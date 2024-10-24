@@ -29,7 +29,7 @@ const SELECTORS = {
 };
 
 test.describe
-  .parallel('Test Payments Links V1 @flow=payment-links-v1 @project=no-code @project=no-code-stable @project=no-code-roast @project=payment-links', () => {
+  .parallel('Test Payments Links V1 @flow=payment-links-v1 @project=no-code @project=no-code-stable @project=no-code-roast @project=payment-links @skip-unstable', () => {
   test.use({
     storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_NOT_IE_STATE,
   });

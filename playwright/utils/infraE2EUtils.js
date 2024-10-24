@@ -136,7 +136,7 @@ function getDependencies(depCommits) {
         pgrouter_worker_notification_replicas: 0,
         pgrouter_worker_outbox_relay_replicas: 0,
         pgrouter_worker_ledger_replicas: 0,
-        pgrouter_app_mode: 'test',
+        pgrouter_app_mode: 'live',
       };
     }
     if (depName === 'ui-config-service') {
