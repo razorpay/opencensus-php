@@ -10,6 +10,7 @@ import {
   checkEligibilityForFeeBasedGating,
   handleFeeBasedGatingNavigation,
 } from 'merchant/utils/feeBasedGatingUtils';
+import { getCookie } from 'common/utils/cookies';
 
 export default ({ onCloseClick, user }) => {
   const activationName =
@@ -36,6 +37,11 @@ export default ({ onCloseClick, user }) => {
     }
   }, []);
 
+  let isSGMerchant = false;
+  useEffect(() => {
+    isSGMerchant = getCookie('rzp_user_merchant_region') === 'SG';
+  }, []);
+
   const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
 
   const shouldRedirectToEasyFlow =
@@ -52,8 +58,10 @@ export default ({ onCloseClick, user }) => {
       >
         {user.isOrgAxis
           ? 'Please reach out to the Axis Bank to get yourself activated'
+          : isSGMerchant
+          ? 'Sales will reach out to you for more details'
           : `Please fill and submit the ${activationName} Form to access live mode.`}
-        {!user.isOrgAxis ? (
+        {!user.isOrgAxis && !isSGMerchant ? (
           <div class="Modal__actions text-right">
             {!shouldRedirectToEasyFlow ? (
               <button class="btn btn-primary btn-block" onClick={redirectToEasyAfter1sec}>
