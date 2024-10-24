@@ -1292,7 +1292,7 @@ class ActivationWizard extends React.Component {
     const merchantEmail = user?.merchants?.[user?.current]?.email;
 
     const isValidWebsiteUrl = websiteUrl
-      ? isValidWebsite({ url: websiteUrl, isRazorpayDomainAllowed: false, allowHttpProtocol: true })
+      ? isValidWebsite({ url: websiteUrl, isRazorpayDomainAllowed: false })
       : true;
     const isValidAppLink = appLink ? isAppLinkValid(appLink) : true;
 

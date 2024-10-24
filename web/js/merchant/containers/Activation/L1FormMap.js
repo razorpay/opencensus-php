@@ -197,7 +197,7 @@ export default [
       type: 'url',
       validator: (value) => {
         if (
-          !isValidWebsite({ url: value, isRazorpayDomainAllowed: false, allowHttpProtocol: true })
+          !isValidWebsite({ url: value, isRazorpayDomainAllowed: false })
         ) {
           return 'Invalid website URL';
         }

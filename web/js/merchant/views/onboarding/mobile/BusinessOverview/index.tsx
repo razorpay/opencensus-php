@@ -217,7 +217,6 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                     return isValidWebsite({
                       url: value,
                       isRazorpayDomainAllowed: false,
-                      allowHttpProtocol: true,
                     });
                   }
                   return true;

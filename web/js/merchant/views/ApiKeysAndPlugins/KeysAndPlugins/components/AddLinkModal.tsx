@@ -5,7 +5,7 @@ import { bindActionCreators, compose } from 'redux';
 import AsyncButton from 'react-async-button';
 
 import User from 'merchant/models/User';
-import { required } from 'common/utils/validators';
+import { isValidWebsite } from 'common/utils/validators';
 import InputField from 'common/ui/Forms/InputField';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/reducers/session';
@@ -114,9 +114,10 @@ const AddLinkModal = ({
             component={InputField}
             type="text"
             name="link"
-            placeholder="http://"
+            placeholder="https://"
             className="form-control"
-            validate={required()}
+            validate={(value: string) =>
+              isValidWebsite({url: value}) ? undefined : 'Invalid Url'}
           />
         </div>
         <AsyncButton

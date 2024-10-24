@@ -164,8 +164,7 @@ const CustomPaymentsCahnnel = ({
                 validator={(value) =>
                   !isValidWebsite({
                     url: value,
-                    isRazorpayDomainAllowed: false,
-                    allowHttpProtocol: true,
+                    isRazorpayDomainAllowed: false
                   })
                     ? 'Invalid website URL'
                     : ''
@@ -173,8 +172,7 @@ const CustomPaymentsCahnnel = ({
                 onBlur={(e) => {
                   const error = !isValidWebsite({
                     url: value,
-                    isRazorpayDomainAllowed: false,
-                    allowHttpProtocol: true,
+                    isRazorpayDomainAllowed: false
                   })
                     ? 'Invalid website URL'
                     : '';

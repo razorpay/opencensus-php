@@ -3,7 +3,7 @@ import AsyncButton from 'react-async-button';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import InputField from 'common/ui/Forms/InputField';
-import { required, lenientUrl } from 'common/utils/validators';
+import { isValidWebsite } from 'common/utils/validators';
 
 const EditWebsite = reduxForm({ form: 'editWebsiteDetails' })(
   ({ onSubmit, onCancel, handleSubmit }) => {
@@ -59,7 +59,7 @@ const EditWebsite = reduxForm({ form: 'editWebsiteDetails' })(
             name="business_website"
             component={InputField}
             class="form-control"
-            validate={[required(), lenientUrl('Please enter a valid URL')]}
+            validate={(value) => isValidWebsite({url: value}) ? undefined : 'Please enter a valid URL'}
           />
         </div>
         <div class="form-group">
