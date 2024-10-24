@@ -432,7 +432,7 @@ class PartnerSidebarComponent extends Component {
         <MainNavLink
           label="POS Sales Dashboard"
           icon="i i-chart text-info"
-          to={merchantNavLinkProps.routes.posSales}
+          to={BASE_ROUTES.posSales}
           end
           type="general"
           additionalCondition={() => isPosSalesAgent}
