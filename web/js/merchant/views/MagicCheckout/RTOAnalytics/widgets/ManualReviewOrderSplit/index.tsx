@@ -31,7 +31,6 @@ import {
   BREAKDOWN,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 import {
-  COD_REVIEW_WORKFLOW_ROUTE_V2,
   COD_REVIEW_WORKFLOW_ROUTE,
   RTO_REDUCTION_SETUP_ROUTE_V2,
   RTO_REDUCTION_SETUP_ROUTE,
@@ -186,14 +185,7 @@ const ManualReviewOrderSplit = ({
         <div className="manual-review-order-split-nudging-message">
           <p>
             Reduce your RTOs by enabling{' '}
-            <NavLink
-              to={
-                useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT)
-                  ? COD_REVIEW_WORKFLOW_ROUTE_V2
-                  : COD_REVIEW_WORKFLOW_ROUTE
-              }
-              className="magic-link"
-            >
+            <NavLink to={COD_REVIEW_WORKFLOW_ROUTE} className="magic-link">
               Automation
             </NavLink>{' '}
             or turn on{' '}

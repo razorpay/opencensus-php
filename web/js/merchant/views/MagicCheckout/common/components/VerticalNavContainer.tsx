@@ -17,13 +17,17 @@ import {
   Platform,
   User,
   GenericRecord,
-  RoutesConfig,
+  PlatformSpecificRoutes,
   RouteItem,
 } from 'merchant/views/MagicCheckout/types';
+import {
+  checkMagicConfigurationFlow,
+  convertPlatformRoutesToConfigurationFlow,
+} from 'merchant/views/MagicCheckout/utils/Configuration';
 
 interface NestedVerticalTabProps {
-  PATH_PREFIX: string;
-  NAV_ITEMS: RoutesConfig;
+  basePath: string;
+  navItems: PlatformSpecificRoutes;
   customRouteCheck?: (item: RouteItem, user: User) => boolean;
   settings: GenericRecord;
   magicCheckout: GenericRecord;
@@ -39,8 +43,8 @@ const NestedVerticalTab: React.FC<NestedVerticalTabProps> = ({
   magicCheckout,
   customRouteCheck = () => true,
   user,
-  PATH_PREFIX,
-  NAV_ITEMS,
+  basePath,
+  navItems,
 }) => {
   const { platform, showTabHeading } = settings;
   const { rcod: isRCOD } = magicCheckout;
@@ -48,13 +52,17 @@ const NestedVerticalTab: React.FC<NestedVerticalTabProps> = ({
   const { abExperiments } = useSplitzService();
 
   let redirectPath;
+  const pathPrefix = checkMagicConfigurationFlow() ? `/configuration${basePath}` : basePath;
+  const routes = checkMagicConfigurationFlow()
+    ? convertPlatformRoutesToConfigurationFlow(navItems)
+    : navItems;
 
   return (
     <SuspenseWithLoader type="center">
       <StyledTabsWrapper>
         <div className="magic-settings-tabs display-flex" style={{ margin: 0 }}>
           <div className="tabs-container display-flex flex--column">
-            {NAV_ITEMS?.[platform as Platform]?.map((item, index) => {
+            {routes?.[platform as Platform]?.map((item, index) => {
               if (!customRouteCheck(item, user)) return null;
 
               if (!isRouteAuthorised(item, user, abExperiments, isRCOD as boolean)) return null;
@@ -74,12 +82,13 @@ const NestedVerticalTab: React.FC<NestedVerticalTabProps> = ({
             })}
           </div>
           <Routes>
-            {NAV_ITEMS?.[platform as Platform]?.map((item) => {
+            {routes?.[platform as Platform]?.map((item) => {
               if (!isRouteAuthorised(item, user, abExperiments, isRCOD as boolean)) return null;
               if (!customRouteCheck(item, user)) return null;
+
               return (
                 <Route
-                  path={`${item.path.replace(PATH_PREFIX, '')}/*`}
+                  path={`${item.path.replace(pathPrefix, '')}/*`}
                   key={item.path}
                   element={
                     <RouteGuard>

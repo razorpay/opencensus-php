@@ -5,14 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import SwitchField from 'common/ui/Forms/SwitchField';
 
-import {
-  SETUP_MAGICX_V1_ROUTE,
-  SETUP_MAGICX_V2_ROUTE,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/constants';
-import {
-  MAGIC_DASHBOARD_REVAMP_EXPERIMENT,
-  MAGICX_PUBLICAPP_COD_EXPERIMENT,
-} from 'merchant/views/MagicCheckout/constants';
+import { SETUP_MAGICX_ROUTE } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/constants';
+import { MAGICX_PUBLICAPP_COD_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 import { checkMagicConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
 import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 
@@ -24,13 +18,7 @@ import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicE
 const CodIntelligenceToggle = ({ checked, switchMode, sopcMetafields, rcodEnabled }) => {
   const navigate = useNavigate();
   const isMagicXCodEnabled = useMagicExperiment(MAGICX_PUBLICAPP_COD_EXPERIMENT);
-
-  /**
-   * Path to redirect user to setup magicX checkout based on dashboard revamp EXP
-   */
-  const magicXSetupPath = useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT)
-    ? SETUP_MAGICX_V2_ROUTE
-    : SETUP_MAGICX_V1_ROUTE;
+  const magicXSetupPath = SETUP_MAGICX_ROUTE;
 
   return rcodEnabled && isMagicXCodEnabled ? (
     <Box

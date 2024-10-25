@@ -43,8 +43,8 @@ const CODOrdersTab = ({ updateFilters }) => {
   return (
     <SuspenseWithLoader type="center">
       <NavContainer
-        routes={DEFAULT_ROUTES}
-        path={COD_ORDERS_PATH}
+        navItems={DEFAULT_ROUTES}
+        basePath={COD_ORDERS_PATH}
         handleNavClick={(tab) => setActiveNav(tab?.id)}
       />
       {requiredOrderId && (

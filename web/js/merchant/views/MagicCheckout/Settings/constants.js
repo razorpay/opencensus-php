@@ -6,7 +6,6 @@ import MagicIntelligenceTab from 'merchant/views/MagicCheckout/Settings/containe
 import CODSettingsTab from 'merchant/views/MagicCheckout/Settings/containers/CODSettingsTab';
 import ShippingSettingsTab from 'merchant/views/MagicCheckout/Settings/containers/ShippingSettingsTab';
 import CheckoutSettingsTab from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/CheckoutSettingsTab';
-import CouponEngineSettingsTab from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/CouponEngineSettingsTab';
 
 //Files suffixed with V2 are entry points to respective tabs for new dashboard UI
 import PlatformSettingsV2 from 'merchant/views/MagicCheckout/Settings/containers/PlatformSettingsV2';
@@ -23,9 +22,8 @@ import CODOrderAutomation from 'merchant/views/MagicCheckout/CODOrderAutomation'
 import ConfigDashboard from 'merchant/views/MagicCheckout/CODToPrepaid/ConfigsDashboard';
 import MagicXStoreSettings from 'merchant/views/MagicCheckout/MagicXStoreSettings';
 import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
-import CardCTA from 'merchant/views/MagicCheckout/common/components/CardCTA';
 
-import { convertMagicRoutesToConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
+import { convertPlatformRoutesToConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
 import { useSplitzService } from 'common/splitz';
 
 const AnalyticsSettings = lazy(() =>
@@ -227,11 +225,7 @@ export const TABS = {
   ],
 };
 
-export const CONFIG_TABS = Object.keys(PLATFORMS).reduce((_TABS, _platform) => {
-  const platform = PLATFORMS[_platform];
-  _TABS[platform] = convertMagicRoutesToConfigurationFlow(TABS[platform]);
-  return _TABS;
-}, {});
+export const CONFIG_TABS = convertPlatformRoutesToConfigurationFlow(TABS);
 
 export const SWITCH_TEXTS = {
   enable: {
@@ -339,7 +333,7 @@ export const DEFAULT_ROUTES = {
   [PLATFORMS?.NATIVE]: [
     {
       className: 'platform-settings-container',
-      path: '/magic/setup-settings/platform-settings',
+      path: '/magic/settings/platform-settings',
       label: 'Platform Setup',
       Component: PlatformSettingsV2,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
@@ -349,7 +343,7 @@ export const DEFAULT_ROUTES = {
   [PLATFORMS?.SHOPIFY]: [
     {
       className: 'platform-settings-container',
-      path: '/magic/setup-settings/platform-settings',
+      path: '/magic/settings/platform-settings',
       label: 'Platform Setup',
       Component: PlatformSettingsV2,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
@@ -359,7 +353,7 @@ export const DEFAULT_ROUTES = {
   [PLATFORMS?.WOOCOMMERCE]: [
     {
       className: 'platform-settings-container',
-      path: '/magic/setup-settings/platform-settings',
+      path: '/magic/settings/platform-settings',
       label: 'Platform Setup',
       Component: PlatformSettingsV2,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
@@ -368,21 +362,21 @@ export const DEFAULT_ROUTES = {
   ],
 };
 
-export const PATH_PREFIX = '/magic/setup-settings/';
+export const PATH_PREFIX = '/magic/settings/';
 
 export const ROUTES = {
   [PLATFORMS?.NATIVE]: [
     {
       className: 'platform-settings-container',
       label: 'Platform Setup',
-      path: '/magic/setup-settings/platform-settings',
+      path: '/magic/settings/platform-settings',
       Component: PlatformSettingsV2,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
       onRCOD: true,
     },
     {
       className: 'magic-checkout-settings',
-      path: '/magic/setup-settings/checkout-setup',
+      path: '/magic/settings/checkout-setup',
       label: 'Checkout Settings',
       Component: NativeCoupons,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
@@ -390,27 +384,27 @@ export const ROUTES = {
     {
       className: 'shipping-settings',
       label: 'Shipping Setup',
-      path: '/magic/setup-settings/shipping-setup',
+      path: '/magic/settings/shipping-setup',
       Component: NativeShippingWrapper,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
     {
       className: 'intelligence-settings',
       label: 'RTO Reduction Setup',
-      path: '/magic/setup-settings/rto-reduction-setup',
+      path: '/magic/settings/rto-reduction-setup',
       Component: RTOReductionSetupV2,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
     {
       className: 'automation-settings',
-      path: '/magic/setup-settings/cod-review-workflow',
+      path: '/magic/settings/cod-review-workflow',
       label: 'COD Review Workflow',
       Component: CODOrderAutomation,
       condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
     },
     {
       label: 'Upload Addresses',
-      path: '/magic/setup-settings/upload-address',
+      path: '/magic/settings/upload-address',
       Component: BulkAddressUpload,
       condition: (_user) => _user.isBulkAddressUploadEnabled,
       onRCOD: true,
@@ -420,7 +414,7 @@ export const ROUTES = {
     {
       className: 'control-center-settings',
       label: 'Control Center',
-      path: '/magic/setup-settings/control-center',
+      path: '/magic/settings/control-center',
       Component: MagicXControlCenter,
       condition: (_user, abExperiments) =>
         ACCESS_ROLES.includes(_user.role) &&
@@ -431,14 +425,14 @@ export const ROUTES = {
     {
       className: 'platform-settings-container',
       label: 'Platform Setup',
-      path: '/magic/setup-settings/platform-settings',
+      path: '/magic/settings/platform-settings',
       Component: PlatformSettingsV2,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
       onRCOD: true,
     },
     {
       className: 'magic-checkout-settings',
-      path: '/magic/setup-settings/checkout-setup',
+      path: '/magic/settings/checkout-setup',
       label: 'Checkout Setup',
       Component: CheckoutSettingsTab,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
@@ -446,13 +440,13 @@ export const ROUTES = {
     {
       className: 'cod-settings',
       label: 'COD Setup',
-      path: '/magic/setup-settings/cod-settings',
+      path: '/magic/settings/cod-settings',
       Component: MagicXCodSetup,
       onRCODOnly: true,
     },
     {
       className: 'magic-checkout-settings',
-      path: '/magic/setup-settings/magicx-store-settings',
+      path: '/magic/settings/magicx-store-settings',
       label: 'Checkout Setup',
       Component: MagicXStoreSettings,
       condition: (_user, abExperiments) =>
@@ -463,7 +457,7 @@ export const ROUTES = {
     {
       className: 'intelligence-settings',
       label: 'RTO Reduction Setup',
-      path: '/magic/setup-settings/rto-reduction-setup',
+      path: '/magic/settings/rto-reduction-setup',
       Component: RTOReductionSetupV2,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
       onRCOD: true,
@@ -471,7 +465,7 @@ export const ROUTES = {
     {
       className: 'shipping-settings',
       label: 'Shipping Setup',
-      path: '/magic/setup-settings/shipping-setup',
+      path: '/magic/settings/shipping-setup',
       Component: ShippingSettingsTab,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
       onRCOD: true,
@@ -479,27 +473,27 @@ export const ROUTES = {
     {
       className: 'cod-settings',
       label: 'COD Setup',
-      path: '/magic/setup-settings/cod-settings',
+      path: '/magic/settings/cod-settings',
       Component: CODComponentV2,
       condition: (_user) => _user.isMagicPrepayCODEnabled || _user.isMagicCODEngineEnabled,
     },
     {
       className: 'analytics-settings',
       label: 'Analytics and ads setup',
-      path: '/magic/setup-settings/analytics-setup',
+      path: '/magic/settings/analytics-setup',
       Component: AnalyticsSettings,
       condition: (_, abExperiments) =>
         abExperiments?.magic_analytics_setting?.variables?.result === 'on',
     },
     {
       className: 'automation-settings',
-      path: '/magic/setup-settings/cod-review-workflow',
+      path: '/magic/settings/cod-review-workflow',
       label: 'COD Review Workflow',
       Component: CODOrderAutomation,
       condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
     },
     {
-      path: '/magic/setup-settings/upload-address',
+      path: '/magic/settings/upload-address',
       label: 'Upload Addresses',
       Component: BulkAddressUpload,
       condition: (_user) => _user.isBulkAddressUploadEnabled,
@@ -510,34 +504,34 @@ export const ROUTES = {
     {
       className: 'platform-settings-container',
       label: 'Platform Setup',
-      path: '/magic/setup-settings/platform-settings',
+      path: '/magic/settings/platform-settings',
       Component: PlatformSettingsV2,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
       onRCOD: true,
     },
     {
       className: 'magic-checkout-settings',
-      path: '/magic/setup-settings/checkout-setup',
+      path: '/magic/settings/checkout-setup',
       label: 'Checkout Setup',
       Component: WoocCoupons,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
     {
       className: 'shipping-settings',
-      path: '/magic/setup-settings/shipping-setup',
+      path: '/magic/settings/shipping-setup',
       label: 'Shipping Setup',
       Component: WoocShippingTab,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
     {
       className: 'cod-settings',
-      path: '/magic/setup-settings/cod',
+      path: '/magic/settings/cod',
       label: 'COD Setup',
       Component: CODComponentV2,
       condition: (_user) => _user.isMagicPrepayCODEnabled || _user.isMagicCODEngineEnabled,
     },
     {
-      path: '/magic/setup-settings/rto-reduction-setup',
+      path: '/magic/settings/rto-reduction-setup',
       label: 'RTO Reduction Setup',
       Component: RTOReductionSetupV2,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
@@ -545,13 +539,13 @@ export const ROUTES = {
     },
     {
       className: 'automation-settings',
-      path: '/magic/setup-settings/cod-review-workflow',
+      path: '/magic/settings/cod-review-workflow',
       label: 'COD Review Workflow',
       Component: CODOrderAutomation,
       condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
     },
     {
-      path: '/magic/setup-settings/upload-address',
+      path: '/magic/settings/upload-address',
       label: 'Upload Addresses',
       Component: BulkAddressUpload,
       condition: (_user) => _user.isBulkAddressUploadEnabled,

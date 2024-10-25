@@ -92,8 +92,7 @@ export const COD_FEE_INFO = `${GENERAL_FEE_INFO} For COD profile, set rate as to
 export const SETUP_GUIDE_DOCS_HREF =
   'https://razorpay.com/docs/payments/checkout360/configure-cod/';
 export const SETUP_GUIDE_VIDEO_HREF = 'http://bit.ly/checkout360-guide';
-export const SETUP_MAGICX_V2_ROUTE = '/magic/setup-settings/magicx-store-settings';
-export const SETUP_MAGICX_V1_ROUTE = '/magic/settings/magicx-store-settings';
+export const SETUP_MAGICX_ROUTE = '/magic/settings/magicx-store-settings';
 
 //Greater Than Or Equal
 export const GTE = 'gte';

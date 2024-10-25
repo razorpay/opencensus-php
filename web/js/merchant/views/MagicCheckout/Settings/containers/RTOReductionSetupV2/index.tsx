@@ -7,10 +7,10 @@ import { RTO_REDUCTION_ROUTES } from 'merchant/views/MagicCheckout/Settings/cont
 
 ////Entry file to RTO Reduction Setup tab of new dashboard UI
 const RTOReductionSetup: React.FC = () => {
-  const path = '/magic/setup-settings/rto-reduction-setup';
+  const path = '/magic/settings/rto-reduction-setup';
   return (
     <SuspenseWithLoader type="center">
-      <NavContainer routes={RTO_REDUCTION_ROUTES} path={path} />
+      <NavContainer navItems={RTO_REDUCTION_ROUTES} basePath={path} />
     </SuspenseWithLoader>
   );
 };

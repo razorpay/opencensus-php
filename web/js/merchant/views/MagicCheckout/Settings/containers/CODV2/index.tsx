@@ -7,10 +7,10 @@ import { COD_ROUTES } from 'merchant/views/MagicCheckout/Settings/containers/COD
 
 //Entry file to COD tab of new dashboard UI
 const COD: React.FC = () => {
-  const path = '/magic/setup-settings/cod-settings/';
+  const path = '/magic/settings/cod-settings/';
   return (
     <SuspenseWithLoader type="center">
-      <NavContainer routes={COD_ROUTES} path={path} />
+      <NavContainer navItems={COD_ROUTES} basePath={path} />
     </SuspenseWithLoader>
   );
 };

@@ -186,7 +186,7 @@ const RTOAnalytics: React.FC<RTOAnalyticsProps> = ({
         <Spinner center />
       ) : (
         <SuspenseWithLoader type="center">
-          <NavContainer routes={RTO_ROUTES} path={path} handleNavClick={onTabClick} />
+          <NavContainer navItems={RTO_ROUTES} basePath={path} handleNavClick={onTabClick} />
         </SuspenseWithLoader>
       )}
     </div>

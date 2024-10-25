@@ -3,7 +3,7 @@ import CODToPrepaidLinks from 'merchant/views/MagicCheckout/CODToPrepaid/CODToPr
 
 import { formatRoutesByPlatform } from 'merchant/views/MagicCheckout/utils/formatGenericRoutes';
 
-import { RoutesConfig, User, RouteItem } from 'merchant/views/MagicCheckout/types';
+import { PlatformSpecificRoutes, User, RouteItem } from 'merchant/views/MagicCheckout/types';
 
 import {
   COD_ORDERS,
@@ -48,4 +48,4 @@ const GENERIC_ROUTES: RouteItem[] = [
 ];
 
 //DRY - Above routes are common for all platforms
-export const DEFAULT_ROUTES: RoutesConfig = formatRoutesByPlatform(GENERIC_ROUTES);
+export const DEFAULT_ROUTES: PlatformSpecificRoutes = formatRoutesByPlatform(GENERIC_ROUTES);

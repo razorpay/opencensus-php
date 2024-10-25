@@ -13,21 +13,20 @@ export const C360_CONTACT_SALES_HREF = 'mailto:checkout360-support@razorpay.com'
 export const C360_ONBOARDING_CTA = { START: 'Start Set-Up', RESUME: 'Resume Set-Up' };
 export const C360_CONTACT_SALES_CTA = 'Contact Sales';
 
-export const SETUP_MAGICX_V2_ROUTE = '/magic/setup-settings/magicx-store-settings';
-export const SETUP_MAGICX_V1_ROUTE = '/magic/settings/magicx-store-settings';
+export const SETUP_MAGICX_ROUTE = '/magic/settings/magicx-store-settings';
 
 export const ROUTES = {
   COD_CONFIG: {
     MAGICX_V1: '/magic/settings/cod-settings',
-    MAGICX_V2: '/magic/setup-settings/cod-settings/settings',
+    MAGICX_V2: '/magic/settings/cod-settings/settings',
   },
   RTO_CONFIG: {
     MAGICX_V1: '/magic/settings/rto-settings',
-    MAGICX_V2: '/magic/setup-settings/rto-reduction-setup',
+    MAGICX_V2: '/magic/settings/rto-reduction-setup',
   },
   CHECKOUT_CONFIG: {
     MAGICX_V1: '/magic/settings/magicx-store-settings',
-    MAGICX_V2: '/magic/setup-settings/magicx-store-settings',
+    MAGICX_V2: '/magic/settings/magicx-store-settings',
   },
 };
 

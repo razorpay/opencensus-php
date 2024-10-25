@@ -12,7 +12,7 @@ const MagicDashboard: React.FC = () => {
   //Common Component to render L2 Navigation
   return (
     <SuspenseWithLoader type="center">
-      <VerticalNavContainer NAV_ITEMS={NAV_ITEMS} PATH_PREFIX={PATH_PREFIX} />
+      <VerticalNavContainer navItems={NAV_ITEMS} basePath={PATH_PREFIX} />
     </SuspenseWithLoader>
   );
 };

@@ -1,8 +1,4 @@
-export const PLATFORMS = {
-  SHOPIFY: 'shopify',
-  WOOCOMMERCE: 'woocommerce',
-  NATIVE: 'native',
-} as const;
+import { PLATFORMS } from 'merchant/views/MagicCheckout/constants';
 
 type Platform = (typeof PLATFORMS)[keyof typeof PLATFORMS];
 
@@ -37,6 +33,6 @@ export interface RouteItem {
   onRCODOnly?: boolean;
 }
 
-export type RoutesConfig = {
-  [x: string]: RouteItem[];
+export type PlatformSpecificRoutes = {
+  [key in Platform]?: RouteItem[];
 };

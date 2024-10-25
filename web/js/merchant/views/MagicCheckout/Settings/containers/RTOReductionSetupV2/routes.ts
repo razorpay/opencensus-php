@@ -2,13 +2,9 @@ import lazy from 'merchant/routes/LazyLoader';
 
 import ShipRocketWrapper from 'merchant/views/MagicCheckout/Settings/containers/RTOReductionSetupV2/ShipRocketWrapper';
 
-import { RoutesConfig } from 'merchant/views/MagicCheckout/types';
+import { PLATFORMS } from 'merchant/views/MagicCheckout/constants';
 
-const PLATFORMS = {
-  SHOPIFY: 'shopify',
-  WOOCOMMERCE: 'woocommerce',
-  NATIVE: 'native',
-};
+import { PlatformSpecificRoutes } from 'merchant/views/MagicCheckout/types';
 
 export const ACCESS_ROLES = ['owner', 'admin'];
 
@@ -45,45 +41,45 @@ const DeliveryStatus = lazy(
     import(/* webpackChunkName: "DeliveryStatus" */ 'merchant/views/MagicCheckout/OrderStatusTab'),
 );
 
-export const RTO_REDUCTION_ROUTES: RoutesConfig = {
+export const RTO_REDUCTION_ROUTES: PlatformSpecificRoutes = {
   [PLATFORMS.NATIVE]: [
     {
       label: 'RTO Reduction',
       id: 'delivery-tracking',
-      path: '/magic/setup-settings/rto-reduction-setup/rto-reduction',
+      path: '/magic/settings/rto-reduction-setup/rto-reduction',
       Component: RTOReduction,
     },
     {
       label: 'Delivery Tracking',
       id: 'delivery-tracking',
-      path: '/magic/setup-settings/rto-reduction-setup/delivery-tracking',
+      path: '/magic/settings/rto-reduction-setup/delivery-tracking',
       onRCOD: true,
       Component: ShipRocketWrapper,
     },
     {
       label: 'Allow List',
       id: 'allowlist',
-      path: '/magic/setup-settings/rto-reduction-setup/allow-list',
+      path: '/magic/settings/rto-reduction-setup/allow-list',
       condition: (_user) => ACCESS_ROLES?.includes(_user?.role as string),
       Component: AllowList,
     },
     {
       label: 'Block List',
       id: 'blocklist',
-      path: '/magic/setup-settings/rto-reduction-setup/block-list',
+      path: '/magic/settings/rto-reduction-setup/block-list',
       condition: (_user) => ACCESS_ROLES?.includes(_user?.role as string),
       Component: BlockList,
       onRCOD: true,
     },
     {
       label: 'Delivery Data Upload',
-      path: '/magic/setup-settings/rto-reduction-setup/delivery-status',
+      path: '/magic/settings/rto-reduction-setup/delivery-status',
       onRCOD: true,
       Component: DeliveryStatus,
     },
     {
       label: 'RTO History',
-      path: '/magic/setup-settings/rto-reduction-setup/rto-history',
+      path: '/magic/settings/rto-reduction-setup/rto-history',
       condition: (_user) => true,
       Component: RTOHistory,
       onRCOD: true,
@@ -93,14 +89,14 @@ export const RTO_REDUCTION_ROUTES: RoutesConfig = {
     {
       label: 'RTO Reduction',
       id: 'delivery-tracking',
-      path: '/magic/setup-settings/rto-reduction-setup/rto-reduction',
+      path: '/magic/settings/rto-reduction-setup/rto-reduction',
       Component: RTOReduction,
       onRCOD: true,
     },
     {
       label: 'Delivery Tracking',
       id: 'delivery-tracking',
-      path: '/magic/setup-settings/rto-reduction-setup/delivery-tracking',
+      path: '/magic/settings/rto-reduction-setup/delivery-tracking',
       Component: ShipRocketWrapper,
       className: 'shipping-service',
       onRCOD: true,
@@ -108,27 +104,27 @@ export const RTO_REDUCTION_ROUTES: RoutesConfig = {
     {
       label: 'Allow List',
       id: 'allowlist',
-      path: '/magic/setup-settings/rto-reduction-setup/allow-list',
+      path: '/magic/settings/rto-reduction-setup/allow-list',
       condition: (_user) => ACCESS_ROLES?.includes(_user?.role as string),
       Component: AllowList,
     },
     {
       label: 'Block List',
       id: 'blocklist',
-      path: '/magic/setup-settings/rto-reduction-setup/block-list',
+      path: '/magic/settings/rto-reduction-setup/block-list',
       condition: (_user) => ACCESS_ROLES?.includes(_user?.role as string),
       Component: BlockList,
       onRCOD: true,
     },
     {
       label: 'Delivery Data Upload',
-      path: '/magic/setup-settings/rto-reduction-setup/delivery-status',
+      path: '/magic/settings/rto-reduction-setup/delivery-status',
       onRCOD: true,
       Component: DeliveryStatus,
     },
     {
       label: 'RTO History',
-      path: '/magic/setup-settings/rto-reduction-setup/rto-history',
+      path: '/magic/settings/rto-reduction-setup/rto-history',
       condition: (_user) => true,
       Component: RTOHistory,
       onRCOD: true,
@@ -138,40 +134,40 @@ export const RTO_REDUCTION_ROUTES: RoutesConfig = {
     {
       label: 'RTO Reduction',
       id: 'delivery-tracking',
-      path: '/magic/setup-settings/rto-reduction-setup/rto-reduction',
+      path: '/magic/settings/rto-reduction-setup/rto-reduction',
       Component: RTOReduction,
     },
     {
       label: 'Delivery Tracking',
       id: 'delivery-tracking',
-      path: '/magic/setup-settings/rto-reduction-setup/delivery-tracking',
+      path: '/magic/settings/rto-reduction-setup/delivery-tracking',
       Component: ShipRocketWrapper,
       className: 'shipping-service',
     },
     {
       label: 'Allow List',
       id: 'allowlist',
-      path: '/magic/setup-settings/rto-reduction-setup/allow-list',
+      path: '/magic/settings/rto-reduction-setup/allow-list',
       condition: (_user) => ACCESS_ROLES?.includes(_user?.role as string),
       Component: AllowList,
     },
     {
       label: 'Block List',
       id: 'blocklist',
-      path: '/magic/setup-settings/rto-reduction-setup/block-list',
+      path: '/magic/settings/rto-reduction-setup/block-list',
       condition: (_user) => ACCESS_ROLES?.includes(_user?.role as string),
       Component: BlockList,
       onRCOD: true,
     },
     {
       label: 'Delivery Data Upload',
-      path: '/magic/setup-settings/rto-reduction-setup/delivery-status',
+      path: '/magic/settings/rto-reduction-setup/delivery-status',
       onRCOD: true,
       Component: DeliveryStatus,
     },
     {
       label: 'RTO History',
-      path: '/magic/setup-settings/rto-reduction-setup/rto-history',
+      path: '/magic/settings/rto-reduction-setup/rto-history',
       condition: (_user) => true,
       Component: RTOHistory,
       onRCOD: true,

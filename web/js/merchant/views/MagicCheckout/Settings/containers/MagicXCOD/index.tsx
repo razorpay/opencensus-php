@@ -23,17 +23,14 @@ import BasicCOD from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchSummary as fetchShippingProfiles } from 'merchant/reducers/magicCheckout/shippingEngine/action';
-import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 import { checkMagicConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
 
 import { FormContextProvider } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Context';
 
 import {
-  SETUP_MAGICX_V1_ROUTE,
-  SETUP_MAGICX_V2_ROUTE,
+  SETUP_MAGICX_ROUTE,
   CONFIRMATION_MODAL_OBJECT,
 } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/constants';
-import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 import { SWITCH_TEXTS } from 'merchant/views/MagicCheckout/Settings/constants';
 import { COD_ENGINE_TYPES } from 'merchant/views/MagicCheckout/CODSettings/constants';
 
@@ -48,13 +45,6 @@ const MagicXCOD = ({ settings, updateMagicSettings, showNotification, fetchShipp
   const [confirmationModalConfigs, setConfirmationModalConfigs] =
     useState(CONFIRMATION_MODAL_OBJECT);
   const navigate = useNavigate();
-
-  /**
-   * Path to redirect user to setup magicX checkout based on dashboard revamp EXP
-   */
-  const magicXSetupPath: string = useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT)
-    ? SETUP_MAGICX_V2_ROUTE
-    : SETUP_MAGICX_V1_ROUTE;
 
   useEffect(() => {
     fetchShippingProfiles();
@@ -194,8 +184,8 @@ const MagicXCOD = ({ settings, updateMagicSettings, showNotification, fetchShipp
                           navigate(
                             //Support to render on Dashboard Full Page View mode
                             checkMagicConfigurationFlow()
-                              ? magicXSetupPath?.replace('/magic/', '/configuration/magic/')
-                              : magicXSetupPath,
+                              ? `/configuration${SETUP_MAGICX_ROUTE}`
+                              : SETUP_MAGICX_ROUTE,
                           )
                         }
                         marginRight="spacing.2"

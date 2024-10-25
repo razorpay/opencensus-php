@@ -58,7 +58,7 @@ const routesV2 = [
   },
   {
     tabName: 'Setup & Settings',
-    path: '/magic/setup-settings',
+    path: '/magic/settings',
     condition: (_user) => _user.isMagicSettingsEnabled,
     Component: SetupAndSettings,
     onRCOD: true,

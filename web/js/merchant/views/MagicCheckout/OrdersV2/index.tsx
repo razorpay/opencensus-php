@@ -38,8 +38,8 @@ const Orders: React.FC<OrdersProps> = ({ magicCheckout }) => {
   return (
     <SuspenseWithLoader type="center">
       <VerticalNavContainer
-        NAV_ITEMS={NAV_ITEMS}
-        PATH_PREFIX={PATH_PREFIX}
+        navItems={NAV_ITEMS}
+        basePath={PATH_PREFIX}
         customRouteCheck={customRouteCheck}
       />
     </SuspenseWithLoader>

@@ -1,6 +1,6 @@
 import lazy from 'merchant/routes/LazyLoader';
 
-import { RoutesConfig, RouteItem } from 'merchant/views/MagicCheckout/types';
+import { PlatformSpecificRoutes, RouteItem } from 'merchant/views/MagicCheckout/types';
 
 import { PLATFORMS } from 'merchant/views/MagicCheckout/constants';
 
@@ -64,7 +64,7 @@ const GENERIC_ROUTES: RouteItem[] = [
 ];
 
 //DRY - Above routes are common for all platforms
-export const DEFAULT_ROUTES: RoutesConfig = Object.values(PLATFORMS).reduce(
+export const DEFAULT_ROUTES: PlatformSpecificRoutes = Object.values(PLATFORMS).reduce(
   (RTORoutes, Platform) => {
     RTORoutes[Platform] = GENERIC_ROUTES;
     return RTORoutes;

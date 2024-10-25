@@ -11,7 +11,7 @@ import {
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import VerticalNavContainer from 'merchant/views/MagicCheckout/common/components/VerticalNavContainer';
 
-import { RoutesConfig, GenericRecord } from 'merchant/views/MagicCheckout/types';
+import { PlatformSpecificRoutes, GenericRecord } from 'merchant/views/MagicCheckout/types';
 import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 
 interface NestedVerticalTabProps {
@@ -24,7 +24,7 @@ const SetupAndSettings: React.FC<NestedVerticalTabProps> = ({ settings, magicChe
   const { platform, one_click_checkout = true } = settings;
   const { cod_order_control: isCODOrderControlEnabled, rcod: isRCOD } = magicCheckout;
 
-  const NAV_ITEMS: RoutesConfig = useMemo(() => {
+  const NAV_ITEMS: PlatformSpecificRoutes = useMemo(() => {
     return platform === PLATFORMS?.NATIVE || one_click_checkout
       ? { ...ROUTES }
       : { ...DEFAULT_ROUTES };
@@ -66,8 +66,8 @@ const SetupAndSettings: React.FC<NestedVerticalTabProps> = ({ settings, magicChe
   return (
     <SuspenseWithLoader type="center">
       <VerticalNavContainer
-        NAV_ITEMS={NAV_ITEMS}
-        PATH_PREFIX={PATH_PREFIX}
+        navItems={NAV_ITEMS}
+        basePath={PATH_PREFIX}
         customRouteCheck={customRouteCheck}
       />
     </SuspenseWithLoader>

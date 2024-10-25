@@ -172,7 +172,6 @@ export const MIN_START_DATE = 1663957800000;
 export const AUTOMATION_BANNER_SUBHEADING =
   'Set conditions to automatically approve / hold / cancel your COD orders on the basis of RTO risk.';
 export const AUTOMATION_TAB_LINK = '/magic/settings/cod-review-workflow';
-export const AUTOMATION_TAB_LINK_V2 = '/magic/setup-settings/cod-review-workflow';
 
 export const REVIEW_MODE = [
   { label: 'All', name: '' },

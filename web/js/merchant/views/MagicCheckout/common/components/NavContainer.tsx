@@ -8,12 +8,21 @@ import { RouteGuard } from 'merchant/components/ShowWhen';
 import { useSplitzService } from 'common/splitz';
 
 import { isRouteAuthorised } from 'merchant/views/MagicCheckout/utils/genericRouteCheck';
+import {
+  checkMagicConfigurationFlow,
+  convertPlatformRoutesToConfigurationFlow,
+} from 'merchant/views/MagicCheckout/utils/Configuration';
 
-import { RoutesConfig, Platform, RouteItem, User } from 'merchant/views/MagicCheckout/types';
+import {
+  PlatformSpecificRoutes,
+  Platform,
+  RouteItem,
+  User,
+} from 'merchant/views/MagicCheckout/types';
 
 interface NavContainerProps {
-  routes: RoutesConfig;
-  path: string;
+  navItems: PlatformSpecificRoutes;
+  basePath: string;
   handleNavClick?: (item: RouteItem) => unknown;
   user: User;
   platform: Platform;
@@ -27,8 +36,12 @@ interface NavContainerProps {
 const NavContainer: React.FC<NavContainerProps> = (props) => {
   let redirectPath = '';
   const { abExperiments } = useSplitzService();
-  const { routes: ROUTES, path, handleNavClick } = props; //props from parent
+  const { navItems, basePath, handleNavClick } = props; //props from parent
   const { user, platform, isRCOD } = props; // props from store
+  const pathPrefix = checkMagicConfigurationFlow() ? `/configuration${basePath}` : basePath;
+  const routes = checkMagicConfigurationFlow()
+    ? convertPlatformRoutesToConfigurationFlow(navItems)
+    : navItems;
 
   const renderNav = (item: RouteItem) => {
     if (!isRouteAuthorised(item, user, abExperiments, isRCOD)) return false;
@@ -52,15 +65,15 @@ const NavContainer: React.FC<NavContainerProps> = (props) => {
     <SuspenseWithLoader type="center">
       <div className="tabbed-container" style={{ width: '100%' }}>
         <header id="super-checkout-header" className="scrollable-tab-header">
-          {ROUTES?.[platform]?.map(renderNav)}
+          {routes?.[platform]?.map(renderNav)}
         </header>
         <div className="content ">
           <Routes>
-            {ROUTES?.[platform]?.map((item: RouteItem) => {
+            {routes?.[platform]?.map((item: RouteItem) => {
               return (
                 <Route
                   key={item.path}
-                  path={`${item.path.replace(path, '')}/*`}
+                  path={`${item.path.replace(pathPrefix, '')}/*`}
                   element={
                     <RouteGuard
                       additionalCondition={(_user) =>
