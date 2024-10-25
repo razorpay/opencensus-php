@@ -1878,5 +1878,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: ['/website-app-settings/api-keys', '/api-keys', '/keys'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'show_v2_website_flow',
+          experimentId: {
+            beta: 'PCqn0dnUZLArxK',
+            production: 'PCqnbpvKAO807T',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

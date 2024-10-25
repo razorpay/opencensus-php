@@ -7,6 +7,18 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 
 let openModalSpy;
 
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({
+    abExperiments: {
+      show_v2_website_flow: {
+        variables: {
+          result: 'off',
+        },
+      },
+    },
+  }),
+}));
+
 describe('API Keys & Plugins - AddLink', () => {
   beforeAll(() => {
     openModalSpy = jest.spyOn(ModalActions, 'openModal');
