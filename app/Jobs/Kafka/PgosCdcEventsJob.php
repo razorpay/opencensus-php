@@ -21,6 +21,11 @@ class PgosCdcEventsJob extends Job
 
     const ERROR = "ERROR";
     const WARNING = "WARNING";
+
+    const IGNORED_ERRORS = [
+        "The validation id field is required."
+    ];
+
     /**
      * @throws \Exception
      */
@@ -60,17 +65,18 @@ class PgosCdcEventsJob extends Job
         catch (ExtraFieldsException|BadRequestValidationFailureException|BadRequestException|UniqueConstraintViolationException $e)
         {
             //Not propagating the error post this, we don't want to re-attempt here
-            $this->trace->warning(TraceCode::PGOS_DUAL_WRITE_CONSUMER_WARNING, [
-                'code'      => $e->getCode(),
-                'message'   => $e->getMessage(),
-                'payload'   => $this->payload
-            ]);
+            if (!in_array($e->getMessage(), self::IGNORED_ERRORS)) {
+                $this->trace->warning(TraceCode::PGOS_DUAL_WRITE_CONSUMER_WARNING, [
+                    'code'      => $e->getCode(),
+                    'message'   => $e->getMessage(),
+                    'payload'   => $this->payload
+                ]);
+            }
 
-            if ($isMetricExperimentEnabled) {
+            if ($isMetricExperimentEnabled and !in_array($e->getMessage(), self::IGNORED_ERRORS)) {
                 $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
                     'level'           => self::WARNING,
                     'code'            => $e->getCode(),
-                    'description'     => $this->replaceSpaceWithUnderscore($e->getMessage()),
                     'attempt'         => $this->attempts(),
                     'retry'           => false
                 ]);
@@ -91,7 +97,6 @@ class PgosCdcEventsJob extends Job
                 $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
                     'level'           => self::ERROR,
                     'code'            => $e->getCode(),
-                    'description'     => $this->replaceSpaceWithUnderscore($e->getMessage()),
                     'attempt'         => $this->attempts(),
                     'retry'           => true
                 ]);
@@ -115,7 +120,6 @@ class PgosCdcEventsJob extends Job
                 $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
                     'level'           => self::ERROR,
                     'code'            => $e->getCode(),
-                    'description'     => $this->replaceSpaceWithUnderscore($e->getMessage()),
                     'attempt'         => $this->attempts(),
                     'retry'           => false
                 ]);
@@ -124,7 +128,4 @@ class PgosCdcEventsJob extends Job
 
     }
 
-    private function replaceSpaceWithUnderscore($inputString) {
-        return str_replace(' ', '__', $inputString);
-    }
 }
