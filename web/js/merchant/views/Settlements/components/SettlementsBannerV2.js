@@ -1,5 +1,4 @@
 import React from 'react';
-import { getCurrencySymbol as i18nifyGetCurrencySymbol } from '@razorpay/i18nify-js/currency';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { withRouter } from 'common/deprecated/withRouter';
@@ -13,7 +12,7 @@ import SettlementMessage from 'merchant/views/Settlements/InstantSettlements/Ins
 import { Alert } from '@razorpay/blade/components';
 import { ALERT_INTENT, SETTLEMENT_RETRY_SLA_IN_HOURS, SETTLEMENT_STATUS } from './utils';
 import moment from 'moment/moment';
-import { getFormattedAmount } from 'common/utils/rzp-utils';
+import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { analyticsTrack, analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
 import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
@@ -48,6 +47,8 @@ const SettlementsBannerV2 = ({
 
   const no_settlement = settlement_amount?.data?.no_settlement;
 
+  const settlement_currency = settlement_amount?.data?.settlement_currency;
+
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
 
   const isOnHold = no_settlement?.on_hold;
@@ -72,10 +73,6 @@ const SettlementsBannerV2 = ({
   const retrySlaBreached =
     moment().diff(moment.unix(previousSettlement?.created_at), 'hours') >
     SETTLEMENT_RETRY_SLA_IN_HOURS;
-
-  const currency = settlement_amount?.data?.settlement_currency || 'INR';
-
-  const currencySymbol = i18nifyGetCurrencySymbol(currency);
 
   const handleContactSupport = (title) => {
     closeModal();
@@ -233,13 +230,17 @@ const SettlementsBannerV2 = ({
   } else if (previousSettlementFailed) {
     // We are showing this banner if the user's previous settlement is in failed state
     title = retrySlaBreached
-      ? `Contact support to receive failed settlement of ${currencySymbol}${getFormattedAmount(
+      ? `Contact support to receive failed settlement of ${getFormattedAmountNew(
           previousSettlement?.amount,
+          true,
+          settlement_currency,
         )}`
       : 'Your failed settlement is being retried';
     subTitle = retrySlaBreached
-      ? `Your previous settlement of ${currencySymbol}${getFormattedAmount(
+      ? `Your previous settlement of ${getFormattedAmountNew(
           previousSettlement?.amount,
+          true,
+          settlement_currency,
         )} could not be processed as we’ve encountered a few issues`
       : 'We’re retrying your failed settlement as we’ve encountered a few issues. We’ll share an update with you in some time';
     actions = retrySlaBreached && {
