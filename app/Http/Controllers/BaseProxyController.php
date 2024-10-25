@@ -152,6 +152,7 @@ abstract class BaseProxyController extends Controller
             'X-Org-Id'         => optional($this->ba->getMerchant())->getOrgId() ?? '',
             'X-Merchant-Country' => optional($this->ba->getMerchant())->getCountry() ?? '',
             'X-Admin-id'       => optional($this->ba->getAdmin())->getId() ?? '',
+            'X-Product'        => $body['product'] ?? ''
         ];
 
         $actorDetailsHeaders = $this->getActorDetailHeaders();
