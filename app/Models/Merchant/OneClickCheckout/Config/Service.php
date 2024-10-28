@@ -560,7 +560,7 @@ class Service extends Base\Service
             if ($prepayCod[Constants::ENABLED] === true) {
                 $partialCod = $this->get1ccPartialCodConfig();
                 if ($partialCod[Constants::ENABLED]) {
-                    throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, 'Prepay COD and Partial COD cannot be enabled together. Partial COD is already enabled.');
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'Prepay COD and Partial COD cannot be enabled together. Partial COD is already enabled.');
                 }
             }
 
@@ -615,7 +615,7 @@ class Service extends Base\Service
         if ($partialCod[Constants::ENABLED] === true) {
             $prepayCod = $this->get1ccPrepayCodConfig();
             if ($prepayCod[Constants::ENABLED]) {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, 'Prepay COD and Partial COD cannot be enabled together. Prepay COD is already enabled.');
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'Prepay COD and Partial COD cannot be enabled together. Prepay COD is already enabled.');
             }
         }
 
