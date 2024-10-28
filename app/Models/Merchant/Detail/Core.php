@@ -451,7 +451,7 @@ class Core extends Base\Core
 
                     $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
-                    // If the signup campaign is 'assisted_onboarding' or `partner_assisted_onboarding, 
+                    // If the signup campaign is 'assisted_onboarding' or `partner_assisted_onboarding,
                     // mark the milestone as L2 and submitted as true.
                     // In such cases, do not submit the activation form and do not create a CMMA case.
                     if(!empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant() and
@@ -4965,7 +4965,6 @@ class Core extends Base\Core
                             }
 
                         }
-
                         break;
 
                     case Status::REJECTED:
@@ -5082,6 +5081,10 @@ class Core extends Base\Core
 
                 $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS], $rejectionReasons, $rejectionOption);
 
+                if($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
+                {
+                    (new Merchant\Activate)->processActivatePosAndMarkKycVerifiedEvent($merchant->getId());
+                }
                 //send mail
                 try
                 {
@@ -5101,7 +5104,7 @@ class Core extends Base\Core
                 catch (\Throwable $e)
                 {
                     $this->trace->error(TraceCode::MERCHANT_IN_PERSON_NOTIFICATION_FAILED, [
-                        'MerchantId'   => $merchantId,
+                        'MerchantId'   => $merchant->getId(),
                         'ErrorMessage' => $e->getMessage()
                     ]);
                     return $merchantDetails;;
@@ -5205,7 +5208,6 @@ class Core extends Base\Core
                         }
 
                     }
-
                     break;
 
                 case Status::REJECTED:
@@ -5293,6 +5295,10 @@ class Core extends Base\Core
 
             $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS], $rejectionReasons, $rejectionOption);
 
+            if($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
+            {
+                (new Merchant\Activate)->processActivatePosAndMarkKycVerifiedEvent($merchant->getId());
+            }
             //send mail
             try
             {

@@ -3388,7 +3388,132 @@ class CoreTest extends TestCase
 
         (new DetailCore())->updatePosActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
     }
+    public function testActivationInUpdatePosActivationStatus()
+    {
+        $merchantDetails      = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'blacklist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'rejected',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
 
+        $workflowServiceMock = \Mockery::mock(\RZP\Services\Workflow\Service::class)->makePartial();
+
+        $workflowServiceMock->shouldReceive('handle')
+                            ->once();
+
+        $this->app->instance('workflow', $workflowServiceMock);
+
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+        $MerchantOnboardingProxyControllerMock->shouldReceive('shouldMerchantOnboardViaPGOS')
+                                              ->andReturn(true);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_fetch_pos_activation_flow';
+                                              })->andReturn(["pos_activation_flow"=>'whitelist']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_pgos_fetch_activation_status';
+                                              })->andReturn(["pos_activation_status"=>'under_review']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_pos_fetch_all_order';
+                                              })->andReturn(["order_list"     => []]);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->times(1)
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_pgos_update_activation_status';
+                                              })->andReturn(["pos_activation_status"=>Status::KYC_QUALIFIED_STB]);
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+
+        $activationStatusData = [
+            DetailConstant::POS_ACTIVATION_STATUS => Status::KYC_QUALIFIED_STB,
+        ];
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setMerchant($merchantDetails->merchant);
+
+        (new DetailCore())->updatePosActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantDetails->merchant->getId());
+
+        $this->assertTrue($merchant->getAttribute(\RZP\Models\Merchant\Entity::LIVE));
+        $this->assertEquals(0, $merchant->getAttribute(\RZP\Models\Merchant\Entity::ACTIVATED));
+
+
+    }
+    public function testActivationInUpdatePosActivationStatusOfMerchant()
+    {
+        $merchantDetails      = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'blacklist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'rejected',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+
+        $workflowServiceMock = \Mockery::mock(\RZP\Services\Workflow\Service::class)->makePartial();
+
+        $workflowServiceMock->shouldReceive('handle')
+                            ->once();
+
+        $this->app->instance('workflow', $workflowServiceMock);
+
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+        $MerchantOnboardingProxyControllerMock->shouldReceive('shouldMerchantOnboardViaPGOS')
+                                              ->andReturn(true);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_fetch_pos_activation_flow';
+                                              })->andReturn(["pos_activation_flow"=>'whitelist']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_pgos_fetch_activation_status';
+                                              })->andReturn(["pos_activation_status"=>'under_review']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_pos_fetch_all_order';
+                                              })->andReturn(["order_list"     => []]);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->times(1)
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_pgos_update_activation_status';
+                                              })->andReturn(["pos_activation_status"=>Status::KYC_QUALIFIED_STB]);
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+
+        $activationStatusData = [
+            DetailConstant::POS_ACTIVATION_STATUS => Status::KYC_QUALIFIED_STB,
+        ];
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setMerchant($merchantDetails->merchant);
+
+        (new DetailCore())->updatePosActivationStatusOfMerchant($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantDetails->merchant->getId());
+
+        $this->assertTrue($merchant->getAttribute(\RZP\Models\Merchant\Entity::LIVE));
+        $this->assertEquals(0, $merchant->getAttribute(\RZP\Models\Merchant\Entity::ACTIVATED));
+
+
+    }
     public function testHandleRiskWorkFlowCreationErrors()
     {
 
