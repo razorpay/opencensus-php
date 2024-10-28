@@ -1,5 +1,5 @@
-import { test } from 'utils/base';
 import { getStorageStatePath, BASE_PATH, routes } from 'testConstants';
+import { test } from 'utils/base';
 
 import {
   fillCustomerDetails,
@@ -9,29 +9,13 @@ import {
 } from './utils';
 import { navigateToInCurlecDashboard } from '../../utils/common';
 
-const REGISTRATION_LINKS_BUTTONS_NAMES_ASSERTIONS = {
-  SUBSCRIPTIONS: /Subscriptions/i,
-  REGISTRATION_LINK: /Registration Links/i,
-  CREATE_NEW_LINK: /Create New Link/i,
-};
-
 test.describe.parallel('Create Registration Link @flow=CAW @country=MY', () => {
   test.use({
     storageState: getStorageStatePath(BASE_PATH).CURLEC_TEST_CAW_LOGIN_STATE,
   });
 
-  // https://razorpay.slack.com/archives/C061HJGS1CY/p1728536332543699
-  test.skip('should create a registration link with TNG as payment method', async ({ page }) => {
-    await navigateToInCurlecDashboard(page, routes.DASHBOARD);
-    await page
-      .getByRole('link', { name: REGISTRATION_LINKS_BUTTONS_NAMES_ASSERTIONS.SUBSCRIPTIONS })
-      .click();
-    await page
-      .getByRole('link', { name: REGISTRATION_LINKS_BUTTONS_NAMES_ASSERTIONS.REGISTRATION_LINK })
-      .click();
-    await page
-      .getByRole('link', { name: REGISTRATION_LINKS_BUTTONS_NAMES_ASSERTIONS.CREATE_NEW_LINK })
-      .click();
+  test('should create a registration link with TNG as payment method', async ({ page }) => {
+    await navigateToInCurlecDashboard(page, routes.NEW_REGISTRATION_LINKS);
 
     const currentDate = Date.now();
     const customerData = {
