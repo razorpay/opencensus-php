@@ -1,0 +1,32 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    types:
+      - ready_for_review
+      - labeled
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.repository }}-${{ github.event.pull_request.number || github.head_ref || github.sha }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  review:
+    name: AI Code Review
+    runs-on: [self-hosted]
+    if: ${{ github.event.label.name == 'AI-PR-Review' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run review process
+        uses: razorpay/ai-pr-reviewer@ea6f64ee1acc6f20e82397f5fc980da0a21e079f   # Using custom branch commit, will set to master post the experimentation phase
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_CODEREVIEW_SECRET }}
