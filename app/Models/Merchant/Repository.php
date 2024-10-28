@@ -531,7 +531,7 @@ class Repository extends Base\Repository
      */
     public function checkMerchantsCountWithPricingPlanIdNotEqualOne($planId): bool
     {
-        $count = $this->fetchMerchantsCountWithPricingPlanId($planId);
+        $count = $this->countUpToTwoMerchantsByPricingPlan($planId);
 
         return $count !== 1;
     }
@@ -549,7 +549,7 @@ class Repository extends Base\Repository
      * @throws BadRequestException
      * @throws BaseException
      */
-    private function fetchMerchantsCountWithPricingPlanId($planId): int
+    private function countUpToTwoMerchantsByPricingPlan($planId): int
     {
         if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
@@ -571,9 +571,11 @@ class Repository extends Base\Repository
             $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
         }
 
-        return $query->where(Entity::PRICING_PLAN_ID, '=', $planId)
+        $merchants =  $query->where(Entity::PRICING_PLAN_ID, '=', $planId)
                     ->limit(2)
-                    ->count();
+                    ->get();
+
+        return $merchants instanceof Arrayable ? $merchants->count() : 0;
     }
 
     public function isMerchantIdRequiredForFetch()

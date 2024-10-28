@@ -145,7 +145,7 @@ final class RepoAndFunctionToSplitzMap
         "isAnExistingUserOnVendorPortal",
         "Mailable_getUserOrgData",
         "revokeTokenOnPasswordChange",
-        "fetchMerchantsCountWithPricingPlanId",
+        "countUpToTwoMerchantsByPricingPlan",
         "checkAccessForMerchant",
         "fetchQueuedPayoutsForBalanceId",
         "filterOnHoldMerchants",

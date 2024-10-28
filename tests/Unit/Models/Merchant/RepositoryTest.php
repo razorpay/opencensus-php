@@ -663,6 +663,32 @@ class RepositoryTest extends RepositoryTestHelper
 
     }
 
+    public function testCheckMerchantsCountWithPricingPlanIdNotEqualOne()
+    {
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
+        $id1 = PublicEntity::generateUniqueId();
+        $id2 = PublicEntity::generateUniqueId();
+        $id3 = PublicEntity::generateUniqueId();
+        $this->fixtures->create('merchant', ['id' => $id3, 'pricing_plan_id' => $id3]);
+        $this->fixtures->create('merchant', ['id' => $id1, 'pricing_plan_id' => $id1]);
+        $this->fixtures->create('merchant', ['id' => $id2, 'pricing_plan_id' => $id1]);
+
+        //merchant with 1 pricing plan
+        $repository = new Repository();
+        $resultWithoutSplitz1 = $repository->checkMerchantsCountWithPricingPlanIdNotEqualOne($id3);
+        $this->assertEquals(false, $resultWithoutSplitz1);
+
+        //merchant with more than one pricing plan
+        $repository = new Repository();
+        $resultWithoutSplitz1 = $repository->checkMerchantsCountWithPricingPlanIdNotEqualOne($id1);
+        $this->assertEquals(true, $resultWithoutSplitz1);
+
+        //merchant with 0 pricing plan
+        $repository = new Repository();
+        $resultWithoutSplitz1 = $repository->checkMerchantsCountWithPricingPlanIdNotEqualOne($id2);
+        $this->assertEquals(true, $resultWithoutSplitz1);
+    }
+
     public function testFindManyOnReadReplicaOperation()
     {
         Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
