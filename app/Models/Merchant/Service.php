@@ -2544,6 +2544,11 @@ class Service extends Base\Service
 
         $response['policy_url'] = $this->getWebsitePublishedUrl($this->merchant->getId());;
 
+        if ($this->merchant->isOmniEnabled() == true)
+        {
+            $response['omni_enabled'] = true;
+        }
+
         return $response;
     }
 
