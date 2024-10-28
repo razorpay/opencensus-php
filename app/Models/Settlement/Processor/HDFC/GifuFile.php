@@ -41,6 +41,8 @@ class GifuFile extends Base\BaseGifuFile
 
     protected $type = FileStore\Type::HDFC_COLLECT_NOW_SETTLEMENT_FILE;
 
+    const TID_19_REGEX = '/\.[0-9]+@hdfcbank$/';
+
     protected $cardsCutoffTimestamp;
 
     protected $upiCutoffTimestamp;
@@ -410,12 +412,12 @@ class GifuFile extends Base\BaseGifuFile
                 'Terminals Fetch Params' => $params,
                 'Terminals Count'        => $terminals->count(),
                 'Terminal picked'        => $terminals,
-                'Gateway Terminal Id'    => $tId,
+                'Gateway Merchant Id2'   => $terminal['gateway_merchant_id2'],
                 'Merchant Id'            => $mid,
             ]
         );
 
-        if(str_starts_with($tId, "19"))
+        if((isset($terminal['gateway_merchant_id2']) === true) and (preg_match(self::TID_19_REGEX, $terminal['gateway_merchant_id2']) === 0))
         {
             return '';
         }
