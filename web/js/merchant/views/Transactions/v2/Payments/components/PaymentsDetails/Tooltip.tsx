@@ -5,21 +5,22 @@ import {
   InfoIcon,
   IconProps,
 } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
 
-import { tooltipContent } from './constants';
+import { getTooltipContent } from './constants';
 import { TooltipWrapper } from './styled';
-
-export type TooltipContentKeys = keyof typeof tooltipContent;
+import { TooltipKeys } from './types';
 
 interface IProps {
-  type?: TooltipContentKeys;
+  type?: TooltipKeys;
   partnerApplicationName?: string;
   size?: IconProps['size'];
+  orgName: string;
 }
 
 function Tooltip(props: IProps): React.ReactElement {
-  const { type, partnerApplicationName, ...restProps } = props;
-  let content = type ? tooltipContent[type] || '' : '';
+  const { orgName, type, partnerApplicationName, ...restProps } = props;
+  let content = type ? getTooltipContent(orgName)[type] || '' : '';
 
   if (partnerApplicationName) {
     content = `${content} ${partnerApplicationName}`;
@@ -35,4 +36,10 @@ function Tooltip(props: IProps): React.ReactElement {
   );
 }
 
-export default Tooltip;
+const mapStateToProps = (state) => {
+  return {
+    orgName: state.session.org?.business_name,
+  };
+};
+
+export default connect(mapStateToProps)(Tooltip);

@@ -6,13 +6,12 @@ import {
   IconProps,
 } from '@razorpay/blade/components';
 
-import { tooltipContent } from './constants';
+import { getTooltipContent } from './constants';
 import { TooltipWrapper } from './styled';
-
-export type TooltipContentKeys = keyof typeof tooltipContent;
+import { TooltipKeys } from './types';
 
 interface IProps {
-  type?: TooltipContentKeys;
+  type?: TooltipKeys;
   partnerApplicationName?: string;
   size?: IconProps['size'];
 }
@@ -21,8 +20,8 @@ function Tooltip(props: IProps): React.ReactElement {
   const { type, partnerApplicationName, ...restProps } = props;
   let content = '';
 
-  if (type && tooltipContent.hasOwnProperty(type)) {
-    content = tooltipContent[type];
+  if (type && getTooltipContent(window.rzp_org?.business_name).hasOwnProperty(type)) {
+    content = getTooltipContent(window.rzp_org?.business_name)[type];
   }
 
   if (partnerApplicationName) {

@@ -9,6 +9,7 @@ import {
 } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 
+import { getTooltipContent } from './constants';
 import { RowWrapper } from './styled';
 import { IPaymentTransfers, PaymentStatus } from './types';
 import TransferList from './TransferList';
@@ -19,13 +20,13 @@ import { fetchTransfers as fetchTransfersAction } from 'merchant/reducers/paymen
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isPlatformTransaction } from 'merchant/views/Transactions/v1/Payments/Utils/platformUtils';
 import { useNavigate } from 'react-router-dom';
-import { tooltipContent } from './constants';
 import { useMobile } from 'common/hooks/useMobile';
 
 const PaymentTransfers = ({
   paymentDetails,
   fetchTransfers,
   transfers,
+  orgName,
 }: IPaymentTransfers): JSX.Element => {
   const { id, status, amount, amount_transferred } = paymentDetails;
   const navigate = useNavigate();
@@ -74,7 +75,7 @@ const PaymentTransfers = ({
           >
             <Box width="100%" textAlign="right" marginLeft="spacing.5">
               {amount === amount_transferred ? (
-                <BladeTooltip content={tooltipContent.transfer} placement="top">
+                <BladeTooltip content={getTooltipContent(orgName).transfer} placement="top">
                   <TooltipInteractiveWrapper>
                     <Button isDisabled size="small" variant="secondary">
                       {ctaText}
@@ -100,6 +101,7 @@ const PaymentTransfers = ({
 
 const mapStateToProps = (state) => {
   return {
+    orgName: state.session.org?.business_name,
     transfers: state.payment.transfers,
   };
 };

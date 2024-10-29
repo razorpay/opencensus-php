@@ -21,10 +21,16 @@ import copyToClipboard from 'common/utils/copyToClipboard';
 import Tooltip from 'merchant/views/Settlements/v3/components/Tooltip';
 import { connect } from 'react-redux';
 import { SettlementPropsInterface } from 'merchant/views/Settlements/v3/typings';
-import { tooltipContent } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/constants';
 import { trackSettlmentDetailsCopied } from 'merchant/views/Settlements/v3/utils/common';
+import { getTooltipContent } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/constants';
 
-const SettlementInfo = ({ settlement }: { settlement: SettlementPropsInterface }) => {
+const SettlementInfo = ({
+  orgName,
+  settlement,
+}: {
+  orgName: string;
+  settlement: SettlementPropsInterface;
+}) => {
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const toggleAccordian = () => {
     setIsOpen((prevState) => !prevState);
@@ -75,7 +81,7 @@ const SettlementInfo = ({ settlement }: { settlement: SettlementPropsInterface }
                     weight="regular"
                     color="surface.text.gray.subtle"
                   >
-                    Settlement ID <Tooltip content={tooltipContent.settlementId} />
+                    Settlement ID <Tooltip content={getTooltipContent(orgName).settlementId} />
                   </Text>
                   <CopyWrapper
                     onClick={() => {
@@ -103,7 +109,7 @@ const SettlementInfo = ({ settlement }: { settlement: SettlementPropsInterface }
                     weight="regular"
                     color="surface.text.gray.subtle"
                   >
-                    UTR number <Tooltip content={tooltipContent.bankRRN} />
+                    UTR number <Tooltip content={getTooltipContent(orgName).bankRRN} />
                   </Text>
                   {settlement.utr ? (
                     <CopyWrapper
@@ -132,8 +138,9 @@ const SettlementInfo = ({ settlement }: { settlement: SettlementPropsInterface }
 };
 
 const mapStateToProps = (state) => {
-  const { settlement } = state;
+  const { session, settlement } = state;
   return {
+    orgName: session.org?.business_name,
     settlement: settlement.settlement,
   };
 };

@@ -19,7 +19,7 @@ import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isPlatformTransaction } from 'apps/self-serve/src/App/Transactions/v1/Payments/Utils/platformUtils';
 import { useNavigate } from 'react-router-dom';
 import { useMobile } from '@dashboard/shared-ui/hooks';
-import { tooltipContent } from './constants';
+import { getTooltipContent } from './constants';
 import TransferList from './TransferList';
 import { IPaymentTransfers, PaymentStatus } from './types';
 import { RowWrapper } from './styled';
@@ -75,7 +75,10 @@ const PaymentTransfers = ({
           >
             <Box width="100%" textAlign="right" marginLeft="spacing.5">
               {amount === amount_transferred ? (
-                <BladeTooltip content={tooltipContent.transfer} placement="top">
+                <BladeTooltip
+                  content={getTooltipContent(window.rzp_org?.business_name).transfer}
+                  placement="top"
+                >
                   <TooltipInteractiveWrapper>
                     <Button isDisabled size="small" variant="secondary">
                       {ctaText}

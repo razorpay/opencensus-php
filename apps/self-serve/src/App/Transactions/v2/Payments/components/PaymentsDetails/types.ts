@@ -314,3 +314,24 @@ export type GetReceiptDetailsResponse = {
   invoice_id?: string;
   receipt_download_url?: string;
 };
+
+export type TooltipKeys =
+  | 'authenticated'
+  | 'authorized'
+  | 'bankRRN'
+  | 'captured'
+  | 'created'
+  | 'disputeId'
+  | 'failed'
+  | 'gst'
+  | 'orderId'
+  | 'partnerApplicationFees'
+  | 'paymentId'
+  | 'pending'
+  | 'platformFees'
+  | 'refunded'
+  | 'refundId'
+  | 'rrnARN'
+  | 'settlementId'
+  | 'tax'
+  | 'transfer';

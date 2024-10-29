@@ -36,8 +36,8 @@ import {
   RowWrapper,
   SectionHeader,
 } from './styled';
-import Tooltip, { TooltipContentKeys } from './Tooltip';
-import { ApplicationDetails, IPaymentDetails } from './types';
+import Tooltip from './Tooltip';
+import { ApplicationDetails, IPaymentDetails, TooltipKeys } from './types';
 import { isPosTransaction, onCopy } from './utils';
 import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import PaymentPagePaymentReceipt from './PaymentPagePaymentReceipt';
@@ -58,7 +58,7 @@ interface IPaymentDetailsSection extends RouteComponentProps<{ id: string }> {
 interface DetailRowProps {
   label: string;
   value: React.ReactNode;
-  tooltipType?: TooltipContentKeys;
+  tooltipType?: TooltipKeys;
   copyable?: boolean;
   onCopyAction?: () => void;
 }

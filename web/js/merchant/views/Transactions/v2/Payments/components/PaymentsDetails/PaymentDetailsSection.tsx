@@ -36,7 +36,7 @@ import PaymentMethod from './PaymentMethod';
 import PaymentPageDetails from './PaymentPageDetails';
 import PaymentSplitItems from './PaymentSplitItems';
 import PaymentTransfers from './PaymentTransfers';
-import Tooltip, { TooltipContentKeys } from './Tooltip';
+import Tooltip from './Tooltip';
 import {
   CardWrapper,
   CollapsibleContainer,
@@ -45,7 +45,7 @@ import {
   RowWrapper,
   SectionHeader,
 } from './styled';
-import { IPaymentDetails, ApplicationDetails } from './types';
+import { IPaymentDetails, ApplicationDetails, TooltipKeys } from './types';
 import { imageDownload, isChargeSlipForPosEnabled, isPosTransaction, onCopy } from './utils';
 import PaymentPagePaymentReceipt from './PaymentPagePaymentReceipt';
 
@@ -70,7 +70,7 @@ interface IPaymentDetailsSectionProps extends RouteComponentProps<{ id: string }
 interface DetailRowProps {
   label: string;
   value: React.ReactNode;
-  tooltipType?: TooltipContentKeys;
+  tooltipType?: TooltipKeys;
   copyable?: boolean;
   onCopyAction?: () => void;
 }

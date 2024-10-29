@@ -288,6 +288,7 @@ export interface IPaymentTransfers {
   paymentDetails: IPaymentDetails;
   fetchTransfers: (arg: { fetchTransfers: () => void }) => void;
   transfers: ITransfers;
+  orgName: string;
 }
 
 export interface ITransferList {
@@ -337,3 +338,24 @@ export type GetReceiptDetailsResponse = {
   invoice_id?: string;
   receipt_download_url?: string;
 };
+
+export type TooltipKeys =
+  | 'authenticated'
+  | 'authorized'
+  | 'bankRRN'
+  | 'captured'
+  | 'created'
+  | 'disputeId'
+  | 'failed'
+  | 'gst'
+  | 'orderId'
+  | 'partnerApplicationFees'
+  | 'paymentId'
+  | 'pending'
+  | 'platformFees'
+  | 'refunded'
+  | 'refundId'
+  | 'rrnARN'
+  | 'settlementId'
+  | 'tax'
+  | 'transfer';
