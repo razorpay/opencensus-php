@@ -527,7 +527,7 @@ trait RepositoryFetch
                 return $this->getArchivedDataReplicaConnection();
 
             case ConnectionType::DATA_WAREHOUSE_ADMIN:
-                if ($this->isExperimentEnabled(self::ADMIN_TIDB_EXPERIMENT) === true)
+                if ($this->shouldRouteTrafficToTidb() === true)
                 {
                     return $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
                 }
@@ -535,7 +535,7 @@ trait RepositoryFetch
                 return $this->getPaymentFetchReplicaConnection();
 
             case ConnectionType::DATA_WAREHOUSE_MERCHANT:
-                if ($this->isExperimentEnabled(self::MERCHANT_TIDB_EXPERIMENT) === true)
+                if ($this->shouldRouteTrafficToTidb() === true)
                 {
                     return $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
                 }
@@ -556,6 +556,19 @@ trait RepositoryFetch
         }
 
         return $connection;
+    }
+
+    protected function shouldRouteTrafficToTidb()
+    {
+        $app = $this->app;
+
+        $variant = 'on';
+
+        if ($this->entity == Entity::ORDER && $app['basicauth']->getMode() == Mode::TEST) {
+            $variant = $this->isTestModeOrderExperimentEnabled();
+        }
+
+        return ($variant === 'on');
     }
 
     protected function isExperimentEnabled($experiment)
