@@ -30,7 +30,6 @@ import PaytmWalletIntegration from 'merchant/views/Settings/PaymentMethods/compo
 import { DetailsDrawer } from 'merchant/views/Settings/PaymentMethods/components/Modals/PaytmWallet/DetailsDrawer';
 import {
   ACTION_REQUIRED,
-  ACTIVATED_ACTION_REQUIRED,
   REQUESTED,
   ACTIVATED,
   ACCOUNT_LINKABLE,
@@ -40,8 +39,10 @@ import {
   GREYED,
   statusClass,
   statusPopoverText,
-  additionalDetailsStatus,
   DISABLED_INSTRUMENT,
+  additionalDetailsStatus,
+  ACTIVATED_ACTION_REQUIRED,
+  CC_EMI_SEPARATE_INSTRUMENT,
 } from 'merchant/views/Settings/PaymentMethods/constants';
 import { RequestedStatus } from 'merchant/views/Settings/PaymentMethods/components/InstrumentStatuses/RequestedStatus';
 import RejectedAndActionRequired from 'merchant/views/Settings/PaymentMethods/components/InstrumentStatuses/RejectedAndActionRequired';
@@ -386,7 +387,7 @@ class LeafListItem extends React.Component {
     // If affordability Onboarding experiment only then we need to show the credit emi changes
     if (instrument.slug === 'credit' && isAffordabilityOnboardingActive)
       instrument.name = 'Other banks';
-    if (instrument.slug === 'credit.sbi' && !isAffordabilityOnboardingActive) {
+    if (CC_EMI_SEPARATE_INSTRUMENT.includes(instrument.slug) && !isAffordabilityOnboardingActive) {
       return null;
     }
 

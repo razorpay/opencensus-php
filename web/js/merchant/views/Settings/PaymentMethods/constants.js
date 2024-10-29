@@ -88,3 +88,5 @@ export const additionalDetailsStatus = {
 };
 
 export const STANDARD_PRICING_URL = 'https://razorpay.com/pricing/';
+
+export const CC_EMI_SEPARATE_INSTRUMENT = ['credit.sbi', 'credit.hdfc', 'credit.amex'];

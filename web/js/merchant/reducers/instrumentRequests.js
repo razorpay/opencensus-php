@@ -745,12 +745,11 @@ export const initialState = {
           docLink: 'https://razorpay.com/docs/payment-gateway/payment-methods/emi/',
           list: [
             {
-              name: 'Credit Cards',
-              description: 'HDFC, ICICI, Kotak, Axis',
+              name: 'HDFC CC EMI',
+              description: '',
               status: 'greyed',
-              slug: 'credit',
-              docLink:
-                'https://razorpay.com/docs/payments/payment-methods/emi/credit-card-emi/#supported-banks-for-credit-card-emis',
+              slug: 'credit.hdfc',
+              icon: 'https://cdn.razorpay.com/bank/HDFC.gif',
             },
             {
               name: 'SBI CC EMI',
@@ -758,6 +757,21 @@ export const initialState = {
               status: 'greyed',
               slug: 'credit.sbi',
               icon: 'https://cdn.razorpay.com/bank/SBIN.gif',
+            },
+            {
+              name: 'Amex CC EMI',
+              description: '',
+              status: 'greyed',
+              slug: 'credit.amex',
+              icon: 'amex',
+            },
+            {
+              name: 'Credit Cards',
+              description: 'Axis, ICICI, IDFC, Kotak',
+              status: 'greyed',
+              slug: 'credit',
+              docLink:
+                'https://razorpay.com/docs/payments/payment-methods/emi/credit-card-emi/#supported-banks-for-credit-card-emis',
             },
           ],
         },
