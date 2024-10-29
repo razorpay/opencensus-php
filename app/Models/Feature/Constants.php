@@ -633,6 +633,11 @@ class Constants
     const HIDE_SETTLEMENT_TIME= 'hide_settlement_time';
 
     /**
+     * Feature flag for partial cdo payment on merchant dashboard
+     */
+    const ONE_CC_PARTIAL_COD= 'one_cc_partial_cod';
+
+    /**
      * Custom Paypal credentials for org
      */
     const ORG_SPECIFIC_CREDENTIALS = 'org_specific_credentials';
@@ -3189,6 +3194,7 @@ class Constants
         self::CUSTOM_ONBOARDING_EMAILS               => true,
         self::VAS_LINK_WALLETS                       => true,
         self::HIDE_SETTLEMENT_TIME                   => true,
+        self::ONE_CC_PARTIAL_COD            => true,
         self::HIDE_INVOICE_REPORT                    => true,
         self::SHOW_INVOICE_REPORT                   => true,
         self::ORG_SPECIFIC_CREDENTIALS              => true,
@@ -4682,6 +4688,11 @@ class Constants
             'feature'       => self::MESSAGE_BANNER_DISABLED,
             'display_name'  => 'disable display message banners on merchant checkout',
             'documentation' => ''
+        ],
+        self::ONE_CC_PARTIAL_COD  => [
+            'feature'       => self::ONE_CC_PARTIAL_COD,
+            'display_name'  => 'Feature flag for partial cod payment on merchant dashboard',
+            'documentation' => '',
         ],
     ];
 
