@@ -42,6 +42,25 @@ class HdfcCheckoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testHdfcCheckoutHitWithCCText()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            [
+                'org_id'      =>  $org->getId(),
+            ]
+        );
+
+        $this->generateViewMocksWithCC($org->getCustomCode());
+
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['hdfc_checkout_2',"rmv_cc_text_from_logo"]);
+
+        $this->startTest();
+    }
+
     public function testHdfcCheckoutNotHit()
     {
         $this->generateViewMocks('');
@@ -68,6 +87,29 @@ class HdfcCheckoutTest extends TestCase
         $arr['script'] = 'https://cdn.razorpay.com/static/hosted/standard-vas.js';
         $arr['meta'] = '{"type":"hdfcvas","custom_code":"'.$customCode.'","checkout_logo_url":null,"custom_checkout_logo_enabled":false}';
         $resp = ['type' => 'hdfc'];
+
+        View::shouldReceive('make')
+            ->with('public.embedded', $arr)
+            ->andReturn($resp);
+    }
+    protected function generateViewMocksWithCC($customCode)
+    {
+        $arr = [
+            'key' => 'rzp_test_TheTestAuthKey',
+            'options' => '{"receiver_types":"qr_code","order_id":"order_PDHE9FEX1vAlDG","method":{"smartcollect":true}}',
+            'meta' => '{"type":"hdfcvas","custom_code":"'.$customCode.'","checkout_logo_url":null,"custom_checkout_logo_enabled":false,"rmv_cc_text_from_logo":true}',
+            'script' => 'https://cdn.razorpay.com/static/hosted/standard-vas.js',
+            'urls' => '{}'
+        ];
+        $resp = ['type' => 'hdfc'];
+
+        View::shouldReceive('make')
+            ->with('public.embedded', $arr)
+            ->andReturn($resp);
+
+        // For HDFC Checkout 2.0 case
+        $arr['options'] = '{"receiver_types":"qr_code"}';
+        $resp = ['type' => 'not_hdfc'];
 
         View::shouldReceive('make')
             ->with('public.embedded', $arr)
