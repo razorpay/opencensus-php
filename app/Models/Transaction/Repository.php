@@ -969,7 +969,7 @@ class Repository extends Base\Repository
             ->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
             ->first();
 
-        if ($txn !== null){
+        if ($txn !== null) {
 
             $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
 
@@ -977,6 +977,17 @@ class Repository extends Base\Repository
         }
 
         return $txn;
+    }
+
+    public function txnReference3Update($txnId, $value)
+    {
+        $attributes = [
+            'reference3'   => $value,
+        ];
+
+        return $this->newQuery()
+            ->where(Entity::ID, $txnId)
+            ->update($attributes);
     }
 
     public function fetchBySettlement($setl, $txnToRelationFetchMap)

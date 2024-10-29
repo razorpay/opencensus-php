@@ -108,6 +108,15 @@ class TransactionController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function txnReference3Update()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->txnReference3Update($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function list()
     {
         $input = Request::all();

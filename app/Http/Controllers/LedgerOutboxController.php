@@ -51,6 +51,15 @@ class LedgerOutboxController extends Controller {
         return Response::json($response);
     }
 
+    public function createClsAdjustment()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createClsAdjustment($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function createMissingTransactionsForReverseShadowRefunds()
     {
         $input = Request::all();

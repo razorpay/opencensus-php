@@ -1071,6 +1071,8 @@ class Route
         'setl_ledger_inconsistency_debug_cron'     => ['post',     'settlements/ledger_inconsistency/debug/cron',    'SettlementController@settlementsLedgerInconsistencyDebug'          ],
         'setl_amount_check'                        => ['post',     'settlements/amount_check',                       'SettlementController@settlementsAmountCheck'                       ],
 
+        'create_cls_adjustment'                    => ['post',     'pg_ledger/adjustment/create',                    'LedgerOutboxController@createClsAdjustment'                        ],
+
         // following routes currently not being used need to deprecate all these routes
 //        'setl_edit'                                => ['put',      'settlements/{id}',                               'SettlementController@putEditSettlement'                            ],
 //        'setl_delete_file'                         => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
@@ -4666,6 +4668,7 @@ class Route
         'pg_onboard_merchant'                           => ['post',     'pg_ledger/merchant/onboard',           'FeatureController@onboardMerchantsOnPgLedger'],
         'pg_offboard_merchant'                          => ['post',      'pg_ledger/merchant/offboard', 'FeatureController@offboardMerchantsOnPgLedger'],
         'pg_sync_balances_merchant'                     => ['post', 'pg_ledger/merchant/sync_balances', 'FeatureController@syncMerchantBalancesOnPgLedger'],
+        'txn_reference3_update'                         => ['post',     'transactions/reference3/update',                          'TransactionController@txnReference3Update'       ],
         // Creates refund reversal for ledger timed out refunds
         'refunds_reversal_create'                       => ['post',  'refunds/reversal_create', 'RefundController@reversalCreateForVirtualRefund'],
         // Ledger Outbox cron
@@ -5865,6 +5868,9 @@ class Route
         'merchant_autokyc_hard_limit',
         'merchant_autokyc_escalation',
         'partner_send_weekly_activation_summary_emails',
+
+        'create_cls_adjustment',
+        'txn_reference3_update',
 
         //cron route for sending daily transacted submerchant events
         'partner_send_daily_transacted_submerchant_events',
@@ -16951,6 +16957,9 @@ class Route
             'banking_account_statement_automate_recon_cron',
             'banking_account_statement_async_insert_missing_cron',
             'banking_account_statement_detect_missing_cron',
+
+            'create_cls_adjustment',
+            'txn_reference3_update',
 
             // Fund Management Payouts
             'ca_check_fund_management_payout_cron',

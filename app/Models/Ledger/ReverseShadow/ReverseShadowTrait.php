@@ -331,22 +331,28 @@ trait ReverseShadowTrait
         }
     }
 
-    private function getJournalRequestHeadersSync($idempotencyKey = null): array
+    private function getJournalRequestHeadersSync($idempotencyKey = null, $isAdjustmentLedgerEntryOnly = false): array
     {
         if($idempotencyKey === null)
         {
             $idempotencyKey = Uuid::uuid1();
         }
 
-        return [
+        $headers = [
             LedgerService::LEDGER_TENANT_HEADER         => Constants::TENANT_PG,
             LedgerService::IDEMPOTENCY_KEY_HEADER       => $idempotencyKey,
-            LedgerService::LEDGER_INTEGRATION_MODE_HEADER   => Constants::REVERSE_SHADOW,
         ];
+
+        if($isAdjustmentLedgerEntryOnly === false)
+        {
+            $headers[LedgerService::LEDGER_INTEGRATION_MODE_HEADER] = Constants::REVERSE_SHADOW;
+        }
+
+        return $headers;
     }
 
 
-    private function createJournalInLedger(array $journalPayload, bool $isBulkJournalRequest = false, bool $isMultipleJournalRequest = false) : array
+    private function createJournalInLedger(array $journalPayload, bool $isBulkJournalRequest = false, bool $isMultipleJournalRequest = false, $isAdjustmentLedgerEntryOnly = false) : array
     {
         $app = App::getFacadeRoot();
 
@@ -356,7 +362,7 @@ trait ReverseShadowTrait
 
         $ledgerService = $app['ledger'];
 
-        $requestHeaders = $this->getJournalRequestHeadersSync();
+        $requestHeaders = $this->getJournalRequestHeadersSync(null, $isAdjustmentLedgerEntryOnly);
 
         $retryAttempts = 0;
 
