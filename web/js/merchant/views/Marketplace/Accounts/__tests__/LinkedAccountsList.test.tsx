@@ -9,6 +9,7 @@ import {
 import { getInitialReduxState } from 'merchant/views/mocks/fixtures';
 import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
 import * as analytics from 'common/utils/analytics';
+import TwoFaVerificationContextProvider from 'common/ui/TwoFactorVerification/TwoFactorVerificationProvider';
 
 jest.mock('merchant/views/Marketplace/Accounts/components/AccountsList', () => ({
   __esModule: true,
@@ -37,10 +38,15 @@ describe('Reversal List', () => {
   const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrack');
 
   const renderApp = (state = defaultReduxState) => {
-    render(<AccountsList location={location} />, {
-      initialState: state,
-      renderViaRouteGuard: false,
-    });
+    render(
+      <TwoFaVerificationContextProvider>
+        <AccountsList location={location} />
+      </TwoFaVerificationContextProvider>,
+      {
+        initialState: state,
+        renderViaRouteGuard: false,
+      },
+    );
   };
 
   test('should render table once data is loaded', async () => {

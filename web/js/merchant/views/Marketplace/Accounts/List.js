@@ -52,8 +52,6 @@ class AccountsListContainer extends ListContainer {
     confirm: PropTypes.func,
   };
 
-  static contextType = TwoFactorVerificationContext;
-
   componentDidMount() {
     linkedAccountTabOpenedAnalytics(this.props.user.id);
   }
@@ -262,6 +260,18 @@ class AccountsListContainer extends ListContainer {
       });
   };
 
+  handleAccountAddition = ({ criticalFlow, is2FaExperimentActive }) => {
+    if (is2FaExperimentActive) {
+      criticalFlow({
+        enforceVerifyOtp: true,
+        modes: ['live', 'test'],
+        onUserTwoFaVerified: this.showAddAccountModal,
+      });
+    } else {
+      this.showAddAccountModal();
+    }
+  };
+
   render() {
     const {
       loading,
@@ -301,30 +311,26 @@ class AccountsListContainer extends ListContainer {
               }
             >
               <Box display="inline-block">
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => {
-                    if (is2FaExperimentActive) {
-                      this.context.criticalFlow({
-                        enforceVerifyOtp: true,
-                        modes: ['live', 'test'],
-                        onUserTwoFaVerified: this.showAddAccountModal,
-                      });
-                    } else {
-                      this.showAddAccountModal();
-                    }
-                  }}
-                  disabled={isCreationDisabled}
-                  title={
-                    isCreationDisabled &&
-                    !isCustomerFeeBearer &&
-                    'Linked account creation is not allowed for your business type'
-                  }
-                >
-                  <i className="i i-plus" />
-                  <span>Add Account</span>
-                </button>
+                <TwoFactorVerificationContext.Consumer>
+                  {({ criticalFlow }) => (
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() =>
+                        this.handleAccountAddition({ criticalFlow, is2FaExperimentActive })
+                      }
+                      disabled={isCreationDisabled}
+                      title={
+                        isCreationDisabled &&
+                        !isCustomerFeeBearer &&
+                        'Linked account creation is not allowed for your business type'
+                      }
+                    >
+                      <i className="i i-plus" />
+                      <span>Add Account</span>
+                    </button>
+                  )}
+                </TwoFactorVerificationContext.Consumer>
                 {isCustomerFeeBearer && <CustomerFeeBearerPopover feature="Route" />}
               </Box>
             </ShowWhen>
