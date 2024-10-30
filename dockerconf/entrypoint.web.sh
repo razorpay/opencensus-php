@@ -114,6 +114,7 @@ configure_dark(){
     echo "CARD_VAULT_URL=\"https://vault-dark.razorpay.com/v1/\"" >> ./environment/.env.production
     echo "ELIGIBILITY_SERVICE_LIVE_URL=\"https://checkout-affordability-api-dark.razorpay.com\""  >> ./environment/.env.production
     echo "APP_SUBSCRIPTIONS_URL=\"https://subscriptions-dark.concierge.razorpay.com/\"" >> ./environment/.env.production
+    echo "APP_OPTIMIZER_CORE_SERVICE_URL=\"https://optimizer-core-dark-live.razorpay.com/\"" >> ./environment/.env.production
 }
 
 configure_hallmark(){
