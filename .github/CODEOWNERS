@@ -1,7 +1,7 @@
 * @razorpay/merchant-dashboard
 
 app/Http/Kernel.php                               @razorpay/spine-edge
-app/Http/routes.php                               @razorpay/spine-edge
+# app/Http/routes.php                               @razorpay/spine-edge - Will add it back later after shell rollout
 app/Http/Middleware                               @razorpay/spine-edge
 app/Http/Providers                                @razorpay/spine-edge
 app/Http/Session                                  @razorpay/spine-edge
@@ -41,8 +41,8 @@ web/js/merchant/views/Transactions/v2             @razorpay/ssab-fe
 web/js/merchant/views/POS                         @razorpay/omni-acquisition-fe
 plugins/i18n-rules                                @razorpay/i18n-fe
 smart-linter.js                                   @razorpay/i18n-fe
-# apps/digital-bills                                @mihir-karbelkar-rp
-# apps/pos                                          @razorpay/omni-acquisition-fe
+# apps/digital-bills                                @mihir-karbelkar-rp           - Will add it back later after shell rollout
+# apps/pos                                          @razorpay/omni-acquisition-fe - Will add it back later after shell rollout
 pnpm-lock.yaml                                    @razorpay/ssab-fe
 web/js/common/utils/posAgent.ts                   @razorpay/omni-acquisition-fe
 environment/.env.vault.j2                         @razorpay-sanjib @shubham25kr07 @loombarishav @dhruvdutt @rahul-rzp
@@ -79,14 +79,39 @@ web/e2e/suites/transactions/upload-invoices-v1.spec.js                   @razorp
 web/e2e/suites/CAW/registration_link.spec.js                             @razorpay/deploy-leads-dashboard
 web/e2e/suites/RizeMarketplace/listing.spec.js                           @razorpay/deploy-leads-dashboard
 
-# DO NOT REMOVE (KEEP AT THE END!) DO NOT OVERRIDE IT!
-apps/*
+# [IMP] DO NOT REMOVE (KEEP AT THE END!) DO NOT OVERRIDE ANYTHING THAT FALLS UNDER THIS SCOPE! ----------
+scripts/*                                                                @joel-jaimon @dhruvdutt
+.github/*                                                                @joel-jaimon @dhruvdutt
+libs/*                                                                   @joel-jaimon @dhruvdutt
+apps/*                                                                   @joel-jaimon @dhruvdutt
 apps/digital-bills                                                       @joel-jaimon @dhruvdutt
 apps/self-serve                                                          @joel-jaimon @dhruvdutt
 apps/pos                                                                 @joel-jaimon @dhruvdutt
+web/entry/*                                                              @joel-jaimon @dhruvdutt
+web/js/merchant/containers/App.js                                        @joel-jaimon @dhruvdutt
+web/js/merchant/utils/ajax.js                                            @joel-jaimon @dhruvdutt
+web/js/merchant/hooks/*                                                  @joel-jaimon @dhruvdutt
+web/js/merchant/views/bootstrap.js                                       @joel-jaimon @dhruvdutt
+web/js/merchant/views/public-paths.js                                    @joel-jaimon @dhruvdutt
+web/js/merchantLA/views/bootstrap.js                                     @joel-jaimon @dhruvdutt
+web/js/merchantLA/views/public-paths.js                                  @joel-jaimon @dhruvdutt
+web/js/merchantLA/containers/App.js                                      @joel-jaimon @dhruvdutt
+web/js/merchantTnc/bootstrap.js                                          @joel-jaimon @dhruvdutt
+web/js/newAuth/public-paths.js                                           @joel-jaimon @dhruvdutt
+web/js/newAuth/bootstrap.js                                              @joel-jaimon @dhruvdutt
+web/js/pokedex/public-paths.js                                           @joel-jaimon @dhruvdutt
+web/js/pokedex/bootstrap.js                                              @joel-jaimon @dhruvdutt
+web/js/razorx/App.js                                                     @joel-jaimon @dhruvdutt
+web/public-paths.js                                                      @joel-jaimon @dhruvdutt
+web/package.json                                                         @joel-jaimon @dhruvdutt
 web/webpack.config.js                                                    @joel-jaimon @dhruvdutt
+web/tsconfig.json                                                        @joel-jaimon @dhruvdutt
 tsconfig.base.json                                                       @joel-jaimon @dhruvdutt
 pnpm-workspace.yaml                                                      @joel-jaimon @dhruvdutt
-libs/*                                                                   @joel-jaimon @dhruvdutt
 nx.json                                                                  @joel-jaimon @dhruvdutt
-web/tsconfig.json                                                        @joel-jaimon @dhruvdutt
+package.json                                                             @joel-jaimon @dhruvdutt
+# If these files are affected, would need indepth walkthrough of the PR
+app/Http/Controllers/UserController.php                                  @joel-jaimon @dhruvdutt
+app/Http/routes.php                                                      @joel-jaimon @dhruvdutt
+resources/views/merchant/*                                               @joel-jaimon @dhruvdutt
+resources/views/partials/*                                               @joel-jaimon @dhruvdutt
