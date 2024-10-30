@@ -68,7 +68,8 @@ export const LandingContainer = ({ children }) => {
           additionalCondition={(user) =>
             user.international &&
             user.isAllowedView('b2b_payments') &&
-            !isConfigTagEnabled('transactions.upload_invoices')
+            !isConfigTagEnabled('transactions.upload_invoices') &&
+            !user.isCountrySingapore
           }
         >
           <StyledTabItem to={UPLOAD_INVOICES} onClick={trackTransactionsTabClick(UPLOAD_INVOICES)}>
