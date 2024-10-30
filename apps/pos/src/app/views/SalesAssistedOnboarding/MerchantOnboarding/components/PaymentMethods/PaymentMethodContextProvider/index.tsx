@@ -18,7 +18,6 @@ import {
   isBooleanValue,
   isDocumentUpload,
   isStringArrayValue,
-  isNullValue,
   isStringValue,
   isBrandItem,
 } from 'apps/pos/src/app/utils/modularTypeResolvers';
@@ -120,10 +119,9 @@ const createDefaultForm = (type: PaymentMethodFormType): PaymentMethodForm => {
 
 interface GetFieldValueProps {
   field: ModularOnboardingField;
-  fields: ModularOnboardingField[];
   defaultValues: Record<string, number> | undefined;
 }
-const getFieldValue = ({ field, defaultValues, fields }: GetFieldValueProps) => {
+const getFieldValue = ({ field, defaultValues }: GetFieldValueProps) => {
   const handleArrayValue = (f) => {
     if (Array.isArray(f.stringArrayValue) && !f.stringArrayValue.length) return [];
     if (Array.isArray(f.arrayOfDocumentsUploadValue) && !f.arrayOfDocumentsUploadValue.length)
@@ -131,22 +129,6 @@ const getFieldValue = ({ field, defaultValues, fields }: GetFieldValueProps) => 
     if (isStringArrayValue(f)) return f.stringArrayValue;
     if (isArrayOfDocumentsUpload(f)) return f.arrayOfDocumentsUploadValue;
   };
-  if (field.name === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD) {
-    const vas_cc_emi = fields.find(
-      (field) => field.name === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD,
-    );
-    if (isNullValue(vas_cc_emi)) {
-      return true;
-    }
-  }
-  if (field.name === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD) {
-    const vas_dc_emi = fields.find(
-      (field) => field.name === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD,
-    );
-    if (isNullValue(vas_dc_emi)) {
-      return true;
-    }
-  }
   const value = isBooleanValue(field)
     ? field.booleanValue
     : (isStringValue(field) && field.stringValue.toString()) ||
@@ -156,7 +138,7 @@ const getFieldValue = ({ field, defaultValues, fields }: GetFieldValueProps) => 
   return value;
 };
 
-const getFieldCheckedStatus = ({ field, defaultValues, fields }: GetFieldValueProps) => {
+const getFieldCheckedStatus = ({ field, defaultValues }: GetFieldValueProps) => {
   const handleArrayValue = (f) => {
     if (Array.isArray(f.stringArrayValue) && !f.stringArrayValue.length) return false;
     if (Array.isArray(f.arrayOfDocumentsUploadValue) && !f.arrayOfDocumentsUploadValue.length)
@@ -164,23 +146,6 @@ const getFieldCheckedStatus = ({ field, defaultValues, fields }: GetFieldValuePr
     if (isStringArrayValue(f)) return true;
     if (isArrayOfDocumentsUpload(f)) return true;
   };
-  if (field.name === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD) {
-    const vas_cc_emi = fields.find(
-      (field) => field.name === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD,
-    );
-    // when null value is received from api, then cc/dc emi checkboxes are marked as checked
-    if (isNullValue(vas_cc_emi)) {
-      return true;
-    }
-  }
-  if (field.name === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD) {
-    const vas_dc_emi = fields.find(
-      (field) => field.name === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD,
-    );
-    if (isNullValue(vas_dc_emi)) {
-      return true;
-    }
-  }
   const value = isBooleanValue(field)
     ? field.booleanValue
     : (isStringValue(field) && field.stringValue.toString() && true) ||
@@ -228,8 +193,8 @@ const populateFormWithModularConfigData = (
     fields?.forEach((f) => {
       if (f && f.name && f.meta) {
         formCopy.form[f.name] = {
-          checked: getFieldCheckedStatus({ field: f, defaultValues, fields }),
-          value: getFieldValue({ field: f, defaultValues, fields }),
+          checked: getFieldCheckedStatus({ field: f, defaultValues }),
+          value: getFieldValue({ field: f, defaultValues }),
           defaultValue: defaultValues?.[f.name] || null,
           isRequired: f.isRequired,
           isDisabled: f.isDisabled,
