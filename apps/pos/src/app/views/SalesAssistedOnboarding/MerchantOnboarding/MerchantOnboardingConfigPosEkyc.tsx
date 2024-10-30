@@ -41,6 +41,7 @@ import {
   OnboardingStepType,
 } from 'apps/pos/src/app/types/common';
 import { MODULAR_AGREEMENT_FIELDS } from 'apps/pos/src/app/types/AgreementSigning';
+import NACHFormEkycContainer from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/MerchantAdditionalDetails/NACHFormEkyc/NACHFormEkycContainer';
 
 export interface Component {
   slug: OnboardingComponentType;
@@ -128,7 +129,7 @@ export const ONBOARDING_STEPS_POS_EKYC: OnboardingStep[] = [
     components: [
       {
         slug: AvailableComponents.DEVICE_SELECTION_CATALOG,
-        modularKey: MODULAR_DEVICE_FIELDS.PARTNER_DEVICE_CATALOG_COMPONENT,
+        modularKey: MODULAR_DEVICE_FIELDS.DEVICE_CATALOG_COMPONENT,
         checkIfLandingPossible: () => true,
         view: <DeviceSelectionCatalogForPosSalesAgent />,
         title: 'Choose Suitable Devices for your merchant',
@@ -136,7 +137,7 @@ export const ONBOARDING_STEPS_POS_EKYC: OnboardingStep[] = [
       },
       {
         slug: AvailableComponents.DEVICE_CART,
-        modularKey: MODULAR_DEVICE_FIELDS.PARTNER_DEVICE_CART_COMPONENT,
+        modularKey: MODULAR_DEVICE_FIELDS.DEVICE_CART_COMPONENT,
         checkIfLandingPossible: () => true,
         view: <DeviceConfirmationForSalesAgent />,
         title: 'Order Confirmation',
@@ -163,8 +164,8 @@ export const ONBOARDING_STEPS_POS_EKYC: OnboardingStep[] = [
   {
     slug: AvailableSteps.ADDITIONAL_DETAILS,
     modularKey: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
-    title: 'Additional Details',
-    description: 'Provide merchant’s business information to start the POS journey ',
+    title: 'NACH and Additional Details',
+    description: 'Add compliance details to complete your merchant profile',
     getStatus: ({ states }) => {
       return getProgressFromModularStep({
         modularConfig: states.modularConfig,
@@ -180,6 +181,12 @@ export const ONBOARDING_STEPS_POS_EKYC: OnboardingStep[] = [
       }) === 'completed',
     icon: <FilePlusIcon />,
     components: [
+      {
+        slug: AvailableComponents.NACH_FORM,
+        modularKey: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_COMPONENT,
+        view: <NACHFormEkycContainer />,
+        getNextComponent: () => AvailableComponents.ADDITIONAL_DETAILS,
+      },
       {
         slug: AvailableComponents.ADDITIONAL_DETAILS,
         modularKey: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_COMPONENT,

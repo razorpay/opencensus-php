@@ -33,9 +33,7 @@ export enum MODULAR_DEVICE_FIELDS {
   DEVICE_PAYMENT_AMOUNT_FIELD = 'qr_payment_amount_field',
   DEVICE_DELIVERY_ADDRESS_COMPONENT = 'device_delivery_address_component',
   DEVICE_PAYMENT_COMPONENT = 'device_payment',
-
-  PARTNER_DEVICE_CATALOG_COMPONENT = 'partner_device_catalogue_component',
-  PARTNER_DEVICE_CART_COMPONENT = 'partner_device_cart_component',
+  NACH_FORM_COMPONENT = 'nach_form_component',
   DEVICE_CUSTOM_RATES_APPLICABLE = 'device_custom_rates_applicable_field',
   DEVICE_CUSTOM_RATES_DOCUMENTS = 'custom_device_charges_proof',
 }
