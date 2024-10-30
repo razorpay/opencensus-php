@@ -6,6 +6,7 @@ import AddedBrandInfo, {
 } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/PaymentMethods/BrandEMIForm/AddedBrandInfo';
 
 const props: AddedBrandInfoProps = {
+  isFormDisabled: false,
   storeType: 'Multi brand store',
   submitHandler: jest.fn(),
   addBrandHandler: jest.fn(),
@@ -49,5 +50,14 @@ describe('<AddedBrandInfo/>', () => {
     expect(removeBrandBtn).toBeInTheDocument();
     await userEvent.click(removeBrandBtn);
     expect(props.removeBrandHandler).toHaveBeenCalled();
+  });
+  test('should disable Add New Brand btn when kyc qualified', async () => {
+    const mockProps = {
+      ...props,
+      isFormDisabled: true,
+    };
+    render(<AddedBrandInfo {...mockProps} />);
+    const addBrandBtn = screen.getByRole('button', { name: /add new brand/i });
+    expect(addBrandBtn).not.toBeEnabled();
   });
 });

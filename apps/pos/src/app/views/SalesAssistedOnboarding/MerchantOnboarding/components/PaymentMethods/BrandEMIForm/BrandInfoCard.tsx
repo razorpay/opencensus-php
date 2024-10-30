@@ -14,9 +14,15 @@ import { Brand } from 'apps/pos/src/app/utils/paymentsAndServices';
 interface BrandInfoCard {
   brand: Brand;
   isUpdateModularLoading: boolean;
+  isFormDisabled: boolean;
   removeBrandHandler: (brandName: string) => void;
 }
-const BrandInfoCard = ({ isUpdateModularLoading, removeBrandHandler, brand }: BrandInfoCard) => {
+const BrandInfoCard = ({
+  isUpdateModularLoading,
+  removeBrandHandler,
+  brand,
+  isFormDisabled,
+}: BrandInfoCard) => {
   if (!brand) return null;
 
   const badgeColorMap: Record<BRAND_EMI_VERIFICATION_STATUS_ENUM, BadgeProps['color']> = {
@@ -49,7 +55,7 @@ const BrandInfoCard = ({ isUpdateModularLoading, removeBrandHandler, brand }: Br
           onClick={() => removeBrandHandler(brand.name)}
           accessibilityLabel="remove-icon"
           icon={TrashIcon}
-          isDisabled={isUpdateModularLoading}
+          isDisabled={isFormDisabled || isUpdateModularLoading}
         />
       </Box>
       <Box>

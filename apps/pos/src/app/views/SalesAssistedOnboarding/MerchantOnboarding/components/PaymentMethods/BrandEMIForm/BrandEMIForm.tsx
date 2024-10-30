@@ -28,6 +28,7 @@ export interface BrandEMIFormProps {
   merchantGstNumber: string;
   gstErrorMsg: string;
   hasAddedBrandEMIData: boolean;
+  isFormDisabled: boolean;
 }
 
 const defaultValues: Record<string, string> = {
@@ -52,6 +53,7 @@ const BrandEMIForm = ({
   gstErrorMsg,
   hasAddedBrandEMIData,
   resetBrandRelatedFields,
+  isFormDisabled,
 }: BrandEMIFormProps) => {
   const {
     control,
@@ -248,7 +250,7 @@ const BrandEMIForm = ({
             type="submit"
             variant="primary"
             isFullWidth
-            isDisabled={isUpdateModularLoading || !!gstErrorMsg}
+            isDisabled={isFormDisabled || isUpdateModularLoading || !!gstErrorMsg}
             isLoading={isUpdateModularLoading}
           >
             Save

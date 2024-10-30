@@ -33,6 +33,7 @@ const commonProps = {
   onBrandEmiFieldInputChange: jest.fn(),
   handleBrandNameChange: jest.fn(),
   resetBrandRelatedFields: jest.fn(),
+  isFormDisabled: false,
 };
 describe('<BrandEMIForm/>', () => {
   test('should show brand emi form heading with store type and brand name fields', () => {
@@ -151,5 +152,36 @@ describe('<BrandEMIForm/>', () => {
     });
     expect(merchantGstField).toBeDisabled();
     expect(merchantGstField).toHaveDisplayValue('ABC123');
+  });
+  test('should disable save btn when kyc qualified', async () => {
+    const props: BrandEMIFormProps = {
+      ...commonProps,
+      brandRelatedFields: MOCK_BRAND_RELATED_FIELDS,
+      merchantGstNumber: 'ABC123',
+      hasAddedBrandEMIData: true,
+      brandEmiFields: getMockBrandEmiFields({
+        storeType: 'multi_brand_outlet',
+        brandName: 'vivo',
+      }),
+      gstErrorMsg: '',
+      isFormDisabled: true,
+    };
+    renderApp(props);
+    expect(screen.getByRole('button', { name: /save/i })).not.toBeEnabled();
+  });
+  test('should not disable save btn when not kyc qualified', async () => {
+    const props: BrandEMIFormProps = {
+      ...commonProps,
+      brandRelatedFields: MOCK_BRAND_RELATED_FIELDS,
+      merchantGstNumber: 'ABC123',
+      hasAddedBrandEMIData: true,
+      brandEmiFields: getMockBrandEmiFields({
+        storeType: 'multi_brand_outlet',
+        brandName: 'vivo',
+      }),
+      gstErrorMsg: '',
+    };
+    renderApp(props);
+    expect(screen.getByRole('button', { name: /save/i })).toBeEnabled();
   });
 });

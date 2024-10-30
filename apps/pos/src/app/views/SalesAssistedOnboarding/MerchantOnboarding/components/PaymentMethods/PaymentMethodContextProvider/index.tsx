@@ -373,7 +373,12 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
       const newNACH = populateNACHFormWithModularConfigData(data);
       setNachForm(newNACH);
       if (!methodForm.form[PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD].checked) {
-        handleProceedToNextComponent({ [AvailableComponents.NACH_FORM]: true });
+        handleProceedToNextComponent({
+          __typeName: 'custom_routing',
+          routerConditions: {
+            [AvailableComponents.NACH_FORM]: true,
+          },
+        });
         return;
       }
       if (
@@ -381,14 +386,20 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
         !brandEmiForm.brand_details_field.length
       ) {
         handleProceedToNextComponent({
-          [AvailableComponents.BRAND_EMI_FORM]: true,
+          __typeName: 'custom_routing',
+          routerConditions: {
+            [AvailableComponents.BRAND_EMI_FORM]: true,
+          },
         });
       } else if (
         methodForm.form[PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD].checked &&
         brandEmiForm.brand_details_field.length
       ) {
         handleProceedToNextComponent({
-          [AvailableComponents.NACH_FORM]: true,
+          __typeName: 'custom_routing',
+          routerConditions: {
+            [AvailableComponents.NACH_FORM]: true,
+          },
         });
       }
     };
@@ -433,7 +444,12 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
     if (isFormDisabled) {
       const newNACH = populateNACHFormWithModularConfigData(modularConfig);
       setNachForm(newNACH);
-      handleProceedToNextComponent();
+      handleProceedToNextComponent({
+        __typeName: 'custom_routing',
+        routerConditions: {
+          [AvailableComponents.NACH_FORM]: true,
+        },
+      });
       return;
     }
     updateModularConfig(updatedPayload);
@@ -580,10 +596,22 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
 
   const handleViewBrandEMIForm = () => {
     const { handleProceedToNextComponent, updateModularConfig } = handlers;
+    if (isFormDisabled) {
+      handleProceedToNextComponent({
+        __typeName: 'custom_routing',
+        routerConditions: {
+          [AvailableComponents.ADDED_BRAND_INFO]: true,
+        },
+      });
+      return;
+    }
     updateModularConfig({
       [MODULAR_PRICING_FIELDS.RESET_BRAND_DETAILS_FIELD]: moment().unix(),
       [MODULAR_PRICING_FIELDS.MODULAR_CALLBACK]: handleProceedToNextComponent({
-        [AvailableComponents.ADDED_BRAND_INFO]: true,
+        __typeName: 'custom_routing',
+        routerConditions: {
+          [AvailableComponents.ADDED_BRAND_INFO]: true,
+        },
       }),
     });
   };

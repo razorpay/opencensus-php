@@ -10,6 +10,7 @@ export interface AddedBrandInfoProps {
   removeBrandHandler: (brandName: string) => void;
   brands: Brand[];
   isUpdateModularLoading: boolean;
+  isFormDisabled: boolean;
 }
 
 const AddedBrandInfo = ({
@@ -19,6 +20,7 @@ const AddedBrandInfo = ({
   submitHandler,
   isUpdateModularLoading,
   removeBrandHandler,
+  isFormDisabled,
 }: AddedBrandInfoProps): JSX.Element => {
   return (
     <Box>
@@ -43,6 +45,7 @@ const AddedBrandInfo = ({
               isUpdateModularLoading={isUpdateModularLoading}
               brand={brand}
               removeBrandHandler={removeBrandHandler}
+              isFormDisabled={isFormDisabled}
             />
           </Box>
         ))}
@@ -57,6 +60,7 @@ const AddedBrandInfo = ({
         size="medium"
         onClick={addBrandHandler}
         isLoading={isUpdateModularLoading}
+        isDisabled={isFormDisabled}
       >
         Add New Brand
       </Button>

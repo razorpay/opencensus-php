@@ -36,10 +36,12 @@ export interface BrandEmiFormData {
 export interface BrandEMIFormContainerProps {
   onBrandEmiFieldInputChange: (key: string, value: any) => void;
   hasAddedBrandEMIData: boolean;
+  isFormDisabled: boolean;
 }
 const BrandEMIFormContainer = ({
   onBrandEmiFieldInputChange,
   hasAddedBrandEMIData,
+  isFormDisabled,
 }: BrandEMIFormContainerProps): JSX.Element | null => {
   const { states, handlers } = useOnboardingContext();
   const { modularConfig, isUpdateModularLoading } = states;
@@ -64,7 +66,12 @@ const BrandEMIFormContainer = ({
     const payload = {
       ...brandEmiFormData,
       modular_callback: () =>
-        handleProceedToNextComponent({ [AvailableComponents.ADDED_BRAND_INFO]: true }),
+        handleProceedToNextComponent({
+          __typeName: 'custom_routing',
+          routerConditions: {
+            [AvailableComponents.ADDED_BRAND_INFO]: true,
+          },
+        }),
     };
     updateModularConfig(payload);
   };
@@ -151,6 +158,7 @@ const BrandEMIFormContainer = ({
           merchantGstNumber={getMerchantGstDetails().gstNumber}
           gstErrorMsg={getMerchantGstDetails().gstError}
           resetBrandRelatedFields={resetBrandFields}
+          isFormDisabled={isFormDisabled}
         />
       </ErrorBoundary>
     </Box>

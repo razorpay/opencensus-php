@@ -38,6 +38,12 @@ interface OnboardingProgress {
 type StringBooleanObject = Partial<{
   [key in AvailableComponents]: boolean;
 }>;
+
+interface CustomRouter {
+  __typeName: 'custom_routing';
+  routerConditions: StringBooleanObject;
+}
+
 export interface OnboardingValuesType {
   merchantId: string;
   isNewOnboarding: boolean;
@@ -59,7 +65,7 @@ export interface OnboardingStatesType {
 
 export interface OnboardingHandlers {
   handleStepClick: ({ step }: { step: OnboardingStep }) => void;
-  handleProceedToNextComponent: (obj?: StringBooleanObject) => void;
+  handleProceedToNextComponent: (obj?: CustomRouter) => void;
   getStepConfigStepSlug: (step?: OnboardingStepType) => OnboardingStep | undefined;
   getFirstComponentOfStep: (step?: OnboardingStep) => OnboardingComponentType | undefined;
   getOnboardingProgress: () => OnboardingProgress;
@@ -186,7 +192,6 @@ const useOnboardingContext = ({
   const proceedToNextComponent = () => {
     const componentConfig = getComponentConfigFromStep();
     const nextComponent = componentConfig?.getNextComponent?.();
-
     if (!nextComponent) {
       navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}`);
       return;
@@ -194,8 +199,8 @@ const useOnboardingContext = ({
     navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}/${step}/${nextComponent}`);
   };
 
-  const handleProceedToNextComponent = (conditionalRouter?: StringBooleanObject) => {
-    if (!conditionalRouter) {
+  const handleProceedToNextComponent = (conditionalRouter?: CustomRouter) => {
+    if (conditionalRouter?.__typeName !== 'custom_routing') {
       proceedToNextComponent();
       return;
     }
@@ -204,7 +209,7 @@ const useOnboardingContext = ({
       navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}`);
       return;
     }
-    return handleCustomRouting(conditionalRouter);
+    return handleCustomRouting(conditionalRouter.routerConditions);
   };
 
   const getOnboardingProgress = (): OnboardingProgress => {

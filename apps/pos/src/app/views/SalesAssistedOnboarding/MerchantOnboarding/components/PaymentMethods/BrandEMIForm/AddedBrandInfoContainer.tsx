@@ -12,13 +12,23 @@ import { MODULAR_PRICING_FIELDS } from 'apps/pos/src/app/types/PaymentsAndServic
 import { isStringValue } from 'apps/pos/src/app/utils/modularTypeResolvers';
 import { getAllAddedBrands, getBrandEmiField } from 'apps/pos/src/app/utils/paymentsAndServices';
 
-const AddedBrandInfoContainer = (): JSX.Element | null => {
+interface AddedBrandInfoContainerProps {
+  isFormDisabled: boolean;
+}
+const AddedBrandInfoContainer = ({
+  isFormDisabled,
+}: AddedBrandInfoContainerProps): JSX.Element | null => {
   const { states, handlers } = useOnboardingContext();
   const { modularConfig, isUpdateModularLoading } = states;
   const { handleProceedToNextComponent, updateModularConfig } = handlers;
 
   const redirectToBrandEMIForm = () => {
-    handleProceedToNextComponent({ [AvailableComponents.BRAND_EMI_FORM]: true });
+    handleProceedToNextComponent({
+      __typeName: 'custom_routing',
+      routerConditions: {
+        [AvailableComponents.BRAND_EMI_FORM]: true,
+      },
+    });
   };
 
   const removeBrandHandler = (brandName: string) => {
@@ -36,7 +46,12 @@ const AddedBrandInfoContainer = (): JSX.Element | null => {
   };
 
   const submitHandler = () => {
-    handleProceedToNextComponent({ [AvailableComponents.PAYMENT_METHODS]: true });
+    handleProceedToNextComponent({
+      __typeName: 'custom_routing',
+      routerConditions: {
+        [AvailableComponents.PAYMENT_METHODS]: true,
+      },
+    });
   };
 
   const getInitialStoreTypeValue = () => {
@@ -75,6 +90,7 @@ const AddedBrandInfoContainer = (): JSX.Element | null => {
           submitHandler={submitHandler}
           brands={getAllAddedBrands({ modularConfig }) ?? []}
           isUpdateModularLoading={isUpdateModularLoading}
+          isFormDisabled={isFormDisabled}
         />
       </ErrorBoundary>
     </Box>
