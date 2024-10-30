@@ -1938,6 +1938,9 @@ class Route
         'org_admin_get'                            => ['get',      'org/admins/{id}',                                'OrganizationController@getOrgAdmin'                                ],
         'org_admin_get_multiple'                   => ['get',      'org/admins',                                     'OrganizationController@getMultipleOrgAdmins'                       ],
 
+        // Admin Org Replications
+        'admin_org_replications'                   => ['post',     'admin/org/replications',                         'OrganizationController@adminOrgReplications'                       ],
+
         // To-Do : This route should be deprecated in favour of merchant_invitation_verify route . Keeping this route temporarily to decouple FE and BE deployments and avoid any production issue due to removal of route. The older route admin_lead_verify was re-routing request to admin portal due to presence of admin in url. Hence added the new url pattern without using admin in route name.
         'admin_lead_verify'                        => ['get',      'admin-lead/verify/{token}',                      'OrganizationController@verifyAdminLead'                            ],
         'admin_lead_put'                           => ['put',      'admin-lead/{id}',                                'OrganizationController@putAdminLead'                               ],
@@ -8445,6 +8448,7 @@ class Route
         'role_get',
         'role_edit',
         'role_add_permissions',
+        'admin_org_replications',
         'role_delete',
         'admin_get_multiple',
         'admin_get',
@@ -9920,6 +9924,7 @@ class Route
         'role_get'                                 => Permission::VIEW_ROLE,
         'role_edit'                                => Permission::EDIT_ROLE,
         'role_add_permissions'                     => Permission::EDIT_ROLE_ADD_PERMISSIONS,
+        'admin_org_replications'                   => Permission::ADMIN_ORG_REPLICATIONS,
         'role_delete'                              => Permission::DELETE_ROLE,
         'admin_get_multiple'                       => Permission::VIEW_ALL_ADMIN,
         'admin_get'                                => Permission::VIEW_ADMIN,
@@ -15869,6 +15874,7 @@ class Route
             'reward_metrics',
             'reward_update',
             'role_add_permissions',
+            'admin_org_replications',
             'role_create',
             'role_delete',
             'role_edit',

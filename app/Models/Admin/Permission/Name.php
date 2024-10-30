@@ -1220,6 +1220,9 @@ class Name
 
     const VIEW_MERCHANT_LOGIN_READ_ONLY = 'view_merchant_login_read_only';
     const VIEW_MERCHANT_LOGIN_EDIT = 'view_merchant_login_edit';
+
+    const ADMIN_ORG_REPLICATIONS   = 'admin_org_replications';
+
     const VIEW_MERCHANT_LOGIN_NON_ACTIVATED_EDIT = 'view_merchant_login_non_activated_edit';
 
     // Permission to validate merchant brand dealer details

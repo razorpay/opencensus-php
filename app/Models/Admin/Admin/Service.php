@@ -32,6 +32,7 @@ use RZP\Models\Admin\Action;
 use RZP\Events\AuditLogEntry;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\AuthPolicy;
+use RZP\Exception\BadRequestException;
 use RZP\Mail\Admin\Account as AdminMail;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 
@@ -1127,4 +1128,95 @@ class Service extends Base\Service
             'not_found_emails' => $unprocessedEmails,
         ];
     }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function adminOrgReplications(array $input): array
+    {
+        // Log the initiation of org replication
+        $this->trace->info(TraceCode::ADMIN_ORG_PERMISSIONS_INIT, [
+            'input_data'  => $input,
+            'method_name' => __FUNCTION__,
+            'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+            'from_org'    => Org\Entity::silentlyStripSign($input[Constant::FROM_ORG_ID]),
+        ]);
+
+        // Validate the input data
+        $validator = new Validator();
+        $validator->validateInput('admin_org_replications', $input);
+
+        // Initialize the response structure
+        $response = [];
+
+        // Extract and sanitize Org IDs
+        $fromOrgId = Org\Entity::silentlyStripSign($input[Constant::FROM_ORG_ID]);
+        $toOrgId   = Org\Entity::silentlyStripSign($input[Constant::TO_ORG_ID]);
+
+        // Retrieve the source organization; throw an exception if not found
+        $org = $this->repo->org->find($fromOrgId);
+        if ($org === null) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FROM_ORG_NOT_FOUND);
+        }
+
+        // Retrieve the target organization's name for success message
+        $toOrgName = $this->repo->org->findOrFailPublic($toOrgId);
+
+        // Validate replication type; throw an exception for invalid types
+        if ($input[Constant::REPLICATIONS_TYPE] !== 'permission') {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REPLICATION_TYPE,
+                null,
+                "Invalid replication type. Specify a valid replication type."
+            );
+        }
+
+        // Retrieve permissions of the source organization
+        $orgPermissions = $this->repo->admin->getOrgPermissionsList($fromOrgId);
+
+        // Extract permission IDs for processing
+        $permissionIds = array_column($orgPermissions, 'id');
+
+        // Retrieve existing permission IDs of the target organization
+        $existingPermissionIds = $this->repo->admin->existingPermissionIds($toOrgId);
+
+        // Prepare data for batch insertion (only new permissions)
+        $insertData = collect($permissionIds)
+            ->diff($existingPermissionIds)
+            ->map(function ($permissionId) use ($toOrgId) {
+                return [
+                    'permission_id' => $permissionId,
+                    'entity_type'   => 'org',
+                    'entity_id'     => $toOrgId,
+                ];
+            })
+            ->toArray();
+
+        // Throw exception if there are no new permissions to insert
+        if (empty($insertData)) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NO_NEW_PERMISSIONS);
+        }
+
+        // Perform the permission replication process
+        $replicatePermissions = $this->repo->admin->replicatePermissionsToOrg($insertData);
+
+        // Log the completion of permission replication if successful
+        if ($replicatePermissions) {
+            $this->trace->info(TraceCode::ADMIN_ORG_PERMISSIONS_REPLICATIONS, [
+                'replicationData' => $insertData,
+                'status'          => $replicatePermissions,
+                'method_name'     => __FUNCTION__,
+                'route_name'      => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+
+            // Set the success response
+            $response = [
+                'status'  => true,
+                'message' => "{$input[Constant::REPLICATIONS_TYPE]} replicated successfully to the {$toOrgName->business_name} org.",
+            ];
+        }
+
+        return $response;
+    }
+
 }

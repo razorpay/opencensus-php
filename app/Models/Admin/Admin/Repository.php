@@ -7,6 +7,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Base;
 use RZP\Base\ConnectionType;
 use RZP\Models\Admin\Permission;
+use Illuminate\Support\Facades\DB;
 
 class Repository extends Base\Repository
 {
@@ -85,6 +86,31 @@ class Repository extends Base\Repository
             ->orgId($orgId)
             ->where(Entity::ID, '=', $adminId)
             ->update($updatedFields);
+    }
+
+    public function getOrgPermissionsList($orgId): array
+    {
+        return DB::table('permissions as p')
+            ->join('permission_map as pm', 'p.id', '=', 'pm.permission_id')
+            ->join('orgs as o', 'o.id', '=', 'pm.entity_id')
+            ->select('p.id', 'p.name as permission_name', 'p.category', 'pm.entity_id as org_id', 'o.business_name as org_name')
+            ->where('pm.entity_id', $orgId)
+            ->where('pm.entity_type', 'org')
+            ->get()->toArray();
+    }
+
+    public  function replicatePermissionsToOrg($insertData): bool
+    {
+        return DB::table('permission_map')->insert($insertData);
+    }
+
+    public function existingPermissionIds($toOrgId): array
+    {
+        return DB::table('permission_map')
+            ->where('entity_type', 'org')
+            ->where('entity_id', $toOrgId)
+            ->pluck('permission_id')
+            ->toArray();
     }
 
 }

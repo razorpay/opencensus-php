@@ -205,4 +205,9 @@ class Validator extends Base\Validator
 
         $this->validateInput('password_auth', $adminInput);
     }
+    protected static array $adminOrgReplicationsRules= [
+        CONSTANT::FROM_ORG_ID       => 'required|alpha_num|max:255',
+        CONSTANT::TO_ORG_ID         => 'required|alpha_num|max:255|different:from_org_id',
+        CONSTANT::REPLICATIONS_TYPE => 'required|string',
+    ];
 }

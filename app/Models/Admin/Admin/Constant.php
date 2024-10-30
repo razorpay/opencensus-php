@@ -15,6 +15,9 @@ final class Constant
     const ADMIN_ID                      = 'admin_id';
     const ID                            = 'id';
     const RAZORX_EXPERIMENT_ON          = 'on';
+    const FROM_ORG_ID                   = 'from_org_id';
+    const TO_ORG_ID                     = 'to_org_id';
+    const REPLICATIONS_TYPE             = 'replications_type';
 
     const GOOGLE_FETCH_USER_INFO_URL = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token';
 }

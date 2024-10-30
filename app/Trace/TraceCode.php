@@ -12205,6 +12205,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const POS_ACTIVATION_VALIDATED_FOR_OFFLINE_REFUND           = 'POS_ACTIVATION_VALIDATED_FOR_OFFLINE_REFUND';
     const MERCHANT_PERMISSIONS_CHECK_IN_PERSON_PAYMENT          = 'MERCHANT_PERMISSIONS_CHECK_IN_PERSON_PAYMENT';
     const INTERNAL_ERROR_CODE_FOR_VAULT_RESPONSE = "INTERNAL_ERROR_CODE_FOR_VAULT_RESPONSE";
+    const ADMIN_ORG_PERMISSIONS_REPLICATIONS                    = "ADMIN_ORG_PERMISSIONS_REPLICATIONS";
+    const ADMIN_ORG_PERMISSIONS_INIT                            = "ADMIN_ORG_PERMISSIONS_INIT";
     const METHODS_WRITE = "METHODS_WRITE";
     const SQS_PUSH_FAILED_FOR_CROSS_BORDER_TASK_QUEUE                                     = 'SQS_PUSH_FAILED_FOR_CROSS_BORDER_TASK_QUEUE';
     const PROCESS_CB_SQS_TASK                                    = 'PROCESS_CB_SQS_TASK';
@@ -12448,6 +12450,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::ORG_ADMIN_FETCH_SUCCESS                                        => 'Org admin fetched successfully',
         self::ORG_ADMIN_NOT_FOUND                                            => 'Org admin not found',
         self::BANKING_ADMIN_UPDATE_REQUEST_ORG_ID                            => 'Trace log after admin update',
+        self::ADMIN_ORG_PERMISSIONS_REPLICATIONS                             => 'admin org permission replicated successfully',
     ];
 
     public static $fileBasedReconTraceCodes = [

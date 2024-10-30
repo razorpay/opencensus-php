@@ -3174,6 +3174,10 @@ class ErrorCode
     const BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER                               = 'BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER';
 
     const ALT_ID_FETCH_ERROR                                    = 'ALT_ID_FETCH_ERROR';
+    const BAD_REQUEST_REPLICATION_TYPE                                              = 'BAD_REQUEST_REPLICATION_TYPE';
+    const BAD_REQUEST_NO_NEW_PERMISSIONS                                            = 'BAD_REQUEST_NO_NEW_PERMISSIONS';
+    const BAD_REQUEST_FROM_ORG_NOT_FOUND                                            = 'BAD_REQUEST_FROM_ORG_NOT_FOUND';
+
     const BANK_TRANSFER_NOT_FOUND                                      = 'BANK_TRANSFER_NOT_FOUND';
     const BANK_TRANSFER_PROCESSING_FAILED                              = 'BANK_TRANSFER_PROCESSING_FAILED';
 
