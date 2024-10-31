@@ -15012,6 +15012,27 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testWhatsAppOptInInternalAuth()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345679', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->ba->setAppAuthHeaders(['X-Dashboard-User-Id' => $user['id']]);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app]);
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->app['stork_service']->shouldReceive('optInForWhatsapp')->once()->with('test', $user['contact_mobile'], $testData['request']['content'])->andReturn([
+            'optin_status'  => true
+        ]);
+
+        $this->startTest();
+    }
+
     public function testWhatsAppOptInStatusForX()
     {
         $user = $this->fixtures->user->createUserForMerchant('10000000000000', [

@@ -8249,6 +8249,23 @@ return [
         ],
     ],
 
+    'testWhatsAppOptInInternalAuth' => [
+        'request' => [
+            'url'     => '/users/whatsapp/opt_in_internal',
+            'method'  => 'POST',
+            'content' => [
+                'source'           => 'rize_incorporation.onboarding.presignup',
+                'business_account' => 'razorpay'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'optin_status' => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testWhatsAppOptInStatusForX' => [
         'request' => [
             'url'     => '/users/whatsapp/opt_in_status?source=x&business_account=razorpayx',
