@@ -1,4 +1,5 @@
 import React from 'react';
+import moment from 'moment';
 import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
 import DeviceDeliveryAddress from '../DeviceDeliveryAddress';
 import { render, screen, userEvent } from 'apps/pos/src/services/test/test-utils';
@@ -63,6 +64,7 @@ describe('DeviceDeliveryAddress', () => {
       },
       modular_callback: expect.any(Function),
       qr_payment_amount_field: 2478,
+      check_for_order_completion: moment().unix(),
     });
   });
 

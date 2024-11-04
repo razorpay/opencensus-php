@@ -9,6 +9,7 @@ import {
   RadioGroup,
   useToast,
 } from '@razorpay/blade/components';
+import moment from 'moment';
 import DeliveryAddressRadio from './DeliveryAddressRadio';
 import { getFieldsForDeliveryAddressFromMerchantDetails } from 'apps/pos/src/app/utils/deviceSelection';
 import {
@@ -64,6 +65,7 @@ const DeviceDeliveryAddress = ({
   const handleOnDeliveryAddressClick = (): void => {
     const addressData = addresses?.[addressType];
     const payload = {
+      [MODULAR_DEVICE_FIELDS.DEVICE_CHECK_FOR_ORDER_COMPLETION]: moment().unix(),
       [MODULAR_DEVICE_FIELDS.DEVICE_DELIVERY_ADDRESS_FIELD]: addressData,
       [MODULAR_DEVICE_FIELDS.DEVICE_ORDER_QR_AMOUNT]: orderSummary?.totalOrderCharge,
       [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: onAddressUpdate,

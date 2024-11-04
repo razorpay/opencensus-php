@@ -103,7 +103,7 @@ const MERCHANT_KYC = {
   slug: AvailableSteps.MERCHANT_KYC,
   modularKey: null,
   title: 'Merchant KYC',
-  description: 'Provide merchant’s business information to start the POS jounrey .',
+  description: 'Provide merchant’s business information to start the POS journey .',
   getStatus: ({ states }) => {
     const { merchantDetails } = states;
     const posActivationStatus = merchantDetails?.activation?.posActivationStatus;
