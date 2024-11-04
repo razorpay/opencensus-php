@@ -16,6 +16,7 @@
     window.STREAKS_REWARDS = "{{ env('STREAKS_REWARDS') }}";
     window.REFINER_PROJECT_ID = "{{ env('REFINER_PROJECT_ID') }}";
     window.EASY_ONBOARDING_URL = "{{ env('EASY_ONBOARDING_URL') }}";
+    window.CURLEC_LINKED_ACCOUNT_ONBOARDING_URL = "{{ env('CURLEC_LINKED_ACCOUNT_ONBOARDING_URL') }}"
     window.EASY_DASHBOARD_CURLEC_URL = "{{ env('EASY_DASHBOARD_CURLEC_URL') }}";
     window.PP_ECOMMERCE_URL = "{{ env('PP_ECOMMERCE_URL') }}";
     window.BANK_DETAILS_URL = "{{ env('BANK_DETAILS_URL') }}";

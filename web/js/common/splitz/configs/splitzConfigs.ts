@@ -1751,6 +1751,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'enable_modular_onboarding_linked_account',
+          experimentId: {
+            beta: 'PE67MJdIfalxst',
+            production: 'PEifQHS5uNeQJE',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

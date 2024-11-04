@@ -8,7 +8,7 @@ import Alert from 'common/ui/Forms/Alert';
 import Pager from 'common/ui/Pager';
 import ProductWrapper from 'common/ui/ProductWrapper';
 import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
-import { is2FaExperimentEnabled } from 'common/utils/rzp-utils';
+import { is2FaExperimentEnabled, isExperimentActive } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import CustomerFeeBearerPopover from 'merchant/components/CustomerFeeBearerPopover';
 import DocsLink from 'merchant/components/DocsLink';
@@ -219,8 +219,20 @@ class AccountsListContainer extends ListContainer {
 
   showAccountDetailsModal = (account) => {
     const { closeModal } = this.props;
+    const {
+      abExperiments: { enable_modular_onboarding_linked_account = {} },
+    } = this.props.splitz;
     closeModal();
-    this.setState({ showAccountDetailsFor: account.id });
+    if (
+      typeof window !== 'undefiend' &&
+      isExperimentActive(enable_modular_onboarding_linked_account) &&
+      user.isOrgCurlec
+    ) {
+      // Redirect to modular onboarding if experiment is active
+      window.location.href = `${window.CURLEC_LINKED_ACCOUNT_ONBOARDING_URL}?accountId=${account.id}`;
+    } else {
+      this.setState({ showAccountDetailsFor: account.id });
+    }
   };
 
   highlightRowAndClose = (accountId) => {
