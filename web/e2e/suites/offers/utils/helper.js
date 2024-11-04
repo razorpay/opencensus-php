@@ -2,7 +2,6 @@ import { expect } from '@playwright/test';
 
 export async function gotoOfferCreationFlow({ page }) {
   await page.getByRole('button', { name: /create new offer/i }).click();
-  await page.getByText(/discounts & cash backs/i).click();
 }
 
 export async function openDetailsPanel({ page, offerName }) {
@@ -68,6 +67,11 @@ export async function fillPercentageDiscountType({ page }) {
   await page.getByText(/percentage/i).click();
   await page.locator("[name='percent_rate']").fill(discountPercentage.toFixed(2));
   await page.locator("[name='max_cashback']").fill(maxDiscount.toFixed(2));
+}
+export async function fillSubscriptionDiscountTab({ page }) {
+  let minAmount = 10 + (Math.random() * 10000) / 100;
+
+  await page.locator("[name='min_amount']").fill(minAmount.toFixed(2));
 }
 
 export async function fillOfferValidity({ page }) {

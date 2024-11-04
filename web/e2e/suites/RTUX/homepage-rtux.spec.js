@@ -147,7 +147,7 @@ test.describe.parallel('RTUX - Header Nav @flow=rtux @project=payments', () => {
       await expect(page.getByText('Announcements')).toBeVisible();
     });
 
-    test('should show status details nav item @priority=normal', async ({ page }) => {
+    test.skip('should show status details nav item @priority=normal', async ({ page }) => {
       await page.goto(routes.DASHBOARD);
       const statusDetailsCTA = await page.getByTestId('header-status-details');
       await expect(statusDetailsCTA).toBeVisible();

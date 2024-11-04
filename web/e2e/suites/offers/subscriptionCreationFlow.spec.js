@@ -1,18 +1,14 @@
 import { test, expect } from '@playwright/test';
 import { getStorageStatePath, BASE_PATH, routes } from 'testConstants';
 import {
-  gotoOfferCreationFlow,
   fillDescription,
   getOfferName,
-  selectOfferType,
   selectPaymentMethod,
-  fillPercentageDiscountType,
-  fillFlatDiscountType,
+  fillSubscriptionDiscountTab,
   fillOfferValidity,
   openDetailsPanel,
   disableOffer,
 } from './utils/helper';
-import { SELECTORS } from './utils/constants';
 
 async function clickNext(page) {
   await page.getByRole('button', { name: 'Next' }).click();
@@ -21,7 +17,7 @@ async function clickNext(page) {
 // NOTE: Different Payment Method aren't tested as they are covered in
 // Offer subscription flows.
 test.describe
-  .parallel('[Subscription] Offer creation flow @suite=merchant-offers @project=offers', () => {
+  .parallel('[Subscription] Offer creation flow @suite=merchant-offers @project=subscription-offers', () => {
   test.use({
     storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
@@ -33,8 +29,7 @@ test.describe
 
   test('Happy subscription offer creation flow.', async ({ page }) => {
     // Go to Subscription Offer Form
-    await page.getByRole('button', { name: /create new offer/i }).click();
-    await page.getByText(/offers on subscriptions/i).click();
+    await page.getByRole('button', { name: /create no & low cost emi/i }).click();
 
     const offerName = getOfferName();
 
@@ -43,7 +38,7 @@ test.describe
     await clickNext(page);
 
     // Discount tab
-    await fillPercentageDiscountType({ page });
+    await fillSubscriptionDiscountTab({ page });
     await clickNext(page);
 
     // Applicable on tab
@@ -67,8 +62,7 @@ test.describe
 
   test('Percentage as discount type and limited cycles as redemption type.', async ({ page }) => {
     // Go to Subscription Offer Form
-    await page.getByRole('button', { name: /create new offer/i }).click();
-    await page.getByText(/offers on subscriptions/i).click();
+    await page.getByRole('button', { name: /create no & low cost emi/i }).click();
 
     const offerName = getOfferName();
 
@@ -80,7 +74,7 @@ test.describe
     await page.locator("button[name='redemption_type']").click();
     await page.getByText('Limited Number of Cycles').click();
     await page.locator("input[name='no_of_cycles']").fill('3');
-    await fillPercentageDiscountType({ page });
+    await fillSubscriptionDiscountTab({ page });
     await clickNext(page);
 
     // Applicable on tab
