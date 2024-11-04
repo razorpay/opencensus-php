@@ -118,7 +118,7 @@ class CongfigurationContainer extends Component {
     }
 
     if (transaction_report_email) {
-      data.transaction_report_email = transaction_report_email.split(',');
+      data.transaction_report_email = transaction_report_email.split?.(',');
     }
 
     return this.props

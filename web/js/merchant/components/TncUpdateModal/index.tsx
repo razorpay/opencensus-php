@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Heading, Text, ArrowRightIcon } from '@razorpay/blade/components';
 import moment from 'moment';
+import noop from 'lodash/noop';
 
 import { useMobile } from 'common/hooks/useMobile';
 import useModalComponents from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/hooks/useModalComponents';
@@ -86,7 +87,7 @@ const TncUpdateModal = () => {
   };
 
   return (
-    <Modal isOpen={isOpen} size="small" snapPoints={[0.65, 0.75, 0.9]}>
+    <Modal isOpen={isOpen} size="small" snapPoints={[0.65, 0.75, 0.9]} onDismiss={noop}>
       <ModalBody>
         <Box display="flex" flexDirection="column" gap={isMobile ? 'spacing.5' : 'spacing.3'}>
           <Box width="88px" height="80px">
