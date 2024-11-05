@@ -1,9 +1,8 @@
 import React from 'react';
-import { Box, CopyIcon, Text } from '@razorpay/blade/components';
+import { Box, CheckIcon, CopyIcon, IconButton, Text, Tooltip } from '@razorpay/blade/components';
 
-// eslint-disable-next-line
-import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { titleCase } from 'common/utils/rzp-utils';
+import useClipboard from 'merchant/hooks/useClipboard';
 import { getInitials } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/sections/Profile/views/v2/utils';
 import { User } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 
@@ -18,6 +17,8 @@ const ProfileInfo = ({ user, userRole }: ProfileInfoInterface): JSX.Element => {
   const { id: merchantId, logo_url: imageUrl, user: loggedInUser } = user;
   const { name: loggedInUserName } = loggedInUser;
   const userNameInitials = getInitials(loggedInUserName);
+
+  const { copy, isCopied } = useClipboard(2000);
 
   return (
     <Box display="flex" gap={{ base: 'spacing.6', m: 'spacing.7' }} alignItems="center">
@@ -54,9 +55,13 @@ const ProfileInfo = ({ user, userRole }: ProfileInfoInterface): JSX.Element => {
             <Text size="medium" weight="semibold">
               {merchantId}
             </Text>
-            <CustomClipboard value={merchantId}>
-              <CopyIcon color="interactive.icon.primary.subtle" size="medium" />
-            </CustomClipboard>
+            <Tooltip content={isCopied ? 'Copied' : 'Click to copy'}>
+              <IconButton
+                accessibilityLabel="Copy MID to Clipboard"
+                icon={isCopied ? CheckIcon : CopyIcon}
+                onClick={() => copy(merchantId)}
+              />
+            </Tooltip>
           </Box>
         </Box>
       </Box>
