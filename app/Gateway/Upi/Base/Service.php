@@ -96,4 +96,33 @@ class Service extends BaseService
             'ids'       => $ids
         ];
     }
+
+    /*
+     * This function retrieves the name based on the npciReferenceId (RRN) where the action is in an authorized state from the UPI entity table,
+     *  then extracts the name column from the UPI entity.*/
+    public function getNameBasedOnNpciReferenceIdAndActions(string $npciReferenceId)
+    {
+        try {
+            $data = $this->repo->upi->fetchByNpciReferenceIdAndActions($npciReferenceId,['authorize']);
+
+            if (empty($data) === true) {
+                $this->trace->traceException(
+                    TraceCode::QR_PAYER_NAME_EMPTY,
+                    [
+                        'npciReferenceId' => $npciReferenceId
+                    ]);
+                return null;
+            }
+
+            return $data['name'];
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                TraceCode::QR_PAYER_NAME_EMPTY,
+                []);
+            return null;
+        }
+    }
 }

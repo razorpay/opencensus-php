@@ -11,6 +11,7 @@ use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\QrPaymentRequest;
+use RZP\Gateway\Upi\Base\Service;
 use RZP\Models\Reward\RewardCoupon\Core as RewardCouponCore;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -788,13 +789,13 @@ class Notify
         if(
             $this->merchant->isFeatureEnabled(Feature\Constants::SEND_NAME_IN_EMAIL_FOR_QR) &&
             $this->payment->isUpi() === true &&
-            $this->payment->getGateway() === Payment\Gateway::UPI_ICICI &&
             $this->payment->isAuthorized() === true &&
             $this->payment->isBharatQr() === true &&
             is_null($this->payment->getReference16()) === false
         )
         {
-            $payerName = (new QrPaymentRequest\Core())->getPayerNameBasedOnRefId($this->payment->getReference16());
+
+            $payerName = (new Service())->getNameBasedOnNpciReferenceIdAndActions($this->payment->getReference16());
 
             if ($payerName !== null)
             {

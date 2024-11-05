@@ -2552,13 +2552,12 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentToFetchPayerName()
     {
-        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
 
         Mail::fake();
 
         $this->fixtures->merchant->addFeatures(['send_name_in_email_for_qr']);
 
-        $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
+        $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer','type' => 'upi_qr']);
 
         $qrCodeId = $qrCode['id'];
 
