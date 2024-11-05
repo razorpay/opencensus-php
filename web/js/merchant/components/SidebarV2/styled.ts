@@ -27,7 +27,7 @@ export const SidebarContainer = styled.div<SidebarContainerProps>(
       : '#2e3345'
   };
   width: ${isRTUXHomepage ? 216 : 248}px;
-  z-index: ${zIndicesMap.sidebar};
+  z-index: ${isMobile ? 1001 : zIndicesMap.sidebar};
   transform: translate(-100%,0);
   transition: transform ${makeMotionTime(theme.motion.delay.short)} ${
     theme.motion.easing.standard.effective
