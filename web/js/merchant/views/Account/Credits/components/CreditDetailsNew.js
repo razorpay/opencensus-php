@@ -24,6 +24,16 @@ import {
   CardHeaderTrailing,
   ChevronDownIcon,
   ChevronUpIcon,
+  Collapsible,
+  CollapsibleBody,
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableHeaderCell,
+  TableHeaderRow,
+  TableRow,
+  Text,
 } from '@razorpay/blade/components';
 import { Flex } from './style';
 import { ACTIVATION_STATUS } from '../../constants';
@@ -114,6 +124,10 @@ function CreditDetails(props) {
   const creditItems = pruneAmountCredits(props.creditItems);
   const currency = user.merchant.currency;
 
+  const data = {
+    nodes: creditItems,
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -132,7 +146,7 @@ function CreditDetails(props) {
         />
       </CardHeader>
       <CardBody>
-        <Flex direction="column" spacing={12}>
+        <Flex direction="column">
           <Flex isResponsive spacing={8} justifyBetween direction="row">
             <Amount
               size="large"
@@ -167,83 +181,76 @@ function CreditDetails(props) {
               </span>
             ) : null}
           </Flex>
-          {showCollapsible ? (
-            <div class="collapsible">
-              <div class="history">
-                {creditItems.map((cItem) => {
-                  const isExpired =
-                    cItem.expired_at && moment().isAfter(moment(cItem.expired_at, 'X'));
-                  return (
-                    <div class={classList('container', cItem.expired && 'disabled')} key={cItem.id}>
-                      <div class="col-md-6 col-sm-6 col-lg-6 col-xs-12">
-                        <div class="row">
-                          {cItem.used === cItem.value ? (
-                            <>
+          <Collapsible isExpanded={showCollapsible}>
+            <CollapsibleBody width="100%">
+              <Table data={data}>
+                {(tableData) => (
+                  <>
+                    <TableHeader>
+                      <TableHeaderRow>
+                        <TableHeaderCell>Total</TableHeaderCell>
+                        <TableHeaderCell>Left</TableHeaderCell>
+                        <TableHeaderCell>Percentage</TableHeaderCell>
+                        <TableHeaderCell>Code</TableHeaderCell>
+                        <TableHeaderCell>Expired</TableHeaderCell>
+                        <TableHeaderCell>Details</TableHeaderCell>
+                      </TableHeaderRow>
+                    </TableHeader>
+                    <TableBody>
+                      {tableData.map((item, index) => {
+                        const isExpired =
+                          item.expired_at && moment().isAfter(moment(item.expired_at, 'X'));
+                        return (
+                          <TableRow key={index} item={item}>
+                            <TableCell>
                               <Amount
                                 isAffixSubtle={false}
-                                value={i18nifyConvertToMajorUnit(cItem.value, currency)}
+                                value={i18nifyConvertToMajorUnit(item.value, currency)}
                                 currency={currency}
-                              />{' '}
-                              All credits used
-                            </>
-                          ) : (
-                            <>
-                              <Amount
-                                isAffixSubtle={false}
-                                value={i18nifyConvertToMajorUnit(
-                                  cItem.value - cItem.used,
-                                  currency,
-                                )}
-                                currency={currency}
-                              />{' '}
-                              of{' '}
-                              <Amount
-                                isAffixSubtle={false}
-                                value={i18nifyConvertToMajorUnit(cItem.value, currency)}
-                                currency={currency}
-                              />{' '}
-                              is still unused
-                            </>
-                          )}
-                        </div>
-                        <div class="row">
-                          {`${getRemainingPercentage(cItem)}% consumed`}
-                          <br />
-                          <span
-                            class="progress-bar"
-                            style={{
-                              width: `${getRemainingPercentage(cItem) * 2}px`,
-                            }}
-                          />
-                          <span class="progress-bar-overlay" />
-                        </div>
-                      </div>
-                      <div class="col-md-6 col-sm-6 col-lg-6 col-xs-12">
-                        <div class="row">
-                          {isExpired ? (
-                            <strong>Expired</strong>
-                          ) : cItem.expired_at ? (
-                            <>
-                              Valid till{' '}
-                              <strong>{moment(cItem.expired_at, 'X').format('DD MMM YYYY')}</strong>
-                            </>
-                          ) : (
-                            'Unlimited Validity'
-                          )}
-                        </div>
-                        <div class="row">
-                          <strong>{cItem.campaign}</strong> coupon applied
-                          <Link to={`/credits/${cItem.id}`} class="m-l">
-                            View Details
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              {item.used === item.value ? (
+                                <Text>All credits used</Text>
+                              ) : (
+                                <Amount
+                                  isAffixSubtle={false}
+                                  value={i18nifyConvertToMajorUnit(
+                                    item.value - item.used,
+                                    currency,
+                                  )}
+                                  currency={currency}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell>{`${getRemainingPercentage(item)}%`}</TableCell>
+                            <TableCell>{item.campaign}</TableCell>
+                            <TableCell>
+                              {isExpired ? (
+                                'Expired'
+                              ) : item.expired_at ? (
+                                <>
+                                  Valid till
+                                  <strong>
+                                    {moment(item.expired_at, 'X').format('DD MMM YYYY')}
+                                  </strong>
+                                </>
+                              ) : (
+                                'Unlimited Validity'
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Link to={`/credits/${item.id}`}>View Details</Link>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </>
+                )}
+              </Table>
+            </CollapsibleBody>
+          </Collapsible>
         </Flex>
       </CardBody>
     </Card>
