@@ -133,6 +133,18 @@ class RepositoryTest extends RepositoryTestHelper
         ]
     ];
 
+    public function testMerchantDocumentSaveOrFailMigration()
+    {
+        $attributes = [
+            "source" => "UFH",
+            "merchant_id" => "D2fahy3beSAu0S",
+            "document_type" => "memorandum_of_association",
+            "entity_type" => "merchant",
+        ];
+
+        $this->validateSaveOrFailReadMigration("merchant_document", $attributes, new Repository());
+    }
+
     public function testFindDocumentByMerchantIdAndType()
     {
         // Set splitz experiment

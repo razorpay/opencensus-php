@@ -9,6 +9,8 @@ class Constant
     const GRPC_HOST = 'grpc_host';
     const USERNAME = 'username';
     const PASSWORD = 'password';
+
+    const DISABLE_READ_IN_WRITE_FLOW = 'disable_read_in_write_flow';
     const ASV_V2_GRPC_KEEP_ALIVE_TIME_IN_MS = 'grpc_keep_alive_time_in_ms';
     const ASV_V2_GRPC_KEEP_ALIVE_TIMEOUT_IN_MS = 'grpc_keep_alive_timeout_in_ms';
     const ASV_V2_GRPC_KEEP_ALIVE_PERMIT_WITHOUT_CALLS = 'grpc_keep_alive_permit_without_calls';

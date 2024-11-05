@@ -161,6 +161,20 @@ class RepositoryTest extends RepositoryTestHelper
         ]
     ];
 
+    public function testMerchantStakeholderSaveOrFailMigration()
+    {
+        $attributes = [
+            "email" => "123@gfmail.com",
+            "name" => "test",
+            "phone_primary" => "123f4567890",
+            "phone_secondary" => "12f34567890",
+            "director" => 1,
+            "executive" => 1,
+        ];
+
+        $this->validateSaveOrFailReadMigration("stakeholder", $attributes, new Repository());
+    }
+
 
     public function testGetStakeholderByMerchantId()
     {

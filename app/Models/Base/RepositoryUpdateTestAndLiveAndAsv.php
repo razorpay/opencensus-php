@@ -216,15 +216,23 @@ trait RepositoryUpdateTestAndLiveAndAsv
         // fetch existing audit action
         $auditAction = $entity->getAuditAction();
 
-        $testEntity = $this->newQueryWithConnection(Mode::TEST)->lockForUpdate()->findOrFail($id);
-        $liveEntity = $this->newQueryWithConnection(Mode::LIVE)->lockForUpdate()->findOrFail($id);
-        $asvEntity = $this->newQueryWithConnection(Connection::ASV_WRITER)->lockForUpdate()->findOrFail($id);
+        if ($this->asvRouter->shouldRouteReadRequestDuringWriteToAccountService($entity))
+        {
+            $asvEntity = $this->newQueryWithConnection(Connection::ASV_WRITER)->lockForUpdate()->findOrFail($id);
+            $testEntity = clone $asvEntity;
+            $liveEntity = clone $asvEntity;
+
+        } else {
+            $testEntity = $this->newQueryWithConnection(Mode::TEST)->lockForUpdate()->findOrFail($id);
+            $liveEntity = $this->newQueryWithConnection(Mode::LIVE)->lockForUpdate()->findOrFail($id);
+            $asvEntity = $this->newQueryWithConnection(Connection::ASV_WRITER)->lockForUpdate()->findOrFail($id);
+            $this->validateEntitiesMatch($liveEntity, $testEntity);
+        }
+
 
         // reset the current entity's audit action with the older one
         $liveEntity->setAuditAction($auditAction);
         $testEntity->resetAuditAction();
-
-        $this->validateEntitiesMatch($liveEntity, $testEntity);
 
         // Update the test and live entities
         $attributes = $entity->getAttributes();

@@ -3,6 +3,7 @@
 namespace Unit\Models\Merchant;
 
 use Config;
+use Database\Connection;
 use RZP\Exception\DbQueryException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
@@ -18,6 +19,7 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Models\Adjustment\Entity as AdjustmentEntity;
 use RZP\Models\Transaction\Entity as TransactionEntity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
 use function PHPUnit\Framework\assertNotEquals;
 use const Grpc\STATUS_DEADLINE_EXCEEDED;
@@ -783,6 +785,17 @@ class RepositoryTest extends RepositoryTestHelper
         $merchantEntity2 = $repo->findOrFail($id);
 
         assertNotEquals(1234, $merchantEntity2->getUpdatedAt());
+    }
+
+    public function testMerchantSaveOrFailMigration()
+    {
+        $attributes = [
+            "name" => "saveorfailreadmigration",
+            "email" => "saveorfailreadmigration@gmail.com",
+            "website" => "www.saveorfailreadmigration.com"
+        ];
+
+        $this->validateSaveOrFailReadMigration("merchant", $attributes, new Repository());
     }
 
     public function testVerifyEagerLoadRelation()

@@ -511,6 +511,43 @@ class RepositoryTest extends RepositoryTestHelper
         );
     }
 
+    public function testMerchantDetailSaveOrFailMigration()
+    {
+        $attributes = [
+            "activation_flow" => "whitelist",
+            "contact_name" => "saveorfailreadmigration",
+            "contact_email" => "saveorfailreadmigration@gmail.com",
+        ];
+
+        $this->validateSaveOrFailReadMigration("merchant_detail", $attributes, new Repository());
+    }
+
+    public function testMerchantEmailSaveOrFailMigration()
+    {
+        $attributes = [
+            "email" => "support@rtll.com",
+            "phone" => "9999999999",
+            "policy" => "24x7 support",
+        ];
+
+        $this->validateSaveOrFailReadMigration("merchant_email", $attributes, new \RZP\Models\Merchant\Email\Repository());
+    }
+
+    public function testMerchantBusinessDetailSaveOrFailMigration()
+    {
+        $attributes = [
+            "blacklisted_products_category" => "3-5 dayfs",
+            'app_urls' => [
+                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.whatsapp',
+                'txn_playstore_urls' => [
+                    'https://play.google.com/store/apps/details?id=com.whatsapp',
+                ],
+            ]
+        ];
+
+        $this->validateSaveOrFailReadMigration("merchant_business_detail", $attributes, new \RZP\Models\Merchant\BusinessDetail\Repository());
+    }
+
     public function testMerchantDetailRepositoryFind()
     {
         Config::set('applications.asv_v2.splitz_experiment_merchant_detail_find', 'K1ZaAHZ7Lnumc6');

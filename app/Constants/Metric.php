@@ -74,6 +74,8 @@ class Metric
 
     const ASV_REQUEST_NOT_ROUTED = 'asv_read_request_not_routed';
     const ASV_READ_REQUEST_ROUTING_RESULT = 'asv_read_request_routing_result';
+
+    const ASV_READ_REQUEST_ROUTED_FOR_WRITE_FLOW_RESULT = 'asv_read_request_routed_for_write_flow_result';
     const DUAL_WRITES_TOTAL                     = 'dual_writes_total';
     const DUAL_WRITES_FAILED                    = 'dual_writes_failed';
     const DUAL_WRITES_TIME_TAKEN                = 'dual_writes_time_taken';
@@ -274,7 +276,7 @@ class Metric
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_NOT_FOUND = 'settlement_ondemand_feature_config_max_limit_not_found';
 
     const BANK_TRANSFER_CREATE_PROCESS_JOB_INIT_COUNT            = 'bank_transfer_create_process_job_init_count';
-    
+
     const OPGSP_UFH_FILE_PUSH                                   = 'opgsp_ufh_file_push';
     const OPGSP_BEAM_PUSH                                       = 'opgsp_beam_push';
     const OPGSP_FILE_SEND_STARTED                               = 'opgsp_file_send_started';

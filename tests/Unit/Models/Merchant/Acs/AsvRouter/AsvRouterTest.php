@@ -9,6 +9,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\RequestContext;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Repository;
 use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Services\SplitzService;
@@ -84,6 +85,78 @@ class AsvRouterTest extends TestCase
             );
 
             $this->assertEquals($test["expected_result"], $actualResult);
+        }
+
+    }
+
+    public function testShouldRouteReadRequestDuringWriteToAccountService() {
+        $tests = [
+            [
+                "entity" => new Entity(),
+                "should_route" => true,
+                "disable_read_in_write_flow" => true
+            ],
+            [
+                "entity" => new \RZP\Models\Merchant\Detail\Entity(),
+                "should_route" => false,
+                "disable_read_in_write_flow" => true
+            ],
+            [
+                "entity" => new \RZP\Models\Merchant\Document\Entity(),
+                "should_route" => true,
+                "disable_read_in_write_flow" => true
+            ],
+            [
+                "entity" => new \RZP\Models\Merchant\Email\Entity(),
+                "should_route" => true,
+                "disable_read_in_write_flow" => true
+            ],
+            [
+                "entity" => new \RZP\Models\Merchant\BusinessDetail\Entity(),
+                "should_route" => true,
+                "disable_read_in_write_flow" => true
+            ],
+            [
+                "entity" => new \RZP\Models\Merchant\Website\Entity(),
+                "should_route" => true,
+                "disable_read_in_write_flow" => true
+            ],
+            [
+                "entity" => new \RZP\Models\Merchant\Stakeholder\Entity(),
+                "should_route" => true,
+                "disable_read_in_write_flow" => true
+            ],
+            [
+                "entity" => new \RZP\Models\Merchant\Account\Entity(),
+                "should_route" => true,
+                "disable_read_in_write_flow" => true
+            ],
+            [
+                "entity" => new \RZP\Models\Merchant\BvsValidation\Entity(),
+                "should_route" => false,
+                "disable_read_in_write_flow" => true
+            ],
+            [
+                "entity" => new \RZP\Models\Merchant\Account\Entity(),
+                "should_route" => false,
+                "disable_read_in_write_flow" => false
+            ],
+            [
+                "entity" => new \RZP\Models\Merchant\Entity(),
+                "should_route" => false,
+                "disable_read_in_write_flow" => false
+            ],
+        ];
+
+        for ($i = 0; $i < count($tests); $i++) {
+            $test          = $tests[$i];
+
+            Config::set('applications.asv_v2.disable_read_in_write_flow', $test['disable_read_in_write_flow']);
+            $actualResult = (new AsvRouter())->ShouldRouteReadRequestDuringWriteToAccountService(
+               $test['entity']
+            );
+
+            $this->assertEquals($test["should_route"], $actualResult);
         }
 
     }

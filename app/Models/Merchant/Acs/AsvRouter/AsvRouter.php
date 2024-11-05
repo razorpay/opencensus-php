@@ -4,7 +4,9 @@ namespace RZP\Models\Merchant\Acs\AsvRouter;
 
 use App;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Models\Merchant\Detail\Repository as MerchantDetailRepository;
@@ -27,10 +29,10 @@ class AsvRouter
     const GOT_EXCEPTION = 'GOT_EXCEPTION';
 
     const READ_EXCLUSION_FLOW = 'READ_EXCLUSION_FLOW';
-    const WRITE_FLOW = 'WRITE_FLOW';
-
-    const FLOW_WITH_TRANSACTION = 'FLOW_WITH_TRANSACTION';
     const SPLITZ_REJECTED = 'SPLITZ_REJECTED';
+    const ENTITY_NOT_WHITELISTED = 'ENTITY_NOT_WHITELISTED';
+
+    const READ_ENABLED_IN_WRITE_FLOW = 'READ_ENABLED_IN_WRITE_FLOW';
     const MERCHANT_FETCH_INTERNAL_USERS =  'merchant_fetch_internal_users';
 
     const None = "none";
@@ -51,6 +53,8 @@ class AsvRouter
 
     protected SplitzHelper $splitzHelper;
 
+    protected $asvConfig;
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -58,6 +62,8 @@ class AsvRouter
         $this->app = $app;
 
         $this->trace = $app[Constant::TRACE];
+
+        $this->asvConfig = $app->config->get(ASVV2Constant::ASV_CONFIG);
 
         $this->splitzHelper = new SplitzHelper();
     }
@@ -272,6 +278,57 @@ class AsvRouter
             ]);
 
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
+            return false;
+        }
+    }
+
+    public function shouldRouteReadRequestDuringWriteToAccountService($entity): bool
+    {
+        if ($this->asvConfig[ASVV2Constant::DISABLE_READ_IN_WRITE_FLOW] === false) {
+            $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => self::READ_ENABLED_IN_WRITE_FLOW,
+                'entity' => $entity->getEntityName()
+            ]);
+
+            return false;
+        }
+
+        try {
+            $whiteListedEntity = [
+                E::MERCHANT,
+                E::MERCHANT_DETAIL,
+                E::STAKEHOLDER,
+                E::MERCHANT_DOCUMENT,
+                E::MERCHANT_EMAIL,
+                E::MERCHANT_WEBSITE,
+                E::MERCHANT_BUSINESS_DETAIL,
+                E::ACCOUNT
+            ];
+
+            $resp = in_array($entity->getEntityName(), $whiteListedEntity, true) === true;
+
+
+            if ($resp === false) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::ENTITY_NOT_WHITELISTED,
+                    'entity' => $entity->getEntityName()
+                ]);
+            } else {
+                $this->trace->count(Metric::ASV_READ_REQUEST_ROUTED_FOR_WRITE_FLOW_RESULT, [
+                    'route' => $this->getRouteOrJobName(),
+                ]);
+            }
+
+            return $resp;
+        } catch (\Exception $e) {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_EXCEPTION_IN_READ_IN_WRITE_FLOW);
+            $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => self::GOT_EXCEPTION,
+                'entity' => $entity->getEntityName()
+            ]);
             return false;
         }
     }

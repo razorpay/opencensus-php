@@ -3,13 +3,17 @@
 namespace Unit\Models\Merchant\TestingHelper;
 
 use Config;
+use Database\Connection;
 use Razorpay\Asv\Error\GrpcError;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 
 class RepositoryTestHelper extends TestCase
 {
+    use DbEntityFetchTrait;
+
     private $splitzResponse = [
         'id' => '10000000000000',
         'project_id' => 'K1ZCHBSn7hbCMN',
@@ -39,6 +43,24 @@ class RepositoryTestHelper extends TestCase
             'assign_bucket'
         ]
     ];
+
+    public function validateSaveOrFailReadMigration($entityName, $attributes, $repo)
+    {
+
+        $entity = $this->fixtures->create($entityName);
+        $entity->fill($attributes);
+
+        $repo->saveOrFail($entity);
+        $testEntity = $this->getDbEntityById($entityName, $entity->getKey(), Connection::TEST);
+        $liveEntity = $this->getDbEntityById($entityName, $entity->getKey(), Connection::LIVE);
+        $asvEntity  = $this->getDbEntityById($entityName, $entity->getKey(), Connection::ASV_WRITER);
+
+        $this->assertEquals($testEntity, $liveEntity);
+        $this->assertEquals($asvEntity, $liveEntity);
+        foreach ($attributes as $fieldName => $fieldValue) {
+            $this->assertEquals($fieldValue, $liveEntity->getAttribute($fieldName));
+        }
+    }
 
     public function runTestsForImplicitJoin( $entitiesData)
     {

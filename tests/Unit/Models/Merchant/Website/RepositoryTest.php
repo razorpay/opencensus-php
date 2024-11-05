@@ -142,6 +142,30 @@ class RepositoryTest extends RepositoryTestHelper
     }';
 
 
+    public function testMerchantWebsiteSaveOrFailMigration()
+    {
+        $attributes = [
+            'merchant_id'              => '10000000000000',
+            'status'                   => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "contact_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                ]
+            ]
+        ];
+
+        $this->validateSaveOrFailReadMigration("merchant_website", $attributes, new Repository());
+    }
+
+
     public function testGetWebsiteDetailsForMerchantId()
     {
         $this->createMerchantWebsiteInDatabase($this->websiteEntityJson1);
