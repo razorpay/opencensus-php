@@ -67,6 +67,7 @@ const NavLinkItem = ({
   location,
   image,
   toggleMobileMenu,
+  bladeIcon: BladeIcon,
 }: NavLinkItemInterface & WithRouterProps): JSX.Element | null => {
   const { abExperiments } = useSplitzService();
   const { isConfigTagEnabled } = useI18Service();
@@ -168,7 +169,17 @@ const NavLinkItem = ({
               className="sidebar-active"
             />
           )}
-          <Icon className={`i ${icon}`} isRTUXHomepage={isRTUXHomepage} isActive={isActive} />
+
+          {BladeIcon ? (
+            <BladeIcon
+              color={isActive ? 'surface.icon.gray.normal' : 'surface.icon.gray.subtle'}
+              marginRight="spacing.3"
+              size="medium"
+            />
+          ) : (
+            <Icon className={`i ${icon}`} isRTUXHomepage={isRTUXHomepage} isActive={isActive} />
+          )}
+
           <Text
             variant="body"
             weight={isActive ? 'medium' : 'regular'}

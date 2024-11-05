@@ -1,3 +1,42 @@
+import {
+  AffordabilityIcon,
+  AlertTriangleIcon,
+  AppStoreIcon,
+  AtSignIcon,
+  BankIcon,
+  BillIcon,
+  CashIcon,
+  CheckCircleIcon,
+  CodeSnippetIcon,
+  CreditCardIcon,
+  CustomersIcon,
+  DashboardIcon,
+  FileTextIcon,
+  MagicCheckoutIcon,
+  MyAccountIcon,
+  OffersIcon,
+  OptimizerIcon,
+  PaymentButtonsIcon,
+  PaymentLinksIcon,
+  PaymentPagesIcon,
+  PosIcon,
+  QRCodeIcon,
+  RazorpayIcon,
+  RazorpayXIcon,
+  RefreshIcon,
+  ReportsIcon,
+  RoutesIcon,
+  RupeeIcon,
+  SettingsIcon,
+  SettlementsIcon,
+  ShoppingBagIcon,
+  StorefrontIcon,
+  TransactionsIcon,
+  TrendingUpIcon,
+  WalletIcon,
+  ZapIcon,
+} from '@razorpay/blade/components';
+
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
 import { isMobileResolution } from 'common/utils/rzp-utils';
@@ -20,18 +59,22 @@ export type ExtraConfig = {
 
 export const PRODUCTS_DATA = {
   home: {
+    bladeIcon: DashboardIcon,
     icon: 'i-chart',
     additionalCondition: (user: any): boolean => user.isAllowedView('home'),
   },
   transactions: {
+    bladeIcon: TransactionsIcon,
     icon: 'i-repeat',
     additionalCondition: (user: any): boolean => user.isAllowedMultiple('payments orders refunds'),
   },
   digital_bills: {
+    bladeIcon: BillIcon,
     icon: 'i-digital-bills',
     additionalCondition: (): boolean => false,
   },
   settlements: {
+    bladeIcon: SettlementsIcon,
     icon: 'i-done-all',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('settlements') &&
@@ -39,17 +82,20 @@ export const PRODUCTS_DATA = {
       user.hideForNIASupportRole,
   },
   reconciliations: {
+    bladeIcon: CheckCircleIcon,
     icon: 'i-check-circle-outline',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       checkReconSaasEnabled({ abExperiments }),
   },
   settings: {
+    bladeIcon: SettingsIcon,
     icon: 'i-settings',
     additionalCondition: (user: any): boolean =>
       user.isAllowedMultiple('webhooks applications configuration api_keys') &&
       !user.isAccountAndSettingsRevampEnabled,
   },
   developers: {
+    bladeIcon: CodeSnippetIcon,
     icon: 'i-developers developers-sidebar-icon',
     additionalCondition: (user: any): boolean =>
       !isMobileResolution() &&
@@ -57,67 +103,80 @@ export const PRODUCTS_DATA = {
       (user.isDeveloperConsoleEnabled || user.isDeveloperConsoleWebhooksTabEnabled),
   },
   my_account: {
+    bladeIcon: MyAccountIcon,
     icon: 'i-account',
     additionalCondition: (user: any): boolean =>
       user.isAllowedMultiple('profile credits add_funds team referrals') &&
       !user.isAccountAndSettingsRevampEnabled,
   },
   reports: {
+    bladeIcon: ReportsIcon,
     icon: 'i-books',
     additionalCondition: (user: any): boolean =>
       (user.isAllowedView('reports') || user.isCareHealthOwner) && user.hideForNIASupportRole,
   },
   x_corporate_cards: {
+    bladeIcon: CreditCardIcon,
     icon: 'i-credit-card',
     additionalCondition: (user: any): boolean => user.isCardsLOSEnabled,
   },
   working_capital_loans: {
+    bladeIcon: RupeeIcon,
     icon: 'i-rupee',
     additionalCondition: (user: any): boolean => user.isNonFldgLoansEnabled,
   },
   checkout_rewards: {
+    bladeIcon: CashIcon,
     icon: 'i-rewards',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('checkoutrewards') &&
       !isConfigTagEnabled('checkout_rewards.checkout_rewards'),
   },
   offers: {
+    bladeIcon: OffersIcon,
     icon: 'i-offer',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('offers') && !isConfigTagEnabled('offers.offers'),
   },
   customers: {
+    bladeIcon: CustomersIcon,
     icon: 'i-people',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('customers') && !isConfigTagEnabled('customers.customers'),
   },
   optimizer: {
+    bladeIcon: OptimizerIcon,
     icon: 'i-routing',
     additionalCondition: (user: any): boolean =>
       user.isAllowedView('optimizer') &&
       (user.isOptimizerEnabled || user.isOptimizerOnboardingEnabled),
   },
   bbps: {
+    bladeIcon: DashboardIcon,
     icon: 'i-chart',
     additionalCondition: (user: any): boolean => user.isAllowedView('bbps') && user.isBbpsEnabled,
   },
   magic_checkout: {
+    bladeIcon: MagicCheckoutIcon,
     icon: 'i-magic-checkout',
     additionalCondition: (user: any): boolean => user.isMagicCheckoutEnabled,
   },
   magic_konnect: {
+    bladeIcon: RazorpayIcon,
     icon: 'i-magic-konnect',
     image: magicKonnectLogo,
     additionalCondition: (user: any, extraConfig: ExtraConfig) =>
       user.isMagicKonnectEnabled && isExperimentEnabled(extraConfig?.abExperiments?.magic_konnect),
   },
   smart_collect: {
+    bladeIcon: BankIcon,
     icon: 'i-account-balance',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('virtual_accounts') &&
       !isConfigTagEnabled('smart_collect.virtual_accounts'),
   },
   payment_metrics: {
+    bladeIcon: DashboardIcon,
     icon: 'i-chart',
     additionalCondition: (user: {
       isCheckoutAnalyticsEnabled: boolean;
@@ -126,17 +185,20 @@ export const PRODUCTS_DATA = {
     }) => user.isCheckoutAnalyticsEnabled && user.isOrgRZP && user.isCountryIndia,
   },
   qr_codes: {
+    bladeIcon: QRCodeIcon,
     icon: 'i-qr-code',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('qr_codes') && !isConfigTagEnabled('qr_code.qr_code'),
   },
   affordability: {
+    bladeIcon: AffordabilityIcon,
     icon: 'i-affordability',
     additionalCondition: (user: any) => {
       return user.isShowAffordabilityWidget && user.isOrgRZP && user.isCountryIndia;
     },
   },
   subscriptions: {
+    bladeIcon: RefreshIcon,
     icon: 'i-refresh',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('subscriptions') && !isConfigTagEnabled('subscriptions.subscription'),
@@ -144,21 +206,25 @@ export const PRODUCTS_DATA = {
       routes[user.isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions'],
   },
   x_payroll: {
+    bladeIcon: RazorpayXIcon,
     icon: 'i-razorpayx',
     additionalCondition: (user: any): boolean =>
       user.isShowPayrollWidgetEnabled && user.isOrgRZP && user.isCountryIndia,
   },
   x_banking: {
+    bladeIcon: RazorpayXIcon,
     icon: 'i-razorpayx',
     additionalCondition: (user: any): boolean =>
       user.isShowRazorpayXWidgetEnabled && user.isOrgRZP && user.isCountryIndia,
   },
   route: {
+    bladeIcon: RoutesIcon,
     icon: 'i-route',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('marketplace') && !isConfigTagEnabled('route.marketplace'),
   },
   payment_button: {
+    bladeIcon: PaymentButtonsIcon,
     icon: 'i-payment-button',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedMultiple('payment_buttons subscription_buttons') &&
@@ -166,6 +232,7 @@ export const PRODUCTS_DATA = {
       !isConfigTagEnabled('payment_buttons.payment_buttons'),
   },
   api_keys: {
+    bladeIcon: CodeSnippetIcon,
     icon: 'i-api-keys-plugins',
     additionalCondition: (user: any): boolean =>
       user.isAllowedView('api_keys') &&
@@ -173,21 +240,25 @@ export const PRODUCTS_DATA = {
       user.activated,
   },
   stores: {
+    bladeIcon: StorefrontIcon,
     icon: 'i-store-product',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('stores') && user.isStoresEnabled && !isConfigTagEnabled('stores.stores'),
   },
   payment_pages: {
+    bladeIcon: PaymentPagesIcon,
     icon: 'i-payment-pages',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('payment_pages') && !isConfigTagEnabled('payment_pages.payment_pages'),
   },
   payment_links: {
+    bladeIcon: PaymentLinksIcon,
     icon: 'i-link',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('payment_links') && !isConfigTagEnabled('payment_links.payment_link'),
   },
   payment_handle: {
+    bladeIcon: AtSignIcon,
     icon: 'i-payment-handle',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('payment_handle') &&
@@ -195,28 +266,34 @@ export const PRODUCTS_DATA = {
       !isConfigTagEnabled('payments.payment_handle'),
   },
   cash_advance: {
+    bladeIcon: RupeeIcon,
     icon: 'i-rupee',
     additionalCondition: canViewCashAdvanceProduct,
   },
   line_of_credit: {
+    bladeIcon: RupeeIcon,
     icon: 'i-rupee',
     additionalCondition: canViewLOCEMIProduct,
   },
   capital_loans: {
+    bladeIcon: RupeeIcon,
     icon: 'i-rupee',
     additionalCondition: canViewLoans,
   },
   invoices: {
+    bladeIcon: FileTextIcon,
     icon: 'i-notes',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('invoices') && !isConfigTagEnabled('invoices.invoice'),
   },
   app_store: {
+    bladeIcon: AppStoreIcon,
     icon: 'i-app-store',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       !isOrgFeatureExist('hide_razorpay_text_link') && !isConfigTagEnabled?.('app_store.app_store'),
   },
   accountsettings: {
+    bladeIcon: SettingsIcon,
     icon: 'i-settings',
     additionalCondition: (user: any) =>
       user.isAllowedMultiple(
@@ -224,6 +301,7 @@ export const PRODUCTS_DATA = {
       ) && user.isAccountAndSettingsRevampEnabled,
   },
   wallet: {
+    bladeIcon: WalletIcon,
     icon: 'i-wallet',
     additionalCondition: (user: any) =>
       (user.isIssuingDashboardEnabled ||
@@ -235,6 +313,7 @@ export const PRODUCTS_DATA = {
     additionalCondition: (user: any) => user.isShowInternationalPaymentBtnExpEnabled,
   },
   pos: {
+    bladeIcon: PosIcon,
     icon: 'i-pos',
     additionalCondition: (user, { abExperiments }: ExtraConfig) => {
       const isPosOnboardingEnabled = isPosExperimentEnabled({ user, abExperiments });
@@ -242,6 +321,7 @@ export const PRODUCTS_DATA = {
     },
   },
   gcms_programs: {
+    bladeIcon: ZapIcon,
     icon: 'i-program',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       user.isIssuingDashboardEnabled &&
@@ -249,6 +329,7 @@ export const PRODUCTS_DATA = {
       user.isIssuingGcmsEnabled,
   },
   gcms_resellers: {
+    bladeIcon: StorefrontIcon,
     icon: 'i-reseller',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       user.isIssuingDashboardEnabled &&
@@ -256,6 +337,7 @@ export const PRODUCTS_DATA = {
       user.isIssuingGcmsEnabled,
   },
   gcms_orders: {
+    bladeIcon: ShoppingBagIcon,
     icon: 'i-order',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       user.isIssuingDashboardEnabled &&
@@ -263,6 +345,7 @@ export const PRODUCTS_DATA = {
       user.isIssuingGcmsEnabled,
   },
   gcms_funds: {
+    bladeIcon: TrendingUpIcon,
     icon: 'i-funds',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       user.isIssuingDashboardEnabled &&
@@ -270,6 +353,7 @@ export const PRODUCTS_DATA = {
       user.isIssuingGcmsEnabled,
   },
   gcms_reports: {
+    bladeIcon: ReportsIcon,
     icon: 'i-reports',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       user.isIssuingDashboardEnabled &&
@@ -277,12 +361,14 @@ export const PRODUCTS_DATA = {
       user.isIssuingGcmsEnabled,
   },
   riskAndFraud: {
+    bladeIcon: AlertTriangleIcon,
     icon: 'i-triangle-alert',
     additionalCondition: (user: User): boolean => {
       return user.isRiskAndFraudEnabled;
     },
   },
   assisted_financing: {
+    bladeIcon: AtSignIcon,
     icon: 'i-at-sign',
     additionalCondition: (
       user: any,

@@ -1,3 +1,5 @@
+import { type IconComponent } from '@razorpay/blade/components';
+
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 export type User = Record<string, unknown>;
@@ -74,6 +76,7 @@ export interface NavLinkItemInterface extends RouteComponentProps {
   heading: string;
   image?: string;
   toggleMobileMenu: () => void;
+  bladeIcon?: IconComponent;
 }
 
 export interface NavLinkProductPropsInterface extends RouteComponentProps {
