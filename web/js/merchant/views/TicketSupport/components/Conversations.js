@@ -622,91 +622,98 @@ class Conversations extends React.Component {
               )}
               <div>
                 <div className="ticket-replies-container">
-                  <div className="q-open">
-                    {message}
-                    {!isRzpPosTicket &&
-                    !(MESSAGE === 'Closed' || MESSAGE === 'Resolved') &&
-                    ticket?.status !== 5 ? (
-                      <div className="row flex flex-wrap">
-                        <button
-                          onClick={() => {
-                            this.handleToggleReplySection();
-                          }}
-                          style={{ position: 'relative' }}
-                          className={`btn btn-outline${toggleReply ? ' active' : ''}`}
-                        >
-                          {' '}
-                          <i className="i i-reply" /> Send a reply
-                          {toggleReply ? <i className="i i-caret-down chev-down" /> : null}
-                        </button>
-                        {(moment().diff(
-                          ticket?.fr_due_by || parseInt(workflow?.due_date, 10),
-                          'hours',
-                        ) > 0 ||
-                          is_escalated) && (
-                          <span>
-                            {!isTicketCreatedByAgent && (
-                              <button
-                                className={`btn btn-outline grievance-related-btn ${
-                                  is_escalated ? 'btn-warning' : ''
-                                } ${!can_be_escalated ? 'disabled-style' : ''}`}
-                                onClick={() => {
-                                  if (can_be_escalated) {
-                                    this.openGrievanceFlow(ticket);
-                                  }
-                                }}
-                              >
-                                <i className="i i-followup" />{' '}
-                                {is_escalated ? 'Requested status update' : 'Request status update'}
-                              </button>
-                            )}
-                            {!can_be_escalated ? (
-                              <Popover align="bottom" theme="dark">
-                                <PopoverBody>
-                                  <span>{this.getPopoverMessage(is_escalated, has_callback)}</span>
-                                </PopoverBody>
-                              </Popover>
-                            ) : null}
-                          </span>
-                        )}
-                        {!(has_callback || has_click_to_call) ? (
-                          scheduleCallConfig?.is_eligible ? (
-                            <button
-                              onClick={() => {
-                                if (window.rzpTicketSystem) {
-                                  window.rzpTicketSystem.openModal(`#schedule-call`, {
-                                    ticket,
-                                  });
-                                }
-                              }}
-                              className="btn btn-outline"
-                              disabled={has_callback || has_click_to_call}
-                            >
-                              {' '}
-                              <i className="i i-call-new" /> Request a call
-                            </button>
-                          ) : null
-                        ) : (
-                          <button className="btn btn-outline requested">
-                            {' '}
-                            <i className="i i-call-new" /> <span>Call requested,</span>{' '}
-                            <b
-                              onClick={() =>
-                                this.openCallDetails(ticket?.custom_fields?.cf_callback_id, ticket)
-                              }
-                              className="details"
-                            >
-                              View Details
-                            </b>
-                          </button>
-                        )}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  {isLoading && (
+                  {isLoading ? (
                     <div className="ticket-cont-spinner">
                       <Spinner />
+                    </div>
+                  ) : (
+                    <div className="q-open">
+                      {message}
+                      {!isRzpPosTicket &&
+                      !(MESSAGE === 'Closed' || MESSAGE === 'Resolved') &&
+                      ticket?.status !== 5 ? (
+                        <div className="row flex flex-wrap">
+                          <button
+                            onClick={() => {
+                              this.handleToggleReplySection();
+                            }}
+                            style={{ position: 'relative' }}
+                            className={`btn btn-outline${toggleReply ? ' active' : ''}`}
+                          >
+                            {' '}
+                            <i className="i i-reply" /> Send a reply
+                            {toggleReply ? <i className="i i-caret-down chev-down" /> : null}
+                          </button>
+                          {(moment().diff(
+                            ticket?.fr_due_by || parseInt(workflow?.due_date, 10),
+                            'hours',
+                          ) > 0 ||
+                            is_escalated) && (
+                            <span>
+                              {!isTicketCreatedByAgent && (
+                                <button
+                                  className={`btn btn-outline grievance-related-btn ${
+                                    is_escalated ? 'btn-warning' : ''
+                                  } ${!can_be_escalated ? 'disabled-style' : ''}`}
+                                  onClick={() => {
+                                    if (can_be_escalated) {
+                                      this.openGrievanceFlow(ticket);
+                                    }
+                                  }}
+                                >
+                                  <i className="i i-followup" />{' '}
+                                  {is_escalated
+                                    ? 'Requested status update'
+                                    : 'Request status update'}
+                                </button>
+                              )}
+                              {!can_be_escalated ? (
+                                <Popover align="bottom" theme="dark">
+                                  <PopoverBody>
+                                    <span>
+                                      {this.getPopoverMessage(is_escalated, has_callback)}
+                                    </span>
+                                  </PopoverBody>
+                                </Popover>
+                              ) : null}
+                            </span>
+                          )}
+                          {!(has_callback || has_click_to_call) ? (
+                            scheduleCallConfig?.is_eligible ? (
+                              <button
+                                onClick={() => {
+                                  if (window.rzpTicketSystem) {
+                                    window.rzpTicketSystem.openModal(`#schedule-call`, {
+                                      ticket,
+                                    });
+                                  }
+                                }}
+                                className="btn btn-outline"
+                                disabled={has_callback || has_click_to_call}
+                              >
+                                {' '}
+                                <i className="i i-call-new" /> Request a call
+                              </button>
+                            ) : null
+                          ) : (
+                            <button className="btn btn-outline requested">
+                              {' '}
+                              <i className="i i-call-new" /> <span>Call requested,</span>{' '}
+                              <b
+                                onClick={() =>
+                                  this.openCallDetails(
+                                    ticket?.custom_fields?.cf_callback_id,
+                                    ticket,
+                                  )
+                                }
+                                className="details"
+                              >
+                                View Details
+                              </b>
+                            </button>
+                          )}
+                        </div>
+                      ) : null}
                     </div>
                   )}
                   {toggleReply ? (
