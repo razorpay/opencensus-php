@@ -552,6 +552,22 @@ class TerminalController extends Controller
 
         return $response;
     }
+    public function enableBulkTerminalsOnline()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->enableBulkTerminalsOnline($input);
+
+        return $response;
+    }
+    public function disableBulkTerminalsOnline()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->disableBulkTerminalsOnline($input);
+
+        return $response;
+    }
 
     // used by batch service
     public function postTerminalsBulk()

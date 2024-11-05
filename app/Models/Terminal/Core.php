@@ -1409,4 +1409,13 @@ class Core extends Base\Core
 
         return $redactedInput;
     }
+
+    public function validateTerminalForOnlineType(Entity $terminal)
+    {
+        if(($terminal->isUpiEnabled() === true))
+        {
+            return true;
+        }
+        return false;
+    }
 }

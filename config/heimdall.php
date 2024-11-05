@@ -703,6 +703,12 @@ return [
             Permission::BULK_CLOSE_MULTIPLE_QR => [
                 'description' => 'Close multiple QR Codes in bulk',
             ],
+            Permission::ENABLE_TERMINALS_ONLINE_TAG_BULK => [
+                'description' => 'Enable online tag for terminals in bulk',
+            ],
+            Permission::DISABLE_TERMINALS_ONLINE_TAG_BULK => [
+                'description' => 'Disable online tag for terminals in bulk',
+            ],
             Permission::BANK_TRANSFER_INSERT => [
                 'description' => 'Insert bank transfers for failed payments',
                 'assignable'  => true,

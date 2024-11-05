@@ -125,6 +125,8 @@ class Name
     const VIEW_TERMINAL_EXTERNAL_ORG          = 'view_terminal_external_org';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
+    const ENABLE_TERMINALS_ONLINE_TAG_BULK    = 'enable_terminals_online_tag_bulk';
+    const DISABLE_TERMINALS_ONLINE_TAG_BULK   = 'disable_terminals_online_tag_bulk';
     const EDIT_TERMINAL_GOD_MODE              = 'edit_terminal_god_mode';
     const ENABLE_TERMINALS_BULK               = 'enable_terminals_bulk';
     const PAYMENTS_BATCH_CREATE_TERMINALS_BULK = "payments_batch_create_terminals_bulk";

@@ -661,6 +661,8 @@ class Route
         'terminal_toggle_internal'                 => ['post' ,    'terminals/toggle/{id}/{action}',                 'TerminalController@toggleTerminalInternal'                         ],
         'terminal_fill_enabled_wallets'            => ['patch',    'terminals/fill/enabled_wallets',                 'TerminalController@fillEnabledWallets',                           ],
         'terminal_update_bulk'                     => ['patch',    'terminals/bulk',                                 'TerminalController@updateTerminalsBulk',                           ],
+        'enable_terminals_online_tag_bulk'         => ['post',     'payments/terminal/enable_onlinetag/bulk',        'TerminalController@enableBulkTerminalsOnline',                     ],
+        'disable_terminals_online_tag_bulk'        => ['post',     'payments/terminal/disable_onlinetag/bulk',       'TerminalController@disableBulkTerminalsOnline',                    ],
         'terminal_add_merchant'                    => ['put',      'terminals/{id}/merchants/{mid}',                 'TerminalController@addMerchant'                                    ],
         'terminal_remove_merchant'                 => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
         'terminal_reassign_merchant'               => ['put',      'terminals/{id}/reassign',                        'TerminalController@reassignMerchant'                               ],
@@ -9713,6 +9715,9 @@ class Route
         'close_qr_codes_bulk',
 
         'payouts_dashboard_manual_actions',
+
+        'enable_terminals_online_tag_bulk',   
+        'disable_terminals_online_tag_bulk'  
     ];
 
     protected static $splitPaymentRoutes = [
@@ -10630,6 +10635,8 @@ class Route
         'entity_balance_id_update'                 => Permission::UPDATE_ENTITY_BALANCE_ID,
         'merchant_balance_bulk_backfill_ids'       => Permission::MERCHANT_BALANCE_BULK_BACKFILL,
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
+        'enable_terminals_online_tag_bulk'         => Permission::ENABLE_TERMINALS_ONLINE_TAG_BULK,
+        'disable_terminals_online_tag_bulk'        => Permission::DISABLE_TERMINALS_ONLINE_TAG_BULK,
         'set_redis_keys'                           => Permission::MANAGE_REDIS_KEYS,
         'set_gateway_downtime_conf'                => Permission::CREATE_GATEWAY_DOWNTIME,
         'get_gateway_downtime_conf'                => Permission::VIEW_GATEWAY_DOWNTIME,
@@ -16796,6 +16803,8 @@ class Route
             'user_update_name',
             'close_qr_codes_bulk',
             'payouts_dashboard_manual_actions',
+            'enable_terminals_online_tag_bulk',   
+            'disable_terminals_online_tag_bulk' 
         ],
 
         //

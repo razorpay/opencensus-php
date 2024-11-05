@@ -40,6 +40,8 @@ class TerminalTest extends TestCase
 
     use DbEntityFetchTrait;
 
+    use WorkflowTrait;
+
     protected $razorxValue = RazorXClient::DEFAULT_CASE;
 
     protected $terminalsServiceMock;
@@ -3405,7 +3407,6 @@ class TerminalTest extends TestCase
 
         $this->startTest();
     }
-
     public function testUpdateTerminalsBulk()
     {
         $this->ba->adminAuth();

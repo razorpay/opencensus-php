@@ -2482,5 +2482,125 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals($total_count,$response['failure'],);
 
     }
+    public function testEnableBulkTerminalsOnline()
+    {
+        $this->ba->adminAuth();
+        $this->addPermissionToBaAdmin(Permission::ENABLE_TERMINALS_ONLINE_TAG_BULK);
+        $terminal1 = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'upi_rzpapb',
+                'gateway_merchant_id' => '250000001',
+                'upi' => 1,
+                'type'    => [
+                    'pay' => '0'
+                ],
+            ]);
+        $terminal2 = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460op0t',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'upi_rzpapb',
+                'gateway_merchant_id' => '250000001',
+                'upi' => 1,
+                'type'    => [
+                    'pay' => '0'
+                ],
+            ]);
+        $terminal3 = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opV0',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'upi_rzpapb',
+                'gateway_merchant_id' => '250000001',
+                'upi' => 1,
+                'type'    => [
+                    'pay' => '0'
+                ],
+            ]);
+        $terminal_ids = [
+                'terminal_ids' => [
+                    $terminal1['id'],
+                    $terminal2['id'],
+                    $terminal3['id']
+                ]
+            ];
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/terminal/enable_onlinetag/bulk',
+            'content' => $terminal_ids,
+        ];
+        $total_count = 3;
+        $response  = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true,empty($response['failedIds']));
+        $this->assertEquals($total_count,$response['success']);
+        $this->assertEquals(0,$response['failed'],);
+
+    }
+    public function testDisableBulkTerminalsOnline()
+    {
+        $this->ba->adminAuth();
+        $this->addPermissionToBaAdmin(Permission::DISABLE_TERMINALS_ONLINE_TAG_BULK);
+        $terminal1 = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'upi_rzpapb',
+                'gateway_merchant_id' => '250000001',
+                'upi' => 1,
+                'type'    => [
+                    'online' => '1'
+                ],
+            ]);
+        $terminal2 = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460op0t',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'upi_rzpapb',
+                'gateway_merchant_id' => '250000001',
+                'upi' => 1,
+                'type'    => [
+                    'online' => '1'
+                ],
+            ]);
+        $terminal3 = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opV0',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'upi_rzpapb',
+                'gateway_merchant_id' => '250000003',
+                'upi' => 1,
+                'type'    => [
+                    'online' => '1'
+                ],
+            ]);
+        $terminal_ids = [
+                'terminal_ids' => [
+                    $terminal1['id'],
+                    $terminal2['id'],
+                    $terminal3['id']
+                ]
+            ];
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/terminal/disable_onlinetag/bulk',
+            'content' => $terminal_ids,
+        ];
+        $total_count = 3;
+        $response  = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true,empty($response['failedIds']));
+        $this->assertEquals($total_count,$response['success']);
+        $this->assertEquals(0,$response['failed']);
+
+    }
 
 }
