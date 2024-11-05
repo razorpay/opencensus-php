@@ -56,10 +56,11 @@ class Repository extends Merchant\Repository
         }
 
         list($mysqlParams) = $this->getMysqlAndEsParams($params);
-
+        $validParams = $this->sanitizeParams($mysqlParams);
         $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
+
         $this->addCommonQueryParamMerchantId($query, $merchantId);
-        $dbQuery = $this->buildFetchQuery($query, $mysqlParams);
+        $dbQuery = $this->buildFetchQuery($query, $validParams);
 
         if ($this->isTransactionActive())
         {
@@ -78,5 +79,22 @@ class Repository extends Merchant\Repository
         }
         $this->resetConnectionOnModels($results);
         return $results;
+    }
+
+    public function sanitizeParams(array $params)
+    {
+        $validParams = [];
+        foreach ($params as $key => $value)
+        {
+            if (in_array($key, Constants::VALID_PARAMS_FOR_FETCH))
+            {
+                $validParams[$key] = $value;
+            }
+            else
+            {
+                $this->trace->info(TraceCode::FETCH_SKIP_KEY, ["key" => $key]);
+            }
+        }
+        return $validParams;
     }
 }

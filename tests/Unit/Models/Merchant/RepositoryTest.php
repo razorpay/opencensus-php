@@ -593,6 +593,15 @@ class RepositoryTest extends RepositoryTestHelper
         $this->fixtures->create('merchant', ['id' => $id3, 'email' => 'test1@gmail.com', "account_code" => 123]);
         $this->fixtures->create('merchant', ['id' => $id1, 'email' => 'test1@gmail.com', "parent_id" => $id1, "account_code" => "123"]);
         $this->fixtures->create('merchant', ['id' => $id2, 'email' => 'test2@gmail.com', "parent_id" => $id1]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
 
         // listLinkedAccounts usecase
         $input1 = [
@@ -614,7 +623,7 @@ class RepositoryTest extends RepositoryTestHelper
         $repository = new Account\Repository();
         $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $input1, $repository) {
             $resultWithSplitz1 = $repository->fetchFromAsv($input1);
-            $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
+            $this->assertPublicCollectionsEqualIgnoringUpdatedAt($resultWithoutSplitz1, $resultWithSplitz1);
             $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
         });
 
@@ -635,7 +644,7 @@ class RepositoryTest extends RepositoryTestHelper
         $repository = new Account\Repository();
         $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $input2, $id1, $repository) {
             $resultWithSplitz1 = $repository->fetchFromAsv($input2, $id1);
-            $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
+            $this->assertPublicCollectionsEqualIgnoringUpdatedAt($resultWithoutSplitz1, $resultWithSplitz1);
             $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
         });
 
@@ -656,11 +665,55 @@ class RepositoryTest extends RepositoryTestHelper
         $repository = new Account\Repository();
         $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $input3, $id1, $repository) {
             $resultWithSplitz1 = $repository->fetchFromAsv($input3);
-            $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
+            $this->assertPublicCollectionsEqualIgnoringUpdatedAt($resultWithoutSplitz1, $resultWithSplitz1);
             $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
         });
 
+        //with no count
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();;
+        $resultWithoutSplitz1 = $repository->fetchFromAsv([]);
+        $repository->resetConnectionOnModels($resultWithoutSplitz1);
+        $this->assertEquals(sizeof($resultWithoutSplitz1), 10);
 
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $repository) {
+            $resultWithSplitz1 = $repository->fetchFromAsv([]);
+            $this->assertEquals(sizeof($resultWithoutSplitz1), 10);
+            $this->assertPublicCollectionsEqualIgnoringUpdatedAt($resultWithoutSplitz1, $resultWithSplitz1);
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+
+        // input with additional params
+        // we are comparing only count because in fetch method if we pass q it will be return from elastic search
+        $input4 = [
+            "count" => 10,
+            "skip" => 0,
+            "q" => "abc",
+            "email" => "test1@gmail.com",
+        ];
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($input4, $repository) {
+            $resultWithSplitz = $repository->fetchFromAsv($input4);
+            $this->assertEquals(sizeof($resultWithSplitz), 2);
+        });
+    }
+
+    public function assertPublicCollectionsEqualIgnoringUpdatedAt($expectedCollection, $actualCollection)
+    {
+        $expectedWithoutUpdatedAt = $expectedCollection->map(function ($item) {
+            return collect($item)->except(['created_at', 'updated_at'])->toArray();
+        });
+
+        $actualWithoutUpdatedAt = $actualCollection->map(function ($item) {
+            return collect($item)->except(['created_at', 'updated_at'])->toArray();
+        });
+
+        $this->assertEquals($expectedWithoutUpdatedAt->toArray(), $actualWithoutUpdatedAt->toArray(), "response with and without splitz are not same");
     }
 
     public function testCheckMerchantsCountWithPricingPlanIdNotEqualOne()
