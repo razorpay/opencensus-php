@@ -165,6 +165,9 @@ final class RepoAndFunctionToSplitzMap
         "stakeholderFindByIdAndMerchantId",
         "getFailedSettlementsForRetry",
         "fetchLinkedAccountsForParentMerchantId",
+        "restoreModel",
+        "baseEagerLoadRelation",
+        "getMerchantBankAccountsBetweenTimestamp"
     );
 
     public const SPLITZ_REMOVED_TIDB_FILTER = array(

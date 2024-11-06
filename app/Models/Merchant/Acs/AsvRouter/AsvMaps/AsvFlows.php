@@ -47,6 +47,7 @@ final class AsvFlows
         'link_account_documents_v2' => true,
         'link_stakeholder_documents_v2' => true,
         'linked_account_create_batch' => true,
+        'internal_merchant_fetch' => true,
         'merchant_actions' => true,
         'merchant_activation_archive' => true,
         'merchant_activation_clarifications_save' => true,

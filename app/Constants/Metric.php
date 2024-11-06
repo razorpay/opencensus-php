@@ -75,6 +75,8 @@ class Metric
     const ASV_REQUEST_NOT_ROUTED = 'asv_read_request_not_routed';
     const ASV_READ_REQUEST_ROUTING_RESULT = 'asv_read_request_routing_result';
 
+    const ASV_FALLBACK_TO_API_DB_RESULT = 'asv_fallback_to_api_db_result';
+
     const ASV_READ_REQUEST_ROUTED_FOR_WRITE_FLOW_RESULT = 'asv_read_request_routed_for_write_flow_result';
     const DUAL_WRITES_TOTAL                     = 'dual_writes_total';
     const DUAL_WRITES_FAILED                    = 'dual_writes_failed';

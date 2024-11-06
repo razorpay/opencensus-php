@@ -71,20 +71,7 @@ class AsvRouter
     public function isExclusionFlowOrFailure(): bool
     {
         try {
-            $routeOrWorkerName = $this->getRouteOrJobName();
-
-            $isExclusionFlow = AsvFlows::isExclusionFLow($routeOrWorkerName);
-
-            if($isExclusionFlow === true) {
-                $transactionFlowExperimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForEnableExclusionFlow();
-                $isExclusionFlow = $this->splitzHelper->isSplitzOnByExperimentName($transactionFlowExperimentName, $routeOrWorkerName);
-            }
-            // temporarily added this log if the check is working correctly.
-            $this->trace->count(Metric::ACCOUNT_SERVICE_CHECK_EXCLUSION_FLOW_RESULT, [
-                'routeOrWorkerName' => $routeOrWorkerName,
-                'isExclusionFlow' => $isExclusionFlow
-            ]);
-            return $isExclusionFlow;
+            return false;
         } catch (\Exception $e) {
 
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_CHECK_EXCLUSION_FLOW_EXCEPTION);
@@ -605,9 +592,22 @@ class AsvRouter
     {
         try
         {
-            $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForFallbackToASVDB();
+            $isExclusionFlow = $this->isExclusionFlowOrFailure();
 
-            return $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
+            if ($isExclusionFlow === true) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::READ_EXCLUSION_FLOW,
+                ]);
+                return false;
+            }
+
+            $this->trace->count(Metric::ASV_FALLBACK_TO_API_DB_RESULT, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => self::READ_EXCLUSION_FLOW,
+            ]);
+
+            return $this->shouldRouteToAsv();
         } catch (\Exception $e)
         {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_SPLITZ_ERROR);
