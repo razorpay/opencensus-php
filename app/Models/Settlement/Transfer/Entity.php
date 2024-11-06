@@ -4,9 +4,13 @@ namespace RZP\Models\Settlement\Transfer;
 
 use RZP\Models\Base;
 use RZP\Constants\Entity as EntityConstant;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper\ImplicitJoinHelper;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID                        = 'id';
     const SOURCE_MERCHANT_ID        = 'source_merchant_id';
     const SETTLEMENT_ID             = 'settlement_id';
@@ -79,6 +83,15 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(
             'RZP\Models\Merchant\Entity',
             self::SOURCE_MERCHANT_ID);
+    }
+
+    public function getSourceMerchantId(){
+        return $this->getAttribute(self::SOURCE_MERCHANT_ID);
+    }
+
+    public function getSourceMerchantAttribute()
+    {
+        return (new ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, 'sourceMerchant', 'getSourceMerchantId');
     }
 
     public function settlement()
