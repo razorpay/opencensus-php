@@ -192,7 +192,7 @@ function CreditDetails(props) {
                         <TableHeaderCell>Left</TableHeaderCell>
                         <TableHeaderCell>Percentage</TableHeaderCell>
                         <TableHeaderCell>Code</TableHeaderCell>
-                        <TableHeaderCell>Expired</TableHeaderCell>
+                        <TableHeaderCell>Validity</TableHeaderCell>
                         <TableHeaderCell>Details</TableHeaderCell>
                       </TableHeaderRow>
                     </TableHeader>
@@ -229,12 +229,7 @@ function CreditDetails(props) {
                               {isExpired ? (
                                 'Expired'
                               ) : item.expired_at ? (
-                                <>
-                                  Valid till
-                                  <strong>
-                                    {moment(item.expired_at, 'X').format('DD MMM YYYY')}
-                                  </strong>
-                                </>
+                                <Text>{moment(item.expired_at, 'X').format('DD MMM YYYY')}</Text>
                               ) : (
                                 'Unlimited Validity'
                               )}
