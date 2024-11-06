@@ -568,6 +568,15 @@ trait RepositoryFetch
             $variant = $this->isTestModeOrderExperimentEnabled();
         }
 
+        if ($this->app->runningUnitTests() === true) {
+            return false;
+        }
+
+        if (in_array($this->app['env'], [Environment::BVT, Environment::AUTOMATION], true) === true)
+        {
+            return false;
+        }
+
         return ($variant === 'on');
     }
 
