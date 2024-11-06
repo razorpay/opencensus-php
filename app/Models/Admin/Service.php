@@ -64,6 +64,16 @@ class Service extends Base\Service
 
     use Base\RepositoryUpdateTestAndLive;
 
+    const ASV_ENTITIES = [
+        E::MERCHANT,
+        E::MERCHANT_DETAIL,
+        E::STAKEHOLDER,
+        E::MERCHANT_DOCUMENT,
+        E::MERCHANT_EMAIL,
+        E::MERCHANT_WEBSITE,
+        E::MERCHANT_BUSINESS_DETAIL,
+    ];
+
     const FROM_MODE                  = 'from_mode';
     const TO_MODE                    = 'to_mode';
     const FIELDS_TO_SYNC             = 'fields_to_sync';
@@ -291,6 +301,15 @@ class Service extends Base\Service
             }
             else
             {
+                $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::REPLICA);
+            }
+        } else if(in_array($entity, self::ASV_ENTITIES, true) === true) {
+
+            $rampFromTidb = (new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__);
+
+            if ($rampFromTidb === true) {
+                $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            } else {
                 $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::REPLICA);
             }
         }
