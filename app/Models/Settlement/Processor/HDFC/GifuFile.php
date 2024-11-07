@@ -41,8 +41,6 @@ class GifuFile extends Base\BaseGifuFile
 
     protected $type = FileStore\Type::HDFC_COLLECT_NOW_SETTLEMENT_FILE;
 
-    const TID_19_REGEX = '/\.[0-9]+@hdfcbank$/';
-
     protected $cardsCutoffTimestamp;
 
     protected $upiCutoffTimestamp;
@@ -138,6 +136,12 @@ class GifuFile extends Base\BaseGifuFile
         $orgId = (new Merchant\Repository)->getMerchantOrg(current($input));
 
         $experimentResult = $this->app->razorx->getTreatment($orgId, Merchant\RazorxTreatment::GIFU_CUSTOM,$this->mode);
+
+         $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT, [
+             'org_id'    => $orgId,
+             'experiment_result' => $experimentResult,
+             'mode'       => $this->mode,
+         ]);
 
         $isGifuCustomEnabled = ( $experimentResult === 'on' ) ? true : false;
 
@@ -246,11 +250,6 @@ class GifuFile extends Base\BaseGifuFile
                 $amount = $amount + $this->getAggregatedPaymentAmount($value['payments'] ?? []);
 
                 $narration = $this->getNarration($value['settlements'] ?? [],$mid);
-
-                if(empty($narration) === true)
-                {
-                    continue;
-                }
 
                 $brCode = $this->getBrCode($accountNumber);
             }
@@ -412,15 +411,9 @@ class GifuFile extends Base\BaseGifuFile
                 'Terminals Fetch Params' => $params,
                 'Terminals Count'        => $terminals->count(),
                 'Terminal picked'        => $terminals,
-                'Gateway Merchant Id2'   => $terminal['gateway_merchant_id2'],
                 'Merchant Id'            => $mid,
             ]
         );
-
-        if((isset($terminal['gateway_merchant_id2']) === true) and (preg_match(self::TID_19_REGEX, $terminal['gateway_merchant_id2']) === 0))
-        {
-            return '';
-        }
 
         $setlId = !empty($data) ? $data[0]->id : '';
 

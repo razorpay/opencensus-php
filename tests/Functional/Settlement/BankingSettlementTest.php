@@ -1493,7 +1493,7 @@ class BankingSettlementTest extends TestCase
         $this->assertEquals(false, $result["settle_to_org"]);
     }
 
-    public function testGefuFileCreationWithGatewayMerchantId2WIthoutTid()
+    public function testGefuFileCreationWithGatewayTerminalIdPrefix190()
     {
         $this->app['config']->set('applications.ufh.mock', true);
 
@@ -1543,11 +1543,10 @@ class BankingSettlementTest extends TestCase
                         'id' => random_alphanum_string(14),
                         'merchant_id' => $merchantId,
                         'gateway' => 'hdfc',
-                        'gateway_merchant_id2' => 'bababaidyanathtemple@hdfcbank',
                         'gateway_merchant_id' => '250000002',
                         'gateway_secure_secret' => "1231424",
                         'gateway_terminal_id' => '190000004',
-                        'upi' => 1,
+                        'card' => 1,
                         'emi'  => 1,
                         'mode' => 2,
                         'type'    => [
@@ -1566,8 +1565,7 @@ class BankingSettlementTest extends TestCase
                         'gateway_merchant_id' => '250000002',
                         'gateway_secure_secret' => "1231424",
                         'gateway_terminal_id' => '250000004',
-                        'gateway_merchant_id2' => 'bababaidyanathtemple.70756743@hdfcbank',
-                        'upi' => 1,
+                        'card' => 1,
                         'emi'  => 1,
                         'mode' => 2,
                         'type'    => [

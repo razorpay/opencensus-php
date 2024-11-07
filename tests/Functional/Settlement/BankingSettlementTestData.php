@@ -128,7 +128,7 @@ return [
         ]
     ],
 
-    'testGefuFileCreationWithGatewayMerchantId2WIthoutTid' => [
+    'testGefuFileCreationWithGatewayTerminalIdPrefix190' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/IUXvshap3Hbzos/send_gifu_file',
