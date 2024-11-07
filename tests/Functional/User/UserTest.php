@@ -589,15 +589,17 @@ class UserTest extends TestCase
         $this->assertEquals(1, $merchantUsers->count());
 
         $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
-        $merchant = DB::table('merchant_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
+        $merchantDetails = DB::table('merchant_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
 
         // If user doesn't have a merchant (considered fresh signup), we use the user's email to create the merchant
-        $this->assertEquals($user['contact_mobile'], $merchant->contact_mobile);
+        $this->assertEquals($user['contact_mobile'], $merchantDetails->contact_mobile);
 
+        $merchantData = DB::table('merchants')->where('id', '=', $merchantUserEntry->merchant_id)->first();
         // Payload assertion
         $this->assertEquals($response['user_id'], $user['id']);
         $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
         $this->assertEquals($response['name'], $testData['request']['content']['name']);
+        $this->assertEquals("org_" . $merchantData->org_id, $testData['request']['content']['org_id']);
     }
 
     public function testCreateUserInternal() {
@@ -16082,7 +16084,7 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $this->mockHubSpotClient('trackSignupEvent');
-        
+
         $this->startTest();
 
         $createdSubM = $this->getDbLastEntity('merchant');

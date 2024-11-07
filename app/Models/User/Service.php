@@ -2423,7 +2423,10 @@ class Service extends Base\Service
             $merchantInputData = [
                 Merchant\Entity::SIGNUP_SOURCE  => $signupSource,
             ];
-
+            if ($isInternal)
+            {
+                $merchantInputData[Merchant\Entity::ORG_ID] = $input[Merchant\Entity::ORG_ID];
+            }
             $data = $this->createMerchant($user->toArray(), '', $businessName, $countryCode, false, $merchantInputData, null, false, $isInternal);
         }
 
