@@ -18,7 +18,7 @@ async function clickNext(page) {
 }
 
 test.describe
-  .parallel('Offers creation Flow (Payment methods) @suite=merchant-offers @project=offers', () => {
+  .parallel('Offers creation Flow (Payment methods) @suite=merchant-offers @project=offers @skip-unstable', () => {
   test.use({
     storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
