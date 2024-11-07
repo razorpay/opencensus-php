@@ -167,7 +167,7 @@ function MerchantNavLinks(props) {
       />
 
       <MainNavLink
-        label="Magic Konnect"
+        label="Konnect"
         type="product"
         image={MagicKonnect}
         to={routes.magicKonnect}
