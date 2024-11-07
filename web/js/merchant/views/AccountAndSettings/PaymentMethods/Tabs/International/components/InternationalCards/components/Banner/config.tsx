@@ -147,7 +147,7 @@ export const getBannerProps = ({
             onClick: () => {
               scrollToPaypalSection(history);
               trackIEEvent({
-                objectName: 'Link Paypal Now',
+                objectName: 'Link PayPal Now',
                 actionName: 'Clicked',
               });
             },

@@ -152,7 +152,7 @@ describe('International', () => {
     expect(screen.getAllByTestId('leaf-list-item')).toHaveLength(totalLeafList);
 
     expect(screen.getByTestId('paypal')).toBeInTheDocument();
-    expect(screen.getByText(/Paypal name: Paypal/i)).toBeInTheDocument();
+    expect(screen.getByText(/Paypal name: PayPal/i)).toBeInTheDocument();
     expect(screen.getByText(/Paypal slug: paypal/i)).toBeInTheDocument();
     expect(screen.getByTestId('instant-wire-transfer')).toBeInTheDocument();
     expect(screen.getByTestId('swift-bank-transfer')).toBeInTheDocument();

@@ -3,7 +3,7 @@ import { renderApp } from 'merchant/views/Settings/PaymentMethods/components/__t
 
 describe('Paypal', () => {
   describe('When IE Revamp is enabled', () => {
-    test('should render Paypal instructions', () => {
+    test('should render PayPal instructions', () => {
       renderApp();
       expect(
         screen.getByText('Accept International Payments using PayPal on Razorpay Checkout'),
@@ -47,7 +47,7 @@ describe('Paypal', () => {
   });
 
   describe('When IE Revamp is disabled', () => {
-    test('should render Paypal instructions', () => {
+    test('should render PayPal instructions', () => {
       renderApp({
         props: {
           isIERevamp: false,

@@ -178,7 +178,7 @@ describe('Banner config', () => {
               break;
             case BannerType.REJECTED:
               expect(trackIEEventSpy).toHaveBeenCalledWith({
-                objectName: 'Link Paypal Now',
+                objectName: 'Link PayPal Now',
                 actionName: 'Clicked',
               });
               expect(scrollToPaypalSection).toHaveBeenCalledWith(commonArgs.history);

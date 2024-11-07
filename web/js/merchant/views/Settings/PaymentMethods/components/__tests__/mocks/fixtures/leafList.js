@@ -185,7 +185,7 @@ const MORE_INTERNATIONAL_METHODS = {
 
 const INTERNATIONAL_INSTRUMENT = {
   name: 'International Payments',
-  description: 'Cards, Paypal, USD ACH & more',
+  description: 'Cards, PayPal, USD ACH & more',
   slug: 'international',
   icon: 'international',
   actionItems: {},

@@ -17,7 +17,7 @@ const SuccessModal = ({ closeModal }) => {
 
           <p>We will update the status on the dashboard once the review is completed</p>
           <p>
-            In the meantime, you can accept international payments through Paypal Wallet. Click{' '}
+            In the meantime, you can accept international payments through PayPal Wallet. Click{' '}
             <a
               href="https://razorpay.com/docs/payment-gateway/payment-methods/paypal"
               target="_blank"

@@ -159,7 +159,7 @@ export const computeBannerState = (data = {}) => {
     const linkPaypalState = getLocalState('rzp_banner_LinkPayPalAccount');
     if (linkPaypalState.isEnabled) {
       enableLinkPaypal = true;
-      analyticsFn({ eventName: 'Link paypal snackbar', event: 'displayed' });
+      analyticsFn({ eventName: 'Link PayPal snackbar', event: 'displayed' });
     }
   }
   // LinkPayPalAccount - End

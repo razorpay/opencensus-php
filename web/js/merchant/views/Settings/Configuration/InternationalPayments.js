@@ -32,18 +32,18 @@ export const getBadgeVariant = (status) => {
 export const getStatusMessage = (status) => {
   switch (status) {
     case 'activated':
-      return 'You are now accepting payments via Paypal.';
+      return 'You are now accepting payments via PayPal.';
 
     case 'permission_missing':
-      return 'Please provide the necessary permission to Razorpay from your paypal account. Please contact the PayPal customer support team for any queries.';
+      return 'Please provide the necessary permission to Razorpay from your PayPal account. Please contact the PayPal customer support team for any queries.';
 
     case 'requested':
-      return 'There was an issue with linking your account with PayPal. We request you to register for your Paypal account again.';
+      return 'There was an issue with linking your account with PayPal. We request you to register for your PayPal account again.';
 
     case 'pending':
       return (
         <span>
-          Your Paypal account is not configured to receive payments. Please visit your Paypal
+          Your PayPal account is not configured to receive payments. Please visit your PayPal
           account and make sure you have added the bank details/card details correctly. Please
           contact{' '}
           <a
@@ -59,7 +59,7 @@ export const getStatusMessage = (status) => {
       );
 
     case 'created':
-      return 'Please verify the confirmation email sent by Paypal to your registered email id. Email verification can take upto 24 hours to update.';
+      return 'Please verify the confirmation email sent by PayPal to your registered email id. Email verification can take upto 24 hours to update.';
     default:
       return '';
   }
@@ -151,7 +151,7 @@ const PaypalWrapper = ({ terminals }) => {
               {terminals[0].terminal.merchant_id}
               <Popover align="right" theme="dark">
                 <PopoverBody>
-                  <div className="disabled-text">Paypal generated Merchant ID</div>
+                  <div className="disabled-text">PayPal generated Merchant ID</div>
                 </PopoverBody>
               </Popover>
             </a>

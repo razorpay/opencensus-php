@@ -177,7 +177,7 @@ describe('PaymentMethods', () => {
       await waitFor(() => {
         expect(setInstrumentSpy).toHaveBeenCalledWith(
           expect.objectContaining({
-            description: 'Cards, Paypal, USD ACH & more',
+            description: 'Cards, PayPal, USD ACH & more',
             name: 'International Payments',
             slug: 'international',
           }),

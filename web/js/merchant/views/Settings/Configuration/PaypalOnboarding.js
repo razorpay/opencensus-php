@@ -78,15 +78,10 @@ class PaypalOnboardingButton extends Component {
         const interval = setInterval(() => {
           if (win && win.closed) {
             if (this.is_redirected) {
-              onboardTerminal('wallet_paypal').finally(() => {
-                this.props
-                  .getOnboardingStatus('wallet_paypal')
-                  .then(() => this.props.getOnboardingStatus('wallet_paypal'))
-                  .then(() => {
-                    this.setState({
-                      loading: false,
-                    });
-                  });
+              this.props.getOnboardingStatus('wallet_paypal').then(() => {
+                this.setState({
+                  loading: false,
+                });
               });
             } else {
               this.setState({ loading: false });
@@ -157,7 +152,7 @@ class PaypalOnboardingButton extends Component {
                       <UsersIcon {...props} />
                       <Popover align="right" theme="dark">
                         <PopoverBody>
-                          <div className="disabled-text">Paypal generated Merchant ID</div>
+                          <div className="disabled-text">PayPal generated Merchant ID</div>
                         </PopoverBody>
                       </Popover>
                     </>
@@ -224,7 +219,7 @@ class PaypalOnboardingButton extends Component {
               <i className="i i-user-circle" /> {paypalMerchantId}
               <Popover align="right" theme="dark">
                 <PopoverBody>
-                  <div className="disabled-text">Paypal generated Merchant ID</div>
+                  <div className="disabled-text">PayPal generated Merchant ID</div>
                 </PopoverBody>
               </Popover>
             </a>
@@ -293,7 +288,7 @@ const ChangeAccountModal = (props) => {
   return (
     <div>
       <div className="header">
-        <p className="title">Change Paypal Account</p>
+        <p className="title">Change PayPal Account</p>
         <i className="i i-close" onClick={() => onClose()} />
       </div>
       <div className="body">

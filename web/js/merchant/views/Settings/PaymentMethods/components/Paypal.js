@@ -77,7 +77,7 @@ const Paypal = ({ instrument, terminals, isIERevamp }) => {
             description={
               <>
                 You can accept Payments in <strong>International Currencies only</strong> using
-                Paypal. They CANNOT be collected in INR.
+                PayPal. They CANNOT be collected in INR.
               </>
             }
             color="neutral"
@@ -145,7 +145,7 @@ const Paypal = ({ instrument, terminals, isIERevamp }) => {
       {!disabled && (
         <div class="paypal-info mt20">
           <p>
-            You can accept Payments in <strong>International Currencies only</strong> using Paypal
+            You can accept Payments in <strong>International Currencies only</strong> using PayPal
           </p>
 
           <p class="mt10">You CANNOT accept Payments in INR</p>

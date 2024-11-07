@@ -21,7 +21,7 @@ const content = {
     bannerId: 'link-paypal-account',
     ctaText: 'Link your PayPal account',
     ctaLink: '/payment-methods?instrument=international',
-    eventName: 'Link paypal snackbar cta',
+    eventName: 'Link PayPal snackbar cta',
     event: 'clicked',
   },
 };

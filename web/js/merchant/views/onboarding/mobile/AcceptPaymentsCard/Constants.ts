@@ -13,7 +13,7 @@ export const INTERNATIONAL_FLOW = {
     account_activated: {
       title: 'Accept Live Payments!',
       description:
-        'You can start accepting domestic payments. You can integrate Paypal to enable international payments.',
+        'You can start accepting domestic payments. You can integrate PayPal to enable international payments.',
     },
   },
   af_wl_iaf_gl: {

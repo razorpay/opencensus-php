@@ -48,11 +48,11 @@ describe('PaymentMethodsSection', () => {
     renderApp();
     expect(screen.queryByTestId('payment-method-tabs-shimmer')).not.toBeInTheDocument();
     expect(screen.getByText('International Payments')).toBeInTheDocument();
-    expect(screen.getByText('Cards, Paypal, USD ACH & more')).toBeInTheDocument();
+    expect(screen.getByText('Cards, PayPal, USD ACH & more')).toBeInTheDocument();
     expect(
       screen.queryByText(/KYC verification is mandatory to request for new payment methods/i),
     ).not.toBeInTheDocument();
-    expect(screen.getByText('Cards, Paypal, USD ACH & more')).toBeInTheDocument();
+    expect(screen.getByText('Cards, PayPal, USD ACH & more')).toBeInTheDocument();
 
     const paymentMethodsLink = screen.getByRole('link', {
       name: 'Know More about payment methods',
