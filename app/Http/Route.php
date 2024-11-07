@@ -620,6 +620,7 @@ class Route
         'merchant_balance_create'                  => ['post',     'capital_balances',                               'BalanceController@createCapitalBalance'                            ],
         'merchant_balance_fetch_admin'             => ['get',      'admin_balances',                                 'MerchantController@getAccountBalances'                             ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
+        'pre_fund_withdraw'                        => ['post',     'merchants/pre_fund/withdraw',                    'MerchantController@preFundWithdraw'                                ],
         'credits_create_bulk'                      => ['post',     'merchants/credits/bulk',                         'MerchantController@bulkCreateMerchantCredits'                      ],
         'credits_create_bulk_internal'             => ['post',     'internal/merchants/credits/bulk',                'MerchantController@bulkCreateMerchantCredits'                      ],
         'credits_create_bulk_batch'                => ['post',     'merchants/credits/bulk/batch',                   'MerchantController@bulkCreateMerchantCreditsBatch'                 ],
@@ -7086,6 +7087,7 @@ class Route
         //FTS holiday Details
         'payout_get_holiday_details',
         'fund_addition_tpv',
+        'pre_fund_withdraw',
         'merchant_coupons_apply',
         'raw_address_create_batch_service',
         'fulfillment_order_update',
@@ -12561,6 +12563,7 @@ class Route
             'qr_configs_delete',
             'qr_configs_update',
             'fund_addition_tpv',
+            'pre_fund_withdraw',
             'corporate_card_get',
             'corporate_card_update',
             'corporate_card_list',

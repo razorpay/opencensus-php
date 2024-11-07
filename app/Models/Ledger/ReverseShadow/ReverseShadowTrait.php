@@ -923,6 +923,9 @@ trait ReverseShadowTrait
             case "trf":
                 $res[Constants::TYPE] = LedgerOutboxConstants::TRANSFER;
                 return $res;
+            case "credits":
+                $res[Constants::TYPE] = LedgerOutboxConstants::CREDIT;
+                return $res;
             default:
                 $res[Constants::TYPE] = "";
                 return $res;
@@ -1340,6 +1343,53 @@ trait ReverseShadowTrait
             ]);
 
         return $isExperimentEnabled;
+    }
+    public function createTransactionEntityForPreFundWithdrawFromJournal($journalResponse, $merchant): TransactionEntity
+    {
+        $transactorPublicId = $journalResponse[Constants::TRANSACTOR_ID];
+
+        $currency = $journalResponse[Constants::CURRENCY];
+
+        $transactorInfo = $this->determineTransactionTypeFromTransactorId($transactorPublicId);
+
+        $transactionType = $transactorInfo[Constants::TYPE];
+
+        $transactorId =  $transactorInfo[Constants::ID];
+
+        $transactionAmount = $journalResponse[Constants::BASE_AMOUNT];
+
+
+        $transaction = [
+            TransactionEntity::ID               => $journalResponse[Constants::ID],
+            TransactionEntity::ENTITY_ID        => $transactorId,
+            TransactionEntity::TYPE             => $transactionType,
+            TransactionEntity::MERCHANT_ID      => $merchant->getId(),
+            TransactionEntity::AMOUNT           => (int) $transactionAmount,
+            TransactionEntity::CURRENCY         => $currency,
+            TransactionEntity::CREDIT           => (int) $transactionAmount,
+            TransactionEntity::DEBIT            => 0,
+            TransactionEntity::BALANCE          => 0,
+            TransactionEntity::FEE              => 0,
+            TransactionEntity::TAX              => 0,
+            TransactionEntity::CHANNEL          => $merchant->getChannel(),
+            TransactionEntity::CREDITS          => 0,
+            TransactionEntity::CREDIT_TYPE      => 0,
+            TransactionEntity::BALANCE_ID       => null,
+            TransactionEntity::CREATED_AT       => $journalResponse[Constants::CREATED_AT],
+            TransactionEntity::UPDATED_AT       => $journalResponse[Constants::UPDATED_AT],
+            TransactionEntity::BALANCE_UPDATED  => null,
+            TransactionEntity::FEE_BEARER       => Merchant\FeeBearer::NA,
+            TransactionEntity::FEE_MODEL        => Merchant\FeeModel::PREPAID,
+            TransactionEntity::API_FEE          => 0,
+            TransactionEntity::MDR              => null,
+            TransactionEntity::GRATIS           => false,
+        ];
+
+        $txn = new TransactionEntity();
+
+        $txn->forceFill($transaction);
+
+        return $txn;
     }
 }
 

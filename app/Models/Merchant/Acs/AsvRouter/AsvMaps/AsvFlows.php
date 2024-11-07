@@ -43,6 +43,7 @@ final class AsvFlows
         'feature_delete' => true,
         'feature_delete_internal' => true,
         'fund_addition_tpv' => true,
+        'pre_fund_withdraw' => true,
         'internal_post_website_update' => true,
         'link_account_documents_v2' => true,
         'link_stakeholder_documents_v2' => true,

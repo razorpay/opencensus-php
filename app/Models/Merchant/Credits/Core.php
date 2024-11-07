@@ -5,12 +5,16 @@ namespace RZP\Models\Merchant\Credits;
 use App;
 use Mail;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception\LogicException;
 use RZP\Jobs\Ledger\AmountCreditsExpiryReverseShadow as AmountCreditsExpiryJob;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 use RZP\Models\Merchant;
 use RZP\Base\ConnectionType;
 use RZP\Models\Merchant\Constants;
@@ -24,6 +28,7 @@ use RZP\Models\Merchant\Credits;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\Ledger\ReverseShadow\Utility as ClsUtility;
 use RZP\Models\Ledger\ReverseShadow\CreditLoading as ReverseShadowCreditLoading;
+use RZP\Models\Ledger\ReverseShadow\CreditWithdrawal as ReverseShadowCreditWithdrawal;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForKycUsers;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForChurnedUsers;
 use RZP\Models\Ledger\MerchantCreditJournalEvents;
@@ -32,6 +37,7 @@ use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
+    use ReverseShadowTrait;
 
     const FUND_ADDITION_WEBHOOK_MUTEX_TTL = 60;
     const FUND_ADDITION_WEBHOOK_MUTEX_RETRIES = 40;
@@ -543,4 +549,90 @@ class Core extends Base\Core
 
         return [];
     }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws LogicException
+     * @throws \Throwable
+     */
+    public function withdraw($merchant, $input): void
+    {
+        $withdrawType = $input["type"];
+        $input["type"] = Type::WITHDRAWAL_TYPE_MAPPING[$withdrawType];
+
+        $input = [
+            "type" => $input["type"],
+            "value" => $input["amount"],
+            "campaign" => "credits_withdraw"
+        ];
+
+        $withdrawalCredit = (new Credits\Entity)->build($input);
+
+        $resource = "credits_create" . $merchant->getId() . '_' . $withdrawType;
+
+        $mutex = App::getFacadeRoot()['api.mutex'];
+
+        $txn =  $mutex->acquireAndRelease(
+            $resource,
+            function () use ($withdrawalCredit, $merchant, $withdrawType)
+            {
+                return $this->repo->transaction(function () use ($merchant, $withdrawalCredit, $withdrawType)
+                {
+                    //have taken db lock here
+                    $credits = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchant->getId());
+
+                    $currentCredits = $credits[$withdrawType] ?? 0;
+
+                    $withdrawalCredit->getValidator()->validateWithdrawBalanceCredits(
+                        $withdrawalCredit->getValue(), $currentCredits, $withdrawType);
+
+                    $withdrawalCredit->merchant()->associate($merchant);
+
+                    $this->repo->saveOrFail($withdrawalCredit);
+
+                    $journal = $this->createLedgerEntriesForCreditWithdrawal($withdrawalCredit);
+
+                    $creditWithdrawalTxn =  (new ReverseShadowCreditWithdrawal\Core())->transformJournalResponseToTransactionEntityForCreditsWithdrawal($journal, $merchant);
+
+                    (new Credits\Transaction\Core)->createCreditTransaction($withdrawalCredit->getValue(), $creditWithdrawalTxn, $withdrawType);
+
+                    $this->updateCreditsInMerchantAccount($merchant, (-1 * $withdrawalCredit->getValue()), $withdrawType);
+
+                    return $creditWithdrawalTxn;
+                });
+
+            },
+            self::FUND_ADDITION_WEBHOOK_MUTEX_TTL,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            self::FUND_ADDITION_WEBHOOK_MUTEX_RETRIES,
+            self::FUND_ADDITION_WEBHOOK_MUTEX_MIN_RETRY_DELAY,
+            self::FUND_ADDITION_WEBHOOK_MUTEX_MAX_RETRY_DELAY
+        );
+        (new ReverseShadowCreditWithdrawal\Core())->dispatchToSettlementFromJournalForCreditsWithdrawal($txn, $merchant);
+    }
+
+    public function createLedgerEntriesForCreditWithdrawal($creditsLog): array
+    {
+        try
+        {
+            $journalPayload = (new ReverseShadowCreditWithdrawal\Core())->prepareJournalPayloadForCreditsWithdrawal($creditsLog);
+
+            $journal = $this->createJournalInLedger($journalPayload);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_ENTRY_FAILED,
+                [
+                    'credit_id' => $creditsLog->getId(),
+                    'type'      => Feature\Constants::PG_LEDGER_REVERSE_SHADOW,
+                    'error'     => $e->getMessage(),
+                ]);
+            throw $e;
+        }
+        return $journal;
+    }
+
 }

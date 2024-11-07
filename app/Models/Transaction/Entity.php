@@ -832,6 +832,11 @@ class Entity extends Base\PublicEntity
         return (in_array($this->getType(), Type::CAPITAL_TYPE, true) === true);
     }
 
+    public function isTypeCredit(): bool
+    {
+        return ($this->getType() === Type::CREDIT);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);

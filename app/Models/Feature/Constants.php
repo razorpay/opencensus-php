@@ -4694,6 +4694,11 @@ class Constants
             'display_name'  => 'Feature flag for partial cod payment on merchant dashboard',
             'documentation' => '',
         ],
+        self::PG_LEDGER_REVERSE_SHADOW => [
+            'feature' => self::PG_LEDGER_REVERSE_SHADOW,
+            'display_name' => "Feature flag for merchants onboarded on PG-Ledger",
+            'documentation' => "",
+        ],
     ];
 
     /**

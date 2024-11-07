@@ -3906,6 +3906,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const  MERCHANT_EDIT_REQUEST                                =  'MERCHANT_EDIT_REQUEST';
     const  MERCHANT_EDIT_REQUEST_PGOS                           =  'MERCHANT_EDIT_REQUEST_PGOS';
     const  MERCHANT_EDIT_RESPONSE_PGOS                          =  'MERCHANT_EDIT_RESPONSE_PGOS';
+    const  WITHDRAW_PRE_FUNDS_REQUEST                            =  'WITHDRAW_PRE_FUNDS_REQUEST';
 
     const  MERCHANT_APPLICABLE_STATUS_DOES_NOT_MATCH            =  'MERCHANT_APPLICABLE_STATUS_DOES_NOT_MATCH';
 
@@ -10785,6 +10786,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_CLOSED_FOR_FUND_ADDITION          = 'VIRTUAL_ACCOUNT_CLOSED_FOR_FUND_ADDITION';
     const INVALID_AMOUNT_FOR_FUND_ADDITION                  = 'INVALID_AMOUNT_FOR_FUND_ADDITION';
     const FUND_ADDITION_FAILED                              = 'FUND_ADDITION_FAILED';
+
 
     // no-doc onboarding
     const GSTIN_VALIDATION_JOB_INITIATED_FOR_NO_DOC                   = 'GSTIN_VALIDATION_JOB_INITIATED_FOR_NO_DOC';

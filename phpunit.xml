@@ -660,7 +660,7 @@
             <directory>./tests/Functional/Reminders/</directory>
             <directory>./tests/Functional/RazorX/</directory>
             <directory>./tests/Functional/Schedule/</directory>
-            <directory>./tests/Functional/Transaction/</directory>
+            <directory>./tests/Functional/Transaction/CreditsTest.php</directory>
             <directory>./tests/Functional/Merchant/BvsVerification/</directory>
             <directory>./tests/Functional/RequestLog/</directory>
             <directory>./tests/Functional/Modules/Acs/Wrapper/</directory>

@@ -807,6 +807,8 @@ class Entity
 
     const LINKED_ACCOUNT_REFERENCE_DATA = 'linked_account_reference_data';
 
+    const CREDIT = 'credit';
+
     const CYBER_CRIME_HELP_DESK         = 'cyber_crime_help_desk';
 
     const CORP_CARD = 'corp_card';
@@ -1253,6 +1255,8 @@ class Entity
         self::MERCHANT_NOTIFICATION_CONFIG      => \RZP\Models\Merchant\MerchantNotificationConfig::class,
 
         self::LINKED_ACCOUNT_REFERENCE_DATA     => \RZP\Models\Merchant\LinkedAccountReferenceData::class,
+
+        self::CREDIT            => \RZP\Models\Merchant\Credits::class,
 
 
         // gateways

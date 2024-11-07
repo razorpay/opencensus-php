@@ -90,6 +90,8 @@ class Constants
     const MERCHANT_REFUND_CREDITS_ADDITION                  = "merchant_refund_credits_addition";
     const MERCHANT_SETTLEMENT_AMOUNT                        = "merchant_settlement_amount";
     const CREDIT_AMOUNT                                     = "credit_amount";
+    const REFUND_CREDITS_AMOUNT                             = "refund_credits_amount";
+    const FEE_CREDITS_AMOUNT                                = "fee_credits_amount";
     const CREDIT_TYPE                                       = "credit_type";
     const CREDIT_CONTROL_AMOUNT                             = "credit_control_amount";
     const ENTITY_TYPE                                       = "entity_type";
@@ -218,6 +220,7 @@ class Constants
     const KAFKA_MESSAGE_DATA                                    = 'data';
     const CREATE_LEDGER_JOURNAL_EVENT                           = 'create-ledger-journal-event';
     const CREDIT_ID                                             = 'credit_id';
+
 
     //Credits loading events
     const MERCHANT_REFUND_CREDIT_LOADING                    = "merchant_refund_credit_loading";
@@ -348,4 +351,8 @@ class Constants
     const FAILED_ENTRIES_COUNT                         =  'failed_entries_count';
 
     const FAILED_IDS                                   =  'failed_ids';
+
+    const MERCHANT_REFUND_CREDIT_WITHDRAWAL            = 'merchant_refund_credit_withdrawal';
+
+    const MERCHANT_FEE_CREDIT_WITHDRAWAL               = 'merchant_fee_credit_withdrawal';
 }

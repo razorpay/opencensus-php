@@ -1419,6 +1419,7 @@ class UserRolesScope
             '1cc_magic_konnect_get_sso_jwt'                       => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS, Role::ADMIN_READONLY],
 
             'fund_addition_tpv'                                   => [Role::OWNER, Role::ADMIN],
+            'pre_fund_withdraw'                                   => [Role::OWNER, Role::ADMIN],
             'shipping_provider_list'                              => [Role::OWNER, Role::ADMIN, Role::ADMIN_READONLY],
             'shipping_provider_post'                              => [Role::OWNER, Role::ADMIN],
             'shipping_provider_patch'                             => [Role::OWNER, Role::ADMIN],

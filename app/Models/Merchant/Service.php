@@ -6,6 +6,8 @@ namespace RZP\Models\Merchant;
 use ApiResponse;
 use App;
 use DB;
+use RZP\Exception\AssertionException;
+use RZP\Exception\LogicException;
 use Rzp\Models\Key;
 use EmailValidator\Validator as EmailValidator;
 use Lib\PhoneBook;
@@ -261,6 +263,8 @@ class Service extends Base\Service
     const SEGMENT_DATA_PP_ONLY                          = 'pp_only';
     const SEGMENT_FREE_CREDITS_AVAILABLE                = 'free_credits_available';
 
+    const FEE                                           = 'fee';
+    const REFUND                                        = 'refund';
     const DEFAULT_MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION   =   24;
     // Should be decided by marketing team
     const NEOSTONE_UTM_RULES = [
@@ -14069,6 +14073,42 @@ class Service extends Base\Service
         );
 
         return $response;
+    }
+
+    /**
+     * @param $mid
+     * @param $input
+     * @return array
+     * @throws LogicException
+     * @throws BadRequestValidationFailureException
+     * @throws \Exception|Throwable
+     */
+    public function withdrawPreFundsForMerchant($mid, $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($mid);
+
+        if (!$merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) {
+            throw new Exception\LogicException(
+                "PG LEDGER REVERSE SHADOW feature flag is not enabled.",
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+                [
+                    'merchant_id' => $mid
+                ]
+            );
+        }
+
+        $type = $input["type"];
+
+        switch ($type) {
+            case self::FEE:
+            case self::REFUND:
+                (new Credits\Core)->withdraw($merchant, $input);
+                break;
+            default:
+                throw new BadRequestValidationFailureException('Invalid type: ' . $type . ' for pre fund withdrawal', null, $input);
+        }
+
+        return ["status" => "success"];
     }
 
 }

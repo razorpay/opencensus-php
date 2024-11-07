@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Credits;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
 
@@ -22,7 +23,7 @@ class Validator extends Base\Validator
         Entity::CAMPAIGN                => 'required|string|max:255',
         # Value is in paise
         Entity::VALUE                   => 'required|integer',
-        Entity::TYPE                    => 'sometimes|filled|string|max:20|in:amount,fee,refund,reward_fee,fee_credit',
+        Entity::TYPE                    => 'sometimes|filled|string|max:20|in:amount,fee,refund,reward_fee,fee_credit,fee_withdraw,refund_withdraw',
         Entity::EXPIRED_AT              => 'sometimes|integer',
         Entity::PROMOTION_ID            => 'sometimes|alpha_num|max:14',
         Entity::PRODUCT                 => 'sometimes|in:banking',
@@ -76,6 +77,19 @@ class Validator extends Base\Validator
 
             $msg = sprintf($msg, $credits/100, $type,
                 $merchantCredits/100, $type);
+
+            throw new Exception\BadRequestValidationFailureException($msg);
+        }
+    }
+
+    public function validateWithdrawBalanceCredits($credits, $currentCredits, $type)
+    {
+        if (abs($credits) > $currentCredits)
+        {
+            $msg = 'Cannot withdraw %d %s-credits. Merchant has only %d %s-credits.';
+
+            $msg = sprintf($msg, $credits/100, $type,
+                $currentCredits/100, $type);
 
             throw new Exception\BadRequestValidationFailureException($msg);
         }

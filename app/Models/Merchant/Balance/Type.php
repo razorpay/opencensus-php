@@ -12,6 +12,7 @@ class Type
      */
     const PRIMARY           = 'primary';
     const COMMISSION        = 'commission';
+    const PREFUND_WITHDRAWAL  = 'prefund_withdrawal';
     const FEE_CREDITS       = 'fee_credits';
     const REFUND_CREDITS    = 'refund_credits';
     const AMOUNT_CREDITS    = 'amount_credits';
@@ -52,6 +53,7 @@ class Type
     public static $settleableBalanceTypes = [
         self::PRIMARY,
         self::COMMISSION,
+        self::PREFUND_WITHDRAWAL
     ];
 
     public static function exists(string $type): bool
