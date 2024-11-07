@@ -33,6 +33,7 @@ const routesV2 = [
     tabName: 'Magic Dashboard',
     path: '/magic/dashboard',
     Component: MagicDashboard,
+    onRCOD: true,
   },
   {
     tabName: 'Orders',

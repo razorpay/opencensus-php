@@ -28,6 +28,8 @@ import {
 } from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/PreAndPostMagic/styled';
 
 import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+import { addFPVSupportToPath } from 'merchant/views/MagicCheckout/utils/Configuration';
+
 import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 import {
   RTO_HISTORY_UPLOAD_ROUTE,
@@ -118,7 +120,7 @@ const PreAndPostMagic = ({ widgetData, fetchWidgets, fetchingTimedWidgetsData })
           {subtitle}
           {useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT) && (
             <span>
-              <Link onClick={() => navigate(link)}>Click here</Link> to Upload
+              <Link onClick={() => navigate(addFPVSupportToPath(link))}>Click here</Link> to Upload
             </span>
           )}
         </span>

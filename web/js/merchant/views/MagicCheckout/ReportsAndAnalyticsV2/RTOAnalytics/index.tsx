@@ -78,7 +78,7 @@ const RTOAnalytics: React.FC<RTOAnalyticsProps> = ({
     setTimeRange(startDate.toDate().getTime(), endDate.toDate().getTime());
 
     return () => setTimeRange(null, null);
-  }, [setTimeRange]);
+  }, [setTimeRange, activeTab]);
 
   useEffect(() => {
     if (fetchProviders) {

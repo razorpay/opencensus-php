@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
+import { addFPVSupportToPath } from 'merchant/views/MagicCheckout/utils/Configuration';
+
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import Button from 'common/new-ui/Button';
 
@@ -22,7 +24,7 @@ const CODAutomationBanner = ({ user }) => {
       className="automate-magic-cod-order-banner"
     >
       {AUTOMATION_BANNER_SUBHEADING}
-      <Link to={AUTOMATION_TAB_LINK}>
+      <Link to={addFPVSupportToPath(AUTOMATION_TAB_LINK)}>
         <Button.Primary type="button" className="btn btn-primary automate-cta">
           Automate now
         </Button.Primary>

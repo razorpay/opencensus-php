@@ -21,6 +21,7 @@ import {
   onRequestCountChange,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
 import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+import { addFPVSupportToPath } from 'merchant/views/MagicCheckout/utils/Configuration';
 
 import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 import {
@@ -237,8 +238,8 @@ const RTORate = ({
               <NavLink
                 to={
                   isMagicDashboardV2Enabled
-                    ? RTO_REDUCTION_SETUP_ROUTE_V2
-                    : RTO_REDUCTION_SETUP_ROUTE
+                    ? addFPVSupportToPath(RTO_REDUCTION_SETUP_ROUTE_V2)
+                    : addFPVSupportToPath(RTO_REDUCTION_SETUP_ROUTE)
                 }
                 className="magic-link"
               >

@@ -23,3 +23,7 @@ export const convertPlatformRoutesToConfigurationFlow = (
 };
 
 export const checkMagicConfigurationFlow = () => location.pathname.includes('configuration/magic');
+
+//FPV - Full Page View
+export const addFPVSupportToPath = (path) =>
+  checkMagicConfigurationFlow() ? `/configuration${path}` : path;

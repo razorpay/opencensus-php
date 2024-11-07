@@ -17,17 +17,27 @@ import magicCheckoutRoutesV2 from 'merchant/views/MagicCheckout/MagicCheckoutRou
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
 import { RCOD_APP_NAME, SOPC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
-import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
+import {
+  MAGIC_DASHBOARD_REVAMP_EXPERIMENT,
+  MAGICX_PUBLICAPP_COD_EXPERIMENT,
+} from 'merchant/views/MagicCheckout/constants';
 
 import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 import { isRouteAuthorised } from 'merchant/views/MagicCheckout/utils/genericRouteCheck';
 
-const getTabName = (tabName, dashboardView) => {
+const getTabName = (tabName, dashboardView, abExperiments) => {
   if (
     tabName === 'Order Analytics' &&
     (dashboardView === SOPC_APP_NAME || dashboardView === RCOD_APP_NAME)
   ) {
     return 'Analytics';
+  }
+  if (
+    tabName === 'Magic Dashboard' &&
+    (dashboardView === SOPC_APP_NAME || dashboardView === RCOD_APP_NAME) &&
+    abExperiments?.[MAGICX_PUBLICAPP_COD_EXPERIMENT]?.variables?.result === 'on'
+  ) {
+    return 'Checkout360';
   }
   return tabName;
 };
@@ -89,10 +99,11 @@ const RouteContainer = ({
      * Checks for Dashboard Revamp(V2) Routes
      */
     if (
-      (item.tabName === 'Reports & Analytics' || item.tabName === 'Magic Dashboard') &&
-      !isCODIntelligenceEnabled &&
-      (!user?.isMagicRTOAnalyticsV3Enabled || !isCODOrderControlEnabled) &&
-      !user.isMagicOrderAnalyticsEnabled
+      item.tabName === 'Reports & Analytics' &&
+      ((isRcodEnabled && !user.isMagicOrderAnalyticsEnabled) ||
+        (!isCODIntelligenceEnabled &&
+          (!user?.isMagicRTOAnalyticsV3Enabled || !isCODOrderControlEnabled) &&
+          !user.isMagicOrderAnalyticsEnabled))
     )
       return null;
 
@@ -137,7 +148,7 @@ const RouteContainer = ({
 
     return (
       <NavLink key={item.path} to={item.path}>
-        {getTabName(item.tabName, dashboardView)}
+        {getTabName(item.tabName, dashboardView, abExperiments)}
       </NavLink>
     );
   };

@@ -22,6 +22,7 @@ import {
 } from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
 
 import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+import { addFPVSupportToPath } from 'merchant/views/MagicCheckout/utils/Configuration';
 
 import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 import {
@@ -185,15 +186,15 @@ const ManualReviewOrderSplit = ({
         <div className="manual-review-order-split-nudging-message">
           <p>
             Reduce your RTOs by enabling{' '}
-            <NavLink to={COD_REVIEW_WORKFLOW_ROUTE} className="magic-link">
+            <NavLink to={addFPVSupportToPath(COD_REVIEW_WORKFLOW_ROUTE)} className="magic-link">
               Automation
             </NavLink>{' '}
             or turn on{' '}
             <NavLink
               to={
                 useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT)
-                  ? RTO_REDUCTION_SETUP_ROUTE_V2
-                  : RTO_REDUCTION_SETUP_ROUTE
+                  ? addFPVSupportToPath(RTO_REDUCTION_SETUP_ROUTE_V2)
+                  : addFPVSupportToPath(RTO_REDUCTION_SETUP_ROUTE)
               }
               className="magic-link"
             >

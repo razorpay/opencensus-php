@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 
 import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+import { addFPVSupportToPath } from 'merchant/views/MagicCheckout/utils/Configuration';
 
 import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 import {
@@ -29,8 +30,8 @@ const FeedbackFooterText = ({ footerStatus, isShippingProviderAvailable }) => {
             className="feedbackRate-links"
             to={
               useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT)
-                ? UPLOAD_ORDER_STATUS_TAB_V2
-                : UPLOAD_ORDER_STATUS_TAB
+                ? addFPVSupportToPath(UPLOAD_ORDER_STATUS_TAB_V2)
+                : addFPVSupportToPath(UPLOAD_ORDER_STATUS_TAB)
             }
           >
             data by uploading
@@ -40,8 +41,8 @@ const FeedbackFooterText = ({ footerStatus, isShippingProviderAvailable }) => {
             className="feedbackRate-links"
             to={
               useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT)
-                ? MAGIC_SETTINGS_TAB_DELIVERY_TRACKING
-                : MAGIC_SETTINGS_TAB
+                ? addFPVSupportToPath(MAGIC_SETTINGS_TAB_DELIVERY_TRACKING)
+                : addFPVSupportToPath(MAGIC_SETTINGS_TAB)
             }
           >
             integrate with your delivery partner

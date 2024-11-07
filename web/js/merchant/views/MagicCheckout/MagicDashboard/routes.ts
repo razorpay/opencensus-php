@@ -1,4 +1,5 @@
 import KeyReportsAndAnalytics from 'merchant/views/MagicCheckout/MagicDashboard/Wrapper';
+import WhatsNew from 'merchant/views/MagicCheckout/MagicDashboard/WhatsNew';
 
 import { formatRoutesByPlatform } from 'merchant/views/MagicCheckout/utils/formatGenericRoutes';
 
@@ -9,6 +10,11 @@ const GENERIC_ROUTES: RouteItem[] = [
     label: 'Key Reports and Analytics',
     path: '/magic/dashboard/key-reports',
     Component: KeyReportsAndAnalytics,
+  },
+  {
+    label: "What's New",
+    path: '/magic/dashboard/whats-new',
+    Component: WhatsNew,
     onRCOD: true,
   },
 ];

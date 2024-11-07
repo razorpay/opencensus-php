@@ -6,6 +6,7 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import MagicDashboardAnalytics from 'merchant/views/MagicCheckout/MagicDashboard/Container';
 import { Link } from '@razorpay/blade/components';
 
+import { addFPVSupportToPath } from 'merchant/views/MagicCheckout/utils/Configuration';
 import { OrderAnalyticsProvider } from 'merchant/views/MagicCheckout/OrderAnalytics/OrderAnalyticsContext';
 
 import { REPORTS_AND_ANALYTICS_ROUTE } from 'merchant/views/MagicCheckout/MagicDashboard/routes';
@@ -23,7 +24,9 @@ const Wrapper: React.FC = () => {
         <MagicDashboardAnalytics />
       </OrderAnalyticsProvider>
       <LinkWrapper>
-        <Link onClick={() => navigate(REPORTS_AND_ANALYTICS_ROUTE)}>View more</Link>
+        <Link onClick={() => navigate(addFPVSupportToPath(REPORTS_AND_ANALYTICS_ROUTE))}>
+          View more
+        </Link>
       </LinkWrapper>
     </SuspenseWithLoader>
   );
