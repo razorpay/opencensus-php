@@ -16,20 +16,19 @@ import {
   CheckCircleIcon,
   LoaderIcon,
 } from '@razorpay/blade/components';
-import { CODTable } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Components/Table';
-import EditModal from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Components/Modal';
-import { SetupGuide } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Components/SetupGuide';
-import { CODTableShimmer } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Components/CODTableShimmer';
-import { SyncConfirmationModal } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Components/SyncConfirmationModal';
+import { CODTable } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/components/Table';
+import EditModal from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/components/Modal';
+import { SetupGuide } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/common/components/SetupGuide';
+import { CODTableShimmer } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/components/CODTableShimmer';
 import { DisplayNotificationTxt } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
 import Time from 'common/ui/Time';
-import { LastSyncedBadge } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/styled';
+import { LastSyncedBadge } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/styled';
 
 import {
   convertTableDataToForm,
   convertServerDataToTableData,
   getLastSyncedWithShopifyInMs,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/helpers';
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/helpers';
 import {
   setProfile,
   clearProfile,
@@ -40,16 +39,17 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   syncWithShopify,
   pollShippingProfiles,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/api';
-import { useFormContext } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Context';
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/api';
+import { useFormContext } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/Context';
+import { useConfirm } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/common/components/ConfirmationModal';
 
 import {
   action,
   COD_TABLE_TITLE,
   COLUMNS,
-  SETUP_GUIDE_DOCS_HREF,
+  BASIC_COD_SETUP_GUIDE,
   SYNC_STATES,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/constants';
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/constants';
 import {
   Column,
   SyncStates,
@@ -69,9 +69,9 @@ const BasicCOD = ({
 }): JSX.Element => {
   const { shipping_profiles, isLoading } = magicShippingEngine;
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [syncState, setSyncState] = useState<SyncStates>(SYNC_STATES.IDLE);
   const { initialiseFormData, resetForm } = useFormContext();
+  const confirm = useConfirm();
 
   const notify = (type, message) =>
     showNotification({ type, message: <DisplayNotificationTxt notificationTxt={message} /> });
@@ -162,7 +162,16 @@ const BasicCOD = ({
     setTimeout(poll, POLLING_INTERVAL);
   };
 
-  const handleSync = () => {
+  const handleSync = async () => {
+    const shouldSync = await confirm({
+      title: 'Sync Shipping Profiles From Shopify',
+      description: 'Syncing Shipping Profiles from Shopify might take upto 20 seconds.',
+      confirmText: 'Sync',
+      confirmAccessibilityLabel: 'confirm sync',
+    });
+
+    if (!shouldSync) return;
+
     setSyncState(SYNC_STATES.LOADING);
     syncWithShopify(dashboardView)
       .then((res) => {
@@ -189,7 +198,7 @@ const BasicCOD = ({
           <span>
             COD can be configured for Shipping Methods created on Shopify. <b>Sync Again</b> if you
             don’t see all your shipping methods from Shopify in the table below. Refer to the{' '}
-            <Link href={SETUP_GUIDE_DOCS_HREF} target="_blank" size="small">
+            <Link href={BASIC_COD_SETUP_GUIDE.docs} target="_blank" size="small">
               Setup Guide
             </Link>{' '}
             for detailed steps or contact support at checkout360-support@razorpay.com
@@ -230,7 +239,7 @@ const BasicCOD = ({
                 icon={syncStateMapping.icon}
                 iconPosition="left"
                 isDisabled={syncState === SYNC_STATES.LOADING}
-                onClick={() => setIsSyncModalOpen(true)}
+                onClick={handleSync}
                 accessibilityLabel="Sync profiles from Shopify"
               >
                 {syncStateMapping.text}
@@ -253,17 +262,9 @@ const BasicCOD = ({
         </>
       )}
       <Box marginTop="spacing.9">
-        <SetupGuide />
+        <SetupGuide {...BASIC_COD_SETUP_GUIDE} />
       </Box>
       <EditModal isOpen={isModalOpen} handleModalClose={handleModalClose} />
-      <SyncConfirmationModal
-        handleSync={() => {
-          setIsSyncModalOpen(false);
-          handleSync();
-        }}
-        isSyncModalOpen={isSyncModalOpen}
-        handleSyncModalClose={() => setIsSyncModalOpen(false)}
-      />
     </>
   );
 };

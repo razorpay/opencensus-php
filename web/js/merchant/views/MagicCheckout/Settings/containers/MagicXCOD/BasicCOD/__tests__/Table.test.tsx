@@ -3,12 +3,12 @@ import { render, screen, within } from '@testing-library/react';
 
 import { BladeProvider } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
-import { CODTable } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Components/Table';
+import { CODTable } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/components/Table';
 
 import {
   action,
   COLUMNS,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/constants';
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/constants';
 
 import { mockShippingMethods } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/__tests__/mocks';
 

@@ -3,10 +3,6 @@ import { Box, Heading, Text } from '@razorpay/blade/components';
 import { makeSize } from '@razorpay/blade/utils';
 import styled from 'styled-components';
 
-import codSetupGuideThumbnail from 'assets/magic_checkout/cod-setup-guide-thumbnail.png';
-
-import { SETUP_GUIDE_VIDEO_HREF } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/constants';
-
 const StyledLink = styled.a`
   position: relative;
   border: 0;
@@ -39,10 +35,17 @@ const PlayIcon = styled.i`
   height: 64px;
 `;
 
-export const SetupGuide = () => {
+type Props = {
+  heading: string;
+  thumbnail: string;
+  video: string;
+  title: string;
+  description: string;
+};
+export const SetupGuide: React.FC<Props> = ({ heading, title, description, thumbnail, video }) => {
   return (
     <Box display="flex" flexDirection="column" gap="spacing.4">
-      <Heading size="medium">Setup Guide</Heading>
+      <Heading size="medium">{heading}</Heading>
       <Box
         display="flex"
         gap="spacing.3"
@@ -54,10 +57,10 @@ export const SetupGuide = () => {
         <StyledLink
           data-test-id="video-play-btn"
           aria-label="Go to COD setup guide video"
-          href={SETUP_GUIDE_VIDEO_HREF}
+          href={video}
           target="_blank"
         >
-          <StyledThumbnail src={codSetupGuideThumbnail} role="presentation" />
+          <StyledThumbnail src={thumbnail} role="presentation" />
           <PlayIcon className="i i-play-filled-circle" />
         </StyledLink>
         <Box
@@ -69,13 +72,10 @@ export const SetupGuide = () => {
           paddingLeft="spacing.8"
         >
           <Heading size="medium" weight="semibold">
-            How to setup COD configurations for store?
+            {title}
           </Heading>
           <Text color="surface.text.gray.subtle" weight="regular">
-            All shipping profiles (product groups) and shipping methods have been synced from
-            Shopify. You can use the Configure COD button above to enable/disable COD for your
-            respective shipping methods on Shopify. You can also limit COD availability by cart
-            amount and disable prepaid options using the configurations above.
+            {description}
           </Text>
         </Box>
       </Box>

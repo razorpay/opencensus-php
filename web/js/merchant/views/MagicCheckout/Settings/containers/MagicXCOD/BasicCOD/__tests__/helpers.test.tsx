@@ -3,7 +3,7 @@ import {
   convertServerDataToTableData,
   convertTableDataToForm,
   getLastSyncedWithShopifyInMs,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/helpers';
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/helpers';
 import {
   mockServerData,
   mockTableData,

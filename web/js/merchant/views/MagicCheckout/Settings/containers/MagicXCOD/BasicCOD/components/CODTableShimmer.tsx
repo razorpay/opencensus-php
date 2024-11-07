@@ -13,7 +13,7 @@ import {
 import {
   SyncInProgressBadge,
   RelativePositionContainer,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/styled';
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/styled';
 
 const ROWS = 4;
 const COLS = 6;

@@ -3,19 +3,19 @@ import { render, screen, fireEvent } from '@testing-library/react';
 
 import { BladeProvider } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
-import { Form } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Components/Form';
+import { Form } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/components/Form';
 
-import { useFormContext } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Context';
+import { useFormContext } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/Context';
 
 import {
   COD_ON_ALL_ORDERS,
   INVALID_PAYMENT_METHOD,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/constants';
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/constants';
 
 import { mockFormData } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/__tests__/mocks';
 
 // Mocking the useFormContext to provide mock form data and functions
-jest.mock('merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Context', () => ({
+jest.mock('merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/Context', () => ({
   useFormContext: jest.fn(),
 }));
 

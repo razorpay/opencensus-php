@@ -19,18 +19,19 @@ import {
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { DisplayNotificationTxt } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
 import BasicCOD from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Containers/BasicCOD';
+import { ConfirmationModalProvider } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/common/components/ConfirmationModal';
 
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchSummary as fetchShippingProfiles } from 'merchant/reducers/magicCheckout/shippingEngine/action';
 import { checkMagicConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
 
-import { FormContextProvider } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Context';
+import { FormContextProvider } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/Context';
 
 import {
   SETUP_MAGICX_ROUTE,
   CONFIRMATION_MODAL_OBJECT,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/constants';
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/constants';
 import { SWITCH_TEXTS } from 'merchant/views/MagicCheckout/Settings/constants';
 import { COD_ENGINE_TYPES } from 'merchant/views/MagicCheckout/CODSettings/constants';
 
@@ -122,125 +123,127 @@ const MagicXCOD = ({ settings, updateMagicSettings, showNotification, fetchShipp
 
   return (
     <ErrorBoundary team={Teams?.MAGIC_CHECKOUT} rank={Ranks.P0} resetOnProps>
-      <div className="cod-content-wrapper">
-        <div className="cod-content">
-          <div className="text-container">
-            <Heading size="medium">Cash on Delivery Setup</Heading>
-          </div>
-          <Box display="flex" marginY="spacing.6">
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              borderWidth="thinner"
-              borderColor="surface.border.gray.subtle"
-              padding="spacing.5"
-              borderTopLeftRadius="medium"
-              borderBottomLeftRadius="medium"
-            >
-              <Text marginRight="spacing.10" marginLeft="spacing.3" weight="semibold">
-                Enable COD as payment option
-              </Text>
-              <Switch
-                accessibilityLabel="magicx cod"
-                marginX="spacing.3"
-                isChecked={isCODPaymentEnabled}
-                onChange={handleToggle}
-                name="codSettings"
-              />
-            </Box>
-            {isCODPaymentEnabled && (
+      <ConfirmationModalProvider>
+        <div className="cod-content-wrapper">
+          <div className="cod-content">
+            <div className="text-container">
+              <Heading size="medium">Cash on Delivery Setup</Heading>
+            </div>
+            <Box display="flex" marginY="spacing.6">
               <Box
-                borderLeftWidth="none"
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
                 borderWidth="thinner"
                 borderColor="surface.border.gray.subtle"
                 padding="spacing.5"
-                maxWidth="40%"
-                borderTopRightRadius="medium"
-                borderBottomRightRadius="medium"
+                borderTopLeftRadius="medium"
+                borderBottomLeftRadius="medium"
               >
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Text marginRight="spacing.10" marginLeft="spacing.3" weight="semibold">
-                    Enable RTO Intelligence
-                  </Text>
-                  <Switch
-                    accessibilityLabel="magicx cod intelligence"
-                    marginX="spacing.3"
-                    isChecked={isCODIntelligenceEnabled}
-                    onChange={handleToggle}
-                    name="codIntelligence"
-                  />
-                </Box>
-                {isCODIntelligenceEnabled && !(sopc_metafields?.status === 'live') && (
-                  <Box display="flex" marginBottom="-15px" alignItems="center">
-                    <AlertTriangleIcon
-                      color="feedback.icon.notice.intense"
-                      marginX="spacing.3"
-                      size="small"
-                    />
-                    <Text variant="body" size="small">
-                      <Link
-                        onClick={() =>
-                          navigate(
-                            //Support to render on Dashboard Full Page View mode
-                            checkMagicConfigurationFlow()
-                              ? `/configuration${SETUP_MAGICX_ROUTE}`
-                              : SETUP_MAGICX_ROUTE,
-                          )
-                        }
-                        marginRight="spacing.2"
-                        size="small"
-                      >
-                        Activate
-                      </Link>
-                      Checkout360 for this to work.
-                    </Text>
-                  </Box>
-                )}
+                <Text marginRight="spacing.10" marginLeft="spacing.3" weight="semibold">
+                  Enable COD as payment option
+                </Text>
+                <Switch
+                  accessibilityLabel="magicx cod"
+                  marginX="spacing.3"
+                  isChecked={isCODPaymentEnabled}
+                  onChange={handleToggle}
+                  name="codSettings"
+                />
               </Box>
-            )}
-            <Modal
-              isOpen={isConfirmationModalOpen}
-              size="small"
-              onDismiss={() => setIsConfirmationModalOpen(false)}
-            >
-              <ModalHeader title={confirmationModalConfigs?.header} />
-              <ModalBody>
-                <Text>{confirmationModalConfigs?.desc}</Text>
-              </ModalBody>
-              <ModalFooter>
-                <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
-                  <Button
-                    isDisabled={isConfirmationModalLoading}
-                    variant="secondary"
-                    onClick={() => setIsConfirmationModalOpen(false)}
-                  >
-                    {confirmationModalConfigs?.secondaryCtaLabel}
-                  </Button>
-                  <Button
-                    testID="confirm-button"
-                    isLoading={isConfirmationModalLoading}
-                    isDisabled={isConfirmationModalLoading}
-                    onClick={() => {
-                      setIsConfirmationModalLoading(true);
-                      if (confirmationModalConfigs?.name === 'codIntelligence')
-                        toggleCODIntelligence();
-                      else toggleCODSettings();
-                    }}
-                  >
-                    {confirmationModalConfigs?.primaryCtaLabel}
-                  </Button>
+              {isCODPaymentEnabled && (
+                <Box
+                  borderLeftWidth="none"
+                  borderWidth="thinner"
+                  borderColor="surface.border.gray.subtle"
+                  padding="spacing.5"
+                  maxWidth="40%"
+                  borderTopRightRadius="medium"
+                  borderBottomRightRadius="medium"
+                >
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Text marginRight="spacing.10" marginLeft="spacing.3" weight="semibold">
+                      Enable RTO Intelligence
+                    </Text>
+                    <Switch
+                      accessibilityLabel="magicx cod intelligence"
+                      marginX="spacing.3"
+                      isChecked={isCODIntelligenceEnabled}
+                      onChange={handleToggle}
+                      name="codIntelligence"
+                    />
+                  </Box>
+                  {isCODIntelligenceEnabled && !(sopc_metafields?.status === 'live') && (
+                    <Box display="flex" marginBottom="-15px" alignItems="center">
+                      <AlertTriangleIcon
+                        color="feedback.icon.notice.intense"
+                        marginX="spacing.3"
+                        size="small"
+                      />
+                      <Text variant="body" size="small">
+                        <Link
+                          onClick={() =>
+                            navigate(
+                              //Support to render on Dashboard Full Page View mode
+                              checkMagicConfigurationFlow()
+                                ? `/configuration${SETUP_MAGICX_ROUTE}`
+                                : SETUP_MAGICX_ROUTE,
+                            )
+                          }
+                          marginRight="spacing.2"
+                          size="small"
+                        >
+                          Activate
+                        </Link>
+                        Checkout360 for this to work.
+                      </Text>
+                    </Box>
+                  )}
                 </Box>
-              </ModalFooter>
-            </Modal>
-          </Box>
-          <Box>
-            <FormContextProvider>
-              <BasicCOD />
-            </FormContextProvider>
-          </Box>
+              )}
+              <Modal
+                isOpen={isConfirmationModalOpen}
+                size="small"
+                onDismiss={() => setIsConfirmationModalOpen(false)}
+              >
+                <ModalHeader title={confirmationModalConfigs?.header} />
+                <ModalBody>
+                  <Text>{confirmationModalConfigs?.desc}</Text>
+                </ModalBody>
+                <ModalFooter>
+                  <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
+                    <Button
+                      isDisabled={isConfirmationModalLoading}
+                      variant="secondary"
+                      onClick={() => setIsConfirmationModalOpen(false)}
+                    >
+                      {confirmationModalConfigs?.secondaryCtaLabel}
+                    </Button>
+                    <Button
+                      testID="confirm-button"
+                      isLoading={isConfirmationModalLoading}
+                      isDisabled={isConfirmationModalLoading}
+                      onClick={() => {
+                        setIsConfirmationModalLoading(true);
+                        if (confirmationModalConfigs?.name === 'codIntelligence')
+                          toggleCODIntelligence();
+                        else toggleCODSettings();
+                      }}
+                    >
+                      {confirmationModalConfigs?.primaryCtaLabel}
+                    </Button>
+                  </Box>
+                </ModalFooter>
+              </Modal>
+            </Box>
+            <Box>
+              <FormContextProvider>
+                <BasicCOD />
+              </FormContextProvider>
+            </Box>
+          </div>
         </div>
-      </div>
+      </ConfirmationModalProvider>
     </ErrorBoundary>
   );
 };

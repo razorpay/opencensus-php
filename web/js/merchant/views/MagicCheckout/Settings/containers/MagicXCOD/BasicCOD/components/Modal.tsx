@@ -10,14 +10,14 @@ import {
   Box,
   Button,
 } from '@razorpay/blade/components';
-import { Form } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Components/Form';
+import { Form } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/components/Form';
 import { DisplayNotificationTxt } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
 
 import { updateShippingMethod } from 'merchant/reducers/magicCheckout/shippingEngine/action';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { convertFormDataToPayload } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/helpers';
+import { convertFormDataToPayload } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/helpers';
 
-import { useFormContext } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Context';
+import { useFormContext } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/Context';
 
 const EditModal = ({ isOpen, handleModalClose, updateShippingMethod, showNotification }) => {
   const { formData, formErrors } = useFormContext();

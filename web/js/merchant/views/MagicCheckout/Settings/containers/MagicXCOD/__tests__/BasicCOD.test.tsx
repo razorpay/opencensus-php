@@ -4,6 +4,7 @@ import { storeWithInitialState } from 'merchant/store';
 import { fireEvent, render as renderMain, screen, server, waitFor } from 'test-utils';
 
 import BasicCOD from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Containers/BasicCOD';
+import { ConfirmationModalProvider } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/common/components/ConfirmationModal';
 
 import { setProfile, clearProfile } from 'merchant/reducers/magicCheckout/shippingEngine/action';
 import {
@@ -21,7 +22,7 @@ const initState = {
 };
 
 const render = (ui, config = {}) => {
-  return renderMain(ui, {
+  return renderMain(<ConfirmationModalProvider>{ui}</ConfirmationModalProvider>, {
     reduxStore: storeWithInitialState({ ...initState, ...config }),
   });
 };
@@ -120,7 +121,7 @@ describe('Sync Profiles', () => {
     ).toBeInTheDocument();
   });
 
-  test('Should show updated sync status on sync btn & table shimmer(skeleton View) after submitting sync confirmation modal', () => {
+  test('Should show updated sync status on sync btn & table shimmer(skeleton View) after submitting sync confirmation modal', async () => {
     render(<BasicCOD />);
     expect(screen.queryByRole('button', { name: 'Sync profiles from Shopify' })).toHaveTextContent(
       /Sync Again/i,
@@ -133,16 +134,20 @@ describe('Sync Profiles', () => {
     ).toBeInTheDocument();
     expect(screen.queryByTestId('Table-Shimmer')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'confirm sync' }));
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'confirm sync' }));
+    });
     jest.advanceTimersByTime(6000);
 
-    expect(screen.queryByTestId('Table-Shimmer')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Sync profiles from Shopify' })).toHaveTextContent(
-      /Syncing from Shopify/i,
-    );
-    expect(screen.getByTestId('Table-Shimmer')).toHaveTextContent(
-      /Please wait until sync is complete/i,
-    );
+    await waitFor(() => {
+      expect(screen.queryByTestId('Table-Shimmer')).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Sync profiles from Shopify' }),
+      ).toHaveTextContent(/Syncing from Shopify/i);
+      expect(screen.getByTestId('Table-Shimmer')).toHaveTextContent(
+        /Please wait until sync is complete/i,
+      );
+    });
   });
 
   test('Should notify about invalid status code if sync with shopify api returns status code other than 202', async () => {

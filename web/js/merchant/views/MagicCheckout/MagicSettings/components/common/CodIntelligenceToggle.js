@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import SwitchField from 'common/ui/Forms/SwitchField';
 
-import { SETUP_MAGICX_ROUTE } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/constants';
+import { SETUP_MAGICX_ROUTE } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/constants';
 import { MAGICX_PUBLICAPP_COD_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 import { checkMagicConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
 import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';

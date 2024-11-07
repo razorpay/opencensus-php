@@ -6,7 +6,7 @@ import {
   INVALID_PAYMENT_METHOD,
   INVALID_COD_CONFIG,
   INVALID_COD_RANGE,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/constants';
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/constants';
 
 import {
   FormErrors,

@@ -4,7 +4,7 @@ import { Link, EditInlineIcon, Box } from '@razorpay/blade/components';
 import {
   WrappedSubTitle,
   WrappedTitle,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/styled';
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/styled';
 
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 
@@ -13,6 +13,8 @@ import {
   FormContextType,
   Amount,
 } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/types';
+
+import basicCODSetupGuideThumbnail from 'assets/magic_checkout/cod-setup-guide-thumbnail.png';
 
 export const ShippingMethodProfile = {
   title: 'Shipping Method',
@@ -93,6 +95,16 @@ export const SETUP_GUIDE_DOCS_HREF =
   'https://razorpay.com/docs/payments/checkout360/configure-cod/';
 export const SETUP_GUIDE_VIDEO_HREF = 'http://bit.ly/checkout360-guide';
 export const SETUP_MAGICX_ROUTE = '/magic/settings/magicx-store-settings';
+
+export const BASIC_COD_SETUP_GUIDE = {
+  heading: 'Setup Guide',
+  title: 'How to setup COD configurations for store?',
+  description:
+    'All shipping profiles (product groups) and shipping methods have been synced from Shopify. You can use the Configure COD button above to enable/disable COD for your respective shipping methods on Shopify. You can also limit COD availability by cart amount and disable prepaid options using the configurations above.',
+  video: 'http://bit.ly/checkout360-guide',
+  thumbnail: basicCODSetupGuideThumbnail,
+  docs: 'https://razorpay.com/docs/payments/checkout360/configure-cod/',
+};
 
 //Greater Than Or Equal
 export const GTE = 'gte';

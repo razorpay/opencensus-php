@@ -12,7 +12,7 @@ import {
 
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 
-import { useFormContext } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Context';
+import { useFormContext } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/Context';
 
 import {
   GENERAL_FEE_INFO,
@@ -21,7 +21,7 @@ import {
   LT,
   COD_ORDER_INFO,
   COD_ON_ALL_ORDERS,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/constants';
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/constants';
 
 export const Form: React.FC = () => {
   const { formData, updateFormData, formErrors } = useFormContext();
