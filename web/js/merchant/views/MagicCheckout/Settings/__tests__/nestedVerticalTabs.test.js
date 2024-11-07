@@ -17,6 +17,7 @@ const initState = {
   session: {
     user: {
       isMagicPrepayCODEnabled: true,
+      isMagicPartialCODEnabled: true,
       isMagicCODOrderAutomationEnabled: true,
       isMagicCODEngineEnabled: true,
       isMagicCouponEngineEnabled: true,

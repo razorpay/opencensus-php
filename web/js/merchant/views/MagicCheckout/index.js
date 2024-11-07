@@ -78,6 +78,7 @@ const MagicCheckout = ({
         isCODIntelligenceEnabled={magicCheckout?.cod_intelligence}
         isCODOrderControlEnabled={magicCheckout?.cod_order_control}
         isPrepayCODEnabled={magicCheckout?.one_cc_prepay_cod_conversion}
+        isPartialCODEnabled={magicCheckout?.one_cc_partial_cod_conversion}
         platform={magicCheckout?.platform}
         isRcodEnabled={magicCheckout?.rcod}
         dashboardView={magicCheckout?.dashboard_view}

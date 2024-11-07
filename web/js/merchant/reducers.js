@@ -71,6 +71,7 @@ import { orderStatusBatchesReducer } from 'merchant/reducers/magicCheckout/bulk_
 import magicRTOAnalyticsReducer from 'merchant/reducers/magicCheckout/rtoAnalytics/reducer';
 import { magicCODOrdersAutomationReducer } from 'merchant/reducers/magicCheckout/codOrderAutomation/reducer';
 import { magicPrepayCODConfigsReducer } from 'merchant/reducers/magicCheckout/prepayCOD/configDashboard/reducers';
+import { magicPartialCODReducer } from 'merchant/reducers/magicCheckout/partialCOD/reducers';
 import {
   magicPrepayCODOrdersReducer,
   magicPrepayCODOrderInfoReducer,
@@ -277,6 +278,7 @@ export default combineReducers({
   magicCODOrderInfo: magicCODOrderInfoReducer,
   magicCODOrdersAutomation: magicCODOrdersAutomationReducer,
   magicPrepayCODConfigs: magicPrepayCODConfigsReducer,
+  magicPartialCODConfigs: magicPartialCODReducer,
   magicCODEngine: magicCODSettingsReducer,
   magicShippingEngine: shippingEngineReducer,
   magicBlocklist: blocklistReducer,

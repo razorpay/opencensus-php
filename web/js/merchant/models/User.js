@@ -603,6 +603,10 @@ export default class User {
     );
   }
 
+  get isMagicPartialCODEnabled() {
+    return this.isFeatureEnabled('one_cc_partial_cod');
+  }
+
   get isCardMultipleFrequencyEnabled() {
     return getSplitzExperimentVariant('recurring_card_multi_frequency')?.variables?.result === 'on';
   }

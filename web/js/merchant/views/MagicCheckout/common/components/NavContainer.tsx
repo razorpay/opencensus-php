@@ -63,7 +63,7 @@ const NavContainer: React.FC<NavContainerProps> = (props) => {
 
   return (
     <SuspenseWithLoader type="center">
-      <div className="tabbed-container" style={{ width: '100%' }}>
+      <div className="tabbed-container" style={{ width: '100%', backgroundColor: '#fff' }}>
         <header id="super-checkout-header" className="scrollable-tab-header">
           {routes?.[platform]?.map(renderNav)}
         </header>

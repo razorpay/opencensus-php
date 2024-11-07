@@ -1,5 +1,6 @@
 import CODSettingsTab from 'merchant/views/MagicCheckout/Settings/containers/CODSettingsTab';
 import ConfigDashboard from 'merchant/views/MagicCheckout/CODToPrepaid/ConfigsDashboard';
+import PartialCOD from 'merchant/views/MagicCheckout/PartialCOD';
 
 import { PLATFORMS } from 'merchant/views/MagicCheckout/constants';
 
@@ -22,6 +23,13 @@ export const COD_ROUTES = {
       Component: ConfigDashboard,
       condition: (_user: GenericRecord) => _user?.isMagicPrepayCODEnabled as boolean,
     },
+    {
+      className: 'partial-cod',
+      path: '/magic/settings/cod-settings/partial-cod',
+      label: 'Partial COD',
+      Component: PartialCOD,
+      condition: (_user: GenericRecord) => _user?.isMagicPartialCODEnabled as boolean,
+    },
   ],
   [PLATFORMS.WOOCOMMERCE]: [
     {
@@ -37,6 +45,15 @@ export const COD_ROUTES = {
       label: 'Convert COD to Prepaid',
       Component: ConfigDashboard,
       condition: (_user: GenericRecord) => _user?.isMagicPrepayCODEnabled as boolean,
+    },
+  ],
+  [PLATFORMS.NATIVE]: [
+    {
+      className: 'partial-cod',
+      path: '/magic/settings/cod-settings/partial-cod',
+      label: 'Partial COD',
+      Component: PartialCOD,
+      condition: (_user: GenericRecord) => _user?.isMagicPartialCODEnabled as boolean,
     },
   ],
 };

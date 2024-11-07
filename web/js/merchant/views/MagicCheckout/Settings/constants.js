@@ -32,6 +32,10 @@ const AnalyticsSettings = lazy(() =>
   ),
 );
 
+const PartialCOD = lazy(() =>
+  import(/* webpackChunkName: "MagicPartialCOD" */ 'merchant/views/MagicCheckout/PartialCOD'),
+);
+
 const MagicXCodSetup = () => {
   const {
     abExperiments: { magic_dashboard_revamp, magicx_publicapp_cod },
@@ -133,6 +137,13 @@ export const TABS = {
       condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
     },
     {
+      className: 'partial-cod',
+      path: '/magic/settings/partial-cod',
+      label: 'Partial COD',
+      Component: PartialCOD,
+      condition: (_user) => _user?.isMagicPartialCODEnabled,
+    },
+    {
       className: 'pl-configurations-container',
       path: '/magic/settings/cod-to-prepaid',
       label: 'Convert COD to Prepaid',
@@ -221,6 +232,13 @@ export const TABS = {
       label: 'COD Review Workflow',
       Component: CODOrderAutomation,
       condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
+    },
+    {
+      className: 'partial-cod',
+      path: '/magic/settings/partial-cod',
+      label: 'Partial COD',
+      Component: PartialCOD,
+      condition: (_user) => _user?.isMagicPartialCODEnabled,
     },
   ],
 };

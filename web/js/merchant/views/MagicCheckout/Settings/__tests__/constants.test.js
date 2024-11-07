@@ -4,6 +4,7 @@ describe('testing constants', () => {
   test('condition should return true if feature is enabled', () => {
     const user = {
       isMagicCODOrderAutomationEnabled: true,
+      isMagicPartialCODEnabled: true,
       isMagicPrepayCODEnabled: true,
       isMagicCODEngineEnabled: true,
       isMagicCouponEngineEnabled: true,
