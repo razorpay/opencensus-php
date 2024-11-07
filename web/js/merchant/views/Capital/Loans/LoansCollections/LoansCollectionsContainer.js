@@ -59,7 +59,7 @@ const LoansCollectionsContainer = ({
   // disabling till feature flag is
   // const isPlanActive = loanData.plan.status === PLAN_STATUS.CREATED;
 
-  // if (!user.isLoansCollectionsEnabled && !isPlanActive) {
+  // if (!isPlanActive) {
   //   return <NoPermission />;
   // }
 
