@@ -30,6 +30,7 @@ class Handler extends BaseHandler
     const SUPPORTED_CHANNELS_FOR_EVENTS = [
 
         Events::NEEDS_CLARIFICATION                           => [Channel::SMS, Channel::WHATSAPP],
+        Events::EDD_PENDING                                   => [Channel::EMAIL],
         Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::NC_COUNT_1_PAYMENTS_NOT_LIVE                  => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
@@ -382,6 +383,13 @@ class Handler extends BaseHandler
                     Events::ACTIVATED_MCC_PENDING_SUCCESS,
                     Events::ACTIVATED_MCC_PENDING_ACTION_REQUIRED,
                     Events::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS
+                ];
+
+                break;
+
+            case Status::EDD_PENDING:
+                $events = [
+                    Events::EDD_PENDING
                 ];
 
                 break;
