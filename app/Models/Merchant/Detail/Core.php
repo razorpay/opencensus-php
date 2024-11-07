@@ -649,7 +649,7 @@ class Core extends Base\Core
 
         if ($this->isNcResponded($merchantPosActivationStatus, Status::UNDER_REVIEW ) === true)
         {
-            $this->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
+            $this->updatePosActivationStatusOfMerchant($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
 
             $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
@@ -5384,7 +5384,7 @@ class Core extends Base\Core
             $this->setMerchantForInternalApi($merchant);
 
             //pos submission
-            $this->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW], $merchant);
+            $this->updatePosActivationStatusOfMerchant($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW], $merchant);
 
             unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
 
@@ -5403,7 +5403,7 @@ class Core extends Base\Core
                 'ErrorMessage' => $e->getMessage()
             ]);
 
-            return ['success' => false];
+            throw $e;
         }
 
         return ['success' => true];
@@ -13386,6 +13386,10 @@ class Core extends Base\Core
         return null;
     }
 
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws \Throwable
+     */
     public function updateMerchantPosActivationStatus(Entity $merchantDetails, string $posActivationStatus, mixed $rejectionReasons, string $rejectionOption)
     {
 
@@ -13400,14 +13404,15 @@ class Core extends Base\Core
             ];
 
             $payload[Entity::REJECTION_REASONS] = [];
-            foreach ($rejectionReasons as $rejectionReason) {
+            foreach ($rejectionReasons as $rejectionReason)
+            {
                 $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? '';
 
                 $payloadRecord = [
-                    Reason\Entity::REASON_CODE => $rejectionReasonCode,
-                    Reason\Entity::REASON_CATEGORY => $rejectionReason[Reason\Entity::REASON_CATEGORY],
+                    Reason\Entity::REASON_CODE        => $rejectionReasonCode,
+                    Reason\Entity::REASON_CATEGORY    => $rejectionReason[Reason\Entity::REASON_CATEGORY],
                     Reason\Entity::REASON_DESCRIPTION => RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode),
-                    Reason\Entity::REASON_TYPE => $rejectionReason[Reason\Entity::REASON_TYPE]
+                    Reason\Entity::REASON_TYPE        => $rejectionReason[Reason\Entity::REASON_TYPE]
                 ];
                 array_push($payload [Entity::REJECTION_REASONS], $payloadRecord);
 
@@ -13426,6 +13431,13 @@ class Core extends Base\Core
                 'response'    => $response,
             ]);
 
+            if ($response['downstream_status_code'] != 200)
+            {
+                throw new Exception\ServerErrorException(
+                    'Update Pos Activation Status failed',
+                    ErrorCode::SERVER_ERROR);
+            }
+
             return $response[DEConstants::POS_ACTIVATION_STATUS];
         }
 
@@ -13436,6 +13448,8 @@ class Core extends Base\Core
                 'merchant_id'   => $merchantId,
                 'error_message' => $exception->getMessage()
             ]);
+
+            throw $exception;
         }
 
         return null;

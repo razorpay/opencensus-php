@@ -710,7 +710,7 @@ class Service extends Base\Service
 
             if ($posActivationFlow !== DetailConstants::POS_BLACKLIST) {
 
-                $this->core->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
+                $this->core->updatePosActivationStatusOfMerchant($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
 
                 $this->core()->pushKafkaEventOnPOSActivationFormSubmit($merchant, DEConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA);
             }
