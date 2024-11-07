@@ -1,3 +1,5 @@
+/* stylelint-disable */
+
 $white-color = #ffffff
 $timeline-border-color = #8a91ac94
 
@@ -1415,11 +1417,10 @@ i.settle-now {
   margin 0 -42px
   border 1px solid #adbcc92b
   border-radius 2px
-  padding 10px
   box-shadow 0 2px 6px #3e475421
   background-color $white-color
   max-height 456px
-  overflow auto
+  overflow-y: auto
 
   ul
     padding 14px 32px 4px
@@ -1484,10 +1485,12 @@ i.settle-now {
       line-height 18px
 
   .settlement-example
-    margin -10px
     padding 12px 42px
-    background #ff9f001a
+    background #FFF5E5
     border-radius 2px
+    position sticky
+    bottom 0
+    width 100%
 
     p
       font-size 12px

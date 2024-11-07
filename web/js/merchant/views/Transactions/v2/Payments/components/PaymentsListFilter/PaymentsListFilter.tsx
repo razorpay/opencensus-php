@@ -10,16 +10,17 @@ import {
   TextInput,
 } from '@razorpay/blade/components';
 import moment from 'moment';
-import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
-import { openModal } from 'merchant_common/reducers/modals';
+
 import { CountryCodeInput } from 'common/components/CountryCodeInput';
 import Dropdown from 'common/components/Dropdown';
 import { Option } from 'common/components/Dropdown/types';
+import { withRouter } from 'common/deprecated/withRouter';
 import { useMobile } from 'common/hooks/useMobile';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import lazy from 'merchant/routes/LazyLoader';
+import { isOmniChannelMerchant as _isOmniChannelMerchant } from 'merchant/utils/omniUtils';
 import {
   TransactionsEntityRoute,
   CUSTOM,
@@ -44,6 +45,7 @@ import {
 } from 'merchant/views/Transactions/v2/common/tracking';
 import { Duration, DurationOption } from 'merchant/views/Transactions/v2/common/types';
 import { endOfDay, getFromTime, getValue } from 'merchant/views/Transactions/v2/common/utils';
+import { openModal } from 'merchant_common/reducers/modals';
 
 import {
   paymentDurationSectionName,
@@ -108,8 +110,7 @@ const PaymentsListFilter = ({
     ? MOBILE_CALENDAR_NUMBER_OF_MONTHS
     : DESKTOP_CALENDAR_NUMBER_OF_MONTHS;
   const shouldShowStatus = pathname !== FAILED_PAYMENTS;
-  const isOmniChannelMerchant =
-    user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant);
+  const isOmniChannelMerchant = _isOmniChannelMerchant(user);
 
   const handleSearch = (newSearchParams = {}) => {
     const newCountryCode = isContactSearch ? countryCode : '';

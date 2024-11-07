@@ -1,13 +1,16 @@
 import React, { useRef, useState } from 'react';
 import { Box, Button, SearchIcon, TextInput } from '@razorpay/blade/components';
+import { compose } from '@reduxjs/toolkit';
 import moment from 'moment';
-import { withRouter } from 'common/deprecated/withRouter';
+import { connect } from 'react-redux';
 
 import Dropdown from 'common/components/Dropdown';
 import { Option } from 'common/components/Dropdown/types';
+import { withRouter } from 'common/deprecated/withRouter';
 import { useMobile } from 'common/hooks/useMobile';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import lazy from 'merchant/routes/LazyLoader';
+import { isOmniChannelMerchant as _isOmniChannelMerchant } from 'merchant/utils/omniUtils';
 import {
   CUSTOM,
   DESKTOP_CALENDAR_NUMBER_OF_MONTHS,
@@ -39,8 +42,6 @@ import {
 } from './constants';
 import { Duration, RefundsListFilterProps } from './types';
 import { getDefaultValuesAndOptions, getOptions } from './utils';
-import { compose } from '@reduxjs/toolkit';
-import { connect } from 'react-redux';
 
 const DateRangePicker = lazy(
   () => import(/* webpackChunkName: 'DateRangePicker' */ 'common/ui/Forms/DateRangePickerField'),
@@ -77,8 +78,7 @@ const RefundsListFilter = ({
   const numberOfMonths = isMediumDesktopAndMobile
     ? MOBILE_CALENDAR_NUMBER_OF_MONTHS
     : DESKTOP_CALENDAR_NUMBER_OF_MONTHS;
-  const isOmniChannelMerchant =
-    user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant);
+  const isOmniChannelMerchant = _isOmniChannelMerchant(user);
 
   const handleSearch = (newSearchParams = {}) => {
     const searchParams = {

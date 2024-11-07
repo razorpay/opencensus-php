@@ -11,7 +11,9 @@ const PaymentSchedule = (props) => {
 
   if (filteredSchedules.length > 1) {
     filteredSchedules.forEach((schedule) => {
-      if (!schedule.includes('default')) otherMethods.push(schedule.split(':')[1]);
+      if (!schedule.includes('in_person') && !schedule.includes('default')) {
+        otherMethods.push(schedule.split(':')[1]);
+      }
     });
   }
 

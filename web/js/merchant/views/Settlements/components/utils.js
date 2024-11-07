@@ -88,6 +88,23 @@ export const settleNowRestrictionMsgFn = (
   return null;
 };
 
+export function filterAndTransformInPersonSchedule(obj) {
+  const transformed = {};
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (key.includes('in_person')) {
+      const newKey = key
+        .split(':')
+        .filter((part) => part !== 'in_person')
+        .join(' ');
+
+      transformed[newKey] = value;
+    }
+  }
+
+  return transformed;
+}
+
 export const TIMELINE_EVENTS = {
   PAYMENT_CAPTURED: 'PAYMENT_CAPTURED',
   REFUND_PROCESSED: 'REFUND_PROCESSED',

@@ -1,25 +1,63 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
+import { Box, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+
 import { useI18Service } from 'common/i18';
+import ModalHeader from 'common/ui/ModalHeader';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { getCustomURL } from 'merchant/components/DocsLink';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { isOmniChannelMerchant } from 'merchant/utils/omniUtils';
+import HolidayModal from 'merchant/views/Settlements/Settlements/components/Modals/HolidayModal';
 import {
   closeModal as fnCloseModal,
   openModal as fnOpenModal,
 } from 'merchant_common/reducers/modals';
-import ModalHeader from 'common/ui/ModalHeader';
-import { getCustomURL } from 'merchant/components/DocsLink';
-import HolidayModal from 'merchant/views/Settlements/Settlements/components/Modals/HolidayModal';
-import PaymentSchedule from './PaymentSchedule';
+
 import EntitySchedule from './EntitySchedule';
-import ShowWhen from 'merchant/components/ShowWhen';
-import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import PaymentSchedule from './PaymentSchedule';
+import { filterAndTransformInPersonSchedule } from './utils';
 
 const paymentTypes = ['domestic', 'international'];
-const specialScheduleNames = ['instant']; // these schedules names doesn't have T in their name so we don't want to communicate the info on T
-
+const specialScheduleNames = ['instant'];
 const transferReversalCommunication =
   'The fund transfer happens internally as per the given schedule, the credit to linked accounts will happen as per the settlement schedule of the linked accounts.';
 
+const renderPosCycleList = (schedules, refundSchedule) => {
+  if (!schedules?.payment) return null;
+  const filteredInPersonSchedule = filterAndTransformInPersonSchedule(schedules.payment);
+  return (
+    <ul>
+      {schedules?.payment && (
+        <li>
+          Payments default settlement cycle
+          {Object.entries(filteredInPersonSchedule).map(([key, val], index) => {
+            return (
+              <div key={index} className="payment-schedule-container">
+                <div className="default-cycle schedule-row">
+                  <div className="section capitalize">{key} Payments</div>
+                  <div className="section capitalize text-right">
+                    <strong>{val}</strong>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          <div className="schedule-info">
+            <span className="text-danger">*</span>T is the date of payment capture
+          </div>
+        </li>
+      )}
+      {refundSchedule && (
+        <li>
+          Other Settlement cycle
+          <EntitySchedule entityType="refunds" schedule="Normal" />
+        </li>
+      )}
+    </ul>
+  );
+};
 const SettlementScheduleV2 = (props) => {
   const { closeModal, openModal, holidayList, config: settlementConfig, user } = props;
   const [showExample, setShowExample] = useState(false);
@@ -28,14 +66,13 @@ const SettlementScheduleV2 = (props) => {
   const refundSchedule = schedules?.refund?.default;
   const reversalSchedule = schedules?.reversal?.default;
   const transferSchedule = schedules?.transfer?.default;
+  const _isOmniChannelMerchant = isOmniChannelMerchant(user);
   const { isConfigTagEnabled } = useI18Service();
 
   const toggleExample = () => {
-    const { user } = props;
     setShowExample(!showExample);
 
-    // instrument only view clicks
-    if (showExample === false)
+    if (!showExample) {
       analyticsTrackWithUserInfo({
         objectName: 'View Settlement',
         actionName: 'Example Clicked',
@@ -45,11 +82,12 @@ const SettlementScheduleV2 = (props) => {
           settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
           state: user.isTransacted ? 'Complete' : 'Empty',
           activation_status: user.activation_status,
-          sessionId: window?.session_id ? window.session_id : undefined,
-          isL2Completed: user.isActivated && true,
+          sessionId: window?.session_id,
+          isL2Completed: user.isActivated,
           international_payments_enabled: user.international,
         },
       });
+    }
   };
 
   const viewHolidayList = () => {
@@ -59,74 +97,91 @@ const SettlementScheduleV2 = (props) => {
     });
   };
 
-  // For non-special names we need to show information about T
   const showScheduleInfoCommunication = () => {
     const showRefunds = !specialScheduleNames.includes(refundSchedule?.toLowerCase());
-    // Consider transfer and reversal only for Route merchants
     const showReversals =
       user.isMarketplaceEnabled && !specialScheduleNames.includes(reversalSchedule?.toLowerCase());
     const showTransfers =
       user.isMarketplaceEnabled && !specialScheduleNames.includes(transferSchedule?.toLowerCase());
-    // If atleast one schedule name has T we should communicate the info about T
     return showRefunds || showReversals || showTransfers;
   };
+
+  const renderCycleList = () => (
+    <ul>
+      {schedules?.payment && (
+        <li>
+          Payments default settlement cycle
+          {paymentTypes.map((paymentType) => (
+            <PaymentSchedule
+              paymentType={paymentType}
+              key={paymentType}
+              schedules={schedules.payment}
+            />
+          ))}
+          <div className="schedule-info">
+            <span className="text-danger">*</span>T is the date of payment capture
+          </div>
+        </li>
+      )}
+      {(refundSchedule ||
+        (user.isMarketplaceEnabled && (reversalSchedule || transferSchedule))) && (
+        <li>
+          Other Settlement cycle
+          {refundSchedule && <EntitySchedule entityType="refunds" schedule={refundSchedule} />}
+          {user.isMarketplaceEnabled && (
+            <>
+              {reversalSchedule && (
+                <EntitySchedule
+                  entityType="reversals"
+                  schedule={reversalSchedule}
+                  info={transferReversalCommunication}
+                />
+              )}
+              {transferSchedule && (
+                <EntitySchedule
+                  entityType="transfers"
+                  schedule={transferSchedule}
+                  info={transferReversalCommunication}
+                />
+              )}
+            </>
+          )}
+          {showScheduleInfoCommunication() && (
+            <div className="schedule-info">
+              <span className="text-danger">*</span>T is the date of initiation
+            </div>
+          )}
+        </li>
+      )}
+    </ul>
+  );
 
   return (
     <div>
       <ModalHeader title="Settlement Cycle" onCloseClick={closeModal} />
       <div className="modal-body">
         <div className="settlement-cycle-overflow-box">
-          <ul>
-            {schedules?.payment && (
-              <li>
-                Payments default settlement cycle
-                {paymentTypes.map((paymentType) => {
-                  return (
-                    <PaymentSchedule
-                      paymentType={paymentType}
-                      key={paymentType}
-                      schedules={schedules.payment}
-                    />
-                  );
-                })}
-                <div className="schedule-info">
-                  <span className="text-danger">*</span>T is the date of payment capture
-                </div>
-              </li>
-            )}
-            {(refundSchedule ||
-              (user.isMarketplaceEnabled && (reversalSchedule || transferSchedule))) && (
-              <li>
-                Other Settlement cycle
-                {schedules?.refund?.default && (
-                  <EntitySchedule entityType="refunds" schedule={refundSchedule} />
-                )}
-                {user.isMarketplaceEnabled && (
-                  <>
-                    {reversalSchedule && (
-                      <EntitySchedule
-                        entityType="reversals"
-                        schedule={reversalSchedule}
-                        info={transferReversalCommunication}
-                      />
-                    )}
-                    {transferSchedule && (
-                      <EntitySchedule
-                        entityType="transfers"
-                        schedule={transferSchedule}
-                        info={transferReversalCommunication}
-                      />
-                    )}
-                  </>
-                )}
-                {showScheduleInfoCommunication() && (
-                  <div className="schedule-info">
-                    <span className="text-danger">*</span>T is the date of initiation
-                  </div>
-                )}
-              </li>
-            )}
-          </ul>
+          <Box padding="11px 342px 10px 25px" backgroundColor="surface.background.gray.subtle">
+            <Text weight="semibold" color="surface.text.gray.subtle">
+              Online
+            </Text>
+          </Box>
+          {renderCycleList()}
+          {_isOmniChannelMerchant ? (
+            <Fragment>
+              <Box
+                marginTop="spacing.4"
+                padding="11px 342px 10px 25px"
+                backgroundColor="surface.background.gray.subtle"
+                whiteSpace="nowrap"
+              >
+                <Text weight="semibold" color="surface.text.gray.subtle">
+                  In Person
+                </Text>
+              </Box>
+              {renderPosCycleList(schedules, refundSchedule)}
+            </Fragment>
+          ) : null}
           <div className="settlement-example">
             <p>
               <strong>Note:</strong> <span className="yellow">Bank holidays</span> aren’t counted as

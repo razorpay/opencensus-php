@@ -26,6 +26,7 @@ import { User } from 'common/typings';
 import copyToClipboard from 'common/utils/copyToClipboard';
 import { noop } from 'common/utils/rzp-utils';
 import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
+import { isOmniChannelMerchant as _isOmniChannelMerchant } from 'merchant/utils/omniUtils';
 import { fetchEncodedPaymentReceipt } from 'merchant/views/Transactions/model';
 import { isPaymentV2RevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import { openModal } from 'merchant_common/reducers/modals';
@@ -34,6 +35,7 @@ import { showNotification as showNotificationAction } from 'merchant_common/redu
 import getNotes from './Notes';
 import PaymentMethod from './PaymentMethod';
 import PaymentPageDetails from './PaymentPageDetails';
+import PaymentPagePaymentReceipt from './PaymentPagePaymentReceipt';
 import PaymentSplitItems from './PaymentSplitItems';
 import PaymentTransfers from './PaymentTransfers';
 import Tooltip from './Tooltip';
@@ -47,7 +49,6 @@ import {
 } from './styled';
 import { IPaymentDetails, ApplicationDetails, TooltipKeys } from './types';
 import { imageDownload, isChargeSlipForPosEnabled, isPosTransaction, onCopy } from './utils';
-import PaymentPagePaymentReceipt from './PaymentPagePaymentReceipt';
 
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
@@ -157,9 +158,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   const isChargeSlipExperimentEnabled = isChargeSlipForPosEnabled(splitz);
   const isTxnV2ParityFeaturesEnabled = isPaymentV2RevampEnabled(abExperiments);
 
-  const isOmniChannelMerchant =
-    isPosTransaction(source_channel) &&
-    (user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant));
+  const isOmniChannelMerchant = isPosTransaction(source_channel) && _isOmniChannelMerchant(user);
 
   const onDownloadClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
