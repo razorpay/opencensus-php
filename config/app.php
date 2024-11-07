@@ -1060,7 +1060,15 @@ return array(
 
     'merchant_activation_pos_activation_check_for_transfers_splitz_exp_id' => env('MERCHANT_ACTIVATION_POS_ACTIVATION_CHECK_FOR_TRANSFERS_SPLITZ_EXP_ID'),
 
-    'splitz_merchant_cls_balance_read_experiment_id' => env('SPLITZ_MERCHANT_CLS_BALANCE_READ_EXPERIMENT_ID'),
+    'splitz_merchant_cls_balance_read_experiment_id'    => env('SPLITZ_MERCHANT_CLS_BALANCE_READ_EXPERIMENT_ID'),
+
+    'splitz_harvester_query_upi_experiment_id'          => env('SPLITZ_HARVESTER_QUERY_UPI_EXPERIMENT_ID'),
+
+    'splitz_harvester_query_core_experiment_id'         => env('SPLITZ_HARVESTER_QUERY_CORE_EXPERIMENT_ID'),
+
+    'splitz_harvester_query_partnership_experiment_id'  => env('SPLITZ_HARVESTER_QUERY_PARTNERSHIP_EXPERIMENT_ID'),
+
+    'splitz_merchant_acq_harvester_query_experiment_id' => env('SPLITZ_MERCHANT_ACQ_HARVESTER_QUERY_EXPERIMENT_ID'),
 
     'qr_code_v1_failed_payment_experiment' => env('QRCODEV1_FAILED_PAYMENT_EXPERIMENT'),
 
@@ -1071,6 +1079,8 @@ return array(
     'reversal_read_experiment' => env('REVERSAL_READ_EXPERIMENT_ID'),
 
     'fulcrum_recurring_initial_experiment' => env('FULCRUM_RECURRING_INITIAL_PAYMENT_EXP_ID'),
+
+    'splitz_recurring_harvester_query_experiment_id' => env('SPLITZ_RECURRING_HARVESTER_QUERY_EXPERIMENT_ID'),
 
     'fulcrum_recurring_subsequent_experiment' => env('FULCRUM_RECURRING_SUBSEQUENT_PAYMENT_EXP_ID'),
 

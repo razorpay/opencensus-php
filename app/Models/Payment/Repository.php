@@ -60,6 +60,7 @@ use RZP\Constants\Entity as EntityName;
 use RZP\Models\Base\Traits\ExternalRepo;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\InvalidArgumentException;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Gateway\Downtime\DowntimeDetection;
 use RZP\Models\Transfer\Payment as TransferPayment;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
@@ -2458,7 +2459,9 @@ EOT;
 
         $transactionReconciledAt = $txnRepo->dbColumn(Transaction\Entity::RECONCILED_AT);
 
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $connectionType = $this->getSplitzStatusAndReturnConnectionForHarvesterMigration();
+
+        return $this->newQueryWithConnection($connectionType)
             ->select($paymentAttrs)
             ->from(\DB::raw('`payments`, `transactions` USE INDEX (transactions_reconciled_at_index)'))
             ->where($paymentId, '=', \DB::raw('`transactions`.`entity_id`'))
@@ -3136,25 +3139,6 @@ EOT;
         return $payment;
     }
 
-    public function getCapturedRearchAndNonrearchPaymentForOrder(string $orderId)
-    {
-        $payment = $this->newQuery()
-            ->whereNotNull(Entity::CAPTURED_AT)
-            ->where(Entity::ORDER_ID, '=', $orderId)
-            ->first();
-
-        if (empty($payment) === false)
-        {
-            return $payment;
-        }
-
-        $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))->whereNotNull(Entity::CAPTURED_AT)
-        ->where(Entity::ORDER_ID, '=', $orderId)
-        ->first();
-
-        return $payment;
-    }
-
     //Resetting the connection to default as we don't want any subsequent DB calls going to this Archive data replica.
     public function resetDefaultConnInEntity($entity)
     {
@@ -3762,7 +3746,9 @@ EOT;
             "to" => $to
         ]);
 
-        $query = $this->newQueryOnPaymentFetchReplica(600000, $to)
+        $connectionType = $this->getSplitzStatusAndReturnConnectionForHarvesterMigration();
+
+        $query = $this->newQueryWithConnection($connectionType)
             ->select($selectCols)
             ->join(Table::TOKEN, Entity::TOKEN_ID, '=', $tokenIdColumn)
             ->join(Table::ENACH, $paymentIdColumn, '=', $enachPaymentIdColumn)
@@ -3819,7 +3805,9 @@ EOT;
             "last_15_days_timestamp" => $last15Days
         ]);
 
-        $result = \DB::connection($this->getPaymentFetchReplicaConnection())->select($query);
+        $connectionType = $this->getSplitzStatusAndReturnConnectionForHarvesterMigration();
+
+        $result = \DB::connection($connectionType)->select($query);
 
         $this->trace->info(TraceCode::EMANDATE_REGISTRATION_RBL_QUERY, [
             "ENACH_RBL_QUERY_LOG" => "QUERY_EXECUTED",
@@ -3845,6 +3833,27 @@ EOT;
         ]);
 
         return $collection;
+    }
+
+    protected function getSplitzStatusAndReturnConnectionForHarvesterMigration($useSlave = false)
+    {
+        $properties = [
+            "id" => Base\UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_recurring_harvester_query_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        if ($useSlave === true)
+        {
+            $connectionType = $variant === true ? $this->getSlaveConnection() : $this->getPaymentFetchReplicaConnection();
+        }
+        else
+        {
+            $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT) : $this->getPaymentFetchReplicaConnection();
+        }
+
+        return $connectionType;
     }
 
     public function fetchPendingEmandateDebit(string $gateway, $from, $to)
@@ -4680,18 +4689,21 @@ EOT;
             return Mode::TEST;
         }
 
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ARCHIVED_REPLICA_QUERY_MOVEMENT, Mode::LIVE);
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_upi_experiment_id'),
+        ];
 
-        if ($experimentResult === 'on')
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        if ($variant === true)
         {
-            // Check id in archived data replica as the entity might be archived
-            $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaLiveConnection())->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+            $obj = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
         }
         else
         {
-            $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->find($id);
+            $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaLiveConnection())->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
         }
-
 
         if (($obj !== null) and
             ($obj->getAuthenticationGateway() !== null))
@@ -4699,15 +4711,13 @@ EOT;
             return Mode::LIVE;
         }
 
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ARCHIVED_REPLICA_QUERY_MOVEMENT, Mode::TEST);
-
-        if ($experimentResult === 'on')
+        if ($variant === true)
         {
-            $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaTestConnection())->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+            $obj = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
         }
         else
         {
-            $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_TEST)->find($id);
+            $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaTestConnection())->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
         }
 
         if (($obj !== null) and
@@ -5000,17 +5010,39 @@ EOT;
 
     public function hasMerchantTransacted(string $merchantId)
     {
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
+        ];
+
+        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
         try
         {
-            $result = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
-                           ->from(\DB::raw('`payments` FORCE INDEX (payments_merchant_id_status_created_at_index_all_replicas)'))
-                           ->where(Entity::MERCHANT_ID, "=", $merchantId)
-                           ->where(Entity::BASE_AMOUNT, ">", 0)
-                           ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
-                           ->limit(1)
-                           ->get()
-                           ->pluck(Entity::MERCHANT_ID)
-                           ->toArray();;
+            if ($variant === true)
+            {
+                $result = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+                    ->from(\DB::raw('`payments`'))
+                    ->where(Entity::MERCHANT_ID, "=", $merchantId)
+                    ->where(Entity::BASE_AMOUNT, ">", 0)
+                    ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
+                    ->limit(1)
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();;
+            }
+            else
+            {
+                $result = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+                    ->from(\DB::raw('`payments` FORCE INDEX (payments_merchant_id_status_created_at_index_all_replicas)'))
+                    ->where(Entity::MERCHANT_ID, "=", $merchantId)
+                    ->where(Entity::BASE_AMOUNT, ">", 0)
+                    ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
+                    ->limit(1)
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();;
+            }
 
             if (empty($result) === true)
             {
@@ -5064,6 +5096,10 @@ EOT;
            // which is noty present in master, unsetting so that it doesn't break insert on archived
            // payments
           unset($payment['source_channel']);
+
+          unset($payment['_transaction_updated_at']);
+
+          unset($payment['device_id']);
 
           parent::saveOrFail($payment, $options);
 
@@ -5181,8 +5217,10 @@ EOT;
 
         $startTime = millitime();
 
+        $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
         // check number of successful payments in last 12 months by contact.
-        $userPastPayments = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $userPastPayments = $this->newQueryWithConnection($connectionType)
                     ->select(DB::raw("/*+ MAX_EXECUTION_TIME(200) */ `id`"))
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->where(Entity::CONTACT, $contact)
@@ -5281,30 +5319,16 @@ EOT;
             return $payment;
         }
 
+        $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
-        // added as P0 flows were going to TiDB
-        if ($this->isExperimentEnabledForId(self::PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB, __FUNCTION__) === true)
-        {
-            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
-                            ->where(Entity::TOKEN_ID, $tokenId)
-                            ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
-                            ->where(Entity::MERCHANT_ID, $merchantId)
-                            ->where(Entity::METHOD, $method)
-                            ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')
-                            ->where(Entity::STATUS, Status::AUTHORIZED)
-                            ->first();
-            $this->resetDefaultConnInEntity($payment);
-
-        }else{
-            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
-            $payment = $this->newQueryWithConnection($connectionType)
-                            ->where(Entity::TOKEN_ID, $tokenId)
-                            ->where(Entity::MERCHANT_ID, $merchantId)
-                            ->where(Entity::METHOD, $method)
-                            ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')
-                            ->where(Entity::STATUS, Status::AUTHORIZED)
-                            ->first();
-        }
+        $payment = $this->newQueryWithConnection($connectionType)
+            ->where(Entity::TOKEN_ID, $tokenId)
+            ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::METHOD, $method)
+            ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')
+            ->where(Entity::STATUS, Status::AUTHORIZED)
+            ->first();
 
         return $payment;
     }
@@ -5403,7 +5427,9 @@ EOT;
 
     public function getPaymentCountByToken($tokenId)
     {
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $connectionType = $this->getSplitzStatusAndReturnConnectionForHarvesterMigration(true);
+
+        return $this->newQueryWithConnection($connectionType)
             ->select($this->dbColumn('*'))
             ->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
             ->WhereNotNull(Payment\Entity::TOKEN_ID)
@@ -5413,7 +5439,9 @@ EOT;
 
     public function fetchPaymentCountByTokenForCardInRange($tokenId, $start, $end)
     {
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $connectionType = $this->getSplitzStatusAndReturnConnectionForHarvesterMigration(true);
+
+        return $this->newQueryWithConnection($connectionType)
             ->select($this->dbColumn('*'))
             ->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
             ->where(Payment\Entity::METHOD, '=', Method::CARD)
@@ -5426,7 +5454,9 @@ EOT;
 
     public function fetchPaymentCountByTokenForUpiInRange($tokenId, $start, $end)
     {
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $connectionType = $this->getSplitzStatusAndReturnConnectionForHarvesterMigration(true);
+
+        return $this->newQueryWithConnection($connectionType)
             ->select($this->dbColumn('*'))
             ->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
             ->where(Payment\Entity::METHOD, '=', Method::UPI)
@@ -5439,7 +5469,9 @@ EOT;
 
     public function fetchNonFailedPaymentCountByOrder($orderId)
     {
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $connectionType = $this->getSplitzStatusAndReturnConnectionForHarvesterMigration();
+
+        return $this->newQueryWithConnection($connectionType)
             ->select($this->dbColumn('*'))
             ->where(Payment\Entity::ORDER_ID, '=', $orderId)
             ->where(Payment\Entity::METHOD, '=', Method::UPI)
@@ -5471,22 +5503,6 @@ EOT;
         }
 
         return $paymentIds;
-    }
-
-    public function fetchPaymentsByContactsExcludingRoutePayments(array $contacts, int $skip, int $count) : Base\PublicCollection
-    {
-        $nowMinus6Months = Carbon::now()->subMonths(6)->getTimestamp();
-
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
-            ->whereIn(Entity::CONTACT, $contacts)
-            ->where(Entity::CREATED_AT, '>=', $nowMinus6Months)
-            ->whereNotIn(Entity::METHOD, [Method::TRANSFER])
-            ->whereNull(Entity::TRANSFER_ID)
-            ->with(['merchant', 'refunds'])
-            ->skip($skip)
-            ->take($count)
-            ->latest()
-            ->get();
     }
 
     /*
@@ -5716,6 +5732,13 @@ EOT;
     public function findNonRearchPaymentsFromPaymentFetchReplica($id)
     {
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+            ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
+            ->find($id);
+    }
+
+    public function findNonRearchPaymentsFromDataWarehouse($id)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
             ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
             ->find($id);
     }

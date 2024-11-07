@@ -5,6 +5,8 @@ namespace RZP\Models\EntityOrigin;
 use RZP\Base\ConnectionType;
 use RZP\Constants;
 use RZP\Models\Base\Repository as BaseRepository;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 use RZP\Models\EntityOrigin\Constants as EntityOriginConstants;
 
@@ -30,7 +32,9 @@ class Repository extends BaseRepository
         {
             $entityOrigin = $this->newQueryAndResetEntityConnection(function () use ($entityType, $entityId)
             {
-                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+
+                return  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                              ->where(Entity::ENTITY_TYPE, $entityType)
                              ->where(Entity::ENTITY_ID, $entityId)
                              ->first();
@@ -52,7 +56,9 @@ class Repository extends BaseRepository
         {
             $entityOrigin = $this->newQueryAndResetEntityConnection(function () use ($entityType, $entityId)
             {
-                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+
+                return  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::ENTITY_TYPE, $entityType)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->first();
@@ -67,11 +73,24 @@ class Repository extends BaseRepository
         $merchantApplicationIdColumn = $this->repo->merchant_application->dbColumn(MerchantApplicationsEntity::APPLICATION_ID);
         $originIdColumn = $this->dbColumn(Entity::ORIGIN_ID);
         $merchantIdColumn = $this->repo->merchant_application->dbColumn(MerchantApplicationsEntity::MERCHANT_ID);
+
         return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
                     ->join(Constants\Table::MERCHANT_APPLICATION, $originIdColumn, '=', $merchantApplicationIdColumn)
                     ->where(Entity::ORIGIN_TYPE, EntityOriginConstants::APPLICATION)
                     ->where($merchantIdColumn, '=', $partnerId)
                     ->limit($limit)
                     ->get();
+    }
+
+    protected function checkHarvsterQuerySplitzAndReturnConnection()
+    {
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_partnership_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        return $variant === true ? ConnectionType::DATA_WAREHOUSE_MERCHANT :ConnectionType::PAYMENT_FETCH_REPLICA;
     }
 }

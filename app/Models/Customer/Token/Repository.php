@@ -594,48 +594,26 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        if($this->repo->terminal->isTerminalsTidbReadMigrationEnabled(__FUNCTION__) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
-            return $this->newQueryWithConnection($connectionType)
-                ->select($selectCols,
-                    'payments.id as payment_id',
-                    'payments.amount as payment_amount',
-                    'payments.created_at as payment_created_at',
-                    'payments.email as payment_email')
-                ->from(\DB::raw('`tokens`, `payments`'))
-                ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
-                ->whereBetween($paymentCreatedAtColumn, [$from, $to])
-                ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
-                ->where($paymentRecurringColumn, '=', 1)
-                ->where($paymentMethodColumn, '=', Method::EMANDATE)
-                ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
-                ->where($paymentGatewayColumn, '=', $gateway)
-                ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
-                ->where($tokenRecurringColumn, '=', 1)
-                ->with(['merchant', 'terminal'])
-                ->get();
-        }
-
-        return $this->newQueryOnPaymentFetchReplica(600000, $to)
-                    ->select($selectCols,
-                             'payments.id as payment_id',
-                             'payments.amount as payment_amount',
-                             'payments.created_at as payment_created_at',
-                             'payments.email as payment_email')
-                    ->from(\DB::raw('`tokens`, `payments`'))
-                    ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
-                    ->whereBetween($paymentCreatedAtColumn, [$from, $to])
-                    ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
-                    ->where($paymentRecurringColumn, '=', 1)
-                    ->where($paymentMethodColumn, '=', Method::EMANDATE)
-                    ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
-                    ->where($paymentGatewayColumn, '=', $gateway)
-                    ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
-                    ->where($tokenRecurringColumn, '=', 1)
-                    ->with(['merchant', 'terminal'])
-                    ->get();
+        return $this->newQueryWithConnection($connectionType)
+            ->select($selectCols,
+                'payments.id as payment_id',
+                'payments.amount as payment_amount',
+                'payments.created_at as payment_created_at',
+                'payments.email as payment_email')
+            ->from(\DB::raw('`tokens`, `payments`'))
+            ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
+            ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+            ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
+            ->where($paymentRecurringColumn, '=', 1)
+            ->where($paymentMethodColumn, '=', Method::EMANDATE)
+            ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
+            ->where($paymentGatewayColumn, '=', $gateway)
+            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
+            ->where($tokenRecurringColumn, '=', 1)
+            ->with(['merchant', 'terminal'])
+            ->get();
     }
 
     public function fetchDeletedTokensForMethodsTidb(array $methods, $gateways, string $acquirer, $from, $to): Base\PublicCollection
@@ -698,39 +676,6 @@ class Repository extends Base\Repository
         return $result;
     }
 
-    // TODO: need to optimize the query futher
-    public function fetchDeletedTokensForMethods(array $methods, $gateways, string $acquirer, $from, $to): Base\PublicCollection
-    {
-        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
-
-        $selectCols = $this->dbColumn('*');
-
-        $tokenMethodColumn = $this->repo->token->dbColumn(Entity::METHOD);
-
-        $tokenRecurringColumn = $this->repo->token->dbColumn(Entity::RECURRING);
-
-        $tokenDeletedAtColumn = $this->repo->token->dbColumn(Entity::DELETED_AT);
-
-        $tokenTerminalIdColumn = $this->repo->token->dbColumn(Entity::TERMINAL_ID);
-
-        $terminalGatewayColumn = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY);
-
-        $terminalGatewayAcquirerColumn = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
-
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
-                    ->select($selectCols)
-                    ->from(\DB::raw('`tokens`, `terminals`'))
-                    ->where($tokenTerminalIdColumn, '=', \DB::raw('`terminals`.`id`'))
-                    ->whereBetween($tokenDeletedAtColumn, [$from, $to])
-                    ->whereIn($tokenMethodColumn, $methods)
-                    ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
-                    ->where($tokenRecurringColumn, '=', 1)
-                    ->whereIn($terminalGatewayColumn, $gateways)
-                    ->where($terminalGatewayAcquirerColumn, '=', $acquirer)
-                    ->withTrashed()
-                    ->get();
-    }
-
     /**
      * @param string $gateway
      * @param $from
@@ -761,40 +706,9 @@ class Repository extends Base\Repository
 
         $tokenTerminalIdColumn = $this->repo->token->dbColumn(Entity::TERMINAL_ID);
 
-        if($this->repo->terminal->isTerminalsTidbReadMigrationEnabled(__FUNCTION__) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
-            return $this->newQueryWithConnection($connectionType)
-                ->select('tokens.' . Entity::ACCOUNT_TYPE,
-                    'tokens.' . Entity::BENEFICIARY_NAME,
-                    'tokens.' . Entity::IFSC,
-                    'tokens.' . Entity::ACCOUNT_NUMBER,
-                    'tokens.' . Entity::GATEWAY_TOKEN,
-                    'tokens.' . Entity::MERCHANT_ID,
-                    'tokens.' . Entity::TERMINAL_ID,
-                    'payments.id as payment_id',
-                    'payments.amount as payment_amount',
-                    'payments.notes as payment_notes',
-                    'payments.created_at as payment_created_at',
-                    'payments.email as payment_email')
-                ->from(\DB::raw('`tokens`, `payments`, `terminals`'))
-                ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
-                ->where($tokenTerminalIdColumn, '=', \DB::raw('`terminals`.`id`'))
-                ->whereBetween($paymentCreatedAtColumn, [$from, $to])
-                ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
-                ->where($paymentRecurringColumn, '=', 1)
-                ->where($paymentMethodColumn, '=', Method::EMANDATE)
-                ->where($paymentGatewayColumn, '=', $gateway)
-                ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
-                ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
-                ->where($tokenRecurringColumn, '=', 1)
-                ->where($terminalAcquirerColumn, '=', $acquirer)
-                ->with(['merchant'])
-                ->get();
-        }
-
-        return $this->newQueryOnPaymentFetchReplica(600000, $to)
+        return $this->newQueryWithConnection($connectionType)
             ->select('tokens.' . Entity::ACCOUNT_TYPE,
                 'tokens.' . Entity::BENEFICIARY_NAME,
                 'tokens.' . Entity::IFSC,
@@ -852,53 +766,28 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        if($this->repo->terminal->isTerminalsTidbReadMigrationEnabled(__FUNCTION__) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
-            return  $this->newQueryWithConnection($connectionType)
-                ->select($selectCols,
-                    'payments.id as payment_id',
-                    'payments.amount as payment_amount',
-                    'payments.created_at as payment_created_at',
-                    'payments.email as payment_email')
-                ->from(\DB::raw('`tokens`, `payments`, `terminals`'))
-                ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
-                ->where($tokenTerminalIdColumn, '=', \DB::raw('`terminals`.`id`'))
-                ->whereBetween($paymentCreatedAtColumn, [$from, $to])
-                ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
-                ->where($paymentRecurringColumn, '=', 1)
-                ->where($paymentMethodColumn, '=', Method::EMANDATE)
-                ->where($paymentGatewayColumn, '=', $gateway)
-                ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
-                ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
-                ->where($tokenRecurringColumn, '=', 1)
-                ->where($terminalAcquirerColumn, '=', $acquirer)
-                ->with(['merchant', 'terminal'])
-                ->get();
-        }
-
-
-        return $this->newQueryOnPaymentFetchReplica(600000, $to)
-                    ->select($selectCols,
-                            'payments.id as payment_id',
-                            'payments.amount as payment_amount',
-                            'payments.created_at as payment_created_at',
-                            'payments.email as payment_email')
-                    ->from(\DB::raw('`tokens`, `payments`, `terminals`'))
-                    ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
-                    ->where($tokenTerminalIdColumn, '=', \DB::raw('`terminals`.`id`'))
-                    ->whereBetween($paymentCreatedAtColumn, [$from, $to])
-                    ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
-                    ->where($paymentRecurringColumn, '=', 1)
-                    ->where($paymentMethodColumn, '=', Method::EMANDATE)
-                    ->where($paymentGatewayColumn, '=', $gateway)
-                    ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
-                    ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
-                    ->where($tokenRecurringColumn, '=', 1)
-                    ->where($terminalAcquirerColumn, '=', $acquirer)
-                    ->with(['merchant', 'terminal'])
-                    ->get();
+        return  $this->newQueryWithConnection($connectionType)
+            ->select($selectCols,
+                'payments.id as payment_id',
+                'payments.amount as payment_amount',
+                'payments.created_at as payment_created_at',
+                'payments.email as payment_email')
+            ->from(\DB::raw('`tokens`, `payments`, `terminals`'))
+            ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
+            ->where($tokenTerminalIdColumn, '=', \DB::raw('`terminals`.`id`'))
+            ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+            ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
+            ->where($paymentRecurringColumn, '=', 1)
+            ->where($paymentMethodColumn, '=', Method::EMANDATE)
+            ->where($paymentGatewayColumn, '=', $gateway)
+            ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
+            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
+            ->where($tokenRecurringColumn, '=', 1)
+            ->where($terminalAcquirerColumn, '=', $acquirer)
+            ->with(['merchant', 'terminal'])
+            ->get();
     }
 
     public function isEmandateTokenFetchFromTidbEnabled($function = null): bool
@@ -944,50 +833,21 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        if($this->isEmandateTokenFetchFromTidbEnabled(__FUNCTION__) === true)
-        {
-            $this->trace->info(TraceCode::EMANDATE_TOKEN_QUERY_CONNECTION,
-                [
-                    "database"  => "tidb",
-                ]);
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
-
-            $tokens = $this->newQueryWithConnection($connectionType)
-                ->select($selectCols, 'payments.id as payment_id')
-                ->from(\DB::raw('`tokens`, `payments`'))
-                ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
-                ->whereBetween($paymentCreatedAtColumn, [$from, $to])
-                ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
-                ->where($paymentRecurringColumn, '=', 1)
-                ->where($paymentMethodColumn, '=', Method::NACH)
-                ->where($paymentGatewayColumn, '=', $gateway)
-                ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
-                ->where($tokenRecurringColumn, '!=', 1)
-                ->with(['customer', 'merchant'])
-                ->get();
-        }
-        else
-        {
-            $this->trace->info(TraceCode::EMANDATE_TOKEN_QUERY_CONNECTION,
-                [
-                    "database"  => "replica",
-                ]);
-
-            $tokens = $this->newQueryOnPaymentFetchReplica(600000, $to)
-                ->select($selectCols, 'payments.id as payment_id')
-                ->from(\DB::raw('`tokens`, `payments`'))
-                ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
-                ->whereBetween($paymentCreatedAtColumn, [$from, $to])
-                ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
-                ->where($paymentRecurringColumn, '=', 1)
-                ->where($paymentMethodColumn, '=', Method::NACH)
-                ->where($paymentGatewayColumn, '=', $gateway)
-                ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
-                ->where($tokenRecurringColumn, '!=', 1)
-                ->with(['customer', 'merchant'])
-                ->get();
-        }
+        $tokens = $this->newQueryWithConnection($connectionType)
+            ->select($selectCols, 'payments.id as payment_id')
+            ->from(\DB::raw('`tokens`, `payments`'))
+            ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
+            ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+            ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
+            ->where($paymentRecurringColumn, '=', 1)
+            ->where($paymentMethodColumn, '=', Method::NACH)
+            ->where($paymentGatewayColumn, '=', $gateway)
+            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
+            ->where($tokenRecurringColumn, '!=', 1)
+            ->with(['customer', 'merchant'])
+            ->get();
 
         return (new Entity)->mapIFSC($tokens);
     }
@@ -1053,7 +913,6 @@ class Repository extends Base\Repository
      */
     public function fetchPendingNachOrMandateDebit($gateways, $from, $to, $acquirer)
     {
-
         $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);
 
         $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
@@ -1074,66 +933,35 @@ class Repository extends Base\Repository
 
         $tokenTerminalIdColumn = $this->repo->token->dbColumn(Entity::TERMINAL_ID);
 
-        if($this->repo->terminal->isTerminalsTidbReadMigrationEnabled(__FUNCTION__) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
-            return $this->newQueryWithConnection($connectionType)
-                ->select('tokens.' . Entity::ACCOUNT_TYPE,
-                    'tokens.' . Entity::BENEFICIARY_NAME,
-                    'tokens.' . Entity::IFSC,
-                    'tokens.' . Entity::ACCOUNT_NUMBER,
-                    'tokens.' . Entity::GATEWAY_TOKEN,
-                    'tokens.' . Entity::MERCHANT_ID,
-                    'tokens.' . Entity::TERMINAL_ID,
-                    'payments.id as payment_id',
-                    'payments.amount as payment_amount',
-                    'payments.notes as payment_notes',
-                    'payments.created_at as payment_created_at',
-                    'payments.email as payment_email')
-                ->from(\DB::raw('`tokens`, `payments`, `terminals`'))
-                ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
-                ->where($tokenTerminalIdColumn, '=', \DB::raw('`terminals`.`id`'))
-                ->whereBetween($paymentCreatedAtColumn, [$from, $to])
-                ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
-                ->where($paymentRecurringColumn, '=', 1)
-                ->whereIn($paymentMethodColumn, [Method::NACH, Method::EMANDATE])
-                ->whereIn($paymentGatewayColumn, $gateways)
-                ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
-                ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
-                ->where($tokenRecurringColumn, '=', 1)
-                ->where($terminalAcquirerColumn, '=', $acquirer)
-                ->with(['merchant'])
-                ->get();
-        }
-
-        return $this->newQueryOnPaymentFetchReplica(600000, $to)
-              ->select('tokens.' . Entity::ACCOUNT_TYPE,
-                       'tokens.' . Entity::BENEFICIARY_NAME,
-                       'tokens.' . Entity::IFSC,
-                       'tokens.' . Entity::ACCOUNT_NUMBER,
-                       'tokens.' . Entity::GATEWAY_TOKEN,
-                       'tokens.' . Entity::MERCHANT_ID,
-                       'tokens.' . Entity::TERMINAL_ID,
-                       'payments.id as payment_id',
-                       'payments.amount as payment_amount',
-                       'payments.notes as payment_notes',
-                       'payments.created_at as payment_created_at',
-                       'payments.email as payment_email')
-              ->from(\DB::raw('`tokens`, `payments`, `terminals`'))
-              ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
-              ->where($tokenTerminalIdColumn, '=', \DB::raw('`terminals`.`id`'))
-              ->whereBetween($paymentCreatedAtColumn, [$from, $to])
-              ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
-              ->where($paymentRecurringColumn, '=', 1)
-              ->whereIn($paymentMethodColumn, [Method::NACH, Method::EMANDATE])
-              ->whereIn($paymentGatewayColumn, $gateways)
-              ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
-              ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
-              ->where($tokenRecurringColumn, '=', 1)
-              ->where($terminalAcquirerColumn, '=', $acquirer)
-              ->with(['merchant'])
-              ->get();
+        return $this->newQueryWithConnection($connectionType)
+            ->select('tokens.' . Entity::ACCOUNT_TYPE,
+                'tokens.' . Entity::BENEFICIARY_NAME,
+                'tokens.' . Entity::IFSC,
+                'tokens.' . Entity::ACCOUNT_NUMBER,
+                'tokens.' . Entity::GATEWAY_TOKEN,
+                'tokens.' . Entity::MERCHANT_ID,
+                'tokens.' . Entity::TERMINAL_ID,
+                'payments.id as payment_id',
+                'payments.amount as payment_amount',
+                'payments.notes as payment_notes',
+                'payments.created_at as payment_created_at',
+                'payments.email as payment_email')
+            ->from(\DB::raw('`tokens`, `payments`, `terminals`'))
+            ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
+            ->where($tokenTerminalIdColumn, '=', \DB::raw('`terminals`.`id`'))
+            ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+            ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
+            ->where($paymentRecurringColumn, '=', 1)
+            ->whereIn($paymentMethodColumn, [Method::NACH, Method::EMANDATE])
+            ->whereIn($paymentGatewayColumn, $gateways)
+            ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
+            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
+            ->where($tokenRecurringColumn, '=', 1)
+            ->where($terminalAcquirerColumn, '=', $acquirer)
+            ->with(['merchant'])
+            ->get();
     }
 
     public function getByPublicIdAndMerchantFromAPI(string $id, Merchant\Entity $merchant)

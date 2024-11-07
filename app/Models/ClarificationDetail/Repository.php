@@ -6,6 +6,8 @@ namespace RZP\Models\ClarificationDetail;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Base\ConnectionType;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 
 class Repository extends Base\Repository
@@ -16,7 +18,16 @@ class Repository extends Base\Repository
 
     public function hasClarificationDetailsForMerchantId($merchantId): bool
     {
-        $result = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
+        ];
+
+        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getSlaveConnection(): $this->getPaymentFetchReplicaConnection();
+
+        $result = $this->newQueryWithConnection($connectionType)
                        ->where(Entity::MERCHANT_ID, $merchantId)
                        ->limit(1);
 
@@ -25,7 +36,16 @@ class Repository extends Base\Repository
 
     public function getByMerchantId($merchantId)
     {
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
+        ];
+
+        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getSlaveConnection(): $this->getPaymentFetchReplicaConnection();
+
+        return $this->newQueryWithConnection($connectionType)
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();

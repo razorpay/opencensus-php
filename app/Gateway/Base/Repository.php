@@ -5,6 +5,8 @@ namespace RZP\Gateway\Base;
 use RZP\Base;
 use RZP\Base\ConnectionType;
 use RZP\Gateway\Upi\Base\Entity;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 class Repository extends Base\Repository
 {
@@ -21,7 +23,9 @@ class Repository extends Base\Repository
         {
             $hotData = $this->newQueryAndResetEntityConnection(function () use ($id)
             {
-                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+
+                return  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where('payment_id', '=', $id)
                     ->get();
             });
@@ -45,7 +49,9 @@ class Repository extends Base\Repository
         {
             $hotData = $this->newQueryAndResetEntityConnection(function () use ($paymentId, $action)
             {
-                $entity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+
+                $entity =  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
                     ->orderBy(Entity::CREATED_AT, 'desc')
@@ -75,7 +81,9 @@ class Repository extends Base\Repository
         {
             $data = $this->newQueryAndResetEntityConnection(function () use ($paymentId, $action)
             {
-                $entity =   $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+
+                $entity =   $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
                     ->orderBy(Entity::CREATED_AT, 'desc')
@@ -109,7 +117,9 @@ class Repository extends Base\Repository
         {
             $hotData = $this->newQueryAndResetEntityConnection(function () use ($paymentIds, $action)
             {
-                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+
+                return  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->whereIn('payment_id', $paymentIds)
                     ->where('action', '=', $action)
                     ->get();
@@ -178,7 +188,9 @@ class Repository extends Base\Repository
         {
             $data = $this->newQueryAndResetEntityConnection(function () use ($refundId)
             {
-                $entity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+
+                $entity =  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::REFUND_ID, '=', $refundId)
                     ->first();
 
@@ -205,7 +217,9 @@ class Repository extends Base\Repository
         {
             $hotData = $this->newQueryAndResetEntityConnection(function () use ($refundId, $action)
             {
-                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+
+                return  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::REFUND_ID, '=', $refundId)
                     ->where(Entity::ACTION, '=', $action)
                     ->get();
@@ -260,5 +274,17 @@ class Repository extends Base\Repository
                     ->orderBy(Entity::CREATED_AT, 'desc');
 
         return $query->firstOrFail();
+    }
+
+    protected function checkHarvsterQuerySplitzAndReturnConnection()
+    {
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_upi_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        return $variant === true ? ConnectionType::DATA_WAREHOUSE_MERCHANT :ConnectionType::PAYMENT_FETCH_REPLICA;
     }
 }

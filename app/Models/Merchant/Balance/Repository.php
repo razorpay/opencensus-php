@@ -751,29 +751,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getMerchantsWithBalanceUpdatedInTimeRange($from, $to)
-    {
-        $startTime = microtime(true);
-
-        $result = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
-                       ->select(Entity::MERCHANT_ID)
-                       ->where(Entity::TYPE, '=', Type::PRIMARY)
-                       ->where(Entity::UPDATED_AT, '>', $from)
-                       ->where(Entity::UPDATED_AT, '<=', $to)
-                       ->groupBy(Entity::MERCHANT_ID)
-                       ->pluck(Entity::MERCHANT_ID)
-                       ->toArray();
-
-        $this->trace->info(
-            TraceCode::SETTLEMENT_DEBUGGING_FRAMEWORK_MERCHANT_FETCH_TIME_TAKEN,
-            [
-                'time_taken' => get_diff_in_millisecond($startTime),
-                'count'      => count($result),
-            ]);
-
-        return $result;
-    }
-
     /**
      * Filter balance ids with merchants having payout_service_enabled feature
      *
