@@ -73,6 +73,10 @@ class Service extends Base\Service
         }
 
         $input[Entity::ACTION_ID] = $actionId;
+        if (isset($input[RiskWorkflowActionConstants::RISK_ATTRIBUTES]))
+        {
+            unset($input[RiskWorkflowActionConstants::RISK_ATTRIBUTES]);
+        }
 
         $checker = $this->core()->create($input);
 

@@ -58,6 +58,7 @@ class Constants
     const RISK_REASON_CPV                   = 'CPV_checks';
     const RISK_REASON_KYC_LAPSES            = 'KYC_lapses';
     const RISK_REASON_INADEQUATE_CLARIFICATION = 'inadequate_response/risk_clarification';
+    const RISK_REASON_MERCHANT_REQUEST      = 'merchant_request';
 
     // Risk Sub Reasons
     const RISK_SUB_REASON_BRAND             = 'brand_imposter';
@@ -98,7 +99,7 @@ class Constants
     const RISK_SUB_REASON_APPROPRIATE_OR_NO_RESPONSE = 'appropriate_or_no_response_within_TAT';
     const RISK_SUB_REASON_NON_SERVICE        = 'non_service_delivery';
     const RISK_SUB_REASON_FAKE_WEBSITE       = 'suspected_fake_website';
-
+    const RISK_SUB_REASON_MERCHANT_REQUEST      = 'merchant_request';
 
     const RISK_REASONS_MAP = [
         self::RISK_REASON_FRAUD_BEHAVIOUR   =>  [
@@ -154,6 +155,9 @@ class Constants
             self::RISK_SUB_REASON_NEGATIVE_CPV,
             self::RISK_SUB_REASON_SUSPICIOUS_CPV,
             self::RISK_SUB_REASON_APPROPRIATE_OR_NO_RESPONSE,
+        ],
+        self::RISK_REASON_MERCHANT_REQUEST => [
+            self::RISK_SUB_REASON_MERCHANT_REQUEST,
         ]
     ];
 
