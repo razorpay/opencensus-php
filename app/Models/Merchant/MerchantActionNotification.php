@@ -436,7 +436,7 @@ class MerchantActionNotification
         // Whatsapp Experiment is applicable only for FOH template.
         $isWhatsappEnabled = $whatsappTemplateName != Constants::FOH_WHATSAPP_TEMPLATE_NAME ||
             (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
-                Merchant\RazorxTreatment::FRAUD_WHATSAPP_NOTIFICATIONS_MIDS);
+                Merchant\RazorxTreatment::FOH_WHATSAPP_NOTIFICATION_MIDS);
 
         $receiver = $merchant->merchantDetail->getContactMobile();
         if ($whatsappTemplateName == Constants::FOH_WHATSAPP_TEMPLATE_NAME)

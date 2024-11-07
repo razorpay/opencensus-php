@@ -321,6 +321,8 @@ final class RazorxTreatment
 
     const FRAUD_WHATSAPP_NOTIFICATIONS_MIDS = 'whatsapp_notification_mids';
 
+    const FOH_WHATSAPP_NOTIFICATION_MIDS = 'foh_whatsapp_notification_mids';
+
 
     // experiment to enable pushing events to segment
     const SEGMENT_ANALYTICS_FUNCTIONALITY = 'segment_analytics_functionality';

@@ -131,25 +131,28 @@ class Core extends Base\Core
             $transactionDate = $payment[CyberHelpdeskConstants::TRANSACTION_DATE];
             $timestamp = \DateTime::createFromFormat('d/m/y', $transactionDate)->getTimestamp();
 
-            $createdDate = date('d-m-y H:i:s', $timestamp);
+            $createdDate = date("Y-m-d H:i:s", $timestamp);
             $createdTimestamp = strtotime($createdDate);
             $currentTimestamp = time();
 
-            if (($currentTimestamp - $createdTimestamp) <= 86400) {
-                $tableRow = array();
-                $tableRow[CyberHelpdeskConstants::PAYMENT_ID] = $payment[CyberHelpdeskConstants::PAYMENT_ID];
-                $tableRow[CyberHelpdeskConstants::AMOUNT] = $payment[CyberHelpdeskConstants::AMOUNT];
-                $tableRow[CyberHelpdeskConstants::SOURCE] = $payment[CyberHelpdeskConstants::SOURCE_OF_NOTIFICATION];
-                $tableRow[CyberHelpdeskConstants::CREATED_DATE] = date('Y-m-d H:i:s', $payment[CyberHelpdeskConstants::CREATED_DATE]);
-                $tableRow[CyberHelpdeskConstants::RESPOND_BY] = $payment[CyberHelpdeskConstants::RESPOND_BY];
-                $tableData[] = $tableRow;
-            }
+//            if (($currentTimestamp - $createdTimestamp) <= 86400) {
+            $tableRow = array();
+            $tableRow[CyberHelpdeskConstants::PAYMENT_ID] = $payment[CyberHelpdeskConstants::PAYMENT_ID];
+            $tableRow[CyberHelpdeskConstants::AMOUNT] = $payment[CyberHelpdeskConstants::AMOUNT];
+            $tableRow[CyberHelpdeskConstants::SOURCE] = $payment[CyberHelpdeskConstants::SOURCE_OF_NOTIFICATION];
+            $tableRow[CyberHelpdeskConstants::CREATED_DATE] = date('Y-m-d H:i:s', $payment[CyberHelpdeskConstants::CREATED_DATE]);
+            $tableRow[CyberHelpdeskConstants::RESPOND_BY] = $payment[CyberHelpdeskConstants::RESPOND_BY];
+            $tableData[] = $tableRow;
+//            }
             $this->app['trace']->info(
                 TraceCode::WHATSAPP_FRAUD_MESSAGE_FOR_SINGLE_MERCHANT_TIMESTAMP,
                 [
                     'created_timestamp' => $createdTimestamp,
                     'current_timestamp' => $currentTimestamp,
-                    'timestamp_diff'    => $currentTimestamp - $createdTimestamp
+                    'timestamp_diff'    => $currentTimestamp - $createdTimestamp,
+                    'created_date'      => $createdDate,
+                    'transaction_date'  => $transactionDate,
+                    'timestamp'         => $timestamp
                 ]);
         }
         return $tableData;
