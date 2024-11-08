@@ -677,7 +677,7 @@ describe('processPrecheckoutPricing', () => {
 
   describe('POS sidebar condtions', () => {
     const abExperiments = {
-      pos_onboarding: {
+      pos_api_merchant_enablement: {
         experimentId: 'mock-exp-id',
         variables: {
           result: 'on',
@@ -689,20 +689,9 @@ describe('processPrecheckoutPricing', () => {
       expect(isExperimentEnabled).toBe(true);
     });
 
-    test('isPosExperimentEnabled should return false when user is not a pgos merchant', () => {
-      const user = { ...MOCK_USER };
-      user.is_pgos_merchant = false;
-
-      const isExperimentEnabled = isPosExperimentEnabled({
-        user,
-        abExperiments,
-      });
-      expect(isExperimentEnabled).toBe(false);
-    });
-
     test('isPosExperimentEnabled should return false when experiment is disabled', () => {
       const newAbExperiments = {
-        pos_onboarding: {
+        pos_api_merchant_enablement: {
           experimentId: 'mock-exp-id',
           variables: {
             result: 'off',
@@ -719,7 +708,7 @@ describe('processPrecheckoutPricing', () => {
 
     test('isPosExperimentEnabled should return false for unregistered merchants', () => {
       const newAbExperiments = {
-        pos_onboarding: {
+        pos_api_merchant_enablement: {
           experimentId: 'mock-exp-id',
           variables: {
             result: 'off',

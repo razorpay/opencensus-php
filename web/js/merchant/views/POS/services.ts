@@ -132,7 +132,6 @@ export const getModularOnboardingData = async (
 export const getPosPricingTemplate = async (payload = {}) => {
   const htmlTemplate = await merchantFetch({
     url: `templating/template_configs/render`,
-    // url: `email_template_config/render`,
     method: 'post',
     data: {
       namespace: 'payments',
@@ -179,4 +178,16 @@ export const agreeToPosMerchantAgreement = async ({
     },
   });
   return response;
+};
+
+interface PosOnboardingInitiateResponse {
+  workflow_id: string;
+  downstream_status_code: number;
+}
+
+export const initiatePosOnboarding = async (): Promise<PosOnboardingInitiateResponse> => {
+  return await merchantFetch({
+    url: 'pg/onboarding/initiate_pos_onboarding',
+    method: 'post',
+  });
 };

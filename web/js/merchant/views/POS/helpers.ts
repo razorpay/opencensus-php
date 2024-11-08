@@ -78,8 +78,7 @@ export const isPosExperimentEnabled = ({
     user.user?.signup_campaign === 'phantom_onboarding';
 
   return (
-    isExperimentEnabled(abExperiments?.pos_onboarding) &&
-    !!user.is_pgos_merchant &&
+    isExperimentEnabled(abExperiments?.pos_api_merchant_enablement) &&
     isWhitelistedForPos &&
     !isUnregisteredMerchant &&
     !isBlockedForSignUpCampaign

@@ -568,6 +568,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'pos_api_merchant_enablement',
+        experimentId: {
+          beta: 'OXEKmEW1H6Nk5b',
+          production: 'OXEUIX6iFPCGoi',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

@@ -2112,6 +2112,13 @@ export default class User {
   get isPayerNameEnabled() {
     return this.isOrgFeatureEnabled('display_upi_payer_name');
   }
+
+  get isMkycMerchant() {
+    return (
+      this?.workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING' ||
+      this?.workflow_type === 'MODULAR_ONBOARDING'
+    );
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap, shouldSkipRoleCheck = false) {

@@ -14,6 +14,14 @@ import { PosDeviceStoreProvider } from 'merchant/views/POS/providers';
 import { ProductPlans } from 'merchant/views/POS/types';
 import { render, screen, server, userEvent, waitFor, waitForElementToBeRemoved } from 'test-utils';
 
+const mockAbExperiments = {
+  pos_api_merchant_enablement: { variables: { result: 'on' } },
+};
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({ abExperiments: mockAbExperiments }),
+}));
+
 const MOCK_CART_ITEMS = [
   {
     code: 'mock-product',
@@ -43,6 +51,7 @@ describe('<OrderSummary/>', () => {
   afterEach(() => {
     queryClient.clear();
   });
+
   test('should render app on screen ', async () => {
     server.use(getProductPricingHandler(), getLatestOrderHandler('latest_order_with_delivered'));
     renderApp();

@@ -2254,7 +2254,9 @@ class Content extends Component {
                   isPosExperimentEnabled({
                     user,
                     abExperiments: this.props.splitz?.abExperiments,
-                  }) && !isPosSalesAgent
+                  }) &&
+                  !isPosSalesAgent &&
+                  !user.isMkycMerchant
                 }
               >
                 <Pos />
