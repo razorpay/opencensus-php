@@ -1093,4 +1093,8 @@ return array(
     'payout_properties_event_experiment_id' => env('PAYOUT_PROPERTIES_EVENT_EXPERIMENT_ID'),
 
     'my_save_card_splitz_experiment_id' => env('MY_SAVE_CARD_SPLITZ_EXPERIMENT_ID'),
+
+    'p2p' => [
+        'encryption_key' => env('P2P_NACL_SESSION_TOKEN_ENCRYPTION_KEY')
+    ],
 );

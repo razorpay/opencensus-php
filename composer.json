@@ -99,7 +99,8 @@
         "ext-pdo": "*",
         "guzzlehttp/guzzle": "7.7",
         "razorpay/config-proto": "dev-master",
-        "razorpay/redis-counting-semaphore": "dev-added_package_changes"
+        "razorpay/redis-counting-semaphore": "dev-added_package_changes",
+        "ext-sodium": "*"
     },
     "repositories": [
         {

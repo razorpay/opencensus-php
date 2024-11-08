@@ -146,11 +146,21 @@ class RouteServiceProvider extends ServiceProvider
             ],
         ];
 
+        // Add p2p v1 routes.
         $router->group(
             $routeGroupP2pParams,
             function ($router)
             {
                 $this->mapP2pRoutes($router);
+            });
+
+        //  Add p2p v2 routes.
+        $routeGroupP2pParams['prefix'] = 'v2/upi';
+        $router->group(
+            $routeGroupP2pParams,
+            function ($router)
+            {
+                $this->mapP2pV2Routes($router);
             });
 
         $this->route->defineAllExtraRoutes();
@@ -186,6 +196,18 @@ class RouteServiceProvider extends ServiceProvider
                     'device',
                     'direct',
                     'private',
+                ]);
+            }
+        );
+    }
+
+    protected function mapP2pV2Routes(Router $router)
+    {
+        $router->group(
+            [],
+            function($router) {
+                $this->p2pRoute->addV2RouteGroups([
+                    'public',
                 ]);
             }
         );

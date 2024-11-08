@@ -56,7 +56,9 @@ class Context extends ArrayObject
 
     const OPTIONS_RULES = [
         self::REQUEST_ID                              => 'nullable|string|max:50',
-        self::HANDLE                                  => 'required|string',
+        // Make handle as nullable since it is not required for create session. 
+        // SetHandleAndMode method is already handling the scenario where handle is required.
+        self::HANDLE                                  => 'nullable|string',
         self::DEVICE                                  => 'array',
         self::DEVICE . '.' . Device\Entity::IP        => 'nullable|ipv4',
         self::DEVICE . '.' . Device\Entity::GEOCODE   => 'nullable|string|max:20',
@@ -135,7 +137,7 @@ class Context extends ArrayObject
             $this->setOptions(ContextMap::resolveRequestHeaders($request));
 
             // Handle is set in context from the options, each HTTP request will have handle specified
-            $this->setHandleAndMode($this->options[self::HANDLE], $basicAuth->getMode());
+            $this->setHandleAndMode($request,$this->options[self::HANDLE], $basicAuth->getMode());
 
             // As the context is loaded from HTTP request, we are using the basic auth
             // for merchant and device, later we will have to change this if we change the auth.
@@ -143,7 +145,7 @@ class Context extends ArrayObject
             if (($basicAuth->getMerchant() instanceof Merchant\Entity))
             {
                 // Merchant must be in basic auth as the auth is either public or device
-                $this->setMerchant($basicAuth->getMerchant());
+                $this->setMerchant($request,$basicAuth->getMerchant());
             }
             else
             {
@@ -194,8 +196,16 @@ class Context extends ArrayObject
     /**
      * @param Merchant\Entity $merchant
      */
-    public function setMerchant(Merchant\Entity $merchant)
+    public function setMerchant(Request $request,Merchant\Entity $merchant)
     {
+        // If handle is not required for the api, only set the merchant and type and return
+        if (in_array($request->route()->getName(), ContextMap::SKIP_HANDLE_VALIDATION_ROUTES, true) === true) {
+            $this->type = self::MERCHANT;
+
+            $this->merchant = $merchant;
+            return;
+        }
+
         $client = $this->handle->client(Client\Type::MERCHANT, $merchant->getId());
 
         if (($client instanceof Client\Entity) === false)
@@ -464,8 +474,19 @@ class Context extends ArrayObject
      * @param string|null $mode
      * @throws \RZP\Exception\P2p\BadRequestException
      */
-    public function setHandleAndMode(string $handleCode, string $mode = null)
+    public function setHandleAndMode(Request $request,string $handleCode = null, string $mode = null)
     {
+        // Skip the handle validation for Create session api , since it is not required.
+        if (in_array($request->route()->getName(), ContextMap::SKIP_HANDLE_VALIDATION_ROUTES, true) === true) {
+            $this->setMode($mode);
+            return;
+        }
+
+        // If handle is required and it being passed as nil , throw error
+        if(is_null($handleCode) == true) {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_INVALID_HANDLE);
+        }
+
         $modes = [Mode::LIVE, Mode::TEST];
 
         // If mode is passed, we will only look for that mode

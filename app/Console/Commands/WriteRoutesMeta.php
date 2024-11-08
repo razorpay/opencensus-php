@@ -106,14 +106,24 @@ class WriteRoutesMeta extends Command
 
         }
 
+        $v2PrefixP2pRoutesMap = [];
+        for ($i = 0; $i < count(P2pRoute::$routesWithV2Prefix); $i++) {
+            $v2PrefixP2pRoutesMap[P2pRoute::$routesWithV2Prefix[$i]] = true;
+        }
+
         foreach (P2pRoute::getP2PRoutes() as $name => $meta)
         {
             $methods = $meta[0] === 'any' ? Router::$verbs : explode(',', $meta[0]);
             $methods = array_map(function($v) { return strtoupper($v); }, $methods);
 
+            $prefix = "/v1/upi" ;
+            if (isset($v2PrefixP2pRoutesMap[$name])) {
+                $prefix = "/v2/upi";
+            }
+
             $jsonRoutesMeta[] = [
                 'methods'   => $methods,
-                'uri_regex' => laravelPatternToEdgeRoute($meta[1], '/v1/upi'),
+                'uri_regex' => laravelPatternToEdgeRoute($meta[1], $prefix),
                 'name'      => $name,
                 'auth'      => routeNameToEdgeAuthP2P($name),
             ];
