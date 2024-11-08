@@ -284,6 +284,7 @@ class Validator extends Base\Validator
         ConfigKey::UPI_TURBO_POPULAR_BANK_LIST                                         => 'filled|array',
         ConfigKey::CURRENCY_METHOD_LEVEL_DCC_MARKUP                                    => 'filled|array',
         ConfigKey::UPI_TURBO_SDK_TIMEOUTS                                              => 'filled|array',
+        ConfigKey::UPI_TURBO_SENTRY_TXN_SAMPLING_RATE                                  => 'filled|array',
         ConfigKey::TURBO_SDK_ERROR_MAPPINGS_HASH                                       => 'filled|string',
         ConfigKey::TURBO_SDK_ERROR_MAPPINGS                                            => 'filled|array',
         ConfigKey::METRIC_MERCHANTS_LIST                                               => 'filled|array',

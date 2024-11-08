@@ -183,6 +183,7 @@ class Processor extends Base\Processor
             ],
             Entity::POPULAR_BANKS                  => $this->getPopularBankListForSDK(),
             Constants::TIMEOUTS                    => $this->fetchSDKTimeoutConfigs(),
+            Constants::SENTRY_CONFIG               => $this->fetchSentrySamplingRate(),
             Entity::ERROR_MAPPING_HASH             => $this->getErrorMappingHash(),
             Constants::PAYER_ACCOUNT_TYPE_MAPPINGS => Constants::getPayerAccountTypeMappings($this->getGateway())
         ];
@@ -206,6 +207,20 @@ class Processor extends Base\Processor
             default:
                 throw new LogicException("Unknown gateway!");
         }
+    }
+
+    private function fetchSentrySamplingRate()
+    {
+        $sdkSamplingRate =  ConfigKey::get(ConfigKey::UPI_TURBO_SENTRY_TXN_SAMPLING_RATE, []);
+
+        if (empty($sdkSamplingRate) === true)
+        {
+            $sdkSamplingRate = Constants::getDefaultSamplingRate();
+        }
+
+        return [
+            Constants::UPI_TURBO_SENTRY_TXN_SAMPLING_RATE => number_format($sdkSamplingRate[Constants::UPI_TURBO_SENTRY_TXN_SAMPLING_RATE], 3)
+        ];
     }
 
     private function getPopularBankListForSDK()

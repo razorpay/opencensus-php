@@ -462,6 +462,8 @@ class ConfigKey
 
     const UPI_TURBO_SDK_TIMEOUTS                    = self::PREFIX . 'upi_turbo_sdk_timeouts';
 
+    const UPI_TURBO_SENTRY_TXN_SAMPLING_RATE        = self::PREFIX . 'upi_turbo_sentry_txn_sampling_rate';
+
     const TURBO_SDK_ERROR_MAPPINGS_HASH             = self::PREFIX . 'turbo_sdk_error_mappings_hash';
 
     const TURBO_SDK_ERROR_MAPPINGS                  = self::PREFIX . 'turbo_sdk_error_mappings';
@@ -662,6 +664,7 @@ class ConfigKey
         self::CURRENCY_METHOD_LEVEL_DCC_MARKUP,
         self::UPI_TURBO_PAYEE_EXECUTION_HOLD_TIME,
         self::UPI_TURBO_PAYMENT_ID_BY_GATEWAY_TXN_TTL,
+        self::UPI_TURBO_SENTRY_TXN_SAMPLING_RATE,
         self::UPI_TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE,
         self::UPI_TURBO_PRE_FETCH_BANK_ACCOUNT,
         self::TOKENS_SERVICE_ENABLED,

@@ -66,6 +66,8 @@ class PreferencesTest extends TestCase
 
         $timeouts = $this->setSDKTimeoutConfigsInRedis(30);
 
+        $samplingrate = $this->setSDKSamplingRateInRedis(0.005);
+
         $response = $helper->getGatewayPreferences($this->gateway, []);
 
         $this->assertArrayHasKey('customer', $response);
@@ -89,6 +91,7 @@ class PreferencesTest extends TestCase
         $this->assertArrayHasKey('timeouts', $response);
 
         $this->assertArraySelectiveEquals($timeouts, $response['timeouts']);
+        $this->assertArraySelectiveEquals($samplingrate, $response['config']);
 
         $this->assertEquals('api', $response['metadata']['X-PG-Service']);
 
@@ -290,6 +293,19 @@ class PreferencesTest extends TestCase
         ]);
 
         return $sdkTimeoutConfigs;
+    }
+
+    public function setSDKSamplingRateInRedis($turboSamplingRate = 0)
+    {
+        $sdkSamplingRateConfigs = [
+            Constants::UPI_TURBO_SENTRY_TXN_SAMPLING_RATE => $turboSamplingRate
+        ];
+
+        (new Admin\Service)->setConfigKeys([
+            Admin\ConfigKey::UPI_TURBO_SENTRY_TXN_SAMPLING_RATE => $sdkSamplingRateConfigs
+        ]);
+
+        return $sdkSamplingRateConfigs;
     }
 
     public function testErrorMappingHashInPreferencesResponse()
