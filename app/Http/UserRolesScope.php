@@ -36,6 +36,7 @@ class UserRolesScope
             'register_merchant_verify_otp'                         => [Role::PARTNER_AGENT],
             'merchant_nc_revamp_eligibility'                       => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT, Role::ADMIN_READONLY,Role::RAZORPAY_SALES],
             'merchant_activation_details_sales'                    => [Role::PARTNER_AGENT,Role::POS_SALES_ADMIN],
+            'initiate_pos_onboarding'                              => [Role::OWNER],
             'onboarding_get_sales'                                 => [Role::PARTNER_AGENT,Role::POS_SALES_ADMIN],
             'onboarding_save_sales'                                => [Role::PARTNER_AGENT,Role::POS_SALES_ADMIN],
             'merchant_activation_clarifications_fetch'             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT, Role::ADMIN_READONLY,Role::RAZORPAY_SALES],

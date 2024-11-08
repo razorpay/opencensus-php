@@ -41,6 +41,7 @@ class RouteTeamMap
         'register_merchant_sales'                  => [self::TEAM_OMNI_ACQUISITION],
         'register_merchant_verify_otp'             => [self::TEAM_OMNI_ACQUISITION],
         'merchant_activation_details_sales'        => [self::TEAM_OMNI_ACQUISITION],
+        'initiate_pos_onboarding'                  => [self::TEAM_OMNI_ACQUISITION],
         'onboarding_get_sales'                     => [self::TEAM_OMNI_ACQUISITION],
         'onboarding_save_sales'                    => [self::TEAM_OMNI_ACQUISITION],
         'fetch_brand_dealer_details'               => [self::TEAM_OMNI_ACQUISITION],

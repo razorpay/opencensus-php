@@ -692,6 +692,9 @@ class Service extends Base\Service
 
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
+        // check if merchant is to be onboarded via PGOS
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
+
         // Check if POS details have been submitted and merchant details are set.
         // Additionally, skip the process if the merchant's signup campaign is 'assisted_onboarding'.
         if ($this->isPosDetailsSubmitted($isPosDetailsSubmitted) === true and  isset($merchantDetails) === true and
@@ -714,10 +717,11 @@ class Service extends Base\Service
 
                 $this->core()->pushKafkaEventOnPOSActivationFormSubmit($merchant, DEConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA);
             }
-        }
 
-        // check if merchant is to be onboarded via PGOS
-        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
+            // Marking $shouldMerchantOnboardViaPGOS = true for cases where non-PGOS API merchants are allowed to submit POS details or during the L3 submission step.
+            // By setting this flag to true, we ensure that the PGOS onboarding process is triggered and the correct response is constructed based on the OBS workflow ID.
+            $shouldMerchantOnboardViaPGOS = true;
+        }
 
         if ($shouldMerchantOnboardViaPGOS === true and $activationFormMilestone != DEConstants::L2_SUBMISSION)
         {

@@ -42,6 +42,7 @@ class Route
         'register_merchant_verify_otp'                      => ['post',     'register/merchant/otp/verify',                         'UserController@verifySignupOtpAndRegisterUser'                     ],
         'register_merchant_sales'                           => ['post',     'sales/register/merchant',                              'UserController@registerUser'                     ],
         'merchant_activation_details_sales'                 => ['get',      'pg/onboarding/merchant_activation_details_sales',      'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'initiate_pos_onboarding'                           => ['post',     'pg/onboarding/initiate_pos_onboarding',                'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'payments_rearch_backfill'                          => ['post',     'payments/backfill',                                    'PaymentController@callCpsForBackfilling'                           ],
         'merchant_nc_revamp_eligibility_admin'              => ['get',      'merchant/activation/{id}/clarifications/eligibility',  'MerchantController@getMerchantNcRevampEligibility'                 ],
         'merchant_nc_revamp_eligibility'                    => ['get',      'merchant/activation/clarifications/eligibility',       'MerchantController@getMerchantNcRevampEligibility'                 ],
@@ -7019,6 +7020,7 @@ class Route
 
     public static $proxy = [
         'merchant_activation_details_sales',
+        'initiate_pos_onboarding',
         'onboarding_get_sales',
         'onboarding_save_sales',
         'register_merchant_sales',
@@ -9731,6 +9733,7 @@ class Route
     // if we add permission in the current route for admin dashboard access, will it affect the merchant dashboard access as well?
     public static $routePermission = [
         'merchant_activation_details_sales'               => Permission::VIEW_MERCHANT,
+        'initiate_pos_onboarding'                         => Permission::EDIT_MERCHANT,
         'onboarding_get_sales'                            => Permission::VIEW_MERCHANT,
         'onboarding_save_sales'                           => Permission::EDIT_MERCHANT,
         'register_merchant_sales'                         => Permission::EDIT_MERCHANT,
@@ -12487,6 +12490,7 @@ class Route
 
         'merchant_dashboard' => [
             'merchant_activation_details_sales',
+            'initiate_pos_onboarding',
             'onboarding_get_sales',
             'onboarding_save_sales',
             'register_merchant_sales',
