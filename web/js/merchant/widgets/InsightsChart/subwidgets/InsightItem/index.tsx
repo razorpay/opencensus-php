@@ -93,7 +93,11 @@ const InsightItem: React.FC<InsightItemProps> = ({
     chart_data,
   } = data;
   const changeValue = convertToNumber(change);
-  const isChartData = chart_data && chart_data.data && chart_data.data.length > 0;
+  const isChartData =
+    chart_data &&
+    chart_data.data &&
+    chart_data.data.length > 0 &&
+    chart_data.data[0].points.length > 0;
 
   const variant = changeValue > 0 ? 'increase' : 'decrease';
   const finalVariant = isChangeBehaviourInverted

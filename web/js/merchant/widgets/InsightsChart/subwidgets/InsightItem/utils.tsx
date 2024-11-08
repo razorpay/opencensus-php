@@ -4,25 +4,37 @@ import { ChartComponentProps, Line } from 'react-chartjs-2';
 
 import { TOOLTIP_CHART_CONFIG } from 'merchant/widgets/common/utils';
 
+const commonChartOptions = {
+  maintainAspectRatio: false,
+  responsive: true,
+  legend: {
+    display: false,
+  },
+  elements: {
+    line: {
+      tension: 0.1,
+    },
+    point: {
+      radius: 0, // hide point on chart
+      hoverRadius: 4, // make the point bigger when user hovers
+    },
+  },
+  layout: {
+    padding: {
+      top: 5,
+      left: 0,
+      right: 10,
+      bottom: 0,
+    },
+  },
+};
+
 export const getLineChartOptions = (
   colors: Theme['colors'],
   chartData: ChartComponentProps['data'],
 ): ChartComponentProps['options'] => {
   return {
-    maintainAspectRatio: false,
-    responsive: true,
-    legend: {
-      display: false,
-    },
-    elements: {
-      line: {
-        tension: 0.1,
-      },
-      point: {
-        radius: 0, // hide point on chart
-        hoverRadius: 4, // make the point bigger when user hovers
-      },
-    },
+    ...commonChartOptions,
     scales: {
       xAxes: [
         {
@@ -65,14 +77,6 @@ export const getLineChartOptions = (
         },
       ],
     },
-    layout: {
-      padding: {
-        top: 5,
-        left: 0,
-        right: 10,
-        bottom: 0,
-      },
-    },
     ...TOOLTIP_CHART_CONFIG,
   };
 };
@@ -85,11 +89,13 @@ export const EmptyLineChart = () => {
         label: '',
         data: [0, 0],
         borderColor: theme.colors.surface.text.gray.subtle,
+        backgroundColor: theme.colors.surface.background.gray.subtle,
       },
     ],
   });
 
   const emptyChartOptions = {
+    ...commonChartOptions,
     scales: {
       yAxes: [
         {

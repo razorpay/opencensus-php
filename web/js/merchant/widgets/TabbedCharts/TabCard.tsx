@@ -9,13 +9,13 @@ import { convertToNumber } from 'merchant/widgets/common/utils';
 
 import { TabCardProps } from './types';
 
-const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) => {
+const TabCard: React.FC<TabCardProps> = ({ isActive, tabData }) => {
   const isMobile = useMobile();
   const title = tabData.title ?? '';
   const change = convertToNumber(tabData.data.change);
   const changeType = tabData.data.change_type;
   const currency = tabData.data.currency || 'INR';
-  const value = parseInt(`${tabData.data.value}`, 10) ?? 0;
+  const value = parseInt(`${tabData.data.value ?? 0}`, 10);
   const formattedValue = convertToMajorUnit(value, { currency: currency as any });
   const trendText = `${change}%`;
   const trendSubText = tabData.data.sub_text ?? '';
@@ -56,17 +56,13 @@ const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) =>
         {tooltipText && <TooltipWidget tooltip_text={tooltipText} />}
       </Box>
       <Box display="flex" flexDirection="row" alignItems="center" gap="spacing.3">
-        {hasValue || cardPosition === 0 ? (
-          <Amount
-            value={formattedValue}
-            currency={currency as AmountProps['currency']}
-            type="heading"
-            size="large"
-            weight="semibold"
-          />
-        ) : (
-          <Text weight="semibold">--</Text>
-        )}
+        <Amount
+          value={formattedValue}
+          currency={currency as AmountProps['currency']}
+          type="heading"
+          size="large"
+          weight="semibold"
+        />
         {hasValue ? (
           <Change
             text={trendText}

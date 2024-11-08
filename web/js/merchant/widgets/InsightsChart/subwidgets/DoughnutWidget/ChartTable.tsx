@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Amount, Box, Divider } from '@razorpay/blade/components';
+import { Amount, Box, Divider, Text } from '@razorpay/blade/components';
 
 import { titleCase } from 'common/utils/rzp-utils';
 import { doughnutColors } from 'merchant/containers/Home/RTUX/colors';
@@ -17,7 +17,11 @@ function ChartTable({ chartData }: { chartData: ChartDataType }) {
   const getYValue = (point: string, schema: ChartSchemaType['y']) => {
     const formattedValue = formatYAxis(point, schema);
     if (schema.type !== 'amount') {
-      return formattedValue;
+      return (
+        <Text size="medium" weight="semibold">
+          {formattedValue}
+        </Text>
+      );
     }
 
     return (
@@ -41,7 +45,8 @@ function ChartTable({ chartData }: { chartData: ChartDataType }) {
               display="flex"
               justifyContent="space-between"
               alignItems="center"
-              marginY="spacing.3"
+              marginTop={index === 0 ? undefined : 'spacing.3'}
+              marginBottom={index === length - 1 ? undefined : 'spacing.3'}
             >
               <Box display="flex" alignItems="center" gap="spacing.3">
                 <ColorBox backgroundColor={doughnutColors[index]} />

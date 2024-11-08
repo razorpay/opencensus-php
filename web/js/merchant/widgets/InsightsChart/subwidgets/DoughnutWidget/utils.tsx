@@ -15,10 +15,10 @@ export const getOptions = (): ChartComponentProps['options'] => {
     borderWidth: 0,
     layout: {
       padding: {
-        top: 5,
-        left: 0,
-        right: 0,
-        bottom: 5,
+        top: 10,
+        left: 10,
+        right: 10,
+        bottom: 10,
       },
     },
     ...TOOLTIP_CHART_CONFIG,
@@ -68,7 +68,19 @@ export const emptyChartTableData: ChartDataType = {
       label: '',
       points: [
         {
-          x: '--',
+          x: 'Credit Cards',
+          y: '0',
+        },
+        {
+          x: 'UPI',
+          y: '0',
+        },
+        {
+          x: 'Netbanking',
+          y: '0',
+        },
+        {
+          x: 'Others',
           y: '0',
         },
       ],

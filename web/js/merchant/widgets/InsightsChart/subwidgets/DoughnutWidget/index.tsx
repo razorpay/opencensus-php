@@ -84,7 +84,6 @@ const DoughnutWidget: React.FC<DoughnutWidgetProps> = ({
       padding="spacing.6"
       borderWidth="thin"
       borderColor="surface.border.gray.muted"
-      gap="spacing.4"
     >
       <Box display="flex" flexDirection="column" flex="1">
         <Box display="flex">

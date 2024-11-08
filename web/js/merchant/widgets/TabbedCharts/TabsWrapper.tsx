@@ -40,7 +40,7 @@ const TabsWrapper: React.FC<TabsWrapperProps> = ({ children, analyticsProperties
   return (
     <Box display="flex" flexDirection="column">
       <Box display="flex" flexDirection="row" overflowX="scroll">
-        {children.map((child, index) => {
+        {children.map((child) => {
           const { id, tabData } = child.props;
           return (
             <TabCardWrapper
@@ -48,7 +48,7 @@ const TabsWrapper: React.FC<TabsWrapperProps> = ({ children, analyticsProperties
               onClick={() => handleTabClick(id, tabData)}
               data-testid={`tab-${id}`}
             >
-              <TabCard isActive={activeTab === id} tabData={tabData} cardPosition={index} />
+              <TabCard isActive={activeTab === id} tabData={tabData} />
             </TabCardWrapper>
           );
         })}

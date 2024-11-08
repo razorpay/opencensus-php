@@ -60,7 +60,6 @@ export type TabProps = {
 export type TabCardProps = {
   isActive: boolean;
   tabData: ComponentDataType;
-  cardPosition?: number;
 };
 
 export type GetTabbedChartDatasetType = {

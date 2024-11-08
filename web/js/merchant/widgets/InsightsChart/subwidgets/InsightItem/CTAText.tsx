@@ -10,7 +10,8 @@ export const CTAText = ({ value, value_type, currency }: CTATextProps) => {
       ? `${value}%`
       : value_type === 'amount'
       ? i18CurrencyConversionFromMinorUnitToCommonUnit(value, currency)
-      : value;
+      : value ?? 0;
+
   return (
     <Box display="inline-flex">
       {value_type === 'amount' ? (
