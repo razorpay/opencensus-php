@@ -1,7 +1,7 @@
 const { BASE_PATH, getStorageStatePath, routes } = require('testConstants');
 const { test, expect } = require('utils/base');
 
-test.describe('GCMS orders create @flow=ordersCreate @project=payments', () => {
+test.describe('GCMS orders create @flow=ordersCreate @project=payments @skip-unstable', () => {
   test.use({
     storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });

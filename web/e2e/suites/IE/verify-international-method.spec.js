@@ -17,7 +17,7 @@ test.describe.parallel(
     });
 
     // roast test verifyViewInternationalMethodsTest
-    test.skip('should be IE banner and link should redirect to IE page @priority=normal @suite=payments-automation', async ({
+    test('should be IE banner and link should redirect to IE page @priority=normal @suite=payments-automation', async ({
       page,
     }) => {
       await page.goto(routes.DASHBOARD);
