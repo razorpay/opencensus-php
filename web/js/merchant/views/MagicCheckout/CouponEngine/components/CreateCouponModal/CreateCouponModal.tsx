@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 import { useSplitzService } from 'common/splitz';
+import { addFPVSupportToPath } from 'merchant/views/MagicCheckout/utils/Configuration';
 
 // ui elements
 import ModalHeader from 'common/ui/ModalHeader';
@@ -26,7 +27,7 @@ const CreateCouponModal = ({ closeModal, isRcodEnabled }) => {
   const { abExperiments } = useSplitzService();
 
   const navigateToCreateCouponForm = (type: string) => {
-    navigate(`/magic/coupons/create/${type}`);
+    navigate(addFPVSupportToPath(`/magic/coupons/create/${type}`));
 
     // close the modal to select the coupon type
     closeModal();

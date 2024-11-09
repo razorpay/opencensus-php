@@ -11,6 +11,8 @@ import {
 } from '@razorpay/blade/components';
 import styled from 'styled-components';
 
+import { addFPVSupportToPath } from 'merchant/views/MagicCheckout/utils/Configuration';
+
 import { NewOffering } from 'merchant/views/MagicCheckout/MagicDashboard/WhatsNew/types';
 
 const ImageWrapper = styled.img`
@@ -45,7 +47,7 @@ export const WhatsNewCard = ({
               iconPosition="right"
               icon={ArrowRightIcon}
               marginRight="spacing.5"
-              onClick={() => navigate(item.ctaLink)}
+              onClick={() => navigate(addFPVSupportToPath(item.ctaLink))}
             >
               Check it out
             </Button>

@@ -29,6 +29,7 @@ import {
   openCreateCouponConfirmationModal,
   createApiData,
 } from 'merchant/views/MagicCheckout/CouponEngine/helpers';
+import { addFPVSupportToPath } from 'merchant/views/MagicCheckout/utils/Configuration';
 
 // context import
 import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
@@ -181,7 +182,7 @@ const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
         message: successToastMessage,
       });
       handleReset();
-      navigate('/magic/coupons');
+      navigate(addFPVSupportToPath('/magic/coupons'));
     } catch (error) {
       showNotification({
         type: 'error',
@@ -195,7 +196,7 @@ const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
   return (
     <Container>
       <div className="width-100">
-        <BackLink to="/magic/coupons" onClick={handleReset}>
+        <BackLink to={addFPVSupportToPath('/magic/coupons')} onClick={handleReset}>
           <i className="i i-chevron-left" />
           Back to All Coupons
         </BackLink>
@@ -210,7 +211,7 @@ const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
           })}
         </CreateCouponFormWrapper>
         <CtaContainer>
-          <Link to="/magic/coupons">
+          <Link to={addFPVSupportToPath('/magic/coupons')}>
             <button className="cancel-cta" onClick={handleReset} disabled={isLoading}>
               Cancel
             </button>
