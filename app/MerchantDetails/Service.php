@@ -354,6 +354,22 @@ class Service extends Base\Service
             }
         }
 
+        // Using this because test balance is not getting created for X
+        // as pre_signup_complete becomes true when experiment remove_presignup_functionality is on
+        // Slack thread: https://razorpay.slack.com/archives/C017XUC6V44/p1632118553161500?thread_ts=1631973030.154000&cid=C017XUC6V44
+//        $isPrimaryRequest = ApiUrl::isPrimaryOriginRequest();
+//
+//        if($data['pre_signup_complete'] === false and
+//            $isPrimaryRequest === true)
+//        {
+//            $skipPreSignup = (new Merchant\Service)->getTreatment('remove_presignup_functionality');
+//
+//            if($skipPreSignup['result'] === 'on')
+//            {
+//                $data['pre_signup_complete'] = true;
+//            }
+//        }
+
         return $data;
     }
 

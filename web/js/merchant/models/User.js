@@ -699,6 +699,10 @@ export default class User {
     return this.userRole === rolesList.SUPPORT;
   }
 
+  get isRazorxRXCASelfServeFlowEnabled() {
+    return this.getExpStatus('rx_ca_self_serve_flow');
+  }
+
   get isRewardsPageEnabled() {
     return this.isFeatureEnabled('reward_merchant_dashboard');
   }
@@ -826,7 +830,11 @@ export default class User {
   }
 
   isNeostoneFlowEnabled = (showState = '') => {
-    return getXCAStatus(this).showState === showState && this.isOwner;
+    return (
+      getXCAStatus(this).showState === showState &&
+      this.isOwner &&
+      !this.isRazorxRXCASelfServeFlowEnabled
+    );
   };
 
   isICICILinkedCAFlowEnabled = (showState = '') => {
@@ -888,6 +896,9 @@ export default class User {
 
   get isMobileSignupCareActive() {
     return this.getExpStatus('mobile_signup_care_changes_active');
+  }
+  get isSmartDashboardActive() {
+    return this.getExpStatus('instrument_requests_smart_dashboard');
   }
 
   get isRazorxAnnouncementEnabled() {
@@ -1112,6 +1123,10 @@ export default class User {
       getSplitzExperimentVariant('website_compliance_modal_exp')?.variables?.result === 'on' &&
       isWebsitePolicyFailed
     );
+  }
+
+  get isWhatsNewSectionEnabled() {
+    return this.getExpStatus('whats-new-dec-2020');
   }
 
   get isUxRevampPhase2Enabled() {
@@ -1808,6 +1823,10 @@ export default class User {
 
   get isProductRecommendationEnabled() {
     return this.getExpStatus('product_recommendation');
+  }
+
+  get isLoansCollectionsEnabled() {
+    return this.getExpStatus('loans_collections_dashboard');
   }
 
   get isAutoPLEnabled() {
