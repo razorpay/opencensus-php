@@ -9720,8 +9720,8 @@ class Route
 
         'payouts_dashboard_manual_actions',
 
-        'enable_terminals_online_tag_bulk',   
-        'disable_terminals_online_tag_bulk'  
+        'enable_terminals_online_tag_bulk',
+        'disable_terminals_online_tag_bulk'
     ];
 
     protected static $splitPaymentRoutes = [
@@ -16810,8 +16810,8 @@ class Route
             'user_update_name',
             'close_qr_codes_bulk',
             'payouts_dashboard_manual_actions',
-            'enable_terminals_online_tag_bulk',   
-            'disable_terminals_online_tag_bulk' 
+            'enable_terminals_online_tag_bulk',
+            'disable_terminals_online_tag_bulk'
         ],
 
         //
@@ -18189,7 +18189,10 @@ class Route
             'internal_fetch_merchant_ids',
             'user_fetch_by_verified_contact_internal',
             'user_create_merchant_internal',
-            'user_create_internal'
+            'user_create_internal',
+            'internal_feature_bulk_assign',
+            'merchant_methods_edit_internal',
+            'internal_feature_get_all'
         ],
 
         'disputes' => [
