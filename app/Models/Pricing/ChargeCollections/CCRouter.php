@@ -110,7 +110,6 @@ class CCRouter
         $this->trace = $app['trace'];
         $this->splitzExperimentID = "";
 
-
         if ($writes) {
             $this->splitzExperimentID = $app['config']->get('app.pricing_writes_experiment_id') ?? '';
         }
@@ -260,6 +259,9 @@ class CCRouter
                 $response = $this->app->charge_collections->createPricingPlan($input, $headers);
             }else if ($methodName == 'updatePlanRule'){
                 $response = $this->app->charge_collections->updatePricingPlanRule($input, $headers);
+                if (isset($response['rule'])){
+                    $response = $response['rule'];
+                }
             }else if ($methodName == 'deletePlanRuleForce'){
                 $response = $this->app->charge_collections->deletePricingPlanRule($input);
             }else if ($methodName == 'postAddBulkPricingRules'){
@@ -466,7 +468,7 @@ class CCRouter
         return $pricingEntity;
     }
 
-    private function transformToPlanModel($response)
+    public function transformToPlanModel($response)
     {
         if(!isset($response['rules']) || count($response['rules']) == 0) {
             return new PlanCollection;

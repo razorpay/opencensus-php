@@ -7093,7 +7093,8 @@ class Service extends Base\Service
             {
                 $newPricingRule['payment_network'] = $paymentNetwork;
 
-                (new Pricing\Core())->addPlanRule($plan, $newPricingRule, $orgId);
+                $planID = $plan->getId();
+                (new Pricing\Service())->addPlanRule($planID, $newPricingRule, $orgId);
 
                 if($paymentNetwork === null)
                 {
@@ -7105,7 +7106,9 @@ class Service extends Base\Service
         if($type === null && $addedRules === 0)
         {
             // atleast one card null business null rule is added
-            (new Pricing\Core())->addPlanRule($plan, $newPricingRule, $orgId);
+            $planID = $plan->getId();
+            (new Pricing\Service())->addPlanRule($planID, $newPricingRule, $orgId);
+
         }
     }
 
@@ -11841,7 +11844,13 @@ class Service extends Base\Service
             array_push($newRules, $rule);
         }
 
-        $newPlan = (new Pricing\Core)->create([PricingEntity::PLAN_NAME => $planName, PricingEntity::RULES => $newRules], $ruleOrgId);
+        $newPlan = (new Pricing\Service())->createPlan([PricingEntity::PLAN_NAME => $planName, PricingEntity::RULES => $newRules],
+            null, $ruleOrgId, true);
+
+        // for Pricing reverse_shadow/enable cases, convert response to Plan Entity
+        if (!($newPlan instanceof Pricing\Plan) && is_array($newPlan)) {
+            $newPlan =  (new Pricing\ChargeCollections\CCRouter())->transformToPlanModel($newPlan);
+        }
 
         return $newPlan[0][PricingEntity::PLAN_ID];
     }

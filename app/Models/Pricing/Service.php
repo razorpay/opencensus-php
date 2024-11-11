@@ -53,7 +53,7 @@ class Service extends Base\Service
         $this->ccRouter = new CCRouter(true);
     }
 
-    public function createPlan($input, $type = null)
+    public function createPlan($input, $type = null, $orgID = '', $internalCall = false)
     {
         $sourceInput = $input;
         $fqcn = get_class($this) . '\\' . __FUNCTION__;
@@ -61,8 +61,8 @@ class Service extends Base\Service
         $planAndRuleIds = Pricing\ChargeCollections\Utils::generatePlanAndRuleIds($ruleCount);
         $ccRequest = $this->transformCreatePlanRequest($input,$planAndRuleIds);
 
-        $legacyCallable = function () use ($sourceInput, $type, $planAndRuleIds) {
-            return $this->createPlanLegacy($sourceInput, $type, $planAndRuleIds);
+        $legacyCallable = function () use ($sourceInput, $type, $planAndRuleIds, $orgID, $internalCall) {
+            return $this->createPlanLegacy($sourceInput, $type, $planAndRuleIds, $orgID, $internalCall);
         };
 
         return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable, null, $type == Type::BUY_PRICING);
@@ -89,7 +89,23 @@ class Service extends Base\Service
         return $input;
     }
 
-    public function createPlanLegacy($input, $type = null, $planAndRuleIds = null): array
+    /**
+     * Creates a pricing plan based on input data, type, and optional IDs for plans and rules.
+     * Additional configuration options allow specifying an organization ID and a internalCall redirect identifier flag.
+     *
+     * @param array $input The data used to create the plan, containing pricing rules.
+     * @param string|null $type Optional. The type of plan to create, such as "pricing" or "buy_pricing" or null.
+     * @param array|null $planAndRuleIds Optional. An array of pre-generated plan and rule IDs to associate with the plan.
+     * @param string $orgID Optional. The organization ID for the plan, used for internal plan creation calls
+     *                       (e.g. merchant module). Defaults to an empty string, which triggers finding the
+     *                       organization from authentication details.
+     * @param bool $internalCall Optional. Determines if the call is from an internal module instead of the pricing
+     *                           controller, impacting the returned plan entity type.
+     * @return array The created plan in an array format with rules in an array. If $internalCall is true, returns
+     *               the `Plan` entity itself (without array conversion).
+     * @throws \Throwable
+     */
+    public function createPlanLegacy($input, $type = null, $planAndRuleIds = null, $orgID = '', $internalCall = false): array
     {
         // if rules are sent in json encoded form, decode it
         if (isset($input['rules']) === true and is_string($input['rules']) === true)
@@ -118,7 +134,12 @@ class Service extends Base\Service
                 TraceCode::PRICING_PLAN_CREATE_ATTEMPT, ['rules_count' => count($input['rules'])]
             );
         }
-        $ruleOrgId = $this->getRuleOrgId();
+
+        if ( !empty($orgID)){
+            $ruleOrgId = $orgID;
+        }else{
+            $ruleOrgId = $this->getRuleOrgId();
+        }
 
         $this->repo->pricing->withBuyPricing();
 
@@ -133,7 +154,10 @@ class Service extends Base\Service
             $input[Entity::RULES] = (new Entity())->formattedBuyPricingRules($inputRules);
         }
 
-        (new Pricing\Core)->create($input, $ruleOrgId);
+        $plan = (new Pricing\Core)->create($input, $ruleOrgId);
+        if ($internalCall){
+            return $plan;
+        }
 
         $plan = $this->repo->pricing->getPlanByName($input[Entity::PLAN_NAME]);
 
@@ -1065,22 +1089,22 @@ class Service extends Base\Service
         return $pricingPlans->toArrayMultiplePlansPublic();
     }
 
-    public function updatePlanRule($planId, $ruleId, $input, $isBuyPricingRule = false)
+    public function updatePlanRule($planId, $ruleId, $input, $isBuyPricingRule = false, $orgId = null)
     {
         $sourceInput = $input;
         $fqcn = get_class($this) . '\\' . __FUNCTION__;
         $planAndRuleIds = Pricing\ChargeCollections\Utils::generatePlanAndRuleIds(1);
         $ccRequest = $this->transformUpdatePlanRequest($input, $planId, $ruleId, $planAndRuleIds);
 
-        $legacyCallable = function () use ($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds) {
-            return $this->updatePlanRuleLegacy($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds);
+        $legacyCallable = function () use ($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds, $orgId) {
+            return $this->updatePlanRuleLegacy($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds, $orgId);
         };
 
         return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable, null, $isBuyPricingRule);
     }
 
     public function transformUpdatePlanRequest($input, $planId, $ruleId, $planAndRuleIds) {
-        $input[Entity::ID] = $planAndRuleIds['ruleIds'][0] ?? '';
+        $input['new_rule_id'] = $planAndRuleIds['ruleIds'][0] ?? '';
         $input[Entity::PLAN_ID] = $planId;
         $input['rule_id'] = $ruleId;
 
@@ -1092,7 +1116,7 @@ class Service extends Base\Service
         return $input;
     }
 
-    public function updatePlanRuleLegacy($planId, $ruleId, $input, $isBuyPricingRule = false, $planAndRuleIds = null)
+    public function updatePlanRuleLegacy($planId, $ruleId, $input, $isBuyPricingRule = false, $planAndRuleIds = null, $orgId = null)
     {
         $newRuleIds = $planAndRuleIds['ruleIds'] ?? [];
         if (!empty($newRuleIds[0])) {
@@ -1104,7 +1128,7 @@ class Service extends Base\Service
             $this->repo->pricing->onlyBuyPricing();
         }
 
-        $rule = (new Pricing\Core)->editPlanRule($planId, $ruleId, $input);
+        $rule = (new Pricing\Core)->editPlanRule($planId, $ruleId, $input, $orgId);
 
         return $rule->toArray();
     }

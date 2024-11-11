@@ -236,10 +236,14 @@ class Core extends Base\Core
                 try
                 {
                     // create forward pricing plan and assign to merchant.
-                    $plan = (new Pricing\Core)->create([ Pricing\Entity::PLAN_NAME => $merchant->getId(),
+                    $plan = (new Pricing\Service())->createPlan([ Pricing\Entity::PLAN_NAME => $merchant->getId(),
                         Pricing\Entity::RULES => $parser->getPricingRulesInput($processedEntry)
-                    ], $merchant->getOrgId()
-                    );
+                    ], null, $merchant->getOrgId(), true);
+
+                    // for Pricing reverse_shadow/enable cases, convert response to Plan Entity
+                    if (!($plan instanceof Pricing\Plan) && is_array($plan)) {
+                        $plan =  (new Pricing\ChargeCollections\CCRouter())->transformToPlanModel($plan);
+                    }
 
                     $merchant->setPricingPlan($plan[0][Pricing\Entity::PLAN_ID]);
 
@@ -474,7 +478,8 @@ class Core extends Base\Core
                     },
                         ARRAY_FILTER_USE_KEY);
 
-                    (new Pricing\Core)->editPlanRule($plan->getId(), $rule->getId(), $rule1, 'org_' . $merchant->org->getId());
+                    (new Pricing\Service())->updatePlanRule($plan->getId(), $rule->getId(), $rule1,
+                        false, 'org_' . $merchant->org->getId());
                 }
 
                 $this->repo->saveOrFail($merchant);

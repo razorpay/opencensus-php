@@ -135,7 +135,7 @@ class Repository extends Base\Repository
             return $query;
         }
 
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
         $query = $query->where(Pricing\Entity::ORG_ID, '=', $orgId);
 
