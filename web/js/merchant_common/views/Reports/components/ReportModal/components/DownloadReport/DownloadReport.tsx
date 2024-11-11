@@ -728,26 +728,39 @@ export const DownloadReportModal = ({
               visible: 'always',
             }}
           >
-            <MultiSelectDropdown
-              label="Add Recipient's Details"
-              helpText="Select report you want to receive report about."
-              errorText="Mandatory Field: Select report you want to receive report about."
-              placeHolder="Start typing emails to add"
-              value={recipients}
-              onChange={setRecipients}
-              shouldCloseDropdownOnSelect={false}
-              validate={() =>
-                showErrorInSection === ERROR_IN_FOURTH_SECTION
-                  ? validationsForEachSections[ERROR_IN_FOURTH_SECTION]
-                  : true
-              }
-              isSearchable
-              options={availableEmails && Array.isArray(availableEmails) ? availableEmails : []}
-              isVirtualized
-              itemHeight={36}
-              ariaLabelBy="Add Recipient Field"
-              necessityIndicator="required"
-            />
+            <Dropdown selectionType="multiple">
+              <SelectInput
+                label="Add Recipient's Details"
+                helpText="Select report you want to receive report about."
+                errorText="Mandatory Field: Select report you want to receive report about."
+                placeholder="Start typing emails to add"
+                value={recipients}
+                onChange={({ values }) => setRecipients(values)}
+                validationState={
+                  showErrorInSection === ERROR_IN_FOURTH_SECTION
+                    ? validationsForEachSections[ERROR_IN_FOURTH_SECTION]
+                      ? 'none'
+                      : 'error'
+                    : 'none'
+                }
+                necessityIndicator="required"
+                accessibilityLabel="Add Recipient Field"
+                isRequired
+              />
+              <DropdownOverlay>
+                <ActionList
+                  options={availableEmails && Array.isArray(availableEmails) ? availableEmails : []}
+                  itemComponent={({ data, index }) => (
+                    <ActionListItem
+                      key={`${data}-${index}`}
+                      title={data}
+                      value={data}
+                      testID={data}
+                    />
+                  )}
+                />
+              </DropdownOverlay>
+            </Dropdown>
           </CollapsibleFormSection>
         </CollapsibleForm>
         <ModalFooter>

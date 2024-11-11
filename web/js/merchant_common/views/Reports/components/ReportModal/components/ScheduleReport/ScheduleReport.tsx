@@ -567,22 +567,40 @@ export const ScheduleReportModal = ({
                 : "Add receiver's email addresses."
             }
           >
-            <MultiSelectDropdown
-              label="Add Recipient's Details"
-              helpText="Select report you want to receive report about."
-              errorText="Mandatory Field: Select report you want to receive report about."
-              placeHolder="Start typing emails to add"
-              value={recipients}
-              onChange={setRecipients}
-              shouldCloseDropdownOnSelect={false}
-              validate={() => (showErrorInSection === 2 ? validationsForEachSections[2] : true)}
-              isSearchable
-              options={availableEmails && Array.isArray(availableEmails) ? availableEmails : []}
-              isVirtualized
-              itemHeight={36}
-              ariaLabelBy="Add Recipient Field"
-              necessityIndicator="required"
-            />
+            <Dropdown selectionType="multiple">
+              <SelectInput
+                label="Add Recipient's Details"
+                helpText="Select report you want to receive report about."
+                errorText="Mandatory Field: Select report you want to receive report about."
+                placeholder="Start typing emails to add"
+                value={recipients}
+                onChange={({ values }) => setRecipients(values)}
+                validationState={
+                  showErrorInSection === 2
+                    ? validationsForEachSections[2]
+                      ? 'none'
+                      : 'error'
+                    : 'none'
+                }
+                necessityIndicator="required"
+                accessibilityLabel="Add Recipient Field"
+                testID="add_recipient_field"
+                isRequired
+              />
+              <DropdownOverlay>
+                <ActionList
+                  options={availableEmails && Array.isArray(availableEmails) ? availableEmails : []}
+                  itemComponent={({ data, index }) => (
+                    <ActionListItem
+                      key={`${data}-${index}`}
+                      title={data}
+                      value={data}
+                      testID={data}
+                    />
+                  )}
+                />
+              </DropdownOverlay>
+            </Dropdown>
           </CollapsibleFormSection>
         </CollapsibleForm>
         <ModalFooter>
@@ -597,6 +615,7 @@ export const ScheduleReportModal = ({
           </Button>
 
           <Button
+            testID="create_schedule"
             isLoading={isSubmitButtonLoading}
             size="medium"
             onClick={handleSubmit}

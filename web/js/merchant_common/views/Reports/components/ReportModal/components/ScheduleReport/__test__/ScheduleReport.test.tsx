@@ -130,10 +130,10 @@ describe('Create Schedule Modal', () => {
     await userEvent.click(screen.getByText(getDataDurations(false)[0].label));
 
     await userEvent.click(screen.getByText('Who will receive this report?'));
-    await userEvent.click(screen.getByLabelText('Add Recipient Field'));
-    await userEvent.click(screen.getByLabelText('rzp@rzp.com'));
+    await userEvent.click(screen.getByTestId('add_recipient_field'));
+    await userEvent.click(screen.getByTestId('rzp@rzp.com'));
 
-    await userEvent.click(screen.getByLabelText('Create Schedule'));
+    await userEvent.click(screen.getByTestId('create_schedule'));
 
     await expect(scheduleSpy).toBeCalled();
   }, 30000);
