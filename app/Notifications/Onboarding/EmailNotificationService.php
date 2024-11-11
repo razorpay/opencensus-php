@@ -17,6 +17,8 @@ use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Mail\Merchant\PartnerSubmerchantOnboardingEmail;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Mail\Base\EmailHelper;
+use RZP\Models\Merchant\Core;
+
 
 class EmailNotificationService extends BaseNotificationService
 {
@@ -24,6 +26,27 @@ class EmailNotificationService extends BaseNotificationService
 
     public function send(): void
     {
+        $merchant     = $this->args[Constants::MERCHANT];
+        $merchantCore = new Core();
+        $isExperimentEnabled = true;
+
+        if (isset(Events::EMAIL_TEMPLATES_SPLITZ_EXPERIMENTS[$this->event]) === true)
+        {
+            $experimentKey = Events::EMAIL_TEMPLATES_SPLITZ_EXPERIMENTS[$this->event];
+
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.'.$experimentKey),
+            ];
+
+            $isExperimentEnabled = $merchantCore->isSplitzExperimentEnable($properties, 'enable');
+        }
+
+        if ($isExperimentEnabled === false)
+        {
+            return;
+        }
+
         if (strpos($this->event, Events::PARTNER_EVENTS_PREFIX) === 0)
         {
             $this->sendToPartner();

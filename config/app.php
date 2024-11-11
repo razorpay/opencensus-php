@@ -505,6 +505,10 @@ return array(
 
     'payment_handle_order_creation_experiment_id' => env('PAYMENT_HANDLE_ORDER_CREATION_EXPERIMENT_ID'),
 
+    'under_review_communications_from_api_exp_id' => env('SEND_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
+
+    'rejected_communications_from_api_exp_id' => env('SEND_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
+
     'nocode' => [
         'cache' => [
             'slug_ttl'      => env('NOCODE_SLUG_CACHE_TTL', 86400),

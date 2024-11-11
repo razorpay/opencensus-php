@@ -113,7 +113,6 @@ class Events
     const OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                    = "OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER";
     const OMNI_NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                     = "OMNI_NC_COUNT_1_ONBOARDING_PAUSE_REMINDER";
     const OMNI_NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                     = "OMNI_NC_COUNT_2_ONBOARDING_PAUSE_REMINDER";
-
     const SMS_TEMPLATES = [
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE         => 'sms.onboarding.nc_revamp',
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE     => 'sms.onboarding.nc_revamp',
@@ -205,6 +204,10 @@ class Events
         self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'send_partner_submerchant_needs_clarification_communications',
         self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_NOT_LIVE                  => 'send_partner_submerchant_needs_clarification_communications',
         self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_ONBOARDING_PAUSE                   => 'send_partner_submerchant_needs_clarification_communications',
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE                           => 'under_review_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE                        => 'under_review_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE                               => 'rejected_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE                            => 'rejected_communications_from_api_exp_id'
     ];
 
     const SMS_TEMPLATES_RAZORX_EXPERIMENTS = [
@@ -304,6 +307,10 @@ class Events
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                => 'send_partner_submerchant_needs_clarification_communications',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE   => 'send_partner_submerchant_needs_clarification_communications',
         self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE                 => 'send_partner_submerchant_needs_clarification_communications',
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE                   => 'under_review_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE                => 'under_review_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE                       => 'rejected_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE                    => 'rejected_communications_from_api_exp_id'
     ];
 
     const WHATSAPP_TEMPLATES_NEW_EXPERIMENTS = [
@@ -630,6 +637,12 @@ class Events
         self::OMNI_NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                   => '[Action required] Reminder to update your details for KYC verification',
     ];
 
+    const EMAIL_TEMPLATES_SPLITZ_EXPERIMENTS = [
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE                   => 'under_review_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE                => 'under_review_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE                       => 'rejected_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE                    => 'rejected_communications_from_api_exp_id'
+    ];
 
     const EMAIL_CC = [
         self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION            => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
