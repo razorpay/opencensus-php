@@ -24,6 +24,8 @@ import {
   BANK_ACCOUNT_UPDATE_STEPS,
   FLOW_TYPE,
 } from './typings';
+import { useValidatePermissions } from 'merchant/helpers/permissions/utils';
+import { PERMISSIONS } from 'merchant/helpers/permissions/constant';
 
 const BankAccountDetails = ({
   openModal,
@@ -39,6 +41,11 @@ const BankAccountDetails = ({
 }: BankAccountDetailsPropsInterface): JSX.Element => {
   const [isBankUpdateEnabled, setIsBankUpdateEnabled] = useState<boolean | null>(null);
   const [isDataSettled, setIsDataSettled] = useState<boolean>(false);
+  const { isActionAllowed, isRBACEnabled } = useValidatePermissions();
+  // Get this permission assigned to admin and owner
+  const canUpdateBankAccount = isActionAllowed({
+    permissions: [PERMISSIONS.UPDATE_BANK_ACCOUNT_DETAIL],
+  });
 
   const context = useTwoFactorVerificationContext();
 
@@ -98,7 +105,7 @@ const BankAccountDetails = ({
   useEffect(() => {
     const { isAdminOrOwner, id } = user;
     const promises: Promise<void>[] = [fetchBankAccount(), fetchSettlementConfig()];
-    if (isAdminOrOwner) {
+    if (isRBACEnabled ? canUpdateBankAccount : isAdminOrOwner) {
       promises.push(
         fetchBankAccountChangeStatus(id)
           .then(({ data }) => setIsBankUpdateEnabled(!data))
@@ -111,7 +118,7 @@ const BankAccountDetails = ({
       );
     }
     Promise.allSettled(promises).then(() => setIsDataSettled(true));
-  }, [user.id, user.isAdminOrOwner]);
+  }, [user.id, user.isAdminOrOwner, isRBACEnabled, canUpdateBankAccount]);
 
   return (
     <>

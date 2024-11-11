@@ -22,6 +22,8 @@ import {
 } from 'merchant/views/Account/Profile/deeplink-constants';
 import { bindActionCreators } from 'redux';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
+import { useValidatePermissions } from 'merchant/helpers/permissions/utils';
+import { PERMISSIONS } from 'merchant/helpers/permissions/constant';
 
 function linkHandler() {
   analyticsTrack({
@@ -41,6 +43,10 @@ const EditTransactionLimit = (props) => {
   const workflowKey = isTypeDomestic
     ? WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT
     : WORKFLOW_TYPES.INCREASE_INTERNATIONAL_TRANSACTION_LIMIT;
+  const { isActionAllowed, isRBACEnabled } = useValidatePermissions();
+  const canUpdateTransactionLimit = isActionAllowed({
+    permissions: [PERMISSIONS.UPDATE_TRANSACTION_LIMIT],
+  });
 
   const amountValue = useMemo(
     () => (isTypeDomestic ? max_payment_amount : max_international_payment_amount),
@@ -58,7 +64,7 @@ const EditTransactionLimit = (props) => {
     );
 
     const showTransactionLimit =
-      user.role === 'owner' &&
+      (isRBACEnabled ? canUpdateTransactionLimit : user.role === 'owner') &&
       user.isOrgRZP &&
       user.isCountryIndia &&
       user.isTransactionLimitUpdateSelfServeOn &&
@@ -120,17 +126,20 @@ const EditTransactionLimit = (props) => {
                 </PopoverBody>
               </Popover>
             </small>
-            <WorkflowStatus
-              roles={[rolesList.OWNER]}
-              workflowType={workflowKey}
-              reviewStatus="Your request to increase transaction limit has been received. Our team is going through the information provided by you."
-              onReplyClick={() =>
-                props.replyHandler({
-                  workflowType: workflowKey,
-                  workflowName: 'Increase Transaction Limit',
-                })
-              }
-            />
+            {canUpdateTransactionLimit ? (
+              <WorkflowStatus
+                roles={[rolesList.OWNER]}
+                shouldSkipRoleCheck={isRBACEnabled}
+                workflowType={workflowKey}
+                reviewStatus="Your request to increase transaction limit has been received. Our team is going through the information provided by you."
+                onReplyClick={() =>
+                  props.replyHandler({
+                    workflowType: workflowKey,
+                    workflowName: 'Increase Transaction Limit',
+                  })
+                }
+              />
+            ) : null}
           </div>
         )}
         value={() =>

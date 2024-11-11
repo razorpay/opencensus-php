@@ -77,4 +77,4 @@ export const isInternalTestingEnabled = (experiment): boolean => {
   return isRazorpayMerchant && isExperimentEnabled(experiment?.internal_testing_whitelisting);
 };
 
-export const isRBACEnabled = (experiment): boolean => isExperimentEnabled(experiment?.rbacEnabled);
+export const isBillMeActivatedMerchant = (experiment = {}): boolean => false;

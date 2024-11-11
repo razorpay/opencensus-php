@@ -49,6 +49,7 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
 
   const [sections, setSections] = useState<SectionCardInterface[]>([]);
   const { abExperiments } = useSplitzService();
+  const rbacExperiment = abExperiments?.rbacEnabled;
   const { isConfigTagEnabled } = useI18Service();
   const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
 
@@ -100,6 +101,7 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
         profile,
         allowCFBInternational: featureData[feature],
         extraConfig,
+        rbacExperiment,
       });
       setSections(sectionCards);
     }

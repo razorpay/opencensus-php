@@ -1,5 +1,4 @@
 import { useSplitzService } from 'common/splitz';
-import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
 import React from 'react';
 import { useStore } from 'shell/commonStore';
@@ -15,8 +14,10 @@ interface ValidatePermissions {
  * Check if RBAC is enabled based on Splitz
  * User object is passed to have exclusion of users
  * */
+
 export const isRBACExperimentEnabled = (user, rbacExperiment) => {
-  return isExperimentEnabled(rbacExperiment);
+  const result = rbacExperiment?.variables?.result === 'variant';
+  return result;
 };
 
 /**
@@ -25,46 +26,41 @@ export const isRBACExperimentEnabled = (user, rbacExperiment) => {
  * */
 const initIsActionAllowed =
   (user: User, rbacExperiment) =>
-    ({ permissions, operator = 'AND' }: ValidatePermissions): boolean => {
-      const isRBACEnabled = isRBACExperimentEnabled(user, rbacExperiment);
-      if (!isRBACEnabled) return true;
+  ({ permissions, operator = 'AND' }: ValidatePermissions): boolean => {
+    const isRBACEnabled = isRBACExperimentEnabled(user, rbacExperiment);
+    if (!isRBACEnabled) return true;
 
-      const userPermissions = user.permissions || [];
+    const userPermissions = user.permissions || [];
 
-      // For Testing
-      // const userPermissions = window.rzp_user.permissions || [];
+    if (!permissions) throw new Error('Permissions are required');
 
-      if (!permissions) throw new Error('Permissions are required');
+    if (!Array.isArray(permissions)) {
+      throw new Error('Permissions must be an array');
+    }
 
-      if (!Array.isArray(permissions)) {
-        throw new Error('Permissions must be an array');
-      }
+    if (permissions.length === 0) {
+      throw new Error('At least one permission is required');
+    }
 
-      if (permissions.length === 0) {
-        throw new Error('At least one permission is required');
-      }
+    if (operator !== 'AND' && operator !== 'OR') {
+      throw new Error('Invalid permissions operator');
+    }
 
-      if (operator !== 'AND' && operator !== 'OR') {
-        throw new Error('Invalid permissions operator');
-      }
+    if (operator === 'AND') {
+      return permissions.every((permission) => userPermissions.includes(permission));
+    }
 
-      if (operator === 'AND') {
-        return permissions.every((permission) => userPermissions.includes(permission));
-      }
+    if (operator === 'OR') {
+      return permissions.some((permission) => userPermissions.includes(permission));
+    }
 
-      if (operator === 'OR') {
-        return permissions.some((permission) => userPermissions.includes(permission));
-      }
-
-      return false;
-    };
+    return false;
+  };
 
 const ValidatePermissionsHOC = (WrappedComponent) => (props) => {
   const user = useStore((state) => state.session.user);
 
-  const {
-    abExperiments: { rbacEnabled },
-  } = useSplitzService();
+  const { abExperiments: { rbacEnabled } = {} } = useSplitzService();
 
   const isActionAllowed = initIsActionAllowed(user, rbacEnabled);
   const isRBACEnabled = isRBACExperimentEnabled(user, rbacEnabled);
@@ -80,9 +76,7 @@ const withValidatePermissions = (WrappedComponent) => ValidatePermissionsHOC(Wra
 const useValidatePermissions = () => {
   const user = useStore((state) => state.session.user);
 
-  const {
-    abExperiments: { rbacEnabled },
-  } = useSplitzService();
+  const { abExperiments: { rbacEnabled } = {} } = useSplitzService();
 
   const isActionAllowed = initIsActionAllowed(user, rbacEnabled);
   const isRBACEnabled = isRBACExperimentEnabled(user, rbacEnabled);

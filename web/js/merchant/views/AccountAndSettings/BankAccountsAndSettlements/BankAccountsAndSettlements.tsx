@@ -26,6 +26,8 @@ import React, { Suspense } from 'react';
 import { connect } from 'react-redux';
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
+import { useValidatePermissions } from 'merchant/helpers/permissions/utils';
+import { PERMISSIONS } from 'merchant/helpers/permissions/constant';
 
 const { BANK_ACCOUNT_DETAILS, SETTLEMENT_DETAILS } = ROUTES_INFO;
 const BankAccountDetails = lazy(
@@ -68,6 +70,12 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
   const { abExperiments } = useSplitzService();
   const { isConfigTagEnabled } = useI18Service();
   const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
+
+  const { isActionAllowed } = useValidatePermissions();
+  const canViewSettlementDetails = isActionAllowed({
+    permissions: [PERMISSIONS.VIEW_SETTLEMENT],
+  });
+
   if (!user.isAccountAndSettingsRevampEnabled) {
     switch (pathname) {
       case BANK_ACCOUNT_DETAILS:
@@ -101,7 +109,11 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
           <ShowWhen additionalCondition={() => isBankAccountDetailsAllowed(extraConfig)}>
             <NavLink to={BANK_ACCOUNT_DETAILS}>Bank account details</NavLink>
           </ShowWhen>
-          <ShowWhen additionalCondition={() => isSettlementsAllowed(extraConfig)}>
+          <ShowWhen
+            additionalCondition={() =>
+              isSettlementsAllowed(extraConfig) && canViewSettlementDetails
+            }
+          >
             <NavLink to={SETTLEMENT_DETAILS}>Settlement details</NavLink>
           </ShowWhen>
         </StyledHeader>
@@ -124,7 +136,11 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
                 <Route
                   path={getRefRoute(SETTLEMENT_DETAILS)}
                   element={
-                    <RouteGuard additionalCondition={() => isSettlementsAllowed(extraConfig)}>
+                    <RouteGuard
+                      additionalCondition={() =>
+                        isSettlementsAllowed(extraConfig) && canViewSettlementDetails
+                      }
+                    >
                       {getTabsContent({ type: 'settlement', user })}
                     </RouteGuard>
                   }

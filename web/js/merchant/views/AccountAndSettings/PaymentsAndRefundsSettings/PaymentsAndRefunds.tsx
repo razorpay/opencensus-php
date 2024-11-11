@@ -40,6 +40,8 @@ import {
 import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
+import { useValidatePermissions } from 'merchant/helpers/permissions/utils';
+import { PERMISSIONS } from 'merchant/helpers/permissions/constant';
 
 const feature = 'allow_cfb_international';
 
@@ -74,6 +76,13 @@ const PaymentsAndRefundsSettings = ({
   const { abExperiments } = useSplitzService();
   const { isConfigTagEnabled } = useI18Service();
   const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
+  const { isActionAllowed, isRBACEnabled } = useValidatePermissions();
+  const canViewTransactionLimits = isActionAllowed({
+    permissions: [PERMISSIONS.VIEW_TRANSACTION_LIMIT],
+  });
+  const canViewBalance = isActionAllowed({
+    permissions: [PERMISSIONS.VIEW_BALANCE],
+  });
 
   useEffect(() => {
     if (!featureData.hasOwnProperty(feature)) {
@@ -117,7 +126,11 @@ const PaymentsAndRefundsSettings = ({
           ]}
         />
         <StyledHeader className="scrollable-tab-header">
-          <ShowWhen additionalCondition={(user) => isBalancesEnabled(user, extraConfig)}>
+          <ShowWhen
+            additionalCondition={(user) =>
+              canViewBalance && isBalancesEnabled(user, extraConfig, isRBACEnabled)
+            }
+          >
             <NavLink to={ROUTES_INFO.BALANCES}>Balances</NavLink>
           </ShowWhen>
           <ShowWhen additionalCondition={(user): boolean => isCreditsEnabled(user, extraConfig)}>
@@ -126,7 +139,9 @@ const PaymentsAndRefundsSettings = ({
           <ShowWhen additionalCondition={() => isReminderEnabled(extraConfig)}>
             <NavLink to={ROUTES_INFO.REMINDERS}>Reminders</NavLink>
           </ShowWhen>
-          <NavLink to={ROUTES_INFO.TRANSACTION_LIMITS}>Transaction limits</NavLink>
+          {canViewTransactionLimits ? (
+            <NavLink to={ROUTES_INFO.TRANSACTION_LIMITS}>Transaction limits</NavLink>
+          ) : null}
           <ShowWhen
             additionalCondition={(user, { splitz }): boolean =>
               isWhatsAppAccountSetupEnabled(user, splitz, true)
@@ -162,7 +177,7 @@ const PaymentsAndRefundsSettings = ({
                     <Route
                       path={getRefRoute(ROUTES_INFO.BALANCES)}
                       element={
-                        <RouteGuard>
+                        <RouteGuard additionalCondition={() => canViewBalance}>
                           <BalanceSettings />
                         </RouteGuard>
                       }
@@ -186,7 +201,7 @@ const PaymentsAndRefundsSettings = ({
                     <Route
                       path={getRefRoute(ROUTES_INFO.TRANSACTION_LIMITS)}
                       element={
-                        <RouteGuard>
+                        <RouteGuard additionalCondition={() => canViewTransactionLimits}>
                           <TransactionLimits />
                         </RouteGuard>
                       }

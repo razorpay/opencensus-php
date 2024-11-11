@@ -46,10 +46,15 @@ const WorkflowStatus = ({
   fetchWorkflowStatus,
   user,
   isBankAccountUpdateWorkflow = false,
+  shouldSkipRoleCheck = false,
 }) => {
+  const shouldFetchWorkflow = shouldSkipRoleCheck
+    ? true
+    : !roles.length || roles.includes(user.role);
+
   useEffect(() => {
     // Only fetch request if user is owner, other users shouldn't see the workflow
-    if ((!roles.length || roles.includes(user.role)) && workflows[workflowType].loading) {
+    if (shouldFetchWorkflow && workflows[workflowType].loading) {
       fetchWorkflowStatus(workflowType);
     }
   }, []);

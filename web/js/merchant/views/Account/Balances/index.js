@@ -26,12 +26,14 @@ import {
 import lazy from 'merchant/routes/LazyLoader';
 import DocsLink from 'merchant/components/DocsLink';
 import ReserveBalance from 'merchant/views/Account/Balances/ReserveBalance';
+import { CompanyBalance } from 'merchant/views/Account/Balances/CompanyBalance';
 import CurrentBalance from 'merchant/views/Account/Balances/CurrentBalance';
 import Loader from 'common/ui/Loader';
 import { TicketSystemEmitter } from 'merchant/care/init';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { Flex } from '../Credits/components/style';
 import { BellIcon, Box, Heading, Link, Text } from '@razorpay/blade/components';
+import { isBillMeActivatedMerchant } from 'common/splitz/utils';
 
 const ManageBalanceAlert = lazy(() =>
   import(
@@ -270,7 +272,6 @@ class AddFundsContainer extends Component {
                 handleContactUs={this.handleContactUs}
                 handlAddFunds={this.handlAddFunds}
               />
-
               <ReserveBalance
                 handleContactUs={this.handleContactUs}
                 handlAddFunds={this.handlAddFunds}
@@ -281,6 +282,7 @@ class AddFundsContainer extends Component {
             <Text size="small" weight="regular" color="surface.text.gray.normal">
               Note: Standard TDR charges applies on adding funds
             </Text>
+            {isBillMeActivatedMerchant() ? <CompanyBalance /> : null}
           </Box>
         </Box>
       </div>

@@ -90,8 +90,13 @@ export const isSupportTicketEnabled = (user: User, extraConfig: ExtraConfig): bo
   !user.isComdelApiEnabled &&
   !extraConfig.isConfigTagEnabled('account.support_history');
 
-export const isBalancesEnabled = (user: User, extraConfig: ExtraConfig): boolean =>
-  user.isAllowedView('add_funds') && !extraConfig.isConfigTagEnabled('account.balances');
+export const isBalancesEnabled = (
+  user: User,
+  extraConfig: ExtraConfig,
+  isRBACEnabled: boolean = false,
+): boolean =>
+  user.isAllowedView('add_funds', isRBACEnabled) &&
+  !extraConfig.isConfigTagEnabled('account.balances');
 
 export const isCreditsEnabled = (user: User, extraConfig: ExtraConfig): boolean =>
   user.isAllowedView('credits') && !extraConfig.isConfigTagEnabled('account.credits');

@@ -14,11 +14,14 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import lazy from 'merchant/routes/LazyLoader';
 import { HeaderProps } from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/GSTDetails/types';
 import { track } from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/GSTDetails/tracking';
+import { useValidatePermissions, ValidatePermissions } from 'merchant/helpers/permissions/utils';
+import { PERMISSIONS } from 'merchant/helpers/permissions/constant';
 
 const UpdateModal = lazy(() => import(/* webpackChunkName: 'UpdateModal' */ './UpdateModal'));
 
 const Header = ({ openModal, gstList, defaultGSTIn, setAlertStatus }: HeaderProps) => {
   const isMobile = useMobile();
+  const { isRBACEnabled } = useValidatePermissions();
 
   const openGSTUpdateModal = () => {
     track({
@@ -75,33 +78,38 @@ const Header = ({ openModal, gstList, defaultGSTIn, setAlertStatus }: HeaderProp
           <Text size="large">GST details</Text>
         </Box>
       )}
-      <ShowWhen myRole="owner admin" additionalCondition={(usr) => usr.isAllowedEdit('profile')}>
-        <Box
-          display="flex"
-          flexDirection="column"
-          gap="spacing.3"
-          justifyContent="space-between"
-          alignItems="center"
-          width={{
-            base: '100%',
-            m: 'auto',
-          }}
+      <ValidatePermissions permissions={[PERMISSIONS.UPDATE_GST_DETAIL]}>
+        <ShowWhen
+          myRole={isRBACEnabled ? undefined : 'owner admin'}
+          additionalCondition={(usr) => usr.isAllowedEdit('profile', isRBACEnabled)}
         >
-          <TriggerOnQueryParamMatch
-            queryParamsMapping={[
-              {
-                key: ACTION_QUERY_PARAM_KEY,
-                value: GSTIN_UPDATE,
-                trigger: openGSTUpdateModal,
-              },
-            ]}
+          <Box
+            display="flex"
+            flexDirection="column"
+            gap="spacing.3"
+            justifyContent="space-between"
+            alignItems="center"
+            width={{
+              base: '100%',
+              m: 'auto',
+            }}
           >
-            <Button isFullWidth={isMobile} onClick={openGSTUpdateModal}>
-              Update GST details
-            </Button>
-          </TriggerOnQueryParamMatch>
-        </Box>
-      </ShowWhen>
+            <TriggerOnQueryParamMatch
+              queryParamsMapping={[
+                {
+                  key: ACTION_QUERY_PARAM_KEY,
+                  value: GSTIN_UPDATE,
+                  trigger: openGSTUpdateModal,
+                },
+              ]}
+            >
+              <Button isFullWidth={isMobile} onClick={openGSTUpdateModal}>
+                Update GST details
+              </Button>
+            </TriggerOnQueryParamMatch>
+          </Box>
+        </ShowWhen>
+      </ValidatePermissions>
     </Box>
   );
 };

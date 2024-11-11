@@ -3,6 +3,8 @@ import User from 'common/typings/User';
 import * as LocalStorageService from 'common/utils/localStorage';
 import { isExperimentActive } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { PERMISSIONS } from 'merchant/helpers/permissions/constant';
+import { initIsActionAllowed, isRBACExperimentEnabled } from 'merchant/helpers/permissions/utils';
 import {
   AdditionalContextInterface,
   SectionCardInterface,
@@ -374,9 +376,17 @@ export const Sections: SectionCardInterface[] = [
         title: PaymentRefundsTitles[PaymentRefundsFields.BALANCES],
         href: ROUTES_INFO.BALANCES,
         additionalCondition:
-          ({ extraConfig }: AdditionalContextInterface) =>
-          (user: User): boolean =>
-            isBalancesEnabled(user, extraConfig),
+          ({ extraConfig, rbacExperiment }: AdditionalContextInterface) =>
+          (user: User): boolean => {
+            const isActionAllowed = initIsActionAllowed(user, rbacExperiment);
+            const isRBACEnabled = isRBACExperimentEnabled(user, rbacExperiment);
+            return (
+              isBalancesEnabled(user, extraConfig, isRBACEnabled) &&
+              isActionAllowed({
+                permissions: [PERMISSIONS.VIEW_BALANCE],
+              })
+            );
+          },
       },
       {
         id: PaymentRefundsFields.CREDITS,
@@ -400,6 +410,14 @@ export const Sections: SectionCardInterface[] = [
         id: PaymentRefundsFields.TRANSACTION_LIMITS,
         title: PaymentRefundsTitles[PaymentRefundsFields.TRANSACTION_LIMITS],
         href: ROUTES_INFO.TRANSACTION_LIMITS,
+        additionalCondition: ({ rbacExperiment }) => {
+          return (user: User) => {
+            const isActionAllowed = initIsActionAllowed(user, rbacExperiment);
+            return isActionAllowed({
+              permissions: [PERMISSIONS.VIEW_TRANSACTION_LIMIT],
+            });
+          };
+        },
       },
       {
         id: PaymentRefundsFields.FEE_BEARER,
@@ -460,6 +478,14 @@ export const Sections: SectionCardInterface[] = [
         id: BankAccountSettlementFields.SETTLEMENT_DETAILS,
         title: BankAccountSettlementTitles[BankAccountSettlementFields.SETTLEMENT_DETAILS],
         href: ROUTES_INFO.SETTLEMENT_DETAILS,
+        additionalCondition: ({ rbacExperiment }) => {
+          return (user: User) => {
+            const isActionAllowed = initIsActionAllowed(user, rbacExperiment);
+            return isActionAllowed({
+              permissions: [PERMISSIONS.VIEW_SETTLEMENT],
+            });
+          };
+        },
       },
     ],
   },
