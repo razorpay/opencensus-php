@@ -14,7 +14,6 @@ type Props = {
 const ProgramsListItem: React.FC<Props> = ({ program, onClick }) => {
   // const programType =
   //   Object.keys(PROGRAM_TYPES).find((key) => PROGRAM_TYPES[key].id === program.type) || 'VOUCHER';
-
   return (
     <Box paddingX="0px" paddingY="spacing.3" flexBasis="25%">
       <Card
@@ -91,10 +90,10 @@ const ProgramsListItem: React.FC<Props> = ({ program, onClick }) => {
             </Box>
             <Box paddingTop="spacing.5" height="38px" width="240px">
               <Box>
-                <Text color="surface.text.gray.muted">Reseller Discount</Text>
+                <Text color="surface.text.gray.muted">Maximum Discount</Text>
               </Box>
               <Box paddingTop="spacing.1">
-                <Text>{'5%'}</Text>
+                <Text>{program.policies.max_discount_percent}%</Text>
               </Box>
             </Box>
           </Box>

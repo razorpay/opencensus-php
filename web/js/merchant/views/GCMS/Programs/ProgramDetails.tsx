@@ -10,6 +10,7 @@ import {
   getProgramContentSections,
   getProgramDenominationSections,
 } from 'merchant/views/GCMS/Programs/constants';
+import { useStore } from 'shell/commonStore';
 import { fetchProgramById } from 'merchant/views/GCMS/Programs/queries';
 import ProgramHeaderSection from 'merchant/views/GCMS/shared/ProgramHeaderSection';
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
@@ -18,11 +19,12 @@ import { trackProgramsDetailsPageLoadSuccess } from './events';
 import { getFormattedAmountNewDenom } from '../shared/utils';
 
 const ProgramDetails: React.FC = () => {
+  const session = useStore((state) => state.session);
+  const mode = session.mode;
   const location = useLocation();
   const navigate = useNavigate();
   const { programId } = useParams<{ programId: string }>();
 
-  const mode = 'test';
   const { isLoading, data: program } = useQuery({
     queryKey: ['gcms:programs:id', mode, programId],
     queryFn: () => fetchProgramById({ mode, programId }),

@@ -29,11 +29,12 @@ const OrderStatus = ({
   isGiftCardDownloading: boolean;
 }) => {
   const isOrderDraft = orderDetails?.status === OrderStatusEnum.DRAFT;
+  // status == "processed" implies that issuing has completed
+  const isOrderStatusProcessed = orderDetails?.status === OrderStatusEnum.PROCESSED;
   const isOrderProcessed = orderDetails?.total_quantity === orderDetails?.processed_quantity;
   const isOrderCancelled = orderDetails?.status === OrderStatusEnum.CANCELLED;
   const isOrderDeliveryCompleted =
     orderDetails?.delivery_status === OrderDeliveryStatusEnum.DELIVERY_COMPLETED;
-
   if (isOrderDraft) {
     return null;
   }
@@ -166,7 +167,7 @@ const OrderStatus = ({
                     marginBottom="spacing.3"
                     alignItems="center"
                   >
-                    {isOrderProcessed ? null : (
+                    {isOrderStatusProcessed ? null : (
                       <LoaderIcon
                         color="surface.icon.gray.normal"
                         size="medium"
@@ -174,10 +175,10 @@ const OrderStatus = ({
                       />
                     )}
                     <Text size="medium" weight="semibold" color="surface.text.gray.normal">
-                      {isOrderProcessed ? 'Order Processed' : 'Generating gift cards'}
+                      {isOrderStatusProcessed ? 'Order Processed' : 'Generating gift cards'}
                     </Text>
                   </Box>
-                  {isOrderProcessed ? (
+                  {isOrderStatusProcessed ? (
                     <Box display="flex" flexDirection="row">
                       <Box display="flex" flexDirection="column" marginRight="spacing.7">
                         <Text

@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import Shimmer from 'common/components/Shimmer';
 import Spinner from 'common/ui/Spinner';
+import { useStore } from 'shell/commonStore';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import store from 'merchant/store';
@@ -59,6 +60,8 @@ const brandTrasactionColumns = [
 ];
 
 const BrandAccount = (): JSX.Element => {
+  const session = useStore((state) => state.session);
+  const mode = session.mode;
   const [skip, setSkip] = useState(0);
   const [referenceId, setReferenceId] = useState('');
   const [fromDate, setFromDate] = useState();
@@ -81,7 +84,7 @@ const BrandAccount = (): JSX.Element => {
 
   const { isLoading: isFetchBrandBalanceLoading, data: brandBalanceData } = useQuery({
     queryKey: ['gcms:brandBalance'],
-    queryFn: () => fetchBrandBalance({ merchantId, mode: 'test' }),
+    queryFn: () => fetchBrandBalance({ merchantId, mode }),
   });
 
   useEffect(() => {

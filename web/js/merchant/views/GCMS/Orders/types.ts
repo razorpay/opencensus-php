@@ -15,7 +15,7 @@ export enum OrderStatusEnum {
   DRAFT = 'draft',
   SUBMITTED = 'submitted',
   PROCESSING = 'processing',
-  PROCESSED = 'prcoessed',
+  PROCESSED = 'processed',
   CANCELLED = 'cancelled',
 }
 
