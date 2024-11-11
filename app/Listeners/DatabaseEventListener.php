@@ -4,6 +4,7 @@ namespace RZP\Listeners;
 
 use App;
 
+use Database\Connection;
 use RZP\Base\ConnectionType;
 use RZP\Base\Database\Metric;
 use RZP\Trace\TraceCode;
@@ -20,6 +21,16 @@ class DatabaseEventListener
      * @var Trace
      */
     protected $trace;
+
+    const ASV_TABLES = [
+        "merchants",
+        "merchant_details",
+        "merchant_business_details",
+        "merchant_website",
+        "stakeholders",
+        "merchant_documents",
+        "merchant_emails",
+    ];
 
     /**
      * Create the event listener.
@@ -60,6 +71,29 @@ class DatabaseEventListener
                         'tableName' => $table,
                         'operation' => $operation
                     ]);
+
+                    if (in_array($table, self::ASV_TABLES, true) === true &&
+                        in_array($event->connectionName, Connection::ASV_ROUTEING_CONNECTIONS, true) === false){
+
+                        $this->trace->count(Metric::ASV_DATABASE_QUERY_BINDING, [
+                            'route' => $this->app['request.ctx']->getRoute() ?? $this->app['worker.ctx']->getJobName(),
+                            'connection' => $event->connectionName,
+                            'tableName' => $table,
+                            'operation' => $operation
+                        ]);
+
+                        $this->trace->info(
+                            TraceCode::DB_QUERY_FOR_ASV_TABLES_EXECUTION_LOG,
+                            [
+                                'route' => $this->app['request.ctx']->getRoute() ?? $this->app['worker.ctx']->getJobName(),
+                                'connection' => $event->connectionName,
+                                'table' => $table,
+                                'operation' => $operation,
+                                'query' => $event->sql,
+                                'time' => $event->time,
+                            ]);
+                    }
+
                 }
             }
         } catch (\Throwable $e) {

@@ -9557,6 +9557,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // DB Query Event Listners
     const DB_QUERY_EXECUTION_LOG                                = 'DB_QUERY_EXECUTION_LOG';
 
+
+    const DB_QUERY_FOR_ASV_TABLES_EXECUTION_LOG               = 'DB_QUERY_FOR_ASV_TABLES_EXECUTION_LOG';
+
     const TOKEN_UPDATE_DEBUG = 'TOKEN_UPDATE_DEBUG';
 
     // PAYOUT_CREATE_SUBMITTED_LOW_PRIORITY traces

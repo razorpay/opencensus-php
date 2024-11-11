@@ -18,6 +18,8 @@ final class Metric
 
     const TABLE_OPERATION_QUERY_BINDING        = 'table_operation_query_binding';
 
+    const ASV_DATABASE_QUERY_BINDING        = 'asv_database_query_binding';
+
     // ------------------------- dimensions ------------------------- //
 
     const CONNECTION         = 'connection';
