@@ -97,7 +97,11 @@ class Core extends Base\Core
 
             if (strtolower($variant) === 'on')
             {
-                $merchantCollections = $invitedUser->merchants()->get();
+                if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+                    $merchantCollections = $invitedUser->getMerchantsFromAsvWithPivot(1000);
+                } else {
+                    $merchantCollections = $invitedUser->merchants()->get();
+                }
 
                 //
                 // if the invitedUser is restricted or

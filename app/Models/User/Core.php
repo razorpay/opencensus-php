@@ -1558,7 +1558,11 @@ class Core extends Base\Core
             (empty($input[MerchantDetailEntity::REFERRAL_CODE]) === false)
         )
         {
-            $merchant = $user->merchants()->first();
+            if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+                $merchant = $user->getMerchantsFromAsvWithPivot(1)->first();
+            } else {
+                $merchant = $user->merchants()->first();
+            }
 
             if (empty($merchant) === false)
             {
@@ -6486,6 +6490,12 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetailsForPayroll($user);
 
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchants = $user->getMerchantsFromAsvWithPivot(1000);
+        } else {
+            $merchants = $user->merchants()->get();
+        }
+
         return [
             'user_id'                 => $user->getId(),
             'name'                    => $user->getName(),
@@ -6495,7 +6505,7 @@ class Core extends Base\Core
             'account_locked'          => $user->isAccountLocked(),
             'confirmed'               => $user->confirmed,
             'merchants'               => $merchantDetails,
-            'total_merchant_count'    => $user->merchants()->count()
+            'total_merchant_count'    => $merchants->count()
         ];
     }
 
@@ -6561,7 +6571,11 @@ class Core extends Base\Core
      */
     protected function getMerchantDetails(Entity $user): array
     {
-        $merchant = $user->merchants()->first();
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchant = $user->getMerchantsFromAsvWithPivot(1)->first();
+        } else {
+            $merchant = $user->merchants()->first();
+        }
 
         // if there is no merchant details then return empty result
         if ($merchant === NULL)
@@ -6884,9 +6898,14 @@ class Core extends Base\Core
         }
 
         if ($user) {
-            $merchantEntities = $user->merchants()->where(
-                Merchant\Entity::SUSPENDED_AT, null
-            )->take(1000)->get();
+
+            if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+                $merchantEntities = $user->getNonSuspendedMerchants(1000);
+            } else {
+                $merchantEntities = $user->merchants()->where(
+                    Merchant\Entity::SUSPENDED_AT, null
+                )->take(1000)->get();
+            }
 
             $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
             $merchantDetails = $this->getUnifiedMerchants($merchants);

@@ -45,6 +45,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\BusinessDetail as MBD;
 use RZP\Jobs\PartnerSubmerchantLinkingOauthJob;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\MerchantApplications\Repository as MerchantAppRepo;
 use RZP\Jobs\PartnerSubmerchantLinkingReferralJob;
@@ -2413,7 +2414,12 @@ class Service extends Base\Service
             $this->auth->getRequestOriginProduct();
 
         $user = $this->auth->getUser();
-        $merchants = $user->merchants()->take(1)->get();
+
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchants = $user->getMerchantsFromAsvWithPivot(1);
+        } else {
+            $merchants = $user->merchants()->take(1)->get();
+        }
 
         if ($merchants->count() > 0) {
             // User already has a merchant so we need to prefill any data the user has

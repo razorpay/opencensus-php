@@ -291,7 +291,7 @@ class Entity extends Base\PublicEntity
                     ->orderByRaw($sql, [$this->getEmail()]);
     }
 
-    public function getNonSuspendedMerchants($limit, $defaultMerchantId = null)
+    public function getNonSuspendedMerchants($limit = 100, $defaultMerchantId = null)
     {
         $merchantUsers = [];
 
