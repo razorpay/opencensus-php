@@ -4305,6 +4305,7 @@ class Core extends Base\Core
             {
                 case Status::ACTIVATED:
                 case Status::KYC_QUALIFIED_UNACTIVATED:
+                case Status::EDD_PENDING:
 
                     if ($merchant->isLinkedAccount() === false)
                     {

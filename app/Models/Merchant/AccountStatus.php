@@ -18,6 +18,7 @@ final class AccountStatus
     const PENDING                     = 'pending';
     const PENDING_UNDER_REVIEW        = 'pending_under_review';
     const PENDING_NEEDS_CLARIFICATION = 'pending_needs_clarification';
+    const PENDING_EDD_PENDING         = 'pending_edd_pending';
     const DEAD                        = 'dead';
     const INSTANTLY_ACTIVATED         = 'instantly_activated';
     const REJECTED                    = 'rejected';

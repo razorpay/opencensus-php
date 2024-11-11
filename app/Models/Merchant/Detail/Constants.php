@@ -806,6 +806,7 @@ class Constants
 
     const WHITE_GLOVE_ATTRIBUTES       = 'white_glove_attributes';
     const ONBOARDING_PAYMENT_DETAILS   = 'onboarding_payment_details';
+    const AUTHORISED_SIGNATORY_NAME    = 'authorised_signatory_name';
 
     const POS_ACTIVATION_STATUS    = 'pos_activation_status';
     const IS_POS_DETAILS_SUBMITTED = 'is_pos_details_submitted';
