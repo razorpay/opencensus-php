@@ -55,6 +55,7 @@ class CCRouter
         'RZP\\Models\\Pricing\\Service\\deletePlanRuleForce' => true,
         'RZP\\Models\\Pricing\\Service\\postAddBulkPricingRules' => true,
         'RZP\\Models\\Pricing\\Service\\addPlanRule' => true,
+        'RZP\\Models\\Pricing\\Service\\replicatePlanAndAssign' => true,
         'RZP\\Models\\Pricing\\Repository\\getPlan' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdAndOrgId' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdWithProductAndFeatureFilter' => true,
@@ -264,7 +265,10 @@ class CCRouter
             }else if ($methodName == 'postAddBulkPricingRules'){
                 $response = $this->app->charge_collections->addBulkPricingPlanRule($input, $headers);
             }else if($methodName == 'addPlanRule'){
-                $response = $this->app->charge_collections->addPricingPlanRule($input);
+                $response = $this->app->charge_collections->addPricingPlanRule($input);}
+            else if($methodName == 'replicatePlanAndAssign'){
+                $response = $this->app->charge_collections->replicatePlanAndAssign($input, $headers);
+                return $this->transformToPlanModel($response);
             }else{
                 $this->trace->info(TraceCode::CC_ROUTER_EXCEPTION,
                     [
@@ -311,15 +315,6 @@ class CCRouter
             if($this->isRouteApplicableForDecomp($routeName) === false &&
                 $this->isFunctionApplicableForDecomp($functionName) === false) {
                 $this->monitorChargeCollectionsRequestNotRouted($routeName,$functionName,self::ROUTE_OR_FUNCTION_NOT_ONBOARDED);
-                return self::DISABLE;
-            }
-
-            // skip transaction active check for workflow checker route and for get calls
-            if ($this->isTransactionActive() &&
-                !isset(self::FUNCTION_TO_CC_ROUTE_MAP[$functionName]) &&
-                $routeName != 'action_checker_create'){
-                $this->monitorChargeCollectionsRequestNotRouted($routeName,$functionName,self::REPO_TRANSACTION_ACTIVE);
-
                 return self::DISABLE;
             }
 

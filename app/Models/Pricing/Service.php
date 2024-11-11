@@ -381,7 +381,7 @@ class Service extends Base\Service
 
         if ($shouldReplicatePlan)
         {
-            $plan = $this->replicatePlanAndAssign($merchant, $plan, $generatedPlanAndRuleId, $rampPhase);
+            $plan = $this->replicatePlanAndAssignLegacy($merchant, $plan, $generatedPlanAndRuleId, $rampPhase);
             return [true, $plan];
         }else{
             return [false, $plan];
@@ -791,10 +791,49 @@ class Service extends Base\Service
         return $input;
     }
 
-    public function replicatePlanAndAssign($merchant, $plan, $generatedPlanAndRuleId = null, $rampPhase = '')
+    public function generatePlanAndRuleIdsForReplicatePlan($ruleCount){
+        $newPlanId = UniqueIdEntity::generateUniqueId();
+        $newPlanName = UniqueIdEntity::generateUniqueId();
+
+        // Generate rule IDs based on the rule count
+        $ruleIds = [];
+        for ($i = 0; $i < $ruleCount; $i++) {
+            $ruleIds[] = UniqueIdEntity::generateUniqueId();
+        }
+
+        return [
+            'plan_name' => $newPlanName,
+            'plan_id' => $newPlanId,
+            'ids' => $ruleIds,
+        ];
+    }
+
+    public function replicatePlanAndAssign($merchant, $plan)
     {
-        // Get merchants existig plan ID
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+
+        $generatedPlanAndRuleId = $this->generatePlanAndRuleIdsForReplicatePlan(count($plan));
+
+        $input['generated_ids'] = $generatedPlanAndRuleId;
+        $input['merchant_id'] = $merchant->getId();
+        $input['plan_id'] = $plan->getId();
+
+        $ccRequest = $input;
+
+        $legacyCallable = function ($rampPhase, $_) use ($merchant, $plan, $generatedPlanAndRuleId, $input) {
+            return $this->replicatePlanAndAssignLegacy($merchant, $plan, $generatedPlanAndRuleId, $rampPhase, $input);
+        };
+
+        return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable);
+    }
+
+    public function replicatePlanAndAssignLegacy($merchant, $plan, $generatedPlanAndRuleId, $rampPhase = '', $input = null)
+    {
+        // Get merchants existing plan ID, consider initial id sent in case of reverse_shadow
         $planId = $merchant->getPricingPlanId();
+        if ($rampPhase == CCRouter::REVERSE_SHADOW && $input != null){
+            $planId = $input['plan_id'];
+        }
 
         // Get intended pricing plans org id
         $ruleOrgId = $plan->getOrgId();
