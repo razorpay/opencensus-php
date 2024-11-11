@@ -11,6 +11,7 @@ import { connect } from 'react-redux';
 import { AnyAction, Dispatch, bindActionCreators } from 'redux';
 
 import { User } from 'common/typings';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 import {
@@ -113,6 +114,10 @@ const CheckoutFeatures = ({
       fetchMerchantCheckoutStylingConfig();
     }
   }, [fetchMerchantCheckoutStylingConfig, merchantCheckoutStyledConfig]);
+
+  useEffect(() => {
+    triggerHotjarRecording('CHECKOUT_EDITOR_SCREEN', ['CHECKOUT_EDITOR_SCREEN']);
+  }, []);
 
   const handleUpdateFeatures = (payload: unknown) => updateFeatures(payload, user.current);
 
