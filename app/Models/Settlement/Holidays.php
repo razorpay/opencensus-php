@@ -421,6 +421,7 @@ class Holidays
                 1  => 'Diwali Amavasya (Laxmi Pujan)/Deepawali/Kut/Kannada Rajyothsava',
                 2  => 'Diwali (Bali Pratipada)/Balipadyami/Laxmi Puja (Deepawali)/Govardhan Pooja/Vikram Samvant New Year Day',
                 15 => 'Guru Nanak Jayanti/Karthika Purnima',
+                20 => 'Maharashtra Assembly Elections'
             ],
             12 => [
                 25 => 'Christmas',
