@@ -34,7 +34,7 @@ class Constants
 
     const HDFC_COLLECT_NOW_JOB_NAME    =  'hdfc_settlement_push';
 
-    const YESBANK_EMI_FILE_JOB_NAME    = 'yesbank_emi';
+    const YESBANK_EMI_FILE_JOB_NAME    = 'yesb_emi_push';
 
     const YESBANK_ENACH_NB_JOB_NAME    = 'yesbank_enach_nb';
 

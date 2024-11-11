@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\GatewayErrorException;
 use RZP\Trace\TraceCode;
 use Str;
 use Mail;
@@ -38,6 +40,8 @@ class Yesb extends Base
     protected $totalAmount;
 
     protected $totalTransactions;
+
+    protected $chotaBeam = true;
 
     protected $shouldEncrypt = false;
 
@@ -173,6 +177,8 @@ class Yesb extends Base
 
         $bucketConfig = $config[$bucketType];
 
+        $bucketConfig['name'] = \Illuminate\Support\Facades\Config::get('applications.chota_beam.bucket_name');
+
         return $bucketConfig;
     }
 
@@ -189,6 +195,7 @@ class Yesb extends Base
             Service::BEAM_PUSH_JOBNAME       => BeamConstants::YESBANK_EMI_FILE_JOB_NAME,
             Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
             Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+            Service::CHOTABEAM_FLAG           => $this->chotaBeam,
         ];
 
         // Retry in 15, 30 and 45 minutes
@@ -206,7 +213,25 @@ class Yesb extends Base
             ],
         ];
 
-        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+
+        if ((isset($beamResponse['error']) === true) and
+            (empty($beamResponse['error']) === false))
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                null,
+                null,
+                [
+                    'beam_response' => $beamResponse,
+                    'filestore_id'  => $this->file->getId(),
+                    'gateway_file'  => $this->gatewayFile->getId(),
+                    'job_name'      => BeamConstants::YESBANK_EMI_FILE_JOB_NAME,
+                    'file_name'     => $fullFileName,
+                    'Bank'          => 'YES BANK',
+                ]
+            );
+        }
 
         $this->sendConfirmationMail();
     }
@@ -249,5 +274,6 @@ class Yesb extends Base
         return [PGPEncryption::PUBLIC_KEY => $publicKey];
     }
     */
+
 
 }
