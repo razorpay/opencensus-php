@@ -829,6 +829,10 @@ class Core extends Base\Core
             {
                 $document = $this->repo->merchant_document->findDocumentByFileStoreId($data[Entity::FILE_STORE_ID]);
 
+                if ($data[Entity::UPLOAD_BY_ADMIN_ID] == "") {
+                    unset($data[Entity::UPLOAD_BY_ADMIN_ID]);
+                }
+
                 if (empty($document) === false)
                 {
                     unset($data[Entity::MERCHANT_ID]);
