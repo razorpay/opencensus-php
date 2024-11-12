@@ -5270,15 +5270,21 @@ class Core extends Base\Core
     }
 
     private function pushToAccountServiceQueue(Entity $payout): void {
+        /** @var Attempt\Entity $fundTransferAttempt */
+        $fundTransferAttempt = $payout->fundTransferAttempts()->first();
+
         $pushData = [
-            PayoutConstants::ENTITY_ID      => $payout->getId(),
-            PayoutConstants::ENTITY_TYPE    => PayoutConstants::PAYOUTS_ENTITY_TYPE,
-            PayoutConstants::UTR            => $payout->getUtr(),
-            PayoutConstants::EVENT_CREATED_TIMESTAMP => Carbon::now()->getTimestamp(),
-            PayoutConstants::EVENT_ID => UniqueIdEntity::generateUniqueId(),
-            PayoutConstants::GATEWAY_REF_NO => "",
-            PayoutConstants::CMS_REF_NO => "",
-            PayoutConstants::STATUS => $payout->getStatus(),
+            PayoutConstants::ENTITY_ID               => $payout->getId(),
+            PayoutConstants::ENTITY_TYPE             => PayoutConstants::PAYOUTS_ENTITY_TYPE,
+            PayoutConstants::UTR                     => $payout->getUtr() ? $payout->getUtr() : "",
+            PayoutConstants::EVENT_CREATED_TIMESTAMP => Carbon::now(Timezone::IST)->getTimestamp(),
+            PayoutConstants::EVENT_ID                => UniqueIdEntity::generateUniqueId(),
+            PayoutConstants::GATEWAY_REF_NO          => $fundTransferAttempt ? $fundTransferAttempt->getGatewayRefNo() : "",
+            PayoutConstants::CMS_REF_NO              => $fundTransferAttempt ? $fundTransferAttempt->getCmsRefNo() : "",
+            PayoutConstants::STATUS                  => $payout->getStatus(),
+            PayoutConstants::MODE                    => $payout->getMode(),
+            PayoutConstants::AMOUNT                  => $payout->getAmount(),
+            PayoutConstants::BALANCE_ID              => $payout->getBalanceId(),
         ];
 
         $queueName = $this->app['config']->get('queue.account_statements_source_event.' . $this->mode);

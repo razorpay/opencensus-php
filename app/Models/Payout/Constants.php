@@ -139,14 +139,15 @@ class Constants
     const TAX                               = 'tax';
 
     //Constants for account statement source event queue
-    const ENTITY_ID = "entity_id";
-    const ENTITY_TYPE = "entity_type";
-    const UTR         = "utr";
-    const PAYOUTS_ENTITY_TYPE = "payouts";
+    const ENTITY_ID           = "entity_id";
+    const ENTITY_TYPE         = "entity_type";
+    const UTR                 = "utr";
+    const PAYOUTS_ENTITY_TYPE = "payout";
 
     const EVENT_CREATED_TIMESTAMP = "event_create_timestamp";
-    const EVENT_ID = "event_id";
-    const GATEWAY_REF_NO = "gateway_ref_no";
-    const CMS_REF_NO = "cms_ref_no";
-
+    const EVENT_ID                = "event_id";
+    const GATEWAY_REF_NO          = "gateway_ref_no";
+    const CMS_REF_NO              = "cms_ref_no";
+    const AMOUNT                  = 'amount';
+    const BALANCE_ID              = 'balance_id';
 }

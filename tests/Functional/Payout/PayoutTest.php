@@ -323,7 +323,9 @@ class PayoutTest extends OAuthTestCase
         // Mock the queue push call made for DLQ and access the queue name that was passed
         $queueObject = new class {
             public $queueName;
+            public $payload;
             public function pushRaw($payload, $queueName) {
+                $this->payload = $payload;
                 $this->queueName = $queueName;
                 return true;
             }
@@ -407,15 +409,16 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->create(
             'fund_transfer_attempt',
             [
-                'id'          => 'randomftaid112',
-                'source_id'   => 'randomid111112',
-                'source_type' => 'payout',
-                'is_fts'      => true,
-                'merchant_id' => '10000000000000',
-                'purpose'     => 'refund',
-                'channel'     => 'rbl',
-                'status'      => 'initiated',
-                'initiate_at'   => '1000000001'
+                'id'             => 'randomftaid112',
+                'source_id'      => 'randomid111112',
+                'source_type'    => 'payout',
+                'is_fts'         => true,
+                'merchant_id'    => '10000000000000',
+                'purpose'        => 'refund',
+                'channel'        => 'rbl',
+                'status'         => 'initiated',
+                'initiate_at'    => '1000000001',
+                'gateway_ref_no' => 'grntest101'
             ]);
 
         $this->fixtures->on('live')->create('contact',
@@ -446,7 +449,11 @@ class PayoutTest extends OAuthTestCase
 
         \DB::connection('live')->table('payouts')->insert($payoutData);
 
+        /** @var Payout\Entity $payout1 */
         $payout1 = $this->getDbLastEntity('payout', 'live');
+
+        /** @var Attempt\Entity $fta */
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $payout1->getId()], 'live');
 
         $this->fixtures->edit('payout', $payout1['id'], ['status' => 'initiated']);
 
@@ -454,10 +461,26 @@ class PayoutTest extends OAuthTestCase
 
         $payout1->reload();
 
+        $fta->reload();
+
+        $queuePayload = json_decode($queueObject->payload);
+
         // Assert payout status was updated.
         $this->assertEquals('processed', $payout1->getStatus());
 
         $this->assertEquals($accountStatementQueue, $queueObject->queueName);
+
+        // assert queue payload
+        $this->assertEquals($payout1->getId(), $queuePayload->entity_id);
+        $this->assertEquals('payout', $queuePayload->entity_type);
+        $this->assertEquals($payout1->getUtr(), $queuePayload->utr);
+        $this->assertEquals($fta->getGatewayRefNo(), $queuePayload->gateway_ref_no);
+        $this->assertEquals($fta->getCmsRefNo(), $queuePayload->cms_ref_no);
+        $this->assertEquals($payout1->getStatus(), $queuePayload->status);
+        $this->assertEquals($payout1->getMode(), $queuePayload->mode);
+        $this->assertEquals($payout1->getAmount(), $queuePayload->amount);
+        $this->assertNotNull($queuePayload->event_id);
+        $this->assertEquals($payout1->getBalanceId(), $queuePayload->balance_id);
     }
 
     public function testAccountStatementQueuePushForFailedPayout() {
