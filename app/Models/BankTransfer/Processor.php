@@ -523,6 +523,13 @@ class Processor extends VirtualAccount\Processor
 
         $this->repo->saveOrFail($this->virtualAccount);
 
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_AMOUNT_FIELDS_UPDATED, [
+                'amount'             => $bankTransfer->getAmount(),
+                'virtual_account_id' => $this->virtualAccount->getId(),
+            ]
+        );
+
         if ($bankTransfer->getAmount() >= self::AMOUNT_THRESHOLD_FOR_BANKING) {
             $time = Carbon::now(Timezone::IST)->getTimestamp();
 

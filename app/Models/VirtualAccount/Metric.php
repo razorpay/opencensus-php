@@ -19,6 +19,7 @@ class Metric extends Base\Core
     const SMART_COLLECT_TERMINAL_CACHING_HIT       = 'smart_collect_terminal_caching_hit';
     const SMART_COLLECT_TERMINAL_CACHING_MISS      = 'smart_collect_terminal_caching_miss';
     const SMART_COLLECT_TERMINAL_CACHING_EXCEPTION = 'smart_collect_terminal_caching_exception';
+    const VIRTUAL_ACCOUNT_UPI_PAYMENT_PROCESSING_TIME  = 'virtual_account_upi_payment_processing_time';
 
     const LABEL_TRACE_CODE                  = 'code';
     const LABEL_HAS_BANK_ACCOUNT            = 'has_bank_account';

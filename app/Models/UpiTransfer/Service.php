@@ -17,6 +17,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\QrCode\Constants;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Models\UpiTransferRequest;
+use RZP\Models\VirtualAccount\Metric;
 
 class Service extends Base\Service
 {
@@ -35,6 +36,8 @@ class Service extends Base\Service
 
     public function processUpiTransferPayment($input, $gateway, $isCollectXPayment = false)
     {
+        $startTime = microtime(true);
+
         $this->trace->info(
             TraceCode::UPI_TRANSFER_PAYMENT_PROCESS_REQUEST,
             [
@@ -63,13 +66,27 @@ class Service extends Base\Service
             }
             else
             {
-                [$valid, $transactionId] = $this->processUpiTransfer($gatewayResponse, $terminal);
+                [$valid, $transactionId] = $this->processUpiTransfer($gatewayResponse, $terminal, isCollectXPayment: $isCollectXPayment);
             }
         }
         catch (\Exception $e)
         {
             $this->core->alertException($e, $gatewayResponse);
         }
+
+        $totalTime = get_diff_in_millisecond($startTime);
+
+        $dimensions = [
+            'gateway'             => $gateway,
+            'valid'               => $valid,
+            'is_collectx_payment' => $isCollectXPayment
+        ];
+
+        $this->trace->histogram(
+            Metric::VIRTUAL_ACCOUNT_UPI_PAYMENT_PROCESSING_TIME,
+            $totalTime,
+            $dimensions
+        );
 
         return [
             'valid'          => $valid,
@@ -436,14 +453,14 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function processUpiTransfer(mixed $gatewayResponse, mixed $terminal): array
+    public function processUpiTransfer(mixed $gatewayResponse, mixed $terminal, $isCollectXPayment = false): array
     {
         $upiTransferRequest = (new UpiTransferRequest\Service())->create($gatewayResponse['upi_transfer_data'],
                                                                          $gatewayResponse['callback_data']);
 
         $upiTransferRequestId = $upiTransferRequest ? $upiTransferRequest->getPublicId() : null;
 
-        $valid = $this->core->processPayment($gatewayResponse, $terminal, $upiTransferRequestId);
+        $valid = $this->core->processPayment($gatewayResponse, $terminal, $upiTransferRequestId, isCollectXPayment: $isCollectXPayment);
 
         $transactionId = $gatewayResponse['upi_transfer_data'][GatewayResponseParams::PROVIDER_REFERENCE_ID] ?? '';
 

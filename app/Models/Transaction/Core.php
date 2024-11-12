@@ -2117,6 +2117,12 @@ class Core extends Base\Core
             TxnMetric::TRANSACTION_CREATED_EVENT_DISPATCH_TIME,
             $timeTaken,
             $dimensions);
+        if($txn->getType() === E::BANK_TRANSFER)
+        {
+            $this->trace->count(TxnMetric::TRANSACTION_CREATED_EVENT_TOTAL, [
+                "type" => $txn->getType()
+            ]);
+        }
     }
 
     /**

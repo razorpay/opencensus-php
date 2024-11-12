@@ -225,6 +225,29 @@ class Service extends Base\Service
             return $response;
         }
 
+        //metric for counting number of incoming notification callbacks from bank
+        $this->trace->count(BankTransferMetrics::BANKTRANSFER_CALLBACK_COUNT);
+
+        //metric for difference in time b/w( bank transfer transaction time , bank transfer webhook callback)
+        if((array_key_exists('Req_dt_time' , $input)) && (empty($input['Req_dt_time']) === false))
+        {
+            try
+            {
+                $diffInMillSec = get_diff_in_millisecond(strtoepoch($input['Req_dt_time'],'d-m-Y H:i:s'));
+
+                $this->trace->histogram(BankTransferMetrics::BANKTRANSFER_WEBHOOK_DELAY, $diffInMillSec);
+            }
+
+            catch(\Throwable $ex)
+            {
+
+                $this->trace->error(TraceCode::BANK_TRANSFER_WEBHOOK_DELAY_METRIC_PUSH_FAILURE,[
+                    $ex->getMessage()
+                ]);
+            }
+        }
+
+
         $response = $this->validateDuplicateRequest($input, $routeName);
 
         if (empty($response) === false) {
@@ -485,7 +508,6 @@ class Service extends Base\Service
 
     protected function routeForCollectXUPIRequest(array $input): array
     {
-        // MyComment: Check for unexpected payments
         return (new UpiTransfer\Service())->processUpiTransferPayment($input, Gateway::UPI_YESBANK, isCollectXPayment: true);
     }
 
