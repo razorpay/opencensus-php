@@ -7356,7 +7356,12 @@ class Processor
                 {
                     try
                     {
-                        $transfers = $this->processPaymentTransfersInSync($payment);
+                        [$transfersProcessed, $failedTransfersToRetry] = $this->processPaymentTransfersInSync($payment);
+
+                        if (empty($failedTransfersToRetry) === false)
+                        {
+                            $processTransferInSync = false;
+                        }
                     }
                     catch (\Throwable $e)
                     {
@@ -7486,19 +7491,62 @@ class Processor
      */
     protected function processPaymentTransfersInSync(Payment\Entity $payment)
     {
-        $redis = $this->app['redis']->connection('secure');
-
-        $semaphore = null;
-
-        $semaphoreConfig = (new Admin\Service)->getConfigKey(['key' => ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_CONFIG]);
-
-        if (empty($semaphoreConfig) === true)
+        if ($this->merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === true)
         {
-            $semaphoreConfig = self::PAYMENT_TRANSFERS_SYNC_PROCESSING_DEFAULT_CONFIG;
+            return $this->processPaymentTransfersInSyncImpl($payment);
         }
 
+        [$transfersProcessed, $failedTransfersToRetry] = $this->acquireSemaphoreAndExecute(function () use ($payment)
+        {
+            if ($this->checkIfTransferSyncProcessingViaApiIsWithinLimit() === false)
+            {
+                throw new Exception\RuntimeException('Transfer sync processing limit via API exceeded');
+            }
+
+            return $this->processPaymentTransfersInSyncImpl($payment);
+        });
+
+        return [$transfersProcessed, $failedTransfersToRetry];
+    }
+
+    protected function processPaymentTransfersInSyncImpl(Payment\Entity $payment)
+    {
+        $this->trace->info(TraceCode::PAYMENT_TRANSFER_PROCESS_IN_SYNC,
+            [
+                'payment_id'     => $payment->getId(),
+            ]
+        );
+
+        $transfer = new PaymentTransfer($payment);
+
+        $transfersSyncProcessStartTime = microtime(true);
+
+        [$transfersProcessed, $failedTransfersToRetry] = $transfer->process();
+
+        $transfersSyncProcessTimeMs = (microtime(true) - $transfersSyncProcessStartTime) * 1000;
+
+        $category = $this->merchant->getCategory();
+
+        (new TransferMetric())->pushTransfersProcessingTimeInSyncMetrics($transfersSyncProcessTimeMs, $category);
+
+        return [$transfersProcessed, $failedTransfersToRetry];
+    }
+
+    public function acquireSemaphoreAndExecute(callable $func)
+    {
         try
         {
+            $redis = $this->app['redis']->connection('secure');
+
+            $semaphore = null;
+
+            $semaphoreConfig = (new Admin\Service)->getConfigKey(['key' => ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_CONFIG]);
+
+            if (empty($semaphoreConfig) === true)
+            {
+                $semaphoreConfig = self::PAYMENT_TRANSFERS_SYNC_PROCESSING_DEFAULT_CONFIG;
+            }
+
             $semaphoreAcquireStartTime = microtime(true);
 
             $semaphore = new Semaphore($redis->client(), $this->merchant->getId(), (int) $semaphoreConfig['limit']);
@@ -7511,38 +7559,13 @@ class Processor
 
                 (new TransferMetric())->pushSemaphoreAcquireSuccessMetrics($timeTakenToAcquireMs);
 
-                if ($this->checkIfTransferSyncProcessingViaApiIsWithinLimit() === false)
-                {
-                    throw new Exception\RuntimeException('Transfer sync processing limit via API exceeded');
-                }
-
-                $this->trace->info(TraceCode::PAYMENT_TRANSFER_PROCESS_IN_SYNC,
-                    [
-                        'payment_id'     => $payment->getId(),
-                        'sem_time_taken_ms' => $timeTakenToAcquireMs
-                    ]
-                );
-
-                $transfer = new PaymentTransfer($payment);
-
-                $transfersSyncProcessStartTime = microtime(true);
-
-                [$transfersProcessed, $failedTransfersToRetry] = $transfer->process();
-
-                $transfersSyncProcessTimeMs = (microtime(true) - $transfersSyncProcessStartTime) * 1000;
-
-                $category = $this->merchant->getCategory();
-
-                (new TransferMetric())->pushTransfersProcessingTimeInSyncMetrics($transfersSyncProcessTimeMs, $category);
-
-                return $transfersProcessed->merge($failedTransfersToRetry);
+                return call_user_func($func);
             }
-            else
-            {
-                (new TransferMetric())->pushSemaphoreAcquireFailureMetrics();
 
-                throw new Exception\RuntimeException('Failed to acquire semaphore');
-            }
+            (new TransferMetric())->pushSemaphoreAcquireFailureMetrics();
+
+            throw new Exception\RuntimeException('Failed to acquire semaphore');
+
         }
         finally
         {
@@ -8590,7 +8613,7 @@ class Processor
             if ($data['gateway']['error']['internal_error_code'] === 'BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION'){
 
                 $internalCode=$data['gateway']['error']['internal_error_code'];
-                $shouldUpdateForNetbankigHdfcCorpPayments=true;     
+                $shouldUpdateForNetbankigHdfcCorpPayments=true;
             }
 
         }
