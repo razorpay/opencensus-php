@@ -1293,19 +1293,20 @@ class Core extends Base\Core
             return false;
         }
 
-        if (($aggregatorMerchant->isAggregatorPartner() === false) and ($aggregatorMerchant->isFullyManagedPartner() === false))
+        // allowing only for platform partner types(aggregator, pure platform, fully_managed)
+        if (!$aggregatorMerchant->isPartner() || $aggregatorMerchant->isResellerPartner())
         {
             return false;
         }
 
-        $defaultPartnerConfig = (new PartnerConfig\Core)->fetchAllDefaultConfigsByPartner($aggregatorMerchant);
-
-        if (($defaultPartnerConfig === null) or (count($defaultPartnerConfig) === 0))
+        if ($aggregatorMerchant->isPurePlatformPartner())
         {
-            return false;
+            $defaultPaymentMethods = $this->getDefaultPaymentMethodsForPurePlatformPartner($aggregatorMerchant);
         }
-
-        $defaultPaymentMethods = $defaultPartnerConfig->first()->getDefaultPaymentMethods();
+        else
+        {
+            $defaultPaymentMethods = $this->getDefaultPaymentMethodsForNonPurePlatformPartner($aggregatorMerchant);
+        }
 
         if (empty($defaultPaymentMethods) === true)
         {
@@ -1328,6 +1329,27 @@ class Core extends Base\Core
             ]);
 
         return true;
+    }
+
+    protected function getDefaultPaymentMethodsForNonPurePlatformPartner(Merchant\Entity $aggregatorMerchant)
+    {
+        $defaultPartnerConfig = (new PartnerConfig\Core)->fetchAllDefaultConfigsByPartner($aggregatorMerchant);
+
+        if ($defaultPartnerConfig->isEmpty())
+        {
+            return false;
+        }
+
+        return $defaultPartnerConfig->first()->getDefaultPaymentMethods();
+    }
+
+    protected function getDefaultPaymentMethodsForPurePlatformPartner(Merchant\Entity $aggregatorMerchant)
+    {
+        $oauthAppId = $this->app['basicauth']->getOAuthApplicationId() ?? null;
+
+        $partnerConfig = $this->repo->partner_config->getApplicationConfig($oauthAppId);
+
+        return optional($partnerConfig)->getDefaultPaymentMethods();
     }
 
     public function setPaymentBanksForMerchant($merchant, $input)
