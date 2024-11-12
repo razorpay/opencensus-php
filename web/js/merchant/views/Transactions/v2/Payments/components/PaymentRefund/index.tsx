@@ -15,6 +15,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 
 import { useI18Service } from 'common/i18';
+import { useSplitzService } from 'common/splitz';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import {
   fetchItem as fetchPayment,
@@ -34,6 +35,7 @@ import {
   trackRefundError,
 } from './analytics';
 import { calculateHasEnoughFunds, PaymentUtils } from './utils';
+import { isPaymentV2ParityFeatureEnabled } from 'merchant/views/Transactions/v2/common/utils';
 
 const RefundModal = (props) => {
   const {
@@ -52,6 +54,7 @@ const RefundModal = (props) => {
   } = props;
 
   const i18 = useI18Service();
+  const splitz = useSplitzService();
 
   const [isOpen, setIsOpen] = useState(true);
   const [reversal, setReversal] = useState(null);
@@ -81,7 +84,11 @@ const RefundModal = (props) => {
     getRefundFeeForPayableAmount,
   } = paymentUtils;
   const isPartial = isPartialPayment(payableAmount);
+  const optimierInstantRefundDisabled = isPaymentV2ParityFeatureEnabled(splitz, user)
+    ? payment.instant_refund_support === false && user?.isOptimizerEnabled
+    : false;
   const isInstantRefundFeatureEnabled =
+    !optimierInstantRefundDisabled &&
     !showWhenUtil({ featureEnabled: 'disable_instant_refunds' }) &&
     !i18.isConfigTagEnabled('refunds.instant_refunds');
 

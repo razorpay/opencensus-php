@@ -1,6 +1,10 @@
+import { noop } from 'common/utils/rzp-utils';
+
 export const initialState = {
   session: {
-    user: {},
+    user: {
+      isOptimizerView: noop,
+    },
   },
 };
 

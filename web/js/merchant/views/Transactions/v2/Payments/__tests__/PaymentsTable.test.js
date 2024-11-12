@@ -8,7 +8,7 @@ import { screen, waitFor } from 'test-utils';
 jest.mock('common/splitz', () => ({
   useSplitzService: () => ({
     abExperiments: {
-      toggle_payments_v2_revamp: false,
+      enable_trxn_v2_parity_features: false,
     },
   }),
 }));

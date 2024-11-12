@@ -124,7 +124,7 @@ module.exports = [
   {
     name: 'Payment Pages',
     path: 'js/merchant/PaymentPages.*.js',
-    limit: '156 KB',
+    limit: '157 KB',
     gzip: true,
   },
   {

@@ -9,6 +9,8 @@ import { Option } from 'common/components/Dropdown/types';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useMobile } from 'common/hooks/useMobile';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { useSplitzService } from 'common/splitz';
+import ProviderSelector from 'merchant/components/ProviderSelector';
 import lazy from 'merchant/routes/LazyLoader';
 import { isOmniChannelMerchant as _isOmniChannelMerchant } from 'merchant/utils/omniUtils';
 import {
@@ -26,12 +28,18 @@ import {
 } from 'merchant/views/Transactions/v2/common/styled';
 import {
   trackDurationFilter,
+  trackProviderFilter,
   trackSearchButton,
   trackSearchByFilter,
   trackStatusFilter,
 } from 'merchant/views/Transactions/v2/common/tracking';
 import { DurationOption } from 'merchant/views/Transactions/v2/common/types';
-import { endOfDay, getFromTime, getValue } from 'merchant/views/Transactions/v2/common/utils';
+import {
+  endOfDay,
+  getFromTime,
+  getValue,
+  isPaymentV2ParityFeatureEnabled,
+} from 'merchant/views/Transactions/v2/common/utils';
 
 import {
   refundsDurationSectionName,
@@ -52,7 +60,11 @@ const RefundsListFilter = ({
   loading,
   user,
   location: { pathname },
+  terminalProviders,
 }: RefundsListFilterProps): JSX.Element => {
+  const splitz = useSplitzService();
+  const isProviderSelectorForV2 = isPaymentV2ParityFeatureEnabled(splitz, user);
+
   const {
     defaultRefundsDuration,
     defaultDate,
@@ -68,6 +80,7 @@ const RefundsListFilter = ({
     defaultRefundsDuration.value === CUSTOM,
   );
   const [searchBy, setSearchBy] = useState(defaultSearchByOption.value);
+  const [terminalId, setTerminalId] = useState<string>();
   const [searchByValue, setSearchByValue] = useState(defaultSearchByValue);
   const isMobile = useMobile();
   const isMediumDesktopAndMobile = useMobile(mobileBreakoints);
@@ -84,6 +97,7 @@ const RefundsListFilter = ({
     const searchParams = {
       ...date,
       public_status: status,
+      [terminalId === 'Razorpay' ? 'settled_by' : 'terminal_id']: terminalId,
       source_channel: channel,
       [searchBy]: searchByValue,
       ...newSearchParams,
@@ -125,6 +139,19 @@ const RefundsListFilter = ({
     handleSearch({ public_status: status });
     trackStatusFilter({
       status: selectedStatuses[0].title,
+      pathname,
+    });
+  };
+
+  const onTerminalProviderChange = (terminalProviders: Option[]) => {
+    const terminal_id = getValue(terminalProviders);
+    handleSearch({
+      [terminal_id === 'Razorpay' ? 'settled_by' : 'terminal_id']: terminal_id,
+      [terminal_id === 'Razorpay' ? 'terminal_id' : 'settled_by']: '',
+    });
+    setTerminalId(terminal_id);
+    trackProviderFilter({
+      terminalProviderSelected: terminalProviders[0].title,
       pathname,
     });
   };
@@ -202,6 +229,17 @@ const RefundsListFilter = ({
             bottomSheetTitle={channelSectionName}
           />
         ) : null}
+        {isProviderSelectorForV2 &&
+          user.isSingleReconEnabled &&
+          user.isOptimizerEnabled &&
+          terminalProviders &&
+          terminalProviders.length > 0 && (
+            <ProviderSelector
+              providers={terminalProviders}
+              onChange={onTerminalProviderChange}
+              isLoading={loading}
+            />
+          )}
       </StyledSubListFilter>
       <StyledSearchByFilter>
         <Box display="flex" columnGap="spacing.1" marginLeft="auto">

@@ -26,9 +26,12 @@ import { User } from 'common/typings';
 import copyToClipboard from 'common/utils/copyToClipboard';
 import { noop } from 'common/utils/rzp-utils';
 import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
+import { fetchEncodedPaymentReceipt, fetchTransfersFn } from 'merchant/views/Transactions/model';
+import {
+  isPaymentV2ParityFeatureEnabled,
+  isTransactionsV2Enabled,
+} from 'merchant/views/Transactions/v2/common/utils';
 import { isOmniChannelMerchant as _isOmniChannelMerchant } from 'merchant/utils/omniUtils';
-import { fetchEncodedPaymentReceipt } from 'merchant/views/Transactions/model';
-import { isPaymentV2RevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification as showNotificationAction } from 'merchant_common/reducers/notifications';
 
@@ -51,6 +54,10 @@ import { IPaymentDetails, ApplicationDetails, TooltipKeys } from './types';
 import { imageDownload, isChargeSlipForPosEnabled, isPosTransaction, onCopy } from './utils';
 
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { PaymentFeeBreakdown } from 'merchant/views/Transactions/v1/Payments/components/PaymentFee';
+import { fetchTransfers } from 'merchant/reducers/payments/details';
+import { isExperimentEnabled } from 'common/splitz/utils';
+import PaymentOptimizerDetails from './PaymentOptimizerDetails';
 
 const PaymentReceipt = lazy(
   () =>
@@ -66,6 +73,11 @@ interface IPaymentDetailsSectionProps extends RouteComponentProps<{ id: string }
   splitz: SpiltzContextState;
   showNotification: (payload: { type: 'error' | 'success'; message: string }) => void;
   orgName: string;
+  orgFeatures: string[];
+  fetchTransfers: (paymentModel: any) => void;
+  transfers: any;
+  terminalProviders: any;
+  shouldShowOptimizerDetails: boolean;
 }
 
 interface DetailRowProps {
@@ -113,6 +125,11 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   splitz,
   showNotification,
   orgName,
+  orgFeatures,
+  fetchTransfers,
+  transfers,
+  terminalProviders,
+  shouldShowOptimizerDetails,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const isStorefront = location.hash === '#storefront';
@@ -153,10 +170,26 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   } = paymentDetails;
   const { isConfigTagEnabled } = useI18Service();
 
-  const { abExperiments } = splitz || { abExperiments: { toggle_payments_v2_revamp: undefined } };
+  useEffect(() => {
+    if (['created', 'authorized', 'failed'].indexOf(paymentDetails.status) < 0) {
+      fetchTransfers({ fetchTransfers: fetchTransfersFn(id) });
+    }
+  }, [paymentDetails.status]);
+
+  const { abExperiments } = splitz || {
+    abExperiments: {
+      enable_trxn_v2_parity_features: undefined,
+      enable_trxn_v2_fee_breakup: undefined,
+    },
+  };
 
   const isChargeSlipExperimentEnabled = isChargeSlipForPosEnabled(splitz);
-  const isTxnV2ParityFeaturesEnabled = isPaymentV2RevampEnabled(abExperiments);
+  const isTxnV2ParityFeaturesEnabled = isPaymentV2ParityFeatureEnabled(splitz, user);
+  const isTxnFeeBreakupEnabled =
+    isTransactionsV2Enabled(splitz, user) &&
+    isExperimentEnabled(abExperiments?.enable_trxn_v2_fee_breakup);
+
+  const isLateAuthAttributeEnabled = orgFeatures?.includes('show_late_auth_attributes');
 
   const isOmniChannelMerchant = isPosTransaction(source_channel) && _isOmniChannelMerchant(user);
 
@@ -364,6 +397,21 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     </Box>
                   }
                 />
+                {paymentDetails?.gateway_provider && (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow label="Gateway" value={paymentDetails.gateway_provider} />
+                  </>
+                )}
+                {isTxnFeeBreakupEnabled ? (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow
+                      label="Total Fee"
+                      value={<PaymentFeeBreakdown transfers={transfers} payment={paymentDetails} />}
+                    />
+                  </>
+                ) : null}
                 {user?.isPayerNameEnabled && (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />
@@ -470,49 +518,81 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                 )}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow label="Notes" value={getNotes({ notes, isStorefront })} />
+
+                {hash && isPaymentSplitSectionAllowed(hash.substring(1)) ? (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <RowWrapper>
+                      <Text
+                        variant="body"
+                        size="medium"
+                        weight="regular"
+                        color="surface.text.gray.subtle"
+                      >
+                        Payment Split
+                      </Text>
+                    </RowWrapper>
+                    <RowWrapper>
+                      <PaymentSplitItems order_id={paymentDetails.order_id} />
+                    </RowWrapper>
+                  </>
+                ) : null}
+
+                {(user.isOrgCurlec || !isConfigTagEnabled('payment_transfer.transfers')) && (
+                  <PaymentTransfers paymentDetails={paymentDetails} />
+                )}
+
+                {isLateAuthAttributeEnabled ? (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow
+                      label="Late Authorized"
+                      value={paymentDetails.late_authorized ? 'Yes' : 'No'}
+                    />
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow
+                      label="Auto Captured"
+                      value={paymentDetails.auto_captured ? 'Yes' : 'No'}
+                    />
+                  </>
+                ) : null}
+                {shouldShowOptimizerDetails && !!paymentDetails?.optimizer_provider ? (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow
+                      label="Optimizer details"
+                      value={
+                        <PaymentOptimizerDetails
+                          payment={paymentDetails}
+                          terminalProviders={terminalProviders}
+                          page="Payment Detail"
+                        />
+                      }
+                    />
+                  </>
+                ) : null}
+                {disputes.items.length > 0 && (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow
+                      label="Dispute ID"
+                      value={
+                        <Box display="flex" flexDirection="column" gap="spacing.2">
+                          {disputes.items.map((item) => (
+                            <Link
+                              key={item.id}
+                              onClick={() => history.push(`/disputes/${item.id}`)}
+                            >
+                              {item.id}
+                            </Link>
+                          ))}
+                        </Box>
+                      }
+                      tooltipType="disputeId"
+                    />
+                  </>
+                )}
               </RowsWrapper>
-
-              {hash && isPaymentSplitSectionAllowed(hash.substring(1)) ? (
-                <>
-                  <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                  <RowWrapper>
-                    <Text
-                      variant="body"
-                      size="medium"
-                      weight="regular"
-                      color="surface.text.gray.subtle"
-                    >
-                      Payment Split
-                    </Text>
-                  </RowWrapper>
-                  <RowWrapper>
-                    <PaymentSplitItems order_id={paymentDetails.order_id} />
-                  </RowWrapper>
-                </>
-              ) : null}
-
-              {(user.isOrgCurlec || !isConfigTagEnabled('payment_transfer.transfers')) && (
-                <PaymentTransfers paymentDetails={paymentDetails} />
-              )}
-
-              {disputes.items.length > 0 && (
-                <>
-                  <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                  <DetailRow
-                    label="Dispute ID"
-                    value={
-                      <Box display="flex" flexDirection="column" gap="spacing.2">
-                        {disputes.items.map((item) => (
-                          <Link key={item.id} onClick={() => history.push(`/disputes/${item.id}`)}>
-                            {item.id}
-                          </Link>
-                        ))}
-                      </Box>
-                    }
-                    tooltipType="disputeId"
-                  />
-                </>
-              )}
             </CardBody>
           </Card>
         </CardWrapper>
@@ -524,12 +604,15 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
 const mapStateToProps = (state) => ({
   user: state.session.user,
   orgName: state.session.org?.business_name,
+  orgFeatures: state.session.org?.features,
+  transfers: state.payment.transfers,
 });
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
     {
       showNotification: showNotificationAction,
+      fetchTransfers,
     },
     dispatch,
   );

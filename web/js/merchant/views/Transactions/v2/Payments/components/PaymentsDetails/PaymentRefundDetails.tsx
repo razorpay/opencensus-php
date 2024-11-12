@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
-import { deepClone } from 'common/utils/rzp-utils';
+import { capitalize, deepClone } from 'common/utils/rzp-utils';
 import * as PaymentActions from 'merchant/reducers/payments/details';
 import {
   fetchInstantRefundFeeFn,
@@ -20,7 +20,10 @@ import RefundModal from 'merchant/views/Transactions/v1/Payments/components/Refu
 import RefundModalRevamp from 'merchant/views/Transactions/v2/Payments/components/PaymentRefund';
 import RefundMiniTimeline from 'merchant/views/Transactions/v2/Refunds/components/RefundMiniTimeline';
 import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
-import { isRefundRevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
+import {
+  isPaymentV2ParityFeatureEnabled,
+  isRefundRevampEnabled,
+} from 'merchant/views/Transactions/v2/common/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
 import Tooltip from './Tooltip';
@@ -53,6 +56,9 @@ import {
 } from './utils';
 
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import GatewayData from 'merchant/views/Transactions/v1/Refunds/components/GatewayData';
+import { User } from 'common/typings';
+import PaymentOptimizerDetails from './PaymentOptimizerDetails';
 
 interface IPaymentRefundDetails {
   paymentDetails: IPaymentDetails | null;
@@ -64,6 +70,9 @@ interface IPaymentRefundDetails {
   reFetchPageDetails: (id: string) => void;
   match: RouteComponentProps<{ id: string }>['match'];
   orgName: string;
+  orgFeatures: string[];
+  terminalProviders: any;
+  shouldShowOptimizerDetails: boolean;
 }
 interface PaymentRefundContentType {
   enableBorderTopRadius?: boolean;
@@ -73,6 +82,10 @@ interface PaymentRefundContentType {
   currency: CurrencyCodeType;
   transactionIDActual: string;
   orgName: string;
+  user: User;
+  orgFeatures: string[];
+  terminalProviders: any;
+  shouldShowOptimizerDetails: boolean;
 }
 
 function PaymentRefundDetails({
@@ -87,6 +100,9 @@ function PaymentRefundDetails({
     params: { id: transactionIDActual },
   },
   orgName,
+  orgFeatures,
+  terminalProviders,
+  shouldShowOptimizerDetails,
 }: IPaymentRefundDetails): React.ReactElement {
   const { currency, refund_status } = paymentDetails!;
   const hasFooter = refund_status !== null;
@@ -174,6 +190,10 @@ function PaymentRefundDetails({
               currency={currency}
               transactionIDActual={transactionIDActual}
               orgName={orgName}
+              orgFeatures={orgFeatures}
+              user={user}
+              terminalProviders={terminalProviders}
+              shouldShowOptimizerDetails={shouldShowOptimizerDetails}
             />
           ) : (
             <CardWrapper enableBorderBottomRadius>
@@ -206,6 +226,10 @@ function PaymentRefundDetails({
                 currency={currency}
                 transactionIDActual={transactionIDActual}
                 orgName={orgName}
+                orgFeatures={orgFeatures}
+                user={user}
+                terminalProviders={terminalProviders}
+                shouldShowOptimizerDetails={shouldShowOptimizerDetails}
               />
             </BoxContainer>
           ))}
@@ -228,9 +252,14 @@ function PaymentRefundContent({
   currency,
   transactionIDActual,
   orgName,
+  orgFeatures,
+  user,
+  shouldShowOptimizerDetails,
+  terminalProviders,
 }: PaymentRefundContentType): JSX.Element {
   const bankCode = refund.acquirer_data?.rrn || refund.acquirer_data?.arn;
 
+  const splitz = useSplitzService();
   const { theme } = useTheme();
   const { matchedBreakpoint } = useBreakpoint({
     breakpoints: theme.breakpoints,
@@ -239,6 +268,11 @@ function PaymentRefundContent({
   const createdAt = useTime(refund.created_at).join(', ');
 
   const getRefundSpeed = () => refund.speed[0].toUpperCase() + refund.speed.slice(1);
+
+  const isLateAuthAttributeEnabled = orgFeatures?.includes('show_refnd_lateauth_param');
+
+  const shouldShowGatewayResponse =
+    user.isOptimizerView() && isPaymentV2ParityFeatureEnabled(splitz, user);
 
   return (
     <Box testID={`payment-refunded-${refund.id}`}>
@@ -363,6 +397,70 @@ function PaymentRefundContent({
                   {createdAt}
                 </Text>
               </RowWrapper>
+              {isLateAuthAttributeEnabled ? (
+                <>
+                  <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                  <RowWrapper>
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="regular"
+                      color="surface.text.gray.subtle"
+                    >
+                      Refund Type
+                    </Text>
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="regular"
+                      color="surface.text.gray.normal"
+                    >
+                      {capitalize(refund.refund_type || '')}
+                    </Text>
+                  </RowWrapper>
+                </>
+              ) : null}
+              {shouldShowGatewayResponse ? (
+                <>
+                  <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                  <RowWrapper>
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="regular"
+                      color="surface.text.gray.subtle"
+                    >
+                      Gateway Response
+                    </Text>
+                    <GatewayData
+                      status={refund.status}
+                      value={refund.gateway_data}
+                      isTransactionV2={true}
+                    />
+                  </RowWrapper>
+                </>
+              ) : null}
+
+              {shouldShowOptimizerDetails && !!refund?.optimizer_provider ? (
+                <>
+                  <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                  <RowWrapper>
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="regular"
+                      color="surface.text.gray.subtle"
+                    >
+                      Optimizer details
+                    </Text>
+                    <PaymentOptimizerDetails
+                      payment={refund}
+                      terminalProviders={terminalProviders}
+                      page="Refund Detail"
+                    />
+                  </RowWrapper>
+                </>
+              ) : null}
               <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
                 <Text
@@ -397,6 +495,7 @@ const mapStateToProps = (state) => {
   return {
     user: state.session.user,
     orgName: state.session.org?.business_name,
+    orgFeatures: state.session.org?.features,
   };
 };
 

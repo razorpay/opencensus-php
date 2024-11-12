@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
-import { bladeTheme } from '@razorpay/blade/tokens';
+import { bladeTheme, createTheme } from '@razorpay/blade/tokens';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 import {
   QueryClient,
@@ -19,6 +19,8 @@ import {
   graphqlRequestMutation,
 } from 'common/services/graphql/graphql-client';
 import store from 'merchant/store';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,9 +53,21 @@ const GlobalStyles = createGlobalStyle`
 `;
 
 const Wrapper: React.FC<Props> = ({ context, children }) => {
+  const splitz = useSplitzService();
+  const isCustomTheme = isExperimentEnabled(splitz?.abExperiments?.enable_trxn_v2_parity_features);
+  let customTheme = bladeTheme;
+
+  if (isCustomTheme) {
+    const color = window?.rzp_org?.merchant_styles?.primary;
+    if (color) {
+      const { theme: customColorTheme } = createTheme({ brandColor: color });
+      customTheme = customColorTheme;
+    }
+  }
+
   return (
     <Provider store={store}>
-      <BladeProvider themeTokens={bladeTheme}>
+      <BladeProvider themeTokens={customTheme}>
         <GlobalStyles />
         <ThemeProvider theme={theme}>
           <ReactQueryClientProvider client={queryClient}>

@@ -40,6 +40,7 @@ type Getters = {
   isFeatureEnabled: (args: string) => boolean;
   isOrgAllowedFunctionality: (featureName: string) => boolean;
   isPartner: (...args: string[]) => boolean;
+  isOptimizerView: () => boolean;
   isApmOnboardingEnabled: boolean;
   isAccountAndSettingsRevampEnabled: boolean;
   isIERevampEnabled: boolean;

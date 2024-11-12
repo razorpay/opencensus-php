@@ -20,6 +20,7 @@ export interface RefundsListFilterProps extends RouteComponentProps {
   onSubmit: (args: SearchParams) => void;
   loading: boolean;
   user: User;
+  terminalProviders?: { [key: string]: string }[];
 }
 
 export interface DefaultDateAndOption {

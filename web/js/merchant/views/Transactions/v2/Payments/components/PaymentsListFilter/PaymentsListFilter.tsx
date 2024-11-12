@@ -19,6 +19,8 @@ import { Option } from 'common/components/Dropdown/types';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useMobile } from 'common/hooks/useMobile';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { useSplitzService } from 'common/splitz';
+import ProviderSelector from 'merchant/components/ProviderSelector';
 import lazy from 'merchant/routes/LazyLoader';
 import { isOmniChannelMerchant as _isOmniChannelMerchant } from 'merchant/utils/omniUtils';
 import {
@@ -39,12 +41,18 @@ import {
 import {
   trackDurationFilter,
   trackMethodFilter,
+  trackProviderFilter,
   trackSearchButton,
   trackSearchByFilter,
   trackStatusFilter,
 } from 'merchant/views/Transactions/v2/common/tracking';
 import { Duration, DurationOption } from 'merchant/views/Transactions/v2/common/types';
-import { endOfDay, getFromTime, getValue } from 'merchant/views/Transactions/v2/common/utils';
+import {
+  endOfDay,
+  getFromTime,
+  getValue,
+  isPaymentV2ParityFeatureEnabled,
+} from 'merchant/views/Transactions/v2/common/utils';
 import { openModal } from 'merchant_common/reducers/modals';
 
 import {
@@ -76,7 +84,11 @@ const PaymentsListFilter = ({
   user,
   location: { pathname },
   openModal,
+  terminalProviders,
 }: PaymentsListFilterProps): JSX.Element => {
+  const splitz = useSplitzService();
+  const isProviderSelectorForV2 = isPaymentV2ParityFeatureEnabled(splitz, user);
+
   const {
     defaultPaymentDuration,
     defaultDate,
@@ -95,6 +107,7 @@ const PaymentsListFilter = ({
     defaultPaymentDuration.value === CUSTOM,
   );
   const [status, setStatus] = useState(defaultStatusValue);
+  const [terminalId, setTerminalId] = useState<string>();
   const [searchBy, setSearchBy] = useState(defaultSearchByOption.value);
   const [searchByValue, setSearchByValue] = useState(defaultSearchByValue);
   const [countryCode, setCountryCode] = useState(defaultCountryCodeValue);
@@ -118,6 +131,7 @@ const PaymentsListFilter = ({
       ...date,
       status,
       method,
+      [terminalId === 'Razorpay' ? 'settled_by' : 'terminal_id']: terminalId,
       country_code: newCountryCode,
       source_channel: channel,
       ...newSearchParams,
@@ -161,6 +175,19 @@ const PaymentsListFilter = ({
     handleSearch({ method });
     trackMethodFilter({
       paymentMethodSelected: selectedPaymentMethods[0].title,
+      pathname,
+    });
+  };
+
+  const onTerminalProviderChange = (terminalProviders: Option[]) => {
+    const terminal_id = getValue(terminalProviders);
+    handleSearch({
+      [terminal_id === 'Razorpay' ? 'settled_by' : 'terminal_id']: terminal_id,
+      [terminal_id === 'Razorpay' ? 'terminal_id' : 'settled_by']: '',
+    });
+    setTerminalId(terminal_id);
+    trackProviderFilter({
+      terminalProviderSelected: terminalProviders[0].title,
       pathname,
     });
   };
@@ -289,6 +316,18 @@ const PaymentsListFilter = ({
               bottomSheetTitle={paymentMethodSectionName}
             />
           )}
+
+          {isProviderSelectorForV2 &&
+            user.isSingleReconEnabled &&
+            user.isOptimizerEnabled &&
+            terminalProviders &&
+            terminalProviders.length > 0 && (
+              <ProviderSelector
+                providers={terminalProviders}
+                onChange={onTerminalProviderChange}
+                isLoading={loading}
+              />
+            )}
         </StyledSubListFilter>
         <StyledSearchByFilter>
           <Box display="flex" columnGap="spacing.3" marginLeft="auto">

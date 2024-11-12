@@ -16,6 +16,11 @@ export interface Item {
   created_at: number;
   status: Status;
   source_channel: 'online' | 'in_person' | null;
+  gateway_data: {
+    code: string;
+    refund_code: string;
+    refund_message: string;
+  } | null;
 }
 
 export interface AcquirerData {

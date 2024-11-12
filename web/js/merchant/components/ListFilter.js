@@ -20,16 +20,19 @@ import { isMobileDevice } from 'merchant/components/Home/data';
 export const isTransactionsV2Enabled = (splitz, user) => {
   const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
 
-  const isInternalTesting = isInternalTestingEnabled(abExperiments);
-  const isV2ForCurlecEnabled = isExperimentEnabled(abExperiments?.enable_trxn_v2_for_curlec);
-
-  if (isInternalTesting) return true;
-
   if (!abExperiments?.Transactions_Revamp) return false;
 
-  // for curlec merchants, if experiment is enabled, then show trxn v2
-  if (user.isOrgCurlec) {
-    if (isV2ForCurlecEnabled) {
+  // All optimiser merchants are parity merchants
+  // All merchants whose org is Curlec are parity merchants
+  // All merchants whose org is VAS are parity merchants
+  const isExcludedMerchant = user.isFeatureEnabled('raas') || !user.isOrgRZP;
+  const isTransactionsEnabledForExcludedMerchant = isExperimentEnabled(
+    abExperiments?.enable_trxn_v2_for_excluded_merchants,
+  );
+
+  // for excluded merchants, if experiment is enabled, then show trxn v2
+  if (isExcludedMerchant) {
+    if (isTransactionsEnabledForExcludedMerchant) {
       return true;
     }
     return false;
@@ -37,8 +40,6 @@ export const isTransactionsV2Enabled = (splitz, user) => {
 
   return (
     Boolean(user.isCountryIndia || user.isCountrySingapore) &&
-    (user.isOrgRZP || user.isVasTestingMerchant) &&
-    !user.isFeatureEnabled('raas') &&
     isExperimentEnabled(abExperiments.Transactions_Revamp)
   );
 };

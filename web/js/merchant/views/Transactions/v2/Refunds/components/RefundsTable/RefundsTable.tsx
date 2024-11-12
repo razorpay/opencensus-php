@@ -10,9 +10,11 @@ import { getDesktopColumns, mobileColumns } from './columns';
 import { RefundsTableProps } from './types';
 
 const RefundsTable = (props: RefundsTableProps): JSX.Element => {
-  const { loading: isLoading, isOmniView } = props;
+  const { loading: isLoading, isOmniView, shouldDisplayOptimizerColumn } = props;
   const isMobile = useMobile(mobileBreakoints);
-  const columns = isMobile ? mobileColumns : getDesktopColumns(isOmniView);
+  const columns = isMobile
+    ? mobileColumns
+    : getDesktopColumns(shouldDisplayOptimizerColumn, isOmniView);
 
   return (
     <StyledTable loading={isLoading}>

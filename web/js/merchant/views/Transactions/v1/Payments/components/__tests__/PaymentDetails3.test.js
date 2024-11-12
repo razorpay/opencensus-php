@@ -7,12 +7,18 @@ import {
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
 import { analyticsTrack } from 'common/utils/analytics';
 import store from 'merchant/store';
+import { useStore } from 'shell/commonStore';
 
 const stateSpy = jest.spyOn(store, 'getState');
+jest.mock('shell/commonStore', () => ({
+  ...jest.requireActual('shell/commonStore'),
+  useStore: jest.fn(),
+}));
 
 describe('PaymentDetails', () => {
   beforeEach(() => {
     stateSpy.mockClear();
+    useStore.mockReturnValue({});
   });
   test('should call onCreateTransfer when clicked on Create Transfer', () => {
     render(<App />, {
@@ -100,24 +106,19 @@ describe('PaymentDetails', () => {
         screen.getByText('The customer has paid the fees for this payment'),
       ).toBeInTheDocument();
     });
-
-    test('should render fee bearer when fee_bearer is not platform', () => {
-      render(<App />);
-      expect(
-        screen.getByText('The customer has paid the fees for this payment'),
-      ).toBeInTheDocument();
-    });
   });
 
   describe('Total Fee', () => {
     test('should render business name in fee label', () => {
+      useStore.mockReturnValue({
+        businessName: 'Test Business Name',
+      });
       render(
         <App
           payment={{
             ...defaultProps.payment,
             fee: 898989,
           }}
-          org={{ business_name: 'Test Business Name' }}
         />,
       );
       expect(screen.queryByText('Test Business Name Fee -')).toBeInTheDocument();

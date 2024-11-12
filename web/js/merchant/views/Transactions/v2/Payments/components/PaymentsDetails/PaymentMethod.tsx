@@ -13,7 +13,10 @@ import { titleCase } from 'common/utils/rzp-utils';
 
 import { IPaymentDetails } from './types';
 import { useSplitzService } from 'common/splitz';
-import { isPaymentV2RevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
+import { isPaymentV2ParityFeatureEnabled } from 'merchant/views/Transactions/v2/common/utils';
+import { cardNetworkLogoMap } from './constants';
+import { StyledPaymentMethodLogo } from './styled';
+import { useStore } from 'shell/commonStore';
 
 interface IPaymentMethod {
   payment: any;
@@ -26,12 +29,15 @@ interface IPaymentMethod {
 
 function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMethod): JSX.Element {
   const splitz = useSplitzService();
+  const user = useStore((state) => state.session.user);
 
-  const { abExperiments } = splitz || { abExperiments: { toggle_payments_v2_revamp: undefined } };
-  const isTxnV2ParityFeaturesEnabled = isPaymentV2RevampEnabled(abExperiments);
+  const isTxnV2ParityFeaturesEnabled = isPaymentV2ParityFeatureEnabled(splitz, user);
 
   const getPaymentMethod = () => {
     if (method === 'card') {
+      const { name = '', widthToken = 9 } = card?.network
+        ? cardNetworkLogoMap[card.network] || {}
+        : {};
       return (
         <>
           {card?.international ? 'International' : 'Domestic'} {titleCase(card?.type)} card{' '}
@@ -39,6 +45,11 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
             (<img src={CardIcon} alt="card-icon" style={{ marginLeft: '4px' }} />
             xx{card?.last4})
           </span>
+          <Box display="flex" alignItems="center">
+            <Text>{card?.issuer ? `${card.issuer}, ` : ''}</Text>
+            <Text>{card?.network ? `${card.network} ` : ''}</Text>
+            {name ? <StyledPaymentMethodLogo src={`/img/${name}`} widthToken={widthToken} /> : null}
+          </Box>
         </>
       );
     }

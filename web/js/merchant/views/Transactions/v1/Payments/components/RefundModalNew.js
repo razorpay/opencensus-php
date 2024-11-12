@@ -7,6 +7,7 @@ import { compose, bindActionCreators } from 'redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 
 import { withI18Service } from 'common/i18';
+import { withSplitzService } from 'common/splitz';
 import Amount, { AmountTooltip } from 'common/ui/Amount';
 import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
 import InputField from 'common/ui/Forms/InputField';
@@ -29,6 +30,7 @@ import {
   fetchTransfers,
 } from 'merchant/reducers/payments/details';
 import { trackRefundError } from 'merchant/views/Transactions/v1/Payments/track';
+import { isPaymentV2ParityFeatureEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import { closeModal } from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
@@ -480,8 +482,12 @@ class RefundModal extends Component {
     const instant_refund_supported =
       payment.instant_refund_support && payment.instant_refund_support === true;
     const refund_check_disabled = isInstantDisabled || !instant_refund_supported;
+    const optimierInstantRefundDisabled = isPaymentV2ParityFeatureEnabled(this.props.splitz, user)
+      ? payment.instant_refund_support === false && user?.isOptimizerEnabled
+      : false;
 
     if (
+      !optimierInstantRefundDisabled &&
       !showWhenUtil({ featureEnabled: 'disable_instant_refunds' }) &&
       !this.props.i18.isConfigTagEnabled('refunds.instant_refunds')
     ) {
@@ -981,9 +987,11 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default compose(
-  reduxForm({
-    form: 'refundModal',
-  }),
-  connect(mapStateToProps, mapDispatchToProps),
-)(withI18Service(RefundModal));
+export default withSplitzService(
+  compose(
+    reduxForm({
+      form: 'refundModal',
+    }),
+    connect(mapStateToProps, mapDispatchToProps),
+  )(withI18Service(RefundModal)),
+);

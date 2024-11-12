@@ -34,7 +34,7 @@ function PaymentOptimierProvider(props: PaymentOptimizerProviderProps) {
   return (
     <Tooltip content={provider.Provider_name} placement="top">
       <TooltipInteractiveWrapper>
-        <Box display="flex" gap="spacing.4" maxWidth="120px">
+        <Box display="flex" gap="spacing.3" maxWidth="120px">
           <img alt={provider.Gateway} height="20" src={gatewayLogos[provider.Gateway]} />
           <StyledText as="span">{provider.Provider_name}</StyledText>
         </Box>

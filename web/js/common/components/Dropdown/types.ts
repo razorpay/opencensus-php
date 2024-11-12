@@ -2,11 +2,13 @@ import {
   DropdownProps as BladeDropdownProps,
   IconComponent,
   ButtonProps,
+  ActionListItemProps,
 } from '@razorpay/blade/components';
 
 export type Option = {
   title: string;
   value: string;
+  leading?: ActionListItemProps['leading'];
 };
 
 export type SectionOption = {

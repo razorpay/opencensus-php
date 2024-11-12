@@ -47,6 +47,7 @@ export interface PaymentsListFilterProps extends RouteComponentProps {
   loading: boolean;
   openModal: (args: { size: string; component: JSX.Element; isNew?: boolean }) => void;
   user: User;
+  terminalProviders?: { [key: string]: any }[];
 }
 
 export interface ExtraFiltersModalProps {

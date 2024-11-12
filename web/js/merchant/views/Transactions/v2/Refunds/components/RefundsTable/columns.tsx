@@ -1,7 +1,8 @@
-import { Box, Text, VisuallyHidden } from '@razorpay/blade/components';
 import React from 'react';
+import { Box, Text, VisuallyHidden } from '@razorpay/blade/components';
 
 import Amount from 'common/ui/Amount';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/v2/Payments/components/PaymentOptimizerProvider';
 import {
   amount,
   createdOn,
@@ -99,9 +100,11 @@ const status = {
       Status
     </Text>
   ),
-  value: ({ status }: Item): JSX.Element => {
+  value: ({ gateway_data, status }: Item): JSX.Element => {
     const { variant, content } = getRefundsStatusVariantMap(window.rzp_org?.business_name)[status];
-    return <Status variant={variant} content={content} status={status} />;
+    return (
+      <Status variant={variant} content={content} status={status} gatewayData={gateway_data} />
+    );
   },
 };
 
@@ -127,12 +130,29 @@ const actions = {
   },
 };
 
+export const optimizer = {
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Payment provider
+    </Text>
+  ),
+  value: (item: Item) => <PaymentOptimizerProvider item={item} />,
+};
+
 export const mobileColumns = [mobileAmount, status, actions];
 export const desktopColumns = [refundId, _paymentId, createdOn, amount, status, actions];
 
-export const getDesktopColumns = (isOmniView?: boolean) => {
+export const getDesktopColumns = (shouldDisplayOptimizerColumn: boolean, isOmniView?: boolean) => {
+  let updatedDesktopColumns = desktopColumns;
   if (isOmniView) {
-    return [omniRefundId, ...desktopColumns.slice(1, desktopColumns.length)];
+    updatedDesktopColumns = [omniRefundId, ...desktopColumns.slice(1, desktopColumns.length)];
   }
-  return desktopColumns;
+
+  if (shouldDisplayOptimizerColumn) {
+    updatedDesktopColumns = updatedDesktopColumns
+      .slice(0, 1)
+      .concat(optimizer, updatedDesktopColumns.slice(1));
+  }
+
+  return updatedDesktopColumns;
 };

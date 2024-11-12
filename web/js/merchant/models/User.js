@@ -200,6 +200,10 @@ export default class User {
     return custom_code?.toLowerCase() === ORG_CUSTOM_CODE_MAP.CURLEC;
   }
 
+  isOptimizerView() {
+    return this.isOptimizerEnabled && this.isSingleReconEnabled;
+  }
+
   /* Check case-insensitive tag check */
   findTag(tag) {
     return this.tags.some((t) => t.toLowerCase() === tag.toLowerCase());

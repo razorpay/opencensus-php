@@ -14,10 +14,11 @@ import {
   TransactionsEntityRoute,
 } from 'merchant/views/Transactions/v2/common/constants';
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
-import { isPaymentV2RevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
+import { isPaymentV2ParityFeatureEnabled } from 'merchant/views/Transactions/v2/common/utils';
 
 import { RouterLink } from './styled';
 import { DetailsProps, HandleDetailsClickParams, RouterParams } from './types';
+import { useStore } from 'shell/commonStore';
 
 const makeUrl = ({ baseUrl, itemId, initiatePage, rowData }: HandleDetailsClickParams): string => {
   const { hash } = window.location;
@@ -59,8 +60,9 @@ export const handleDetailsClick = ({
 
 const Details = ({ isDisabled, itemId, baseUrl, initiatePage }: DetailsProps): JSX.Element => {
   const navigate = useNavigate();
+  const user = useStore((state) => state.session.user);
   const isMobile = useMobile([...mobileBreakoints, 'l']);
-  const { abExperiments } = useSplitzService();
+  const splitz = useSplitzService();
 
   const linkText = isMobile ? '' : 'Details';
 
@@ -93,7 +95,7 @@ const Details = ({ isDisabled, itemId, baseUrl, initiatePage }: DetailsProps): J
   };
 
   const shouldShowHyperlink =
-    baseUrl === TransactionsEntityRoute.PAYMENTS && isPaymentV2RevampEnabled(abExperiments);
+    baseUrl === TransactionsEntityRoute.PAYMENTS && isPaymentV2ParityFeatureEnabled(splitz, user);
 
   const url = makeUrl({ baseUrl, itemId, initiatePage });
 

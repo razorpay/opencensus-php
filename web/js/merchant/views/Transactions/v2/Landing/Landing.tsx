@@ -13,6 +13,8 @@ import {
 import { track, trackTransactionsTabClick } from 'merchant/views/Transactions/v2/common/tracking';
 import { Page } from 'merchant/views/Transactions/v2/common/types';
 import { useI18Service } from 'common/i18';
+import { shouldHideAnalytics } from 'merchant/views/Transactions/v2/common/utils';
+import { useStore } from 'shell/commonStore';
 
 const { ORDERS } = Page;
 const {
@@ -25,6 +27,10 @@ const {
 
 export const LandingContainer = ({ children }) => {
   const { isConfigTagEnabled } = useI18Service();
+  const { user, mode } = useStore((state) => ({
+    user: state.session.user,
+    mode: state.session.mode,
+  }));
 
   useEffect(() => {
     track({
@@ -41,9 +47,11 @@ export const LandingContainer = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const isAnalyticsHidden = shouldHideAnalytics(user, mode);
+
   return (
     <div className="tabbed-container">
-      <LandingPageAnalyticsOverview />
+      {isAnalyticsHidden ? null : <LandingPageAnalyticsOverview />}
       <StyledTabHeader id="transactions-header">
         <StyledTabItem to={PAYMENTS_ROUTE} onClick={trackTransactionsTabClick(PAYMENTS_ROUTE)} end>
           Payments

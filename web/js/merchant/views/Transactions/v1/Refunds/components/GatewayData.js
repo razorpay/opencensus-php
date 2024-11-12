@@ -13,14 +13,14 @@ const statusClassMap = {
  * @prop {Object|Array} value - The value (gateway_data), can be an object or an empty array.
  */
 
-const GatewayData = ({ status, value }) => {
+const GatewayData = ({ status, value, isTransactionV2 = false }) => {
   // Check if the "value" is an object and it has keys and not an array
   if (value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length) {
     const statusClass = `${statusClassMap[status?.toLowerCase()]}` || '';
 
     return (
       <div className="refund-gateway-data" data-testid="refund-gateway-data">
-        <p className="refund-gateway-data--label">Gateway response</p>
+        {isTransactionV2 ? null : <p className="refund-gateway-data--label">Gateway response</p>}
         <p className="refund-gateway-data--code">
           Gateway code: <span className={statusClass}>{value?.refund_code}</span>
         </p>

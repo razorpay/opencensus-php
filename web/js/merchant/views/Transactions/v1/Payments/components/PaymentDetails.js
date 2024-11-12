@@ -23,7 +23,6 @@ import MaskedEmail from 'merchant/components/Mask/Email';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import { isOrgFeatureExist } from 'merchant/models/User';
-import lazy from 'merchant/routes/LazyLoader';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 import { isPlatformTransaction } from 'merchant/views/Transactions/v1/Payments/Utils/platformUtils';
 import { OptimizerDetails } from 'merchant/views/Transactions/v1/Payments/components/OptimizerDetails';
@@ -53,6 +52,7 @@ import './Payments.styl';
 import { DownloadIcon } from '@razorpay/blade/components';
 import { openModal } from 'merchant_common/reducers/modals';
 import BounceMemoPopup from '../BounceMemoPopup';
+import { PaymentFeeBreakdown } from './PaymentFee';
 const INIT_POINT = 'payment-details';
 
 function PaymentDetails(props) {
@@ -84,7 +84,6 @@ function PaymentDetails(props) {
     fetchEzetapKeys,
   } = props;
 
-  const hideRazorpayTextLink = isOrgFeatureExist('hide_razorpay_text_link');
   const isFromHomePage = location?.state?.fromHomePage;
   const paymentId = payment?.id;
   const bankTransferDetails = bankTransfer?.details;
@@ -98,8 +97,6 @@ function PaymentDetails(props) {
   const scroller = useRef();
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
   const [isUPIVisible, setUPIVisible] = useState(false);
-  const currency = user.merchant.currency;
-  const isRZPOrg = user.isOrgRZP;
   const { isConfigTagEnabled } = useI18Service();
 
   const params = new Proxy(new URLSearchParams(window.location?.search), {
@@ -111,9 +108,6 @@ function PaymentDetails(props) {
   const page = initiatePage?.split('.')[1];
 
   const showPlatformFee = isPlatformTransaction(transfers);
-  const PlatformFeeDetails = showPlatformFee
-    ? lazy(() => import('merchant/views/Transactions/v1/Payments/components/PlatformFeeDetails'))
-    : null;
 
   const getPaymentReferenceNumber = (method, acquirer_data) => {
     switch (method) {
@@ -166,25 +160,6 @@ function PaymentDetails(props) {
       setScrolledToBottom(false);
     }
   }, [scrolledToBottom]);
-
-  /* This function handles specific flow for international payments
-  other flows won't be affected
-  1. fee bearer is customer
-  2. currency is not INR
-  3. payment is in authorized state
-  4. fee_currency_amount is not null */
-  const getPaymentFees = () => {
-    let fee = payment?.fee ?? 0;
-    if (
-      payment?.fee_bearer === 'customer' &&
-      payment?.currency !== 'INR' &&
-      payment?.fee_currency_amount &&
-      payment?.status === 'authorized'
-    ) {
-      fee = payment.fee_currency_amount;
-    }
-    return fee;
-  };
 
   useEffect(() => {
     if (user.isSingleReconEnabled && user.isOptimizerEnabled) {
@@ -256,15 +231,6 @@ function PaymentDetails(props) {
     if (window?.session_id) selfServeInitiateData.props.sessionId = window.session_id;
 
     selfServeTrackInitiate(selfServeInitiateData);
-  };
-
-  const chargedFeeLabelText = () => {
-    const orgName = org?.business_name || 'Razorpay';
-
-    if (hideRazorpayTextLink) {
-      return '';
-    }
-    return orgName;
   };
 
   const triggerRefund = () => {
@@ -567,21 +533,7 @@ function PaymentDetails(props) {
                 </ShowWhen>
 
                 <EntityDetailRow label="Total Fee">
-                  {showPlatformFee ? (
-                    <PlatformFeeDetails transfers={transfers} payment={payment} />
-                  ) : (
-                    <Definition>
-                      <Amount value={getPaymentFees()} currency={currency} />
-                      <span>
-                        {chargedFeeLabelText()} Fee -&nbsp;
-                        <Amount value={getPaymentFees() - payment.tax} currency={currency} />
-                      </span>
-                      <span>
-                        {isRZPOrg ? 'GST' : 'Tax'} -{' '}
-                        <Amount value={payment.tax} currency={currency} />
-                      </span>
-                    </Definition>
-                  )}
+                  <PaymentFeeBreakdown transfers={transfers} payment={payment} />
                 </EntityDetailRow>
 
                 {isInteger(payment?.customer_fee) && isInteger(payment?.customer_fee_gst) && (

@@ -263,3 +263,10 @@ export const StyledBankTransferCollapser = styled.div`
   align-items: center;
   cursor: pointer;
 `;
+
+export const StyledPaymentMethodLogo = styled.img(
+  ({ theme, widthToken = 9 }: { theme: Theme; widthToken: number }) => `
+  width: ${theme.spacing[widthToken]}px;
+  margin-left: ${theme.spacing[2]}px;
+`,
+);

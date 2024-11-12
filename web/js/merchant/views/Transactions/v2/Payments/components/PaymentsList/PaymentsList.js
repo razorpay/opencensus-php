@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import { withSplitzService } from 'common/splitz';
-import { isExperimentEnabled } from 'common/splitz/utils';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
@@ -27,7 +26,11 @@ import {
   TransactionsEntityRoute,
   TransactionsPagesMap,
 } from 'merchant/views/Transactions/v2/common/constants';
-import { onPaginate, onSearch } from 'merchant/views/Transactions/v2/common/utils';
+import {
+  isPaymentV2ParityFeatureEnabled,
+  onPaginate,
+  onSearch,
+} from 'merchant/views/Transactions/v2/common/utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 class PaymentsList extends ListContainer {
@@ -108,21 +111,22 @@ class PaymentsList extends ListContainer {
         pos_activation_status,
         isOmniEnabledMerchant,
         isCustomTransactionTabView,
-        isSingleReconEnabled,
-        isOptimizerEnabled,
       },
       orgName,
+      terminalProviders,
     } = this.props;
 
     const shouldDisplayOptimizerColumn =
-      isSingleReconEnabled &&
-      isOptimizerEnabled &&
-      isExperimentEnabled(splitz?.abExperiments?.toggle_payments_v2_revamp);
+      this.props.user.isOptimizerView() && isPaymentV2ParityFeatureEnabled(splitz, this.props.user);
     const isOmniView = isOmniEnabledMerchant || (!!pos_activation_status && isOmniChannelMerchant);
 
     return (
       <>
-        <PaymentsListFilter onSubmit={onSearch(history)} loading={loading} />
+        <PaymentsListFilter
+          onSubmit={onSearch(history)}
+          loading={loading}
+          terminalProviders={terminalProviders}
+        />
         {isCustomTransactionTabView && (
           <Box display="grid" margin="0 10px 10px 0">
             <Link
@@ -190,6 +194,7 @@ export default withSplitzService(
         ...state.payments,
         user: state.session.user,
         orgName: state.session.org?.business_name,
+        terminalProviders: state.navigator.terminalProviders,
       }),
       mapDispatchToProps,
     )(PaymentsList),

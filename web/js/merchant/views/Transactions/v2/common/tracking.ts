@@ -84,6 +84,22 @@ export const trackMethodFilter = ({
   });
 };
 
+export const trackProviderFilter = ({
+  terminalProviderSelected,
+  pathname,
+}: {
+  terminalProviderSelected: string;
+  pathname: string;
+}): void => {
+  track({
+    objectName: 'Provider Dropdown',
+    properties: {
+      terminalProviderSelected,
+      section: TransactionsPagesMap[pathname],
+    },
+  });
+};
+
 export const trackSearchByFilter = ({
   searchBy,
   pathname,

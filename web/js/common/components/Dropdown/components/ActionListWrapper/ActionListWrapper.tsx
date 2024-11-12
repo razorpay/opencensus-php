@@ -19,7 +19,7 @@ const ActionListWrapper = ({
           return (
             <ActionListSection key={sectionName} title={sectionName}>
               {sectionOptions.map((sectionOption) => {
-                const { title, value: optionValue } = sectionOption;
+                const { title, value: optionValue, leading } = sectionOption;
                 const isSelected = _selectedOptions.some(
                   // handling the case where the option is falsy
                   (option) => optionValue === option?.value,
@@ -31,13 +31,14 @@ const ActionListWrapper = ({
                     isSelected={isSelected}
                     title={title}
                     value={optionValue}
+                    leading={leading}
                   />
                 );
               })}
             </ActionListSection>
           );
         } else {
-          const { title, value: optionValue } = option as Option;
+          const { title, value: optionValue, leading } = option as Option;
           const isSelected = _selectedOptions.some(
             // handling the case where the option is falsy
             (option) => optionValue === option?.value,
@@ -49,6 +50,7 @@ const ActionListWrapper = ({
               isSelected={isSelected}
               title={title}
               value={optionValue}
+              leading={leading}
             />
           );
         }

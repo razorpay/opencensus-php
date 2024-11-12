@@ -21,25 +21,30 @@ import { StyledHeading } from './styled';
 import { getHeading } from './utils';
 import { openModal } from 'merchant_common/reducers/modals';
 import BounceMemoPopup from 'merchant/views/Transactions/v1/Payments/BounceMemoPopup';
-import { isBounceMemoEnabled } from 'merchant/views/Transactions/v2/common/utils';
+import {
+  isBounceMemoEnabled,
+  shouldHideAnalytics,
+} from 'merchant/views/Transactions/v2/common/utils';
 import { useSplitzService } from 'common/splitz';
 
 const { FAILED_PAYMENTS, DISPUTES, SUCCESS_RATE, REFUNDS, BATCH_REFUNDS, BATCH_REFUNDS_UPLOAD } =
   TransactionsEntityRoute;
 
-const EntitiesOverview = ({ location: { pathname }, user }: any): JSX.Element => {
+const EntitiesOverview = ({ location: { pathname }, user, mode }: any): JSX.Element => {
   const { id: merchantId } = user;
   const splitz = useSplitzService();
   const isBounceModalMemoEnabled = isBounceMemoEnabled(splitz);
   const shouldShowHeading = [FAILED_PAYMENTS, SUCCESS_RATE].includes(
     pathname as TransactionsEntityRoute,
   );
-  const shouldShowOverview = [
-    FAILED_PAYMENTS,
-    REFUNDS,
-    BATCH_REFUNDS,
-    BATCH_REFUNDS_UPLOAD,
-  ].includes(pathname as TransactionsEntityRoute);
+
+  const isAnalyticsHidden = shouldHideAnalytics(user, mode);
+
+  const shouldShowOverview =
+    !isAnalyticsHidden &&
+    [FAILED_PAYMENTS, REFUNDS, BATCH_REFUNDS, BATCH_REFUNDS_UPLOAD].includes(
+      pathname as TransactionsEntityRoute,
+    );
   const entityAnalyticsType =
     pathname === FAILED_PAYMENTS ? EntityOverviewType.Failed : EntityOverviewType.Refunds;
   const { isConfigTagEnabled } = useI18Service();

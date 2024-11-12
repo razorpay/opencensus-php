@@ -89,6 +89,7 @@ class SettlementInfo extends Component {
       viewSettlementOverview,
       integratedGateways,
       location,
+      isTransactionsV2,
     } = this.props;
 
     const settlementTimelineDetails = settlementTimeline?.data;
@@ -279,11 +280,15 @@ class SettlementInfo extends Component {
       jsx = (
         <Fragment>
           <div>--</div>
-          <div className="optimizer-settlement-info">
-            <p className="icon-para">
+          <div
+            className={`optimizer-settlement-info ${
+              isTransactionsV2 ? 'optimizer-settlement-info-v2' : ''
+            }`}
+          >
+            <p className={!isTransactionsV2 ? 'icon-para' : ''}>
               <i className="i i-info-outline" />
             </p>
-            <p aria-label="info" className="info-para">
+            <p aria-label="info" className={!isTransactionsV2 ? 'info-para' : ''}>
               {info}
             </p>
           </div>

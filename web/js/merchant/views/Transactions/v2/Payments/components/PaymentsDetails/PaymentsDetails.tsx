@@ -23,6 +23,7 @@ import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
 import User from 'common/typings/User';
 import { getErrorMessageFromResponse, deepClone, getURLQueryParams } from 'common/utils/rzp-utils';
+import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import * as PaymentActions from 'merchant/reducers/payments/details';
 import {
   fetchPaymentIdDetails,
@@ -41,7 +42,7 @@ import {
   trackDetailsPageLoad,
 } from 'merchant/views/Transactions/v2/common/tracking';
 import {
-  isPaymentV2RevampEnabled,
+  isPaymentV2ParityFeatureEnabled,
   isRefundRevampEnabled,
 } from 'merchant/views/Transactions/v2/common/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -68,6 +69,8 @@ interface PaymentDetailsProps extends RouteComponentProps<{ id: string }> {
   openModal: (args) => void;
   fetchCurrentBalance: () => Promise<ICurrentBalance>;
   fetchRefundFee: () => Promise<Record<string, string>>;
+  terminalProviders: { [key: string]: any }[];
+  fetchTerminalProviders: () => void;
 }
 
 const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
@@ -76,6 +79,8 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
     match: { params },
     location,
     showNotification,
+    terminalProviders,
+    fetchTerminalProviders,
   } = props;
   const { isConfigTagEnabled } = useI18Service();
 
@@ -101,16 +106,22 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
     dashboardFlag.push('upi_payer_name');
   }
   const splitz = useSplitzService();
-  const isDetailHyperlinkVisible = isPaymentV2RevampEnabled(splitz?.abExperiments);
+  const isDetailHyperlinkVisible = isPaymentV2ParityFeatureEnabled(splitz, user);
+  const isPaymentsRoute = location.pathname.includes('/payments');
+
+  const shouldShowOptimizerDetails =
+    isPaymentV2ParityFeatureEnabled(splitz, user) && user.isOptimizerView();
 
   const fetchDetails = async () => {
     setError(null);
     setIsLoading(true);
-    const isPaymentsRoute = location.pathname.includes('/payments');
     const { id } = params;
     // slicing the pay_ from the payment id
     const slicedPaymentId = id?.replace('pay_', '') as string;
     try {
+      if (shouldShowOptimizerDetails) {
+        fetchTerminalProviders();
+      }
       if (isPaymentsRoute) {
         // payments route - api call flow
         const responses = await Promise.all([
@@ -293,12 +304,16 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
             <PaymentDetailsSection
               paymentDetails={paymentIdDetails}
               applicationDetails={applicationDetails}
+              shouldShowOptimizerDetails={shouldShowOptimizerDetails}
+              terminalProviders={terminalProviders}
             />
             {!isConfigTagEnabled('refunds.refund') && (
               <PaymentRefundDetails
                 paymentDetails={paymentIdDetails}
                 paymentIdRefundDetails={paymentIdRefundDetails}
                 reFetchPageDetails={reFetchPageDetails}
+                shouldShowOptimizerDetails={shouldShowOptimizerDetails}
+                terminalProviders={terminalProviders}
               />
             )}
           </Box>
@@ -319,6 +334,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
+  terminalProviders: state.navigator.terminalProviders,
 });
 
 const mapDispatchToProps = (dispatch) =>
@@ -327,6 +343,7 @@ const mapDispatchToProps = (dispatch) =>
       ...PaymentActions,
       ...ModalActions,
       showNotification,
+      fetchTerminalProviders,
     },
     dispatch,
   );

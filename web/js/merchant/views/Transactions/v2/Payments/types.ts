@@ -40,6 +40,11 @@ export interface Item {
   source_channel: null | 'online' | 'in_person';
   optimizer_provider: null | string;
   settled_by: null | string;
+  gateway_data: {
+    code: string;
+    refund_code: string;
+    refund_message: string;
+  } | null;
 }
 
 export interface AcquirerData {

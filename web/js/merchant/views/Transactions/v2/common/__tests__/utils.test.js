@@ -314,7 +314,7 @@ describe('utils', () => {
       const splitz = {
         abExperiments: { Transactions_Revamp: { variables: { result: 'on' } } },
       };
-      const user = { isOrgCurlec: true, isOrgRZP: true };
+      const user = { isOrgCurlec: true, isOrgRZP: true, isFeatureEnabled: () => false };
       const result = isTransactionsV2Enabled(splitz, user);
       expect(result).toBe(false);
     });
@@ -323,7 +323,7 @@ describe('utils', () => {
       const splitz = {
         abExperiments: { Transactions_Revamp: { variables: { result: 'off' } } },
       };
-      const user = { isOrgCurlec: false, isOrgRZP: true };
+      const user = { isOrgCurlec: false, isOrgRZP: true, isFeatureEnabled: () => false };
       const result = isTransactionsV2Enabled(splitz, user);
       expect(result).toBe(false);
     });
@@ -332,7 +332,12 @@ describe('utils', () => {
       const splitz = {
         abExperiments: { Transactions_Revamp: { variables: { result: 'on' } } },
       };
-      const user = { isOrgCurlec: false, isOrgRZP: false, isVasTestingMerchant: false };
+      const user = {
+        isOrgCurlec: false,
+        isOrgRZP: false,
+        isVasTestingMerchant: false,
+        isFeatureEnabled: () => false,
+      };
       const result = isTransactionsV2Enabled(splitz, user);
       expect(result).toBe(false);
     });

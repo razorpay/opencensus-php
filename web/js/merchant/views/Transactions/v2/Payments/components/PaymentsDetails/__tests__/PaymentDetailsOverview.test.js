@@ -19,10 +19,10 @@ import {
   mockfetchSettlementConfig,
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/handlers';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import { render, screen, userEvent, waitFor } from 'test-utils';
+import { render, screen } from 'test-utils';
 
 const mockAbExperiments = {
-  toggle_payments_v2_revamp: {
+  enable_trxn_v2_parity_features: {
     variables: {
       result: 'on',
     },
@@ -89,15 +89,7 @@ describe('Payment Details Overview component', () => {
       render(<App props={capturedPaymentProps} />, { initialState });
       const paymentAmount = capturedPaymentProps.paymentDetails.amount;
       expect(screen.getAllByLabelText('amount-info')).toHaveLength(1);
-      expect(screen.getByTestId('gross-amount')).toBeInTheDocument();
-      expect(screen.getByTestId('net-amount')).toBeInTheDocument();
-      expect(screen.getByTestId('deductions')).toBeInTheDocument();
-
-      //for total amount shown like a header
-      expect(screen.getByText(`${paymentAmount / 100}`)).toBeInTheDocument();
-
-      //for gross amount
-      expect(screen.getByText(`${paymentAmount / 100}.00`)).toBeInTheDocument();
+      expect(screen.getAllByText(`${paymentAmount / 100}`)).toHaveLength(1);
     });
 
     test('should render payment timestamp', () => {
@@ -117,56 +109,6 @@ describe('Payment Details Overview component', () => {
       expect(
         screen.getByText(`${refundedPaymentProps.applicationDetails.name}`),
       ).toBeInTheDocument();
-    });
-  });
-
-  describe('Render deductions details', () => {
-    test('should render deduction, net amount & gross amount labels', () => {
-      render(<App props={capturedPaymentProps} />, { initialState });
-      expect(screen.getByText('Gross amount')).toBeInTheDocument();
-      expect(screen.getByText('Deductions')).toBeInTheDocument();
-      expect(screen.getByText('Net amount')).toBeInTheDocument();
-    });
-
-    test('should render deduction, net amount & gross amount values', () => {
-      render(<App props={capturedPaymentProps} />, { initialState });
-      const { fee, tax, amount } = capturedPaymentProps.paymentDetails;
-
-      const totalDeductions = Number(tax) + Number(fee);
-
-      expect(screen.getByText(`${totalDeductions / 100}.00`)).toBeInTheDocument();
-      expect(screen.getByText(`${(amount - totalDeductions) / 100}.00`)).toBeInTheDocument();
-    });
-
-    test('should toggle deductions view', async () => {
-      render(<App props={capturedPaymentProps} />, { initialState });
-      const toggleBtn = screen.getByTestId(`chevron-down`);
-      expect(toggleBtn).toBeInTheDocument();
-      userEvent.click(toggleBtn);
-      await waitFor(() => {
-        expect(screen.getByTestId(`chevron-up`)).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Render footer correctly', () => {
-    test('should render settlement cycle cta', () => {
-      render(<App props={capturedPaymentProps} />, { initialState });
-      expect(screen.getByText('settlement cycle')).toBeInTheDocument();
-    });
-
-    test('should render settlement cycle cta', () => {
-      render(<App props={capturedPaymentProps} />, { initialState });
-      expect(screen.getByText('settlement cycle')).toBeInTheDocument();
-    });
-
-    test('should open settlement cycle modal', async () => {
-      render(<App props={capturedPaymentProps} />, { initialState });
-      const settlementCycleCTA = screen.getByText('settlement cycle');
-      userEvent.click(settlementCycleCTA);
-      await waitFor(() => {
-        expect(openModalSpy).toHaveBeenCalled();
-      });
     });
   });
 });

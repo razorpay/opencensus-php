@@ -5,13 +5,13 @@ import {
 } from '@razorpay/i18nify-js/currency';
 import moment, { Moment } from 'moment';
 import qs from 'query-string';
+import { Environments, User } from 'common/typings';
 
 import { Option } from 'common/components/Dropdown/types';
 import { ANALYTICS } from 'common/constant';
 import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { SpiltzContextState } from 'common/splitz/types';
-import { isExperimentEnabled, isInternalTestingEnabled } from 'common/splitz/utils';
-import { User } from 'common/typings';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getDateFormat } from 'common/utils/date-utils';
 import {
@@ -212,16 +212,19 @@ export const getCreatedOnTime = ({ created_at }: { created_at: number }): string
 export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User): boolean => {
   const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
 
-  const isInternalTesting = isInternalTestingEnabled(abExperiments);
-  const isV2ForCurlecEnabled = isExperimentEnabled(abExperiments?.enable_trxn_v2_for_curlec);
-
-  if (isInternalTesting) return true;
-
   if (!abExperiments?.Transactions_Revamp) return false;
 
-  // for curlec merchants, if experiment is enabled, then show trxn v2
-  if (user.isOrgCurlec) {
-    if (isV2ForCurlecEnabled) {
+  // All optimiser merchants are parity merchants
+  // All merchants whose org is Curlec are parity merchants
+  // All merchants whose org is VAS are parity merchants
+  const isExcludedMerchant = user.isFeatureEnabled('raas') || !user.isOrgRZP;
+  const isTransactionsEnabledForExcludedMerchant = isExperimentEnabled(
+    abExperiments?.enable_trxn_v2_for_excluded_merchants,
+  );
+
+  // for excluded merchants, if experiment is enabled, then show trxn v2
+  if (isExcludedMerchant) {
+    if (isTransactionsEnabledForExcludedMerchant) {
       return true;
     }
     return false;
@@ -229,8 +232,6 @@ export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User):
 
   return (
     Boolean(user.isCountryIndia || user.isCountrySingapore) &&
-    (user.isOrgRZP || user.isVasTestingMerchant) &&
-    !user.isFeatureEnabled('raas') &&
     isExperimentEnabled(abExperiments.Transactions_Revamp)
   );
 };
@@ -312,10 +313,11 @@ export const isBounceMemoEnabled = (splitz: SpiltzContextState): boolean => {
   return isExperimentEnabled(abExperiments.bounce_memo);
 };
 
-export function isPaymentV2RevampEnabled(abExperiments) {
+// New features introduced within Transactions V2 are behind this experiment
+export function isPaymentV2ParityFeatureEnabled(splitz, user) {
   return (
-    isExperimentEnabled(abExperiments?.toggle_payments_v2_revamp) ||
-    isInternalTestingEnabled(abExperiments)
+    isTransactionsV2Enabled(splitz, user) &&
+    isExperimentEnabled(splitz?.abExperiments?.enable_trxn_v2_parity_features)
   );
 }
 
@@ -328,4 +330,9 @@ export const getCountryTaxDefinition = ({ countryCode = '' }: { countryCode: str
     default:
       return 'GST';
   }
+};
+
+export const shouldHideAnalytics = (user: User, mode: Environments): boolean => {
+  const isCurlecVASTestMode = mode === 'test' && !user.isOrgRZP;
+  return isCurlecVASTestMode;
 };

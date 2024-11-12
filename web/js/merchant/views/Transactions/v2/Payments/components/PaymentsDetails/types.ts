@@ -172,6 +172,7 @@ export interface IPaymentDetails {
     authentication_channel: string;
   };
   optimizer_provider: string;
+  settled_by: string;
   gateway_terminal_id?: string;
   gateway_merchant_id?: string;
   device_id?: string;
@@ -182,6 +183,9 @@ export interface IPaymentDetails {
     vpa: string;
     payer_name: string;
   };
+  late_authorized: boolean;
+  auto_captured: boolean;
+  gateway_provider?: string;
 }
 
 export interface IPaymentIdRefundDetail {
@@ -205,6 +209,13 @@ export interface IPaymentIdRefundDetail {
   speed_requested: string;
   status: RefundStatus;
   processed_at: number;
+  refund_type: string;
+  gateway_data: {
+    code: string;
+    refund_code: string;
+    refund_message: string;
+  } | null;
+  optimizer_provider: string;
 }
 export type IPaymentIdRefundDetails = Array<IPaymentIdRefundDetail>;
 
