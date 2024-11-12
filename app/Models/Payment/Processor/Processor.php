@@ -3560,7 +3560,8 @@ class Processor
         }
 
         $isPluginFlowPayment = isset($input['_']) === true &&
-            isset($input['_']['integration']) === true
+            isset($input['_']['integration']) === true &&
+            ($input['_']['integration'] !== 'shopify') 
             && Payment\Analytics\Metadata::isValidIntegration($input['_']['integration']);
 
         $isInvoicePayment = isset($this->order) === true && $this->order->getProductType() === ProductType::INVOICE;
