@@ -178,6 +178,12 @@ class Core extends Base\Core
 
         });
 
+        $traceData = [
+            'mode' => $this->mode,
+            'internal_app_name' => app('request.ctx')->getInternalAppName()
+        ];
+        $this-> trace->info(TraceCode::CUSTOMER_CREATE_REQUEST_CTX, $traceData);
+
         return $customer;
     }
 
@@ -218,12 +224,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($customer);
 
-        $inputTrace = $input;
-
-        unset($inputTrace[Entity::NAME], $inputTrace[Entity::EMAIL], $inputTrace[Entity::CONTACT]);
-
-        $this->trace->info(TraceCode::CUSTOMER_EDIT, $inputTrace);
-
+        $traceData = [
+            'mode' => $this->mode,
+            'internal_app_name' => app('request.ctx')->getInternalAppName()
+        ];
+        $this-> trace->info(TraceCode::CUSTOMER_EDIT_REQUEST_CTX, $traceData);
         return $customer;
     }
 

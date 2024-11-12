@@ -1159,9 +1159,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CUSTOMER_NOT_FOUND                                    = 'CUSTOMER_NOT_FOUND';
     const CUSTOMER_CREATE                                       = 'CUSTOMER_CREATE';
+
+    const CUSTOMER_CREATE_REQUEST_CTX                           = 'CUSTOMER_CREATE_REQUEST_CTX';
     const CUSTOMER_CREATE_PAYLOAD_INFO                          = 'CUSTOMER_CREATE_PAYLOAD_INFO';
     const CUSTOMER_DELETE                                       = 'CUSTOMER_DELETE';
     const CUSTOMER_EDIT                                         = 'CUSTOMER_EDIT';
+    const CUSTOMER_EDIT_REQUEST_CTX                             = 'CUSTOMER_EDIT_REQUEST_CTX';
     const CUSTOMER_TOKEN_CREATE                                 = 'CUSTOMER_TOKEN_CREATE';
     const DEFAULTING_TOKEN_EXPIRY_IF_NULL                       = 'DEFAULTING_TOKEN_EXPIRY_IF_NULL';
     const SUBSCRIPTION_TOKEN_CREATE                             = 'SUBSCRIPTION_TOKEN_CREATE';
