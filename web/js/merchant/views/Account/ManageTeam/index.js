@@ -16,7 +16,7 @@ import HeaderAction from 'common/ui/HeaderAction';
 import ModalHeader from 'common/ui/ModalHeader';
 import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, is2FaExperimentEnabled } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import DocsLink from 'merchant/components/DocsLink';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -188,6 +188,7 @@ class ManageTeamContainer extends React.Component {
       user,
       i18: { isConfigTagEnabled },
       isRenderedFromPartnerRoute,
+      splitz,
     } = this.props;
 
     return (
@@ -218,7 +219,19 @@ class ManageTeamContainer extends React.Component {
               <ShowWhen additionalCondition={(userCurrent) => userCurrent.isAllowedEdit('team')}>
                 {/* To make the CTAs on header to be sticky in teh bottom need to add a wrapper to them added same */}
                 <span className="cta-container">
-                  {this.isInviteTeamMember2faEnabled() ? (
+                  {is2FaExperimentEnabled(splitz.abExperiments) ? (
+                    <Button
+                      onClick={() => {
+                        this.context.criticalFlow({
+                          enforceVerifyOtp: true,
+                          modes: ['live', 'test'],
+                          onUserTwoFaVerified: this.inviteNewMember,
+                        });
+                      }}
+                    >
+                      Invite New Member
+                    </Button>
+                  ) : this.isInviteTeamMember2faEnabled() ? (
                     this.renderInviteNewMemberButton()
                   ) : (
                     <button className="btn btn-primary" onClick={this.inviteNewMember}>
