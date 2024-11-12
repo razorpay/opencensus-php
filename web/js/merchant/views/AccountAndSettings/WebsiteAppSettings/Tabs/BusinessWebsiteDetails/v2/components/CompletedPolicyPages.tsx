@@ -5,9 +5,9 @@ import { CardDetails } from './EditableCard';
 import { PolicyPageContent, getReviewPagesData, isPolicyPageCreatedByRazorpay } from './utils';
 import useBusinessWebsiteData from '../hooks/useBusinessWebsiteData';
 import useModalComponents from '../hooks/useModalComponents';
+import { track } from '../tracking';
 import { WebsitePolicyPages } from '../types';
 import { getWebsiteCount, snapPoints } from '../utils';
-import { track } from '../tracking';
 
 export interface PolicyPagesCompleteProps {
   isOpen: boolean;

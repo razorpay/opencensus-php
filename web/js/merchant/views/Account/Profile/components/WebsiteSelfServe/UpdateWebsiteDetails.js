@@ -623,7 +623,7 @@ function UpdateWebsiteDetails(props) {
       <BladeModalHeader title="Update Website/App" />
       <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
         <form onSubmit={save}>
-          <Box height={isMobile ? 'auto' : '550px'} overflowY="auto" display="flex">
+          <Box height={isMobile ? 'auto' : '500px'} overflowY="auto" display="flex">
             <Box
               paddingX={isMobile ? 'spacing.0' : 'spacing.8'}
               paddingTop={isMobile ? 'spacing.0' : 'spacing.7'}

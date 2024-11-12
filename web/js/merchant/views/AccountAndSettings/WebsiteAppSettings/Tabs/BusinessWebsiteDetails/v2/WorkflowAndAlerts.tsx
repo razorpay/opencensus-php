@@ -3,7 +3,7 @@ import { Box } from '@razorpay/blade/components';
 
 import { OpenModalType } from 'common/typings';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
+import NewNeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NewNeedsClarificationModal';
 import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 
@@ -26,7 +26,7 @@ const WorkflowAndAlerts: React.FC<WorkflowAndAlertsProps> = ({
   const openNeedsClarificationModal = (data) => {
     openModal({
       size: 'small',
-      component: <NeedsClarificationModal {...data} />,
+      component: <NewNeedsClarificationModal {...data} />,
     });
   };
 

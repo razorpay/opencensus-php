@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { Alert, Box, Text } from '@razorpay/blade/components';
+import { Alert, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
@@ -50,7 +50,8 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
 }) => {
   const navigate = useNavigate();
 
-  const { rejection_reason_message } = businessWebsiteWorkflow ?? {};
+  const { rejection_reason_message, needs_clarification: needs_clarification_message } =
+    businessWebsiteWorkflow ?? {};
 
   const { status, analyticsStatus } = getWebsiteWorkflowStatus({
     businessWebsiteWorkflow,
@@ -196,7 +197,7 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
         title={title}
         description={`We’ll verify your details and share an update by ${getUnderReviewETA({
           offset: 48 * 60 * 60 * 1000,
-        })}`}
+        })}.`}
       />
     );
   }
@@ -205,7 +206,12 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
     return (
       <Alert
         title={title}
-        description="To accept payments and for faster verification, kindly update the details"
+        description={
+          <Text color="surface.text.gray.subtle" wordBreak="break-word">
+            <b>From {org.business_name} support:&nbsp;</b>
+            {`"${needs_clarification_message}"`}
+          </Text>
+        }
         isDismissible={false}
         actions={{
           primary: {
@@ -230,12 +236,10 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
         isFullWidth
         title={title}
         description={
-          <Box display="flex" flexDirection="row">
-            <Text weight="medium" color="surface.text.gray.subtle">
-              From {org.business_name} support:&nbsp;
-            </Text>
-            <Text color="surface.text.gray.subtle">&quot;{rejection_reason_message}&quot;</Text>
-          </Box>
+          <Text color="surface.text.gray.subtle" wordBreak="break-word">
+            <b>From {org.business_name} support:&nbsp;</b>
+            {`"${rejection_reason_message}"`}
+          </Text>
         }
       />
     );

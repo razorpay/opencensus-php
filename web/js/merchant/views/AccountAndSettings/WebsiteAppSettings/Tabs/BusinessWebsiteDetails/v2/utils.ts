@@ -138,7 +138,7 @@ export const getCTACondition = ({
   };
 };
 
-export const defaultValue = {
+export const mainPageFormDefaultValue = {
   platform: {
     value: '',
     valid: ValidationState.NONE,
@@ -190,7 +190,7 @@ export const policyPageFormValidator = (formState): { isValid: boolean; formStat
       const { value, radioValue } = newFormState[field] as MissingPagesFormFieldType;
       if (radioValue === PolicyPagesSelection.YES && value && validators.url(value)) {
         newFormState[field].valid = ValidationState.NONE;
-      } else if (radioValue === PolicyPagesSelection.NO) {
+      } else if (radioValue === PolicyPagesSelection.NO || radioValue === PolicyPagesSelection.NA) {
         newFormState[field].valid = ValidationState.NONE;
       } else {
         hasError = true;
@@ -324,14 +324,21 @@ export const getWebsitePolicyPagesSubmitPayload = ({
   formState,
   mode,
 }): WebsiteUpdateApiPayload => {
-  const policy_pages = Object.keys(formState).reduce((acc, key) => {
-    if (formState[key].radioValue === PolicyPagesSelection.YES) {
-      acc[key] = {
-        url: autoPrefixUrls(formState[key].value, true),
-      };
-    }
-    return acc;
-  }, {});
+  const policy_pages = Object.keys(formState).reduce(
+    (acc, key) => {
+      if (formState[key].radioValue === PolicyPagesSelection.YES) {
+        acc[key] = {
+          url: autoPrefixUrls(formState[key].value, true),
+        };
+      }
+      return acc;
+    },
+    {
+      is_shipping_page_required:
+        formState[WebsitePolicyPages.SHIPPING].radioValue !== PolicyPagesSelection.NA,
+    },
+  );
+
   return {
     mode,
     policy_pages,
@@ -345,16 +352,11 @@ export function getUnderReviewETA({ date = new Date(), offset = 60 * 60 * 1000 }
   const futureDate = new Date(currentDate.getTime() + offset);
 
   const options: Intl.DateTimeFormatOptions = {
-    weekday: 'long',
     month: 'short',
     day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: true,
   };
 
-  // output: Wednesday, Jun 19, 2024, 7:31 PM
+  // output: Nov 8
   const formattedDate = futureDate.toLocaleString('en-US', options);
   return formattedDate;
 }
@@ -419,7 +421,9 @@ export function getWebsiteWorkflowStatus({
   const isAllPagesVerified =
     website_verification_page_status &&
     Object.values(website_verification_page_status).every(
-      (page) => page?.verified === WebsiteVerificationStatus.PASSED,
+      (page) =>
+        page?.verified === WebsiteVerificationStatus.PASSED ||
+        page?.verified === WebsiteVerificationStatus.NOT_APPLICABLE,
     );
 
   if (
@@ -436,8 +440,9 @@ export function getWebsiteWorkflowStatus({
   } else if (
     current_status === WebsiteUpdateAutomationStatus.IN_PROGRESS &&
     website_verification_stage?.bvs_check_status === WebsiteVerificationStatus.FAILED &&
-    website_verification_stage?.negative_keyword_check_status ===
-      WebsiteVerificationStatus.PASSED &&
+    website_verification_stage?.mcc_check_status !== WebsiteVerificationStatus.INITIATED &&
+    website_verification_stage?.negative_keyword_check_status !==
+      WebsiteVerificationStatus.INITIATED &&
     !isAllPagesVerified
   ) {
     status = Status.BvsNeedsClarification;
@@ -476,11 +481,16 @@ export function getInProgressWebsiteStatusBadge({
   const isAllPagesVerified =
     website_verification_page_status &&
     Object.values(website_verification_page_status).every(
-      (page) => page?.verified === WebsiteVerificationStatus.PASSED,
+      (page) =>
+        page?.verified === WebsiteVerificationStatus.PASSED ||
+        page?.verified === WebsiteVerificationStatus.NOT_APPLICABLE,
     );
   const hasPolicyPagesFixRequiredStatus =
     current_status === WebsiteUpdateAutomationStatus.IN_PROGRESS &&
     website_verification_stage?.bvs_check_status === WebsiteVerificationStatus.FAILED &&
+    website_verification_stage?.mcc_check_status !== WebsiteVerificationStatus.INITIATED &&
+    website_verification_stage?.negative_keyword_check_status !==
+      WebsiteVerificationStatus.INITIATED &&
     !isAllPagesVerified;
 
   if (hasAwaitingCustomerResponseStatus || hasPolicyPagesFixRequiredStatus) {
@@ -519,7 +529,7 @@ export const alertText: Record<NonNullableStatus, string> = {
 export const alertCTAText: Partial<Record<NonNullableStatus, string>> = {
   [Status.Success]: 'Download API Keys',
   [Status.BvsNeedsClarification]: 'Update now',
-  [Status.WorkflowNeedsClarification]: 'Add reply',
+  [Status.WorkflowNeedsClarification]: 'Resolve now',
 };
 
 export const getBusinessWebsitesToShow = ({
@@ -595,3 +605,24 @@ export const getMerchantWebsiteDetailsPayload = (policyPagesToBeMade) => {
   });
   return result;
 };
+
+export const shouldShowNotApplicableOption = (pageKey: WebsitePolicyPages): boolean =>
+  [WebsitePolicyPages.SHIPPING].includes(pageKey);
+
+export function extractTextFromHtmlElement(htmlContent, className = '') {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlContent, 'text/html');
+
+  if (!className) {
+    return doc.body.textContent || doc.body.innerText || '';
+  }
+
+  const elements = doc.querySelectorAll(`.${className}`);
+  const arrayOfElements = Array.from(elements);
+  if (!arrayOfElements.length) {
+    return '';
+  }
+  const extractedText = arrayOfElements.map((element) => element.textContent?.trim()).join('\n');
+
+  return extractedText;
+}

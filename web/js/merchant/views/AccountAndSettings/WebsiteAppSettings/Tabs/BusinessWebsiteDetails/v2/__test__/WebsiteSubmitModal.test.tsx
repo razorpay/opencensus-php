@@ -78,6 +78,18 @@ jest.mock(
 );
 
 jest.mock(
+  'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/components/MainPageLivenessError.tsx',
+  () => ({
+    __esModule: true,
+    default: () => (
+      <div>
+        <h1>Main Page Liveness Error</h1>
+      </div>
+    ),
+  }),
+);
+
+jest.mock(
   'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/hooks/useBusinessWebsiteData',
   () => {
     return jest.fn(() => ({
@@ -234,7 +246,9 @@ describe('WebsiteSubmitModal', () => {
         );
       });
       await waitFor(() => {
-        expect(mockSetCurrentStep).toHaveBeenCalledWith(WebsiteSubmitModalSteps.MAIN_PAGE_ERROR);
+        expect(mockSetCurrentStep).toHaveBeenCalledWith(
+          WebsiteSubmitModalSteps.MAIN_PAGE_LIVENESS_ERROR,
+        );
       });
     });
 
@@ -477,5 +491,14 @@ describe('WebsiteSubmitModal', () => {
     renderApp();
 
     checkIfComponentIsEmpty();
+  });
+
+  it('shoud show main page liveness error', async () => {
+    mockCurrentStep = WebsiteSubmitModalSteps.MAIN_PAGE_LIVENESS_ERROR;
+    renderApp();
+
+    await waitFor(() => {
+      expect(screen.getByText('Main Page Liveness Error')).toBeInTheDocument();
+    });
   });
 });

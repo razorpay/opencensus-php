@@ -17,10 +17,10 @@ import {
 } from '@razorpay/blade/components';
 import styled from 'styled-components';
 
-import { PolicyPagesSelection, ValidationState, WebsitePolicyPages } from '../types';
-import { track } from '../tracking';
-import { getWebsiteCount } from '../utils';
 import { isPolicyPageCreatedByRazorpay } from './utils';
+import { track } from '../tracking';
+import { PolicyPagesSelection, ValidationState, WebsitePolicyPages } from '../types';
+import { getWebsiteCount, shouldShowNotApplicableOption } from '../utils';
 
 const StyledRadioGroup = styled.div(
   ({ theme }: { theme: Theme }) => `
@@ -87,12 +87,20 @@ export default function EditableCard({
           Will be created by Razorpay
         </Badge>
       );
+    } else if (radioValue === PolicyPagesSelection.NA && !isActiveField) {
+      return (
+        <Badge color="neutral" emphasis="subtle" icon={CheckIcon} size="medium">
+          Not Applicable
+        </Badge>
+      );
     }
     return null;
   };
 
   const isValidInput =
-    (radioValue === PolicyPagesSelection.YES && !!value) || radioValue === PolicyPagesSelection.NO;
+    (radioValue === PolicyPagesSelection.YES && !!value) ||
+    radioValue === PolicyPagesSelection.NO ||
+    radioValue === PolicyPagesSelection.NA;
   const isError = valid === ValidationState.ERROR;
   const isRadioSelected = radioValue !== undefined;
   const isEditing = !isValidInput || isActiveField || isError;
@@ -138,8 +146,8 @@ export default function EditableCard({
                         },
                       };
                     });
-                    // on clicking no, directly go the next step (As there is no continue button)
-                    if (value === PolicyPagesSelection.NO) {
+                    // on clicking no/not applicable, directly go the next step (As there is no continue button)
+                    if (value === PolicyPagesSelection.NO || value === PolicyPagesSelection.NA) {
                       handleFocusOnNext(page);
                     }
                     track({
@@ -160,6 +168,11 @@ export default function EditableCard({
                   <Radio value={PolicyPagesSelection.NO} testID="create-via-rzp">
                     No, create this page for me
                   </Radio>
+                  {shouldShowNotApplicableOption(page) && (
+                    <Radio value={PolicyPagesSelection.NA} testID="not-applicable">
+                      NA
+                    </Radio>
+                  )}
                 </RadioGroup>
               </StyledRadioGroup>
 
@@ -176,7 +189,7 @@ export default function EditableCard({
                         isError && isRadioSelected ? ValidationState.ERROR : ValidationState.NONE
                       }
                       value={value}
-                      errorText="Enter valid website link"
+                      errorText="Enter valid website link starting with https://"
                       key={page}
                       testID="webpage-link"
                     />
@@ -205,7 +218,7 @@ export default function EditableCard({
                 <Link variant="button">{value}</Link>
               ) : (
                 <Text color="surface.text.gray.muted" variant="body" size="medium" weight="medium">
-                  Not Provided
+                  {radioValue === PolicyPagesSelection.NA ? 'Not Applicable' : 'Not Provided'}
                 </Text>
               )}
               <Link

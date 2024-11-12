@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+
 import { useMobile } from 'common/hooks/useMobile';
-import { noop } from 'common/utils/rzp-utils';
 import { Environments, ShowNotificationType, User as UserType } from 'common/typings';
+import { noop } from 'common/utils/rzp-utils';
 import User from 'merchant/models/User';
 import { updateSession as updateSessionReducer } from 'merchant/reducers/session';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { closeModal as closeModalReducer } from 'merchant_common/reducers/modals';
 import { showNotification as showNotificationReducer } from 'merchant_common/reducers/notifications';
-import Loader from './components/Loader';
+
 import CompletedPolicyPages from './components/CompletedPolicyPages';
-import Questionnaire from './components/Questionaire';
+import Loader from './components/Loader';
+import MainPageLivenessError from './components/MainPageLivenessError';
 import PreviewPages from './components/PreviewPolicyPages';
+import Questionnaire from './components/Questionaire';
 import WebsiteFixModal from './components/WebsiteFixModal';
 import WebsiteInputModal from './components/WebsiteInputModal';
 import useBusinessWebsiteData from './hooks/useBusinessWebsiteData';
@@ -34,10 +37,11 @@ import {
   MainPageFormData,
   PolicyPagesSelection,
   WebsiteVerificationStatus,
-  PolicyPageToBeMade,
+  PartialPolicyPages,
   WebsitePolicyPages,
 } from './types';
 import {
+  mainPageFormDefaultValue,
   getWebsiteCount,
   getWebsiteMainPageSubmitPayload,
   getWebsitePolicyPagesSubmitPayload,
@@ -53,6 +57,7 @@ interface WebsiteSubmitModalProps {
   updateSession: (args: { user: UserType; mode?: string }) => void;
   user: UserType;
   mode: Environments;
+  org: { business_name: string };
   refetchData: VoidFunction;
 }
 
@@ -63,12 +68,15 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
   updateSession,
   user,
   mode,
+  org,
   refetchData = noop,
 }) => {
   const isMobile = useMobile();
   const saveWebsiteUpdate = useSaveWebsiteUpdate();
   const { currentStep, setCurrentStep, websiteUpdateData } = useBusinessWebsiteData();
-  const [policyPagesToBeMade, setPolicyPagesToBeMade] = useState<PolicyPageToBeMade>([]);
+  const [mainPageFormState, setMainPageFormState] =
+    useState<MainPageFormData>(mainPageFormDefaultValue);
+  const [policyPagesToBeMade, setPolicyPagesToBeMade] = useState<PartialPolicyPages>([]);
   const [pagesBeingVerified, setPagesBeingVerified] = useState<WebsitePolicyPages[]>([]);
 
   async function submitAppForActivated(formState) {
@@ -117,7 +125,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
     }
   }
 
-  const handleMainPageSubmit = async (formState: MainPageFormData) => {
+  const handleMainPageSubmit = async (formState) => {
     const [isInputValid, inputValidationError] = isMainPageSubmitPayloadValid(
       formState,
       user.business_website,
@@ -207,7 +215,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
                 errorMessage: 'Website is not live',
                 isWebsiteLive: false,
               });
-              setCurrentStep(WebsiteSubmitModalSteps.MAIN_PAGE_ERROR);
+              setCurrentStep(WebsiteSubmitModalSteps.MAIN_PAGE_LIVENESS_ERROR);
               return;
             }
             /* @ts-expect-error error-message-check */
@@ -231,13 +239,16 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
 
   const handlePolicyPageSubmit = (formState: PolicyPageFormData) => {
     // save button
-    const pagesFilled: Array<Partial<WebsitePolicyPages>> = [];
-    const newPolicyPagesToBeMade: PolicyPageToBeMade = [];
+    const pagesFilled: PartialPolicyPages = [];
+    const newPolicyPagesToBeMade: PartialPolicyPages = [];
+    const notApplicablePages: PartialPolicyPages = [];
     Object.entries(formState).forEach(([key, data]) => {
       if (data.radioValue === PolicyPagesSelection.YES) {
         pagesFilled.push(key as WebsitePolicyPages);
       } else if (data.radioValue === PolicyPagesSelection.NO) {
         newPolicyPagesToBeMade.push(key as WebsitePolicyPages);
+      } else if (data.radioValue === PolicyPagesSelection.NA) {
+        notApplicablePages.push(key as WebsitePolicyPages);
       }
     });
     const properties = {
@@ -261,7 +272,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
     });
 
     // if no user provided links exist, then directly go to the policy pages creation step
-    if (pagesFilled.length === 0) {
+    if (pagesFilled.length === 0 && notApplicablePages.length === 0) {
       setPolicyPagesToBeMade(newPolicyPagesToBeMade);
       setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_CREATION);
       return;
@@ -285,7 +296,9 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
               if (
                 website_verification_page_status &&
                 website_verification_page_status[page]?.verified !==
-                  WebsiteVerificationStatus.PASSED
+                  WebsiteVerificationStatus.PASSED &&
+                website_verification_page_status[page]?.verified !==
+                  WebsiteVerificationStatus.NOT_APPLICABLE
               ) {
                 newPolicyPagesToBeMade.push(page);
               }
@@ -311,6 +324,16 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
               actionFrom: 'policyPages',
             });
             setCurrentStep(WebsiteSubmitModalSteps.WEBSITE_UPDATE_SUCCESS);
+          } else if (current_status === WebsiteUpdateAutomationStatus.WORKFLOW_IN_PROGRESS) {
+            setCurrentStep(WebsiteSubmitModalSteps.WEBSITE_UPDATE_WORKFLOW_RAISED);
+            trackBasicWebsiteCheckCompleteModalLoad({
+              basicCheckPassed: 'yes',
+              newWebsiteLink: main_page_url,
+              websiteCount: getWebsiteCount(user),
+              isSuccess: true,
+              isWorkflowRaised: true,
+              actionFrom: 'policyPages',
+            });
           } else {
             const errorMessage = 'Invalid Response. Please try again.';
             trackBasicWebsiteCheckFailureModalLoad({
@@ -400,10 +423,14 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
   }
 
   const onCreateAllPolicyPagesButtonClick = (formState: PolicyPageFormData) => {
-    const newPolicyPagesToBeMade = Object.keys(formState) as PolicyPageToBeMade;
-
+    const newPolicyPagesToBeMade = Object.keys(formState) as PartialPolicyPages;
+    setPagesBeingVerified(Object.keys(formState) as WebsitePolicyPages[]);
     setPolicyPagesToBeMade(newPolicyPagesToBeMade);
     setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_CREATION);
+  };
+
+  const onWebsiteChangeClick = () => {
+    setCurrentStep(WebsiteSubmitModalSteps.ADD_MAIN_PAGE);
   };
 
   switch (currentStep) {
@@ -415,6 +442,8 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
           onDismiss={handleCancel.bind(null, 'websiteFlow')}
           handleMainPageSubmit={handleMainPageSubmit}
           user={user}
+          formState={mainPageFormState}
+          setFormState={setMainPageFormState}
         />
       );
     case WebsiteSubmitModalSteps.ADD_MISSING_POLICY_PAGES:
@@ -425,6 +454,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
           onDismiss={handleCancel.bind(null, 'policyPages')}
           handlePolicyPageSubmit={handlePolicyPageSubmit}
           user={user}
+          org={org}
           onCreateAllPolicyPagesButtonClick={onCreateAllPolicyPagesButtonClick}
         />
       );
@@ -436,6 +466,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
           setCurrentStep={setCurrentStep}
           policyPagesToBeMade={policyPagesToBeMade}
           mode={mode}
+          org={org}
           showNotification={showNotification}
         />
       );
@@ -459,11 +490,23 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
           pagesBeingVerified={pagesBeingVerified}
         />
       );
+
+    case WebsiteSubmitModalSteps.MAIN_PAGE_LIVENESS_ERROR:
+      return (
+        <MainPageLivenessError
+          isMobile={isMobile}
+          isOpen={isOpen}
+          onDismiss={onDismiss}
+          onWebsiteChangeClick={onWebsiteChangeClick}
+          mainPageFormState={mainPageFormState}
+        />
+      );
+
     case WebsiteSubmitModalSteps.MAIN_PAGE_SUBMIT_IN_PROGRESS:
     case WebsiteSubmitModalSteps.POLICY_PAGES_SUBMIT_IN_PROGRESS:
     case WebsiteSubmitModalSteps.MAIN_PAGE_SUBMIT_SUCCESS:
     case WebsiteSubmitModalSteps.WEBSITE_UPDATE_SUCCESS:
-    case WebsiteSubmitModalSteps.MAIN_PAGE_ERROR:
+    case WebsiteSubmitModalSteps.WEBSITE_UPDATE_WORKFLOW_RAISED:
       return (
         <Loader
           isMobile={isMobile}
@@ -483,6 +526,7 @@ const mapStateToProps = (state) => {
   return {
     user: state.session.user,
     mode: state.session.mode,
+    org: state.session.org,
   };
 };
 

@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen } from 'test-utils';
 
-import CompletedPolicyPages, { PolicyPagesCompleteProps } from '../CompletedPolicyPages';
 import { WebsitePolicyPages } from '../../types';
+import CompletedPolicyPages, { PolicyPagesCompleteProps } from '../CompletedPolicyPages';
 
 const defaultProps: PolicyPagesCompleteProps = {
   isOpen: true,
@@ -109,5 +109,17 @@ describe('Completed Policy Pages', () => {
 
     const createdByRazorpayLinks = screen.getAllByText('https://www.merchant.razorpay.com');
     expect(createdByRazorpayLinks).toHaveLength(1);
+  });
+
+  it('should render verified & completed sections both on mobile', () => {
+    renderApp({
+      ...defaultProps,
+      isMobile: true,
+    });
+
+    expect(screen.getByTestId('completed-pages')).toBeInTheDocument();
+    expect(screen.getByText('Cancellations and Refunds')).toBeInTheDocument();
+    expect(screen.getByText('Terms and Conditions')).toBeInTheDocument();
+    expect(screen.getByText('Privacy Policy')).toBeInTheDocument();
   });
 });

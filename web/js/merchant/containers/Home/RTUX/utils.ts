@@ -2,8 +2,8 @@ import { useStore } from 'shell/commonStore';
 
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled, isInternalTestingEnabled } from 'common/splitz/utils';
-import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { User } from 'common/typings';
+import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 
 interface RTUXHomepageEnabled {
   user: User;

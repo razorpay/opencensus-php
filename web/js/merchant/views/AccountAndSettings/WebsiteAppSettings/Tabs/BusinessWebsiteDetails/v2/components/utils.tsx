@@ -8,22 +8,24 @@ import {
   ShieldIcon,
   Heading,
   Button,
-  Box,
 } from '@razorpay/blade/components';
 
 import ListSuggestionBox from './ListSuggestionBox';
+import RequesSubmitSuccessLoader from './RequesSubmitSuccessLoader';
 import CheckTick from './assets/lottie/CheckTick.json';
 import ErrorAlert from './assets/lottie/ErrorAlert.json';
 import MainPageSubmitInProgress from './assets/lottie/MainPageSubmitInProgress.json';
 import PolicyPagesSubmitInProgress from './assets/lottie/PolicyPagesSubmitInProgress.json';
-import { PolicyPagesSuggestionsList } from './constants';
+import { PolicyPagesSuggestionsList, mappingPolicyPageKeyToQuestionaire } from './constants';
 import {
   InitialPolicyPagesFormStateData,
   MissingPagesFormFieldType,
+  PartialPolicyPages,
   PolicyPageFormData,
   SuggestionSteps,
   ValidationState,
   WebsitePolicyPages,
+  WebsitePolicyPagesDetailsKeys,
   WebsiteSubmitModalSteps,
   WebsiteVerificationPageStatus,
   WebsiteVerificationStatus,
@@ -90,7 +92,7 @@ export const getInitialPolicyPagesFormState = (
       if (page.verified === WebsiteVerificationStatus.PASSED) {
         verifiedPages[field] = page;
         verifiedPagesKeys.push(policyPageKey);
-      } else {
+      } else if (page.verified !== WebsiteVerificationStatus.NOT_APPLICABLE) {
         missingPages[field] = {
           ...page,
           value: '',
@@ -121,10 +123,12 @@ export const getReviewPagesData = (
   for (const page of Object.keys(websiteUpdateStatusData || {})) {
     const pageData = websiteUpdateStatusData?.[page];
     if (pagesBeingVerified.includes(page as WebsitePolicyPages)) {
-      missingPages[page] = {
-        value: pageData?.url,
-      };
-      missingPagesKeys.push(page as WebsitePolicyPages);
+      if (pageData?.verified !== WebsiteVerificationStatus.NOT_APPLICABLE) {
+        missingPages[page] = {
+          value: pageData?.url,
+        };
+        missingPagesKeys.push(page as WebsitePolicyPages);
+      }
     } else {
       verifiedPages[page] = {
         value: pageData?.url,
@@ -180,21 +184,13 @@ export const loaderVariant = {
   },
   [WebsiteSubmitModalSteps.MAIN_PAGE_SUBMIT_SUCCESS]: {
     lottieAnimation: CheckTick,
+    Content: ({ onClick }) => <RequesSubmitSuccessLoader onClick={onClick} eta="10 minutes" />,
+  },
+  [WebsiteSubmitModalSteps.WEBSITE_UPDATE_WORKFLOW_RAISED]: {
+    lottieAnimation: CheckTick,
+    img: CheckTick,
     Content: ({ onClick }) => (
-      <>
-        <Heading size="large" textAlign="center">
-          Your website is submitted for verification
-        </Heading>
-        <Box>
-          <Text textAlign="center" color="surface.text.gray.subtle">
-            We’re verifying your details and will share an update
-          </Text>
-          <Text weight="medium" textAlign="center" color="surface.text.gray.subtle">
-            within 10 minutes
-          </Text>
-        </Box>
-        <Button onClick={onClick}>Okay, got it</Button>
-      </>
+      <RequesSubmitSuccessLoader onClick={onClick} eta="1-3 working days" />
     ),
   },
   [WebsiteSubmitModalSteps.WEBSITE_UPDATE_SUCCESS]: {
@@ -213,7 +209,7 @@ export const loaderVariant = {
       </>
     ),
   },
-  [WebsiteSubmitModalSteps.MAIN_PAGE_ERROR]: {
+  [WebsiteSubmitModalSteps.MAIN_PAGE_LIVENESS_ERROR]: {
     lottieAnimation: ErrorAlert,
     Content: ({ onClick }) => (
       <>
@@ -330,4 +326,52 @@ export const isPolicyPageCreatedByRazorpay = (policyPageUrl: string) => {
   let regexToMatch = /sme-dashboard\.dev\.razorpay\.in/;
   if (isProd) regexToMatch = /merchant\.razorpay\.com/;
   return regexToMatch.test(policyPageUrl);
+};
+
+export const getQuestionaireDetailsFromPolicyPagesToBeGenerated = (
+  policyPagesToGenerate: PartialPolicyPages,
+  websiteUpdateData,
+) => {
+  let pendingQuestionPages = policyPagesToGenerate;
+
+  // if MCC checks failed, we need to ask all questions, but skip if it's not required
+  if (
+    websiteUpdateData?.website_verification_stage?.mcc_check_status ===
+    WebsiteVerificationStatus.FAILED
+  ) {
+    pendingQuestionPages = Object.values(WebsitePolicyPages).filter(
+      (page) =>
+        websiteUpdateData?.website_verification_page_status[page]?.verified !==
+        WebsiteVerificationStatus.NOT_APPLICABLE,
+    );
+  }
+  const questions: Array<Partial<WebsitePolicyPagesDetailsKeys>> = [];
+
+  pendingQuestionPages.forEach((policyPage) => {
+    const mappedQuestions = mappingPolicyPageKeyToQuestionaire[policyPage];
+
+    if (mappedQuestions) {
+      mappedQuestions.forEach((question) => {
+        if (!questions.includes(question)) {
+          questions.push(question);
+        }
+      });
+    }
+  });
+  const keys = Object.values(WebsitePolicyPagesDetailsKeys);
+
+  const result: Record<WebsitePolicyPagesDetailsKeys, boolean> = {} as Record<
+    WebsitePolicyPagesDetailsKeys,
+    boolean
+  >;
+  let isEmpty = true;
+  keys.forEach((key) => {
+    const isPresent = questions.includes(key as WebsitePolicyPagesDetailsKeys);
+    if (isPresent) {
+      isEmpty = false;
+    }
+    result[key] = isPresent;
+  });
+
+  return { isEmpty, questionaireMapping: result };
 };

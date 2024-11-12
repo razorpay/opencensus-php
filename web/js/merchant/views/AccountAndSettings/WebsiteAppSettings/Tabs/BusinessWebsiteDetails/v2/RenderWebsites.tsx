@@ -84,7 +84,7 @@ const RenderWebsites: React.FC<RenderWebsitesProps> = ({
           Verified websites/apps appear here
         </Text>
         <Text color="surface.text.gray.muted">
-          Our team takes 3-4 days to verify your website/app
+          Our team takes 1-2 days to verify your website/app
         </Text>
       </Box>
     </Box>

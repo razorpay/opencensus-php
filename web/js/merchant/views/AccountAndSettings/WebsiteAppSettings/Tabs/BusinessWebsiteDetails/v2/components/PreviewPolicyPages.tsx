@@ -19,27 +19,29 @@ import {
   AlertTriangleIcon,
 } from '@razorpay/blade/components';
 import styled from 'styled-components';
-import { trackPreviewPolicyPages } from '../tracking';
 
 import { Environments, ShowNotificationType } from 'common/typings';
 
+import DisclaimerModal from './DisclaimerModal';
+import PreviewPagesIllustration from './assets/previewPagesIllustration.svg';
+import { PolicyPageContent } from './utils';
 import useModalComponents from '../hooks/useModalComponents';
 import { usePolicyPagesPreview, usePolicyPagesPublish } from '../hooks/usePolicyPagesPublish';
+import { trackPreviewPolicyPages } from '../tracking';
 import {
-  PolicyPageToBeMade,
+  PartialPolicyPages,
   ValidationState,
   WebsiteSubmitModalSteps,
   WebsiteUpdateAutomationStatus,
 } from '../types';
-import { snapPoints } from '../utils';
-import { PolicyPageContent } from './utils';
+import { extractTextFromHtmlElement, snapPoints } from '../utils';
 
 const SkeletonWrapper = styled.div(
   ({ theme }) => `
   display: flex;
   flex-direction: column;
   gap: ${theme.spacing[5]}px;
-  max-width: 400px;
+  max-width: 100%;
 `,
 );
 
@@ -51,11 +53,11 @@ const AlertIconWrapper = styled.div(
 `,
 );
 
-interface PreviewPagesProps {
+export interface PreviewPagesProps {
   isMobile: boolean;
   isOpen: boolean;
   setCurrentStep: (step: WebsiteSubmitModalSteps) => void;
-  policyPagesToBeMade: PolicyPageToBeMade;
+  policyPagesToBeMade: PartialPolicyPages;
   mode: Environments;
   showNotification: ShowNotificationType;
 }
@@ -81,6 +83,7 @@ function PreviewPages({
   const { consentMutation, publishMutation } = usePolicyPagesPublish();
   const [isConsentChecked, setIsConsentChecked] = useState(true);
   const [isFormError, setIsFormError] = useState(false);
+  const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
 
   const commonProperties = {
     policyPageRZPCreate: policyPagesToBeMade.length,
@@ -120,8 +123,16 @@ function PreviewPages({
               sections: policyPagesToBeMade,
             })
             .then((res) => {
-              if (res.current_status === WebsiteUpdateAutomationStatus.COMPLETED) {
-                trackPreviewPolicyPages('Success', commonProperties);
+              const isWorkflowRaised =
+                res.current_status === WebsiteUpdateAutomationStatus.WORKFLOW_IN_PROGRESS;
+              if (
+                res.current_status === WebsiteUpdateAutomationStatus.COMPLETED ||
+                isWorkflowRaised
+              ) {
+                trackPreviewPolicyPages('Success', {
+                  ...commonProperties,
+                  isWorkflowRaised,
+                });
                 setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_COMPLETE);
               } else {
                 const message = 'Something went wrong. Please try again.';
@@ -161,122 +172,166 @@ function PreviewPages({
 
   const isPublishing = publishMutation.isLoading || consentMutation.isLoading;
 
-  return (
-    <Modal isOpen={isOpen} onDismiss={onGoBack} snapPoints={snapPoints} size="medium">
+  return isDisclaimerOpen ? (
+    <DisclaimerModal
+      isDisclaimerOpen={isDisclaimerOpen}
+      setIsDisclaimerOpen={setIsDisclaimerOpen}
+      isMobile={isMobile}
+    />
+  ) : (
+    <Modal isOpen={isOpen} onDismiss={onGoBack} snapPoints={snapPoints} size="large">
       <ModalHeader />
       <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
         <Box
-          paddingX={isMobile ? 'none' : 'spacing.8'}
-          paddingY={isMobile ? 'none' : 'spacing.7'}
+          display="flex"
+          flexDirection="row"
+          minHeight={isMobile ? 'none' : '400px'}
           height="560px"
+          overflowY="auto"
         >
-          <Box>
-            <Heading size="small" weight="semibold">
-              Please review the policy pages created for your business
-            </Heading>
-            <Text size="medium" color="surface.text.gray.muted" marginBottom="spacing.7">
-              We have created these pages based on your given details.
-            </Text>
-          </Box>
-          <Box backgroundColor="transparent" width="100%" overflow="scroll">
-            <Box
-              display="flex"
-              flexDirection="row"
-              gap="spacing.3"
-              alignItems="center"
-              marginBottom="spacing.7"
-            >
-              <Badge icon={CheckIcon} color="information">
-                Created by Razorpay
-              </Badge>
-              <Divider thickness="thick" variant="subtle" />
+          <Box
+            paddingX={isMobile ? 'none' : 'spacing.8'}
+            paddingY={isMobile ? 'none' : 'spacing.7'}
+            minHeight="560px"
+            flex="2"
+          >
+            <Box>
+              <Heading size="small" weight="semibold">
+                Please review the policy pages created for your business
+              </Heading>
+              <Text size="medium" color="surface.text.gray.muted" marginBottom="spacing.7">
+                We have created these pages based on your given details.
+              </Text>
             </Box>
-          </Box>
-          {isFetching || isError ? (
-            <SkeletonWrapper>
-              {policyPagesToBeMade.map((item) => (
-                <Card key={`${item}-wrapper`} elevation="none">
-                  <CardBody>
-                    {isFetching ? (
-                      <Box
-                        marginBottom="spacing.4"
-                        display="flex"
-                        flexDirection="column"
-                        gap="spacing.4"
-                      >
-                        <Skeleton width="100%" height="20px" borderRadius="medium" />
-                        <Skeleton width="50%" height="16px" borderRadius="medium" />
-                      </Box>
-                    ) : (
-                      <Box display="flex" gap="spacing.4">
-                        <AlertIconWrapper>
-                          <AlertTriangleIcon color="feedback.icon.negative.intense" />
-                        </AlertIconWrapper>
-                        <Box>
-                          <Text
-                            color="surface.text.gray.subtle"
-                            weight="semibold"
-                            variant="body"
-                            size="medium"
-                          >
-                            Preview couldn’t be loaded
-                          </Text>
-                          <Link onClick={() => retryPreviewAPI()} variant="button">
-                            Retry
-                          </Link>
-                        </Box>
-                      </Box>
-                    )}
-                  </CardBody>
-                </Card>
-              ))}
-            </SkeletonWrapper>
-          ) : (
-            <>
-              <Box display="flex" flexDirection="column" gap="spacing.4">
-                {data &&
-                  data.data.map((item) => {
-                    return (
-                      <Accordion
-                        variant="filled"
-                        key={`${item.html_content}-accordian`}
-                        size="medium"
-                      >
-                        <AccordionItem>
-                          <AccordionItemHeader title={PolicyPageContent[item.section].title} />
-                          <AccordionItemBody>
-                            <Box height="200px" overflow="scroll">
-                              <div dangerouslySetInnerHTML={{ __html: item.html_content }} />
-                            </Box>
-                          </AccordionItemBody>
-                        </AccordionItem>
-                      </Accordion>
-                    );
-                  })}
-              </Box>
+            <Box backgroundColor="transparent" width="100%" overflow="scroll">
               <Box
                 display="flex"
-                flexDirection="column"
-                justifyContent="flex-end"
-                padding="spacing.4"
-                position="relative"
+                flexDirection="row"
                 gap="spacing.3"
+                alignItems="center"
+                marginBottom="spacing.7"
               >
-                <Checkbox
-                  size="medium"
-                  onChange={(e) => {
-                    setIsConsentChecked(e.isChecked);
-                    setIsFormError(false);
-                  }}
-                  validationState={isFormError ? ValidationState.ERROR : ValidationState.NONE}
-                  errorText="Please agree to the terms to proceed"
-                  isChecked={isConsentChecked}
-                >
-                  I understand that the content provided is not legal advice, and by using them I
-                  agree to this disclaimer
-                </Checkbox>
+                <Badge icon={CheckIcon} color="information">
+                  Created by Razorpay
+                </Badge>
+                <Divider thickness="thick" variant="subtle" />
               </Box>
-            </>
+            </Box>
+            {isFetching || isError ? (
+              <SkeletonWrapper>
+                {policyPagesToBeMade.map((item) => (
+                  <Card key={`${item}-wrapper`} elevation="none">
+                    <CardBody>
+                      {isFetching ? (
+                        <Box
+                          marginBottom="spacing.4"
+                          display="flex"
+                          flexDirection="column"
+                          gap="spacing.4"
+                          testID={`loading-${item}`}
+                        >
+                          <Skeleton width="100%" height="20px" borderRadius="medium" />
+                          <Skeleton width="50%" height="16px" borderRadius="medium" />
+                        </Box>
+                      ) : (
+                        <Box display="flex" gap="spacing.4">
+                          <AlertIconWrapper>
+                            <AlertTriangleIcon color="feedback.icon.negative.intense" />
+                          </AlertIconWrapper>
+                          <Box>
+                            <Text
+                              color="surface.text.gray.subtle"
+                              weight="semibold"
+                              variant="body"
+                              size="medium"
+                            >
+                              Preview couldn’t be loaded
+                            </Text>
+                            <Link onClick={() => retryPreviewAPI()} variant="button">
+                              Retry
+                            </Link>
+                          </Box>
+                        </Box>
+                      )}
+                    </CardBody>
+                  </Card>
+                ))}
+              </SkeletonWrapper>
+            ) : (
+              <>
+                <Box display="flex" flexDirection="column" gap="spacing.4">
+                  {data &&
+                    data.data.map((item) => {
+                      const pageContent = extractTextFromHtmlElement(
+                        item.html_content,
+                        'content-text',
+                      );
+                      return (
+                        <Accordion variant="filled" key={`${item.section}-accordian`} size="medium">
+                          <AccordionItem>
+                            <AccordionItemHeader title={PolicyPageContent[item.section].title} />
+                            <AccordionItemBody>
+                              <Box height="200px" overflow="scroll">
+                                {!!pageContent ? (
+                                  <Text size="small" color="surface.text.gray.subtle">
+                                    {pageContent}
+                                  </Text>
+                                ) : (
+                                  <div dangerouslySetInnerHTML={{ __html: item.html_content }} />
+                                )}
+                              </Box>
+                            </AccordionItemBody>
+                          </AccordionItem>
+                        </Accordion>
+                      );
+                    })}
+                </Box>
+                <Box
+                  display="flex"
+                  flexDirection="column"
+                  justifyContent="flex-end"
+                  padding="spacing.4"
+                  position="relative"
+                  gap="spacing.3"
+                >
+                  <Checkbox
+                    size="medium"
+                    onChange={(e) => {
+                      setIsConsentChecked(e.isChecked);
+                      setIsFormError(false);
+                    }}
+                    validationState={isFormError ? ValidationState.ERROR : ValidationState.NONE}
+                    errorText="Please agree to the terms to proceed"
+                    isChecked={isConsentChecked}
+                  >
+                    I understand that the content provided is not legal advice, and by using them I
+                    agree to{' '}
+                    <Link variant="button" onClick={() => setIsDisclaimerOpen(true)}>
+                      this disclaimer
+                    </Link>
+                  </Checkbox>
+                </Box>
+              </>
+            )}
+          </Box>
+          {!isMobile && (
+            <Box
+              padding="spacing.6"
+              backgroundColor="surface.background.sea.subtle"
+              flex="1"
+              display="flex"
+              position="sticky"
+              top="spacing.0"
+              flexDirection="column"
+              gap="spacing.3"
+              alignItems="center"
+              justifyContent="flex-end"
+              paddingBottom="spacing.0"
+            >
+              <Box>
+                <img src={PreviewPagesIllustration} />
+              </Box>
+            </Box>
           )}
         </Box>
       </ModalBody>
@@ -298,7 +353,7 @@ function PreviewPages({
               // do API call and go to next step
               onContinueClick();
             }}
-            isDisabled={isPublishing || isFetching || isConsentChecked === false}
+            isDisabled={isError || isPublishing || isFetching || isConsentChecked === false}
           >
             {isMobile
               ? `Proceed${isPublishing ? 'ing' : ''}`

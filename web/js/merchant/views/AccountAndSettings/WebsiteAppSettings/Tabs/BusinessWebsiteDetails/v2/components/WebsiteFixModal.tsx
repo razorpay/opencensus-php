@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowRightIcon, Box, Button, Heading, Text } from '@razorpay/blade/components';
+import { ArrowRightIcon, Box, Button, Heading, Text, Link } from '@razorpay/blade/components';
 
 import { User } from 'common/typings';
 
 import EditableCard from './EditableCard';
+import HorizontalLineWithText from './HorizontalLineWithText';
 import SuggestionsBox from './SuggestionsBox';
 import VerifiedPolicyPageCard from './VerifiedPolicyPageCard';
+import PolicyPagesIllustration from './assets/policyPagesIllustration.svg';
 import { PolicyPageContent, getInitialPolicyPagesFormState } from './utils';
 import useBusinessWebsiteData from '../hooks/useBusinessWebsiteData';
 import useModalComponents from '../hooks/useModalComponents';
@@ -24,6 +26,7 @@ interface WebsiteFixModalProps {
   onDismiss: () => void;
   handlePolicyPageSubmit: (formState: PolicyPageFormData) => void;
   user: User;
+  org: { business_name: string };
   onCreateAllPolicyPagesButtonClick: (formState: PolicyPageFormData) => void;
 }
 
@@ -33,6 +36,7 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
   onDismiss,
   handlePolicyPageSubmit,
   user,
+  org,
   onCreateAllPolicyPagesButtonClick,
 }) => {
   const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
@@ -176,28 +180,32 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
               paddingTop="65px"
               position="sticky"
               top="spacing.0"
+              alignItems="center"
+              flexDirection="column"
+              gap="spacing.3"
             >
+              <HorizontalLineWithText>
+                <span>Recommended</span>
+              </HorizontalLineWithText>
               <SuggestionsBox type="ADD_MISSING">
-                <Box display="flex" flexDirection="column" gap="spacing.4">
-                  <Text
-                    color="surface.text.gray.subtle"
-                    size="medium"
-                    weight="semibold"
-                    variant="body"
-                  >
-                    In case you don’t have these details, we can create these policy pages for you!
+                <Box position="relative" padding="spacing.5">
+                  <Text size="large" weight="medium">
+                    Create Policy pages with {org.business_name} in 2 mins! ⚡️
                   </Text>
+                  <Link
+                    variant="button"
+                    size="medium"
+                    onClick={() => onCreateAllPolicyPagesButtonClick(formState)}
+                    iconPosition="right"
+                    icon={ArrowRightIcon}
+                    marginTop="spacing.6"
+                  >
+                    Create Now
+                  </Link>
+                  <Box position="absolute" right="spacing.0" bottom="spacing.0">
+                    <img src={PolicyPagesIllustration} />
+                  </Box>
                 </Box>
-                <Button
-                  variant="primary"
-                  size="small"
-                  onClick={() => onCreateAllPolicyPagesButtonClick(formState)}
-                  iconPosition="right"
-                  icon={ArrowRightIcon}
-                  marginTop="spacing.4"
-                >
-                  Create Policy Pages
-                </Button>
               </SuggestionsBox>
             </Box>
           )}

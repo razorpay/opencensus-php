@@ -20,6 +20,7 @@ export enum RequireCredsValues {
 export enum PolicyPagesSelection {
   YES = 'yes',
   NO = 'no',
+  NA = 'not-applicable',
 }
 
 export type FormFieldType = {
@@ -51,10 +52,10 @@ export enum WebsitePolicyPages {
   REFUND = 'refund',
 }
 
-export type PolicyPageToBeMade = Array<Partial<WebsitePolicyPages>>;
+export type PartialPolicyPages = Array<Partial<WebsitePolicyPages>>;
 
 export interface MissingPagesFormFieldType extends FormFieldType {
-  radioValue: PolicyPagesSelection.YES | PolicyPagesSelection.NO | undefined;
+  radioValue: PolicyPagesSelection | undefined;
 }
 
 export type PolicyPageFormData = Record<WebsitePolicyPages, MissingPagesFormFieldType>;
@@ -84,11 +85,13 @@ export enum WebsiteSubmitModalSteps {
   // Loading, success, error state - Main website
   MAIN_PAGE_SUBMIT_IN_PROGRESS = 'MAIN_PAGE_SUBMIT_IN_PROGRESS',
   MAIN_PAGE_SUBMIT_SUCCESS = 'MAIN_PAGE_SUBMIT_SUCCESS',
-  MAIN_PAGE_ERROR = 'MAIN_PAGE_ERROR',
+  MAIN_PAGE_LIVENESS_ERROR = 'MAIN_PAGE_LIVENESS_ERROR',
 
   // Loading, success, error state - Missing Pages
   POLICY_PAGES_SUBMIT_IN_PROGRESS = 'POLICY_PAGES_SUBMIT_IN_PROGRESS',
   WEBSITE_UPDATE_SUCCESS = 'WEBSITE_UPDATE_SUCCESS',
+  WEBSITE_UPDATE_WORKFLOW_RAISED = 'WEBSITE_UPDATE_WORKFLOW_RAISED',
+
   // Multiple error steps
   POLICY_PAGES_CREATION = 'POLICY_PAGES_CREATION',
   POLICY_PAGES_PREVIEW = 'POLICY_PAGES_PREVIEW',
@@ -120,6 +123,7 @@ export enum WebsiteVerificationStatus {
   INITIATED = 'INITIATED',
   PASSED = 'PASSED',
   FAILED = 'FAILED',
+  NOT_APPLICABLE = 'NOT_APPLICABLE',
 }
 
 export interface WebsitePolicyPageVerificationStatus {
@@ -204,6 +208,7 @@ export interface WebsiteUpdateApiPayload {
     [WebsitePolicyPages.CONTACT]?: {
       url: string;
     };
+    is_shipping_page_required?: boolean;
   };
 }
 

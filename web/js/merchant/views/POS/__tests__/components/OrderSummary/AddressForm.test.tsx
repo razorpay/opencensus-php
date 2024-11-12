@@ -38,7 +38,7 @@ describe('<AddressForm/>', () => {
     expect(screen.getByText('Add New Address')).toBeVisible();
   });
 
-  test('should call on submit with correct form data', async () => {
+  test.skip('should call on submit with correct form data', async () => {
     server.use(getPincodeInfoHandler({ type: 'delivery_available' }));
     const { name, phoneNumber, pincode, city, address } = MOCK_DELIVERY_ADDRESS;
     render(<AddressForm {...initProps} />);

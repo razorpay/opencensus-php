@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Text, Heading, Chip, ChipGroup, TextInput } from '@razorpay/blade/components';
+
 import { Environments, ShowNotificationType } from 'common/typings';
-import {
-  PolicyPageCreationQuestionaire,
-  defaultPolicyPageCreationFormField,
-  getQuestionaireDetailsFromPolicyPagesToBeGenerated,
-} from './constants';
+
+import { PolicyPageCreationQuestionaire, defaultPolicyPageCreationFormField } from './constants';
+import { getQuestionaireDetailsFromPolicyPagesToBeGenerated } from './utils';
+import useBusinessWebsiteData from '../hooks/useBusinessWebsiteData';
 import useModalComponents from '../hooks/useModalComponents';
 import { usePolicyPagesDetails } from '../hooks/usePolicyPagesDetails';
+import { track as analyticsTrack, trackQuestionaire } from '../tracking';
 import {
   BladeFormInputOnEvent,
   PolicyPageCreationFormFieldType,
-  PolicyPageToBeMade,
+  PartialPolicyPages,
   ValidationState,
   WebsitePolicyPagesDetailsKeys,
   WebsiteSubmitModalSteps,
@@ -22,8 +23,6 @@ import {
   getMerchantWebsiteDetailsPayload,
   getWebsiteCount,
 } from '../utils';
-import styled from 'styled-components';
-import { track as analyticsTrack, trackQuestionaire } from '../tracking';
 
 const sensitiveKeys = [
   WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER,
@@ -34,27 +33,11 @@ export interface QuestionareProps {
   isMobile: boolean;
   isOpen: boolean;
   setCurrentStep: (step: WebsiteSubmitModalSteps) => void;
-  policyPagesToBeMade: PolicyPageToBeMade;
+  policyPagesToBeMade: PartialPolicyPages;
   mode: Environments;
+  org: { business_name: string };
   showNotification: ShowNotificationType;
 }
-
-const ErrorMessage = styled.span`
-  color: hsla(4, 74%, 49%, 1);
-  font-family: 'Inter', 'Inter Fallback Arial', Arial;
-  font-size: 0.6875rem;
-  font-weight: 400;
-  font-style: italic;
-  -webkit-text-decoration-line: none;
-  text-decoration-line: none;
-  line-height: 1rem;
-  -webkit-letter-spacing: 0px;
-  -moz-letter-spacing: 0px;
-  -ms-letter-spacing: 0px;
-  letter-spacing: 0px;
-  margin: 0;
-  padding: 0;
-`;
 
 function Questionare({
   isOpen,
@@ -62,10 +45,13 @@ function Questionare({
   isMobile,
   policyPagesToBeMade,
   mode,
+  org,
   showNotification,
 }: QuestionareProps): JSX.Element {
   const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
   const { mutate: savePolicyPagesMutate, isPosting } = usePolicyPagesDetails();
+  const { websiteUpdateData } = useBusinessWebsiteData();
+
   const [formState, setFormState] = useState<PolicyPageCreationFormFieldType>(
     defaultPolicyPageCreationFormField,
   );
@@ -102,8 +88,10 @@ function Questionare({
     }));
   };
 
-  const { isEmpty, questionaireMapping } =
-    getQuestionaireDetailsFromPolicyPagesToBeGenerated(policyPagesToBeMade);
+  const { isEmpty, questionaireMapping } = getQuestionaireDetailsFromPolicyPagesToBeGenerated(
+    policyPagesToBeMade,
+    websiteUpdateData,
+  );
 
   const questionareCTAtrack = (properties) =>
     analyticsTrack({
@@ -170,7 +158,7 @@ function Questionare({
         <Box paddingX={isMobile ? 'none' : 'spacing.8'} paddingY={isMobile ? 'none' : 'spacing.7'}>
           <Box marginBottom="spacing.7">
             <Heading size="small" weight="semibold">
-              Create policy pages with Razorpay
+              Create policy pages with {org.business_name}
             </Heading>
             <Text size="medium" color="surface.text.gray.muted">
               {isEmpty
@@ -211,9 +199,8 @@ function Questionare({
                           name={question.questionId}
                           size="xsmall"
                           testID={`chips-${question.questionId}`}
-                          // TODO: Upgrade to https://github.com/razorpay/blade/releases/tag/%40razorpay%2Fblade%4011.16.0
-                          // validationState={formState[question.questionId].valid}
-                          // errorText="Please select an option"
+                          validationState={formState[question.questionId].valid}
+                          errorText="Please select an option"
                         >
                           {question.options.map((option) => {
                             return (
@@ -223,10 +210,6 @@ function Questionare({
                             );
                           })}
                         </ChipGroup>
-                        {/* TODO: temporary workaround - remove after blade upgrade */}
-                        {formState[question.questionId].valid === ValidationState.ERROR && (
-                          <ErrorMessage>Please select an option</ErrorMessage>
-                        )}
                       </Box>
                     )
                   );

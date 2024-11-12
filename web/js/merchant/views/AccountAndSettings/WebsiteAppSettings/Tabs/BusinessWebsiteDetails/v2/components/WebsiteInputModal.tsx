@@ -26,13 +26,7 @@ import {
   MainPageFormData,
   MainFormFields,
 } from '../types';
-import {
-  defaultValue,
-  mainPageFormValidator,
-  snapPoints,
-  validators,
-  getWebsiteCount,
-} from '../utils';
+import { mainPageFormValidator, snapPoints, validators, getWebsiteCount } from '../utils';
 
 interface WebsiteInputModalProps {
   isMobile: boolean;
@@ -40,6 +34,8 @@ interface WebsiteInputModalProps {
   onDismiss: () => void;
   handleMainPageSubmit: (formState: MainPageFormData) => void;
   user: User;
+  formState: MainPageFormData;
+  setFormState: React.Dispatch<React.SetStateAction<MainPageFormData>>;
 }
 
 const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
@@ -48,10 +44,10 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
   onDismiss,
   handleMainPageSubmit,
   user,
+  formState,
+  setFormState,
 }) => {
   const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
-
-  const [formState, setFormState] = useState<MainPageFormData>(defaultValue);
   const [suggestionStep, setSuggestionStep] = useState(SuggestionSteps.POLICY_PAGES);
 
   useEffect(() => {
@@ -91,7 +87,7 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
         ...formState,
         [name]: {
           value,
-          valid: ValidationState.NONE,
+          valid: validators[name](value, formState) ? ValidationState.NONE : ValidationState.ERROR,
         },
       };
     });
@@ -129,7 +125,7 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
               type="url"
               validationState={formState.url.valid}
               value={formState.url.value}
-              errorText="Enter valid website link"
+              errorText="Enter valid website link starting with https://"
             />
             <RadioGroup
               label={`Does your ${formState.platform.value} require login form user to complete payment?`}
@@ -210,7 +206,7 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
               }
               handleMainPageSubmit(formState);
             }}
-            // isDisabled={!mainPageFormValidator(formState)}
+            isDisabled={!mainPageFormValidator(formState)}
           >
             {isMobile ? 'Proceed' : 'Submit'}
           </Button>

@@ -15,6 +15,7 @@ import { OpenModalType, CloseModalType, Store, User, ShowNotificationType } from
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { FLOWS } from 'merchant/views/Account/Profile/components/WebsiteSelfServe/Constants';
 import InitiateWebsiteChange from 'merchant/views/Account/Profile/components/WebsiteSelfServe/InitiateWebsiteChange';
+import UpdateWebsiteDetails from 'merchant/views/Account/Profile/components/WebsiteSelfServe/UpdateWebsiteDetails';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
@@ -27,7 +28,6 @@ import useBusinessWebsiteData from './hooks/useBusinessWebsiteData';
 import { trackEditWebsiteIconClick, trackWebsiteAppDetailsButtonClick } from './tracking';
 import { AddWebsiteClickArgs, WebsiteSubmitModalSteps, WebsiteUpdateActionOn } from './types';
 import { getCTACondition, getWebsiteCount } from './utils';
-import UpdateWebsiteDetails from 'merchant/views/Account/Profile/components/WebsiteSelfServe/UpdateWebsiteDetails';
 
 interface BusinessWebsiteDetailsProps {
   user: User;
@@ -106,6 +106,7 @@ const BusinessWebsiteDetails: React.FC<BusinessWebsiteDetailsProps> = ({
           user={user}
           openModal={openModal}
           closeModal={closeModal}
+          isBladeRevamp={true}
           {...(actionOn === WebsiteUpdateActionOn.ADDITIONAL_WEBSITE
             ? {
                 flowType: FLOWS.ADDITIONAL_WEBSITE,

@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { render, screen, waitFor, userEvent } from 'test-utils';
 
 import { User } from 'common/typings';
 
 import { mockMainPageUrl } from '../../__test__/mocks/fixtures';
+import { MainPageFormData } from '../../types';
+import { mainPageFormDefaultValue } from '../../utils';
 import WebsiteInputModal from '../WebsiteInputModal';
 
 const mockOnDismiss = jest.fn();
@@ -33,8 +35,20 @@ const defaultProps = {
   user: {} as User,
 };
 
+const RenderWebsiteInput = (props) => {
+  const [formState, setFormState] = useState<MainPageFormData>(mainPageFormDefaultValue);
+  return (
+    <WebsiteInputModal
+      formState={formState}
+      setFormState={setFormState}
+      {...defaultProps}
+      {...props}
+    />
+  );
+};
+
 const renderApp = (props = {}) => {
-  const renderOutput = render(<WebsiteInputModal {...defaultProps} {...props} />);
+  const renderOutput = render(<RenderWebsiteInput {...props} />);
   return renderOutput;
 };
 

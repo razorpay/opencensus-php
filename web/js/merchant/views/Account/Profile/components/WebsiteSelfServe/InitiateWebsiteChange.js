@@ -1,15 +1,28 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
+import {
+  Modal as BladeModal,
+  ModalBody as BladeModalBody,
+  ModalHeader as BladeModalHeader,
+  ModalFooter as BladeModalFooter,
+  Box,
+  Button,
+  Alert,
+  List,
+  ListItem,
+} from '@razorpay/blade/components';
 
+import { zIndicesMap } from 'common/constant';
 import ModalHeader from 'common/ui/ModalHeader';
 import TwoFactorVerificaionContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
 
 import { FLOWS } from './Constants';
 import UpdateWebsiteDetails from './UpdateWebsiteDetails';
 
 function InitiateWebsiteChange(props) {
   const context = useContext(TwoFactorVerificaionContext);
+  const [isBladeModalOpen, setIsBladeModalOpen] = useState(true);
 
   const onContactVerified = () => {
     const { user } = props;
@@ -114,6 +127,59 @@ function InitiateWebsiteChange(props) {
           complete, you'll be able to add a new website/app without any hassle.
         </p>
       </div>
+    );
+  }
+
+  if (props.isBladeRevamp) {
+    return (
+      <BladeModal
+        isOpen={isBladeModalOpen}
+        onDismiss={() => {
+          props.closeModal();
+          setIsBladeModalOpen(false);
+        }}
+        size="medium"
+        zIndex={zIndicesMap.modalOverlay}
+      >
+        <BladeModalHeader title={title} />
+        <BladeModalBody>
+          <Box display="flex" justifyContent="center" alignItems="center" margin="spacing.6">
+            <img src="https://cdn.razorpay.com/static/assets/website-self-serve/Website-change.svg" />
+          </Box>
+          <Alert
+            title="Please note:"
+            description={
+              <List variant="ordered">
+                <ListItem>
+                  The product/services that you are selling on the website/app should fall under “
+                  {titleCase(props.user.business_category)}” category.
+                </ListItem>
+                <ListItem>
+                  If your website/app belongs to a different category, please create a new Razorpay
+                  account.
+                </ListItem>
+              </List>
+            }
+            color="information"
+            isDismissible={false}
+            isFullWidth
+          />
+        </BladeModalBody>
+        <BladeModalFooter>
+          <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                props.closeModal();
+                setIsBladeModalOpen(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={onProceedClick}>Proceed to update website/app</Button>
+          </Box>
+        </BladeModalFooter>
+      </BladeModal>
     );
   }
 

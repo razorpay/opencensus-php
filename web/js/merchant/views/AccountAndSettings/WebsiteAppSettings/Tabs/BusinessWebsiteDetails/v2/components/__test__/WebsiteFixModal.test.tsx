@@ -20,6 +20,9 @@ const defaultProps = {
   onCreateAllPolicyPagesButtonClick: () => undefined,
   handlePolicyPageSubmit: mockHandleMainPageSubmit,
   user: {} as User,
+  org: {
+    business_name: 'Razorpay',
+  },
 };
 
 jest.mock(

@@ -82,10 +82,10 @@ describe('Business website automation - Loader', () => {
 
   it('should show error modal when website liveness check fail', async () => {
     renderApp({
-      variant: WebsiteSubmitModalSteps.MAIN_PAGE_ERROR,
+      variant: WebsiteSubmitModalSteps.MAIN_PAGE_LIVENESS_ERROR,
     });
     expect(
-      screen.getByTestId(`loader-${WebsiteSubmitModalSteps.MAIN_PAGE_ERROR}`),
+      screen.getByTestId(`loader-${WebsiteSubmitModalSteps.MAIN_PAGE_LIVENESS_ERROR}`),
     ).toBeInTheDocument();
     expect(screen.getByText('Your website isn’t ready for verification')).toBeInTheDocument();
     const button = screen.getByRole('button', { name: 'Okay, got it' });
@@ -105,6 +105,26 @@ describe('Business website automation - Loader', () => {
       screen.getByTestId(`loader-${WebsiteSubmitModalSteps.MAIN_PAGE_SUBMIT_SUCCESS}`),
     ).toBeInTheDocument();
     expect(screen.getByText('Your website is submitted for verification')).toBeInTheDocument();
+    const button = screen.getByRole('button', { name: 'Okay, got it' });
+    expect(button).toBeInTheDocument();
+    await userEvent.click(button);
+    await waitFor(() => {
+      expect(mockOnClick).toHaveBeenCalled();
+    });
+  });
+
+  it('should show workflow raised success modal', async () => {
+    renderApp({
+      variant: WebsiteSubmitModalSteps.WEBSITE_UPDATE_WORKFLOW_RAISED,
+      isMobile: true,
+    });
+    expect(
+      screen.getByTestId(`loader-${WebsiteSubmitModalSteps.WEBSITE_UPDATE_WORKFLOW_RAISED}`),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Your website is submitted for verification')).toBeInTheDocument();
+    expect(
+      screen.getByText('We’re verifying your details and will share an update'),
+    ).toBeInTheDocument();
     const button = screen.getByRole('button', { name: 'Okay, got it' });
     expect(button).toBeInTheDocument();
     await userEvent.click(button);

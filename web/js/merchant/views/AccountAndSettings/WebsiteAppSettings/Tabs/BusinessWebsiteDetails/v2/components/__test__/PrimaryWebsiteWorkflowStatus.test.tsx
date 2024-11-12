@@ -147,7 +147,7 @@ describe('Business website automation - PrimaryWebsiteWorkflowStatus', () => {
       },
       businessWebsiteWorkflow: {
         workflow_status: 'open',
-        needs_clarification: true,
+        needs_clarification: 'comment by ops agent',
         request_under_validation: false,
         tags: ['awaiting-customer-response'],
       },
@@ -155,10 +155,8 @@ describe('Business website automation - PrimaryWebsiteWorkflowStatus', () => {
     expect(
       screen.getByText('Our team needs a few more details to verify your website'),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText('To accept payments and for faster verification, kindly update the details'),
-    ).toBeInTheDocument();
-    const addReplyButton = screen.getByRole('button', { name: 'Add reply' });
+    expect(screen.getByText(/comment by ops agent/)).toBeInTheDocument();
+    const addReplyButton = screen.getByRole('button', { name: 'Resolve now' });
     expect(addReplyButton).toBeInTheDocument();
     await userEvent.click(addReplyButton);
     await waitFor(() => {

@@ -45,7 +45,7 @@ export const PolicyPagesSuggestionsList = {
   ],
 };
 
-const mappingPolicyPageKeyToQuestionaire = {
+export const mappingPolicyPageKeyToQuestionaire = {
   [WebsitePolicyPages.SHIPPING]: [
     WebsitePolicyPagesDetailsKeys.SHIPPING_PERIOD,
     WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER,
@@ -63,46 +63,16 @@ const mappingPolicyPageKeyToQuestionaire = {
   [WebsitePolicyPages.TERMS]: [],
 };
 
-export const getQuestionaireDetailsFromPolicyPagesToBeGenerated = (
-  policyPagesToGenerate: Array<Partial<WebsitePolicyPages>>,
-) => {
-  const questions: Array<Partial<WebsitePolicyPagesDetailsKeys>> = [];
-
-  policyPagesToGenerate.forEach((policyPage) => {
-    const mappedQuestions = mappingPolicyPageKeyToQuestionaire[policyPage];
-
-    if (mappedQuestions) {
-      mappedQuestions.forEach((question) => {
-        if (!questions.includes(question)) {
-          questions.push(question);
-        }
-      });
-    }
-  });
-  const keys = Object.values(WebsitePolicyPagesDetailsKeys);
-
-  const result: Record<WebsitePolicyPagesDetailsKeys, boolean> = {} as Record<
-    WebsitePolicyPagesDetailsKeys,
-    boolean
-  >;
-  let isEmpty = true;
-  keys.forEach((key) => {
-    const isPresent = questions.includes(key as WebsitePolicyPagesDetailsKeys);
-    if (isPresent) {
-      isEmpty = false;
-    }
-    result[key] = isPresent;
-  });
-
-  return { isEmpty, questionaireMapping: result };
-};
-
 const WebsitePolicyPagesDetailsOptions = [
   { key: 2, value: '1-2 days' },
   { key: 5, value: '3-5 days' },
   { key: 8, value: '6-8 days' },
   { key: 15, value: '9-15 days' },
   { key: 30, value: '16-30 days' },
+];
+
+const ShippingPolicyPageDetailsOptions = [
+  ...WebsitePolicyPagesDetailsOptions,
   { key: null, value: 'Not Applicable' },
 ];
 
@@ -110,7 +80,7 @@ export const PolicyPageCreationQuestionaire = [
   {
     questionId: WebsitePolicyPagesDetailsKeys.SHIPPING_PERIOD,
     value: 'What is your shipping time?',
-    options: WebsitePolicyPagesDetailsOptions,
+    options: ShippingPolicyPageDetailsOptions,
   },
   {
     questionId: WebsitePolicyPagesDetailsKeys.REFUND_REQUEST_PERIOD,
@@ -131,3 +101,6 @@ export const defaultPolicyPageCreationFormField: PolicyPageCreationFormFieldType
   support_contact_number: { valid: ValidationState.NONE, value: '' },
   support_email: { valid: ValidationState.NONE, value: '' },
 };
+
+export const policyPagePublishDisclaimer =
+  'Pursuant to the RBI guidelines, merchants are required to clearly indicate the terms and conditions of the service and other relevant information on their website. I/we understand and acknowledge that I/we must read, modify, delete, or add any and all areas of the draft terms as necessary before using/publishing them on my/our website/payment page. I/we agree to use/publish them at my/our sole discretion and risk. I/we understand that the provision of these terms by Razorpay is not a substitute for independent legal advice, and I/we will use our independent discretion to determine the suitability of these draft terms for my/our business purposes. I/we understand and agree that Razorpay is not liable in any way or form for any liabilities that arise out of my/our free and voluntary use of these draft terms. Razorpay expressly disclaims all liability in respect of any actions taken or not taken based on any or all of the content made available. Razorpay does not endorse and is not responsible for any third-party content that may be accessed through this information.';

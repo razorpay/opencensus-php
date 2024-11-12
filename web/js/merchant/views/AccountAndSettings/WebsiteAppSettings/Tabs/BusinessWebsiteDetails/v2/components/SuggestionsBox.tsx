@@ -23,8 +23,8 @@ const SuggestionsBox: React.FC<SuggestionsBoxProps> = (props) => {
       <Card
         backgroundColor="surface.background.gray.intense"
         borderRadius="medium"
-        elevation="none"
-        padding="spacing.5"
+        elevation="midRaised"
+        padding="spacing.0"
         width="100%"
       >
         <CardBody>{children}</CardBody>
