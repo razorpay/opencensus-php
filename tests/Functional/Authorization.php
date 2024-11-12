@@ -871,6 +871,15 @@ class Authorization
         $this->appAuth('rzp_'.$mode, $pwd);
     }
 
+    public function routeAuth($mode = 'test')
+    {
+        $routeConfig = \Config::get('applications.route');
+
+        $pwd = $routeConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
     public function smartCollectAuth($mode = 'test')
     {
         $smartCollectConfig = \Config::get('applications.smart_collect');

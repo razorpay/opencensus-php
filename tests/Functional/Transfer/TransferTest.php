@@ -3629,4 +3629,65 @@ class TransferTest extends TestCase
 
         $this->assertEquals('trf_P1aV1cjfsJuNf9', $transfer['id']);
     }
+
+    public function testTransferPricing()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $transfer = $this->createTransfer('account');
+
+        $tax = 4;
+        $expectedFee = 20 + $tax;
+
+        $transferData = [
+            'fees'  => $expectedFee,
+            'tax'   => $tax
+        ];
+
+        $txnData = [
+            'amount'          => $transfer['amount'],
+            'fee'             => $expectedFee,
+            'tax'             => $tax,
+            'debit'           => $transfer['amount'] + $expectedFee,
+            'credit_type'     => 'default',
+            'fee_credits'     => 0,
+        ];
+
+        $txnId = $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $feeSplitNew = $this->transferPricingWithRouteAuth($transfer['id'], '10000000000000');
+
+        // assert api resp with api fee split
+        $this->assertEquals($feeSplitNew['fee_split']['pricing_rule_id'], $feesSplit['items'][1]['pricing_rule_id']);
+        $this->assertEquals($feeSplitNew['fee_split']['amount'], $feesSplit['items'][1]['amount']);
+    }
+
+    protected function transferPricingWithRouteAuth(string $id, string $merchantId)
+    {
+
+        $request = [
+            'method'        => 'POST',
+            'url'           => 'internal/transfers/pricing',
+            'content'       => [
+                'transfer' => [
+                    "id" => $id,
+                    "source_id" => "NYMUzQdkB35bGM",
+                    "source_type" => "payment",
+                    "merchant_id" => $merchantId,
+                    "to_id" => "10000000000001",
+                    "to_type" => "merchant",
+                    "amount" => 100
+                ],
+
+            ],
+        ];
+
+        $this->ba->routeAuth('rzp_test', $merchantId);
+
+        return $this->makeRequestAndGetContent($request);
+    }
 }

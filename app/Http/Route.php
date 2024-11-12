@@ -4712,6 +4712,7 @@ class Route
         'payment_update_reference6'                  => ['patch',      'payments/{id}/updateReference6',                       'PaymentController@updateReference6'                           ],
         'internal_payment_pricing'                   => ['get',        'internal/payments/{id}/pricing',                       'PaymentController@internalPricingFetchForPayment'                         ],
         'internal_pricing'                           => ['get',        'internal/entity/{entityType}/{entityId}/pricing',     'PaymentController@internalPricingFetch'                         ],
+        'internal_transfer_pricing'                  => ['post',       'internal/transfers/pricing',                          'TransferController@internalPricingFetch'                        ],
         'internal_merchant_risk_notification'        => ['post',       'internal/payments/{id}/risk_notification',            'PaymentController@internalRiskNotificationForRearch'                      ],
         'internal_payments_upi_action'               => ['post',       'internal/paymentsupi/{action}',                      'PaymentController@internalPaymentsUpiActions'                ],
         'internal_token_create'                      => ['post',       'internal/tokens',                                      'TokenController@internalTokenCreateForRearch'                      ],
@@ -6601,6 +6602,7 @@ class Route
         'payment_update_reference6',
         'internal_payment_pricing',
         'internal_pricing',
+        'internal_transfer_pricing',
         'internal_payments_upi_action',
         'internal_merchant_risk_notification',
         'internal_token_create',
@@ -18522,6 +18524,7 @@ class Route
         ],
 
         'route' => [
+            'internal_transfer_pricing',
             'pricing_fetch_plan',
             'payment_transfer',
             'transfer_transaction_create',

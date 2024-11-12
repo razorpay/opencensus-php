@@ -5,6 +5,7 @@ namespace RZP\Models\Transfer;
 use App;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
+use RZP\Models\Pricing\Fee;
 use Throwable;
 use Carbon\Carbon;
 use Monolog\Logger;
@@ -2813,5 +2814,34 @@ class Service extends Base\Service
 
             return false;
         }
+    }
+
+    public function internalPricingFetch($input): array
+    {
+        $transfer = $this->buildTransferEntityForPricing($input["transfer"]);
+
+        [$fee, $tax, $feeSplit] = (new Fee())->calculateMerchantFees($transfer);
+
+        return [
+            'original_amount'  => $transfer->getAmount(),
+            'fees'            => $fee,
+            'razorpay_fee'    => $fee - $tax,
+            'tax'             => $tax,
+            'amount'          => $transfer->getAmount(),
+            'currency'        => $transfer->getCurrency(),
+            'fee_bearer'      => $transfer->merchant->getFeeBearer(),
+            'fee_split'       => $feeSplit,
+        ];
+    }
+
+    protected function buildTransferEntityForPricing($input): Entity
+    {
+        $transfer = new Entity();
+
+        $transfer->forceFill($input);
+
+        $this->repo->loadRelations($transfer);
+
+        return $transfer;
     }
 }
