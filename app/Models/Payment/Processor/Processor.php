@@ -7716,7 +7716,10 @@ class Processor
         }
         else
         {
-            $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
+            $gatewayVerifyResponseCode = $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
+            if ($gatewayVerifyResponseCode !== null) {
+                return $gatewayVerifyResponseCode;
+            }
         }
 
         return $errorCode;
@@ -8608,7 +8611,12 @@ class Processor
                 'merchant' => $this->merchant,
             ];
 
+            $internalCode = null;
+
             $data['gateway'] = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
+            $this->trace->info(TraceCode::CORPORATE_NETBANKING_PAYMENT_HDFC_PAYMENT_GATEWAY_RESPONSE, [
+                'gateway_response' => $data['gateway'],
+            ]);
             //only set error as Payment pending if we recieve   same response from gateway
             if ($data['gateway']['error']['internal_error_code'] === 'BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION'){
 
@@ -8779,6 +8787,8 @@ class Processor
         {
             $this->disableUpiTerminalIfRequired($payment);
         }
+
+        return $internalCode;
     }
 
     protected function getEmandateErrorDesc($exception)
