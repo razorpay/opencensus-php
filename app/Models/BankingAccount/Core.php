@@ -2324,11 +2324,13 @@ class Core extends Base\Core
 
         $validator->validateInput(Validator::DISPATCH_GATEWAY_BALANCE, [Entity::CHANNEL => $channel]);
 
-        $variant = $this->app->razorx->getTreatment($channel,
-                                                    Merchant\RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,
-                                                    $this->app['rzp.mode']);
+        $requestPayload = [
+            "id" => $channel,
+            "experiment_name" => RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,
+            'request_data'  => json_encode(['id' => $channel])
+        ];
 
-        if (strtolower($variant) === 'on')
+        if ( (new Merchant\Core())->isSplitzExperimentEnable($requestPayload,'enable'))
         {
             return $this->dispatchGatewayBalanceUpdateForMerchantsV2($channel, $isPriorityBalanceUpdate, $blacklistedMerchantIds);
         }

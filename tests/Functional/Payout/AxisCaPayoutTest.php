@@ -17,6 +17,7 @@ use Rzp\Models\FundTransfer;
 use RZP\Services\Mock\Mozart;
 use RZP\Models\Payout\Status;
 use RZP\Models\Merchant\Balance;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
@@ -47,6 +48,7 @@ use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 
 class AxisCaPayoutTest extends TestCase
 {
+    use MocksSplitz;
     use PayoutTrait;
     use TestsMetrics;
     use AttemptTrait;
@@ -58,6 +60,8 @@ class AxisCaPayoutTest extends TestCase
     private $ownerRoleUser;
 
     protected $merchant;
+
+    const ENABLE = 'enable';
 
     protected function setUp(): void
     {
@@ -335,7 +339,7 @@ class AxisCaPayoutTest extends TestCase
 
     public function testBalanceFetch()
     {
-        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'axis']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -358,7 +362,7 @@ class AxisCaPayoutTest extends TestCase
     {
         $this->testCreatePayout();
 
-        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'axis']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -379,7 +383,7 @@ class AxisCaPayoutTest extends TestCase
 
     public function testBalanceFetchWhenMerchantGatewayBalanceChanges()
     {
-        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'axis']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -1843,5 +1847,26 @@ class AxisCaPayoutTest extends TestCase
         (new BAS\Core)->retryBasSourceLinkingForProcessedPayout($params);
 
         Queue::assertNotPushed(BankingAccountStatementSourceLinking::class);
+    }
+    protected function enableSplitzExperiment($experimentName,$variantName,$requestData=null)
+    {
+        $input = [
+            "id" => 'axis',
+            'experiment_name' => $experimentName
+
+        ];
+
+        if ($requestData != null)
+            $input['request_data'] =  json_encode($requestData);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $variantName,
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($input, $output);
+
     }
 }

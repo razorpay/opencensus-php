@@ -23,6 +23,7 @@ use RZP\Models\Payout\Status;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Models\Settlement\Channel;
@@ -51,6 +52,7 @@ use RZP\Jobs\IciciBankingAccountStatement as IciciBankingAccountStatementJob;
 
 class IciciCaPayoutTest extends TestCase
 {
+    use MocksSplitz;
     use PayoutTrait;
     use AttemptTrait;
     use WorkflowTrait;
@@ -61,6 +63,8 @@ class IciciCaPayoutTest extends TestCase
     private $ownerRoleUser;
 
     protected $merchant;
+
+    const ENABLE = 'enable';
 
     protected function setUp(): void
     {
@@ -993,7 +997,7 @@ class IciciCaPayoutTest extends TestCase
 
     public function testBalanceFetch()
     {
-        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'icici']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -3561,11 +3565,7 @@ class IciciCaPayoutTest extends TestCase
 
     public function testICICIPriorityMerchantBalanceUpdate()
     {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2  => 'on'
-            ]
-        );
+        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'icici']);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::ICICI_CA_PRIORITY_BALANCE_UPDATE_LIST => ['10000000000000']]);
 
@@ -3590,11 +3590,7 @@ class IciciCaPayoutTest extends TestCase
 
     public function testICICIPriorityMerchantBalanceUpdateIsNotPushedOnDefaultQueue()
     {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2 => 'on'
-            ]
-        );
+        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'icici']);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::ICICI_CA_PRIORITY_BALANCE_UPDATE_LIST => ['10000000000000']]);
 
@@ -3612,5 +3608,26 @@ class IciciCaPayoutTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         Queue::assertNotPushed(IciciBankingAccountGatewayBalanceUpdate::class);
+    }
+    protected function enableSplitzExperiment($experimentName,$variantName,$requestData=null)
+    {
+        $input = [
+            "id" => 'icici',
+            'experiment_name' => $experimentName
+
+        ];
+
+        if ($requestData != null)
+            $input['request_data'] =  json_encode($requestData);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $variantName,
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
     }
 }
