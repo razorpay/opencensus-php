@@ -66,6 +66,7 @@ use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 use RZP\Mail\Merchant\NeedsClarificationEmail as NeedsClarificationEmail;
+use RZP\Models\Merchant;
 
 
 /**
@@ -6980,5 +6981,30 @@ class ActivationTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID], $merchantUser['id']);
 
         $this->startTest();
+    }
+
+    public function testMerchantActivationWithoutBankAccountDetails()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage("BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND");
+
+        $this->mockRazorxTreatment();
+
+        $this->app['rzp.mode'] = 'test';
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'business_type'       => 4,
+            'business_website'    => 'https://razorpay.com',
+            'submitted'           => 1,
+        ]);
+
+        $merchant = $merchantDetail->merchant;
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->app['repo']->transaction(function() use ($merchant) {
+            (new Merchant\Activate)->activate($merchant);
+        });
     }
 }

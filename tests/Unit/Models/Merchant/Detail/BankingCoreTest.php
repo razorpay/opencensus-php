@@ -249,7 +249,11 @@ class BankingCoreTest extends TestCase
             'promoter_pan'              => 'AAAPA1234J',
             'activation_status'          => 'under_review',
             'submitted'=>true,
-            'business_Website'=> null
+            'business_Website'=> null,
+            'contact_mobile' => '9308490219',
+            'bank_account_number' => '019863300002403',
+            'bank_account_name' => 'Shivam kumar',
+            'bank_branch_ifsc' => 'PUNB0057100',
         ]);
 
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
@@ -313,7 +317,11 @@ class BankingCoreTest extends TestCase
             'promoter_pan'              => 'AAAPA1234J',
             'activation_status'          => 'under_review',
             'submitted'=>true,
-            'business_Website'=> null
+            'business_Website'=> null,
+            'contact_mobile' => '9308490219',
+            'bank_account_number' => '019863300002403',
+            'bank_account_name' => 'Shivam kumar',
+            'bank_branch_ifsc' => 'PUNB0057100',
         ]);
 
         $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]]);
@@ -378,7 +386,11 @@ class BankingCoreTest extends TestCase
             'promoter_pan'              => 'AAAPA1234J',
             'activation_status'          => 'under_review',
             'submitted'=>true,
-            'business_Website'=> null
+            'business_Website'=> null,
+            'contact_mobile' => '9308490219',
+            'bank_account_number' => '019863300002403',
+            'bank_account_name' => 'Shivam kumar',
+            'bank_branch_ifsc' => 'PUNB0057100',
         ]);
 
         $this->mockRazorxTreatment();
@@ -440,7 +452,11 @@ class BankingCoreTest extends TestCase
             'promoter_pan'              => 'AAAPA1234J',
             'activation_status'          => 'under_review',
             'submitted'=>true,
-            'business_Website'=> null
+            'business_Website'=> null,
+            'contact_mobile' => '9308490219',
+            'bank_account_number' => '019863300002403',
+            'bank_account_name' => 'Shivam kumar',
+            'bank_branch_ifsc' => 'PUNB0057100',
         ]);
 
         $this->mockRazorxTreatment();
@@ -500,7 +516,11 @@ class BankingCoreTest extends TestCase
             'promoter_pan'              => 'AAAPA1234J',
             'activation_status'          => 'under_review',
             'submitted'=>true,
-            'business_Website'=> null
+            'business_Website'=> null,
+            'contact_mobile' => '9308490219',
+            'bank_account_number' => '019863300002403',
+            'bank_account_name' => 'Shivam kumar',
+            'bank_branch_ifsc' => 'PUNB0057100',
         ]);
 
        // $this->mockRazorxTreatment();
@@ -573,7 +593,11 @@ class BankingCoreTest extends TestCase
             'promoter_pan'              => 'AAAPA1234J',
             'activation_status'          => 'under_review',
             'submitted'=>true,
-            'business_Website'=> null
+            'business_Website'=> null,
+            'contact_mobile' => '9308490219',
+            'bank_account_number' => '019863300002403',
+            'bank_account_name' => 'Shivam kumar',
+            'bank_branch_ifsc' => 'PUNB0057100',
         ]);
 
         $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]]);

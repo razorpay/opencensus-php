@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Country;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\IdempotencyKey\Metric;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Services\TerminalsService;
@@ -107,6 +108,12 @@ class Activate extends Base\Core
         }
 
         $this->validateMethodsAndPricing($merchant);
+
+        if ($merchantDetail->hasBankAccountDetails() === false)
+        {
+            //throw error if bank account details are not present at time of merchant activation
+            throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+        }
 
         if ($triggerWorkflow === true)
         {
