@@ -25,6 +25,7 @@ use RZP\Services\LocationService;
 use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Order;
+use RZP\Models\Feature;
 use Throwable;
 use RZP\Models\Merchant\OneClickCheckout\Core as OneClickCheckoutCore;
 use RZP\Models\Merchant;
@@ -41,6 +42,8 @@ class Service extends \RZP\Models\Base\Service
 
     const MUTEX_PREFIX_1CC = "1cc_order_action:";
     const UPDATE_ABANDONED_QUOTE_PATH = 'v1/abandoned/magento/quote';
+
+    const FETCH_GSTIN_BILLING_ADDRESS_PATH = 'v1/gstin/address';
 
     public function __construct()
     {
@@ -175,12 +178,33 @@ class Service extends \RZP\Models\Base\Service
                     ];
                 }
 
-            $orderMetaInput = [
-                Order1cc\Fields::COD_FEE      => $codFee,
-                Order1cc\Fields::SHIPPING_FEE => $shippingFee,
-                Order1cc\Fields::TAX_DETAILS  => $taxesApplied,
-            ];
-        }
+                $orderMetaInput = [
+                    Order1cc\Fields::COD_FEE      => $codFee,
+                    Order1cc\Fields::SHIPPING_FEE => $shippingFee,
+                    Order1cc\Fields::TAX_DETAILS  => $taxesApplied,
+                ];
+                try {
+                    if($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_GSTIN_VALIDATION)) {
+                       $order = (new RzpOrders())->findOrderByIdAndMerchant($orderId);
+                       $orderNotes = $order->getNotes()->toArray();
+                       if (isset($orderNotes['gstin'])) {
+                           $gstin = $orderNotes['gstin'];
+                           $gstinAddressResponse = $this->app['magic_checkout_service_client']->sendRequest(self::FETCH_GSTIN_BILLING_ADDRESS_PATH.'?gstin='.$gstin.'&merchant_id='.$this->merchant->getId(),[], Requests::GET);
+                           if(!empty($gstinAddressResponse))
+                           {
+                               $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_BILLING_ADDRESS] =  $gstinAddressResponse;
+                           }
+                       }
+                    }
+                } catch (\Throwable $e) {
+                    //just catching the exception so that UI gets success response as email would already been updated in RZP order
+                    // even in cases where email is not updated in abandoned_quote of magento
+                    $this->trace->error(TraceCode::FETCH_GSTIN_BILLING_ADDRESS_ERROR, [
+                        'error_message' => $e->getMessage(),
+                        'exception' => $e->getTrace()
+                    ]);
+                }
+            }
 
             $orderMetaInput = array_merge($orderMetaInput, [
                 Order1cc\Fields::CUSTOMER_DETAILS => $customerInfo,

@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const ZIPCODE               = 'zipcode';
     const CITY                  = 'city';
     const STATE                 = 'state';
+    const STATE_CODE            = 'state_code';
     const COUNTRY               = 'country';
     const DELETED_AT            = 'deleted_at';
     const CONTACT               = 'contact';

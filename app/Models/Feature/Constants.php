@@ -2054,6 +2054,7 @@ class Constants
     const ONE_CC_EMAIL_CUSTOMER_CONSENT = 'one_cc_email_consent';
     const ONE_CC_WHATSAPP_CUSTOMER_CONSENT = 'one_cc_whatsapp_consent';
     const ONE_CC_SMS_CUSTOMER_CONSENT = 'one_cc_sms_consent';
+    const ONE_CC_GSTIN_VALIDATION = 'one_cc_gstin_validation';
 
 
     CONST ONE_CC_ENABLE_FLITS_COINS = 'one_cc_enable_flits_coins';
@@ -2413,6 +2414,7 @@ class Constants
         self::ONE_CC_SMS_CUSTOMER_CONSENT,
         self::VAS_NB_CORP_MER,
         self::VAS_NB_CORP_ORG,
+        self::ONE_CC_GSTIN_VALIDATION,
     ];
 
     const ONE_CC_FEATURES = [
@@ -2448,6 +2450,7 @@ class Constants
         self::ONE_CC_EMAIL_CUSTOMER_CONSENT,
         self::ONE_CC_WHATSAPP_CUSTOMER_CONSENT,
         self::ONE_CC_SMS_CUSTOMER_CONSENT,
+        self::ONE_CC_GSTIN_VALIDATION,
     ];
 
     const TRUECALLER_FEATURES = [
@@ -3235,6 +3238,7 @@ class Constants
         self::VAS_NB_CORP_MER                        => true,
         self::MESSAGE_BANNER_DISABLED                => true,
         self::RMV_CC_TXT_FRM_LOGO          => true,
+        self::ONE_CC_GSTIN_VALIDATION      => true,
     ];
 
     // Entity type constants
