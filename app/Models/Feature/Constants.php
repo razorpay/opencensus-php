@@ -2084,6 +2084,9 @@ class Constants
      */
     const OMNI_ENABLED = 'omni_enabled';
 
+    /** Feature flag to identify merchants who have split settlement feature enabled*/
+    const SPLIT_SETTLEMENTS_ENABLED = "split_settlements_enabled";
+
     /** Feature flag to remove/hide RZP branding from all places in checkout UIs for Turbo UPI */
     const REMOVE_RAZORPAY_BRANDING = 'remove_rzp_branding';
 
@@ -3158,6 +3161,7 @@ class Constants
         self::ADD_WEBHOOK_HEADERS_MX                       => true,
         self::ONE_CC_TAX_INCLUSION                   => true,
         self::OMNI_ENABLED                           => true,
+        self::SPLIT_SETTLEMENTS_ENABLED              => true,
         self::DEBIT_CARD_VALIDATION                  => true,
         self::REMOVE_RAZORPAY_BRANDING               => true,
         self::PREFETCH_ACCOUNT_DISABLED              => true,
@@ -4566,6 +4570,11 @@ class Constants
             'feature'       => self::OMNI_ENABLED,
             'display_name'  => 'Omni Enabled',
             'documentation' => 'Omni Enabled Merchant',
+        ],
+        self::SPLIT_SETTLEMENTS_ENABLED => [
+            'feature'       => self::SPLIT_SETTLEMENTS_ENABLED,
+            'display_name'  => 'Split Settlement Enabled',
+            'documentation' => 'Split Settlement Enabled Merchant',
         ],
         self::DD_TERMINAL_UPI_QR => [
             'feature'       => self::DD_TERMINAL_UPI_QR,
