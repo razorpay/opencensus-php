@@ -4,8 +4,8 @@ export const CardComponent = styled.div`
   padding: 24px 0px;
   @media screen and (min-width: 768px) {
     width: 368px;
-    height: 308px;
-    padding: 0 20px;
+    height: auto;
+    padding: 0 20px 20px;
     background: #ffffff;
     box-shadow: 0px 1px 2px rgba(21, 45, 75, 0.2), 0px 0px 1px rgba(21, 45, 75, 0.2);
     border-radius: 4px;

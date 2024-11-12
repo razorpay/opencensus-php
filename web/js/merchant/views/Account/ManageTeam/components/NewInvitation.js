@@ -5,7 +5,9 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 
+import { withSplitzService } from 'common/splitz';
 import InputField from 'common/ui/Forms/InputField';
+import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorVerificationOTP';
 import { analyticsTrack } from 'common/utils/analytics';
 import { without, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
@@ -18,6 +20,7 @@ import {
   posPartnerRoles,
 } from 'merchant/helpers/data';
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import { isBillMeMerchant, isOmniChannelMerchant } from 'merchant/utils/omniUtils';
 import {
   trackInviteNewMemberModalLoaded,
   trackInviteNewMemberModalClicked,
@@ -25,8 +28,6 @@ import {
 import withPartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-
-import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorVerificationOTP';
 import {
   triggerOtpOnEmail,
   triggerOtpOnSMS,
@@ -231,9 +232,19 @@ class NewInvitation extends Component {
 
   filterRoles = () => {
     const rolesToRemove = [];
+    const _isOmniChannelMerchant = isOmniChannelMerchant(this.props.user);
+    const _isBillMeMerchant = isBillMeMerchant(this.props.splitz);
 
     if (!this.props.user.isEnhancedEPOSEnabled) {
       rolesToRemove.push(rolesList.SELLERAPP_PLUS);
+    }
+
+    if (!_isOmniChannelMerchant && !_isBillMeMerchant) {
+      rolesToRemove.push(rolesList.STORE_MANAGER, rolesList.CASHIER);
+    }
+
+    if (!_isBillMeMerchant) {
+      rolesToRemove.push(rolesList.MARKETING, rolesList.IT);
     }
 
     // owner role cannot be assigned to anyone
@@ -378,11 +389,13 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default compose(
-  withPartnerDashboardExperiments,
-  connect(mapStateToProps, {
-    showNotification,
-    closeModal,
-    openModal,
-  }),
-)(NewInvitation);
+export default withSplitzService(
+  compose(
+    withPartnerDashboardExperiments,
+    connect(mapStateToProps, {
+      showNotification,
+      closeModal,
+      openModal,
+    }),
+  )(NewInvitation),
+);

@@ -4,7 +4,6 @@ import {
   AppStoreIcon,
   AtSignIcon,
   BankIcon,
-  BillIcon,
   CashIcon,
   CheckCircleIcon,
   CodeSnippetIcon,
@@ -51,6 +50,7 @@ import {
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import magicKonnectLogo from 'assets/magicKonnectLogo.png';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
+import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 
 export type ExtraConfig = {
   abExperiments: any;
@@ -67,11 +67,6 @@ export const PRODUCTS_DATA = {
     bladeIcon: TransactionsIcon,
     icon: 'i-repeat',
     additionalCondition: (user: any): boolean => user.isAllowedMultiple('payments orders refunds'),
-  },
-  digital_bills: {
-    bladeIcon: BillIcon,
-    icon: 'i-digital-bills',
-    additionalCondition: (): boolean => false,
   },
   settlements: {
     bladeIcon: SettlementsIcon,
@@ -320,6 +315,12 @@ export const PRODUCTS_DATA = {
       return isPosOnboardingEnabled;
     },
   },
+  bill_me: {
+    icon: 'i-bill-me',
+    additionalCondition: (user: any, { abExperiments }: ExtraConfig) => {
+      return isBillMeMerchant({ abExperiments });
+    },
+  },
   gcms_programs: {
     bladeIcon: ZapIcon,
     icon: 'i-program',
@@ -393,11 +394,6 @@ export const COMMON_PRODUCTS = [
   {
     title: SIDEEBAR_PRODUCTS_TITLES.transactions,
     product_id: 'transactions',
-    tags: [],
-  },
-  {
-    title: SIDEEBAR_PRODUCTS_TITLES.digital_bills,
-    product_id: 'digital_bills',
     tags: [],
   },
   {

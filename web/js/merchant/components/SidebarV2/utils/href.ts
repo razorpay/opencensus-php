@@ -50,7 +50,6 @@ const ROUTE_REG = {
 export const BASE_ROUTES = {
   home: '/dashboard',
   transactions: '/payments',
-  digital_bills: '/digital-bills',
   settlements: '/settlements',
   settings: '/config',
   developers: '/developers/apis',
@@ -91,6 +90,7 @@ export const BASE_ROUTES = {
   internationalPaymentsBtn: '/payment-methods/international-payments',
   payment_metrics: '/payment-metrics',
   pos: '/pos',
+  bill_me: '/digital-bills',
   gcms_programs: '/gcms/programs',
   gcms_resellers: '/gcms/resellers',
   gcms_orders: '/gcms/orders',

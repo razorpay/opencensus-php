@@ -584,6 +584,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'bill_me_enabled',
+        experimentId: {
+          beta: 'PCozRd6m7HUVNR',
+          production: 'PHumvQHBrGxWmp',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

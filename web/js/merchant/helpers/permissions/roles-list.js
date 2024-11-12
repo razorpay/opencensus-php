@@ -15,6 +15,10 @@ const RolesList = {
   PARTNER: 'partner',
   PARTNER_AGENT: 'partner_agent',
   RAZORPAY_SALES: 'razorpay_sales',
+  STORE_MANAGER: 'store_manager',
+  CASHIER: 'cashier',
+  MARKETING: 'marketing',
+  IT: 'it',
 };
 
 Object.freeze(RolesList);

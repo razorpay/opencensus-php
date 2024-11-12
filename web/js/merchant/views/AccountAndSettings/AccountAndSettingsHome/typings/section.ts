@@ -41,6 +41,8 @@ export enum BusinessSettingsFields {
   SUPPORT_TICKETS = 'support_tickets',
   INVITATIONS = 'invitations',
   ACTIVATION_DETAILS = 'Activation_details',
+  DIGITAL_BILL_SETTINGS = 'digital_bill_settings',
+  STORE_SETTINGS = 'store_settings',
 }
 
 export enum PaymentRefundsFields {
@@ -119,6 +121,8 @@ export const BusinessSettingsTitles: Record<BusinessSettingsFields, string> = {
   [BusinessSettingsFields.INVITATIONS]: 'Invitations',
   [BusinessSettingsFields.MANAGE_TEAM]: 'Manage team',
   [BusinessSettingsFields.SUPPORT_TICKETS]: 'Support tickets',
+  [BusinessSettingsFields.DIGITAL_BILL_SETTINGS]: 'Digital Bill Settings',
+  [BusinessSettingsFields.STORE_SETTINGS]: 'Store Settings',
 };
 
 export const PaymentRefundsTitles: Record<PaymentRefundsFields, string> = {

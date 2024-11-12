@@ -34,6 +34,7 @@ import {
 
 import { useGSTUpdateExperiment } from './Tabs/GSTDetails/utils';
 import { BusinessSettingsProps } from './typings';
+import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 
 const AccountDetails = lazy(
   () => import(/* webpackChunkName: "AccountDetails" */ './Tabs/AccountDetails/v1'),
@@ -163,6 +164,16 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
             >
               {user.isMobileSignupCareActive ? `Support History` : `Support Tickets`}
             </NavLink>
+          </ShowWhen>
+          <ShowWhen
+            additionalCondition={(user, { abExperiments }) => isBillMeMerchant({ abExperiments })}
+          >
+            <NavLink to={ROUTES_INFO.DIGITAL_BILL_SETTINGS}>Digital Bill Settings</NavLink>
+          </ShowWhen>
+          <ShowWhen
+            additionalCondition={(user, { abExperiments }) => isBillMeMerchant({ abExperiments })}
+          >
+            <NavLink to={ROUTES_INFO.STORE_SETTINGS}>Store Settings</NavLink>
           </ShowWhen>
         </StyledHeader>
         <TestModeBanner />

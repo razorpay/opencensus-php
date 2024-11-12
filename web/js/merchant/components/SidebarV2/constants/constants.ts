@@ -57,7 +57,7 @@ export const SIDEEBAR_PRODUCTS_TITLES = {
   wallet: 'Wallet',
   home: 'Home',
   transactions: 'Transactions',
-  digital_bills: 'Digital Bills',
+  bill_me: 'BillMe',
   settlements: 'Settlements',
   reports: 'Reports',
   my_account: 'Account',

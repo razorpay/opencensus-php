@@ -5,6 +5,7 @@ import { isExperimentActive } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { PERMISSIONS } from 'merchant/helpers/permissions/constant';
 import { initIsActionAllowed, isRBACExperimentEnabled } from 'merchant/helpers/permissions/utils';
+import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 import {
   AdditionalContextInterface,
   SectionCardInterface,
@@ -362,6 +363,24 @@ export const Sections: SectionCardInterface[] = [
           ({ extraConfig }: AdditionalContextInterface) =>
           (user: User): boolean =>
             isSupportTicketEnabled(user, extraConfig),
+      },
+      {
+        id: BusinessSettingsFields.DIGITAL_BILL_SETTINGS,
+        title: BusinessSettingsTitles[BusinessSettingsFields.DIGITAL_BILL_SETTINGS],
+        href: ROUTES_INFO.DIGITAL_BILL_SETTINGS,
+        additionalCondition:
+          ({ extraConfig: { abExperiments } }: AdditionalContextInterface) =>
+          (): boolean =>
+            isBillMeMerchant({ abExperiments }),
+      },
+      {
+        id: BusinessSettingsFields.STORE_SETTINGS,
+        title: BusinessSettingsTitles[BusinessSettingsFields.STORE_SETTINGS],
+        href: ROUTES_INFO.STORE_SETTINGS,
+        additionalCondition:
+          ({ extraConfig: { abExperiments } }: AdditionalContextInterface) =>
+          (): boolean =>
+            isBillMeMerchant({ abExperiments }),
       },
     ],
   },

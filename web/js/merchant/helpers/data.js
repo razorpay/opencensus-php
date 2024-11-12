@@ -74,6 +74,22 @@ export const roles = {
     label: 'Support',
     desc: 'Can access payments, refunds, invoices, and orders. Cannot do any write operations like refunds or captures.',
   },
+  // [rolesList.STORE_MANAGER]: {
+  //   label: 'Store Manager',
+  //   desc: 'Access to store-specific views, such as store filters and store data. Can manage the store’s daily activities, but lacks permissions for admin actions like bill deletion or report exports.',
+  // },
+  // [rolesList.CASHIER]: {
+  //   label: 'Cashier',
+  //   desc: 'Restricted to handling store data and customer-facing functions like viewing bills. Cannot manage or export reports, delete bills, or access financial data.',
+  // },
+  // [rolesList.MARKETING]: {
+  //   label: 'Marketing',
+  //   desc: 'Can view store data and store filters, mainly for analyzing customer and store performance. Lacks access to financial and bill-specific actions but can view key data for promotional activities.',
+  // },
+  // [rolesList.IT]: {
+  //   label: 'IT',
+  //   desc: 'Broad access to technical views like store and operational data, providing support for system-related tasks. However, IT cannot handle any financial tasks or make high-level configuration changes.',
+  // },
 };
 
 export const agentRole = {
