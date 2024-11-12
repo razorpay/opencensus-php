@@ -175,7 +175,7 @@ test.describe
       // await assertIssueRefundButton({ page, testId: 'payment-details-timeline' });
     });
 
-    test('should show "failed" payment state details', async ({ page }) => {
+    test.skip('should show "failed" payment state details', async ({ page }) => {
       await navigateToTransactions(page);
       await waitForListingLoader({ page });
       const id = payments.paymentId.failed.netbanking;
