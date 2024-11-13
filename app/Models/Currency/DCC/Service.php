@@ -5,8 +5,10 @@ namespace RZP\Models\Currency\DCC;
 use RZP\Constants\Mode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Currency;
 use RZP\Models\Payment\Entity;
+use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
@@ -305,7 +307,7 @@ class Service extends Base\Service
         return $currencyLevelDCCMarkupMap;
     }
 
-    public function getRequestedCurrencyDetails($baseCurrency, $baseAmount, $requestedCurrency, $currencyRequestId, $merchantMarkUpPercent, $method, $merchantID)
+    public function getRequestedCurrencyDetails($baseCurrency, $baseAmount, $requestedCurrency, $currencyRequestId, $merchantMarkUpPercent, $method, $merchantID, $merchant=null)
     {
         $requestedCurrencyData = [];
         $isCurrencyRequestIdFromRearch = false;
@@ -379,8 +381,82 @@ class Service extends Base\Service
                 $requestedCurrencyData['dcc_mark_up_percent'] = $markUpPercent;
             }
         }
-
+        else
+        {
+            if (!$this->evaluateSplitzExperimentforCrossBorderFlows($merchantID))
+            {
+                return $requestedCurrencyData;
+            }
+            try
+            {
+                if ($method !== Method::CARD)
+                {
+                    return $requestedCurrencyData;
+                }
+                $body = [
+                    'amount' => $baseAmount,
+                    'currency' => $baseCurrency,
+                    'conversion_currency' => $requestedCurrency,
+                    'currency_request_id' => $currencyRequestId,
+                    'merchant_id' => $merchantID,
+                    'filters' => [
+                        'method' => $method
+                    ]
+                ];
+                if (isset($merchant))
+                {
+                    $body['org_id'] = $merchant->getOrgId();
+                    $body['merchant_country'] = $merchant->getCountry();
+                    $body['merchant_international'] = true;
+                }
+                $pxbResponse = $this->app['payments-cross-border']->createForexCharges([], $body);
+                if (isset($pxbResponse) && isset($pxbResponse['id']) && !empty($pxbResponse['id']))
+                {
+                    $requestedCurrencyData['currency'] = $requestedCurrency;
+                    $requestedCurrencyData['forex_rate'] = $pxbResponse['gateway_forex_rate'];
+                    $requestedCurrencyData['dcc_mark_up_percent'] = $pxbResponse['markup_percent'];
+                    $requestedCurrencyData['amount'] = $pxbResponse['gateway_amount'];
+                }
+            }
+            catch (\Exception $e)
+            {
+                return $requestedCurrencyData;
+            }
+        }
         return $requestedCurrencyData;
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderFlows($merchantID){
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_flows_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantID,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_FLOWS_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+        return false;
     }
 
     private function getCurrencyLevelDCCMarkups()

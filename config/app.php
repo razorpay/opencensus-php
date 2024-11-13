@@ -723,6 +723,8 @@ return array(
 
     'cross_border_mcc_rearch_experiment_id' => env('CROSS_BORDER_MCC_REARCH_EXPERIMENT_ID'),
 
+    'cross_border_flows_experiment_id' => env('CROSS_BORDER_FLOWS_EXPERIMENT_ID'),
+
     'cross_border_s2s_mcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_MCC_REARCH_EXPERIMENT_ID'),
 
     'cross_border_mcc_parity_check_experiment_id' => env('CROSS_BORDER_MCC_PARITY_CHECK_EXPERIMENT_ID'),

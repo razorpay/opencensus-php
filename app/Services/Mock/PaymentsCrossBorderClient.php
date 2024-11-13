@@ -34,5 +34,9 @@ class PaymentsCrossBorderClient
     {
         return $this->response;
     }
+    public function createForexCharges($header, $input)
+    {
+        return null;
+    }
 
 }

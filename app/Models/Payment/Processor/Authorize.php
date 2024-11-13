@@ -4261,7 +4261,7 @@ trait Authorize
 
             foreach ($dccItems as $item) {
                 $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $input[$item],
-                    $dccCurrency, $dccCurrencyRequestId, $dccMarkupPerc, $payment->getMethod(), $payment->merchant->getId());
+                    $dccCurrency, $dccCurrencyRequestId, $dccMarkupPerc, $payment->getMethod(), $payment->merchant->getId(), $payment->merchant);
 
                 if (empty($requestedCurrencyData) === true) {
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID, 'currency_request_id',
@@ -5523,7 +5523,7 @@ trait Authorize
             $dccCurrencyRequestId = $input['currency_request_id'];
 
             $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
-                $dccCurrency, $dccCurrencyRequestId, $payment->merchant->getDccMarkupPercentage(), $payment->getMethod(), $payment->merchant->getId());
+                $dccCurrency, $dccCurrencyRequestId, $payment->merchant->getDccMarkupPercentage(), $payment->getMethod(), $payment->merchant->getId(), $payment->merchant);
 
             if (empty($requestedCurrencyData) === true)
             {
