@@ -18219,7 +18219,8 @@ class Route
             'merchant_fetch_internal',
             'internal_merchant_fetch',
             'merchant_fetch_internal_users',
-            'create_merchant_da_payout_mode_config'
+            'create_merchant_da_payout_mode_config',
+            'feature_get_all_internal'
         ],
 
         'myoperator' => [
