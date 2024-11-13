@@ -972,12 +972,14 @@ trait ReverseShadowTrait
 
         $baseTransactionEntity->setSettledAt($settledAt);
 
-        if($baseTransactionEntity->isGratis() === true)
-        {
-            $pricingRuleId = (new Fee())->getZeroPricingPlanRule($payment)->getId();
-
-            $baseTransactionEntity->setPricingRule($pricingRuleId);
-        }
+        // We are not setting this currently, as usecase has been figured where, org other than RZP org also has
+        // Zero pricing rule, causing failures.
+//        if($baseTransactionEntity->isGratis() === true)
+//        {
+//            $pricingRuleId = (new Fee())->getZeroPricingPlanRule($payment)->getId();
+//
+//            $baseTransactionEntity->setPricingRule($pricingRuleId);
+//        }
 
         $merchant = $payment->merchant;
 
