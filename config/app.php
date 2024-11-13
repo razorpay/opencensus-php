@@ -1107,4 +1107,6 @@ return array(
     'p2p' => [
         'encryption_key' => env('P2P_NACL_SESSION_TOKEN_ENCRYPTION_KEY')
     ],
+
+    'external_updates_enabled_for_tokens' => env('EXTERNAL_UPDATES_ENABLED_FOR_TOKENS'),
 );

@@ -2,11 +2,21 @@
 
 namespace RZP\Services\Mock;
 
+use RZP\Exception;
 use RZP\Services\Tokens as BaseTokens;
 
 class Tokens extends BaseTokens {
     public function fetchTokensInternal($input)
     {
+        if (isset($input['token']) && $input['token'] == '101externaltok')
+        {
+            return new Exception\RuntimeException(
+                'Unexpected response code received from Tokens service.',
+                [
+                    'input'         => array_keys($input),
+                ]);
+        }
+
         return [
             'code'     => 200,
             'body'     => [
@@ -57,6 +67,15 @@ class Tokens extends BaseTokens {
 
     public function fetchCustomerTokensInternal($input)
     {
+        if (isset($input['token']) && $input['token'] == '101externaltok')
+        {
+            return new Exception\RuntimeException(
+                'Unexpected response code received from Tokens service.',
+                [
+                    'input'         => array_keys($input),
+                ]);
+        }
+
         return [
             'code'     => 200,
             'body'     =>

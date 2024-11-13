@@ -56,28 +56,9 @@ class PaymentCreateController extends Controller
 
         $input = Request::all();
 
-        $result = 'control';
+        $merchant = $this->app['basicauth']->getMerchant();
 
-        try
-        {
-            $merchant = $this->app['basicauth']->getMerchant();
-
-            $mode = $this->app['rzp.mode'] ?? 'live';
-
-            $result = $this->app['razorx']->getTreatment(
-                $merchant->getId(),
-                RazorxTreatment::PAYMENT_CREATE_ROUTE_REARCH,
-                $mode);
-        }
-        catch(\Throwable $ex)
-        {
-            $this->trace->error(TraceCode::POST_CREATE_PAYMENT_RAZORX_ERROR, [
-                'error' => $ex->getMessage(),
-                'function' => __FUNCTION__
-            ]);
-        }
-
-        if ($result === 'on' && $this->app->runningUnitTests() === false)
+        if ($this->app->runningUnitTests() === false)
         {
             $tokenisationConsent = new TokenisationConsent();
 
