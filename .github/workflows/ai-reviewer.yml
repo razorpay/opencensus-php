@@ -3,6 +3,7 @@ name: AI Code Review
 on:
   pull_request:
     types:
+      - opened
       - ready_for_review
       - labeled
 
@@ -21,7 +22,7 @@ jobs:
   review:
     name: AI Code Review
     runs-on: [self-hosted]
-    if: ${{ github.event.label.name == 'AI-PR-Review' }}
+    if: ${{ (github.event.action == 'labeled' && (github.event.label.name == 'AI-PR-Review')) || (github.event.action == 'ready_for_review') || (github.event.action == 'opened') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
