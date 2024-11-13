@@ -775,6 +775,13 @@ class Core extends Base\Core
             {
                 $offer = $this->repo->offer->lockForUpdate($offer->getId());
 
+                app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_INCREMENT, [
+                    "offer_id"      => $offer->getId(),
+                    "current_usage" => $offer->getCurrentOfferUsage(),
+                    "new_usage"     => $offer->getCurrentOfferUsage() + 1,
+                    "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null
+                ]);
+
                 $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
 
                 $this->repo->saveOrFail($offer);
@@ -797,6 +804,13 @@ class Core extends Base\Core
             $offer = $this->repo->transaction(function () use ($offer)
             {
                 $offer = $this->repo->offer->lockForUpdate($offer->getId());
+
+                app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_DECREMENT, [
+                    "offer_id"      => $offer->getId(),
+                    "current_usage" => $offer->getCurrentOfferUsage(),
+                    "new_usage"     => $offer->getCurrentOfferUsage() - 1,
+                    "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null
+                ]);
 
                 $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() - 1);
 
@@ -1081,7 +1095,8 @@ class Core extends Base\Core
 
                 $this->traceNonExistingIins($offer, $merchant);
 
-                if ($this->shouldRouteToOffersEngine($merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true)
+                if ($this->shouldRouteToOffersEngine(
+                    $merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP, true) === true)
                 {
                     $this->offersEngine->createOffer($offer, $subscriptionInput ?? [], $input);
                 }
@@ -1145,7 +1160,7 @@ class Core extends Base\Core
         return $result;
     }
 
-    public function shouldRouteToOffersEngine(string $merchantId, $experiment): bool
+    public function shouldRouteToOffersEngine(string $merchantId, $experiment, $throwError = false): bool
     {
         try
         {
@@ -1172,6 +1187,11 @@ class Core extends Base\Core
                 [
                     'msg' => $e->getMessage()
                 ]);
+
+            if ($throwError === true)
+            {
+                throw $e;
+            }
         }
 
         return false;

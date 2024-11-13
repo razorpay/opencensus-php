@@ -3951,6 +3951,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_CARD_INTERNATIONAL_CHECK                        = 'OFFER_CARD_INTERNATIONAL_CHECK';
     const OFFER_CARD_USAGE_CHECK                                = 'OFFER_CARD_USAGE_CHECK';
     const OFFER_USAGE_CHECK                                     = 'OFFER_USAGE_CHECK';
+    const CURRENT_OFFER_USAGE_INCREMENT                         = 'CURRENT_OFFER_USAGE_INCREMENT';
+    const CURRENT_OFFER_USAGE_DECREMENT                         = 'CURRENT_OFFER_USAGE_DECREMENT';
     const OFFER_MAX_ORDER_AMOUNT_CHECK                          = 'OFFER_MAX_ORDER_AMOUNT_CHECK';
     const OFFER_MIN_ORDER_AMOUNT_CHECK                          = 'OFFER_MIN_ORDER_AMOUNT_CHECK';
     const OFFER_ISSUER_CHECK_NOT_APPLICABLE                     = 'OFFER_ISSUER_CHECK_NOT_APPLICABLE';
