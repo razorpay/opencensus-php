@@ -840,7 +840,13 @@ class Repository extends Base\Repository
 
     public function fetchMerchantIdsByOrgId($orgId)
     {
-        return $this->newQuery()
+        if ((new AsvRouter())->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQuery();
+        }
+
+        return $query
             ->where(Entity::ORG_ID, '=', $orgId)
             ->pluck(Entity::ID)
             ->toArray();
@@ -848,7 +854,12 @@ class Repository extends Base\Repository
 
     public function getLiveMerchantCount()
     {
-        return $this->newQuery()
+        if ((new AsvRouter())->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQuery();
+        }
+        return $query
                     ->where(Entity::LIVE, '=', 1)
                     ->whereNull(Entity::SUSPENDED_AT)
                     ->count();
