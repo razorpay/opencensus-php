@@ -2067,13 +2067,6 @@ class Service extends Base\Service
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
         $data['signup_campaign'] = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
 
-        if ( empty($userDeviceDetail) === false && $this->pgosProxyController->isIndiaPgModularMerchant($merchant) === true)
-        {
-            $res = $this->getModularFieldsFromASV($merchantId);
-
-            $data["additional_onboarding_details"] = $res ? $res["pg_onboarding"] : null; ;
-        }
-
         // Merchant confirmed details
         $data['confirmed'] = $this->getMerchantConfirmed($merchant);
 
@@ -2110,7 +2103,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getModularFieldsFromASV(string $merchantId)
+    public function getAdditionalDetailsFromASV(string $merchantId)
     {
         $data = null;
         $fieldList = [

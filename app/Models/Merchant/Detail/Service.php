@@ -323,11 +323,13 @@ class Service extends Base\Service
             $response[DetailConstants::LOCK_COMMON_FIELDS] = $this->core->fetchCommonFieldsToBeLocked($partnerActivation);
         }
 
-        if ( $this->pgosProxyController->isIndiaPgModularMerchant($this->merchant) === true )
-        {
-            $data = (new Merchant\Service())->getModularFieldsFromASV($merchantId);
+        $additionalDetails = (new Merchant\Service())->getAdditionalDetailsFromASV($merchantId);
 
-            $response["additional_onboarding_details"] = $data ? $data["pg_onboarding"] : null; ;
+        $response[DetailConstants::RISK_DETAILS] = $additionalDetails[DetailConstants::RISK_DETAILS] ?? null;
+
+        if ($this->pgosProxyController->isIndiaPgModularMerchant($this->merchant) === true)
+        {
+            $response[DetailConstants::ADDITIONAL_ONBOARDING_DETAILS] = $additionalDetails[DetailConstants::PG_ONBOARDING] ?? null;
         }
 
 
@@ -5359,6 +5361,16 @@ class Service extends Base\Service
 
                             // move the merchant to eligible activation_status
                             $input[Entity::ACTIVATION_STATUS] = $newActivationStatus;
+
+                            if ($newActivationStatus === Status::ACTIVATED or $newActivationStatus === Status::ACTIVATED_MCC_PENDING)
+                            {
+                                $this->trace->info(TraceCode::PREFILLING_ADMIN_WEBSITE_DETAILS, [
+                                    'merchant_id' => $merchantId,
+                                    'new_activation_status' => $newActivationStatus,
+                                ]);
+
+                                $this->core->prefillSystemUrlsInAdminWebisteDetails($merchant->merchantDetail);
+                            }
 
                         }
 

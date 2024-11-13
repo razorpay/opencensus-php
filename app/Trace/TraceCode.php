@@ -3913,6 +3913,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const  MERCHANT_APPLICABLE_STATUS_DOES_NOT_MATCH            =  'MERCHANT_APPLICABLE_STATUS_DOES_NOT_MATCH';
 
+    const PREFILLING_ADMIN_WEBSITE_DETAILS                      = 'PREFILLING_ADMIN_WEBSITE_DETAILS';
+
     const  CLARIFICATION_DETAILS_EDIT_REQUEST                   =  'CLARIFICATION_DETAILS_EDIT_REQUEST';
     const AUDIT_INFO_ENTITY_LOG                                 = 'AUDIT_INFO_ENTITY_LOG';
 

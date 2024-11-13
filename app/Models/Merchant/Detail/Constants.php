@@ -145,6 +145,10 @@ class Constants
 
     const LOCK_COMMON_FIELDS = 'lock_common_fields';
 
+    const RISK_DETAILS                      = 'risk_details';
+    const ADDITIONAL_ONBOARDING_DETAILS     = 'additional_onboarding_details';
+    const PG_ONBOARDING                     = 'pg_onboarding';
+
     // For Route no doc KYC feature.
     const UNREGISTERED_AND_PROPRIETORSHIP   = 'unregistered_and_proprietorship';
     const REGISTERED                        = 'registered';
