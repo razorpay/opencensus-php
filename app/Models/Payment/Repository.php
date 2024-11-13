@@ -1752,14 +1752,6 @@ EOT;
         {
             $query = $this->newQuery();
 
-            // keep the experiment for some more time, not needed to move to TiDB
-            if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, 'fetchOldCreatedPaymentsForMethodForTimeout') === true)
-            {
-                $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
-
-                $query = $this->newQueryWithConnection($connectionType);
-            }
-
             $query = $query
                         ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                         ->status(Payment\Status::CREATED)
@@ -1831,14 +1823,6 @@ EOT;
         return $this->repo->useSlave(function() use ($fromTimestamp, $toTimestamp, $limit, $method)
         {
             $query = $this->newQuery();
-
-            // keep the experiment for some more time, not needed to move to TiDB
-            if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, 'fetchOldAuthenticatedPaymentsForMethodForTimeout') === true)
-            {
-                $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
-
-                $query = $this->newQueryWithConnection($connectionType);
-            }
 
             return $query
                 ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
@@ -4515,16 +4499,13 @@ EOT;
                 ->get();
 
             $this->resetDefaultConnInEntities($payments);
-
         }else{
             $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
             $payments = $this->newQueryWithConnection($connectionType)
-                ->where(Entity::INVOICE_ID, $invoiceId)
-                ->where(Entity::STATUS, '=', Status::CAPTURED)
-                ->get();
+                             ->where(Entity::INVOICE_ID, $invoiceId)
+                             ->where(Entity::STATUS, '=', Status::CAPTURED)
+                             ->get();
         }
-
         return $payments;
     }
 

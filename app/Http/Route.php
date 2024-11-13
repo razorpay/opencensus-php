@@ -20361,20 +20361,8 @@ class Route
     ];
 
     public static $fetchFromWDAService = [
-        'scorecard'                                        =>  'wda_scorecard_migration',
-        'order_fetch'                                      =>  'wda_order_fetch_migration',
-        'order_payments'                                   =>  'wda_order_payments_migration',
-        'payment_fetch_multiple'                           =>  'wda_payment_fetch_multiple_migration',
-        'payment_fetch_multiple_internal'                  =>  'wda_payment_fetch_multiple_migration',
-        'admin_fetch_entity_by_id'                         =>  'wda_migration_admin',
-        'admin_fetch_entity_multiple'                      =>  'wda_migration_admin',
-        'external_admin_fetch_entity_multiple'             =>  'wda_migration_admin',
-        'merchant_fetch_payment_failure_analysis'          =>  'wda_merchant_fetch_payment_failure_analysis_migration',
-        'transaction_statement_fetch_multiple_for_banking' =>  'wda_transaction_statement_fetch_multiple_for_banking_migration',
-        'merchant_onboarding_escalations'                  =>  'wda_merchant_onboarding_escalations',
-        'merchant_autokyc_escalation'                      =>  'wda_merchant_autokyc_escalation',
-        'merchant_autokyc_hard_limit'                      =>  'wda_merchant_autokyc_hard_limit',
-        'merchant_onboarding_crons'                        =>  'wda_merchant_onboarding_crons',
+        //Removing the experiments created by wda team for razorx deprecation,
+        // migration to wda is depreciated for API and is no longer supported.
     ];
 
     protected static $hostMapping = array(
