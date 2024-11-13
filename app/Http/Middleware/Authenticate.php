@@ -60,6 +60,7 @@ class Authenticate
     const APP_NAME             = 'app_name';
     const SECRET               = 'secret';
     const ROUTE_TYPE           = 'route_type';
+    const X_ENTITY_ID_QUERY_KEY  = 'x_entity_id';
 
     /**
      * Application instance
@@ -497,6 +498,7 @@ class Authenticate
         $authCredsClass = $this->isPartnerAuth ? ClientAuthCreds::class : KeyAuthCreds::class;
         $this->ba->authCreds = new $authCredsClass($this->app);
         $this->ba->authCreds->setModeAndDbConnection($this->passport->mode);
+
     }
 
     /**
@@ -572,6 +574,9 @@ class Authenticate
     {
         $this->setAuthTypesBasicAuthContextsFromPassport($authType); // set auth type and auth flow type
         $this->setKeylessAuthContextFromPassport();
+
+        // x_entity_id removal will not be supported on edge. This is a temporary workaround.
+        $this->ba->removeRequestKey(self::X_ENTITY_ID_QUERY_KEY);
 
         $mid = $this->passport->consumer->id;
 
