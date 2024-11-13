@@ -15,7 +15,7 @@ describe('PartnerSignup', () => {
     renderApp();
     expect(screen.getByText(/Already a user\?/i)).toBeInTheDocument();
     expect(screen.getByText(/Most of our partners earn more than/i)).toBeInTheDocument();
-    expect(screen.getByText(/Vikas Baruna/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sankalp Goel/i)).toBeInTheDocument();
     expect(screen.getByText(/Sign up as a Partner/i)).toBeInTheDocument();
     expect(screen.getByText(/privacy policy/i)).toBeInTheDocument();
   });
