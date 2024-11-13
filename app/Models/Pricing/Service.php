@@ -105,7 +105,7 @@ class Service extends Base\Service
      *               the `Plan` entity itself (without array conversion).
      * @throws \Throwable
      */
-    public function createPlanLegacy($input, $type = null, $planAndRuleIds = null, $orgID = '', $internalCall = false): array
+    public function createPlanLegacy($input, $type = null, $planAndRuleIds = null, $orgID = '', $internalCall = false)
     {
         // if rules are sent in json encoded form, decode it
         if (isset($input['rules']) === true and is_string($input['rules']) === true)
