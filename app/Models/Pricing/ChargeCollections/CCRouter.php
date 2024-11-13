@@ -77,6 +77,7 @@ class CCRouter
         'RZP\\Models\\Pricing\\Repository\\getAppPayoutPricingRules' => true,
         'RZP\\Models\\Pricing\\Repository\\getPlanRule' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingFromPricingId' => true,
+        'RZP\\Models\\Pricing\\Repository\\getInstantRefundsDefaultPricingPlanForMethod' => true,
     );
 
     private const FUNCTION_TO_CC_ROUTE_MAP = array(
@@ -98,6 +99,7 @@ class CCRouter
         'RZP\\Models\\Pricing\\Repository\\getBankingDirectAccountFreePayoutDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
         'RZP\\Models\\Pricing\\Repository\\getBankingAccountChargeCollectionDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
         'RZP\\Models\\Pricing\\Repository\\getBankingAccountRzpFeesDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getInstantRefundsDefaultPricingPlanForMethod' =>  ChargeCollections::GetPricingPlanURL,
         'RZP\\Models\\Pricing\\Repository\\getAppPayoutPricingRules' => ChargeCollections::GetPricingPlanURL,
         'RZP\\Models\\Pricing\\Repository\\getPlanRule' => ChargeCollections::GetPricingRuleURL,
         'RZP\\Models\\Pricing\\Repository\\getPricingFromPricingId' => ChargeCollections::GetPricingRuleURL,
@@ -590,11 +592,15 @@ class CCRouter
         $keyAbsent = false;
         $valueMismatch = false;
         foreach ($legacyResponseArray as $k => $v) {
-            if (in_array($k, ['created_at', 'updated_at', 'deleted_at'])) {
+            if (in_array($k, ['created_at', 'updated_at', 'deleted_at', 'audit_id'])) {
                 continue;
             }
             if (!array_key_exists($k, $ccResponseArray)) {
                 $keyAbsent = true;
+                if(!empty($v)) {
+                    $valueMismatch = true;
+                    break;
+                }
                 continue;
             }
             if ($v !== $ccResponseArray[$k]) {

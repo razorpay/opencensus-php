@@ -1197,7 +1197,13 @@ class Repository extends Base\Repository
             }
         }
         //Only select last month's plan for the summary
-        if(empty($input[Entity::PLAN_ID]) && empty($input[Entity::PLAN_NAME])) {
+        try {
+            $orgId = $this->getOrgIdForQuery(null);
+            $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+        } catch (\Throwable $e) {
+            $orgId = "";
+        }
+        if(empty($input[Entity::PLAN_ID]) && empty($input[Entity::PLAN_NAME]) && (empty($orgId) || $orgId === Org\Entity::RAZORPAY_ORG_ID)) {
             $createdAfter = $input['created_after'] ?? (time() - (86400 * 30));
             $query = $query->where(Entity::CREATED_AT, '>', $createdAfter);
         }
