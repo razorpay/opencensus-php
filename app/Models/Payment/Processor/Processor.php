@@ -910,6 +910,10 @@ class Processor
                     $input['currency'] == Currency\Currency::getCurrencyForCountry($iin->getCountry()))
             ){
                 $result = $this->evaluateSplitzExperimentforCrossBorderRearchMCCS2S($merchant);
+            } else if(in_array($library,$internationalSupportedLibraries,true)){
+                $result = $this->evaluateSplitzExperimentforCrossBorderRearchDCCMCCCheckoutJS($merchant);
+            } else if($library == Payment\Analytics\Metadata::S2S){
+                $result = $this->evaluateSplitzExperimentforCrossBorderRearchDCCMCCS2S($merchant);
             }
             $this->trace->info(TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_RESULT, [
                 'canRouteInternationalMCCPaymentsViaRearchFlow'      =>  $result,
@@ -926,6 +930,76 @@ class Processor
         }
 
         return ($result == true);
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderRearchDCCMCCCheckoutJS($merchant){
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_dcc_mcc_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderRearchDCCMCCS2S($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_s2s_dcc_mcc_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
     }
 
     private function evaluateSplitzExperimentforCrossBorderRearchMCCCheckoutJS($merchant){
@@ -3554,7 +3628,7 @@ class Processor
 
         $isPluginFlowPayment = isset($input['_']) === true &&
             isset($input['_']['integration']) === true &&
-            ($input['_']['integration'] !== 'shopify') 
+            ($input['_']['integration'] !== 'shopify')
             && Payment\Analytics\Metadata::isValidIntegration($input['_']['integration']);
 
         $isInvoicePayment = isset($this->order) === true && $this->order->getProductType() === ProductType::INVOICE;

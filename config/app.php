@@ -727,6 +727,10 @@ return array(
 
     'cross_border_s2s_mcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_MCC_REARCH_EXPERIMENT_ID'),
 
+    'cross_border_dcc_mcc_rearch_experiment_id' => env('CROSS_BORDER_DCC_MCC_REARCH_EXPERIMENT_ID'),
+
+    'cross_border_s2s_dcc_mcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_DCC_MCC_REARCH_EXPERIMENT_ID'),
+
     'cross_border_mcc_parity_check_experiment_id' => env('CROSS_BORDER_MCC_PARITY_CHECK_EXPERIMENT_ID'),
 
     'show_upi_autopay_method_on_dashboard' => env('SHOW_UPI_AUTOPAY_METHOD_ON_DASHBOARD'),
