@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger;
 use RZP\Jobs\Order\OrderUpdate;
 use RZP\Jobs\Transfers\TransferUpdate;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Payment;
 use RZP\Models\Order;
 use RZP\Constants\Table;
@@ -547,7 +548,11 @@ class Repository extends Base\Repository
         $transferStatus     = $this->repo->transfer->dbColumn(Entity::STATUS);
         $updatedAt          = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
 
-        $query = $this->newQueryOnSlave();
+        if ((new AsvRouter())->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQueryOnSlave();
+        }
 
         $query = $query
             ->join(Table::PAYMENT, $sourceId, '=', $orderId)
@@ -615,7 +620,11 @@ class Repository extends Base\Repository
         $createdAt          = $this->repo->transfer->dbColumn(Entity::CREATED_AT);
         $updatedAt          = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        if ((new AsvRouter())->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
 
         $query = $query
             ->join(Table::MERCHANT, $merchantEntityId, '=', $transferMerchantId)
