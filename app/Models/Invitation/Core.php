@@ -85,7 +85,11 @@ class Core extends Base\Core
 
         $invitedUser = empty($input[Entity::EMAIL]) === false ? $this->repo->user->getUserFromEmail(strtolower($input[Entity::EMAIL])) :  null;
 
-        $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+        if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $allMerchantsForInvitedUser = optional($invitedUser)->getMerchantsFromAsvWithPivot(1000);
+        } else {
+            $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+        }
 
         if (empty($invitedUser) === false)
         {
@@ -347,7 +351,13 @@ class Core extends Base\Core
         $senderName = $this->getSenderName($input);
         $invitationEmail = $invitation->getEmail();
         $invitedUser = empty($invitationEmail) === false ? $this->repo->user->getUserFromEmail($invitationEmail) : null;
-        $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+
+        if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $allMerchantsForInvitedUser = optional($invitedUser)->getMerchantsFromAsvWithPivot(1000);
+        } else {
+            $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+        }
+
         $invitedUserExists = (empty($invitedUser) === false);
 
         $this->sendEmailIfApplicable($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser, false, $invitationDetails);
@@ -369,7 +379,11 @@ class Core extends Base\Core
 
             $invitedUser = $this->repo->user->getUserFromEmail($invitation->getEmail());
 
-            $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+            if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+                $allMerchantsForInvitedUser = optional($invitedUser)->getMerchantsFromAsvWithPivot(1000);
+            } else {
+                $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+            }
 
             $invitedUserExists = (empty($invitedUser) === false);
 
