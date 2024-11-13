@@ -2768,6 +2768,7 @@ class Route
         'fetch_international_virtual_accounts'              => ['get',      'international/virtual_accounts',                 'MerchantController@getInternationalVirtualAccounts'            ],
         'fetch_international_virtual_account_by_vacurrency' => ['get',      'international/virtual_account/{va_currency}',   'MerchantController@getInternationalVirtualAccountByVACurrency' ],
         'payment_update_b2b_invoice'                        => ['patch',    'payment/{id}/update_b2b_invoice_details',        'PaymentController@updateB2BInvoiceDetails'                     ],
+        'internal_payment_update_b2b_invoice'               => ['patch',    'internal/payment/{id}/update_b2b_invoice_details',   'PaymentController@updateB2BInvoiceDetails'                     ],
         'b2b_invoice_collect_address'                       => ['put',      'b2b-exports/{payment_id}/address',        'BankTransferController@createAddressEntityForB2B' ],
         'b2b_invoice_show_address'                          => ['get',      'b2b-exports/{payment_id}/address',        'BankTransferController@getAddressEntityForB2B' ],
         'b2b_send_notification'                             => ['post',     'b2b-exports/notification',                'BankTransferController@sendNotificationForB2B' ],
@@ -6885,6 +6886,7 @@ class Route
 
         'settlement_ondemand_create_internal',
         'user_create_merchant_internal',
+        'internal_payment_update_b2b_invoice',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -12358,7 +12360,8 @@ class Route
         'payments_cross_border_service' => [
             'payment_capture',
             'internal_payment_authorize_refund',
-            'internal_merchant_fetch'
+            'internal_merchant_fetch',
+            'internal_payment_update_b2b_invoice'
         ],
 
         'xperience' => [
@@ -19163,6 +19166,10 @@ class Route
         'razorflow_admin_fetch_entity_by_id',
     ];
 
+    const ROUTE_THROUGH_PXB_SERVICE = [
+        'internal_payment_update_b2b_invoice'
+    ];
+
     const TYPEFORM_SECURITY = [
         'consume_typeform_webhook',
         'consume_survey_typeform_webhook',
@@ -21160,6 +21167,13 @@ class Route
         $routeName = $this->app['request.ctx']->getRoute();
 
         return (in_array($routeName, self::ROUTES_THROUGH_MASTER_REPLICA, true) === true);
+    }
+
+    public function routeThroughPaymentCrossBorder(): bool
+    {
+        $routeName = $this->app['request.ctx']->getRoute();
+
+        return (in_array($routeName, self::ROUTE_THROUGH_PXB_SERVICE, true) === true);
     }
 
     /**

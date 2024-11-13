@@ -8033,7 +8033,31 @@ class Service extends Base\Service
 
         $document_id = $input["document_id"];
 
-        $merchant = $this->merchant;
+        //Added check for internal route for receiving request from pxb service
+
+        if ($this->app['api.route']->routeThroughPaymentCrossBorder() === true)
+        {
+            if(!isset($input["merchant_id"])){
+                $this->trace->info(
+                    TraceCode::MERCHANT_ID_NOT_FOUND_TO_UPDATE_B2B_INVOICE,
+                    [
+                        'payment_id' => $id
+                    ]);
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
+            }
+            $merchantId = $input["merchant_id"];
+            $merchant = $this->repo->merchant->find($merchantId);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_UPDATE_REQUEST_WITH_B2B_DASHBOARD,
+                [
+                    'payment_id' => $id
+                ]);
+            $merchant = $this->merchant;
+        }
 
         $isB2BInvoiceUpdated = $this->mutex->acquireAndRelease($id,
             function() use ($id,$document_id,$merchant)

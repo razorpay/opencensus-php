@@ -607,6 +607,7 @@ class Validator extends Base\Validator
 
     protected static $updateB2BInvoiceDetailsRules = [
         'document_id'                       => 'required',
+        'merchant_id'                       => 'sometimes',
     ];
 
     protected static $updateMerchantDocumentDetailsRules = [
