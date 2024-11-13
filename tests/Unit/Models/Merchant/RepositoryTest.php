@@ -688,20 +688,22 @@ class RepositoryTest extends RepositoryTestHelper
             $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
         });
 
-        // input with additional params
-        // we are comparing only count because in fetch method if we pass q it will be return from elastic search
-        $input4 = [
-            "count" => 10,
-            "skip" => 0,
-            "q" => "abc",
-            "email" => "test1@gmail.com",
+        // fetch from ES
+        $input5 = [
+            "q" => $id1,
+            "search_hits" => 1,
         ];
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();;
+        $resultWithoutSplitz1 = $repository->fetchFromAsv($input5);
 
         $this->setSplitzWithOutput("true", 1);
         $repository = new Account\Repository();
-        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($input4, $repository) {
-            $resultWithSplitz = $repository->fetchFromAsv($input4);
-            $this->assertEquals(sizeof($resultWithSplitz), 2);
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $input5, $id1, $repository) {
+            $resultWithSplitz1 = $repository->fetchFromAsv($input5);
+            $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1);
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
         });
     }
 

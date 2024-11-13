@@ -50,12 +50,24 @@ class Repository extends Merchant\Repository
             return $this->fetch($params, $merchantId, $connectionType);
         }
 
-        if(isset($params['count']) === false)
+        $this->processFetchParams($params);
+
+        $expands = $this->getExpandsForQueryFromInput($params);
+
+        $this->setEsRepoIfExist();
+
+        list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+
+        if (count($esParams) > 0)
         {
-            $params['count'] = 10;
+            if(isset($params[Base\EsRepository::SEARCH_HITS]) === false)
+            {
+                $params[Base\EsRepository::SEARCH_HITS] = 1;
+            }
+
+            return  $this->runEsFetch($esParams, $merchantId, $expands, $connectionType);
         }
 
-        list($mysqlParams) = $this->getMysqlAndEsParams($params);
         $validParams = $this->sanitizeParams($mysqlParams);
         $query = $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER));
 
