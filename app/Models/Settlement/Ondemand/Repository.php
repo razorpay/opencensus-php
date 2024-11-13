@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement\Ondemand;
 
 use Carbon\Carbon;
+use RZP\Base\ConnectionType;
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
@@ -75,7 +76,7 @@ class Repository extends Base\Repository
 
     public function findAllFromTimeStamp($timeStamp)
     {
-        $connection = $this->newQueryOnPaymentFetchReplica();
+        $connection = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
 
         return $connection->newQuery()
                     ->where(Entity::CREATED_AT,'>=', $timeStamp)
@@ -90,7 +91,7 @@ class Repository extends Base\Repository
 
     public function findAllByMerchantIdFromTimestamp($merchantId, $timeStamp)
     {
-        $connection = $this->newQueryOnPaymentFetchReplica();
+        $connection = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
 
         return $connection->newQuery()
             ->where(Entity::MERCHANT_ID, $merchantId)

@@ -15,6 +15,8 @@ class CreateSettlementOndemandFundAccount extends Job
 
     const MAX_ATTEMPTS = 400;
 
+    protected $metricsEnabled = true;
+
     public function __construct($mode, $merchantId)
     {
         parent::__construct($mode);

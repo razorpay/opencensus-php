@@ -23,6 +23,8 @@ class CreateSettlementOndemandPayoutJobs extends Job
 
     protected $mode;
 
+    protected $metricsEnabled = true;
+
     public function __construct(string $mode , $settlementOndemandId, $merchantId)
     {
         parent::__construct($mode);

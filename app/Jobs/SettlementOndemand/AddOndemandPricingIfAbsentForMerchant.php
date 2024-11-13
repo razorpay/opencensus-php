@@ -15,6 +15,8 @@ class AddOndemandPricingIfAbsentForMerchant extends Job
 
     const MAX_ATTEMPTS = 3;
 
+    protected $metricsEnabled = true;
+
     public function __construct($mode, $merchantId)
     {
         parent::__construct($mode);

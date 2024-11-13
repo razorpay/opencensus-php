@@ -22,6 +22,8 @@ class UpdateOndemandTriggerJob extends Job
 
     protected $amount;
 
+    protected $metricsEnabled = true;
+
 
     public function __construct($settlementOndemandId, $event, $amount)
     {

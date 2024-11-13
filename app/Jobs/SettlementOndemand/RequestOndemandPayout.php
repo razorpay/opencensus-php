@@ -31,6 +31,8 @@ class RequestOndemandPayout extends Job
 
     protected $currency;
 
+    protected $metricsEnabled = true;
+
     public function __construct(string $mode , $settlementOndemandPayoutId, $merchantId, $currency)
     {
         parent::__construct($mode);

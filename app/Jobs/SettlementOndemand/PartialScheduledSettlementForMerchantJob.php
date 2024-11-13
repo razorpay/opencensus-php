@@ -17,6 +17,8 @@ class PartialScheduledSettlementForMerchantJob extends Job
 
     protected $merchantId;
 
+    protected $metricsEnabled = true;
+
     public function __construct($mode, $merchantId)
     {
         parent::__construct($mode);
