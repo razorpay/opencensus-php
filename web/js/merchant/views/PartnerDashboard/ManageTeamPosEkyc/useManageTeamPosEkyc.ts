@@ -84,7 +84,10 @@ const useManageTeamPosEkyc = () => {
   const isLoading = !!isInvitationsLoading || !!isMerchantUsersLoading;
   const isError = !!invitationsError || !!merchantUsersError;
 
-  const posAgentUsers: TableItemT[] = [...invitationsData, ...merchantUsersData]
+  const posAgentUsers: TableItemT[] = [
+    ...merchantUsersData.sort((a, b) => b.created_at - a.created_at),
+    ...invitationsData.sort((a, b) => Number(b.id) - Number(a.id)),
+  ]
     .filter((userData) => userData.role === rolesList.PARTNER_AGENT)
     .map((userData) => ({
       name: userData.name || userData.metadata?.name || '', //for completed users, userData.name and for invitations metadata.name is used.

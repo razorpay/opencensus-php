@@ -1,23 +1,24 @@
-import React, { useState } from 'react';
 import {
   Box,
+  Button,
   Chip,
   ChipGroup,
+  ChipGroupProps,
+  CloseIcon,
   Heading,
+  IconButton,
   Modal,
   ModalBody,
+  SendIcon,
   Text,
   TextInput,
-  Button,
-  SendIcon,
-  IconButton,
-  CloseIcon,
   TextInputProps,
-  ChipGroupProps,
+  Theme,
 } from '@razorpay/blade/components';
-import { FormikProps } from 'formik';
 import InviteMemberBanner from 'assets/partner-dashboard/pos-ekyc/invite-member.webp';
-
+import { FormikProps } from 'formik';
+import React from 'react';
+import styled from 'styled-components';
 import { InviteMemberDataT } from './types';
 
 interface InviteMemberProps {
@@ -25,6 +26,14 @@ interface InviteMemberProps {
   closeModal: () => void;
   formik: FormikProps<InviteMemberDataT>;
 }
+
+const InviteImgContainer = styled.img(
+  ({ theme }: { theme: Theme }) => `
+      width: 100%;
+      height: 100%;
+      border-radius: ${theme.border.radius['2xlarge']}px;
+  `,
+);
 
 const InviteMember = ({ isOpen = false, closeModal, formik }: InviteMemberProps): JSX.Element => {
   const isEditMode = !!formik.values.id; //if id has been set, edit this member details
@@ -128,7 +137,7 @@ const InviteMember = ({ isOpen = false, closeModal, formik }: InviteMemberProps)
             </form>
           </Box>
 
-          <img height="100%" width="100%" src={InviteMemberBanner} />
+          <InviteImgContainer src={InviteMemberBanner} />
         </Box>
         <Box position="absolute" top="spacing.6" right="spacing.6">
           <IconButton icon={CloseIcon} onClick={closeModal} accessibilityLabel="Close Modal" />

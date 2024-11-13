@@ -92,10 +92,15 @@ export type STATUS_FILTERS =
   | 'pending'
   | 'kyc_qualified_stb';
 
+export enum OnboardingWorkflowProduct {
+  PARTNER_ASSISTED_ONBOARDING = 'PARTNER_ASSISTED_ONBOARDING',
+  ASSISTED_ONBOARDING = 'ASSISTED_ONBOARDING',
+}
+
 export type OnboardingStoreState = {
-  workflowProduct: string;
+  workflowProduct: OnboardingWorkflowProduct;
   isPosEkycAgent: boolean;
-  setWorkflowProduct: (setWorkflowProduct: string) => void;
+  setWorkflowProduct: (setWorkflowProduct: OnboardingWorkflowProduct) => void;
   setIsPosEkycAgent: (isPosEkycAgent: boolean) => void;
 };
 

@@ -1,11 +1,17 @@
 import create from 'zustand';
-import { OnboardingStoreState } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
+import {
+  OnboardingStoreState,
+  OnboardingWorkflowProduct,
+} from 'apps/pos/src/app/types/SalesAssistedOnboarding';
+import { devtools } from 'zustand/middleware';
 
-const useOnboardingStore = create<OnboardingStoreState>((set) => ({
-  workflowProduct: '',
-  isPosEkycAgent: false,
-  setWorkflowProduct: (workflowProduct: string) => set({ workflowProduct }),
-  setIsPosEkycAgent: (isPosEkycAgent: boolean) => set({ isPosEkycAgent }),
-}));
+const useOnboardingStore = create<OnboardingStoreState>(
+  devtools((set) => ({
+    workflowProduct: OnboardingWorkflowProduct.ASSISTED_ONBOARDING,
+    isPosEkycAgent: false,
+    setWorkflowProduct: (workflowProduct: OnboardingWorkflowProduct) => set({ workflowProduct }),
+    setIsPosEkycAgent: (isPosEkycAgent: boolean) => set({ isPosEkycAgent }),
+  })),
+);
 
 export default useOnboardingStore;

@@ -11,7 +11,7 @@ import {
   UserPlusIcon,
 } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BeforeInstallPromptEvent } from './types';
 import { RazorpayLogoWhite, PwaInstallBg } from 'apps/pos/src/assets';
 
@@ -58,21 +58,17 @@ const Instruction = ({
 };
 
 const PwaInstall = () => {
-  const onInstallClick = useRef<() => Promise<void> | void>(() => {
-    //noop
-  }); //using ref since this function can only be set after the beforeinstallprompt event is fired by window
+  const [isInstallReady, setIsInstallReady] = useState(false);
+  const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null);
 
   const installPromptCallback = (e: BeforeInstallPromptEvent) => {
-    onInstallClick.current = async () => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      e.prompt();
-    };
+    e.preventDefault();
+    deferredPrompt.current = e; // 'beforeinstallprompt' will be fired only once per browsing session. Hence, this is deferred so that it can be used anywhere, multiple times.
+    setIsInstallReady(true);
   };
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
+    if (typeof window === 'undefined') return;
 
     window.addEventListener('beforeinstallprompt', installPromptCallback);
 
@@ -80,6 +76,12 @@ const PwaInstall = () => {
       window.removeEventListener('beforeinstallprompt', installPromptCallback);
     };
   }, []);
+
+  const onInstallClick = () => {
+    if (deferredPrompt.current) {
+      deferredPrompt.current.prompt();
+    }
+  };
 
   const DASHBOARD_LINK = `/app/pos-sales`;
 
@@ -151,7 +153,8 @@ const PwaInstall = () => {
             isFullWidth
             icon={DownloadIcon}
             iconPosition="right"
-            onClick={onInstallClick.current}
+            onClick={onInstallClick}
+            isDisabled={!isInstallReady}
           >
             Install Now
           </Button>

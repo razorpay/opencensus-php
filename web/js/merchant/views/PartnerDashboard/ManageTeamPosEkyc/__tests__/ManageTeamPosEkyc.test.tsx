@@ -1,4 +1,3 @@
-import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
 import {
@@ -7,18 +6,18 @@ import {
 } from '@tanstack/react-query';
 import { fireEvent, waitFor, waitForElementToBeRemoved, within } from '@testing-library/dom';
 import { render, screen } from '@testing-library/react';
-
+import React from 'react';
+import ManageTeamPosEkyc from '../ManageTeamPosEkyc';
 import {
+  cancelInvitationHandler,
+  deleteUserHandler,
   fetchInvitesHandler,
   fetchMerchantUsersHandler,
   sendInviteHandler,
-  updateInvitationHandler,
-  cancelInvitationHandler,
-  deleteUserHandler,
   server,
+  updateInvitationHandler,
 } from './mocks/apiHandlers';
 import { createInviteMock, MOCK_INVITATION_A, MOCK_USER_C } from './mocks/mocks';
-import ManageTeamPosEkyc from '..';
 
 const queryClient = new QueryClient({});
 
@@ -168,5 +167,23 @@ describe('Manage Team POS eKYC', () => {
       }),
     );
     await waitForElementToBeRemoved(screen.getByText(MOCK_USER_C.metadata.name));
+  });
+
+  test('should sort the list by name when clicking on the column header', async () => {
+    renderApp();
+    expect(await screen.findByText(/Add your POS Partner Agents Now!/i)).toBeInTheDocument();
+
+    const nameHeader = screen.getByRole('columnheader', {
+      name: /Name/i,
+    });
+    fireEvent.click(nameHeader);
+
+    const firstUserNameAsc = screen.getAllByText(/Mock username/)[0];
+    expect(within(firstUserNameAsc).getByText('Mock username C')).toBeInTheDocument();
+
+    fireEvent.click(nameHeader);
+
+    const firstUserNameDesc = screen.getAllByText(/mockName/)[0];
+    expect(within(firstUserNameDesc).getByText('mockNameB')).toBeInTheDocument();
   });
 });

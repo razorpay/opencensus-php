@@ -12,6 +12,7 @@ import App from 'apps/pos/src/app';
 import PageError from 'apps/pos/src/app/components/PageError';
 import useEnv from 'apps/pos/src/app/utils/hooks/useEnv';
 import { MODULES } from 'apps/pos/src/app/types/common';
+import { OnboardingWorkflowProduct } from '../../app/types/SalesAssistedOnboarding';
 
 export const queryClient = new QueryClient();
 export const sentryHub = initSentry();
@@ -22,7 +23,7 @@ graphqlClient.setHeader(
 );
 
 interface WrapperProps {
-  workflowProduct?: string;
+  workflowProduct?: OnboardingWorkflowProduct;
 }
 
 const Wrapper: React.FC<WrapperProps> = ({ workflowProduct }) => {

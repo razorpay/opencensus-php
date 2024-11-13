@@ -206,9 +206,9 @@ const ManageTeamContainer = () => {
         onSortChange={() => {}}
         pagination={renderTablePagination()}
         sortFunctions={{
-          NAME: (array) => array.sort(),
-          ROLE: (array) => array.sort(),
-          STATUS: (array) => array.sort(),
+          NAME: (array) => array.sort((a, b) => a.name.localeCompare(b.name)),
+          ROLE: (array) => array.sort((a, b) => a.role.localeCompare(b.role)),
+          STATUS: (array) => array.sort((a, b) => Number(a.isConfirmed) - Number(b.isConfirmed)),
         }}
         toolbar={renderTableToolbar()}
         data={{
