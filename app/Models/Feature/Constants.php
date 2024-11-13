@@ -2333,6 +2333,8 @@ class Constants
      */
     const RMV_CC_TXT_FRM_LOGO = 'rmv_cc_text_from_logo';
 
+    const HIDE_RZPBRAND_ON_CHECKOUT = 'hide_rzpbrand_on_checkout';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3243,6 +3245,7 @@ class Constants
         self::MESSAGE_BANNER_DISABLED                => true,
         self::RMV_CC_TXT_FRM_LOGO          => true,
         self::ONE_CC_GSTIN_VALIDATION      => true,
+        self::HIDE_RZPBRAND_ON_CHECKOUT    => true,
     ];
 
     // Entity type constants
