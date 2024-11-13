@@ -78,7 +78,6 @@ class Repository extends \Razorpay\Spine\Repository
 
     const WDA_MIGRATION_ADMIN = 'wda_migration_admin';
     const WDA_PAYMENT_FETCH_MULTIPLE_MIGRATION = 'wda_payment_fetch_multiple_migration';
-    const TIDB_EXPERIMENT_FOR_TEST_MODE_ORDERS  = 'rearch_fetch_tidb_test_mode_orders'; // used as experiment for merchant tidb cluster for orders test mode
 
     protected $app;
 

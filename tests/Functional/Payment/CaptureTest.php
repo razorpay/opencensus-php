@@ -127,7 +127,6 @@ class CaptureTest extends TestCase
 
         $this->payment = $payment->toArrayPublic();
 
-        $this->mockRazorxTreatmentV2(Merchant\RazorxTreatment::ORDER_OUTBOX_ONBOARDING, 'on');
 
         $this->ba->privateAuth();
         $this->startTest();

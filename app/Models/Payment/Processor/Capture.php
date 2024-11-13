@@ -1684,17 +1684,13 @@ trait Capture
 
                 $isOrderOutboxEnabled = false;
 
-                $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
-                         Merchant\RazorxTreatment::ORDER_OUTBOX_ONBOARDING, $this->mode);
-
-                if (strtolower($variant) === 'on')
+                if ($this->mode === Mode::LIVE)
                 {
                     $isOrderOutboxEnabled = true;
                 }
 
                 $this->trace->info(TraceCode::ORDER_OUTBOX_ONBOARDING_RAZORX_VARIANT, [
                     'merchant_id'           => $payment->getMerchantId(),
-                    'variant'               => $variant,
                     'isOrderOutboxEnabled'  => $isOrderOutboxEnabled,
                 ]);
 

@@ -502,59 +502,51 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayload($payment);
 
-        $experimentResult = $this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::POST_PAYMENT_TO_BILL_ME, $this->getMode());
-
-        if (($experimentResult === 'on') and  ($this->app->runningUnitTests() === false))
+        try
         {
-            $this->app['bill_me']->postPaymentDataToBillMe($payment->toArrayPublic(), false);
+            $variant = $this->app->razorx->getTreatment(
+                $payment->getMerchantId(),
+                RazorxTreatment::CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER,
+                $this->getMode()
+            );
+
+            if(strtolower($variant) === 'on')
+            {
+                $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
+                $country = $merchant->getCountry();
+                $isInternationalRecurringAuto = ((($payment->isInternational() === true) or ($country == 'MY'))
+                    and ($payment->isRecurringTypeAuto() === true));
+
+                if (($payment->hasSubscription() === true) and
+                    ($payment->isApiBasedEmandateAsyncPayment() === false) and
+                    (($isInternationalRecurringAuto === false) or ($payment->getOffer() !== null)))
+                {
+                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+
+                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+                }
+            }
+            else
+            {
+                if (($payment->hasSubscription() === true) and
+                    ($payment->isApiBasedEmandateAsyncPayment() === false))
+                {
+                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+
+                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+                }
+            }
         }
-
-       try
-       {
-           $variant = $this->app->razorx->getTreatment(
-               $payment->getMerchantId(),
-               RazorxTreatment::CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER,
-               $this->getMode()
-           );
-
-           if(strtolower($variant) === 'on')
-           {
-               $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
-               $country = $merchant->getCountry();
-               $isInternationalRecurringAuto = ((($payment->isInternational() === true) or ($country == 'MY'))
-                   and ($payment->isRecurringTypeAuto() === true));
-
-               if (($payment->hasSubscription() === true) and
-                   ($payment->isApiBasedEmandateAsyncPayment() === false) and
-                   (($isInternationalRecurringAuto === false) or ($payment->getOffer() !== null)))
-               {
-                   $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-
-                   $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
-               }
-           }
-           else
-           {
-               if (($payment->hasSubscription() === true) and
-                   ($payment->isApiBasedEmandateAsyncPayment() === false))
-               {
-                   $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-
-                   $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
-               }
-           }
-
-       }
-       catch (\Throwable $ex)
-       {
-           $this->trace->traceException(
-               $ex,
-               Logger::ERROR,
-               TraceCode::SUBSCRIPTION_HANDLER_ERROR,
-               [
-                   'payment_id' => $payment->getId(),
-               ]);
-       }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::SUBSCRIPTION_HANDLER_ERROR,
+                [
+                    'payment_id' => $payment->getId(),
+                ]);
+        }
 
         // Removed reportInitialPayment from here,
         // Moved it to postTokenisationRecurringPaymentProcessingIfApplicable

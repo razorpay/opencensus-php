@@ -588,7 +588,7 @@ trait RepositoryFetch
             $experiment, $app['basicauth']->getMode() ?? Mode::LIVE);
 
         if ($this->entity == Entity::ORDER && $app['basicauth']->getMode() == Mode::TEST) {
-            $variant = $this->isTestModeOrderExperimentEnabled();
+            $variant = 'on';
         }
 
 //        $this->trace->info(TraceCode::REARCH_TIDB_EXPERIMENT_VARIANT, [
@@ -2089,22 +2089,5 @@ trait RepositoryFetch
         $id = $entity::verifyIdAndStripSign($id);
 
         return $id;
-    }
-
-    public function isTestModeOrderExperimentEnabled(): string
-    {
-        $app = $this->app;
-        $variant = 'control';
-        try {
-            $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
-                self::TIDB_EXPERIMENT_FOR_TEST_MODE_ORDERS, Mode::TEST);
-        } catch (\Throwable $e) {
-        }
-
-        $this->trace->info(TraceCode::REARCH_TIDB_EXPERIMENT_VARIANT, [
-            'variant' => $variant,
-        ]);
-
-        return $variant;
     }
 }

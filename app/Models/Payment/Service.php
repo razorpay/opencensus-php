@@ -1545,14 +1545,6 @@ class Service extends Base\Service
             {
                 $order = $payment->order;
 
-                if (isset($order) === true) {
-                    $variantForFeature = $this->app->razorx->getTreatment($order->getMerchantId(),
-                        RazorxTreatment::STOP_SENDING_ORDER_DATA_FROM_API, $this->mode);
-
-                    if (strtolower($variantForFeature) !== RazorxTreatment::RAZORX_VARIANT_ON) {
-                        $input[Payment\Entity::ORDER] = $order;
-                    }
-                }
                 # have to send conv_fee & gst to PG-router to validate order with payment amount
                 if($order->getFeeConfigId() !== null and
                     $payment->getConvenienceFee() !== null)
@@ -7717,7 +7709,7 @@ class Service extends Base\Service
 
                 }
                 $this->repo->saveOrFail($payment);
-                
+
                 return true;
             });
 

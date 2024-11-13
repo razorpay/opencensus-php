@@ -704,24 +704,6 @@ class PGRouter
 
     public function fetchOrder(string $id, string $merchantId, array $input)
     {
-        if ((app()->isEnvironmentProduction() === true) and
-            ($this->mode === Mode::TEST)) {
-            $shouldGoViaNewFlow = false;
-            try {
-                    $variantForFeature = $this->app->razorx->getTreatment($this->request->getTaskId(),
-                        RazorxTreatment::ROUTE_ORDER_FETCH_TO_PG_ROUTER_TEST, $this->mode);
-                    $shouldGoViaNewFlow = strtolower($variantForFeature) == RazorxTreatment::RAZORX_VARIANT_ON;
-            } catch (\Throwable $e) {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::RAZORX_EXPERIMENT_FOR_PG_ROUTER_TEST_FAILED);
-            }
-            if (!$shouldGoViaNewFlow) {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
-            }
-        }
-
         $endpoint = 'v1/orders/' . $id;
 
         $this->currentEndPoint = self::PGRouterFetchOrder;

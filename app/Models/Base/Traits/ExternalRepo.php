@@ -29,9 +29,7 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
-
-        if (($experimentResult === 'on') and ($this->entity === Entity::PAYMENT))
+        if ($this->entity === Entity::PAYMENT)
         {
             try
             {
@@ -93,9 +91,7 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
-
-        if (($experimentResult === 'on') and ($this->entity === Entity::PAYMENT))
+        if ($this->entity === Entity::PAYMENT)
         {
             try
             {
@@ -175,9 +171,7 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
-
-        if (($experimentResult === 'on') and ($this->entity === Entity::PAYMENT))
+        if ($this->entity === Entity::PAYMENT)
         {
             try
             {
@@ -235,9 +229,7 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
-
-        if (($experimentResult === 'on') and ($this->entity === Entity::PAYMENT))
+        if ($this->entity === Entity::PAYMENT)
         {
             try
             {
@@ -295,9 +287,7 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
-
-        if (($experimentResult === 'on') and ($this->entity === Entity::PAYMENT))
+        if ($this->entity === Entity::PAYMENT)
         {
             try
             {
@@ -355,9 +345,7 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
-
-        if (($experimentResult === 'on') and ($this->entity === Entity::PAYMENT))
+        if ($this->entity === Entity::PAYMENT)
         {
             try
             {
@@ -415,9 +403,7 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
-
-        if (($experimentResult === 'on') and ($this->entity === Entity::PAYMENT))
+        if ($this->entity === Entity::PAYMENT)
         {
             try
             {

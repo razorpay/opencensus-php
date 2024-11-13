@@ -88,9 +88,6 @@ final class RazorxTreatment
     // Razorx treatment constant, allows system to call ledger service.
     const LEDGER_ONBOARDING_PG_MERCHANT = 'ledger_onboarding_pg_merchant';
 
-    // Razorx treatment constant, for onboarding the order update via order outbox.
-    const ORDER_OUTBOX_ONBOARDING = 'order_outbox_onboarding';
-
     //It is used to maintain backward compatibility for fav composite api response.
     const FAV_COMPOSITE_SERVICE_FORWARDING = 'fav_composite_service_forwarding';
 
@@ -496,15 +493,7 @@ final class RazorxTreatment
 
     const ENABLE_CA_RZP_FEES_PAYOUT_VIA_PAYOUTS_SERVICE = 'enable_ca_rzp_fees_payout_via_payouts_service';
 
-    const ROUTE_ORDER_TO_PG_ROUTER = "route_order_to_pg_router";
-
-    const ROUTE_ORDER_TO_PG_ROUTER_REVERSE = "route_order_to_pg_router_reverse";
-
-    const FLIP_PAYMENT_READS = "flip_payment_reads";
-
     const ARCHIVED_REPLICA_QUERY_MOVEMENT = "archived_replica_query_movement";
-
-    const POST_PAYMENT_TO_BILL_ME = "post_payment_to_bill_me";
 
     const ROUTE_CONVENIENCE_FEE_ORDER_TO_PG_ROUTER = "route_convenience_fee_order_to_pg_router";
 
@@ -1149,12 +1138,6 @@ final class RazorxTreatment
      */
     const SEND_DCC_INDICATOR                    = 'send_dcc_indicator';
 
-
-    /**
-     * Razorx flag to stop sending order data from API to PG-Router
-     */
-    const STOP_SENDING_ORDER_DATA_FROM_API = 'stop_sending_order_data_from_api';
-
     const QR_CODE_BLOCK_PAYMENT = 'qr_code_block_payment';
 
     const ALLOW_EMAIL_OPTIONAL_FOR_PARTNER = 'allow_email_optional_for_partner';
@@ -1175,13 +1158,6 @@ final class RazorxTreatment
     const VALIDATE_ACCOUNT_REARCH_UPS = 'validate_account_rearch_ups';
 
     const TERMINALS_TIDB_QUERIES_MIGRATION = 'terminals_tidb_queries_migration';
-
-    /**
-     * Razorx flag to route fetch order to PG-Router Test Service
-     */
-    const ROUTE_ORDER_FETCH_TO_PG_ROUTER_TEST = 'route_order_fetch_to_pg_router_test';
-
-    const ROUTE_ORDER_CREATE_TO_PG_ROUTER_TEST = 'route_order_create_to_pg_router_test';
 
     const ZERO_EXPONENT_CURRENCY_SUPPORT = 'zero_exponent_currency_support';
 
