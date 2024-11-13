@@ -5559,6 +5559,7 @@ EOT;
             ->select($paymentRepo->dbColumn('*'))
             ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::STATUS) . ' as insurance_status')
             ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::CLAIM_STATUS) . ' as insurance_claim_status')
+            ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::CLAIM_HISTORY) . ' as insurance_claim_history')
             ->leftJoin(
                 $insuranceTable,
                 function ($join)

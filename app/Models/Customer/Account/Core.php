@@ -1959,7 +1959,21 @@ class Core extends Base\Core
         {
             $formattedPaymentDetails['insurance']['claim_status'] = $payment['insurance_claim_status'];
         }
+        if (!empty($payment['insurance_claim_history']))
+        {
+            $claimHistory = json_decode($payment['insurance_claim_history'], true) ?? [];
+            if (is_array($claimHistory))
+            {
+                usort(
+                    $claimHistory,
+                    function($a, $b) {
+                        return $a['timestamp'] - $b['timestamp'];
+                    }
+                );
 
+                $formattedPaymentDetails['insurance']['claim_history'] = $claimHistory;
+            }
+        }
         if ($payment->merchant->isLRSFlowEnabled() === true)
         {
             $formattedPaymentDetails['payment']['is_lrs_transaction'] = true;

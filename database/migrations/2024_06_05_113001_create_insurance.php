@@ -22,6 +22,7 @@ return new class extends Migration
             $table->char('merchant_id', 14)->collation('utf8mb4_bin');
             $table->string('status', 30);
             $table->string('claim_status', 30)->nullable();
+            $table->json('claim_history')->nullable();
             $table->string('insurance_ref_id', 30)->nullable();
             $table->string('insurance_provider', 30)->nullable();
             $table->bigInteger('expiry_timestamp')->nullable();
