@@ -1078,6 +1078,9 @@ class Entity
         Entity::REFUND,
         Entity::NOTIFICATION,
         Entity::METHODS,
+        Entity::PARTNER_CONFIG,
+        Entity::MERCHANT_ACCESS_MAP,
+        Entity::MERCHANT_APPLICATION,
     ];
 
     const ARCHIVED_ENTITIES = [

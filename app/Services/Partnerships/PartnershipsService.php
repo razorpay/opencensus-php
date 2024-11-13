@@ -138,6 +138,10 @@ class PartnershipsService extends Base\Service
         'commission_invoice_generate' => self::UPDATE_INVOICE_STATUS
     );
 
+    const ROUTE   = 'route';
+    const SUCCESS = 'success';
+    const RETRY   = 'retry';
+
     /**
      * @var string
      */
@@ -928,6 +932,12 @@ class PartnershipsService extends Base\Service
             $exception = null;
             break;
         }
+
+        $this->trace->count(Metric::PARTNERSHIPS_DUAL_WRITE_REQUEST, [
+            self::ROUTE   => $path,
+            self::SUCCESS => $exception === null,
+            self::RETRY   => self::MAX_RETRY_COUNT - $attempts
+        ]);
 
         // An exception is thrown by lib in cases of network errors e.g. timeout etc.
         if ($exception !== null)
