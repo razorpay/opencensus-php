@@ -90,4 +90,18 @@ class Entity extends BaseModel\PublicEntity
 
         return $this;
     }
+    public function adminEntityBuildWithoutValidator(array $input = array()): static
+    {
+        $this->input = $input;
+
+        $this->modify($input);
+
+        $this->generate($input);
+
+        $this->unsetInput('create', $input);
+
+        $this->fill($input);
+
+        return $this;
+    }
 }

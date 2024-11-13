@@ -15,6 +15,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
+    protected static array $allowedEmailHosts = ['razorpay.com','axis.com', 'axisbank.com'];
 
     /**
      * create admin for the org
@@ -27,6 +28,10 @@ class Core extends Base\Core
      */
     public function create(Org\Entity $org, array $input): array
     {
+        $email = $input[AdminEntity::EMAIL] ?? null;
+
+        // Validate email host
+        $this->validateEmailHost($email);
 
         $admin = (new AdminEntity())->generateId();
 
@@ -34,7 +39,7 @@ class Core extends Base\Core
 
         $admin->org()->associate($org);
 
-        $admin->build($input);
+        $admin->adminEntityBuildWithoutValidator($input);
 
         // Validate the admin email should be unique for the org
         $existingAdmin = $this->repo->admin->findByOrgIdAndEmail($org->getId(), $admin->getEmail());
@@ -148,6 +153,26 @@ class Core extends Base\Core
             );
         }
 
+    }
+
+    /**
+     * Validates the email host from the provided email address.
+     *
+     * @param string|null $email
+     * @throws BadRequestValidationFailureException
+     */
+    protected function validateEmailHost(?string $email): void
+    {
+        if ($email !== null) {
+            $emailHost = substr(strrchr($email, "@"), 1);
+
+            if (!in_array($emailHost, static::$allowedEmailHosts)) {
+                throw new BadRequestValidationFailureException(
+                    'The email must be a valid email address from an allowed host.',
+                    AdminEntity::EMAIL
+                );
+            }
+        }
     }
 
 }

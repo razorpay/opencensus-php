@@ -14,7 +14,7 @@ class Validator extends Base\Validator
     protected static array $orgAdminCreateRules = [
         Entity::AUTH_MODE                         => 'required|string|in:adfs',
         Entity::UNIQUE_IDENTIFIER                 => 'required_if:auth_mode,adfs',
-        Constant::FULL_NAME                       => 'required|alpha_space|between:3,100',
+        Constant::FULL_NAME                       => 'required|regex:/^(?=.*[a-zA-Z])(?=.*\s)[a-zA-Z0-9\s]+$/|between:3,100',
         AdminsEntity::EMAIL                       => 'required|email|max:255',
         AdminsEntity::USERNAME                    => 'sometimes|string|between:3,50',
         Constant::USER_ROLES                      => 'required|array|filled',
@@ -33,7 +33,7 @@ class Validator extends Base\Validator
     ];
 
     protected static array $getUpdateAdminsRules = [
-        Constant::FULL_NAME  => 'sometimes||alpha_space|between:3,100',
+        Constant::FULL_NAME  => 'sometimes|regex:/^(?=.*[a-zA-Z])(?=.*\s)[a-zA-Z0-9\s]+$/|between:3,100',
         Constant::EXPIRE_AT  => 'sometimes|epoch|custom',
         Constant::USER_ROLES => 'sometimes|array',
         Constant::ACCOUNT_STATUS => 'sometimes'

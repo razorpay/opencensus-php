@@ -3172,6 +3172,7 @@ class ErrorCode
     // custom terminal procurement
     const BAD_REQUEST_INVALID_VPA                                                   = 'BAD_REQUEST_INVALID_VPA';
     const BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER                               = 'BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER';
+    const BAD_REQUEST_DUPLICATE_UNIQUE_IDENTIFIER                                   = 'BAD_REQUEST_DUPLICATE_UNIQUE_IDENTIFIER';
 
     const ALT_ID_FETCH_ERROR                                    = 'ALT_ID_FETCH_ERROR';
     const BAD_REQUEST_REPLICATION_TYPE                                              = 'BAD_REQUEST_REPLICATION_TYPE';
