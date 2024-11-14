@@ -740,8 +740,6 @@ class AnalyticsDesktop extends Component {
                 type="G"
               />
             </ShowWhen>
-            {/* capital banner*/}
-            {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
             {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
             {/* Free Credits Repayments Banner */}
             {user.isRepaymentBannerEnabled && <RepaymentAnnouncment userId={user.current} />}

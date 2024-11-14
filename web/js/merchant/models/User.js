@@ -901,9 +901,6 @@ export default class User {
   get isMobileSignupCareActive() {
     return this.getExpStatus('mobile_signup_care_changes_active');
   }
-  get isSmartDashboardActive() {
-    return this.getExpStatus('instrument_requests_smart_dashboard');
-  }
 
   get isRazorxAnnouncementEnabled() {
     return this.findTag('announcement_razorpayx');
@@ -1129,10 +1126,6 @@ export default class User {
     );
   }
 
-  get isWhatsNewSectionEnabled() {
-    return this.getExpStatus('whats-new-dec-2020');
-  }
-
   get isUxRevampPhase2Enabled() {
     return this.getExpStatus('settlement_ux_revamp_p2');
   }
@@ -1219,10 +1212,6 @@ export default class User {
   //instant settlements
   get isISBannerEnabled() {
     return this.getExpStatus('is_banner');
-  }
-
-  get isCapitalBannerEnabled() {
-    return this.getExpStatus('capital_banner');
   }
 
   get isExpireByRequired() {
@@ -1827,10 +1816,6 @@ export default class User {
 
   get isProductRecommendationEnabled() {
     return this.getExpStatus('product_recommendation');
-  }
-
-  get isLoansCollectionsEnabled() {
-    return this.getExpStatus('loans_collections_dashboard');
   }
 
   get isAutoPLEnabled() {
