@@ -81,9 +81,11 @@ const TncUpdateModal = () => {
     saveTncUpdateAcceptance({
       accepted_version: (tncUpdateData as TncUpdateApiData)?.version,
       accepted_at: moment().unix(),
-    }).finally(() => {
-      onDismiss();
-    });
+    })
+      .catch(noop)
+      .finally(() => {
+        onDismiss();
+      });
   };
 
   return (
