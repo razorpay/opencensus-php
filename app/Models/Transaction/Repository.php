@@ -964,22 +964,6 @@ class Repository extends Base\Repository
         return $txn;
     }
 
-    public function findByEntityIdWithoutMerchantPaymentFetchReplica($entityId)
-    {
-        $txn = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::PAYMENT_FETCH_REPLICA))
-            ->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
-            ->first();
-
-        if ($txn !== null) {
-
-            $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
-
-            $txn->setConnection($mode);
-        }
-
-        return $txn;
-    }
-
     public function txnReference3Update($txnId, $value)
     {
         $attributes = [
@@ -3207,7 +3191,14 @@ class Repository extends Base\Repository
 
     public function fetchPaymentTransactionFromPaymentFetchReplica($payment)
     {
-        $connectionType = $this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA);
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
 
         return $this->newQueryWithConnection($connectionType)
             ->where(Entity::TYPE, ConstantEntity::PAYMENT)

@@ -1229,7 +1229,7 @@ class Processor extends Base\Core
 
             $isAggregateSettlement = $input['type'] === Feature\Constants::AGGREGATE_SETTLEMENT;
 
-            $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromHarvesterForMerchantWithoutFail($merchant, $input['balance_type']);
+            $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromTiDBForMerchantWithoutFail($merchant, $input['balance_type']);
 
             $merchantSettler = new SetlMerchant(
                 $merchant,

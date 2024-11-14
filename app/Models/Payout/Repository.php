@@ -5,12 +5,14 @@ namespace RZP\Models\Payout;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature\Constants;
 use Illuminate\Database\Query\JoinClause;
 
 use DB;
 
 use RZP\Exception;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Models\State;
@@ -2896,7 +2898,16 @@ class Repository extends Base\Repository
             $payoutCreatedAt
         ];
 
-        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_payout_harvester_query_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        $query = $this->newQueryWithConnection($connectionType)
             ->distinct()
             ->select($this->getTableName() . '.*')
             ->select($selectAttr)
@@ -3227,7 +3238,16 @@ class Repository extends Base\Repository
         $payoutStatus      = $this->repo->payout->dbColumn(Payout\Entity::STATUS);
         $payoutBalanceId   = $this->repo->payout->dbColumn(Payout\Entity::BALANCE_ID);
 
-        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_payout_harvester_query_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        $query = $this->newQueryWithConnection($connectionType)
             ->join(Table::BALANCE, $balanceId, '=', $payoutBalanceId)
             ->where($payoutPurpose, '=', Payout\Purpose::RZP_FEES)
             ->where($payoutStatus, '=', Payout\Status::QUEUED)

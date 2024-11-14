@@ -8,6 +8,9 @@ use Razorpay\Trace\Logger;
 use RZP\Jobs\Order\OrderUpdate;
 use RZP\Jobs\Transfers\TransferUpdate;
 use RZP\Models\Base;
+
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Payment;
 use RZP\Models\Order;
@@ -190,14 +193,16 @@ class Repository extends Base\Repository
         $transferStatus = $this->repo->transfer->dbColumn(Entity::STATUS);
         $updatedAt      = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
 
-        $query = $this->newQueryOnSlave();
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
+        ];
 
-        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getPaymentFetchReplicaConnection();
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
 
-            $query = $this->newQueryWithConnection($connectionType);
-        }
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        $query = $this->newQueryWithConnection($connectionType);
 
         // If a list of merchantIds is given, we will fetch transfers only for those merchantIds. Else
         // fetch transfers for all merchants excluding key merchants.
@@ -232,14 +237,16 @@ class Repository extends Base\Repository
         $transferStatus = $this->repo->transfer->dbColumn(Entity::STATUS);
         $updatedAt      = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
 
-        $query = $this->newQueryOnSlave();
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
+        ];
 
-        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getPaymentFetchReplicaConnection();
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
 
-            $query = $this->newQueryWithConnection($connectionType);
-        }
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        $query = $this->newQueryWithConnection($connectionType);
 
         return $query
                     ->join(Table::PAYMENT, $sourceId, '=', $orderId)

@@ -1020,7 +1020,7 @@ class Service extends Base\Service
                                 $txnType = Transaction\Type::REFUND;
                                 $merchant = $payment->merchant;
 
-                                $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromHarvesterForMerchantWithFail($merchant, Balance\Type::PRIMARY);
+                                $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromTiDBForMerchantWithFail($merchant, Balance\Type::PRIMARY);
 
                                 $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
 
@@ -2537,7 +2537,7 @@ class Service extends Base\Service
 
                     if ($this->getRefundReversalTxnFetchSplitzResponse($refund->merchant->getId()) === 'enable')
                     {
-                        $txn = $this->repo->transaction->findByEntityIdWithoutMerchantPaymentFetchReplica($refundId);
+                        $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($refundId);
                         $refund->setFee($txn->getFee());
                         $refund->setTax($txn->getTax());
                     }

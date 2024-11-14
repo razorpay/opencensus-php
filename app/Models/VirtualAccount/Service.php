@@ -35,7 +35,9 @@ use RZP\Models\Settings\Module;
 use RZP\Models\VirtualAccountTpv;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\VirtualAccountProducts;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\VirtualAccount\Constant as VAConstants;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Offline\Device as OfflineDevice;
@@ -807,7 +809,16 @@ class Service extends Base\Service
 
         $payments = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_FETCH_PAYMENTS], function() use(&$input, $merchantId)
         {
-            return $this->repo->payment->fetch($input, $merchantId, ConnectionType::PAYMENT_FETCH_REPLICA);
+            $properties = [
+                "id" => UniqueIdEntity::generateUniqueId(),
+                "experiment_id" => $this->app['config']->get('app.splitz_payout_harvester_query_experiment_id'),
+            ];
+
+            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+            $connectionType = $variant === true ? ConnectionType::DATA_WAREHOUSE_MERCHANT : ConnectionType::PAYMENT_FETCH_REPLICA;
+
+            return $this->repo->payment->fetch($input, $merchantId, $connectionType);
         });
 
         return $payments->toArrayPublic();

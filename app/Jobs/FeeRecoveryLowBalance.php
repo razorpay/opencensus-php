@@ -3,8 +3,11 @@
 namespace RZP\Jobs;
 
 use Carbon\Carbon;
+use RZP\Base\ConnectionType;
 use RZP\Constants\Timezone;
 use RZP\Exception;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
@@ -218,7 +221,16 @@ class FeeRecoveryLowBalance extends Job
                 return;
             }
 
-            $actualRecoveryPayoutsAmount = (new BankingAccount\Entity)->fetchOutstandingAmountToBeRecovered($this->merchantId, $balanceId, \RZP\Base\ConnectionType::PAYMENT_FETCH_REPLICA);
+            $properties = [
+                "id" => UniqueIdEntity::generateUniqueId(),
+                "experiment_id" => $this->app['config']->get('app.splitz_payout_harvester_query_experiment_id'),
+            ];
+
+            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+            $connectionType = $variant === true ? ConnectionType::DATA_WAREHOUSE_MERCHANT : ConnectionType::PAYMENT_FETCH_REPLICA;
+
+            $actualRecoveryPayoutsAmount = (new BankingAccount\Entity)->fetchOutstandingAmountToBeRecovered($this->merchantId, $balanceId, $connectionType);
 
             if ($actualRecoveryPayoutsAmount > FeeRecovery\Constants::MIN_BALANCE_AMOUNT)
             {

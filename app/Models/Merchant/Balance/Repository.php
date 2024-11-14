@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Base\ConnectionType;
@@ -398,9 +399,9 @@ class Repository extends Base\Repository
         return $entity;
     }
 
-    public function getMerchantBalanceByTypeHarvester(string $merchantId, string $balanceType)
+    public function getMerchantBalanceByTypeTiDB(string $merchantId, string $balanceType)
     {
-        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA));
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT));
 
         $entity= $query->merchantIdAndType($merchantId, $balanceType)
                          ->first();
@@ -414,9 +415,9 @@ class Repository extends Base\Repository
         return $entity;
     }
 
-    public function getMerchantBalanceByTypeHarvesterOrFail(string $merchantId, string $balanceType)
+    public function getMerchantBalanceByTypeTiDBOrFail(string $merchantId, string $balanceType)
     {
-        $balance = $this->getMerchantBalanceByTypeHarvester($merchantId, $balanceType);
+        $balance = $this->getMerchantBalanceByTypeTiDB($merchantId, $balanceType);
         if ($balance === null)
         {
             throw new BadRequestException(
@@ -838,7 +839,16 @@ class Repository extends Base\Repository
      */
     public function fetchMerchantsBlockedDueToLowBalanceWithBalanceId()
     {
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_payout_harvester_query_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        return $this->newQueryWithConnection($connectionType)
             ->where(Entity::TYPE, '=', Type::BANKING)
             ->where(Entity::ACCOUNT_TYPE, '=', AccountType::DIRECT)
             ->whereIn(Entity::MERCHANT_ID, function($query)

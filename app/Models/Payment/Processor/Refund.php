@@ -1934,7 +1934,7 @@ trait Refund
     protected function refundBalanceChecks(RefundEntity &$refund, $useClsBalance = false)
     {
         if ($useClsBalance === true) {
-            $balance = $this->repo->balance->getMerchantBalanceByTypeHarvester($refund->merchant->getId(), BalanceType::PRIMARY);
+            $balance = $this->repo->balance->getMerchantBalanceByTypeTiDB($refund->merchant->getId(), BalanceType::PRIMARY);
             $refund->balance()->associate($balance);
         }
         else
@@ -2119,7 +2119,7 @@ trait Refund
 
         $merchant= $this->merchant;
 
-        $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromHarvesterForMerchantWithoutFail($merchant, Balance\Type::PRIMARY);
+        $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromTiDBForMerchantWithoutFail($merchant, Balance\Type::PRIMARY);
 
         $refund->balance()->associate($balance);
 

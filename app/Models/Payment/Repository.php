@@ -3094,31 +3094,19 @@ EOT;
             return $payment;
         }
 
-        // experiment added as P0 flows were going to TiDB
-        if ($this->isExperimentEnabledForId(self::PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB, __FUNCTION__) === true)
-        {
-            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))->whereNotNull(Entity::CAPTURED_AT)
-                            ->where(Entity::ORDER_ID, '=', $orderId)
-                            ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
-                            ->first();
-            $this->resetDefaultConnInEntity($payment);
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
+        ];
 
-        }
-        else
-        {
-            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
-            $payment = $this->newQueryWithConnection($connectionType)->whereNotNull(Entity::CAPTURED_AT)
-                            ->where(Entity::ORDER_ID, '=', $orderId)
-                            ->first();
-        }
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
 
-        // Fetch rearch payments
-        if (empty($payment) === true)
-        {
-            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))->whereNotNull(Entity::CAPTURED_AT)
-                ->where(Entity::ORDER_ID, '=', $orderId)
-                ->first();
-        }
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        $payment = $this->newQueryWithConnection($connectionType)->whereNotNull(Entity::CAPTURED_AT)
+            ->where(Entity::ORDER_ID, '=', $orderId)
+            ->first();
+        $this->resetDefaultConnInEntity($payment);
 
         return $payment;
     }
@@ -3312,6 +3300,12 @@ EOT;
         }
         catch (\Throwable $ex)
         {
+            $this->trace->info(TraceCode::PAYMENT_TRANSFER_PROCESS_FAILURE, [
+                'transfer_id'     => $transferId,
+                "message"         => "data not found in master",
+                "connection"      => $query->getConnection()->getName() ?? ''
+            ]);
+
             $connectionType = $this->getPaymentFetchReplicaConnection();
 
             return $this->newQueryWithConnection($connectionType)
@@ -4488,24 +4482,20 @@ EOT;
 
     public function getCapturedPaymentsForInvoice(string $invoiceId)
     {
-        // added as P0 flows were going to TiDB
-        if ($this->isExperimentEnabledForId(self::PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB, __FUNCTION__) === true)
-        {
-            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA));
-            $payments = $query
-                ->where(Entity::INVOICE_ID, $invoiceId)
-                ->where(Entity::STATUS, '=', Status::CAPTURED)
-                ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
-                ->get();
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
+        ];
 
-            $this->resetDefaultConnInEntities($payments);
-        }else{
-            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-            $payments = $this->newQueryWithConnection($connectionType)
-                             ->where(Entity::INVOICE_ID, $invoiceId)
-                             ->where(Entity::STATUS, '=', Status::CAPTURED)
-                             ->get();
-        }
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        $payments = $this->newQueryWithConnection($connectionType)
+            ->where(Entity::INVOICE_ID, $invoiceId)
+            ->where(Entity::STATUS, '=', Status::CAPTURED)
+            ->get();
+
         return $payments;
     }
 

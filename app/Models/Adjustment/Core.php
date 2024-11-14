@@ -108,7 +108,7 @@ class Core extends Base\Core
         {
             if ($balanceType === Balance\Type::PRIMARY)
             {
-                $balance = (new Balance\Repository())->getMerchantBalanceByTypeHarvesterOrFail($merchant->getId(), Balance\Type::PRIMARY);
+                $balance = (new Balance\Repository())->getMerchantBalanceByTypeTiDBOrFail($merchant->getId(), Balance\Type::PRIMARY);
             }else{
                 $balance = $merchant->getBalanceByTypeOrFail($balanceType);
             }

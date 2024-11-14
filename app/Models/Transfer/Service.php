@@ -125,13 +125,21 @@ class Service extends Base\Service
 
     public function getTransferReadSplitzResponse($merchantId)
     {
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.transfer_read_experiment'),
-        ];
-        $response = $this->app['splitzService']->evaluateRequest($properties);
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.transfer_read_experiment'),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
 
-        return $response['response']['variant']['name'] ?? '';
+            return $response['response']['variant']['name'] ?? '';
+        }
+        catch (\Throwable $e)
+        {
+            return '';
+        }
+
     }
 
     public function fetchMultiple(array $input)

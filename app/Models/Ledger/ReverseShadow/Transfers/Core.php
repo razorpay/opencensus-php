@@ -312,7 +312,7 @@ class Core extends Base\Core
 
         $merchant = $transfer->merchant;
 
-        $balance= $this->getBalanceByTypeFromHarvesterForMerchantWithFail($merchant, $balanceType);
+        $balance= $this->getBalanceByTypeFromTiDBForMerchantWithFail($merchant, $balanceType);
 
         $negativeAllowedFlows = (new BalanceConfig\Core())->getNegativeFlowsForBalance($balance->getId());
 
@@ -346,7 +346,7 @@ class Core extends Base\Core
 
         $merchant = $this->merchant;
 
-        $balance= $this->getBalanceByTypeFromHarvesterForMerchantWithFail($merchant, $balanceType);
+        $balance= $this->getBalanceByTypeFromTiDBForMerchantWithFail($merchant, $balanceType);
 
         $negativeAllowedFlows = (new BalanceConfig\Core())->getNegativeFlowsForBalance($balance->getId());
 
@@ -360,61 +360,77 @@ class Core extends Base\Core
         return $maxNegative;
     }
 
-    public function getBalanceByTypeFromHarvesterForMerchantWithFail(Merchant\Entity $merchant, string $balanceType)
+    public function getBalanceByTypeFromTiDBForMerchantWithFail(Merchant\Entity $merchant, string $balanceType)
     {
-        $expEnabled=$this->getBalanceConfigBalanceIDFetchHarvesterSplitzEnabled($merchant->getId());
+        $expEnabled=$this->getBalanceConfigBalanceIDFetchTiDBSplitzEnabled($merchant->getId());
 
-        if($expEnabled===true){
+        if($expEnabled===true)
+        {
                 $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
                     'merchant_id' => $merchant->getId(),
                     'balance_type' => $balanceType,
                     'message'=> 'fetching merchant balance from harvester'
                 ]);
 
-            return $this->repo->balance->getMerchantBalanceByTypeHarvesterOrFail($merchant->getId(), $balanceType);
-        }else {
+            return $this->repo->balance->getMerchantBalanceByTypeTiDBOrFail($merchant->getId(), $balanceType);
+        }
+        else
+        {
             return $merchant->getBalanceByTypeOrFail($balanceType);
         }
 
     }
 
-    public function getBalanceByTypeFromHarvesterForMerchantWithoutFail(Merchant\Entity $merchant, string $balanceType)
+    public function getBalanceByTypeFromTiDBForMerchantWithoutFail(Merchant\Entity $merchant, string $balanceType)
     {
+        $expEnabled=$this->getBalanceConfigBalanceIDFetchTiDBSplitzEnabled($merchant->getId());
 
-        $expEnabled=$this->getBalanceConfigBalanceIDFetchHarvesterSplitzEnabled($merchant->getId());
-
-        if($expEnabled===true){
-            // fetch balance for balance_id from harvester
+        if($expEnabled===true)
+        {
+            // fetch balance for balance_id from TiDB
             $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
                 'merchant_id' => $merchant->getId(),
                 'balance_type' => $balanceType,
-                'message'=> 'fetching merchant balance from harvester without fail'
+                'message'=> 'fetching merchant balance from TiDB without fail'
             ]);
-            return $this->repo->balance->getMerchantBalanceByTypeHarvester($merchant->getId(), $balanceType);
+            return $this->repo->balance->getMerchantBalanceByTypeTiDB($merchant->getId(), $balanceType);
 
-        }else {
+        }
+        else
+        {
             return $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
         }
 
     }
 
-    public function getBalanceConfigBalanceIDFetchHarvesterSplitzEnabled(string $merchantId)
+    public function getBalanceConfigBalanceIDFetchTiDBSplitzEnabled(string $merchantId)
     {
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.transfer_balance_config_balance_id_harvester_experiment'),
-        ];
-        $response = $this->app['splitzService']->evaluateRequest($properties);
+        try {
 
-        $isExp=$response['response']['variant']['name'] === 'enable';
+            $properties = [
+                'id' => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.transfer_balance_config_balance_id_harvester_experiment'),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
 
-        $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
-            'merchant_id' => $merchantId,
-            'response' => $response,
-            'experiment_enabled'=> $isExp
-        ]);
+            $isExp = $response['response']['variant']['name'] === 'enable';
 
-        return $isExp;
+            $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
+                'merchant_id' => $merchantId,
+                'response' => $response,
+                'experiment_enabled' => $isExp
+            ]);
+
+            return $isExp;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+            ]);
+
+            return false;
+        }
     }
 
 

@@ -887,7 +887,7 @@ class Core extends Base\Core
         // Todo: remove null balance check after backfilling is done
         if ($this->getRefundReversalTxnFetchSplitzResponse($refund->merchant->getId()) === 'enable')
         {
-            $balance = $this->repo->balance->getMerchantBalanceByTypeHarvester($refund->merchant->getId(), Balance\Type::PRIMARY);
+            $balance = $this->repo->balance->getMerchantBalanceByTypeTiDB($refund->merchant->getId(), Balance\Type::PRIMARY);
             $reversal->balance()->associate($balance);
         }
         else
