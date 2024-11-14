@@ -19,18 +19,37 @@ import Sticky from 'common/ui/Sticky';
 import { getFormattedAmountNew, checkHTML5APIvalidity } from 'common/utils/rzp-utils';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import Announcement from 'merchant/components/Announcements/Instant';
+import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
+import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
+import SupportRequest from 'merchant/components/Announcements/SupportRequest';
+import EasterEgg from 'merchant/components/EasterEgg';
+import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import ShowWhen from 'merchant/components/ShowWhen';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
+import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
+import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import ProductOnboardingCard from 'merchant/containers/Home/ProductOnboardingCard';
 import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
+import RecentActivity from 'merchant/containers/Home/RecentActivity';
+import Traffic from 'merchant/containers/Home/Traffic';
+import { fetchCarouselBanner as fetchCarouselBannerProp } from 'merchant/reducers/growthService';
+import lazy from 'merchant/routes/LazyLoader';
+import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nudge';
+import WebsiteCompliancePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.mobile';
+import {
+  shouldShowWebsiteComplianceModal,
+  isPolicyWizardV2Enabled,
+} from 'merchant/views/Account/WebsiteAppDetails/utils';
+import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import { OnDemandModalEntry } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandModalEntry';
+import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
+import { STATUSES } from 'merchant/views/TicketSupport/utils';
 import OnboardingCard from 'merchant/views/onboarding/mobile/Screens/Home';
 import { openModal } from 'merchant_common/reducers/modals';
-import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
-import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 
 import DateRangeTooltip from './DateRangeTooltip';
+import SettlementSkipBanner from './SettlementSkipBanner';
 import {
   trackPresetChange,
   trackSettlementsClick,
@@ -38,36 +57,11 @@ import {
   selfServeSettleTracking,
   EVENT_CATEGORY_DASHBOARD_HOME,
 } from './ga';
-import { getSettlementStatus } from 'merchant/views/Capital/utils';
-import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
-import M2MBanner from 'merchant/components/M2M/M2MBanner';
-import EasterEgg from 'merchant/components/EasterEgg';
-import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
-import SupportRequest from 'merchant/components/Announcements/SupportRequest';
-import { fetchCarouselBanner as fetchCarouselBannerProp } from 'merchant/reducers/growthService';
-import { STATUSES } from 'merchant/views/TicketSupport/utils';
-import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nudge';
-import WebsiteCompliancePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.mobile';
-import {
-  shouldShowWebsiteComplianceModal,
-  isPolicyWizardV2Enabled,
-} from 'merchant/views/Account/WebsiteAppDetails/utils';
-import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
-import Traffic from 'merchant/containers/Home/Traffic';
-import RecentActivity from 'merchant/containers/Home/RecentActivity';
-import lazy from 'merchant/routes/LazyLoader';
-
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
 
 const TerminalStatus = lazy(() =>
   import(
     /* webpackChunkName: 'terminal-status-banner' */ 'merchant/components/Announcements/TerminalStatus'
-  ),
-);
-
-const PaymentsRecapBanner = lazy(() =>
-  import(
-    /* webpackChunkName: 'payments-recap-banner' */ 'merchant/components/HeaderNav/PaymentsRecap/Banner'
   ),
 );
 
@@ -294,7 +288,7 @@ class AnalyticsMobile extends Component {
             Google Chrome, Edge, Safari, Firefox.
           </AnnouncementBanner>
         )}
-        <PaymentsRecapBanner bannerVariant="mobile" user={user} />
+        <SettlementSkipBanner user={user} />
         <DashboardBanner />
         <div
           ref={(node) => onExtraContentMount(node)}

@@ -25,6 +25,9 @@ const InfoIcon = lazy(() =>
 );
 
 export const carouselDataWidgetIconMap = {
+  critical: (): JSX.Element => (
+    <AlertTriangleIcon color="feedback.icon.negative.intense" size="large" />
+  ),
   failed: (): JSX.Element => (
     <AlertTriangleIcon color="feedback.icon.negative.intense" size="large" />
   ),

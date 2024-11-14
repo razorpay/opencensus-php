@@ -96,6 +96,7 @@ import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 
 import DateRangeTooltip from './DateRangeTooltip';
+import SettlementSkipBanner from './SettlementSkipBanner';
 import {
   EVENT_CATEGORY_DASHBOARD_HOME,
   selfServeSettleTracking,
@@ -108,12 +109,6 @@ import { IsOutsideDateRangeForHPAnalytics } from './utils';
 const TerminalStatus = lazy(() =>
   import(
     /* webpackChunkName: 'terminal-status-banner' */ 'merchant/components/Announcements/TerminalStatus'
-  ),
-);
-
-const PaymentsRecapBanner = lazy(() =>
-  import(
-    /* webpackChunkName: 'payments-recap-banner' */ 'merchant/components/HeaderNav/PaymentsRecap/Banner'
   ),
 );
 
@@ -562,7 +557,7 @@ class AnalyticsDesktop extends Component {
 
     return (
       <div className="home-analytics-desktop">
-        <PaymentsRecapBanner bannerVariant="desktop" user={user} />
+        <SettlementSkipBanner user={user} />
         <PricingSubscriptionWrapper />
         {user.activation_form_milestone === 'L1' &&
         user.isOrgCurlec &&

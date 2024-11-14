@@ -475,7 +475,7 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
-        uniqueHashKey: 'payments_recap',
+        uniqueHashKey: 'settlement_skip_banner',
         experimentId: {
           beta: 'Nntc2jFOd01hHO',
           production: 'NnteV1Ml7Fb4aD',
