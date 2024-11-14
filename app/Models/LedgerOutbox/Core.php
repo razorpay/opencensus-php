@@ -1208,6 +1208,12 @@ class Core extends Base\Core
 
                                 $transfer->setTax($tax);
 
+                                $transferPayment->setFee(0);
+
+                                $transferPayment->setTax(0);
+
+                                $transferPayment->setMdr(0);
+
                                 $this->repo->saveOrFail($transfer);
 
                                 // create txns without balance update and dispatch for settlement
@@ -2153,7 +2159,7 @@ class Core extends Base\Core
 
         $payloadName = $this->getPayloadName($transfer->getPublicId(),LedgerConstants::TRANSFER);
 
-        $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadNameWithTrashed($payloadName);
+        $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadName($payloadName);
 
         if (count($outboxEntries) == 0)
         {
