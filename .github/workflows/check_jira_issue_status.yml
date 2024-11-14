@@ -66,5 +66,6 @@ jobs:
           BASE_URL: ${{secrets.JIRA_BASE_URL}}
           USER_EMAIL: ${{secrets.JIRA_USER_EMAIL}}
           API_TOKEN: ${{secrets.JIRA_API_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
         run: |
           bash ./.github/actions/jiraStatusCheck.sh
