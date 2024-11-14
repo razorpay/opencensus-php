@@ -237,6 +237,9 @@ class Gateway
     const SWIFT = 'SWIFT';
     const OPTIMIZER_RAZORPAY = "optimizer_razorpay";
 
+    const EMANDATE = 'emandate';
+    const AUTH_TYPES = 'auth_types';
+
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
     // success and status_code defined the status of refund and also category of refund if it is retriable or not.
@@ -5610,6 +5613,41 @@ class Gateway
         return self::$zeroRupeeEmandateBanks;
     }
 
+    public static function fetchBankDataFromApi() {
+        $app = App::getFacadeRoot();
+        // Check if data exists in the cache
+        $cacheKey = 'npci_bank_details';
+        $cachedData = $app['cache']->get($cacheKey);
+
+        // If data is not in the cache, call the external API
+        if ($cachedData === null) {
+            $data = (new \RZP\Services\EmandateService)->fetchNpciData();
+            $data = json_decode($data, true);
+            $data = $data['bank_data'] ?? [];
+
+            // Store the data in the cache
+            $app['cache']->put($cacheKey, $data, 86400); // Cache for 24 hour
+        } else {
+            $data = $cachedData ?? [];
+        }
+
+        return $data;
+    }
+
+    public static function getFilteredEmandateBanks(array $authTypes): array
+    {
+        $data = self::fetchBankDataFromApi();
+
+        foreach ($data as $ifsc => $bank) {
+            // Check if the bank supports any of the specified auth types
+            if (array_intersect($authTypes, $bank[self::AUTH_TYPES])) {
+                $recurringData[self::EMANDATE][$ifsc] = $bank;
+            }
+        }
+        return $recurringData[self::EMANDATE];
+
+    }
+
     public static function getAvailableEmandateBanksForAuthType(string $authType): array
     {
         $banks = [];
@@ -5627,6 +5665,7 @@ class Gateway
         }
 
         return $banks;
+
     }
 
     public static function getEmandateGatewaysForAuthType(string $authType): array

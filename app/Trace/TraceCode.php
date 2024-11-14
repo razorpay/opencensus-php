@@ -418,6 +418,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DIRECT_TRANSFER_CREATE_EXPECTION                      = 'DIRECT_TRANSFER_CREATE_EXPECTION';
     const PAYMENT_QUEUE_CAPTURE_DELETE                          = 'PAYMENT_QUEUE_CAPTURE_DELETE';
     const PAYMENT_CAPTURE_ADD_TO_QUEUE                          = 'PAYMENT_CAPTURE_ADD_TO_QUEUE';
+    const BANK_DATA_VIA_NPCI_API_RAZORX_FAILURE                 = 'bank_data_via_npci_api_razorx_failure';
+    const BANK_DATA_VIA_NPCI_API                                = 'bank_data_via_npci_api';
     const CAPTURE_QUEUE_PAYMENT_ID_MUTEX_TIME_TAKEN             = 'CAPTURE_QUEUE_PAYMENT_ID_MUTEX_TIME_TAKEN';
     const PAYMENT_RECON_QUEUE_CPS_REQUEST                       = 'PAYMENT_RECON_QUEUE_CPS_REQUEST';
     const PAYMENT_TRANSACTION_QUEUE_CPS_REQUEST                 = 'PAYMENT_TRANSACTION_QUEUE_CPS_REQUEST';

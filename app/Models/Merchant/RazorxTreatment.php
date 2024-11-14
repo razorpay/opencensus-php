@@ -1217,4 +1217,5 @@ final class RazorxTreatment
     const ALLOW_FULCRUM_RECURRING_INITIAL = 'fulcrum_recurring_initial';
     const ALLOW_FULCRUM_RECURRING_SUBSEQUENT = 'fulcrum_recurring_subsequent';
 
+    const BANK_DATA_VIA_NPCI_API = 'bank_data_via_npci_api';
 }

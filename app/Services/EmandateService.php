@@ -134,6 +134,13 @@ class EmandateService
         return $this->sendRequest('GET', $path, $input, false);
     }
 
+    public function fetchNPCIData()
+    {
+        $path = 'fetch/npci-supported-banks';
+
+        return $this->sendRequestNPCI('GET', $path, false);
+    }
+
     public function sendRequest(string $method, string $url, array $data = [], bool $shouldTraceResponse = true)
     {
         $request = [
@@ -158,6 +165,29 @@ class EmandateService
         }
 
         return $response[self::DATA];
+    }
+
+    public function sendRequestNPCI(string $method, string $url, bool $shouldTraceResponse = true)
+    {
+        $request = [
+            'url'     => $url,
+            'method'  => $method,
+            'headers' => [
+                self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
+                self::X_REQUEST_ID             => $this->app['request']->getId(),
+            ],
+        ];
+
+        $this->traceRequest($request);
+
+        $response = $this->sendRawRequest($request);
+
+        if ($shouldTraceResponse === true)
+        {
+            $this->traceResponse($response);
+        }
+
+        return $response->body;
     }
 
     protected function sendRawRequest($request)

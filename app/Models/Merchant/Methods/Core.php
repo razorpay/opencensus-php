@@ -60,6 +60,11 @@ class Core extends Base\Core
     const GATEWAY = 'gateway';
     const STATUS  = 'status';
     const ENABLED = 'enabled';
+    const EMANDATE = 'emandate';
+    const NAME = 'name';
+    const AUTH_TYPES = 'auth_types';
+    const BANK_CODE = 'bank_code';
+    const IS_MERGED_BANK = 'is_merged_bank';
     const METHOD_ENABLED = 'method_enabled';
     const TERMINAL_AVAILABLE = 'terminal_available';
 
@@ -845,49 +850,75 @@ class Core extends Base\Core
                 $authTypes = array_diff($authTypes, [Payment\AuthType::AADHAAR]);
             }
         }
+        $experimentName = $this->app['config']->get('app.bank_data_via_npci_api_experiment');
+        if ($this->getSplitzResponse($merchant->getMerchantId(), $experimentName) === 'enable') {
+            if ($this->isTestMode() === true) {
+                $recurringData[self::EMANDATE] = Payment\Gateway::getFilteredEmandateBanks($authTypes);
+            } else {
+               if (!isset($recurringData[self::EMANDATE]) || !is_array($recurringData[self::EMANDATE])) {
+                   $recurringData[self::EMANDATE] = [];
+                }
+                // Iterate over each authType
+                foreach ($authTypes as $authType) {
+                    // Get the banks enabled for the current authType
+                    $banksForAuthType = $this->getEmandateBanksEnabledNew($merchant, $authType);
 
-        foreach ($authTypes as $authType)
-        {
-            if ($this->isTestMode() === true)
-            {
-                $banks = Payment\Gateway::getAvailableEmandateBanksForAuthType($authType);
+                    // Merge the banks for this authType into the recurringData
+                    // Merge using array_merge to avoid overwriting
+                    $recurringData[self::EMANDATE] = array_merge($recurringData[self::EMANDATE], $banksForAuthType[self::EMANDATE]);
+                }
             }
-            else
-            {
-                $banks = $this->getEmandateBanksEnabled($merchant, $authType);
-            }
+        } else {
+            foreach ($authTypes as $authType) {
+                if ($this->isTestMode() === true) {
+                    $banks = Payment\Gateway::getAvailableEmandateBanksForAuthType($authType);
+                } else {
+                    $banks = $this->getEmandateBanksEnabled($merchant, $authType);
+                }
 
-            $banks = Payment\Gateway::removeEmandateRegistrationDisabledBanks($banks);
+                $banks = Payment\Gateway::removeEmandateRegistrationDisabledBanks($banks);
 
-            if($authType === "netbanking")
-            {
-                $banks = Payment\Gateway::removeNetbankingEmandateRegistrationDisabledBanks($banks);
-            }
+                if ($authType === "netbanking") {
+                    $banks = Payment\Gateway::removeNetbankingEmandateRegistrationDisabledBanks($banks);
+                }
 
-            if (empty($banks) === false)
-            {
-                $banks = $this->getBankNames($banks);
+                if (empty($banks) === false) {
+                    $banks = $this->getBankNames($banks);
 
-                foreach ($banks as $ifsc => $name)
-                {
-                    $recurringData['emandate'][$ifsc]['auth_types'][] = $authType;
-                    $recurringData['emandate'][$ifsc]['name'] = $name;
+                    foreach ($banks as $ifsc => $name) {
+                        $recurringData[self::EMANDATE][$ifsc][self::AUTH_TYPES][] = $authType;
+                        $recurringData[self::EMANDATE][$ifsc][self::NAME] = $name;
 
-                    $mergedBankIfsc = Payment\Gateway::ENACH_NPCI_NB_MERGED_BANK_CODE_MAPPING[$ifsc] ?? null;
+                        $mergedBankIfsc = Payment\Gateway::ENACH_NPCI_NB_MERGED_BANK_CODE_MAPPING[$ifsc] ?? null;
 
-                    if($mergedBankIfsc !== null)
-                    {
-                        $recurringData['emandate'][$ifsc]['is_merged_bank'] = true;
+                        if ($mergedBankIfsc !== null) {
+                            $recurringData[self::EMANDATE][$ifsc][self::IS_MERGED_BANK] = true;
 
-                        $recurringData['emandate'][$ifsc]['bank_code'] = $mergedBankIfsc;
-                    }
-                    else
-                    {
-                        $recurringData['emandate'][$ifsc]['is_merged_bank'] = false;
+                            $recurringData[self::EMANDATE][$ifsc][self::BANK_CODE] = $mergedBankIfsc;
+                        } else {
+                            $recurringData[self::EMANDATE][$ifsc][self::IS_MERGED_BANK] = false;
+                        }
                     }
                 }
             }
         }
+    }
+
+    public function getSplitzResponse(string $id, string $experimentId)
+    {
+        $properties = [
+            'id'            => $id,
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     public function addCustomTextForCredIfApplicable(
@@ -1537,6 +1568,39 @@ class Core extends Base\Core
 
             return $data;
         }
+    }
+
+    protected function getEmandateBanksEnabledNew(Merchant\Entity $merchant, $authType): array
+    {
+        $recurringData[self::EMANDATE] = [];
+        // Fetch all bank data from API
+        $data = Payment\Gateway::fetchBankDataFromApi();
+
+        // Get the merchant's applicable emandate terminals for the specified auth type
+        $applicableEmandateTerminals = $this->repo
+                                            ->terminal
+                                            ->getEmandateTerminalsForMerchantAndSharedMerchant($merchant, $authType);
+
+        $availableGatewaysForMerchant = $applicableEmandateTerminals->pluck(Terminal\Entity::GATEWAY);
+
+        // Loop through each available gateway for the merchant
+        foreach ($availableGatewaysForMerchant as $gateway) {
+            // Check if the gateway has the specified auth type and retrieve the bank IFSCs for that auth type
+            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$gateway][$authType])) {
+                $allowedBanksForAuthType = Payment\Gateway::$gatewaysEmandateBanksMap[$gateway][$authType];
+
+                // Loop through each bank from the API response
+                foreach ($data as $ifsc => $bank) {
+                    // Check if the bank's IFSC is allowed for the given auth type in the gateway
+                    if (in_array($ifsc, $allowedBanksForAuthType, true) && in_array($authType, $bank[self::AUTH_TYPES], true)) {
+                        // Add the bank to the recurring data array for this auth type
+                        $recurringData[self::EMANDATE][$ifsc] = $bank;
+                    }
+                }
+            }
+        }
+
+        return $recurringData;
     }
 
     protected function getEmandateBanksEnabled(Merchant\Entity $merchant, $authType): array
