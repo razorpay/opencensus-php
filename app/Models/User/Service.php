@@ -307,6 +307,12 @@ class Service extends Base\Service
                 ];
                 $loggedInUser = $this->app['basicauth']->getUser();
                 $this->updateUserMerchantMapping($loggedInUser['id'], $userMerchantMappingInputData);
+
+                if ($signupCampaign === DeviceDetailConstants::PARTNER_ASSISTED_ONBOARDING)
+                {
+                    $loggedInMerchant = $this->app['basicauth']->getMerchant();
+                    (new Merchant\Service())->mapSubmerchant($loggedInMerchant, $merchantId);
+                }
             }
 
             try {
@@ -926,7 +932,7 @@ class Service extends Base\Service
                         if ($signupCampaign === DeviceDetailConstants::PARTNER_ASSISTED_ONBOARDING)
                         {
                             $loggedInMerchant=  $this->app['basicauth']->getMerchant();
-                            $detailService = (new Merchant\Service())->mapSubmerchant($loggedInMerchant, $merchantData['id']);
+                            (new Merchant\Service())->mapSubmerchant($loggedInMerchant, $merchantData['id']);
                         }
                     }
 
