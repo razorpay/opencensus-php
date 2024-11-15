@@ -1,46 +1,50 @@
 name: Generate Preview URL
 on:
-  pull_request:
-    branches:
-      - '**'
-      - '!changeset-release/master'
+  issue_comment:
+    types: [created, edited, deleted]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-  
+
 env:
   ImageOS: ubuntu20
 jobs:
   deploy-to-devstack:
     name: Deploy To Devstack for Preview URL
-    runs-on: [ self-hosted ]
-    if: ${{ github.event_name == 'pull_request' && github.event.head_commit.author.name != 'rzpcibot' }}
+    runs-on: [self-hosted]
+    if: contains(github.event.comment.body, '/preview')
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3
+      - name: Get latest commit ID
+        id: get_commit_id
+        run: |
+          LATEST_COMMIT=$(git rev-parse HEAD)
+          echo "The latest commit ID is $LATEST_COMMIT"
+          echo "::set-output name=latest_commit::$LATEST_COMMIT"
       # Wait for build to finish
       - name: Wait for dashboard's docker image to be built
         uses: ./.github/actions/waiting-build
         with:
-          commit_id: ${{ github.event.pull_request.head.sha }}
+          commit_id: ${{ steps.get_commit_id.outputs.latest_commit }}
           workflow_name: "Deploy To Devstack for Preview URL"
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Triggers argo workflows webhook to create preview URL
         uses: fjogeleit/http-request-action@52ba495021567f279f4a6577ac8fb73672197af8
         with:
-          url: 'https://argo.dev.razorpay.in/api/v1/events/argo-workflows/dashboard-devstack-deployment'
-          method: 'POST'
+          url: "https://argo.dev.razorpay.in/api/v1/events/argo-workflows/dashboard-devstack-deployment"
+          method: "POST"
           bearerToken: ${{ secrets.ARGO_TOKEN }}
           data: >
             {
               "kube_manifests_ref": "master",
               "repository": "razorpay/dashboard",
-              "pull_request_number": "${{ github.event.number }}",
+              "pull_request_number": "${{ github.event.issue.number }}",
               "self": {
                   "name": "dashboard",
-                  "commit_id": "${{ github.event.pull_request.head.sha }}",
+                  "commit_id": "${{ steps.get_commit_id.outputs.latest_commit }}",
                   "repository_name": "${{ github.repository }}",
                   "node_selector":"node.kubernetes.io/worker-tests-app"
               },
