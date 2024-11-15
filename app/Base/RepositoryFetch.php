@@ -560,14 +560,6 @@ trait RepositoryFetch
 
     protected function shouldRouteTrafficToTidb()
     {
-        $app = $this->app;
-
-        $variant = 'on';
-
-        if ($this->entity == Entity::ORDER && $app['basicauth']->getMode() == Mode::TEST) {
-            $variant = $this->isTestModeOrderExperimentEnabled();
-        }
-
         if ($this->app->runningUnitTests() === true) {
             return false;
         }
@@ -577,7 +569,7 @@ trait RepositoryFetch
             return false;
         }
 
-        return ($variant === 'on');
+        return true;
     }
 
     protected function isExperimentEnabled($experiment)
