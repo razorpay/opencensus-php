@@ -2306,6 +2306,15 @@ class Constants
      */
     const VAS_ORG_IDENTIFIER = 'vas_org_identifier';
 
+
+    /**
+     * Feature flag will be enabled on
+     * all the orgs where RBI requirements were added
+     * Instead of vas_org_identifier, we will use the new flag to move the RBI compliance changes
+     */
+    const VAS_KYC_RBI = 'vas_kyc_rbi';
+
+
     const ADD_WEBHOOK_HEADERS_ORG = 'add_webhook_headers_org';
 
     const ADD_WEBHOOK_HEADERS_MX = 'add_webhook_headers_mx';
@@ -3161,6 +3170,7 @@ class Constants
         self::VAS_ORG_IDENTIFIER                           => true,
         self::ADD_WEBHOOK_HEADERS_ORG                      => true,
         self::ADD_WEBHOOK_HEADERS_MX                       => true,
+        self::VAS_KYC_RBI                           => true,
         self::ONE_CC_TAX_INCLUSION                   => true,
         self::OMNI_ENABLED                           => true,
         self::SPLIT_SETTLEMENTS_ENABLED              => true,
@@ -4704,6 +4714,11 @@ class Constants
             'feature'       => self::MESSAGE_BANNER_DISABLED,
             'display_name'  => 'disable display message banners on merchant checkout',
             'documentation' => ''
+        ],
+        self::VAS_KYC_RBI => [
+            'feature' => self::VAS_KYC_RBI,
+            'display_name' => "VAS KYC RBI",
+            'documentation' => "Feature flag added for the orgs where RBI requirements were added.",
         ],
         self::ONE_CC_PARTIAL_COD  => [
             'feature'       => self::ONE_CC_PARTIAL_COD,

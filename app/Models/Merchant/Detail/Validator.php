@@ -2323,8 +2323,14 @@ class Validator extends Base\Validator
 
         $businessType = strtolower($entry[Header::MIQ_BUSINESS_TYPE]);
 
-        if($this->org !== null and $this->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+        if($this->org !== null and $this->org->isFeatureEnabled(Feature\Constants::VAS_KYC_RBI) === true)
         {
+            $route  = $this->app['api.route']->getCurrentRouteName();
+
+            if($route === 'merchant_edit_pre_signup_details')
+            {
+                return;
+            }
 
             $businessTypesRequiringBusinessPan = [
                 Merchant\Detail\BusinessType::LLP, Merchant\Detail\BusinessType::NGO,
