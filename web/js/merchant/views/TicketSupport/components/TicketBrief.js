@@ -4,6 +4,31 @@ import { Link } from 'react-router-dom';
 import TicketStatus from './TicketStatus';
 import TicketBriefMessage from './TicketBriefMessage';
 import { STATUSES, sanitizeRaySubcategory } from 'merchant/views/TicketSupport/utils';
+
+const TicketCardHeader = ({ ticket }) => {
+  const {
+    cf_requestor_subcategory,
+    cf_new_requester_sub_category,
+    cf_new_requester_item,
+    cf_requester_item,
+  } = ticket.custom_fields || {};
+
+  const category = cf_requestor_subcategory || cf_new_requester_sub_category;
+  const subCategory = cf_new_requester_item || cf_requester_item;
+
+  return (
+    <>
+      {category}
+      {subCategory ? (
+        <>
+          {category ? <span className="ticket-detail-separator">•</span> : null}
+          {sanitizeRaySubcategory(subCategory)}
+        </>
+      ) : null}
+    </>
+  );
+};
+
 export default class TicketBriefRevamped extends React.Component {
   componentDidMount() {
     window.rzpAnalytics?.({
@@ -48,20 +73,7 @@ export default class TicketBriefRevamped extends React.Component {
                               {'RazorpayPOS'}
                             </>
                           ) : (
-                            <>
-                              {ticket.custom_fields?.cf_requestor_subcategory ||
-                                ticket.custom_fields?.cf_new_requester_sub_category}
-                              {ticket.custom_fields.cf_new_requester_item ||
-                              ticket.custom_fields.cf_requester_item ? (
-                                <>
-                                  <span className="ticket-detail-separator">•</span>
-                                  {sanitizeRaySubcategory(
-                                    ticket.custom_fields?.cf_new_requester_item ||
-                                      ticket.custom_fields.cf_requester_item,
-                                  )}
-                                </>
-                              ) : null}
-                            </>
+                            <TicketCardHeader ticket={ticket} />
                           )}
                         </p>
                         <p className="ticket-short-details">
