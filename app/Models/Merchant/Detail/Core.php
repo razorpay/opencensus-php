@@ -767,6 +767,8 @@ class Core extends Base\Core
                 $this->repo->merchant->saveOrFail($merchant);
 
                 $succeededIds[$merchantId] = true;
+                $this->trace->count(Metric::ACTIVATED_NOT_LIVE, ['status' => 'success']);
+
             }
             catch(\Throwable $ex)
             {
@@ -779,30 +781,21 @@ class Core extends Base\Core
                 );
 
                 $failedIds[$merchantId] = false;
+                $this->trace->count(Metric::ACTIVATED_NOT_LIVE, ['status' => 'failed']);
             }
 
         }
 
-        $traceData = [];
-
-        if (sizeof($failedIds) > 0) {
-            $traceData["activated_not_live_failed_count"] = sizeof($failedIds);
-        }
-
-        if (sizeof($succeededIds) > 0) {
-            $traceData["activated_not_live_success_count"] = sizeof($succeededIds);
-        }
-
-        if (!empty($traceData)) {
-            $this->trace->count(Metric::ACTIVATED_NOT_LIVE, $traceData);
-        }
-
-        return [
+        $summaryData = [
             "succeeded_ids" => $succeededIds,
             "failed_ids" => $failedIds,
             "success_count" => sizeof($succeededIds),
             "failed_count" => sizeof($failedIds),
         ];
+
+        $this->trace->info(Tracecode::ACTIVATION_DATA_FIX_CRON_SUMMARY_RESULT, $summaryData);
+
+        return $summaryData;
     }
 
     public function updateActivationProgressPGOSInternal($merchantId, $input)
