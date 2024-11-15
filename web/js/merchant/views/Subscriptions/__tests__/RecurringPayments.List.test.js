@@ -42,7 +42,7 @@ describe('Recurring Payments List', () => {
         }}
       />,
     );
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
   });
 
   test('Should render Recurring Payments List Fields', () => {

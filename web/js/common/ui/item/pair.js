@@ -168,7 +168,10 @@ export const virtualAccountId = {
 };
 export const accountDescription = {
   title: 'Account Description',
-  value: (item) => item.description,
+  value: (item) =>
+    item.description ? (
+      <div style={{ textWrap: 'wrap', maxWidth: '300px' }}>{item.description}</div>
+    ) : null,
 };
 export const amountPaid = {
   title: 'Amount Paid',
@@ -311,7 +314,12 @@ export const qrCodeId = {
 
 export const description = {
   title: 'Description',
-  value: (item) => item.description || '-',
+  value: (item) =>
+    item.description ? (
+      <div style={{ textWrap: 'wrap', maxWidth: '300px' }}>{item.description}</div>
+    ) : (
+      '-'
+    ),
 };
 
 export const qrUsage = {

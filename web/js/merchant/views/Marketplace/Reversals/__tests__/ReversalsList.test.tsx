@@ -16,7 +16,7 @@ describe('Reversal List', () => {
   test('should render table once data is loaded', async () => {
     server.use(reversalsListSuccess());
     renderApp();
-    const spinner = screen.getByTestId('spinner');
+    const spinner = screen.getByRole('progressbar', { name: 'Loading Table' });
     expect(spinner).toBeInTheDocument();
     await waitForElementToBeRemoved(spinner);
     expect(screen.getByText(reversalsData.items[0].id)).toBeInTheDocument();

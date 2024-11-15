@@ -56,6 +56,23 @@
   transition: margin-left 0.3s;
 }
 
+// override in blade table-cell for tooltip visibility
+// to be removed after migrating to blade tooltip or popover
+td[data-blade-component="table-cell"] > div
+  overflow: visible
+
+td[data-blade-component="table-cell"] .cell-wrapper
+  white-space: nowrap !important
+
+// override in blade table-body for copy button visibility on hover
+tbody[data-blade-component="table-body"]
+  .ClipboardCustom
+    opacity: 0
+
+  > tr[data-blade-component="table-row"]:hover
+    .ClipboardCustom
+      opacity: 1
+
 // Tooltip
 [data-tip] {
   position: relative;

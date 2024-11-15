@@ -1,7 +1,6 @@
 // Todo: delete this file, it's available in @dashboard/shared-ui
 import Alert from 'common/ui/Forms/Alert';
 import Pager from 'common/ui/Pager';
-import Spinner from 'common/ui/Spinner';
 import Table from 'common/ui/Table/Index';
 
 /*
@@ -38,6 +37,7 @@ export default function DataTable(props) {
     onRowClick,
     isDisabled,
     hasMoreData = true,
+    gridTemplateColumns,
   } = props;
 
   const classes = `${noStripe ? '' : 'table-striped'} ${columns ? customClass : ''}`;
@@ -67,12 +67,8 @@ export default function DataTable(props) {
         onCellClick={onCellClick}
         onRowClick={onRowClick}
         isDisabled={isDisabled}
+        gridTemplateColumns={gridTemplateColumns}
       />
-      {!progressLoader && loading && (
-        <div style={{ padding: 77 }} class="text-center">
-          <Spinner />
-        </div>
-      )}
       {!loading &&
         !items.length &&
         (EmptyComponent ? (

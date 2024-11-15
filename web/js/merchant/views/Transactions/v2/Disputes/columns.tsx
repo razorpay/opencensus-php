@@ -55,7 +55,11 @@ export const stage = {
       Stage
     </Text>
   ),
-  value: (item) => <Text>{titleCase(item.phase ?? '')}</Text>,
+  value: (item) => (
+    <Box pointerEvents="none">
+      <Text>{titleCase(item.phase ?? '')}</Text>
+    </Box>
+  ),
 };
 
 export const respondBy = {
@@ -65,7 +69,9 @@ export const respondBy = {
     </Text>
   ),
   value: (item) => (
-    <Text> {item.status === 'open' ? daysLeftInExpiry(item.respond_by) : '--'}</Text>
+    <Box pointerEvents="none">
+      <Text>{item.status === 'open' ? daysLeftInExpiry(item.respond_by) : '--'}</Text>
+    </Box>
   ),
 };
 
@@ -75,17 +81,24 @@ export const raisedOn = {
       Raised on
     </Text>
   ),
-  value: (item) => <Text>{getCreatedOnTime({ created_at: item.created_at })}</Text>,
+  value: (item) => (
+    <Box pointerEvents="none">
+      <Text>{getCreatedOnTime({ created_at: item.created_at })}</Text>
+    </Box>
+  ),
 };
 
 export const flag = {
   title: '',
-  value: (item) =>
-    item?.international ? (
-      <GlobeIcon />
-    ) : (
-      <img src={getFlagOfCountry('IN')?.['4X3']} alt="national" />
-    ),
+  value: (item) => (
+    <Box pointerEvents="none">
+      {item?.international ? (
+        <GlobeIcon />
+      ) : (
+        <img src={getFlagOfCountry('IN')?.['4X3']} alt="national" />
+      )}
+    </Box>
+  ),
 };
 
 export const _status = (isMobileView = false) => {
@@ -102,7 +115,11 @@ export const _status = (isMobileView = false) => {
     ),
     value: ({ status }): JSX.Element => {
       if (!disputesStatusVariantMap[status]) {
-        return <Text textAlign={isMobileView ? 'center' : 'left'}>--</Text>;
+        return (
+          <Box pointerEvents="none">
+            <Text textAlign={isMobileView ? 'center' : 'left'}>--</Text>
+          </Box>
+        );
       }
       const { variant, content } = disputesStatusVariantMap[status];
 
@@ -111,6 +128,7 @@ export const _status = (isMobileView = false) => {
           display="flex"
           alignItems={isMobileView ? 'center' : 'left'}
           justifyContent={isMobileView ? 'center' : 'left'}
+          pointerEvents="none"
         >
           <Status variant={variant} content={content} status={status} />
         </Box>
@@ -149,7 +167,7 @@ const mobileAmount = {
   ),
   value: ({ amount, currency }) => {
     return (
-      <Box textAlign="center">
+      <Box textAlign="center" pointerEvents="none">
         <Amount
           isAffixSubtle={false}
           value={amount}

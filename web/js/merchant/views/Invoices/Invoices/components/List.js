@@ -1,14 +1,22 @@
-import Text from '@razorpay/blade-old/src/atoms/Text';
+import {
+  Table,
+  TableHeader,
+  TableHeaderRow,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+  Box,
+  Text,
+  ShareIcon,
+} from '@razorpay/blade/components';
 import View from '@razorpay/blade-old/src/atoms/View';
-import Flex from '@razorpay/blade-old/src/atoms/Flex';
-import Icon from '@razorpay/blade-old/src/atoms/Icon';
 
-import TableBody from 'common/ui/TableBody';
 import MobileListView from 'common/ui/MobileListView';
 import { amount, createdAt } from 'common/ui/item/pair';
-
-import EntityItemRow from 'merchant/containers/EntityItemRow';
+import { getTableTemplateColumnsValue } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import { shareURL } from 'merchant/views/Invoices/Invoices/helpers';
 import {
   customer,
   invoiceId,
@@ -18,42 +26,39 @@ import {
   receiptNumber,
   referenceId,
 } from 'merchant/views/Invoices/Invoices/item';
-import { shareURL } from 'merchant/views/Invoices/Invoices/helpers';
 
 const PaymentLinkMobileTableListView = (items) => {
   const { item, onShareLinkSuccess = () => {} } = items;
 
   return (
-    <EntityItemRow id={item?.id}>
-      <td>
-        {paymentLinkId.value(item)}
+    <TableRow item={item} testID={`entity-item-row-${item.id}`}>
+      <TableCell>
+        <Box display="flex" flexDirection="column" width="100%">
+          {paymentLinkId.value(item)}
 
-        {item?.customer_details && customer.value(item)}
+          {item?.customer_details && customer.value(item)}
 
-        {item?.short_url && (
-          <View
-            className="link-container"
-            data-tip="Copied"
-            onClick={() => {
-              onShareLinkSuccess();
-              shareURL(item.short_url, item?.id);
-            }}
-          >
-            <Flex alignItems="center">
-              <Text size="small">
-                <div className="share-payment-link">
-                  <Icon name="share" size="small" />
-                </div>
-                Share payment link
-              </Text>
-            </Flex>
-          </View>
-        )}
-      </td>
+          {item?.short_url && (
+            <View
+              className="link-container"
+              data-tip="Copied"
+              onClick={() => {
+                onShareLinkSuccess();
+                shareURL(item.short_url, item?.id);
+              }}
+            >
+              <Box display="flex" alignItems="center" padding="4px" gap="4px">
+                <ShareIcon size="small" />
+                <Text size="small">Share payment link</Text>
+              </Box>
+            </View>
+          )}
+        </Box>
+      </TableCell>
 
-      <td>{amount.value(item)}</td>
-      <td>{invoiveStatus.value(item)}</td>
-    </EntityItemRow>
+      <TableCell>{amount.value(item)}</TableCell>
+      <TableCell>{invoiveStatus.value(item)}</TableCell>
+    </TableRow>
   );
 };
 
@@ -61,11 +66,11 @@ const InvoiceListItem = (props) => {
   const { invoice, columns } = props;
 
   return (
-    <EntityItemRow id={invoice.id}>
+    <TableRow item={invoice} testID={`entity-item-row-${invoice.id}`}>
       {columns.map(({ title, value }) => (
-        <td key={title}>{value(invoice)}</td>
+        <TableCell key={title}>{value(invoice)}</TableCell>
       ))}
-    </EntityItemRow>
+    </TableRow>
   );
 };
 
@@ -88,28 +93,41 @@ export default (props) => {
 
   return isMobileDevice() && isPaymentLinksType ? (
     <MobileListView
+      isLoading={isLoading}
       headers={['Payment Link Id', 'Amount', 'Status']}
       TableListItem={PaymentLinkMobileTableListView}
       tableWrapperClass={listStyle}
       items={invoices}
+      EmptyComponent={EmptyList}
       {...props}
     />
   ) : (
-    <div className="table-responsive">
-      <table className="table table-hover">
-        <thead>
-          <tr>
-            {columns.map(({ title }) => (
-              <th key={title}>{title}</th>
-            ))}
-          </tr>
-        </thead>
-        <TableBody isLoading={isLoading} colSpan={8} rows={invoices} emptyTableRow={EmptyList}>
-          {invoices.map((invoice) => (
-            <InvoiceListItem key={invoice.id} invoice={invoice} columns={columns} />
-          ))}
-        </TableBody>
-      </table>
-    </div>
+    <>
+      <Table
+        data={{ nodes: invoices }}
+        isLoading={isLoading}
+        gridTemplateColumns={getTableTemplateColumnsValue(
+          ...columns.map((col) => col.width ?? '1fr'),
+        )}
+      >
+        {(tableData) => (
+          <>
+            <TableHeader>
+              <TableHeaderRow>
+                {columns.map(({ title }) => (
+                  <TableHeaderCell key={title}>{title}</TableHeaderCell>
+                ))}
+              </TableHeaderRow>
+            </TableHeader>
+            <TableBody>
+              {tableData.map((invoice) => (
+                <InvoiceListItem key={invoice.id} invoice={invoice} columns={columns} />
+              ))}
+            </TableBody>
+          </>
+        )}
+      </Table>
+      {!isLoading && invoices.length === 0 && EmptyList ? <EmptyList /> : null}
+    </>
   );
 };

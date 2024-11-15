@@ -53,7 +53,7 @@ describe('Subscriptions List', () => {
     render(<App location={{ search: '' }} docUrl="/123" />, {
       initialState,
     });
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
   });
 
   afterEach(() => {
@@ -163,7 +163,7 @@ describe('Subscriptions Fetch with isSubscriptionExpiryEnabled enabled', () => {
     render(<App location={{ search: '' }} docUrl="/123" />, {
       initialState,
     });
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     expect(screen.getByText('Something went wrong. Please try again.')).toBeInTheDocument();
   });
 
@@ -173,7 +173,7 @@ describe('Subscriptions Fetch with isSubscriptionExpiryEnabled enabled', () => {
     const { container } = render(<App location={{ search: '' }} docUrl="/123" />, {
       initialState,
     });
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     const cards = container.getElementsByClassName('card');
 
     expect(cards[0]).toHaveTextContent(/0active subscriptions/i);

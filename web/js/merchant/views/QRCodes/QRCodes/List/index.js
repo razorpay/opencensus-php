@@ -10,7 +10,7 @@ import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { QRCodeStatusLabel } from 'merchant/components/StatusLabel';
-import { truncatedString } from 'common/utils/rzp-utils';
+import { getTableTemplateColumnsValue, truncatedString } from 'common/utils/rzp-utils';
 import { fetchQRCodes as fetchAll } from 'merchant/reducers/qrCodes/list';
 import { qrCodeId, description, qrUsage, amountReceived, createdAt } from 'common/ui/item/pair';
 
@@ -40,20 +40,16 @@ const QR_CODE_CREATE_HOTJAR = {
   tags: ['QR_Creation'],
 };
 
-const QRCodeMobileListItem = (item) => {
-  return (
-    <EntityItemRow id={item.id}>
-      <td>
-        <NavLink to={`/qr_codes/${item.id}`}>
-          <code>{item.id}</code>
-        </NavLink>
-        <tr className="mobile-text">{item.name || truncatedString(item.description)}</tr>
-      </td>
-      <td>
-        <QRCodeStatusLabel status={item.status} />
-      </td>
-    </EntityItemRow>
-  );
+export const mobileQrCodeId = {
+  title: 'QR Code ID',
+  value: (item) => (
+    <Box>
+      <NavLink to={`/qr_codes/${item.id}`}>
+        <code>{item.id}</code>
+      </NavLink>
+      <div className="mobile-text">{item.name || truncatedString(item.description)}</div>
+    </Box>
+  ),
 };
 
 // TODO: Update colSpan if no of columns are changes
@@ -114,6 +110,21 @@ class QRCodesListContainer extends ListContainer {
     const feeBearer = this.props.user.merchant.fee_bearer;
     const isCreateQRDisabled = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
 
+    const mobileColumns = [
+      { ...mobileQrCodeId, width: '3fr' },
+      { ...status, width: '1fr' },
+    ];
+    const columns = this.props.isMobileResolution
+      ? mobileColumns
+      : [
+          { ...qrCodeId, width: '1fr' },
+          { ...description, width: '3fr' },
+          { ...qrUsage, width: '1fr' },
+          { ...amountReceived, width: '2fr' },
+          { ...createdAt, width: '1fr' },
+          { ...status, width: '1fr' },
+        ];
+
     return (
       <ProductWrapper
         tabsData={tabsData}
@@ -168,10 +179,12 @@ class QRCodesListContainer extends ListContainer {
               {...this.props}
               title="QR Codes"
               EmptyComponent={EmptyComponent}
-              mobileColumns={[qrCodeId, status]}
-              customMobileRow={QRCodeMobileListItem}
               isMobileResolution={this.props.isMobileResolution}
-              columns={[qrCodeId, description, qrUsage, amountReceived, createdAt, status]}
+              columns={columns}
+              gridTemplateColumns={getTableTemplateColumnsValue(
+                ...columns.map(({ width }) => width),
+              )}
+              progressLoader={true}
             />
 
             <Pager

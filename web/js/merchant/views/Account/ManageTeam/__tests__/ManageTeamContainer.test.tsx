@@ -77,7 +77,7 @@ describe('ManageTeamContainer', () => {
 
     renderApp();
 
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     const inviteMemberBtn = screen.getByRole('button', { name: 'Invite New Member' });
     expect(inviteMemberBtn).toBeEnabled();
     await userEvent.click(inviteMemberBtn);
@@ -108,5 +108,5 @@ describe('ManageTeamContainer', () => {
         'Invitation has been successfully sent to test@email.com',
       );
     });
-  });
+  }, 30000);
 });

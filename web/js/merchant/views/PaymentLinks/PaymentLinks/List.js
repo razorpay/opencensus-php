@@ -26,7 +26,7 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import ListFilter from 'merchant/views/Invoices/Invoices/components/ListFilter';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import ListContainer from 'merchant/containers/ListContainer';
-import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
+import EmptyList from 'merchant/components/EmptyList';
 import track from './track';
 import { trackSearchFilterForInternational } from './ga';
 import EasterEgg from 'merchant/components/EasterEgg';
@@ -38,8 +38,7 @@ const {
 } = PRODUCTS_DATA;
 // TODO: Update colSpan if no of columns are changes
 const EmptyComponent = () => (
-  <EmptyListWithTableRow
-    colSpan={8}
+  <EmptyList
     description={
       <>
         <div>There are no payment links yet!!</div>

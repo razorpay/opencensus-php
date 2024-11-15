@@ -312,6 +312,7 @@ class VirtualAccountsListContainer extends ListContainer {
                 this.paginate(params);
               }}
               onErrorCloseClick={this.onErrorCloseClick}
+              progressLoader={true}
             />
           </div>
         </content>

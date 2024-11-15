@@ -45,8 +45,8 @@ async function toggleDateFilter({ page }) {
 }
 
 export const waitForListingLoader = async ({ page }) => {
-  await page.waitForSelector('.PlaceholderLoader', { state: 'visible', strict: false });
-  await page.waitForSelector('.PlaceholderLoader', { state: 'hidden', strict: false });
+  await page.waitForSelector('[data-testid="table-spinner"]', { state: 'visible', strict: false });
+  await page.waitForSelector('[data-testid="table-spinner"]', { state: 'hidden', strict: false });
 };
 
 export const gotoTransactionDetailsPageById = async ({ page, id, listSelector }) => {
@@ -120,7 +120,7 @@ export const assertRefundDetails = async ({ page, id, amount }) => {
 
 export const assertColumnsVisibility = async (page, columns) => {
   for await (const column of columns) {
-    await expect(page.getByRole('cell', { name: new RegExp(column) })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: new RegExp(column) })).toBeVisible();
   }
 };
 

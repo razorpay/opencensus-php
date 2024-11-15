@@ -63,13 +63,15 @@ describe('Batch List', () => {
     expect(screen.getByText('Batch Upload Id')).toBeInTheDocument();
   });
 
-  test('should render all batch list column', () => {
+  test('should render all batch list column', async () => {
     renderApp();
-    expect(screen.getByText('Batch Id')).toBeInTheDocument();
-    expect(screen.getByText('Batch Name')).toBeInTheDocument();
-    expect(screen.getAllByText('Count')[0]).toBeInTheDocument();
-    expect(screen.getByText('Status')).toBeInTheDocument();
-    expect(screen.getByText('Actions')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Batch Id')).toBeInTheDocument();
+      expect(screen.getByText('Batch Name')).toBeInTheDocument();
+      expect(screen.getAllByText('Count')[0]).toBeInTheDocument();
+      expect(screen.getByText('Status')).toBeInTheDocument();
+      expect(screen.getByText('Actions')).toBeInTheDocument();
+    });
   });
 
   test('should render "Upload Batch File" Modal', async () => {

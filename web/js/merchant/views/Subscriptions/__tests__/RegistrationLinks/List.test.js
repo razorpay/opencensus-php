@@ -28,7 +28,7 @@ describe('Registration Links List', () => {
   beforeEach(async () => {
     server.use(fetchRegistrationLinksMock());
     render(<App location={{ search: '' }} />);
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
   });
 
   test('Should render RL List Fields', () => {

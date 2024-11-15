@@ -74,7 +74,7 @@ const mobileAmount = {
   value: (item: Item): JSX.Element => {
     const { amount, currency, created_at } = item;
     return (
-      <>
+      <Box pointerEvents="none">
         <Amount
           marginLeft={{
             base: '-4px',
@@ -89,7 +89,7 @@ const mobileAmount = {
         <Text size="small" color="surface.text.gray.muted">
           {getCreatedOnTime({ created_at })}
         </Text>
-      </>
+      </Box>
     );
   },
 };
@@ -103,7 +103,9 @@ const status = {
   value: ({ gateway_data, status }: Item): JSX.Element => {
     const { variant, content } = getRefundsStatusVariantMap(window.rzp_org?.business_name)[status];
     return (
-      <Status variant={variant} content={content} status={status} gatewayData={gateway_data} />
+      <Box pointerEvents="none">
+        <Status variant={variant} content={content} status={status} gatewayData={gateway_data} />
+      </Box>
     );
   },
 };

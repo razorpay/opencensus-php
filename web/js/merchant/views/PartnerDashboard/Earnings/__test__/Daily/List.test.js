@@ -28,7 +28,9 @@ describe('test suite for Earnings List', () => {
       initialState: { session: state },
     });
     // Lazy loaded components
-    await waitFor(() => expect(screen.queryByRole('loader')).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByRole('progressbar', { name: 'Loading Table' })).not.toBeInTheDocument(),
+    );
     // API call
     await waitFor(() => expect(screen.queryByTestId('spinner')).not.toBeInTheDocument());
     expect(screen.getByTestId('amount-1679250600')).toHaveTextContent('₹ 40.00');
@@ -41,7 +43,9 @@ describe('test suite for Earnings List', () => {
       initialState: { session: state },
     });
     // Lazy loaded components
-    await waitFor(() => expect(screen.queryByRole('loader')).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByRole('progressbar', { name: 'Loading Table' })).not.toBeInTheDocument(),
+    );
     // API call
     await waitFor(() => expect(screen.queryByTestId('spinner')).not.toBeInTheDocument());
     expect(screen.getByTestId('amount-1679250600')).toHaveTextContent('RM 40.00');

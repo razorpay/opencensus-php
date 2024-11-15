@@ -41,7 +41,12 @@ class InvitationsListContainer extends ListContainer {
               }
             : undefined
         }
-        columns={[email, role, this.actions]}
+        columns={[
+          { ...email, width: '4fr' },
+          { ...role, width: '1fr' },
+          { ...this.actions, width: '1fr' },
+        ]}
+        progressLoader={true}
         {...this.props}
       />
     );

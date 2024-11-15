@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Text } from '@razorpay/blade/components';
+import { Text, Box } from '@razorpay/blade/components';
 import styled from 'styled-components';
 
 import DataTable from 'common/ui/Table/DataTable';
@@ -55,19 +55,32 @@ const StyledProgramItemsTable = styled.div(
 const title = {
   title: 'Title',
   columnClass: 'program-items-title',
-  value: (item: ProgramItem) => <Text weight="semibold"> {item.title} </Text>,
+  value: (item: ProgramItem) => (
+    <Box pointerEvents="none">
+      <Text weight="semibold">{item.title}</Text>
+    </Box>
+  ),
 };
 
 const logo = {
   title: '',
   columnClass: 'program-items-logo',
-  value: (item: ProgramItem) => <ItemLogo item={item} />,
+  value: (item: ProgramItem) => (
+    <Box pointerEvents="none">
+      <ItemLogo item={item} />
+    </Box>
+  ),
 };
 
 const description = {
   title: 'Description',
   columnClass: 'program-items-description',
-  value: (item: ProgramItem) => item.description,
+  value: (item: ProgramItem) => (
+    <Box pointerEvents="none" whiteSpace="normal" minWidth="300px">
+      {item.description}
+    </Box>
+  ),
+  width: 'auto',
 };
 interface ProgramItemsTableProps {
   items: Array<ProgramItem>;

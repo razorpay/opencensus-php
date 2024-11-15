@@ -45,16 +45,16 @@ describe('Wallet > Payments', () => {
     expect(mock).toBeCalledWith({ id: input, from: '', to: '' });
   });
 
-  test('Should display Payments table with expected rows', () => {
+  test('Should display Payments table with expected rows', async () => {
     renderPayments();
+    await waitForLoadingToFinish('table-spinner');
 
     expect(screen.getAllByRole('rowgroup')?.[0]?.children.length).toBe(1);
   });
 
   test('Should render table with expected columns and data', async () => {
     renderPayments();
-
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
 
     expect(screen.getByText('ipayment_qwerty87654321')).toBeInTheDocument();
     expect(screen.getByText('50')).toBeInTheDocument();

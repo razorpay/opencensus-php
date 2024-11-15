@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
 
 import * as InvitationActions from 'merchant/reducers/invitation';
@@ -13,20 +12,23 @@ import ModalHeader from 'common/ui/ModalHeader';
 
 import NewInvitation from '../components/NewInvitation';
 import { analyticsTrack } from 'common/utils/analytics';
+import { Box, Button } from '@razorpay/blade/components';
 
 class InvitationsActions extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      resending: false,
+    };
+  }
+
   static contextTypes = {
     confirm: PropTypes.func,
   };
 
   update = () => {
-    const {
-      invitation,
-      updateInvitation,
-      closeModal,
-      pendingInvitationLength,
-      ...props
-    } = this.props;
+    const { invitation, updateInvitation, closeModal, pendingInvitationLength, ...props } =
+      this.props;
 
     analyticsTrack({
       objectName: 'invitation update',
@@ -187,6 +189,7 @@ class InvitationsActions extends Component {
   };
 
   resend = () => {
+    this.setState({ resending: true });
     const { invitation, loggedInUserName, pendingInvitationLength } = this.props;
     analyticsTrack({
       objectName: 'invitation resend',
@@ -240,29 +243,25 @@ class InvitationsActions extends Component {
           type: 'error',
           message: errors,
         });
+      })
+      .finally(() => {
+        this.setState({ resending: false });
       });
   };
 
   render() {
     return (
-      <>
-        <AsyncButton
-          class="btn btn-primary m-r"
-          onClick={this.resend}
-          text="Resend"
-          pendingText="Resending..."
-        />
-        <button class="btn btn-primary m-r" onClick={this.update}>
+      <Box display="flex" gap="spacing.3">
+        <Button onClick={this.resend} isLoading={this.state.resending}>
+          Resend
+        </Button>
+        <Button variant="tertiary" onClick={this.update}>
           Update
-        </button>
-
-        <AsyncButton
-          class="btn btn-default"
-          text="Cancel"
-          pendingText="Cancelling"
-          onClick={this.cancel}
-        />
-      </>
+        </Button>
+        <Button variant="tertiary" onClick={this.cancel}>
+          Cancel
+        </Button>
+      </Box>
     );
   }
 }

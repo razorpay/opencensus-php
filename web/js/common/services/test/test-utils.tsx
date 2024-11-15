@@ -133,8 +133,10 @@ const customRenderHook = (
   return renderHook(hook, { wrapper: AllTheProviders, ...restOptions });
 };
 
-const waitForLoadingToFinish = (testID = 'spinner'): Promise<void> =>
-  waitForElementToBeRemoved(screen.queryAllByTestId(testID));
+const waitForLoadingToFinish = (testID: 'spinner' | 'table-spinner' = 'spinner'): Promise<void> => {
+  return waitForElementToBeRemoved(screen.queryAllByTestId(testID));
+};
+
 const waitForLoadingToFinishByLabel = (label = 'spinner'): Promise<void> =>
   waitFor(
     () => {

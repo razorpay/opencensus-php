@@ -1,4 +1,7 @@
 import React from 'react';
+import { BladeProvider } from '@razorpay/blade/components';
+import { bladeTheme } from '@razorpay/blade/tokens';
+
 import '@testing-library/jest-dom/extend-expect';
 import WebhooksContainer from 'merchant/views/Settings/Webhooks/List';
 import { screen, waitFor, fireEvent, server } from 'test-utils';
@@ -18,12 +21,12 @@ describe('Webhooks - List.js', () => {
     const history = createMemoryHistory();
     return (
       <Provider store={storeWithInitialState(state)}>
-        <Router navigator={history} location={history.location}>
-          <>
+        <BladeProvider themeTokens={bladeTheme}>
+          <Router navigator={history} location={history.location}>
             <ModalDialog />
             <WebhooksContainer {...rest} />
-          </>
-        </Router>
+          </Router>
+        </BladeProvider>
       </Provider>
     );
   };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Tooltip, TooltipInteractiveWrapper } from '@razorpay/blade/components';
+import { Text, Tooltip, TooltipInteractiveWrapper, Box } from '@razorpay/blade/components';
 import moment from 'moment';
 
 import { useMobile } from 'common/hooks/useMobile';
@@ -16,12 +16,12 @@ const CreatedOn = ({ created_at }: CreatedOnProps): JSX.Element => {
     const date = createdAtSplit.slice(0, createdAtSplit.length - 1).join(',');
     const time = createdAtSplit[createdAtSplit.length - 1];
     return (
-      <>
+      <Box display="flex" flexDirection="column" pointerEvents="none">
         <Text>{date}</Text>
         <Text size="small" color="surface.text.gray.muted">
           {time}
         </Text>
-      </>
+      </Box>
     );
   }
   return (

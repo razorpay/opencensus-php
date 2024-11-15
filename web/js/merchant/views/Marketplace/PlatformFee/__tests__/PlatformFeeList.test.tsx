@@ -58,7 +58,7 @@ describe('Platform Fee List', () => {
   test('should render spinner if loading', () => {
     server.use(platformFeeListSuccess());
     renderApp();
-    const spinner = screen.getByTestId('spinner');
+    const spinner = screen.getByRole('progressbar', { name: 'Loading Table' });
     expect(spinner).toBeInTheDocument();
   });
 

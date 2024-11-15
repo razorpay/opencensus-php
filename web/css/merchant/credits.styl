@@ -109,14 +109,8 @@
       td:not(nth-child(1))
         padding-bottom 10px
 
-    tbody tr
-      td:nth-child(1)
-        padding-left 30px
-        width 25%
-
-    thead tr
-      th:nth-child(1)
-        padding-left 30px
+    tfoot tr th
+      grid-column: 1 / 5
 
     td
       vertical-align unset
@@ -126,6 +120,7 @@
       width 85%
 
     .Input-error
+      text-wrap: wrap
       width 105%
 
     input

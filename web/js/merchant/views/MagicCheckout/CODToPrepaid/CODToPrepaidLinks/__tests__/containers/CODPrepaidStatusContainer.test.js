@@ -1,4 +1,4 @@
-import { render, screen, userEvent, waitFor, server } from 'test-utils';
+import { render, screen, userEvent, waitFor, server, waitForLoadingToFinish } from 'test-utils';
 import { Provider } from 'react-redux';
 import { storeWithInitialState } from 'merchant/store';
 import { rest } from 'msw';
@@ -108,6 +108,7 @@ describe('testing cod prepaid status container component', () => {
       }),
     );
     renderApp();
+    await waitForLoadingToFinish('table-spinner');
 
     const ascendCta = screen.getByTestId('date-ascend-arrow');
     const descendCta = screen.getByTestId('riskTier-descend');

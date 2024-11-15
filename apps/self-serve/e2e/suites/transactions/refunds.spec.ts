@@ -60,7 +60,7 @@ test.describe
       const refundsList = page.getByTestId('refunds-list');
       const columns = ['Refund ID', 'Payment ID', 'Created on', 'Amount', 'Status', 'Actions'];
       for await (const column of columns) {
-        expect(refundsList.getByRole('cell', { name: new RegExp(column) })).toBeVisible();
+        expect(refundsList.getByRole('columnheader', { name: new RegExp(column) })).toBeVisible();
       }
       const id = refunds.refundId.fullRefund.processed;
       await searchTransactionById({ page: refundsList, id });

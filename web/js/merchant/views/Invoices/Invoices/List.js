@@ -35,6 +35,17 @@ import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';
 
+const EmptyComponent = () => (
+  <EmptyList
+    description={
+      <>
+        <div>There are no invoices yet!!</div>
+        <div>Start creating new invoices now.</div>
+      </>
+    }
+  />
+);
+
 @withI18Service
 @connect(
   (state) => {
@@ -243,6 +254,7 @@ class InvoicesListContainer extends ListContainer {
               });
             }}
             onDuplicate={this.onDuplicate}
+            EmptyList={EmptyComponent}
           />
 
           <Pager

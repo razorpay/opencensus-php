@@ -9,10 +9,10 @@ describe('CreditTable', () => {
     title: 'Test',
     creditItems: [
       {
-        creditID: 'Credit ID 1',
-        creditsDescription: 'Test Credit',
-        credits: 10,
-        createdAt: '2021-01-01',
+        id: 'Credit ID 1',
+        campaign: 'Test Credit',
+        value: 10000,
+        created_at: 1728567003,
       },
     ],
     type: 'test',

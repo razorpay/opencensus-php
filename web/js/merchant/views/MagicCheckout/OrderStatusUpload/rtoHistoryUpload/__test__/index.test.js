@@ -1,3 +1,6 @@
+import { BladeProvider } from '@razorpay/blade/components';
+import { bladeTheme } from '@razorpay/blade/tokens';
+
 import RTOHistoryUpload from 'merchant/views/MagicCheckout/OrderStatusUpload/rtoHistoryUpload';
 import { fireEvent, screen, waitFor } from 'test-utils';
 import { Provider } from 'react-redux';
@@ -38,7 +41,9 @@ const App = ({ state = {}, ...props }) => {
         ...state,
       })}
     >
-      <RTOHistoryUpload {...initProps} {...props} />
+      <BladeProvider themeTokens={bladeTheme}>
+        <RTOHistoryUpload {...initProps} {...props} />
+      </BladeProvider>
     </Provider>
   );
 };

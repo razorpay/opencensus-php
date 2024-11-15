@@ -24,7 +24,7 @@ describe('Render Batch List', () => {
         }}
       />,
     );
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
   });
 
   test('Should render Batch List Fields', () => {
@@ -87,7 +87,7 @@ describe('Render batch if user has isRegistrationLinkSupervisorRole', () => {
         },
       },
     );
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
   });
   test('Should render Batch List Fields if user has isRegistrationLinkSupervisorRole', () => {
     ['batch id', 'batch name', 'count', 'type', 'status', 'actions'].forEach((fieldLabel) => {

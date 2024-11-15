@@ -55,7 +55,7 @@ describe('ProgramItemsTable', () => {
     const rowTitle = defaultProps.items[0].title;
     const rowDescription = defaultProps.items[0].description;
     expect(screen.getAllByText(rowDescription)).toHaveLength(1);
-    await userEvent.click(screen.getAllByText(rowDescription)[0]);
+    await userEvent.click(screen.getAllByText(rowDescription)[0], { pointerEventsCheck: 0 });
     expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         objectName: 'Partner Playbook Page Section Cta',

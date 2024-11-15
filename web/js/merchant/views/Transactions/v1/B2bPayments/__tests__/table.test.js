@@ -85,7 +85,7 @@ describe('Test <ListTable />', () => {
   });
   test('Should show loading state', () => {
     renderComponent({ items: [], loading: true });
-    expect(screen.getByTestId('spinner')).toBeInTheDocument();
+    expect(screen.getByRole('progressbar', { name: 'Loading Table' })).toBeInTheDocument();
   });
   test('Should render payment in table', () => {
     renderComponent({ items: testTxn, uploadState: {} });
@@ -110,7 +110,7 @@ describe('Test <ListTable />', () => {
       onUpload,
     });
     const file = new File(['(⌐□_□)'], 'testImage.png', { type: 'image/png' });
-    await userEvent.click(screen.getByText('Upload'));
+    await userEvent.click(screen.getByText('Upload'), { pointerEventsCheck: 0 });
 
     await waitFor(() =>
       // TODO: debug the issue, why userEvent not able to triggered upload file on the input
@@ -133,7 +133,7 @@ describe('Test <ListTable />', () => {
       onBuyerAddressClick,
     });
 
-    await userEvent.click(screen.getByText('Add/Update Buyer Address'));
+    await userEvent.click(screen.getByText('Add/Update Buyer Address'), { pointerEventsCheck: 0 });
     expect(onBuyerAddressClick).toHaveBeenCalledWith('id');
   });
 

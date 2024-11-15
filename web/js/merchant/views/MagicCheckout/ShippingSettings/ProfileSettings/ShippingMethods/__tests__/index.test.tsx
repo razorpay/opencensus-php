@@ -38,13 +38,15 @@ describe('Shipping methods', () => {
   test('should show table view', () => {
     renderShippingMethods({}, DEFAULT_PROFILE_NAME);
     const table = screen.getByRole('table');
+    const tableHeaderItems = screen.getAllByRole('rowheader');
     const tableItems = screen.getAllByRole('row');
     const methodName = screen.queryByText(DB_METHOD.description);
     const addMore = screen.getAllByRole('button', { name: 'Add shipping method' })[0];
     expect(table).toBeInTheDocument();
     expect(methodName).toBeInTheDocument();
     expect(addMore).toBeInTheDocument();
-    expect(tableItems).toHaveLength(2);
+    expect(tableHeaderItems).toHaveLength(1);
+    expect(tableItems).toHaveLength(1);
   });
   test('show show add more view', async () => {
     renderShippingMethods({}, DEFAULT_PROFILE_NAME);

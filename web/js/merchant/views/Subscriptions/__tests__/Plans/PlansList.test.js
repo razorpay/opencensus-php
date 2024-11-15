@@ -52,7 +52,7 @@ describe('Plans List', () => {
         },
       },
     });
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
   });
   test('Should render plan list fields', () => {
     [('plan id', 'plan name', 'amount/unit', 'billing cycle', 'created at')].forEach(

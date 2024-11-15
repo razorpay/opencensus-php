@@ -28,7 +28,7 @@ describe('Tokens List', () => {
   beforeEach(async () => {
     server.use(fetchTokens());
     render(<App location={{ search: '' }} />);
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
   });
   test('Should render RL List Fields', () => {
     ['token id', 'method', 'email', 'contact', 'created at', 'status'].forEach((fieldLabel) => {

@@ -3,7 +3,7 @@ import {
   mockDisputeItems,
   renderApp,
 } from 'merchant/views/Transactions/v2/Disputes/__tests__/mocks/fixtures/DisputeList.js';
-import { screen, waitFor } from 'test-utils';
+import { screen, waitFor, waitForLoadingToFinish } from 'test-utils';
 
 const items = mockDisputeItems();
 
@@ -13,8 +13,9 @@ describe('DisputeList', () => {
     expect(screen.getByText('Disputes')).toBeInTheDocument();
   });
 
-  test('should renders correct columns', () => {
+  test('should renders correct columns', async () => {
     renderApp({ items });
+    await waitForLoadingToFinish('table-spinner');
     columns.forEach((column) => {
       expect(
         screen.getByRole('columnheader', {

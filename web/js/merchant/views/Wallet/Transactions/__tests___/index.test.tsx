@@ -14,12 +14,11 @@ describe('Wallet > Transactions > List Table', () => {
 
   test('Should render table with expected columns and data', async () => {
     render(<Transactions />);
+    await waitForLoadingToFinish('table-spinner');
 
-    await waitForLoadingToFinish();
-
-    expect(screen.getByText('Transaction Id', { selector: 'th' })).toBeInTheDocument();
+    expect(screen.getByText('Transaction Id', { selector: 'th > div > p' })).toBeInTheDocument();
     expect(screen.getByText('itxn_MSQSunez0tjxDX')).toBeInTheDocument();
-    expect(screen.getByText('Reference Id', { selector: 'th' })).toBeInTheDocument();
+    expect(screen.getByText('Reference Id', { selector: 'th > div > p' })).toBeInTheDocument();
     expect(screen.getByText('Account Id')).toBeInTheDocument();
     expect(screen.getByText('iacc_MSQShu0g115l39')).toBeInTheDocument();
     expect(screen.getByText('Source')).toBeInTheDocument();

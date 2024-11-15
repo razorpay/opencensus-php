@@ -46,16 +46,16 @@ describe('Wallet > Loads', () => {
     expect(mock).toBeCalledWith({ id: input, from: '', to: '' });
   });
 
-  test('Should display loads table with expected rows', () => {
+  test('Should display loads table with expected rows', async () => {
     renderLoads();
+    await waitForLoadingToFinish('table-spinner');
 
     expect(screen.getAllByRole('rowgroup')?.[0]?.children.length).toBe(1);
   });
 
   test('Should render table with expected columns and data', async () => {
-    render(<Loads />);
-
-    await waitForLoadingToFinish();
+    renderLoads();
+    await waitForLoadingToFinish('table-spinner');
 
     expect(screen.getByText('iload_qwerty87654321')).toBeInTheDocument();
     expect(screen.getByText('50')).toBeInTheDocument();

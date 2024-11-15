@@ -154,6 +154,7 @@ class OrdersListContainer extends ListContainer {
           paginate={this.paginate}
           {...this.props}
           items={updatedItems}
+          progressLoader={true}
         />
       </div>
     );

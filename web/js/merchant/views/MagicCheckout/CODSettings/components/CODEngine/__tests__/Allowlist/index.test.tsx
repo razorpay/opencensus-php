@@ -32,7 +32,7 @@ describe('testing COD engine allowlist component', () => {
 
   test('component should render properly', async () => {
     renderApp();
-    expect(screen.getByTestId('spinner')).toBeInTheDocument();
+    expect(screen.getByRole('progressbar', { name: 'Loading Table' })).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText('No Zipcode list Set!')).toBeInTheDocument();

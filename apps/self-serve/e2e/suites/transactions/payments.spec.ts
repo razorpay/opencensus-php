@@ -86,7 +86,7 @@ test.describe
         'Actions',
       ];
       for await (const column of columns) {
-        expect(page.getByRole('cell', { name: new RegExp(column) })).toBeVisible();
+        expect(page.getByRole('columnheader', { name: new RegExp(column) })).toBeVisible();
       }
       const id = payments.paymentId.authorized.netbanking;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });

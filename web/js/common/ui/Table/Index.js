@@ -1,89 +1,76 @@
-import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import EntityItemRow from 'merchant/containers/EntityItemRow';
+import {
+  Table,
+  TableHeader,
+  TableHeaderRow,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+} from '@razorpay/blade/components';
+
+import { getTableTemplateColumnsValue } from 'common/utils/rzp-utils';
 
 export default ({
   rows,
   columns,
-  className,
   showHeaders = true,
-  limit,
   loading,
-  progressLoader = false,
-  tableStyle = null,
-  isMobileResolution,
-  mobileColumns,
-  customMobileRow,
   onCellClick,
   onRowClick,
   isDisabled,
+  gridTemplateColumns,
 }) => {
-  const rowItems = [];
-  const cols = isMobileResolution && mobileColumns ? mobileColumns : columns;
-  if (progressLoader && loading) {
-    limit = limit || 5;
-    for (let cur = 0; cur < limit; cur++) {
-      rowItems.push(
-        <EntityItemRow key={cur}>
-          {cols.map((column, index) => (
-            <td class={column.columnClass ? column.columnClass : ''} key={index}>
-              <PlaceholderLoader />
-            </td>
-          ))}
-        </EntityItemRow>,
-      );
-    }
-  } else if (rows.length) {
-    let curRow = 0;
-    rows.forEach((item, index) => {
-      curRow++;
-      if (curRow > limit) {
-        return false;
-      }
-      /* 
-        In case you have to create a custom view for mobile:
-        then you can create a custom function `mobileRows` & pass as props
-        from your parent component & take each item as a param. 
-        Note: You can take reference from QR Code payment's tab
-      */
-      const row =
-        isMobileResolution && customMobileRow ? (
-          customMobileRow(item)
-        ) : (
-          <EntityItemRow
-            onRowClick={onRowClick}
-            isDisabled={isDisabled}
-            key={`${item.id}_${index}`}
-            id={item.id}
-            rowClasses={item.rowClass}
-            item={item}
-          >
-            {cols.map((column, index) => (
-              <td class={column.columnClass ? column.columnClass : ''} key={index}>
-                {column.value(item, onCellClick)}
-              </td>
-            ))}
-          </EntityItemRow>
-        );
-      return rowItems.push(row);
-    });
-  }
+  const _gridTemplateColumns =
+    gridTemplateColumns ||
+    getTableTemplateColumnsValue(...columns.map((col) => col.width ?? '1fr'));
 
   return (
-    <div class="table-responsive">
-      <table class={`table table-hover ${className}`} style={tableStyle}>
-        {showHeaders ? (
-          <thead>
-            <tr>
-              {cols.map((column, index) => (
-                <th class={column.columnClass} key={index}>
-                  {typeof column.title === 'function' ? column.title() : column.title}
-                </th>
-              ))}
-            </tr>
-          </thead>
-        ) : null}
-        {rows && <tbody>{rowItems}</tbody>}
-      </table>
-    </div>
+    <Table data={{ nodes: rows }} isLoading={loading} gridTemplateColumns={_gridTemplateColumns}>
+      {(tableData) => (
+        <>
+          {showHeaders && (
+            <TableHeader>
+              <TableHeaderRow>
+                {columns.map((column, index) => (
+                  <TableHeaderCell key={index}>
+                    {typeof column.title === 'function' ? column.title() : column.title}
+                  </TableHeaderCell>
+                ))}
+              </TableHeaderRow>
+            </TableHeader>
+          )}
+          <TableBody>
+            {tableData.map((item, index) => (
+              <TableRow
+                key={item.id ?? index}
+                testID={`entity-item-row-${item.id}`}
+                item={item}
+                isDisabled={typeof isDisabled === 'function' ? isDisabled(item) : undefined}
+                onClick={
+                  typeof onRowClick === 'function'
+                    ? () =>
+                        onRowClick({
+                          id: item.id,
+                          rowData: {
+                            paymentMethod: item?.method || '',
+                            sourceChannel: item?.source_channel || '',
+                          },
+                        })
+                    : undefined
+                }
+              >
+                {columns.map((column, index) => (
+                  <TableCell key={index}>
+                    {typeof column.value === 'function'
+                      ? column.value(item, onCellClick)
+                      : column.value}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </>
+      )}
+    </Table>
   );
 };

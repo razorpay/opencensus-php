@@ -87,7 +87,13 @@ class MembersListContainer extends ListContainer {
             ),
           }
         }
-        columns={[this.member, this.contactPhone, role, this.actions]}
+        columns={[
+          { ...this.member, width: '4fr' },
+          { ...this.contactPhone, width: '2fr' },
+          { ...role, width: '1fr' },
+          { ...this.actions, width: '1fr' },
+        ]}
+        progressLoader={true}
         {...this.props}
       />
     );

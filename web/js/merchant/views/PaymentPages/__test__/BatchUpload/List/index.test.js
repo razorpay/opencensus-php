@@ -31,7 +31,7 @@ describe('Batch Payment Page - Batch Details', () => {
       isBatchPaymentPages: true,
     };
     renderApp(initialState, props);
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     expect(screen.getByText('Download Sample File')).toBeInTheDocument();
     expect(screen.getByText('Batch Id')).toBeInTheDocument();
   });
@@ -49,7 +49,7 @@ describe('Batch Payment Page - Batch Details', () => {
     };
     server.use(paymentPagesErrorHandlers.paymentPagesDetailsError());
     renderApp(initialState, props);
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     expect(screen.getByText(/The requested URL was not found on the server./i)).toBeInTheDocument();
   });
 
@@ -68,7 +68,7 @@ describe('Batch Payment Page - Batch Details', () => {
 
     renderApp(initialState, props);
 
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
 
     expect(screen.getByText('Batch Id')).toBeInTheDocument();
 
@@ -91,7 +91,7 @@ describe('Batch Payment Page - Batch Details', () => {
     };
     renderApp(initialState, props);
 
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
 
     expect(screen.getByText('Batch Id')).toBeInTheDocument();
 
@@ -112,7 +112,7 @@ describe('Batch Payment Page - Batch Details', () => {
       isBatchPaymentPages: true,
     };
     renderApp(initialState, props);
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     const clearBtn = screen.getByRole('button', { name: 'Clear' });
     expect(clearBtn).toBeInTheDocument();
     await userEvent.click(clearBtn);
@@ -137,7 +137,7 @@ describe('Batch Payment Page - Batch Details', () => {
     server.use(paymentPagesErrorHandlers.batchPaymentPageGetBatchesError());
     jest.setTimeout(30000);
     renderApp(initialState, props, true);
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     const uploadBtn = screen.getByRole('button', { name: 'Click here to upload' });
     expect(uploadBtn).toBeInTheDocument();
     await userEvent.click(uploadBtn);
@@ -167,7 +167,7 @@ describe('Batch Payment Page - Batch Details', () => {
       isBatchPaymentPages: true,
     };
     renderApp(initialState, props, true);
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     const notifyBatch = screen.getAllByText('Send all links')[0];
     expect(notifyBatch).toBeInTheDocument();
     await userEvent.click(notifyBatch);
@@ -207,7 +207,7 @@ describe('Batch Payment Page - Batch Details', () => {
       isBatchPaymentPages: true,
     };
     renderApp(initialState, props, true);
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     const notifyBatch = screen.getAllByText('Send all links')[1];
     expect(notifyBatch).toBeInTheDocument();
     await userEvent.click(notifyBatch);
@@ -247,7 +247,7 @@ describe('Batch Payment Page - Batch Details', () => {
       isBatchPaymentPages: true,
     };
     renderApp(initialState, props, true);
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     const notifyBatch = screen.getAllByText('Send all links')[1];
     expect(notifyBatch).toBeInTheDocument();
     await userEvent.click(notifyBatch);
@@ -282,7 +282,7 @@ describe('Batch Payment Page - Batch Details', () => {
     };
     server.use(paymentPagesErrorHandlers.batchPaymentPagesFetchNotifyDetails());
     renderApp(initialState, props, true);
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     const notifyBatch = screen.getAllByText('Send all links')[0];
     expect(notifyBatch).toBeInTheDocument();
     await userEvent.click(notifyBatch);
@@ -317,7 +317,7 @@ describe('Batch Payment Page - Batch Details', () => {
     };
     server.use(paymentPagesErrorHandlers.batchPaymentPageGetBatchesError());
     renderApp(initialState, props, true);
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     expect(screen.getByText(/No Batch Files Found/i)).toBeInTheDocument();
   });
 });

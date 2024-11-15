@@ -19,7 +19,7 @@ describe('Batch List Table component', () => {
       </Provider>,
     );
 
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
 
     expect(container.querySelector('tbody')?.children.length).toBe(2);
   });

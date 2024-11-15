@@ -1,9 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
-import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Amount from 'common/ui/Amount';
-import TableBody from 'common/ui/TableBody';
 import Time from 'common/ui/Time';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -12,10 +10,20 @@ import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/Paymen
 import ShowWhen from 'merchant/components/ShowWhen';
 import Button from 'common/new-ui/Button';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, getTableTemplateColumnsValue } from 'common/utils/rzp-utils';
 
 import { trackListActions } from 'merchant/views/PaymentPages/PaymentPages/ga';
 import track from './track';
+
+import {
+  Table,
+  TableHeader,
+  TableHeaderRow,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+} from '@razorpay/blade/components';
 
 export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }) => {
   const trackCopyClick = (item) => {
@@ -49,186 +57,185 @@ export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }
   );
 
   return (
-    <div class="table-responsive Table--PaymentpagesV3">
-      <table class="table table-hover table-striped">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Total Sales</th>
-            <HideItem>
-              <th>Item Name</th>
-              <th>Units Sold</th>
-            </HideItem>
-            <th>Page Url</th>
-            <th>Created On</th>
-            <th>Status</th>
-            <ShowItem>
-              <th>Actions</th>
-            </ShowItem>
-          </tr>
-        </thead>
-        <TableBody
-          isLoading={loading}
-          colSpan={8}
-          rows={paymentPages}
-          emptyTableMsg="No data found!"
-        >
-          {paymentPages.map((item) => {
-            const { id, title } = item;
-            item.payment_page_items = item?.payment_page_items || [];
-            return (
-              <EntityItemRow id={id} key={id}>
-                <td>
+    <Table
+      data={{ nodes: paymentPages }}
+      isLoading={loading}
+      gridTemplateColumns={getTableTemplateColumnsValue(
+        '2fr 1fr',
+        !isBatchPaymentPages && '1fr',
+        !isBatchPaymentPages && '1fr',
+        '5fr 1fr 1fr',
+        isBatchPaymentPages && '1fr',
+      )}
+    >
+      {(tableData) => (
+        <>
+          <TableHeader>
+            <TableHeaderRow>
+              <TableHeaderCell>Title</TableHeaderCell>
+              <TableHeaderCell>Total Sales</TableHeaderCell>
+              <HideItem>
+                <TableHeaderCell>Item Name</TableHeaderCell>
+                <TableHeaderCell>Units Sold</TableHeaderCell>
+              </HideItem>
+              <TableHeaderCell>Page Url</TableHeaderCell>
+              <TableHeaderCell>Created On</TableHeaderCell>
+              <TableHeaderCell>Status</TableHeaderCell>
+              <ShowItem>
+                <TableHeaderCell>Actions</TableHeaderCell>
+              </ShowItem>
+            </TableHeaderRow>
+          </TableHeader>
+          <TableBody>
+            {tableData.map((item) => {
+              const { id, title } = item;
+              item.payment_page_items = item?.payment_page_items || [];
+              return (
+                <TableRow key={id} item={item} testID={`entity-item-row-${id}`}>
+                  <TableCell>
+                    <HideItem>
+                      <NavLink
+                        to={`/paymentpages/${isStorefrontPage ? 'storefront/' : ''}${id}/payments${
+                          isStorefrontPage ? '#storefront' : '#paymentpages'
+                        }`}
+                        onClick={trackTitleClick}
+                      >
+                        {title}
+                      </NavLink>
+                    </HideItem>
+                    <ShowItem>
+                      <NavLink
+                        to={`${BATCH_PAYMENT_PAGES_BASE_URL}/${id}/payments#batchpaymentpages`}
+                        onClick={trackTitleClick}
+                      >
+                        {title}
+                      </NavLink>
+                    </ShowItem>
+                  </TableCell>
+                  <TableCell>
+                    <Amount value={item.total_amount_paid} currency={item.currency} />
+                  </TableCell>
                   <HideItem>
-                    <NavLink
-                      to={`/paymentpages/${isStorefrontPage ? 'storefront/' : ''}${id}/payments${
-                        isStorefrontPage ? '#storefront' : '#paymentpages'
-                      }`}
-                      onClick={trackTitleClick}
-                    >
-                      {title}
-                    </NavLink>
-                  </HideItem>
-                  <ShowItem>
-                    <NavLink
-                      to={`${BATCH_PAYMENT_PAGES_BASE_URL}/${id}/payments#batchpaymentpages`}
-                      onClick={trackTitleClick}
-                    >
-                      {title}
-                    </NavLink>
-                  </ShowItem>
-                </td>
-
-                {/* TODO: Check if needed to be manually calculated from items or we've direct value */}
-                <td>
-                  <Amount value={item.total_amount_paid} currency={item.currency} />
-                </td>
-
-                <HideItem>
-                  <td>
-                    <table>
-                      <tbody>
-                        {item?.payment_page_items?.slice(0, 2).map((pi, ix) => (
-                          <tr key={ix}>
-                            <td>
-                              <span class="item-ellipsis">{pi?.item?.name}</span>
-                            </td>
-                          </tr>
-                        ))}
-                        {item?.payment_page_items?.length > 2 && (
-                          <tr>
-                            <td>
-                              <span class="help-content">
-                                <span class="more-btn">
-                                  <b>+ {item.payment_page_items.length - 2} more</b>
+                    <TableCell>
+                      <table>
+                        <tbody>
+                          {item?.payment_page_items?.slice(0, 2).map((pi, ix) => (
+                            <tr key={ix}>
+                              <td>
+                                <span class="item-ellipsis">{pi?.item?.name}</span>
+                              </td>
+                            </tr>
+                          ))}
+                          {item?.payment_page_items?.length > 2 && (
+                            <tr>
+                              <td>
+                                <span class="help-content">
+                                  <span class="more-btn">
+                                    <b>+ {item.payment_page_items.length - 2} more</b>
+                                  </span>
+                                  <Popover>
+                                    <PopoverBody>
+                                      <div class="more-items">
+                                        <div>
+                                          <span class="title">Item Name</span>
+                                          {item?.payment_page_items?.slice(2).map((pi, ix) => (
+                                            <span class="item-ellipsis" key={ix}>
+                                              {pi?.item?.name}
+                                            </span>
+                                          ))}
+                                        </div>
+                                        <div>
+                                          <span class="title">Quantities Sold</span>
+                                          {item?.payment_page_items?.slice(2).map((pi, ix) => (
+                                            <span class="item-ellipsis" key={ix}>
+                                              {!isStorefrontPage ? (
+                                                <>
+                                                  {Number(pi.quantity_sold)}
+                                                  {!!pi.stock && (
+                                                    <span style={{ opacity: 0.7 }}>
+                                                      {' '}
+                                                      of {Number(pi.stock)}
+                                                    </span>
+                                                  )}
+                                                </>
+                                              ) : (
+                                                getUnitsDescription({
+                                                  units: pi.stock,
+                                                  quantitySold: pi.quantity_sold,
+                                                  status: pi.catalog_status,
+                                                })
+                                              )}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </PopoverBody>
+                                  </Popover>
                                 </span>
-
-                                <Popover>
-                                  <PopoverBody>
-                                    <div class="more-items">
-                                      <div>
-                                        <span class="title">Item Name</span>
-
-                                        {item?.payment_page_items?.slice(2).map((pi, ix) => (
-                                          <span class="item-ellipsis" key={ix}>
-                                            {pi?.item?.name}
-                                          </span>
-                                        ))}
-                                      </div>
-                                      <div>
-                                        <span class="title">Quantities Sold</span>
-
-                                        {item?.payment_page_items?.slice(2).map((pi, ix) => (
-                                          <span class="item-ellipsis" key={ix}>
-                                            {!isStorefrontPage ? (
-                                              <>
-                                                {Number(pi.quantity_sold)}
-                                                {!!pi.stock && (
-                                                  <span style={{ opacity: 0.7 }}>
-                                                    {' '}
-                                                    of {Number(pi.stock)}
-                                                  </span>
-                                                )}
-                                              </>
-                                            ) : (
-                                              getUnitsDescription({
-                                                units: pi.stock,
-                                                quantitySold: pi.quantity_sold,
-                                                status: pi.catalog_status,
-                                              })
-                                            )}
-                                          </span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  </PopoverBody>
-                                </Popover>
-                              </span>
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </td>
-
-                  <td>
-                    <table>
-                      <tbody>
-                        {item?.payment_page_items?.slice(0, 2).map((pi, ix) => (
-                          <tr key={ix}>
-                            <td>
-                              <span class="item-ellipsis">
-                                {!isStorefrontPage ? (
-                                  <>
-                                    {Number(pi.quantity_sold)}
-                                    {!!pi.stock && (
-                                      <span style={{ opacity: 0.7 }}> of {Number(pi.stock)}</span>
-                                    )}
-                                  </>
-                                ) : (
-                                  getUnitsDescription({
-                                    units: pi.stock,
-                                    quantitySold: pi.quantity_sold,
-                                    status: pi.catalog_status,
-                                  })
-                                )}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </td>
-                </HideItem>
-
-                <td>
-                  {item.short_url && (
-                    <span class="CopyLink">
-                      <span>{item.short_url}</span>
-                      <CustomClipboard value={item.short_url} onCopy={() => trackCopyClick(item)}>
-                        <button class="btn btn-default btn-xs">copy</button>
-                      </CustomClipboard>
-                    </span>
-                  )}
-                </td>
-                <td>
-                  <Time value={item.created_at} />
-                </td>
-                <td>
-                  <PaymentPagesStatusLabel status={item.status} />
-                </td>
-                <ShowItem>
-                  <td>
-                    <NavLink to={`/paymentpages/batchuploads/${item.id}/${item.title}`}>
-                      <Button className="Button--primary">Batch Details</Button>
-                    </NavLink>
-                  </td>
-                </ShowItem>
-              </EntityItemRow>
-            );
-          })}
-        </TableBody>
-      </table>
-    </div>
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </TableCell>
+                    <TableCell>
+                      <table>
+                        <tbody>
+                          {item?.payment_page_items?.slice(0, 2).map((pi, ix) => (
+                            <tr key={ix}>
+                              <td>
+                                <span class="item-ellipsis">
+                                  {!isStorefrontPage ? (
+                                    <>
+                                      {Number(pi.quantity_sold)}
+                                      {!!pi.stock && (
+                                        <span style={{ opacity: 0.7 }}> of {Number(pi.stock)}</span>
+                                      )}
+                                    </>
+                                  ) : (
+                                    getUnitsDescription({
+                                      units: pi.stock,
+                                      quantitySold: pi.quantity_sold,
+                                      status: pi.catalog_status,
+                                    })
+                                  )}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </TableCell>
+                  </HideItem>
+                  <TableCell>
+                    {item.short_url && (
+                      <span class="CopyLink">
+                        <span>{item.short_url}</span>
+                        <CustomClipboard value={item.short_url} onCopy={() => trackCopyClick(item)}>
+                          <button class="btn btn-default btn-xs">copy</button>
+                        </CustomClipboard>
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Time value={item.created_at} />
+                  </TableCell>
+                  <TableCell>
+                    <PaymentPagesStatusLabel status={item.status} />
+                  </TableCell>
+                  <ShowItem>
+                    <TableCell>
+                      <NavLink to={`/paymentpages/batchuploads/${item.id}/${item.title}`}>
+                        <Button className="Button--primary">Batch Details</Button>
+                      </NavLink>
+                    </TableCell>
+                  </ShowItem>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </>
+      )}
+    </Table>
   );
 };

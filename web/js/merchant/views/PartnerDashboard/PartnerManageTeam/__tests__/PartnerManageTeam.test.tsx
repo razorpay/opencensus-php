@@ -100,14 +100,14 @@ describe('PartnerManageTeam', () => {
   test('Should render PartnerManageTeam', async () => {
     renderApp();
     expect(screen.getByText('Add your POS Partner Agents Now!')).toBeInTheDocument();
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     expect(screen.getByText('QA Reseller User Name')).toBeInTheDocument();
     expect(screen.getByText('test2@razorpay.com')).toBeInTheDocument();
   });
 
   test('Should show alert if choosing non-POS role', async () => {
     renderApp();
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     await userEvent.click(screen.getByRole('button', { name: 'Invite New Member' }));
     expect(
       screen.getByText('Can only view POS section under Affiliated Accounts'),
@@ -127,7 +127,7 @@ describe('PartnerManageTeam', () => {
   test('Should be able to invite POS Agent Role in Invite Modal with analytics', async () => {
     server.use(sendMerchantInvitationSuccess());
     renderApp();
-    await waitForLoadingToFinish();
+    await waitForLoadingToFinish('table-spinner');
     await userEvent.click(screen.getByRole('button', { name: 'Invite New Member' }));
     await waitFor(() => {
       expect(screen.getByText('Member Details')).toBeInTheDocument();

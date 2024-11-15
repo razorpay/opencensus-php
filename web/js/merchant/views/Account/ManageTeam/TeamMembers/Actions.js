@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
 
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
@@ -17,6 +16,7 @@ import {
   updateMember as updateMemberReducer,
   updateOwner as updateOwnerReducer,
 } from 'merchant/reducers/team';
+import { Box, Button } from '@razorpay/blade/components';
 
 class MembersActions extends Component {
   static contextTypes = {
@@ -252,20 +252,14 @@ class MembersActions extends Component {
     }
 
     return (
-      <>
-        <button class="btn btn-primary m-r" onClick={this.update}>
-          Update
-        </button>
-
+      <Box display="flex" gap="spacing.3">
+        <Button onClick={this.update}>Update</Button>
         <ShowWhen additionalCondition={(userCurrent) => userCurrent.isAllowedEdit('team')}>
-          <AsyncButton
-            class="btn btn-default"
-            text="Remove"
-            pendingText="Removing..."
-            onClick={this.remove}
-          />
+          <Button variant="tertiary" onClick={this.remove}>
+            Remove
+          </Button>
         </ShowWhen>
-      </>
+      </Box>
     );
   }
 }

@@ -96,7 +96,7 @@ export const bankRRN = {
   value: (item: Item): JSX.Element => {
     const { acquirer_data: { arn, rrn } = {} } = item;
     return (
-      <div className="bank-rrn">
+      <div className="bank-rrn" style={{ pointerEvents: 'none' }}>
         <Text testID="bank-rrn">{rrn || arn || '--'}</Text>
         <Text size="small" color="surface.text.gray.muted">
           {getPaymentMethod(item)}
@@ -113,7 +113,9 @@ export const customerDetail = {
     </Text>
   ),
   value: ({ contact }: Item): JSX.Element => (
-    <Text>{contact ? <MaskedContact contact={contact} /> : '--'}</Text>
+    <Box pointerEvents="none">
+      <Text>{contact ? <MaskedContact contact={contact} /> : '--'}</Text>
+    </Box>
   ),
 };
 
@@ -124,7 +126,11 @@ export const createdOn = {
     </Text>
   ),
   value: ({ created_at }: Item): JSX.Element => {
-    return <CreatedOn created_at={created_at} />;
+    return (
+      <Box pointerEvents="none">
+        <CreatedOn created_at={created_at} />
+      </Box>
+    );
   },
 };
 
@@ -153,7 +159,7 @@ export const mobileAmount = {
   value: (item: Item): JSX.Element => {
     const { amount, currency, created_at } = item;
     return (
-      <>
+      <Box display="flex" flexDirection="column" pointerEvents="none">
         <Amount
           marginLeft={{
             base: '-4px',
@@ -168,7 +174,7 @@ export const mobileAmount = {
         <Text size="small" color="surface.text.gray.muted">
           {getCreatedOnTime({ created_at })} &bull; {getPaymentMethod(item)}
         </Text>
-      </>
+      </Box>
     );
   },
 };
@@ -181,10 +187,18 @@ export const status = {
   ),
   value: ({ status }: Item): JSX.Element => {
     if (!getPaymentStatusVariantMap(window.rzp_org?.business_name)[status]) {
-      return <Text>--</Text>;
+      return (
+        <Box pointerEvents="none">
+          <Text>--</Text>
+        </Box>
+      );
     }
     const { variant, content } = getPaymentStatusVariantMap(window.rzp_org?.business_name)[status];
-    return <Status variant={variant} content={content} status={status} isFailedIconEnabled />;
+    return (
+      <Box pointerEvents="none">
+        <Status variant={variant} content={content} status={status} isFailedIconEnabled />
+      </Box>
+    );
   },
 };
 

@@ -31,7 +31,7 @@ test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=pay
     await page.getByRole('link', { name: 'Orders', exact: true }).click();
     const columns = ['Order Id', 'Amount', 'Attempts', 'Receipt', 'Created At', 'Status'];
     for await (const column of columns) {
-      await expect(page.getByRole('cell', { name: new RegExp(column) })).toBeVisible();
+      await expect(page.getByRole('columnheader', { name: new RegExp(column) })).toBeVisible();
     }
     await expect(page.getByRole('heading', { name: 'No Orders Found!' })).toBeVisible();
   });
@@ -42,7 +42,7 @@ test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=pay
     expect(page.getByRole('link', { name: 'Guide to Dispute' })).toBeVisible();
     const columns = ['Dispute Id', 'Amount', 'Type', 'Respond By', 'Created At', 'Status'];
     for await (const column of columns) {
-      await expect(page.getByRole('cell', { name: new RegExp(column) })).toBeVisible();
+      await expect(page.getByRole('columnheader', { name: new RegExp(column) })).toBeVisible();
     }
     await expect(
       page.getByText('No disputes found for the selected duration and criteria!'),
@@ -61,7 +61,7 @@ test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=pay
       'Actions',
     ];
     for await (const column of columns) {
-      await expect(page.getByRole('cell', { name: new RegExp(column) })).toBeVisible();
+      await expect(page.getByRole('columnheader', { name: new RegExp(column) })).toBeVisible();
     }
     await page.locator('input[name="id"]').fill('pay_OB5ZB0lZSaC2yb');
     await page.getByRole('button', { name: 'Search' }).click();

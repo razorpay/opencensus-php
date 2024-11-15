@@ -1953,3 +1953,14 @@ export const getCountryCodes = async () => {
 
 export const is2FaExperimentEnabled = (experimenets) =>
   experimenets?.enable_2fa_for_protected_flows?.variables.result === 'on';
+
+/**
+ * Get value for `gridTemplateColumns` property.
+ * Filters out args that are not of type `string`. Does not check if passed strings are valid or not.
+ *
+ * @param  {...string} args Value for width of each column.
+ * @returns {string|undefined} All filtered values concatenated with a space.
+ */
+export function getTableTemplateColumnsValue(...args) {
+  return args.filter((value) => typeof value === 'string' && value !== '').join(' ') || undefined;
+}

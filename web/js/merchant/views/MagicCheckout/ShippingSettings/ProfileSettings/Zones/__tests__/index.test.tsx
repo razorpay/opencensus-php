@@ -46,6 +46,7 @@ describe('Shipping zones', () => {
   test('should show table view', () => {
     renderShippingZones({}, DEFAULT_PROFILE_NAME);
     const table = screen.getByRole('table');
+    const tableHeaderItems = screen.getAllByRole('rowheader');
     const tableItems = screen.getAllByRole('row');
     const zoneName = screen.queryByText(/North/i);
     const addMore = screen.getByTestId('magic-add-more-button');
@@ -54,7 +55,8 @@ describe('Shipping zones', () => {
     expect(zoneName).toBeInTheDocument();
     expect(addMore).toBeInTheDocument();
     expect(uploadMore).toBeInTheDocument();
-    expect(tableItems).toHaveLength(3);
+    expect(tableHeaderItems).toHaveLength(1);
+    expect(tableItems).toHaveLength(2);
   });
   test('file upload modal should open when clicked on Upload', async () => {
     renderShippingZones({}, DEFAULT_PROFILE_NAME);

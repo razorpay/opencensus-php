@@ -13,10 +13,11 @@ const ClickableUrl = {
 
     return (
       <NavLink to={url}>
-        <code>{item.url}</code>
+        <code style={{ minWidth: '300px', whiteSpace: 'normal' }}>{item.url}</code>
       </NavLink>
     );
   },
+  width: 'auto',
 };
 
 const Status = {

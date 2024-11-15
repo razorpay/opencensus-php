@@ -78,7 +78,7 @@ import { waitForLoader } from '../../utils';
       page,
     }) => {
       const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
-      await waitForLoader({ page, selector: '[data-testid="spinner"]' });
+      await waitForLoader({ page, selector: '[data-testid="table-spinner"]' });
       const firstRow = await page.locator('[data-testid*="entity-item-row"]').first();
       const firstCell = await firstRow.getByRole('cell').first();
       const batchId = await firstCell.textContent();
