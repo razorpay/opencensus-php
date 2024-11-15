@@ -73,6 +73,11 @@ class Idfc extends Base
 
         foreach ($data['items'] as $emiPayment)
         {
+            if ($emiPayment->terminal->isOptimizer())
+            {
+                continue;
+            }
+
             $cardNumber = $emiPayment->card->getLast4();
 
             $emiTenure = $emiPayment->emiPlan['duration'];
