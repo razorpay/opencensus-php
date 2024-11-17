@@ -11,8 +11,6 @@ final class RazorxTreatment
 
     const PAYMENT_CREATE_ROUTE_REARCH = 'payment_create_route_rearch';
 
-    const FETCH_ENTITY_ORIGIN_VIA_FALLBACK = 'fetch_entity_origin_via_fallback';
-
     const GIFU_CUSTOM = 'gifu_custom';
 
     const WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION         = 'WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION';
