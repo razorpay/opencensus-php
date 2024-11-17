@@ -1,18 +1,22 @@
 import { useEffect, useState } from 'react';
 import { ActionListItemAsset } from '@razorpay/blade/components';
 import qs from 'query-string';
+import { useLocation } from 'react-router-dom';
+import { useStore } from 'shell/commonStore';
 
 import Dropdown from 'common/components/Dropdown';
 import { useSplitzService } from 'common/splitz';
 import ClickOutside from 'merchant/views/Navigator/components/ClickOutside';
 import { gatewayLogos } from 'merchant/views/Navigator/components/util';
 import { isPaymentV2ParityFeatureEnabled } from 'merchant/views/Transactions/v2/common/utils';
-import { useStore } from 'shell/commonStore';
 
 const ProviderSelector = ({ name, providers, provider, setProvider, isLoading, onChange }) => {
+  const location = useLocation();
   const user = useStore((state) => state.session.user);
   const splitz = useSplitzService();
-  const isProviderSelectorForV2 = isPaymentV2ParityFeatureEnabled(splitz, user);
+
+  const isProviderSelectorForV2 =
+    isPaymentV2ParityFeatureEnabled(splitz, user) && !location.pathname.includes('/settlements');
   const optionDisplayKey = isProviderSelectorForV2 ? 'title' : 'name';
 
   const [showList, setShowList] = useState(false);
