@@ -218,7 +218,7 @@ class AccountsListContainer extends ListContainer {
   };
 
   showAccountDetailsModal = (account) => {
-    const { closeModal } = this.props;
+    const { closeModal, user } = this.props;
     const {
       abExperiments: { enable_modular_onboarding_linked_account = {} },
     } = this.props.splitz;
