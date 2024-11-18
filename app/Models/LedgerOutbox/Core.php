@@ -1220,7 +1220,7 @@ class Core extends Base\Core
                                 // balance update is done asynchronously via AsyncBalanceUpdateForTransfer job
                                 $reverseShadowTransfersCore = new ReverseShadow\Transfers\Core();
 
-                                $reverseShadowTransfersCore->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal);
+                                $reverseShadowTransfersCore->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal,$transferPayment);
 
                                 $this->trace->info(
                                     TraceCode::TRANSFER_PROCCESSED_SUCCESSFULLY_IN_REVERSE_SHADOW,

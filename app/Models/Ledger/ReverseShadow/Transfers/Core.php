@@ -277,7 +277,7 @@ class Core extends Base\Core
 
         // create txns without balance update and dispatch for settlement if experiment is enabled
         // balance update is done asynchronously via Kafka for sync journal creates
-        $this->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal);
+        $this->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal, $transferPayment);
 
         return [$fee, $tax];
     }
@@ -724,12 +724,14 @@ class Core extends Base\Core
         return $moneyParams;
     }
 
-    public function createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal)
+    public function createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal, $transferPayment=null)
     {
+        if ($transferPayment === null)
+        {
+            $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
 
-        $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
-
-        $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
+            $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
+        }
 
         $transferMerchant = $transfer->merchant;
 
