@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import ModalHeader from 'common/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -37,9 +37,9 @@ export default ({ onCloseClick, user }) => {
     }
   }, []);
 
-  let isSGMerchant = false;
+  const [isSGMerchant, setIsSGMerchant] = useState(false);
   useEffect(() => {
-    isSGMerchant = getCookie('rzp_user_merchant_region') === 'SG';
+    setIsSGMerchant(getCookie('rzp_user_merchant_region') === 'SG');
   }, []);
 
   const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
