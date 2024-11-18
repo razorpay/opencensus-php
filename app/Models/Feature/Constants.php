@@ -2133,6 +2133,21 @@ class Constants
      */
     const LRSNonStandardCheckout = 'lrs_non_standard_checkout';
 
+    /**
+     * Feature flag to indicate onboarding for Razorpay Tax has been completed by Merchant
+     */
+    const RazorpayTaxOnboarding = 'rzp_tax_onboarding';
+
+    /**
+     * Feature flag to enable merchants for payment calculations via Razorpay Tax
+     */
+    const RazorpayTaxProcessing = 'rzp_tax_processing';
+
+    /**
+     * Feature flag to enable merchants for inclusive pricing for Razorpay Tax
+     */
+    const RazorpayTaxInclusiveTaxPricing = 'rzp_tax_incl_tax_pricing';
+
 
     // Feature flag business website validation bvs and mcc automation
     const WEBSITE_AUTOMATED_CHECKS_FEATURE = 'website_automated_checks';
@@ -2421,6 +2436,9 @@ class Constants
         self::LRSTravelFlow,
         self::LRSTravelCitiFlow,
         self::LRSNonStandardCheckout,
+        self::RazorpayTaxOnboarding,
+        self::RazorpayTaxProcessing,
+        self::RazorpayTaxInclusiveTaxPricing,
         DcsConstants::LRSImportFeeBreakup,
         self::CustomMessageForCFB,
         self::ONE_CC_EMAIL_CUSTOMER_CONSENT,
@@ -3049,6 +3067,9 @@ class Constants
         self::LRSTravelFlow                                => true,
         self::LRSTravelCitiFlow                            => true,
         self::LRSNonStandardCheckout                       => true,
+        self::RazorpayTaxOnboarding                        => true,
+        self::RazorpayTaxProcessing                        => true,
+        self::RazorpayTaxInclusiveTaxPricing               => true,
         DcsConstants::LRSImportFeeBreakup                  => true,
         self::ONE_CLICK_OVERRIDE_THEME                     => true,
         self::PP_CUSTOM_DOMAIN                             => true,
@@ -4397,6 +4418,21 @@ class Constants
         self::LRSNonStandardCheckout => [
             'feature'       => self::LRSTravelFlow,
             'display_name'  => 'Feature to enable LRS for Non Standard Checkout Merchants',
+            'documentation' => '',
+        ],
+        self::RazorpayTaxOnboarding => [
+            'feature'       => self::RazorpayTaxOnboarding,
+            'display_name'  => 'Feature to indicate Razorpay Tax onboarding completion',
+            'documentation' => '',
+        ],
+        self::RazorpayTaxProcessing => [
+            'feature'       => self::RazorpayTaxProcessing,
+            'display_name'  => 'Feature to enable Razorpay Tax payment processing',
+            'documentation' => '',
+        ],
+        self::RazorpayTaxInclusiveTaxPricing => [
+            'feature'       => self::RazorpayTaxInclusiveTaxPricing,
+            'display_name'  => 'Feature to enable Razorpay Tax inclusive pricing',
             'documentation' => '',
         ],
         DcsConstants::LRSImportFeeBreakup => [
