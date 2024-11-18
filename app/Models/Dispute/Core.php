@@ -1008,7 +1008,7 @@ class Core extends Base\Core
 
     protected function getAcceptedDisputeAmount(Entity $dispute, array $input)
     {
-        $disputeBaseAmount = $dispute->getBaseAmount() ?: $dispute->getAmount();
+        $disputeBaseAmount = $dispute->getAmount() ?: $dispute->getBaseAmount();
 
         if (isset($input[Entity::ACCEPTED_AMOUNT]) === false)
         {

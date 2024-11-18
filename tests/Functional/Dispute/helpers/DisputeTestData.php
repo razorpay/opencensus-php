@@ -1022,6 +1022,24 @@ return [
         ],
     ],
 
+    'testDisputeEditDeductOnLostInternational' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'status' => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'          => 50,
+                'amount_deducted' => 50,
+                'currency'        => 'USD',
+                'phase'           => 'chargeback',
+                'status'          => 'lost'
+            ],
+        ],
+    ],
+
     'testDisputeEditDeductForNoBalance' => [
         'request' => [
             'method'  => 'post',
