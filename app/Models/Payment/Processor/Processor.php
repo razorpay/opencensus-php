@@ -4686,10 +4686,10 @@ class Processor
      * @param Payment\Entity $payment
      * @param $calculated_benefits
      * @param Offer\Entity $offer
-     * @return void
+     * @return bool
      * @throws Exception\ServerErrorException
      */
-    public function setOfferBenefitAndAvailOnOE(Payment\Entity $payment, $calculated_benefits, Offer\Entity $offer): void
+    public function setOfferBenefitAndAvailOnOE(Payment\Entity $payment, $calculated_benefits, Offer\Entity $offer): bool
     {
         // Fetch discounted amount from api for nc emi offers
         if ($this->offer->isNoCostEmi()) {
@@ -4711,20 +4711,22 @@ class Processor
                     $this->trace->info(TraceCode::OFFERS_ENGINE_UPDATED_DISCOUNT, [
                         'Empty calculated benefit at Offers Engine' => $calculated_benefits,
                     ]);
-                    return ;
+                    return false;
                 }
 
             } else {
                 $this->trace->info(TraceCode::OFFERS_ENGINE_UPDATED_DISCOUNT, [
                     'Empty calculated benefit at Offers Engine' => $calculated_benefits,
                 ]);
-                return;
+                return false;
             }
         }
 
         $payment->setAttribute(Payment\Entity::OFFER_BENEFITS, $calculated_benefits);
 
         (new Offer\OffersEngine())->availOnOffersEngine($payment, $offer, $calculated_benefits);
+
+        return true;
     }
 
     protected function addCustomerIdToInputForExternalSubscription(array & $input)
@@ -6880,15 +6882,23 @@ class Processor
             isset($resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']) === true;
 
         $hasException = false;
+        $isOfferAvailed = false;
 
         if($isOfferValidAtOE)
         {
             try {
-                $this->setOfferBenefitAndAvailOnOE($payment,
+                $isOfferAvailed = $this->setOfferBenefitAndAvailOnOE($payment,
                     $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits'], $offer);
             } catch (\Exception $e) {
                 $hasException = true;
             }
+        }
+
+        // For No Cost Emi Offers, there's a chance the offer wasn't availed due to
+        // empty calculated benefits
+        if ($isOfferAvailed === false)
+        {
+            return false;
         }
 
         if (!$isOfferValidAtOE || $hasException) {

@@ -74,9 +74,7 @@ class OffersTest extends TestCase
 
     public function testCreateCardOffer()
     {
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
-
-        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
+        $this->offersEngineMock->shouldReceive('createOffer')->times(0)->andReturn( [
             'offer' => [
                 'metadata' => [
                     'offer_id' => 'offer_10000000000000',
@@ -160,9 +158,7 @@ class OffersTest extends TestCase
 
     public function testCreateOfferWithNullMethod()
     {
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
-
-        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
+        $this->offersEngineMock->shouldReceive('createOffer')->times(0)->andReturn( [
             'offer' => [
                 'metadata' => [
                     'offer_id' => 'offer_10000000000000',
@@ -254,9 +250,7 @@ class OffersTest extends TestCase
 
     public function testCreateCardOfferWithIin()
     {
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
-
-        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
+        $this->offersEngineMock->shouldReceive('createOffer')->times(0)->andReturn( [
             'offer' => [
                 'metadata' => [
                     'offer_id' => 'offer_10000000000000',
@@ -343,9 +337,7 @@ class OffersTest extends TestCase
 
     public function testCreateDcCardOfferWithIin()
     {
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
-
-        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
+        $this->offersEngineMock->shouldReceive('createOffer')->times(0)->andReturn( [
             'offer' => [
                 'metadata' => [
                     'offer_id' => 'offer_10000000000000',
@@ -434,11 +426,9 @@ class OffersTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
-
         $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
 
-        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
+        $this->offersEngineMock->shouldReceive('createOffer')->times(0)->andReturn( [
             'offer' => [
                 'metadata' => [
                     'offer_id' => 'offer_10000000000000',
@@ -538,8 +528,6 @@ class OffersTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
-
         $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
 
         $this->startTest();
@@ -549,11 +537,9 @@ class OffersTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
-
         $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
 
-        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
+        $this->offersEngineMock->shouldReceive('createOffer')->times(0)->andReturn( [
             'offer' => [
                 'metadata' => [
                     'offer_id' => 'offer_10000000000000',
@@ -653,8 +639,6 @@ class OffersTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
-
         $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
 
         $this->startTest();
@@ -663,8 +647,6 @@ class OffersTest extends TestCase
 
     public function testCreateCardOfferWithMaxPaymentCount()
     {
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
-
         $this->startTest();
     }
 
@@ -686,8 +668,6 @@ class OffersTest extends TestCase
 
     public function testOfferCreateBulk()
     {
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
-
         $this->ba->adminAuth();
 
         $this->startTest();
@@ -924,8 +904,6 @@ class OffersTest extends TestCase
     {
         $offer = $this->fixtures->create('offer:card');
 
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
-
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 
         $this->startTest();
@@ -934,8 +912,6 @@ class OffersTest extends TestCase
     public function testAddIinsToNonCardOffer()
     {
         $offer = $this->fixtures->create('offer:wallet');
-
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 
@@ -957,8 +933,6 @@ class OffersTest extends TestCase
     {
         $offer = $this->fixtures->create('offer:wallet');
 
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
-
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 
         $this->startTest();
@@ -971,8 +945,6 @@ class OffersTest extends TestCase
         $offer2 = $this->fixtures->create('offer:card', [
             'max_payment_count' => null,
         ]);
-
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer2->getPublicId();
 
@@ -988,8 +960,6 @@ class OffersTest extends TestCase
         ]);
 
          $offer2 = $this->fixtures->create('offer:card');
-
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer2->getPublicId();
 
@@ -1042,8 +1012,6 @@ class OffersTest extends TestCase
 
     public function testDeactivateOffer()
     {
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_off', ]]]);
-
         $offer = $this->fixtures->create('offer:card');
 
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();

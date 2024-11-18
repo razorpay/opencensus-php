@@ -368,7 +368,7 @@ trait ExternalOffersRepo
     private function fetchFromOE(string $merchantId): bool
     {
         return ($this->validateExternalFetchEnabled() === true)
-        && $this->core->shouldRouteToOffersEngine($merchantId, Constants::OFFERS_ENGINE_FETCH_EXP) === true;
+        && ($this->core->shouldRouteToOffersEngine($merchantId, Constants::OFFERS_ENGINE_FETCH_EXP) === true);
     }
 
     private function fetchRemainingFromAPI(array $offerIds, $offerEngineOffers)

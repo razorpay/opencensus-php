@@ -1168,7 +1168,6 @@ class OffersEngine extends Base\Core
      */
     public function availOnOffersEngine(Payment\Entity $payment, Entity $offer, array $benefitApplied): void
     {
-
         $input = $this->getDefaultTransactionInput($payment, $offer);
 
         $input['benefit_applied'] = $benefitApplied;

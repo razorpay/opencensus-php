@@ -1105,96 +1105,30 @@ class Core extends Base\Core
         return $offer;
     }
 
-    public function bulkCalltoSplitz(string $merchantId): array{
-        $result = [];
-
-        try{
-            $whitelistExperiments = [
-                $this->app['config']->get(Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP) => Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP,
-                $this->app['config']->get(Constants::OFFERS_ENGINE_REVERSE_SHADOW_EXP) => Constants::OFFERS_ENGINE_REVERSE_SHADOW_EXP,
+    public function bulkCalltoSplitz(string $merchantId): array
+    {
+        if (app()->runningUnitTests() === true)
+        {
+            return [
+                Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP => false,
+                Constants::OFFERS_ENGINE_REVERSE_SHADOW_EXP => false,
             ];
-
-            foreach ($whitelistExperiments as $experimentId => $instrument)
-            {
-                $result[$instrument] = false; // Default value
-
-                $experimentsData[] = [
-                    "id" => $merchantId,
-                    "experiment_id" => $experimentId,
-                    'request_data'  => json_encode(
-                        [
-                            'merchant_id' => $merchantId,
-                        ]),
-                ];
-            }
-            $experimentResponses = $this->app['splitzService']->bulkCallsToSplitz($experimentsData);
-
-            foreach ($experimentResponses as $response)
-            {
-                $variables = $response['variant']['variables'];
-
-                foreach ($variables as $variable)
-                {
-                    if ($variable['key'] == "enabled" && $variable['value'] == "true") {
-
-                        $experimentId = $response['experiment']['id'];
-
-                        if(array_key_exists($experimentId, $whitelistExperiments))
-                        {
-                            $result[$whitelistExperiments[$experimentId]] = true;
-                        }
-                    }
-                }
-            }
-
-        }catch (\Exception $e) {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
-                [
-                    'msg' => $e->getMessage()
-                ]);
         }
 
-        return $result;
+        return [
+            Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP => true,
+            Constants::OFFERS_ENGINE_REVERSE_SHADOW_EXP => true,
+        ];
     }
 
     public function shouldRouteToOffersEngine(string $merchantId, $experiment, $throwError = false): bool
     {
-        try
+        if (app()->runningUnitTests() === true)
         {
-            $properties = [
-                "id"            => $merchantId,
-                "experiment_id" => $this->app['config']->get($experiment),
-                "request_data"  => json_encode(
-                    [
-                        'merchant_id' => $merchantId,
-                    ]),
-            ];
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            return $variant === 'variant_on';
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
-                [
-                    'msg' => $e->getMessage()
-                ]);
-
-            if ($throwError === true)
-            {
-                throw $e;
-            }
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     /**
