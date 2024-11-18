@@ -44,6 +44,7 @@ use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Merchant\Credits as FundCredits;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\VirtualAccount\Entity as VAEntity;
 use RZP\Models\Admin\Permission\Name as Permission;
 use \RZP\Models\Workflow\Action\Core as ActionCore;
@@ -138,7 +139,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRules = [
-        Entity::ID                          => 'sometimes|alpha_num|size:14|unique:merchants',
+        Entity::ID                          => 'sometimes|alpha_num|size:14',
         Entity::NAME                        => 'sometimes|string|max:200',
         Entity::EMAIL                       => 'sometimes|email',
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
@@ -212,7 +213,17 @@ class Validator extends Base\Validator
     ];
 
     protected static $uniqueEmailRules = [
+        Entity::EMAIL                       => 'sometimes|email|custom'
+    ];
+
+    // this rule is just for fallback don't use this in code .
+    // this will be removed after asv revamp
+    protected static $uniqueEmailFallbackRules = [
         Entity::EMAIL                       => 'sometimes|email|unique:merchants'
+    ];
+
+    protected static $uniqueHandleFallbackRules = [
+        Entity::HANDLE                       => 'sometimes|nullable|min:3|max:4|unique:merchants'
     ];
 
     protected static $editCreditsRules = [
@@ -220,7 +231,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editEmailRules = [
-        Entity::EMAIL                               => 'required|email|unique:merchants',
+        Entity::EMAIL                               => 'required|email|custom',
     ];
 
     protected static $editEmailNonUniqueRules = [
@@ -271,7 +282,7 @@ class Validator extends Base\Validator
         Entity::LOGO_URL                 => 'sometimes|max:2000',
         Entity::INVOICE_LABEL_FIELD      => 'sometimes|filled|string|max:50|in:business_name,business_dba',
         Entity::AUTO_CAPTURE_LATE_AUTH   => 'sometimes|boolean',
-        Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
+        Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:handle,null',
         Entity::DISPLAY_NAME             => 'sometimes|nullable|string|min:3|max:255|utf8',
         Entity::FEE_CREDITS_THRESHOLD    => 'sometimes|integer|nullable',
         Entity::AMOUNT_CREDITS_THRESHOLD => 'sometimes|integer|nullable',
@@ -842,6 +853,20 @@ class Validator extends Base\Validator
         'user_ids' => 'sometimes|array|nullable',
     ];
 
+    public function ValidateEmail($attribute, $value) {
+        $app = App::getFacadeRoot();
+        if ((new AsvRouter())->shouldRouteFilterToAsv(Constants::MERCHANT_EMAIL_VALIDATION)) {
+             if ($app->repo->merchant->getMerchantCountByEmail($value) > 0) {
+                 throw new BadRequestValidationFailureException( 'The email has already been taken.');
+             }
+        } else {
+            $input = [$attribute => $value];
+            $this->validateInput('unique_email_fallback', $input);
+        }
+    }
+
+
+
     /**
      * @throws BadRequestValidationFailureException
      */
@@ -1123,6 +1148,16 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_HANDLE_UPPERCASE_ONLY);
             }
+        }
+
+        $app = App::getFacadeRoot();
+        if ((new AsvRouter())->shouldRouteFilterToAsv(Constants::MERCHANT_HANDLE_VALIDATION)) {
+            if ($app->repo->merchant->getMerchantCountByHandle($handle) > 0) {
+                throw new BadRequestValidationFailureException( 'The handle has already been taken.');
+            }
+        } else {
+            $input = [$attribute => $handle];
+            $this->validateInput('unique_handle_fallback', $input);
         }
     }
 

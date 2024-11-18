@@ -1572,6 +1572,22 @@ class Repository extends Base\Repository
         }
     }
 
+    public function getMerchantCountByEmail($email) {
+        $query = $this->newQueryWithConnection(
+            $this->getConnectionFromType(Connection::ASV_WRITER)
+        );
+
+        return $query->where(Entity::EMAIL, $email)->count();
+    }
+
+    public function getMerchantCountByHandle($handle) {
+        $query = $this->newQueryWithConnection(
+            $this->getConnectionFromType(Connection::ASV_WRITER)
+        );
+
+        return $query->where(Entity::HANDLE, $handle)->count();
+    }
+
     public function fetchByEmailAndOrgId(string $email, string $orgId = Org\Entity::RAZORPAY_ORG_ID)
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);

@@ -4,10 +4,15 @@ namespace Unit\Models\Merchant;
 
 use Config;
 use Database\Connection;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Mailgun\Exception;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\DbQueryException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\Validator;
 use RZP\Models\Merchant\Request\Entity as MEREQEntity;
 use RZP\Tests\Functional;
 use Razorpay\Asv\Error\GrpcError;
@@ -833,6 +838,125 @@ class RepositoryTest extends RepositoryTestHelper
         ];
 
         $this->validateSaveOrFailReadMigration("merchant", $attributes, new Repository());
+    }
+
+    public function testMerchantUniqueEmailValidation()
+    {
+        $id = PublicEntity::generateUniqueId();
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', $id);
+
+        $attributes = [
+            "email" => "saveorfailreadmigration@gmail.com",
+        ];
+
+        $entity = $this->fixtures->create("merchant", $attributes);
+
+        // with spltiz off
+        $this->setSplitzWithOutput("false", 1);
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('The email has already been taken.');
+        (new Validator())->validateInput('unique_email', $attributes);
+
+        // with spltiz on
+        $this->setSplitzWithOutput("true", 1);
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('The email has already been taken.');
+        (new Validator())->validateInput('unique_email', $attributes);
+
+
+        // should not cause failure
+        $attributes = [
+            "email" => "uniqueEmailForTestCase@gmail.com",
+        ];
+
+        // with spltiz off
+
+        try {
+            $this->setSplitzWithOutput("false", 1);
+            (new Validator())->validateInput('unique_email', $attributes);
+            $this->assertTrue(true);
+        } catch (\Exception $e){
+            $this->fail("this flow should not throw validation failure");
+        }
+
+        // with spltiz on
+        try {
+            $this->setSplitzWithOutput("true", 1);
+            (new Validator())->validateInput('unique_email', $attributes);
+            $this->assertTrue(true);
+        } catch (\Exception $e){
+            $this->fail("this flow should not throw validation failure");
+        }
+    }
+
+    public function testMerchantUniqueHandleValidation()
+    {
+        $id = PublicEntity::generateUniqueId();
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', $id);
+
+        $attributes = [
+            "handle" => "AFK"
+        ];
+
+        $this->fixtures->create("merchant", $attributes);
+
+        // with spltiz off
+        $this->setSplitzWithOutput("false", 1);
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('The handle has already been taken.');
+        (new Validator())->validateInput('edit_config', $attributes);
+
+        // with spltiz on
+        $this->setSplitzWithOutput("true", 1);
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('The handle has already been taken.');
+        (new Validator())->validateInput('edit_config', $attributes);
+
+
+        // happy flow
+        $attributes = [
+            "handle" => "ZZZ"
+        ];
+        // with spltiz off
+        try {
+            $this->setSplitzWithOutput("false", 1);
+            (new Validator())->validateInput('edit_config', $attributes);
+            $this->assertTrue(true);
+        } catch (\Exception $e) {
+            $this->fail("this flow should not throw validation failure");
+        }
+
+        // with spltiz on
+        try {
+            $this->setSplitzWithOutput("true", 1);
+            (new Validator())->validateInput('edit_config', $attributes);
+            $this->assertTrue(true);
+        } catch (\Exception $e) {
+            $this->fail("this flow should not throw validation failure");
+        }
+
+    }
+
+    public function testMerchantUniqueIDValidation()
+    {
+        $id = PublicEntity::generateUniqueId();
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', $id);
+
+        $merchantId = PublicEntity::generateUniqueId();
+        $attributes = [
+            "id" => $merchantId,
+        ];
+
+        $this->fixtures->create("merchant", $attributes);
+
+
+        // we have removed the validation in create validation
+        (new Validator())->validateInput('create', $attributes);
+        $this->assertTrue(true);
+
+        // we have moved the validation at db level because id is primary key
+        $this->expectException(UniqueConstraintViolationException::class);
+        $this->fixtures->create("merchant", $attributes);
     }
 
     public function testVerifyEagerLoadRelation()

@@ -17,6 +17,9 @@ use RZP\Models\User\Role;
 final class Constants
 {
 
+    const MERCHANT_EMAIL_VALIDATION = "MERCHANT_EMAIL_VALIDATION";
+    const MERCHANT_HANDLE_VALIDATION = "MERCHANT_HANDLE_VALIDATION";
+
     const ASV_DB = 'asv_db';
     const API_DB = 'api_db';
     const ASV_SERVICE = 'asv_service';

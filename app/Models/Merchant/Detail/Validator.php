@@ -26,6 +26,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use libphonenumber\NumberParseException;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Partner\Core as PartnerCore;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -657,7 +658,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $uniqueContactMobileRules = [
-      Entity::CONTACT_MOBILE                            => 'filled|unique:merchant_details',
+      Entity::CONTACT_MOBILE                            => 'filled|custom',
+    ];
+
+    protected static $uniqueContactMobileFallbackRules = [
+        Entity::CONTACT_MOBILE                            => 'filled|unique:merchant_details',
     ];
 
     protected static $updateEDDDetailsRules = [
@@ -709,6 +714,18 @@ class Validator extends Base\Validator
         Constants::COMMENT      => "required|string|min:4",
         Constants::ENCRYPT      => "sometimes|nullable|associative_array",
     ];
+
+    public function ValidateContactMobile($attribute, $value) {
+        $app = App::getFacadeRoot();
+        if ((new AsvRouter())->shouldRouteFilterToAsv(DetailConstants::MERCHANT_DETAIL_CONTACT_MOBILE_VALIDATION)) {
+            if ($app->repo->merchant_detail->getMerchantDetailCountByContactMobile($value) > 0) {
+                throw new BadRequestValidationFailureException( 'The contact mobile has already been taken.');
+            }
+        } else {
+            $input = [$attribute => $value];
+            $this->validateInput('unique_contact_mobile_fallback', $input);
+        }
+    }
 
     /**
      * @param $attribute

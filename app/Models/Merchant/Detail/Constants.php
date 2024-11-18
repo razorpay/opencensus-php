@@ -15,6 +15,7 @@ use RZP\Models\Merchant\Website\Entity as WebsiteEntity;
 
 class Constants
 {
+    const MERCHANT_DETAIL_CONTACT_MOBILE_VALIDATION = "MERCHANT_DETAIL_CONTACT_MOBILE_VALIDATION";
     const LIVE_PRIMARY_BALANCE          = 'Live Primary Balance';
     const REJECTION_CATEGORY_REASONS    ='Rejection Category - Rejection Reasons';
     const REJECTION_OPTION             ='Rejection Option';

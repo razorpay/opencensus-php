@@ -11,8 +11,11 @@ use Rzp\Accounts\Merchant\V1\EntitySaveResponse;
 use Rzp\Accounts\Merchant\V1\MerchantDetailSaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveResponse;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\WriteEnabledOnAsv;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Merchant\Detail\Validator;
 use RZP\Tests\Functional;
 use Razorpay\Asv\Error\GrpcError;
 use RZP\Tests\Traits\MocksSplitz;
@@ -481,6 +484,57 @@ class RepositoryTest extends RepositoryTestHelper
             $this->flushCache();
             $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantDetailEntity1Array, "CzmiCwTPCL3t2K");
         });
+    }
+
+    public function testMerchantDetailUniqueContactValidation()
+    {
+        $id = PublicEntity::generateUniqueId();
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', $id);
+
+        $attributes = [
+            "contact_mobile" => "9999999991"
+        ];
+
+        $entity = $this->fixtures->create("merchant_detail", $attributes);
+
+        // while creating in db we appends +91 , hence added this
+        $attributes = [
+            "contact_mobile" => "+919999999991"
+        ];
+        // with spltiz off
+        $this->setSplitzWithOutput("false", 1);
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('The contact mobile has already been taken.');
+        (new Validator())->validateInput('unique_contact_mobile', $attributes);
+
+        // with spltiz on
+        $this->setSplitzWithOutput("true", 1);
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('The contact mobile has already been taken.');
+        (new Validator())->validateInput('unique_contact_mobile', $attributes);
+
+
+        // happy flow
+        $attributes = [
+            "contact_mobile" => "+919999999990"
+        ];
+        // with spltiz off
+        try {
+            $this->setSplitzWithOutput("false", 1);
+            (new Validator())->validateInput('unique_contact_mobile', $attributes);
+            $this->assertTrue(true);
+        } catch (\Exception $e) {
+            $this->fail("this flow should not throw validation failure");
+        }
+
+        // with spltiz on
+        try {
+            $this->setSplitzWithOutput("true", 1);
+            (new Validator())->validateInput('unique_contact_mobile', $attributes);
+            $this->assertTrue(true);
+        } catch (\Exception $e) {
+            $this->fail("this flow should not throw validation failure");
+        }
     }
 
     public function testMerchantRepositoryFindOrFailErrors() {

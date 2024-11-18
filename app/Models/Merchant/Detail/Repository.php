@@ -58,6 +58,14 @@ class Repository extends Base\Repository
         $this->asvRouter = new AsvRouter();
     }
 
+    public function getMerchantDetailCountByContactMobile($contactMobile) {
+        $query = $this->newQueryWithConnection(
+            $this->getConnectionFromType(Connection::ASV_WRITER)
+        );
+
+        return $query->where(Entity::CONTACT_MOBILE, $contactMobile)->count();
+    }
+
     public function fetchAllMerchantIDsFromSlaveDB($input)
     {
         $query = $this->newQueryWithConnection($this->getAccountServiceReplicaConnection())
