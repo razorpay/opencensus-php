@@ -130,6 +130,14 @@ class Service extends Base\Service
      */
     const RRN_TTL = 259200;
 
+    const MUTEX_LOCK_TTL = 60; // in seconds
+
+    const MUTEX_RETRY_COUNT = 10;
+
+    const MUTEX_MIN_RETRY_DELAY = 1000; // in miliseconds
+
+    const MUTEX_MAX_RETRY_DELAY = 2000;
+
     const GET_PAYMENTS_QUERY = "select p.id, a.rrn, p.created_at from hive.realtime_hudi_api.payments as p INNER JOIN hive.realtime_pgpayments_card_live.authorization AS a ON p.id = a.payment_id WHERE a.status in ('authorized', 'captured') AND p.method = 'card' and p.gateway = 'hdfc' and p.cps_route = 2 and p.created_at < %s and p.id > '%s' order by p.id asc limit %s";
 
     const PG_ROUTER_URL ="https://pg-router-int.razorpay.com";
@@ -6268,8 +6276,9 @@ class Service extends Base\Service
                         function() use ($payment, $data, $extraProperties, $paymentProcessor)
                         {
                             return $this->timeoutPaymentProcess($payment, $data, $extraProperties, $paymentProcessor);
-                        });
-                });
+                        },  self:: MUTEX_LOCK_TTL,ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,self:: MUTEX_RETRY_COUNT, self:: MUTEX_MIN_RETRY_DELAY, self:: MUTEX_MAX_RETRY_DELAY);
+                },
+            );
         }
 
         return $data;
