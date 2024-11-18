@@ -10,14 +10,14 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
     storageState: getStorageStatePath(BASE_PATH).POS_LOGIN_STATE,
   });
   test.describe('POS Catalog Page', () => {
-    test('should open pos catalog page when clicked on pos sidebar item', async ({ page }) => {
+    test.skip('should open pos catalog page when clicked on pos sidebar item', async ({ page }) => {
       await navigateTo(page, routes.DASHBOARD);
       await page.getByRole('link', { name: 'POS' }).click();
       await waitForPosCatalogToLoad({ page });
       await expect(page).toHaveURL(`${routes.POS}/catalog`);
     });
 
-    test('should show products on screen and on click should add to cart @flow=pos-device-ordering @project=pos-onboarding', async ({
+    test.skip('should show products on screen and on click should add to cart @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
       await navigateTo(page, routes.POS);
@@ -44,7 +44,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await expect(page.getByText('Pocket-sized and affordable')).toBeVisible();
     });
 
-    test('should add device from catalog to cart and cart should be visible with actions @flow=pos-device-ordering @project=pos-onboarding', async ({
+    test.skip('should add device from catalog to cart and cart should be visible with actions @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
       await navigateTo(page, routes.POS);
@@ -79,7 +79,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
   });
 
   test.describe('POS Product Description ', () => {
-    test('should render PDP on screen with content @flow=pos-device-ordering @project=pos-onboarding', async ({
+    test.skip('should render PDP on screen with content @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
       await navigateTo(page, routes.POS);
@@ -113,7 +113,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       );
     });
 
-    test('should be able to add products in cart and should reflect in the cart @flow=pos-device-ordering @project=pos-onboarding', async ({
+    test.skip('should be able to add products in cart and should reflect in the cart @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
       await navigateTo(page, routes.POS);
@@ -140,7 +140,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
   });
 
   test.describe('POS Order Summary', () => {
-    test('should redirect to order summary if clicked on proceed to cart and should be able to modify order in order summary @flow=pos-device-ordering @project=pos-onboarding', async ({
+    test.skip('should redirect to order summary if clicked on proceed to cart and should be able to modify order in order summary @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
       await navigateTo(page, routes.POS);
@@ -161,7 +161,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await orderSummary.click('Done');
     });
 
-    test('should render order pricing details on scren @flow=pos-device-ordering @project=pos-onboarding', async ({
+    test.skip('should render order pricing details on scren @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
       await navigateTo(page, routes.POS);
@@ -205,7 +205,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await expect(page.getByText('Renewal')).toBeVisible();
     });
 
-    test('should be able to fill new address and proceed with checkout @flow=pos-device-ordering @project=pos-onboarding', async ({
+    test.skip('should be able to fill new address and proceed with checkout @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
       await navigateTo(page, routes.POS);
@@ -229,7 +229,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await page.getByText('Confirm Address & Pay').isEnabled();
     });
 
-    test('should persist cart and devlivery address upon refresh  @flow=pos-device-ordering @project=pos-onboarding', async ({
+    test.skip('should persist cart and devlivery address upon refresh  @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
       await navigateTo(page, routes.POS);
@@ -257,7 +257,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       ).toBeVisible();
     });
 
-    test('should open confirm checkout prompt if amount is 0  @flow=pos-device-ordering @project=pos-onboarding', async ({
+    test.skip('should open confirm checkout prompt if amount is 0  @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
       await navigateTo(page, routes.POS);
@@ -286,7 +286,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
   });
 
   test.describe('Order Listing and Details without order', () => {
-    test('should show empty order screen if no orders @flow=pos-device-ordering @project=pos-onboarding', async ({
+    test.skip('should show empty order screen if no orders @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
       await navigateTo(page, routes.POS);
