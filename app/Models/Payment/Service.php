@@ -2630,6 +2630,12 @@ class Service extends Base\Service
                 $this->addAuthenticationObject($entity, $authenticationData);
             }
           }
+        if (isset($entity['card'])) {
+            if (isset($authenticationData['cavv']) && $payment->card->network === Card\Network::$fullName[Card\Network::AMEX]){
+                $authenticationData = (new Payment\Service)->getAuthenticationEntity3ds2($payment->getPublicId());
+                $entity['acquirer_data']['authentication_reference_number'] = $authenticationData['cavv'];
+            }
+        }
 
         if (isset($entity['card']) && ($payment->card->isInternational() === false))
         {
