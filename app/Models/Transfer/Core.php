@@ -932,69 +932,7 @@ class Core extends Base\Core
             return false;
         }
 
-        $experimentIds = [
-            $this->app['config']->get('app.customer_transfer_reverse_shadow_v2'),
-        ];
-
-        if ($this->merchant->isPostpaid() === true)
-        {
-            $experimentIds[] = $this->app['config']->get('app.customer_transfer_reverse_shadow_v2_postpaid');
-        }
-
-        $ledgerService = $this->app['ledger'];
-
-        $core = (new ReverseShadowTransfersCore());
-
-        $merchantAccountBalances = $core->getMerchantAccountBalances($ledgerService, $this->merchant->getId());
-
-        if ($merchantAccountBalances[LedgerConstants::MERCHANT_AMOUNT_CREDITS] > 0)
-        {
-            $experimentIds[] = $this->app['config']->get('app.customer_transfer_reverse_shadow_v2_amount_credits');
-        }
-
-        $negativeLimit = $core->getMaxNegativeLimitForTransferV2();
-
-        if ($negativeLimit > 0)
-        {
-            $experimentIds[] = $this->app['config']->get('app.customer_transfer_reverse_shadow_v2_negative_limit');
-        }
-
-        $experimentData = [];
-
-        foreach ($experimentIds as $experimentId)
-        {
-            $id = $source->getId();
-
-            // override id in case of balance transfers
-            if ($source instanceof Merchant\Entity)
-            {
-                $id = Uuid::uuid1();
-            }
-
-            $experimentData[] = array(
-                'id'              => strval($id),
-                'experiment_id'   => $experimentId,
-                'request_data'    => json_encode([
-                    'merchant_id' => $this->merchant->getId(),
-                ])
-            );
-        }
-
-        $response = $this->app['splitzService']->bulkCallsToSplitz($experimentData);
-
-        // check all the experiments returned enabled variant, if any of them is not ramped up, this flow should not get triggered.
-        $enabled = array_reduce($response, function ($carry, $item) {
-            return $carry && ($item['variant']['name'] === "enabled");
-        }, true);
-
-        $this->trace->info(
-            TraceCode::CUSTOMER_TRANSFER_REVERSE_SHADOW_EXP,
-            [
-                'merchant_id'           => $this->merchant->getId(),
-                'enabled'     => $enabled,
-            ]);
-
-        return $enabled;
+        return true;
     }
 
     public function createLedgerEntriesForCustomerTransferReverseShadow(Transfer\Entity $transfer)
