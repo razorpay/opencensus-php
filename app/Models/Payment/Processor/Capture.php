@@ -32,6 +32,7 @@ use Illuminate\Support\Str;
 use RZP\Models\VirtualAccount;
 use RZP\Jobs\Order\OrderUpdate;
 use RZP\Models\Partner\Commission;
+use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Models\Merchant\Preferences;
@@ -1206,6 +1207,36 @@ trait Capture
                     $payment->setFee($txn->getFee());
                 }
 
+                try
+                {
+                    // keeping it in try-catch block and behind experiment to avoid any unknown breaking issues
+                    if ($this->evaluateSplitzExperimentforCFBIntlPayments($payment->getMerchantId()))
+                    {
+                        if (($payment->isFeeBearerCustomer() === true) and
+                            (($payment->merchant->isCustomerFeeBearerAllowedOnInternational() and
+                                    $payment->isInternational() === true) or
+                                ($payment->merchant->isLRSFlowEnabled())))
+                        {
+                            // set and fee values from txn as it will have INR For Both DCC or MCC or LRS Payments
+                            $payment->setFee($txn->getFee());
+                            $this->trace->info(
+                                TraceCode::PAYMENT_FEE_UPDATED_FOR_INTL_CFB, [
+                                    'payment_id' => $payment->getId(),
+                                    'fee' => $txn->getFee(),
+                                    'merchant_id' => $payment->getMerchantId(),
+                                ]);
+                        }
+                    }
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        null,
+                        TraceCode::CROSS_BORDER_CFB_INTL_EXPERIMENT_SPILTZ_ERROR
+                    );
+                }
+
                 $this->calculateAndSetMdrFeeIfApplicable($payment, $txn);
 
                 $this->repo->saveOrFail($payment);
@@ -1256,6 +1287,42 @@ trait Capture
                 (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $payment);
             }
         }
+    }
+
+    public function evaluateSplitzExperimentforCFBIntlPayments($merchantID)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_cfb_intl_cls_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantID,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_CFB_INTL_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
     }
 
     protected function handleLateBalanceUpdate(Transaction\Entity $txn, $merchantBalance)

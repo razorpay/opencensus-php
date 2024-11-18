@@ -727,6 +727,8 @@ return array(
 
     'cross_border_s2s_mcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_MCC_REARCH_EXPERIMENT_ID'),
 
+    'cross_border_cfb_intl_cls_experiment_id' => env('CROSS_BORDER_CFB_INTL_CLS_EXPERIMENT_ID'),
+
     'cross_border_dcc_mcc_rearch_experiment_id' => env('CROSS_BORDER_DCC_MCC_REARCH_EXPERIMENT_ID'),
 
     'cross_border_s2s_dcc_mcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_DCC_MCC_REARCH_EXPERIMENT_ID'),
