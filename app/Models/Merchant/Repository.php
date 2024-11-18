@@ -313,6 +313,7 @@ class Repository extends Base\Repository
                           $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
                                 ->orWhereNull(Entity::PARENT_ID);
                       })
+                      ->orderBy(Entity::ID, 'ASC')
                       ->take($limit)
                       ->skip($skip);
 
@@ -372,6 +373,7 @@ class Repository extends Base\Repository
                 $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
                     ->orWhereNull(Entity::PARENT_ID);
             })
+            ->orderBy($merchantIdCol, 'ASC')
             ->take($limit)
             ->skip($skip);
 
@@ -420,6 +422,7 @@ class Repository extends Base\Repository
                 $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
                     ->orWhereNull(Entity::PARENT_ID);
             })
+            ->orderBy($merchantIdCol, 'ASC')
             ->take($limit)
             ->skip($skip);
 

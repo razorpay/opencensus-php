@@ -354,6 +354,7 @@ class Repository extends Base\Repository
                 $query->whereNotIn(Merchant\Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
                     ->orWhereNull(Merchant\Entity::PARENT_ID);
             })
+            ->orderBy($merchantIdColumn, 'ASC')
             ->take($limit)
             ->skip($skip);
 

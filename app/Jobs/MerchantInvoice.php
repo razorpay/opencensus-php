@@ -17,14 +17,10 @@ class MerchantInvoice extends Job
 
     protected $year;
 
-    // this is the Key that is passed to processor under which the results are stored in cache this is unique for a merchant per month per year
-    protected $cacheTag;
-
     public $timeout = 5400;
 
     const MERCHANT_INVOICE_MUTEX_RESOURCE = 'MERCHANT_INVOICE_CREATE_%s_%s_%s';
 
-    const CACHE_TAG_RESOURCE = 'merchant_invoice_%s_%s_%s_%s';
 
     const MUTEX_LOCK_TIMEOUT = 5400;
 
@@ -46,8 +42,6 @@ class MerchantInvoice extends Job
         $this->month        = $month;
 
         $this->year         = $year;
-
-        $this->cacheTag     = sprintf(self::CACHE_TAG_RESOURCE, $mode, $merchantId, $month, $year);
     }
 
     public function handle()
@@ -62,7 +56,7 @@ class MerchantInvoice extends Job
                     'month' => $this->month,
                     'year' => $this->year,
                 ]);
-            $creator = new Processor($this->merchantId, $this->month, $this->year, $this->cacheTag);
+            $creator = new Processor($this->merchantId, $this->month, $this->year);
 
             $resource = sprintf(self::MERCHANT_INVOICE_MUTEX_RESOURCE, $this->merchantId, $this->month, $this->year);
 
@@ -74,16 +68,6 @@ class MerchantInvoice extends Job
                 self::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
             );
-
-            //removing data from cache in case of success
-            if(!empty($cacheKeyArr[$this->cacheTag]))
-            {
-                foreach ($cacheKeyArr[$this->cacheTag] as $item)
-                {
-                    $this->cache->tags($this->cacheTag)->forget($item);
-                }
-                unset($cacheKeyArr[$this->cacheTag]);
-            }
         }
         catch (\Throwable $e)
         {
