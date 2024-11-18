@@ -6,6 +6,8 @@ use RZP\Base;
 
 class Validator extends Base\Validator
 {
+    const UPDATE_POLICY_MAP = 'update_policy_map';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -27,5 +29,11 @@ class Validator extends Base\Validator
     protected static $fixRoleAccessPolicyMapRules = [
         Entity::ROLE_ID => 'required|string',
         'dry_run'       => 'sometimes|boolean',
+    ];
+
+    protected static $updatePolicyMapRules = [
+        Constants::ROLE_IDS             => 'required|array',
+        Entity::ACCESS_POLICY_IDS       => 'required|array',
+        Constants::OPERATION            => 'required|string|in:append,remove',
     ];
 }

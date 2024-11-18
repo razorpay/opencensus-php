@@ -55,6 +55,7 @@
             <directory>./tests/Functional/TerminalOnboardingDetail/</directory>
             <directory>./tests/Functional/PayoutOutbox/</directory>
             <directory>./tests/Functional/Location/</directory>
+            <directory>./tests/Functional/Roles/</directory>
             <file>./tests/Functional/Merchant/PartnerTest.php</file>
         </testsuite>
         <testsuite name="Application-1 Test Suite">

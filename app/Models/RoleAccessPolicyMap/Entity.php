@@ -69,4 +69,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ROLE_ID);
     }
 
+    public function setAuthzRoles(array $authzRoles)
+    {
+        $this->setAttribute(self::AUTHZ_ROLES, $authzRoles);
+    }
+
+    public function setAccessPolicyIds(array $accessPolicyIds)
+    {
+        $this->setAttribute(self::ACCESS_POLICY_IDS, $accessPolicyIds);
+    }
+
 }

@@ -622,4 +622,75 @@ class RolesTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testUpdateRoleAccessPolicyMap()
+    {
+        // 1. create dependencies
+        $this->createPrivileges();
+
+        $this->fixtures->create('role_access_policy_map',
+        [
+            'role_id' => '100customRole1',
+            'authz_roles'   => ['authz_roles_1', 'authz_roles_2'],
+            'access_policy_ids' => ['XaccessPolicy1', 'XaccessPolicy2'],
+        ]);
+
+        // acts as control-group: update operations shouldn't impact this role
+        $this->fixtures->create('role_access_policy_map',
+        [
+            'role_id' => '100customRole2',
+            'authz_roles'   => ['authz_roles_1'],
+            'access_policy_ids' => ['XaccessPolicy1'],
+        ]);
+
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request'  => [
+                'content'   => [
+                    'role_ids'          => ['100customRole1'],
+                    'access_policy_ids' => ['XaccessPolicy3', 'XaccessPolicy4', 'XaccessPolicy1', 'XaccessPolicy2', 'XaccessPolicy4'], // adding duplicates to test deduplication
+                    'operation'         => 'append',
+                ],
+            ],
+        ];
+
+        // 2. test appending access policy
+        $this->startTest($dataToReplace);
+
+        // 3. assert append access policy
+        $roleAccessPolicyMapRepo = new \RZP\Models\RoleAccessPolicyMap\Repository;
+
+        $updatedCustomRole1 = $roleAccessPolicyMapRepo->findByRoleId('100customRole1');
+        $updatedCustomRole2 = $roleAccessPolicyMapRepo->findByRoleId('100customRole2');
+
+        $this->assertEquals(['XaccessPolicy1', 'XaccessPolicy2', 'XaccessPolicy3', 'XaccessPolicy4'], $updatedCustomRole1->getAccessPolicyIds());
+        $this->assertEquals(['authz_roles_1', 'authz_roles_2', 'authz_roles_3', 'authz_roles_4'], $updatedCustomRole1->getAuthzRoles());
+
+        $this->assertEquals(['XaccessPolicy1'], $updatedCustomRole2->getAccessPolicyIds());
+        $this->assertEquals(['authz_roles_1'], $updatedCustomRole2->getAuthzRoles());
+
+        // 4. test removing access policy
+        $dataToReplace = [
+            'request'  => [
+                'content'   => [
+                    'role_ids'          => ['100customRole1'],
+                    'access_policy_ids' => ['XaccessPolicy2','XaccessPolicy4'],
+                    'operation'         => 'remove',
+                ],
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        // 5. assert remove access policy
+        $updatedCustomRole1 = $roleAccessPolicyMapRepo->findByRoleId('100customRole1');
+        $updatedCustomRole2 = $roleAccessPolicyMapRepo->findByRoleId('100customRole2');
+
+        $this->assertEquals(['XaccessPolicy1','XaccessPolicy3'], $updatedCustomRole1->getAccessPolicyIds());
+        $this->assertEquals(['authz_roles_1', 'authz_roles_3'], $updatedCustomRole1->getAuthzRoles());
+
+        $this->assertEquals(['XaccessPolicy1'], $updatedCustomRole2->getAccessPolicyIds());
+        $this->assertEquals(['authz_roles_1'], $updatedCustomRole2->getAuthzRoles());
+    }
 }
