@@ -3812,6 +3812,9 @@ class Gateway extends Base\Gateway
                 throw $exception;
             }
 
+            //changed this cuz receiving VPA in uppercase for pre-printed SQRs
+            $inputArray['payeeVPA'] = strtolower($inputArray['payeeVPA']);
+
             if (isset($inputArray['payeeVPA']) === true)
             {
                 $terminalData['gateway_merchant_id2'] = $inputArray['payeeVPA'];
@@ -3847,7 +3850,11 @@ class Gateway extends Base\Gateway
                 'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
             ];
 
-            return $this->upiPreProcess($data);
+//            return $this->upiPreProcess($data);    changed this cuz receiving VPA in uppercase for pre-printed SQRs
+
+            $mozartResp = $this->upiPreProcess($data);
+            $mozartResp['data']['terminal']['gateway_merchant_id2'] = strtolower($mozartResp['data']['terminal']['gateway_merchant_id2']);
+            return $mozartResp;
         }
 
         return json_decode($input, true);

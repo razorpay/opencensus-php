@@ -4434,7 +4434,7 @@ class Terminal extends Base
             'gateway'                   => 'upi_airtel',
             'gateway_merchant_id'       => 'razorpayupiOffline',
             'gateway_terminal_password' => 'razorpay_password',
-            'gateway_merchant_id2'      => 'testvpaOffline@mairtel',
+            'gateway_merchant_id2'      => 'testvpaoffline@mairtel',
             'upi'                       => true,
             'tpv'                       => 2,
             'type'                      => [
