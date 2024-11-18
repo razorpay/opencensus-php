@@ -515,7 +515,7 @@ class Core extends Base\Core
         try
         {
             /** @var FeatureConfig\Entity $featureConfig */
-            $featureConfig = (new FeatureConfig\Repository)->getConfigByMerchantId($merchant->getId());
+            $featureConfig = (new FeatureConfig\Core)->getFeatureConfigByMerchantId($merchant->getId());
 
             if ($pricingFeature === PricingFeature::SETTLEMENT_ONDEMAND and empty($featureConfig->getPricingPercent()) === false)
             {
@@ -659,14 +659,16 @@ class Core extends Base\Core
     // this method returns an array which contains [isODSCappingBreached boolean, merchant's max limit per working day, available limit]
     public function isODSCappingBreached($merchantId)
     {
-        $odsCappingCheckRequired = (bool) ConfigKey::get(ConfigKey::ODS_CAPPING_CHECK_REQUIRED, false);
+        $globalConfig = $this->getGlobalConfigs();
+
+        $odsCappingCheckRequired = $globalConfig[ConfigKey::ODS_CAPPING_CHECK_REQUIRED];
         $today = Carbon::today(Timezone::IST);
         $isHoliday = Holidays::isWorkingDay($today);
 
         if($odsCappingCheckRequired === false)
             return [false, null, null];
 
-        $odsGlobalLimit = (int) ConfigKey::get(ConfigKey::ODS_GLOBAL_LIMIT, 0);
+        $odsGlobalLimit = $globalConfig[ConfigKey::ODS_GLOBAL_LIMIT];
 
         [$key, $keyTimestamp]  = $this->getTotalODSSettledTimestamp();
 
@@ -704,7 +706,7 @@ class Core extends Base\Core
             return [true, null, null];
         }
 
-        $odsCappingScaleFactor = (int) ConfigKey::get(ConfigKey::ODS_CAPPING_SCALE_FACTOR, 100);
+        $odsCappingScaleFactor = $globalConfig[ConfigKey::ODS_CAPPING_SCALE_FACTOR];
 
         // For invalid scale factor, allow ODS
         if($odsCappingScaleFactor < 0 || $odsCappingScaleFactor > 100)
@@ -721,7 +723,7 @@ class Core extends Base\Core
 
         if($totalOdsSettled >= ($odsCappingScaleFactor / 100) * $odsGlobalLimit)
         {
-            $merchantIdList = ConfigKey::get(ConfigKey::ODS_CAPPED_MID_LIST, []);
+            $merchantIdList = $globalConfig[ConfigKey::ODS_CAPPED_MID_LIST];
 
             $this->odsDowntimeEvent([
                 "merchant_id" => $merchantId,
@@ -823,6 +825,51 @@ class Core extends Base\Core
         }
 
         return [false, $featureConfig->getMaxLimitPerWorkingDay(), $featureConfig->getMaxLimitPerWorkingDay() - $amountSettledForMerchant];
+    }
+
+    private function getGlobalConfigs()
+    {
+        if ($this->shouldRetrieveGlobalConfigFromCapitalEs() === true)
+        {
+            $response = $this->app['capital_early_settlements']->getFeatureConfig('global');
+            $featureConfig = $response['global_feature_config'];
+
+            return [
+                ConfigKey::ODS_CAPPING_CHECK_REQUIRED => (bool) $featureConfig['global_limit_check_required'],
+                ConfigKey::ODS_GLOBAL_LIMIT => (int) $featureConfig['global_limit'],
+                ConfigKey::ODS_CAPPING_SCALE_FACTOR => (float) $featureConfig['global_limit_capping_scale_factor'],
+                ConfigKey::ODS_CAPPED_MID_LIST => $featureConfig['global_limit_capped_merchant_ids'],
+            ];
+        }
+
+        return [
+            ConfigKey::ODS_CAPPING_CHECK_REQUIRED => (bool) ConfigKey::get(ConfigKey::ODS_CAPPING_CHECK_REQUIRED, false),
+            ConfigKey::ODS_GLOBAL_LIMIT => (int) ConfigKey::get(ConfigKey::ODS_GLOBAL_LIMIT, 0),
+            ConfigKey::ODS_CAPPING_SCALE_FACTOR => (float) ConfigKey::get(ConfigKey::ODS_CAPPING_SCALE_FACTOR, 100),
+            ConfigKey::ODS_CAPPED_MID_LIST => ConfigKey::get(ConfigKey::ODS_CAPPED_MID_LIST, []),
+        ];
+    }
+
+    private function shouldRetrieveGlobalConfigFromCapitalEs()
+    {
+        $request = ['experiment_id' => $this->app['config']->get('app.feature_config_from_capital_es_experiment_id')];
+        $response = $this->app['splitzService']->evaluateRequest($request);
+
+        $variables = $response['response']['variant']['variables'] ?? [];
+        if (is_array($variables) === false)
+        {
+            return false;
+        }
+
+        foreach ($variables as $variable)
+        {
+            if (is_array($variable) === true && $variable['key'] === 'read_global_config' && $variable['value'] === 'on')
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function getTransactionMutexresource(Base\Entity $baseEntity)

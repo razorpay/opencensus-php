@@ -1953,6 +1953,10 @@ return [
                 'description' => 'Allows an admin user to trigger document verification flows in Capital LOS',
                 'assignable'  => true,
             ],
+            Permission::UPDATE_ALL_ODS_CONFIG => [
+                'description' => 'Allows an admin user to update all ODS config',
+                'assignable'  => true,
+            ]
         ],
 
         PermissionCategory::PAYOUTS => [

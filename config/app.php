@@ -1032,6 +1032,8 @@ return array(
 
     'scheduled_es_enablement_migration_experiment_id' => env('SCHEDULED_ES_ENABLEMENT_MIGRATION_EXP_ID'),
 
+    'feature_config_from_capital_es_experiment_id' => env('FEATURE_CONFIG_FROM_CAPITAL_ES_EXP_ID'),
+
     'banking_mail_invite_merchant_exp_id' => env('BANKING_MAIL_INVITE_MERCHANT_EXP_ID'),
 
     'banking_mail_rejection_notification_exp_id' => env('BANKING_MAIL_REJECTION_NOTIFICATION_EXP_ID'),

@@ -6046,13 +6046,13 @@ class Header
                 self::UPDATE_GIFT_CARDS_EXPIRY_EXPIRE_AT,
                 self::UPDATE_GIFT_CARDS_EXPIRY_REFERENCE_ID,
                 self::UPDATE_GIFT_CARDS_EXPIRY_NOTES,
-                self::UPDATE_GIFT_CARDS_EXPIRY_CONTACT,      
+                self::UPDATE_GIFT_CARDS_EXPIRY_CONTACT,
                 self::UPDATE_GIFT_CARDS_EXPIRY_TICKET_LINK,
-                self::UPDATE_GIFT_CARDS_EXPIRY_TIMESTAMP,     
-                self::UPDATE_GIFT_CARDS_EXPIRY_SOURCE    
+                self::UPDATE_GIFT_CARDS_EXPIRY_TIMESTAMP,
+                self::UPDATE_GIFT_CARDS_EXPIRY_SOURCE
             ],
             self::OUTPUT => [],
-        ],        
+        ],
 
         TYPE::GCMS_UPLOAD_BULK_EMAILS => [
             self::INPUT => [
@@ -6409,7 +6409,21 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION
             ]
-        ]
+        ],
+        Type::UPDATE_ODS_MERCHANT_LIMITS => [
+            self::INPUT => [
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MERCHANT_ID,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_PER_WORKING_DAY,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_AMOUNT_LIMIT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PERCENTAGE_OF_BALANCE_LIMIT,
+            ],
+            self::OUTPUT => [
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MERCHANT_ID,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_PER_WORKING_DAY,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_AMOUNT_LIMIT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PERCENTAGE_OF_BALANCE_LIMIT,
+            ],
+        ],
     ];
 
     /**

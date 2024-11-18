@@ -1489,7 +1489,7 @@ class Route
         'capital_lender_dev_admin'                 => ['any',      'lender/dev_admin/{path?}',                       'CapitalLenderController@handleDevAdminRequests'                    ],
         'capital_es_service'                       => ['any',      'capital_es/service/{path?}',                     'CapitalESController@handleProxyRequests'                           ],
         'capital_es_dev_admin'                     => ['any',      'capital_es/dev_admin/{path?}',                   'CapitalESController@handleDevAdminRequests'                        ],
-
+        'capital_es_admin'                         => ['any',      'capital_es/admin/{path?}',                       'CapitalESController@handleAdminRequests'                           ],
 
 
         'merchants_risk_direct'                    => ['any',      'merchants-risk/direct/{path?}',                  'MerchantsRiskController@handleDirectRequests'                      ],
@@ -8408,6 +8408,7 @@ class Route
         'capital_marketplace_admin',
         'capital_scorecard_admin',
         'capital_lender_admin',
+        'capital_es_admin',
         'bvs_validation_artifact_details',
         'wallet_service_admin',
         'capital_cards_dev_admin',
@@ -9869,6 +9870,7 @@ class Route
         'capital_collections_dev_admin'            => Permission::CAPITAL_DEVELOPER,
         'capital_marketplace_admin'                => Permission::LOANS_EDIT,
         'capital_lender_admin'                     => Permission::LOANS_EDIT,
+        'capital_es_admin'                         => Permission::VIEW_MERCHANT,
         'capital_scorecard_admin'                  => Permission::CAPITAL_SCORECARD,
         'merchants_risk_service'                   => Permission::VIEW_MERCHANT_DEDUPE,
         'merchants_risk_admin'                     => Permission::VIEW_MERCHANT_DEDUPE,
@@ -14524,6 +14526,7 @@ class Route
             'capital_marketplace_admin',
             'capital_scorecard_admin',
             'capital_lender_admin',
+            'capital_es_admin',
             'capital_collections_service',
             'capital_collections_webhook',
             'capital_transaction_create',

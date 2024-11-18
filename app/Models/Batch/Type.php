@@ -310,6 +310,8 @@ class Type
 
     const STORE_ORG_DEFINED_MERCHANT_FIELDS = 'store_org_defined_merchant_fields';
 
+    const UPDATE_ODS_MERCHANT_LIMITS = 'update_ods_merchant_limits';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -401,6 +403,7 @@ class Type
         self::BVS_BULK_KYC_VERIFICATION,
         self::OTC_PAYMENT_CREDIT,
         self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
+        self::UPDATE_ODS_MERCHANT_LIMITS,
     ];
 
     /**
@@ -750,7 +753,8 @@ class Type
         self::BVS_BULK_KYC_VERIFICATION,
         self::UPDATE_GIFT_CARDS_EXPIRY,
         self::OTC_PAYMENT_CREDIT,
-        self::STORE_ORG_DEFINED_MERCHANT_FIELDS
+        self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
+        self::UPDATE_ODS_MERCHANT_LIMITS,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -855,6 +859,7 @@ class Type
         self::S2P_GROUPS_ONBOARDING                   => Name::ADMIN_BATCH_CREATE,
         self::S2P_USERS_ONBOARDING                    => Name::ADMIN_BATCH_CREATE,
         self::OTC_PAYMENT_CREDIT                      => Name::ADMIN_BATCH_CREATE,
+        self::UPDATE_ODS_MERCHANT_LIMITS              => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
     ];
 
     public static $workflowApplicableBatchTypes = [

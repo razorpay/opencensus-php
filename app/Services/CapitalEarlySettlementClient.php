@@ -3,21 +3,25 @@
 namespace RZP\Services;
 
 use App;
-
-use RZP\Exception\ServerErrorException;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestHeader;
+use RZP\Constants\Environment;
 use Psr\Http\Message\RequestInterface;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 use Http\Discovery\Psr18ClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
-use RZP\Models\Settlement\Ondemand\Entity as OndemandEntity;
 
 class CapitalEarlySettlementClient
 {
     const ONDEMAND_STATUS_UPDATE_ENDPOINT = 'early_settlements/ondemand_triggers';
 
     const ENABLE_SCHEDULED_ES = 'instant_settlements/scheduled/enable';
+
+    const UPSERT_MERCHANT_FEATURE_CONFIG = 'feature_configs/merchant';
+
+    const GET_FEATURE_CONFIG = 'feature_configs';
 
     protected $app;
 
@@ -73,6 +77,44 @@ class CapitalEarlySettlementClient
         );
     }
 
+    public function createMerchantFeatureConfig($request)
+    {
+        return $this->sendRequestAndParseResponse(self::UPSERT_MERCHANT_FEATURE_CONFIG,
+            $request,
+            [
+                'X-Auth-Type'    => 'internal',
+                'X-Service-Name' => 'api'
+            ],
+            'POST'
+        );
+    }
+
+    public function updateMerchantFeatureConfig($request)
+    {
+        return $this->sendRequestAndParseResponse(self::UPSERT_MERCHANT_FEATURE_CONFIG,
+            $request,
+            [
+                'X-Auth-Type'    => 'internal',
+                'X-Service-Name' => 'api'
+            ],
+            'PATCH'
+        );
+    }
+
+    public function getFeatureConfig($type, $merchantId=null)
+    {
+        $url = self::GET_FEATURE_CONFIG . '?' . http_build_query(['merchant_id' => $merchantId, 'type' => $type]);
+
+        return $this->sendRequestAndParseResponse($url,
+            [],
+            [
+                'X-Auth-Type'    => 'internal',
+                'X-Service-Name' => 'api'
+            ],
+            'GET'
+        );
+    }
+
     protected function sendRequestAndParseResponse(
         string $url,
         array $body = [],
@@ -92,6 +134,12 @@ class CapitalEarlySettlementClient
                 'Authorization'     => 'Basic '. base64_encode($username . ':' . $password),
             ];
 
+        $devstackLabel = $this->app['request']->header(RequestHeader::DEV_SERVE_USER);
+        if ($this->app['env'] !== Environment::PRODUCTION && empty($devstackLabel) === false)
+        {
+            $defaultHeaders[RequestHeader::DEV_SERVE_USER] = $devstackLabel;
+        }
+
         return $this->sendRequest($defaultHeaders, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
     }
 
@@ -101,6 +149,7 @@ class CapitalEarlySettlementClient
             'url'     => $url,
             'method'  => $method,
             'body'    => $body,
+            'headers' => $headers,
         ]);
 
         $req = $this->newRequest($headers, $url, $method, $body , 'application/json');

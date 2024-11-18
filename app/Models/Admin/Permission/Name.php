@@ -1232,6 +1232,8 @@ class Name
 
     const PAYOUT_MANUAL_ACTION = 'payout_manual_action';
 
+    const UPDATE_ALL_ODS_CONFIG = 'update_all_ods_config';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,
