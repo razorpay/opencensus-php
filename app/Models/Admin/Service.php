@@ -72,6 +72,8 @@ class Service extends Base\Service
         E::MERCHANT_EMAIL,
         E::MERCHANT_WEBSITE,
         E::MERCHANT_BUSINESS_DETAIL,
+        E::BANKING_ACCOUNT,
+        E::ACCOUNT,
     ];
 
     const FROM_MODE                  = 'from_mode';
