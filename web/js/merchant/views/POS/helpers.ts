@@ -77,12 +77,14 @@ export const isPosExperimentEnabled = ({
     user.user?.signup_campaign === 'assisted_onboarding' ||
     user.user?.signup_campaign === 'phantom_onboarding';
 
-  return (
-    isExperimentEnabled(abExperiments?.pos_api_merchant_enablement) &&
-    isWhitelistedForPos &&
-    !isUnregisteredMerchant &&
-    !isBlockedForSignUpCampaign
-  );
+  const checks = isWhitelistedForPos && !isUnregisteredMerchant && !isBlockedForSignUpCampaign;
+
+  if (user.is_pgos_merchant) {
+    return checks;
+  } else {
+    // For non-pgos(API) merchants, we need to check the experiment & the checks
+    return isExperimentEnabled(abExperiments?.pos_api_merchant_enablement) && checks;
+  }
 };
 
 export const isPosSoundboxEnabled = ({ abExperiments }: { abExperiments: ExperimentInfoType }) => {
