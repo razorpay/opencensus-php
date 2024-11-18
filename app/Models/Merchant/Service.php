@@ -13778,7 +13778,7 @@ class Service extends Base\Service
         ]);
         foreach ($terminals as $terminal)
         {
-            $subMerchants = $terminal->merchants();
+            $subMerchants = $terminal->merchants;
             $subMerchantsIds = $subMerchants->pluck(Merchant\Entity::ID)->all();
             if (in_array($merchant->getId(), $subMerchantsIds))
             {

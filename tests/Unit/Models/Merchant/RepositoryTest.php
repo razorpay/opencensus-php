@@ -22,6 +22,8 @@ use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
 use function PHPUnit\Framework\assertNotEquals;
+use RZP\Models\Terminal\Repository as terminalRepository;
+
 use const Grpc\STATUS_DEADLINE_EXCEEDED;
 
 class RepositoryTest extends RepositoryTestHelper
@@ -705,6 +707,39 @@ class RepositoryTest extends RepositoryTestHelper
             $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1);
             $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
         });
+    }
+
+    public function testMerchantsRelation()
+    {
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
+        $id1 = PublicEntity::generateUniqueId();
+        $id2 = PublicEntity::generateUniqueId();
+        $id3 = PublicEntity::generateUniqueId();
+        $this->fixtures->create('merchant', ['id' => $id1, 'email' => 'test1@gmail.com', "parent_id" => $id1, "account_code" => "123"]);
+        $this->fixtures->create('merchant', ['id' => $id2, 'email' => 'test2@gmail.com', "parent_id" => $id1]);
+        $this->fixtures->create('terminal', ['id' => $id3, 'merchant_id' => $id1]);
+
+        $termainalRepository = new terminalRepository();
+        $terminal = $termainalRepository->find($id3);
+
+        $repository = new Repository();
+        $merchant1 = $repository->find($id1);
+        $merchant2 = $repository->find($id2);
+        $terminal->merchants()->attach($merchant1);
+        $terminal->merchants()->attach($merchant2);
+
+        //compare response
+        $resultWithoutSplitz1 = $terminal->merchants;
+        $this->setSplitzWithOutput("true", 1);
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $terminal) {
+            $resultWithSplitz1 = $terminal->merchants;
+            $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1);
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+
+        //compare functionality
+        $fetchWithAssociation = $terminal->merchants()->get();
+        $this->assertEquals($resultWithoutSplitz1, $fetchWithAssociation);
     }
 
     public function assertPublicCollectionsEqualIgnoringUpdatedAt($expectedCollection, $actualCollection)

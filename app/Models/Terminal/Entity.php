@@ -31,10 +31,12 @@ use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Emi\Subvention as EmiSubvention;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Terminal\Status;
 use RZP\Trace\TraceCode;
 use Illuminate\Support\Arr;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper\ImplicitJoinHelper;
 
 class Entity extends Base\PublicEntity
 {
@@ -967,7 +969,7 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicSubMerchantsAttribute(array & $array)
     {
-        $subMerchants = $this->merchants()->get();
+        $subMerchants = $this->merchants;
 
         $subMerchants->transform(
             function ($item, $key)
@@ -2145,5 +2147,15 @@ class Entity extends Base\PublicEntity
 
     public function removeAttributes($fieldToRemove) {
         $this->attributes = Arr::except($this->attributes, $fieldToRemove);
+    }
+
+    public function getMerchantsAttribute()
+    {
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            return (new ImplicitJoinHelper)->getRelationAttribute(
+                $this, $this->entity, 'merchants', 'terminal', 'fetchMerchantsWithTerminalPivot', 'getId'
+            );
+        }
+        return parent::getRelationValue('merchants');
     }
 }

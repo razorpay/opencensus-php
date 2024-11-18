@@ -3176,4 +3176,21 @@ class Repository extends Base\Repository
         return false;
     }
 
+    public function fetchMerchantsWithTerminalPivot($id)
+    {
+        $merchantIds = DB::table(Table::MERCHANT_TERMINAL)->where('terminal_id', '=', $id)->pluck('merchant_id')->toArray();
+        $merchants =  (new Merchant\Repository)->findMerchantsByIds($merchantIds);
+        return $this->addPivot($merchants, $id);
+    }
+
+    protected function addPivot(PublicCollection $merchants, string $terminalId)
+    {
+        foreach ($merchants as $merchant) {
+            $merchant["pivot"] = [
+                "terminal_id" => $terminalId,
+                "merchant_id" => $merchant->getId()
+            ];
+        }
+        return $merchants;
+    }
 }

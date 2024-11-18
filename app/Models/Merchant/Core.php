@@ -6547,7 +6547,11 @@ class Core extends Base\Core
         })->pluck(Entity::ID)->toArray();
 
         // Fetches all the merchants attached to the partner user
-        $merchantIdsAccessible = $partnerOwner->merchants()->get()->pluck(Entity::ID)->toArray();
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchantIdsAccessible = $partnerOwner->getMerchantsFromAsvWithPivot(1000)->pluck(Entity::ID)->toArray();
+        } else {
+            $merchantIdsAccessible = $partnerOwner->merchants()->get()->pluck(Entity::ID)->toArray();
+        }
 
         // gets the intersection of $merchantIdsAccessible and $submerchantIds,
         // so that only Partner's sub-merchants accounts access is revoked.

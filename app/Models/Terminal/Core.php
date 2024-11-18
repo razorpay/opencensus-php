@@ -220,7 +220,7 @@ class Core extends Base\Core
 
     public function addMerchantToTerminal(Entity $terminal, string $merchantId)
     {
-        $subMerchants = $terminal->merchants();
+        $subMerchants = $terminal->merchants;
 
         $subMerchantsIds = $subMerchants->pluck(Merchant\Entity::ID)->all();
 

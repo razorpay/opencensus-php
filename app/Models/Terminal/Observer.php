@@ -54,7 +54,7 @@ class Observer extends BaseObserver
 
         $cachetagsArray[] = Entity::getCacheTag($terminal->getId());
 
-        $merchantIds = $terminal->merchants()->pluck(Entity::ID)->toArray();
+        $merchantIds = $terminal->merchants->pluck(Entity::ID)->toArray();
 
         $merchantIds[] = $terminal->getMerchantId();
 
