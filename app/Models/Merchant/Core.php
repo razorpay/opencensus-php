@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use ApiResponse;
 use App;
+use RZP\Exception\AssertionException;
 use View;
 use Carbon\Carbon;
 use Config;
@@ -81,6 +82,7 @@ use RZP\Models\Feature;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Feature\Service as FeatureService;
 use RZP\Models\Ledger\ReverseShadow\ReserveBalanceLoading;
+use RZP\Models\Ledger\ReverseShadow\ReserveBalanceWithdrawal;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 use RZP\Models\Merchant\Analytics\Constants as AnalyticsConstants;
@@ -414,6 +416,7 @@ class Core extends Base\Core
 
     /**
      * @param Entity $merchant
+     *
      * @return null
      * disables the nocodeapp_fee_applicable feature for the merchant so that the merchant is not charged for no code apps
      */
@@ -7133,7 +7136,6 @@ class Core extends Base\Core
      * Returns maximum transaction amount for a merchant
      *
      * @param Entity $merchant
-     *
      * @return int
      * @throws BadRequestException
      */
@@ -11634,4 +11636,40 @@ class Core extends Base\Core
         return  $this->isSplitzExperimentVariableEnabled($properties, $checkVariable);
     }
 
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws AssertionException
+     * @throws BadRequestException
+     * @throws \Exception
+     * @throws Throwable
+     */
+    public function withdrawFundsFromReserveBalance($merchant, $input): void
+    {
+        $this->trace->info(Tracecode::RESERVE_BALANCE_FUND_WITHDRAWAL_REQUEST, [
+            "merchant_id" => $merchant->getId(),
+            "input" => $input,
+            "currency" => $merchant->getCurrency(),
+        ]);
+
+        $input = [
+            "amount" => $input['amount'],
+            "type" => "reserve_primary",
+            "currency" => $merchant->getCurrency(),
+            "description" => "reserve_balance_withdrawal"
+        ];
+
+        $resource = "reserve_balance_withdraw" . $merchant->getId();
+        $mutex = App::getFacadeRoot()['api.mutex'];
+
+        $mutex->acquireAndRelease(
+            $resource,
+            function () use ($input, $merchant) {
+                return $this->repo->transaction(function () use ($input, $merchant) {
+                    (new Merchant\Validator())->validateIfAmountForFundWithdrawalIsValid($input['amount'], $input, $merchant);
+
+                    $input['amount'] = -1 * abs($input['amount']);
+                    (new Adjustment\Core)->createAdjustment($input, $merchant);
+                });
+            });
+    }
 }

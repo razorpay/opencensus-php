@@ -100,6 +100,7 @@ class Constants
     const ENTRY_TYPE_DEBIT                                  = "debit";
     const ENTRY_TYPE_CREDIT                                 = "credit";
     const RESERVE_BALANCE_AMOUNT                            = "reserve_balance_amount";
+    const RESERVE_BALANCE_CONTROL_AMOUNT                    = "reserve_balance_control_amount";
     const LEDGER_ENTRY                                      = "ledger_entry";
 
     // Fee Types
@@ -221,6 +222,7 @@ class Constants
     const CREATE_LEDGER_JOURNAL_EVENT                           = 'create-ledger-journal-event';
     const CREDIT_ID                                             = 'credit_id';
 
+    const RESERVE_BALANCE_ID                                    = 'reserve_balance_id';
 
     //Credits loading events
     const MERCHANT_REFUND_CREDIT_LOADING                    = "merchant_refund_credit_loading";
@@ -351,6 +353,8 @@ class Constants
     const FAILED_ENTRIES_COUNT                         =  'failed_entries_count';
 
     const FAILED_IDS                                   =  'failed_ids';
+
+    const MERCHANT_RESERVE_BALANCE_WITHDRAWAL          = 'merchant_reserve_balance_withdrawal';
 
     const MERCHANT_REFUND_CREDIT_WITHDRAWAL            = 'merchant_refund_credit_withdrawal';
 

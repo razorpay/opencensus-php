@@ -263,8 +263,10 @@ class Service extends Base\Service
     const SEGMENT_DATA_PP_ONLY                          = 'pp_only';
     const SEGMENT_FREE_CREDITS_AVAILABLE                = 'free_credits_available';
 
+    const RESERVE_BALANCE                               = 'reserve_balance';
     const FEE                                           = 'fee';
     const REFUND                                        = 'refund';
+
     const DEFAULT_MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION   =   24;
     // Should be decided by marketing team
     const NEOSTONE_UTM_RULES = [
@@ -14102,6 +14104,9 @@ class Service extends Base\Service
         $type = $input["type"];
 
         switch ($type) {
+            case self::RESERVE_BALANCE :
+                (new Merchant\Core())->withdrawFundsFromReserveBalance($merchant, $input);
+                break;
             case self::FEE:
             case self::REFUND:
                 (new Credits\Core)->withdraw($merchant, $input);
