@@ -2121,6 +2121,9 @@ export default class User {
     return this.isOrgFeatureEnabled('display_upi_payer_name');
   }
 
+  get isPgLegderReverseShadowEnabled() {
+    return this.isFeatureEnabled('pg_ledger_reverse_shadow');
+  }
   get isMkycMerchant() {
     return (
       this?.workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING' ||

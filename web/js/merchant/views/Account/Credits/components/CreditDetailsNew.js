@@ -15,6 +15,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import {
   Amount,
+  Box,
   Button,
   Card,
   CardBody,
@@ -35,7 +36,6 @@ import {
   TableRow,
   Text,
 } from '@razorpay/blade/components';
-import { Flex } from './style';
 import { ACTIVATION_STATUS } from '../../constants';
 import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
 
@@ -146,8 +146,13 @@ function CreditDetails(props) {
         />
       </CardHeader>
       <CardBody>
-        <Flex direction="column">
-          <Flex isResponsive spacing={8} justifyBetween direction="row">
+        <Box display="flex" flexDirection="column" width="100%">
+          <Box
+            gap="spacing.4"
+            display="flex"
+            justifyContent="space-between"
+            flexDirection={{ base: 'column', l: 'row' }}
+          >
             <Amount
               size="large"
               type="heading"
@@ -161,7 +166,7 @@ function CreditDetails(props) {
               ACTIVATION_STATUS.activated_mcc_pending,
             ].includes(user.activation_status) &&
             [rolesList.OWNER, rolesList.ADMIN].includes(user.role) ? (
-              <span className="btn-fixed">
+              <Box width={{ base: '100%', s: '185px' }}>
                 <Button
                   isFullWidth
                   variant="secondary"
@@ -178,9 +183,9 @@ function CreditDetails(props) {
                     </PopoverBody>
                   </Popover>
                 ) : null}
-              </span>
+              </Box>
             ) : null}
-          </Flex>
+          </Box>
           <Collapsible isExpanded={showCollapsible}>
             <CollapsibleBody width="100%">
               <Table data={data}>
@@ -246,7 +251,7 @@ function CreditDetails(props) {
               </Table>
             </CollapsibleBody>
           </Collapsible>
-        </Flex>
+        </Box>
       </CardBody>
     </Card>
   );

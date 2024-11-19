@@ -31,7 +31,6 @@ import CurrentBalance from 'merchant/views/Account/Balances/CurrentBalance';
 import Loader from 'common/ui/Loader';
 import { TicketSystemEmitter } from 'merchant/care/init';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { Flex } from '../Credits/components/style';
 import { BellIcon, Box, Heading, Link, Text } from '@razorpay/blade/components';
 import { isBillMeActivatedMerchant } from 'common/splitz/utils';
 
@@ -244,7 +243,13 @@ class AddFundsContainer extends Component {
     return (
       <div class="content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
         <Box display="flex" flexDirection="column" gap="spacing.8">
-          <Flex isResponsive justifyBetween alignItems="center">
+          <Box
+            display="flex"
+            width="100%"
+            flexDirection={{ base: 'column', m: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ base: 'unset', m: 'center' }}
+          >
             <Heading size="small" weight="semibold">
               Your Funds
             </Heading>
@@ -265,7 +270,7 @@ class AddFundsContainer extends Component {
                 onClick={() => analyticsTrack(OPEN_DOCUMENTATION)}
               />
             </Box>
-          </Flex>
+          </Box>
           <Box gap="spacing.7" display="flex" flexDirection="column">
             <Box gap="spacing.5" display="flex" flexDirection="column">
               <CurrentBalance

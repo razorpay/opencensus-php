@@ -92,6 +92,7 @@ type Getters = {
   isMagicCouponEngineEnabled: boolean;
   isMoreInternationalMethodsEnabledForVAS: boolean;
   isPayerNameEnabled: boolean;
+  isPgLegderReverseShadowEnabled: boolean;
 };
 
 type Merchant = {

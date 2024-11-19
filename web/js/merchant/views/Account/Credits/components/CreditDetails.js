@@ -20,7 +20,6 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import Loader from 'common/ui/Loader';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { Flex, Slot } from './style';
 import {
   Amount,
   ArrowRightIcon,
@@ -30,10 +29,11 @@ import {
   CardBody,
   CardHeader,
   CardHeaderLeading,
-  CardHeaderLink,
   CardHeaderTrailing,
+  CardHeaderLink,
 } from '@razorpay/blade/components';
 import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
+import WithdrawButton from 'merchant/views/Account/components/WithdrawModal/WithdrawButton';
 
 const ViewCreditHistoryTable = lazy(() =>
   import(
@@ -164,7 +164,12 @@ function CreditDetails({
         />
       </CardHeader>
       <CardBody>
-        <Flex isResponsive spacing={8} justifyBetween direction="row">
+        <Box
+          gap="spacing.4"
+          display="flex"
+          justifyContent="space-between"
+          flexDirection={{ base: 'column', l: 'row' }}
+        >
           <Amount
             size="large"
             type="heading"
@@ -174,7 +179,13 @@ function CreditDetails({
           />
           {isSelfServeEnabled(type) && [rolesList.OWNER, rolesList.ADMIN].includes(user.role) ? (
             <Box display="flex" flexWrap="wrap" gap="spacing.3">
-              <div className="btn-fixed">
+              <WithdrawButton
+                title={title}
+                credits={totalCredits}
+                type={type}
+                submitHandler={fetchCreditBalance}
+              />
+              <Box width={{ base: '100%', s: '185px' }}>
                 <Button
                   isFullWidth
                   variant="secondary"
@@ -191,10 +202,10 @@ function CreditDetails({
                     </PopoverBody>
                   </Popover>
                 ) : null}
-              </div>
+              </Box>
             </Box>
           ) : null}
-        </Flex>
+        </Box>
       </CardBody>
     </Card>
   );

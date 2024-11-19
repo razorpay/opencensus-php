@@ -10,7 +10,6 @@ import { CLICK_ON_MANAGE_ALERTS, OPEN_DOCUMENTATION } from 'merchant/views/Accou
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 import { connect } from 'react-redux';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { Flex } from './style';
 import { BellIcon, Box, Heading, Link, Text } from '@razorpay/blade/components';
 
 function CreditsList(props) {
@@ -55,7 +54,13 @@ function CreditsList(props) {
         </div>
       ) : (
         <Box display="flex" flexDirection="column" gap="spacing.8">
-          <Flex isResponsive justifyBetween alignItems="center">
+          <Box
+            display="flex"
+            width="100%"
+            flexDirection={{ base: 'column', m: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ base: 'unset', m: 'center' }}
+          >
             <Heading size="small" weight="semibold">
               Your Credits
             </Heading>
@@ -78,7 +83,7 @@ function CreditsList(props) {
                 />
               )}
             </Box>
-          </Flex>
+          </Box>
           <Box display="flex" flexDirection="column" gap="spacing.7">
             <Box display="flex" flexDirection="column" gap="spacing.5">
               <CreditDetailsNew
@@ -93,7 +98,7 @@ function CreditsList(props) {
                 totalCredits={balanceData.fee_credits}
                 title="Fee Credits"
                 description="Get your transactions settled in full. Transaction charges will be deducted from fee credits."
-                creditItems={creditItems.fee || []}
+                creditItems={[...(creditItems.fee || []), ...(creditItems.fee_withdraw || [])]}
                 onManageAlert={props.onManageAlert}
                 trackToggleHistory={props.trackToggleHistory}
                 type="fee"
@@ -103,7 +108,10 @@ function CreditsList(props) {
                 totalCredits={balanceData.refund_credits}
                 title="Refund Credits"
                 description="Do not want to refund from your settled amounts? Use refund credits."
-                creditItems={creditItems.refund || []}
+                creditItems={[
+                  ...(creditItems.refund || []),
+                  ...(creditItems.refund_withdraw || []),
+                ]}
                 trackToggleHistory={props.trackToggleHistory}
                 type="refund"
                 setStatus={setStatus}

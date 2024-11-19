@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import Spinner from 'common/ui/Spinner';
+import SpinnerLegacy from 'common/ui/Spinner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
@@ -11,10 +11,16 @@ import {
   CardBody,
   CardHeader,
   CardHeaderLeading,
+  Spinner,
+  Text,
 } from '@razorpay/blade/components';
-import { Flex } from '../Credits/components/style';
+
 import { TICKET_STATUS } from '../constants';
 import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
+import { fetchReserveBalance } from 'merchant/reducers/profile';
+import { bindActionCreators } from 'redux';
+import WithdrawButton from 'merchant/views/Account/components/WithdrawModal/WithdrawButton';
+import { useStore } from 'shell/commonStore';
 
 const getReserveBalanceAmount = (items, reserveBalanceError) => {
   if (!items) return 0;
@@ -34,16 +40,35 @@ function ReserveBalance({
   handlAddFunds,
   ticketGenerated,
   handleActivate,
+  fetchReserveBal,
   mode,
 }) {
   const items = reserveBalance.data?.items;
+  const { showNotification } = useStore();
   const balance = getReserveBalanceAmount(items, reserveBalance.error);
   const { data: ticketStatusData, loading: ticketStatusLoading } = ticketStatus;
+
+  const [resBalanceLoading, setResBalanceLoading] = useState(false);
+
+  const fetchReserveBalanceAfterWithdrawal = () => {
+    setResBalanceLoading(true);
+    fetchReserveBal().then((response) => {
+      if (response.success) {
+        setResBalanceLoading(false);
+      } else {
+        setResBalanceLoading(false);
+        showNotification({
+          type: 'error',
+          message: 'Failed to fetch Reserve Balance, please refresh the page',
+        });
+      }
+    });
+  };
 
   if (ticketStatusLoading) {
     return (
       <div class="page-spinner-container">
-        <Spinner />
+        <SpinnerLegacy />
       </div>
     );
   }
@@ -57,18 +82,28 @@ function ReserveBalance({
         />
       </CardHeader>
       <CardBody>
-        <Flex isResponsive spacing={8} justifyBetween direction="row">
-          <Amount
-            size="large"
-            weight="semibold"
-            type="heading"
-            currency={user.merchant.currency}
-            value={i18nifyConvertToMajorUnit(balance, user.merchant.currency)}
-          />
+        <Box
+          display="flex"
+          width="100%"
+          flexDirection={{ base: 'column', l: 'row' }}
+          justifyContent="space-between"
+          gap="spacing.4"
+        >
+          {!resBalanceLoading ? (
+            <Amount
+              size="large"
+              weight="semibold"
+              type="heading"
+              currency={user.merchant.currency}
+              value={i18nifyConvertToMajorUnit(balance, user.merchant.currency)}
+            />
+          ) : (
+            <Spinner marginY="auto" />
+          )}
           {!user.isOrgAxis && !user.isReserveBalanceSelfServeEnabled && (
             <>
               {ticketGenerated || ticketStatusData.ticket_status === TICKET_STATUS.processing ? (
-                <button class="btn btn-primary">Processing...</button>
+                <Button variant="secondary">Processing...</Button>
               ) : ticketStatusData.ticket_status === TICKET_STATUS.resolved ||
                 ticketStatusData.ticket_status === TICKET_STATUS.closed ||
                 balance > 0 ? null : (
@@ -83,6 +118,12 @@ function ReserveBalance({
             user.isReserveBalanceSelfServeEnabled &&
             [rolesList.OWNER, rolesList.ADMIN].includes(user.role) && (
               <Box display="flex" gap="spacing.3" alignItems="center">
+                <WithdrawButton
+                  title="Reserve Balance"
+                  credits={balance}
+                  type="reserve_balance"
+                  submitHandler={fetchReserveBalanceAfterWithdrawal}
+                />
                 <div>
                   <Button
                     variant="secondary"
@@ -101,11 +142,31 @@ function ReserveBalance({
                 </div>
               </Box>
             )}
-        </Flex>
+        </Box>
+        {ticketGenerated ||
+        (ticketStatusData.ticket_status === 'Processing' &&
+          !user.isReserveBalanceSelfServeEnabled) ? (
+          <Text
+            size="small"
+            weight="medium"
+            marginTop="spacing.2"
+            color="interactive.text.positive.normal"
+          >
+            Your request is being processed. Please check your registered email for an update.
+          </Text>
+        ) : null}
       </CardBody>
     </Card>
   );
 }
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      fetchReserveBal: fetchReserveBalance,
+    },
+    dispatch,
+  );
+};
 
 const mapStateToProps = (state) => {
   return {
@@ -115,4 +176,4 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, null)(ReserveBalance);
+export default connect(mapStateToProps, mapDispatchToProps)(ReserveBalance);
