@@ -149,7 +149,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/details', 'UserController@getUserDetailsV2')->name('get_user_details');
 
         Route::post('/coupons/validate', 'MerchantController@validateCoupon')->name('user_coupons_validate');
-        Route::post('/whatsapp/opt_in', 'MerchantController@whatsappOptIn')->name('user_whatsapp/opt_in');
+        Route::post('/whatsapp/opt_in', 'UserController@whatsappOptIn')->name('user_whatsapp/opt_in');
         Route::post('/merchants', 'UserController@createMerchant')->name('user_create_merchant');
     });
 

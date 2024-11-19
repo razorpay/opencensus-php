@@ -687,6 +687,22 @@ class Service extends Base\Service
        return $this->requestAPI($input, 'users/merchants', 'POST', $options);
     }
 
+    public function whatsappOptIn($input)
+    {
+        $user = Auth::user();
+
+        $requestData = Constants::WHATSAPP_OPT_IN_REQ_DATA_MAP['user'];
+
+        // Switch to proxy auth if merchant is present in the session
+        if (empty($user->currentMerchant()) === false) {
+            $requestData = Constants::WHATSAPP_OPT_IN_REQ_DATA_MAP['merchant'];
+        }
+
+        $request = new ApiRequestAny($requestData['options']);
+
+        return $request->processInput($input)->send($requestData['path'], 'POST');
+    }
+
     /**
      * @param  array  $input [description]
      *

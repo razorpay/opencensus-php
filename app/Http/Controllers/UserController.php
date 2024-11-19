@@ -210,6 +210,15 @@ class UserController extends Controller
 
     }
 
+    public function whatsappOptIn()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service())->whatsappOptIn($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, $isConcurrentApiCall = false)
     {
         $data = $this->getDataForRendering($details,$org, $userError, $orgError);

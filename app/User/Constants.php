@@ -173,6 +173,28 @@ class Constants
         ],
     ];
 
+    /**
+     * Whatsapp opt in can happen in two scenarios
+     * 1. User is logged in
+     * 2. User and merchant are logged in
+     *
+     * This constant stores relevant data to make whatsapp opt in api calls for both the cases
+     */
+    const WHATSAPP_OPT_IN_REQ_DATA_MAP = [
+        'merchant'  => [
+            'path'      => 'users/whatsapp/opt_in',
+            'options'   => [
+                'client_type' => 'merchant',
+            ]
+        ],
+        'user'  => [
+            'path'      => 'users/whatsapp/opt_in_internal',
+            'options'   => [
+                'client_type' => 'user',
+            ]
+        ],
+    ];
+
     const SPLITZ_API_CACHING_ENABLED = 'SPLITZ_API_CACHING_ENABLED';
     const VARIABLES = 'variables';
     const RESULT = 'result';

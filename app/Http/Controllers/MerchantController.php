@@ -237,14 +237,6 @@ class MerchantController extends Controller
 
         return AppResponse::jsonResponse($error,$data);
     }
-    public function whatsappOptIn()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Merchant\Service)->whatsappOptIn($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
 
     public function getCustomersForAutocomplete($mode)
     {

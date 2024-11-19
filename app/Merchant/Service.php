@@ -616,13 +616,6 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function whatsappOptIn($input)
-    {
-        $request = new ApiRequestAny(['client_type' => 'merchant']);
-
-        return $request->processInput($input)->send('users/whatsapp/opt_in', 'POST');
-    }
-
     public function getReferrerAttribute($merchantId)
     {
         $tags = $this->getMerchantTags($merchantId);
