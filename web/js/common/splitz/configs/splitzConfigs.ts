@@ -1784,6 +1784,8 @@ export const splitzConfig: SplitzInitConfig = {
         '/keys',
         '/route/accounts',
         '/business-settings/team',
+        '/partners/manage-team',
+        '/team',
       ],
       abExperiments: [
         {
