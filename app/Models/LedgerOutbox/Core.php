@@ -1208,13 +1208,15 @@ class Core extends Base\Core
 
                                 $transfer->setTax($tax);
 
+                                $this->repo->saveOrFail($transfer);
+
                                 $transferPayment->setFee(0);
 
                                 $transferPayment->setTax(0);
 
                                 $transferPayment->setMdr(0);
 
-                                $this->repo->saveOrFail($transfer);
+                                $this->repo->saveOrFail($transferPayment);
 
                                 // create txns without balance update and dispatch for settlement
                                 // balance update is done asynchronously via AsyncBalanceUpdateForTransfer job

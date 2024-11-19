@@ -1834,9 +1834,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->assertNotNull($transferPayment['transaction_id'], 'transfer txn and transfer_payment txn should not be created');
         $this->assertEquals('captured', $transferPayment['status'], 'transfer_payment not captured');
         $this->assertEquals($creditJID, $transferPayment['transaction_id'], 'transfer_payment txn_id not equal to credit journal_id');
-        $this->assertEquals(0, $transferPayment['fee']);
-        $this->assertEquals(0, $transferPayment['tax']);
-        $this->assertEquals(0, $transferPayment['mdr']);
+        $this->assertSame(0, $transferPayment['fee']);
+        $this->assertSame(0, $transferPayment['tax']);
+        $this->assertSame(0, $transferPayment['mdr']);
 
         // fetch transfer txn
         $transferTxn = $this->getDbEntity('transaction', ['type' => 'transfer', 'entity_id' => $transferId]);
@@ -2062,9 +2062,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->assertNotNull($transferPayment, 'transfer_payment not found');
         $this->assertEquals('captured', $transferPayment['status'], 'transfer_payment not captured');
         $this->assertEquals($creditJID, $transferPayment['transaction_id'], 'transfer_payment txn_id not equal to credit journal_id');
-        $this->assertEquals(0, $transferPayment['fee']);
-        $this->assertEquals(0, $transferPayment['tax']);
-        $this->assertEquals(0, $transferPayment['mdr']);
+        $this->assertSame(0, $transferPayment['fee']);
+        $this->assertSame(0, $transferPayment['tax']);
+        $this->assertSame(0, $transferPayment['mdr']);
 
         // fetch transfer txn
         $transferTxn = $this->getDbEntity('transaction', ['type' => 'transfer', 'entity_id' => $transferId]);

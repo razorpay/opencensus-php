@@ -3175,7 +3175,7 @@ class TransferTest extends TestCase
                                     "id"=> "MopI0tNlyVsICK",
                                     "created_at"=> "1697447934",
                                     "updated_at"=> "1697447934",
-                                    "merchant_id"=> "Kkd0zXqqYyNBLh",
+                                    "merchant_id"=> "10000000000001",
                                     "journal_id"=> "MopI0tL6gDzBe6",
                                     "account_id"=> "KNIZxfkC0t9wJT",
                                     "amount"=> "13757",
@@ -3197,7 +3197,7 @@ class TransferTest extends TestCase
                                     "id"=> "MopI0tNmzEwohI",
                                     "created_at"=> "1697447934",
                                     "updated_at"=> "1697447934",
-                                    "merchant_id"=> "Kkd0zXqqYyNBLh",
+                                    "merchant_id"=> "10000000000001",
                                     "journal_id"=> "MopI0tL6gDzBe6",
                                     "account_id"=> "KoAnIvRweUzEFa",
                                     "amount"=> "13757",
@@ -3234,7 +3234,7 @@ class TransferTest extends TestCase
                                     "id"=> "MopI0tfC05hUWx",
                                     "created_at"=> "1697447934",
                                     "updated_at"=> "1697447934",
-                                    "merchant_id"=> "IDVkQFXRWGybl9",
+                                    "merchant_id"=> "10000000000000",
                                     "journal_id"=> "MopI0tcz3YJFZS",
                                     "account_id"=> "KoAYVJwu2nd4Jx",
                                     "amount"=> "28",
@@ -3256,7 +3256,7 @@ class TransferTest extends TestCase
                                     "id"=> "MopI0tfD3bRsnw",
                                     "created_at"=> "1697447934",
                                     "updated_at"=> "1697447934",
-                                    "merchant_id"=> "IDVkQFXRWGybl9",
+                                    "merchant_id"=> "10000000000000",
                                     "journal_id"=> "MopI0tcz3YJFZS",
                                     "account_id"=> "KoAYVBdA2cIrps",
                                     "amount"=> "6",
@@ -3300,7 +3300,7 @@ class TransferTest extends TestCase
                                     "id"=> "MopI0tfE1HxJdG",
                                     "created_at"=> "1697447934",
                                     "updated_at"=> "1697447934",
-                                    "merchant_id"=> "IDVkQFXRWGybl9",
+                                    "merchant_id"=> "10000000000000",
                                     "journal_id"=> "MopI0tcz3YJFZS",
                                     "account_id"=> "KoAYV3CBjmb8l2",
                                     "amount"=> "13791",
@@ -3324,15 +3324,20 @@ class TransferTest extends TestCase
                 ]
             ]);
 
-
         $this->ba->privateAuth();
 
         $transfer = $this->startTest();
 
         $ikey = $this->getDbLastEntity(Entity::IDEMPOTENCY_KEY);
 
+        $transferPayment = $this->getDbLastEntity(Entity::PAYMENT);
+
         $this->assertEquals($transfer['id'], 'trf_' . $ikey->getSourceId());
         $this->assertEquals('processed', $transfer['status']);
+        $this->assertSame(0, $transfer['fees']);
+        $this->assertSame(0, $transfer['tax']);
+        $this->assertSame(0, $transferPayment['fee']);
+        $this->assertSame(0, $transferPayment['tax']);
         $this->assertEquals($ikeyValue, $ikey->getIdempotencyKey());
 
         return $transfer;

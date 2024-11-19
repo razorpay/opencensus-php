@@ -3008,6 +3008,20 @@ class Core extends Base\Core
             LedgerConstants::MERCHANT_ID => $transfer->getMerchantId(),
         ]);
 
+        $transfer->setFees($fee);
+
+        $transfer->setTax($tax);
+
+        $this->repo->saveOrFail($transfer);
+
+        $transferPayment->setFee(0);
+
+        $transferPayment->setTax(0);
+
+        $transferPayment->setMdr(0);
+
+        $this->repo->saveOrFail($transferPayment);
+
         return $transfer;
     }
 
