@@ -225,9 +225,6 @@ class Service extends Base\Service
             return $response;
         }
 
-        //metric for counting number of incoming notification callbacks from bank
-        $this->trace->count(BankTransferMetrics::BANKTRANSFER_CALLBACK_COUNT);
-
         //metric for difference in time b/w( bank transfer transaction time , bank transfer webhook callback)
         if((array_key_exists('Req_dt_time' , $input)) && (empty($input['Req_dt_time']) === false))
         {
@@ -253,6 +250,9 @@ class Service extends Base\Service
         if (empty($response) === false) {
             return $response;
         }
+
+        //metric for counting number of incoming notification callbacks from bank
+        $this->trace->count(BankTransferMetrics::BANKTRANSFER_CALLBACK_COUNT);
 
         $bankTransferRequest = null;
 

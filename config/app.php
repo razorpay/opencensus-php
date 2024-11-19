@@ -1058,6 +1058,8 @@ return array(
 
     'visa_cvv_less_experiment' => env('VISA_CVV_LESS_EXPERIMENT'),
 
+    'transaction_created_fire_webhook_sync'=>env('TXN_CREATED_FIRE_WEBHOOK_SYNC'),
+
     'refund_creation_data_cls_balance_experiment' => env('REFUND_CREATION_DATA_CLS_BALANCE_EXP_ID'),
 
     'refund_journal_payload_harvester_balance_experiment' => env('REFUND_JOURNAL_PAYLOAD_BALANCE_EXP_ID'),

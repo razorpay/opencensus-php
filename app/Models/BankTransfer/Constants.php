@@ -55,4 +55,8 @@ class Constants
         self::SEEDS_OR_PLANTS,
         self::TOBACCO,
     ];
+
+    const ENABLE = 'enable';
+
+    const TXN_CREATED_FIRE_WEBHOOK_SYNC = 'app.transaction_created_fire_webhook_sync';
 }

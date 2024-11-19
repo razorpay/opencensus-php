@@ -172,8 +172,23 @@ class Metric extends Base\Core
         return camel_case($functionName);
     }
 
+    public static function pushFAVCompletedMetrics(Entity $fav){
+        try
+        {
+            self::pushCreatedToCompletedMetrics($fav);
+        }
+        catch (\Throwable $ex)
+        {
+            app('trace')->traceException( $ex,
+                Trace::ERROR,
+                TraceCode::FUND_ACCOUNT_VALIDATION_METRIC_PUSH_EXCEPTION,
+                [
+                    'id' => $fav->getId()
+            ]);
+        }
+    }
 
-    protected static function pushCreatedToCompletedMetrics(Entity $fav)
+    public static function pushCreatedToCompletedMetrics(Entity $fav)
     {
         $metricDimensions = self::getMetricDimensions($fav);
 

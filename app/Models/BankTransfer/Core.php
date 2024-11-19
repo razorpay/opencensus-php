@@ -1397,7 +1397,15 @@ class Core extends Base\Core
                 });
 
                 // dispatch event for txn created
-                (new Processor())->dispatchEventForTransactionCreated($bankTransfer, $txn);
+                // if merchant is in experiment, it goes in to new flow, else old flow.
+                if($this->isWebhookSyncFiringEnabled($bankTransfer->getMerchantId(),BankTransferConstants::TXN_CREATED_FIRE_WEBHOOK_SYNC,BankTransferConstants::ENABLE))
+                {
+                    (new Processor())->dispatchEventForTransactionCreatedForTxnDependentMerchants($bankTransfer, $txn);
+                }
+                else
+                {
+                    (new Processor())->dispatchEventForTransactionCreated($bankTransfer, $txn);
+                }
                 return [
                     $bankTransfer->getPublicId(),
                     $txn->getPublicId(),
@@ -1568,5 +1576,37 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+    public function isWebhookSyncFiringEnabled($merchantId,$experimentName,string $checkVariant)
+    {
+        try
+        {
+            $experimentId = $this->app['config']->get($experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id' => $merchantId,
+                'experiment_id' => $experimentId,
+            ]);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'experiment_id' => $experimentId,
+                'result' => $response
+            ]);
+        }
+
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id' => $merchantId,
+                'experiment_id' => $this->app['config']->get($experimentName) ?? null
+            ]);
+
+            return false;
+
+        }
+
+        return $response['response']['variant']['name'] == $checkVariant;
+
     }
 }

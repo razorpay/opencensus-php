@@ -12284,6 +12284,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OPTIMIZER_MERCHANT_AFFORDABILITY_SPLITZ_EXPERIMENT_ERROR = 'OPTIMIZER_MERCHANT_AFFORDABILITY_SPLITZ_EXPERIMENT_ERROR';
     const OPTIMIZER_PROVIDER_GATEWAY_FETCH_ERROR            = 'OPTIMIZER_PROVIDER_GATEWAY_FETCH_ERROR';
     const OPTIMIZER_PROVIDER_EMI_DATA_MERGE_ERROR            = 'OPTIMIZER_PROVIDER_EMI_DATA_MERGE_ERROR';
+    const TRANSACTION_CREATED_WEBHOOK_SYNC_FIRE = "TRANSACTION_CREATED_WEBHOOK_SYNC_FIRE";
+    const TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE = "TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE";
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
@@ -12499,6 +12501,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::ORG_ADMIN_NOT_FOUND                                            => 'Org admin not found',
         self::BANKING_ADMIN_UPDATE_REQUEST_ORG_ID                            => 'Trace log after admin update',
         self::ADMIN_ORG_PERMISSIONS_REPLICATIONS                             => 'admin org permission replicated successfully',
+        self::TRANSACTION_CREATED_WEBHOOK_SYNC_FIRE                          => 'Firing Transaction.Created Webhook synchronously',
+        self:: TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE                        => 'Firing Transaction.Created Webhook Asynchronously '
     ];
 
     public static $fileBasedReconTraceCodes = [

@@ -117,6 +117,8 @@ abstract class Base extends Core
 
         $this->triggerValidationCompletedWebhook();
 
+        (new Metric)->pushFAVCompletedMetrics($this->validation);
+
         $this->pushFAVStatusChangeEvent($this->validation);
     }
 

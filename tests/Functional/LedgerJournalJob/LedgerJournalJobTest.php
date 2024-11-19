@@ -8,6 +8,7 @@ use RZP\Models\Feature;
 use RZP\Services\RazorXClient;
 use RZP\Jobs\LedgerJournalTest;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Jobs\PayoutServiceDataMigration;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Reversal\Entity as ReversalEntity;
@@ -18,6 +19,8 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Payout\DataMigration as PayoutDataMigration;
 use RZP\Models\CreditTransfer\Entity as CreditTransferEntity;
+use RZP\Tests\Traits\MocksSplitz;
+use RZP\Tests\Traits\TestsWebhookEvents;
 
 class LedgerJournalJobTest extends TestCase
 {
@@ -25,7 +28,8 @@ class LedgerJournalJobTest extends TestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
-
+    use TestsWebhookEvents;
+    use MocksSplitz;
 
     protected function setUp(): void
     {
@@ -495,4 +499,70 @@ class LedgerJournalJobTest extends TestCase
         $this->assertEquals('SampleCtTrfId3', $creditTransfer[CreditTransferEntity::ID]);
         $this->assertEquals('HNjsypA96SgJKJ', $creditTransfer->getTransactionId());
     }
+    public function testBankTransferProcessWebhookFiredAsyncWhenMerchantInTxnBalanceExperiment()
+    {
+        $testData = &$this->testData['testBankTransferTransactionCreation'];
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+        $this->enableSplitzExperiment('app.transaction_created_fire_webhook_sync');
+        $this->enableRazorXTreatment([RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE]);
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->create('bank_transfer', [
+            'id'             => "SampleBnkTId12",
+            'utr'            => "2222",
+            'balance_id'     => $balance->getId(),
+            'merchant_id'    => '10000000000000'
+        ]);
+        $ledgerJournalJob = new LedgerJournalTest($testData['payload']);
+        $this->expectWebhookEventOneTime('transaction.created');
+        $ledgerJournalJob->handle();
+        $bankTransfer = $this->getDbLastEntity('bank_transfer');
+        $transaction = $this->getDbLastEntity('transaction');
+
+        // assert bank tranfer
+        $this->assertEquals('HNjsypA96SgJKJ', $bankTransfer->getTransactionId());
+
+        // assert transaction
+        $this->assertEquals('HNjsypA96SgJKJ', $transaction->getId());
+        $this->assertEquals('SampleBnkTId12', $transaction->getEntityId());
+        $this->assertEquals('bank_transfer', $transaction->getType());
+        $this->assertEquals('24500', $transaction->getBalance());
+    }
+    protected function enableRazorXTreatment($whiteListFeatures)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) use ($whiteListFeatures) {
+                    if (in_array($feature,$whiteListFeatures))
+                    {
+                        return 'on';
+                    }
+
+                    return 'control';
+                }));
+    }
+    protected function enableSplitzExperiment($experimentId){
+        $input =[
+            "id"=>'10000000000000',
+            'experiment_id' => $this->app['config']->get($experimentId)
+
+        ];
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($input,$output);
+
+    }
+
 }

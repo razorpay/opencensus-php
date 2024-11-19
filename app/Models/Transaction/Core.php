@@ -2124,6 +2124,23 @@ class Core extends Base\Core
             ]);
         }
     }
+    public function dispatchEventForLedgerEntryCreated(string $id): void
+    {
+        $txn = (new TransactionLedgerCore())->fetchLedgerEntryById($id);
+        if($txn!=null || (empty($txn) === false)){
+            (new Notifier($txn))->notify();
+
+            $this->app->events->dispatch('api.transaction.created', $txn);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::LEDGER_JOURNAL_TRANSACTION_DISPATCH_SKIPPED,
+                [
+                    'id'    => $id
+                ]
+            );
+        }
+    }
 
     /**
      * Dispatches webhook, sms and/or email for newly created transaction.
