@@ -8,11 +8,11 @@ export const getMagicKonnectSlideDetails = (businessName = 'Razorpay') => {
     SLIDE_ONE: {
       product: businessName,
       description: 'An end to end WhatsApp engagement suite for your business',
-      title: 'Magic Konnect',
+      title: 'Konnect',
     },
     SLIDE_TWO: {
       product: businessName,
-      title: 'Unlock next level of business growth with Magic Konnect',
+      title: 'Unlock next level of business growth with Konnect',
     },
   };
 };

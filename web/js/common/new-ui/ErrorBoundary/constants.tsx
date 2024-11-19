@@ -29,7 +29,7 @@ export enum Teams {
   RAZORPAY_X = 'RazorpayX',
   MERCHANT_REPORTING = 'Merchant Reporting',
   MAGIC_CHECKOUT = 'Magic Checkout',
-  MAGIC_KONNECT = 'Magic Konnect',
+  MAGIC_KONNECT = 'Konnect',
   RAZORPAY_WALLET = 'Razorpay Wallet',
   OMNI_CHANNEL = 'OMNI_CHANNEL',
   RAY = 'Ray',

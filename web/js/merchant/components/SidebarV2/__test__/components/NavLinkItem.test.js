@@ -156,7 +156,7 @@ describe('NavLinkItem', () => {
     const dummyUrl = 'https://dummyurl.com/image.png';
     renderApp({
       props: {
-        title: 'Magic Konnect',
+        title: 'Konnect',
         product_id: 'magic_konnect',
         image: dummyUrl,
         routes: {
@@ -165,8 +165,8 @@ describe('NavLinkItem', () => {
       },
     });
 
-    expect(screen.getByAltText('Magic Konnect')).toBeInTheDocument();
-    const imageElement = screen.getByAltText('Magic Konnect');
+    expect(screen.getByAltText('Konnect')).toBeInTheDocument();
+    const imageElement = screen.getByAltText('Konnect');
     expect(imageElement).toBeInTheDocument();
     expect(imageElement).toHaveAttribute('src', dummyUrl);
     expect(document.querySelector('i')).not.toBeInTheDocument();
@@ -175,7 +175,7 @@ describe('NavLinkItem', () => {
   test('should render icon only when image is not passed in prop', () => {
     renderApp({
       props: {
-        title: 'Magic Konnect',
+        title: 'Konnect',
         product_id: 'magic_konnect',
         routes: {
           magic_konnect: '/magic-konnect',
@@ -183,8 +183,8 @@ describe('NavLinkItem', () => {
       },
     });
 
-    expect(screen.getByText('Magic Konnect')).toBeInTheDocument();
-    expect(screen.queryByAltText('Magic Konnect')).not.toBeInTheDocument();
+    expect(screen.getByText('Konnect')).toBeInTheDocument();
+    expect(screen.queryByAltText('Konnect')).not.toBeInTheDocument();
   });
 
   test('should render `Magic Checkout` with title `Checkout360` if user has completed C360 onboarding', () => {

@@ -10,7 +10,7 @@ const INIT_PROPS = {
   onClickNextCtaAction: jest.fn(),
   slideLabels: getMagicKonnectSlideDetails(''),
   isLoading: false,
-  primaryCta: 'Login to Magic Konnect',
+  primaryCta: 'Login to Konnect',
   secondaryCta: '',
   isExistingUser: true,
 };
@@ -35,10 +35,10 @@ const renderApp = ({ state = {}, ...props } = {}) => {
   );
 };
 
-describe('Magic konnect onboarding', () => {
+describe('Konnect onboarding', () => {
   test('first slide should be visible', () => {
     renderApp();
-    expect(screen.getByText('Login to Magic Konnect')).toBeInTheDocument();
+    expect(screen.getByText('Login to Konnect')).toBeInTheDocument();
   });
 
   test('should show second slide if dot is clicked', async () => {
@@ -65,6 +65,6 @@ describe('Magic konnect onboarding', () => {
 
     await userEvent.click(backCta);
 
-    expect(screen.getByText('Login to Magic Konnect')).toBeInTheDocument();
+    expect(screen.getByText('Login to Konnect')).toBeInTheDocument();
   });
 });

@@ -31,7 +31,7 @@ const MagicKonnect = ({ user, org }) => {
       .catch(() => {
         showNotification({
           type: 'error',
-          message: 'Unable to proceed with Magic Konnect sign-in',
+          message: 'Unable to proceed with Konnect sign-in',
         });
       })
       .finally(() => {
@@ -55,7 +55,7 @@ const MagicKonnect = ({ user, org }) => {
     return (
       <MagicKonnectOnboarding
         onClickNextCtaAction={onClickExistingUser}
-        primaryCta="Login to Magic Konnect"
+        primaryCta="Login to Konnect"
         isLoading={isLoading}
         isExistingUser={true}
         businessName={org.businessName}
