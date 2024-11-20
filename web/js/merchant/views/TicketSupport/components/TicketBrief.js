@@ -3,7 +3,11 @@ import moment from 'moment';
 import { Link } from 'react-router-dom';
 import TicketStatus from './TicketStatus';
 import TicketBriefMessage from './TicketBriefMessage';
-import { STATUSES, sanitizeRaySubcategory } from 'merchant/views/TicketSupport/utils';
+import {
+  STATUSES,
+  sanitizeRaySubcategory,
+  sanitizeTicketCategory,
+} from 'merchant/views/TicketSupport/utils';
 
 const TicketCardHeader = ({ ticket }) => {
   const {
@@ -13,7 +17,9 @@ const TicketCardHeader = ({ ticket }) => {
     cf_requester_item,
   } = ticket.custom_fields || {};
 
-  const category = cf_requestor_subcategory || cf_new_requester_sub_category;
+  const category = sanitizeTicketCategory(
+    cf_requestor_subcategory || cf_new_requester_sub_category,
+  );
   const subCategory = cf_new_requester_item || cf_requester_item;
 
   return (

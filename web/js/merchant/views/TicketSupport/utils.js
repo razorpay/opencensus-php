@@ -26,6 +26,13 @@ export function sanitizeRaySubcategory(subcategory = '') {
   return subcategory?.replace(/Ray Dashboard/gi, 'Dashboard') || '';
 }
 
+export function sanitizeTicketCategory(category = '') {
+  if (category === 'No Intent Identified') {
+    return '';
+  }
+  return category;
+}
+
 export function getTicketStatus(ticket, workflow = {}) {
   const STATUS = workflow?.state || (statuses[ticket.status] && statuses[ticket.status].name);
   return STATUS;
