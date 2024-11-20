@@ -22,11 +22,11 @@ const ShiprocketNoticeModal = ({
       <ModalBody>
         <Text size="medium" color="surface.text.gray.normal">
           If you're using Shiprocket for shipping, please contact their support team to enable
-          Partial COD support on Shiprocket before activating it in your Razorpay Dashboard.
+          Partial COD feature flag on Shiprocket before activating it in your Razorpay Dashboard.
         </Text>
         <Text size="medium" color="surface.text.gray.normal" marginTop="2px">
-          Activating it on Razorpay first may cause your Partial COD orders to fail if support isn't
-          already set up on Shiprocket.
+          Activating it on Razorpay first may cause your Partial COD orders to fail if feature flag
+          isn't already enabled on Shiprocket.
         </Text>
       </ModalBody>
       <ModalFooter>

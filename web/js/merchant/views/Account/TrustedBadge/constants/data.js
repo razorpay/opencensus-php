@@ -65,8 +65,7 @@ export const pageData = {
       },
       info: {
         type: 'sub-text',
-        text:
-          'Remember, you don’t need to apply for the Razorpay Trusted Business badge. If you meet the eligibility criteria as determined by Razorpay, your payment checkout page will start displaying the badge automatically.',
+        text: 'Remember, you don’t need to apply for the Razorpay Trusted Business badge. If you meet the eligibility criteria as determined by Razorpay, your payment checkout page will start displaying the badge automatically.',
         showKnowMore: true,
       },
     },
@@ -78,23 +77,20 @@ export const pageData = {
       main: {
         id: 'main',
         type: 'details',
-        title: 'You are in the waitlist to become a Razorpay Trusted Business!',
-        subtitle: 'What does the badge stand for:',
-        details: [
-          'It is a sign of quality and trust',
-          'It shows your commitment to serving your customers',
-          'It will be 100% free of cost on checkout once live',
-        ],
+        title: 'Your Request for the Razorpay Trusted Badge is Under Review',
+        subtitle:
+          'Thank you for your interest in the Razorpay Trusted Badge! We are currently evaluating your business using our secure algorithms to ensure it meets the requirements for this badge. This review process helps maintain high standards of trust and transparency for your customers. You’ll be notified once the evaluation is complete.',
+        details: [],
         imgSrc: `${trustedBadgeAssets}/${STATUS.NOT_ELIGIBLE_DELISTED_YES_WAITLISTED.toLowerCase()}.svg`,
-        subComponent: ['divider', 'joinedWaitlist', 'info'],
+        subComponent: ['buyerProtection', 'info'],
       },
       requirements: {
-        subComponent: ['wantToKnow', 'joinedWaitlist'],
+        subComponent: ['wantToKnow'],
       },
       info: {
         type: 'sub-text',
-        text:
-          'We are gradually rolling out the program. Once you meet the eligibility criteria as determined by Razorpay, the badge will automatically be activated on your checkout. Please check back later.',
+        text: "Did you know? You can increase customer trust and encourage more prepaid orders with Razorpay Buyer Protection. This program offers an added layer of security for your customers, covering eligible orders and reinforcing your brand's commitment to a risk-free shopping experience. With Buyer Protection, customers feel more secure making purchases, which can translate to higher conversions and customer loyalty for your business.",
+        buyerProtectionLinks: true,
       },
     },
     order: ['main', 'growth', 'requirements'],
@@ -121,8 +117,7 @@ export const pageData = {
       },
       info: {
         type: 'sub-text',
-        text:
-          'Your payment checkout page can start displaying the badge at the click of the activate button. <a href="https://razorpay.com/docs/payment-gateway/dashboard-guide/trusted-badge/" rel="noreferrer noopener" target="_blank">Know More</a>',
+        text: 'Your payment checkout page can start displaying the badge at the click of the activate button. <a href="https://razorpay.com/docs/payment-gateway/dashboard-guide/trusted-badge/" rel="noreferrer noopener" target="_blank">Know More</a>',
       },
     },
     order: ['main', 'requirements'],
@@ -152,8 +147,7 @@ export const pageData = {
       },
       reserves: {
         type: 'sub-text',
-        text:
-          'Please note, Razorpay reserves the right to revoke the badge should you fail to comply with the program’s requirements.',
+        text: 'Please note, Razorpay reserves the right to revoke the badge should you fail to comply with the program’s requirements.',
       },
       wantToKnow: {
         // override default
@@ -183,14 +177,12 @@ export const pageData = {
         {
           icon: imgBuild,
           title: 'Builds brand credibility',
-          desc:
-            'Unlock growth and attract new customers for your business by building love for you brand',
+          desc: 'Unlock growth and attract new customers for your business by building love for you brand',
         },
         {
           icon: imgCodFeature,
           title: 'Reduces dependency on COD',
-          desc:
-            'As customers start trusting your brand, they increasingly pay via online payment modes',
+          desc: 'As customers start trusting your brand, they increasingly pay via online payment modes',
         },
       ],
     },
@@ -209,8 +201,7 @@ export const pageData = {
     },
     wantToKnow: {
       type: 'sub-text',
-      text:
-        'You must complete KYC verification and update all your business and personal details to be eligible for the badge.',
+      text: 'You must complete KYC verification and update all your business and personal details to be eligible for the badge.',
       showDocTnCLink: true,
     },
     joinWaitlist: {
@@ -235,6 +226,11 @@ export const pageData = {
       icon: imgRtbWaitlist,
       text: 'You are in the waitlist',
     },
+    buyerProtection: {
+      type: 'text-icon',
+      icon: null,
+      text: 'Boost Customer Confidence Even Further with Razorpay Buyer Protection!',
+    },
     divider: {
       type: 'divider',
     },
@@ -244,8 +240,7 @@ export const pageData = {
 export const optOutDialog = {
   confirm: {
     title: 'Are you sure you want to opt out?',
-    body:
-      'Businesses like you see upto 5% increase in conversion by displaying the badge on their Checkout. If you proceed to opt-out, the Razorpay Trusted Business badge will be removed from your checkout.',
+    body: 'Businesses like you see upto 5% increase in conversion by displaying the badge on their Checkout. If you proceed to opt-out, the Razorpay Trusted Business badge will be removed from your checkout.',
     action: [
       {
         label: 'No, don’t opt out',
@@ -260,8 +255,7 @@ export const optOutDialog = {
   },
   postConfirm: {
     title: 'Razorpay Trusted Business badge has been removed from your checkout page',
-    body:
-      'We are sorry to see you go from the program. Do tell us how we can improve the experience of being a Razorpay Trusted Business for you.',
+    body: 'We are sorry to see you go from the program. Do tell us how we can improve the experience of being a Razorpay Trusted Business for you.',
     link: {
       text: 'Tell us how we can improve',
       href: 'https://razorpay.typeform.com/to/Q0KKcFDu',

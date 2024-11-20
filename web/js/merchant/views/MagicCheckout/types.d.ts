@@ -31,6 +31,7 @@ export interface RouteItem {
   condition?: (user: User, abExperiments?: GenericRecord, platform?: Platform) => boolean;
   onRCOD?: boolean;
   onRCODOnly?: boolean;
+  renderNavItemTag?: () => JSX.Element;
 }
 
 export type PlatformSpecificRoutes = {

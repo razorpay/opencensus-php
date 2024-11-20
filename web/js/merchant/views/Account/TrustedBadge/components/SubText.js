@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import sanitizer from 'common/utils/xss-sanitizer';
+import { Box } from '@razorpay/blade/components';
 
 const SubText = (props) => {
   let text = props.text;
@@ -59,6 +60,26 @@ const SubText = (props) => {
             Know More
           </a>
         </div>
+      )}
+      {props.buyerProtectionLinks && (
+        <Box marginTop="8px">
+          <a
+            href="https://drive.google.com/file/d/1X016w8TXE5LPlRW0CJXFHHsNqiQqTUQ1/view?usp=sharing"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            Learn More
+          </a>{' '}
+          about how Buyer Protection can benefit your store and fill in your interest in this{' '}
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSfBHHJuUZ7tTQGR5SNOaMCs1PviM9bCgZEIkGSLhv_edOK-vA/viewform?usp=sf_link"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            form
+          </a>{' '}
+          to make your business stand out!
+        </Box>
       )}
     </>
   );

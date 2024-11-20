@@ -24,6 +24,7 @@ import MagicXStoreSettings from 'merchant/views/MagicCheckout/MagicXStoreSetting
 import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
 
 import { convertPlatformRoutesToConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
+import RouteNewTag from 'merchant/views/MagicCheckout/common/components/RouteNewTag';
 import { useSplitzService } from 'common/splitz';
 
 const AnalyticsSettings = lazy(() =>
@@ -142,6 +143,7 @@ export const TABS = {
       label: 'Partial COD',
       Component: PartialCOD,
       condition: (_user) => _user?.isMagicPartialCODEnabled,
+      renderNavItemTag: () => <RouteNewTag />,
     },
     {
       className: 'pl-configurations-container',
@@ -239,6 +241,7 @@ export const TABS = {
       label: 'Partial COD',
       Component: PartialCOD,
       condition: (_user) => _user?.isMagicPartialCODEnabled,
+      renderNavItemTag: () => <RouteNewTag />,
     },
   ],
 };

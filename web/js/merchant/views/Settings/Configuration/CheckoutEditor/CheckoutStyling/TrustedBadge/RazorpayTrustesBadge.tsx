@@ -90,7 +90,7 @@ const RazorpayTrustedBadge = ({ trustedBadge, updateRTBMerchantStatus: updateSta
           onDismiss={() => setShowTrustedBadgeModal(false)}
           size="large"
         >
-          <ModalHeader title="Razorpay trusted badge" />
+          <ModalHeader title="Razorpay Trusted Badge" />
           <ModalBody>
             <TrustedBadge />
           </ModalBody>

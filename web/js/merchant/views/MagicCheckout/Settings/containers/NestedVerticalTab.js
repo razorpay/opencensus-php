@@ -90,6 +90,7 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
                   key={`${item.label}_${index}`}
                 >
                   {item.label}
+                  {item.renderNavItemTag ? item.renderNavItemTag() : null}
                 </NavLink>
               );
             })}

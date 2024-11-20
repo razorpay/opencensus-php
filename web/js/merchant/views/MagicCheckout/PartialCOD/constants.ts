@@ -9,10 +9,14 @@ import {
 
 export const NOTIFICATION_MSGS = {
   error: 'Something went wrong, please try again after sometime.',
-  slabSavedSuccess: 'Slab saved successfully.',
-  slabUpdatedSuccess: 'Slab updated successfully.',
-  slabRemovedSuccess: 'Slab deleted successfully.',
-  disableSuccess: 'Partial COD disabled successfully.',
+  slabSavedSuccess:
+    'Slab saved successfully. Changes take up to 30 minutes to reflect on your checkout.',
+  slabUpdatedSuccess:
+    'Slab updated successfully. Changes take up to 30 minutes to reflect on your checkout.',
+  slabRemovedSuccess:
+    'Slab deleted successfully. Changes take up to 30 minutes to reflect on your checkout.',
+  disableSuccess:
+    'Partial COD disabled successfully. Changes take up to 30 minutes to reflect on your checkout.',
   percentValAbove50: 'Percentage value should be between 0 and 50',
   'The configs.prepaid payment amount field is required when configs is present.':
     'Please set values in order to enable Partial COD',

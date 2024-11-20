@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import { connect } from 'react-redux';
 
+import { Box } from '@razorpay/blade/components';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { RouteGuard } from 'merchant/components/ShowWhen';
 
@@ -56,7 +57,10 @@ const NavContainer: React.FC<NavContainerProps> = (props) => {
         className="tabs-items pointer padding-8 font-bold"
         onClick={() => handleNavClick && handleNavClick(item)}
       >
-        {item.label}
+        <Box display="flex" alignItems="center">
+          {item.label}
+          {item.renderNavItemTag ? item.renderNavItemTag() : null}
+        </Box>
       </NavLink>
     );
   };

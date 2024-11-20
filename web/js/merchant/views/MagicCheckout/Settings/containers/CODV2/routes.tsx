@@ -1,3 +1,6 @@
+import React from 'react';
+
+import RouteNewTag from 'merchant/views/MagicCheckout/common/components/RouteNewTag';
 import CODSettingsTab from 'merchant/views/MagicCheckout/Settings/containers/CODSettingsTab';
 import ConfigDashboard from 'merchant/views/MagicCheckout/CODToPrepaid/ConfigsDashboard';
 import PartialCOD from 'merchant/views/MagicCheckout/PartialCOD';
@@ -29,6 +32,7 @@ export const COD_ROUTES = {
       label: 'Partial COD',
       Component: PartialCOD,
       condition: (_user: GenericRecord) => _user?.isMagicPartialCODEnabled as boolean,
+      renderNavItemTag: () => <RouteNewTag />,
     },
   ],
   [PLATFORMS.WOOCOMMERCE]: [
@@ -54,6 +58,7 @@ export const COD_ROUTES = {
       label: 'Partial COD',
       Component: PartialCOD,
       condition: (_user: GenericRecord) => _user?.isMagicPartialCODEnabled as boolean,
+      renderNavItemTag: () => <RouteNewTag />,
     },
   ],
 };
