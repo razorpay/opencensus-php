@@ -282,6 +282,13 @@ export const getPaymentTimelineData = (
 
           return paymentIdTimelineData;
         }
+        // For a payment that is refunded before being settled (void trxn), don't show the capture action.
+        const isPaymentRefunded = payment?.status === 'refunded';
+        const isPaymentSettled = payment?.transaction?.settled;
+
+        if (isPaymentRefunded && !isPaymentSettled) {
+          return paymentIdTimelineData;
+        }
 
         paymentIdTimelineData.push({
           id: 2,
