@@ -264,6 +264,7 @@ export const MOCK_USER = {
   pos_activation_flow: 'whitelist',
   is_pgos_merchant: true,
   business_type: '1',
+  isCountryIndia: true,
 };
 
 export const MOCK_PRICING_WITH_PRICES: ProductDescriptionPricing[] = [

@@ -77,7 +77,11 @@ export const isPosExperimentEnabled = ({
     user.user?.signup_campaign === 'assisted_onboarding' ||
     user.user?.signup_campaign === 'phantom_onboarding';
 
-  const checks = isWhitelistedForPos && !isUnregisteredMerchant && !isBlockedForSignUpCampaign;
+  const checks =
+    isWhitelistedForPos &&
+    !isUnregisteredMerchant &&
+    !isBlockedForSignUpCampaign &&
+    user.isCountryIndia;
 
   if (user.is_pgos_merchant) {
     return checks;
