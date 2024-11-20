@@ -2794,7 +2794,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (in_array($merchant->getId(), $admin->merchants()->get()->getIds(), true) === true)
+        if (in_array($merchant->getId(), $admin->merchants->getIds(), true) === true)
         {
             return;
         }

@@ -3,11 +3,13 @@
 namespace RZP\Models\Admin\Admin;
 
 use RZP\Constants\Table;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Base;
 use RZP\Base\ConnectionType;
 use RZP\Models\Admin\Permission;
 use Illuminate\Support\Facades\DB;
+use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -111,6 +113,29 @@ class Repository extends Base\Repository
             ->where('entity_id', $toOrgId)
             ->pluck('permission_id')
             ->toArray();
+    }
+
+    public function fetchMerchantsWithAdminPivot($id)
+    {
+        $merchantIds = DB::table(Table::MERCHANT_MAP)
+                        ->where('entity_id', '=', $id)
+                        ->where('entity_type', '=', 'admin')
+                        ->pluck('merchant_id')->toArray();
+
+        $merchants =  (new Merchant\Repository)->findMerchantsByIds($merchantIds);
+        return $this->addPivot($merchants, $id);
+    }
+
+    protected function addPivot(PublicCollection $merchants, string $adminId)
+    {
+        foreach ($merchants as $merchant) {
+            $merchant["pivot"] = [
+                "entity_type" => "admin",
+                "entity_id" => $adminId,
+                "merchant_id" => $merchant->getId()
+            ];
+        }
+        return $merchants;
     }
 
 }

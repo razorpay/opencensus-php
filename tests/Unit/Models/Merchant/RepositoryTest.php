@@ -24,10 +24,12 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Models\Adjustment\Entity as AdjustmentEntity;
 use RZP\Models\Transaction\Entity as TransactionEntity;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
 use function PHPUnit\Framework\assertNotEquals;
 use RZP\Models\Terminal\Repository as terminalRepository;
+use RZP\Models\Admin\Admin\Repository as adminRepository;
 
 use const Grpc\STATUS_DEADLINE_EXCEEDED;
 
@@ -745,6 +747,34 @@ class RepositoryTest extends RepositoryTestHelper
         //compare functionality
         $fetchWithAssociation = $terminal->merchants()->get();
         $this->assertEquals($resultWithoutSplitz1, $fetchWithAssociation);
+
+        $adminToCreateToVerify = [
+            'id' => $id3,
+            'org_id'             => Org::RZP_ORG,
+            'email'              => 'test@email.com',
+            'oauth_access_token' => 'test oauth token',
+            'oauth_provider_id'  => 'test oauth provider id',
+        ];
+
+        $this->fixtures->create('admin', $adminToCreateToVerify);
+        $adminRepository = new adminRepository();
+        $admin = $adminRepository->find($id3);
+        $admin->merchants()->attach($merchant1);
+        $admin->merchants()->attach($merchant2);
+
+        $this->setSplitzWithOutput("false", 1);
+        $resultWithoutSplitz1 = $admin->merchants;
+        $this->setSplitzWithOutput("true", 1);
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $admin) {
+            $resultWithSplitz1 = $admin->merchants;
+            $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1);
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+
+        //compare functionality
+        $fetchAdminWithAssociation = $admin->merchants()->get();
+        $this->assertEquals($resultWithoutSplitz1, $fetchAdminWithAssociation);
+
     }
 
     public function assertPublicCollectionsEqualIgnoringUpdatedAt($expectedCollection, $actualCollection)

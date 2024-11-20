@@ -18,6 +18,8 @@ use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Group;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper\ImplicitJoinHelper;
 use RZP\Models\Workflow\Action;
 
 class Entity extends Base\Entity
@@ -702,5 +704,15 @@ class Entity extends Base\Entity
         $roleNames = array_unique($roleNames);
 
         return ['roles' => $roleNames, 'permissions' => $permissions];
+    }
+
+    public function getMerchantsAttribute()
+    {
+        if ((new AsvRouter())->shouldRouteFilterToAsv("getMerchantsAttributeForAdmin")) {
+            return (new ImplicitJoinHelper)->getRelationAttribute(
+                $this, $this->entity, 'merchants', 'admin', 'fetchMerchantsWithAdminPivot', 'getId'
+            );
+        }
+        return parent::getRelationValue('merchants');
     }
 }
