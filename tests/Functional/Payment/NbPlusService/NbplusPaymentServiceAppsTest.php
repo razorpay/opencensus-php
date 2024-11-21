@@ -397,7 +397,11 @@ class NbPlusPaymentServiceAppsTest extends TestCase
         $this->assertNotNull($responseContent['all_currencies']);
         $this->assertNotNull($currencyRequestId);
 
-        $convertedCurrency = $responseContent['all_currencies'][$customerSelectedCurrency]['amount'];
+        if (is_array($responseContent['all_currencies']) && isset($responseContent['all_currencies'][$customerSelectedCurrency])) {
+            $convertedCurrency = $responseContent['all_currencies'][$customerSelectedCurrency]['amount'];
+        } else {
+            $this->fail('Currency data is not available');
+        }
 
         $paymentArray = $this->payment;
         $paymentArray['currency'] = 'USD';
