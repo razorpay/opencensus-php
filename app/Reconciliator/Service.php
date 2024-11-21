@@ -1554,10 +1554,14 @@ class Service extends Base\Service
        {
             $this->repo->saveOrFail($transaction);
        }
+        // Dispatch to rearch services
+        // If payment is rearch
+        // If payment is on non cls
         if (($payment->isExternal() === true) and
             (($payment->isUpi() === true and
             $payment->isRoutedThroughPaymentsUpiPaymentService() === true) or
-            ($payment->isMethodCardOrEmi() === true)))
+            ($payment->isMethodCardOrEmi() === true)) and
+            ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
         {
             (new Transaction\Core)->dispatchUpdatedTransactionToCPS($transaction, $payment);
         }
