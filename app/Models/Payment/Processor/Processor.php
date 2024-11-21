@@ -8214,9 +8214,16 @@ class Processor
 
                 $this->repo->saveOrFail($this->payment);
 
+                $reverseShadowCore = (new ReverseShadowPaymentsCore());
+
                 if ($this->payment->merchant->isFeatureEnabled(Features::PG_LEDGER_REVERSE_SHADOW) === true)
                 {
-                    (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($this->payment);
+                    $apiTxnId = null;
+                    if ($this->payment->hasBeenCaptured())
+                    {
+                        $apiTxnId = $reverseShadowCore->getAPITransactionId($this->payment->getPublicId(), $this->payment, \RZP\Models\Ledger\Constants::MERCHANT_CAPTURED);
+                    }
+                    $reverseShadowCore->createLedgerEntryForGatewayCaptureReverseShadow($this->payment, $apiTxnId);
                 }
 
                 $this->createLedgerEntriesForGatewayCapture($this->payment);

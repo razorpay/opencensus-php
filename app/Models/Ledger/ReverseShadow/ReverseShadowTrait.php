@@ -587,9 +587,9 @@ trait ReverseShadowTrait
         return true;
     }
 
-    protected function getAPITransactionId($transactorId, $payment)
+    protected function getAPITransactionId($transactorId, $payment, $transactorEvent = Constants::GATEWAY_CAPTURED)
     {
-        $payloadName = $this->getPayloadName($transactorId, Constants::GATEWAY_CAPTURED);
+        $payloadName = $this->getPayloadName($transactorId, $transactorEvent);
 
         $gatewayCaptureOutboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadNameWithTrashed($payloadName);
 
