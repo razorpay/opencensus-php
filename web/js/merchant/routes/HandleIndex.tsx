@@ -49,6 +49,9 @@ const HandleIndex = ({ user }: HandleIndexProps) => {
             search: `?source=${SALES_ASSISTED_ONBOARDING}`,
           };
         }
+        if (isPosEkycAgent && !user?.user?.name) {
+          navigationInfo = { pathname: '/pos-sales/basic-info', search: '' };
+        }
         navigate(navigationInfo);
         return;
       }
