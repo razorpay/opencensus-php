@@ -1125,4 +1125,8 @@ return array(
     ],
 
     'external_updates_enabled_for_tokens' => env('EXTERNAL_UPDATES_ENABLED_FOR_TOKENS'),
+
+    'cms_create_override_test_experiment_id' => env('CMS_CREATE_OVERRIDE_TEST_EXPERIMENT_ID'),
+
+    'cms_create_override_live_experiment_id' => env('CMS_CREATE_OVERRIDE_LIVE_EXPERIMENT_ID'),
 );

@@ -1163,6 +1163,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CUSTOMER_CREATE                                       = 'CUSTOMER_CREATE';
 
     const CUSTOMER_CREATE_REQUEST_CTX                           = 'CUSTOMER_CREATE_REQUEST_CTX';
+    const CUSTOMER_CREATE_REQUEST_CTX_SPLITZ_ERROR              = 'CUSTOMER_CREATE_REQUEST_CTX_SPLITZ_ERROR';
     const CUSTOMER_CREATE_PAYLOAD_INFO                          = 'CUSTOMER_CREATE_PAYLOAD_INFO';
     const CUSTOMER_DELETE                                       = 'CUSTOMER_DELETE';
     const CUSTOMER_EDIT                                         = 'CUSTOMER_EDIT';

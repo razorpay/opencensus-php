@@ -168,6 +168,24 @@ class Core extends Base\Core
             }
         }
 
+        try
+        {
+            $allowed = $this->isCreateOverrideToCmsEnabled($merchant->getId(),$this->mode,app('request.ctx')->getInternalAppName());
+        }
+        catch(\Exception $e)
+        {
+            $allowed = "unknown";
+            $this->trace->traceException($e, null, TraceCode::CUSTOMER_CREATE_REQUEST_CTX_SPLITZ_ERROR);
+        }
+
+        $traceData = [
+            'merchant_id' => $merchant->getId(),
+            'mode' => $this->mode,
+            'internal_app_name' => app('request.ctx')->getInternalAppName(),
+            'experiment_status' => $allowed
+        ];
+        $this->trace->info(TraceCode::CUSTOMER_CREATE_REQUEST_CTX, $traceData);
+
         $this->repo->transaction(function() use ($customer, $merchant, $input)
         {
             // This needs to happen here because address create associates itself with the customer.
@@ -177,14 +195,22 @@ class Core extends Base\Core
             $this->createCustomerAddressesIfValuesSetInInput($customer, $input);
 
         });
-
-        $traceData = [
-            'mode' => $this->mode,
-            'internal_app_name' => app('request.ctx')->getInternalAppName()
-        ];
-        $this-> trace->info(TraceCode::CUSTOMER_CREATE_REQUEST_CTX, $traceData);
-
         return $customer;
+    }
+    protected function isCreateOverrideToCmsEnabled($merchantId, $mode, $internal_app_name): bool
+    {
+        $experimentId = $this->mode == "test" ? "app.cms_create_override_test_experiment_id" : "app.cms_create_override_live_experiment_id";
+        $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get($experimentId),
+                'request_data'  => json_encode(['merchantId' => $merchantId, 'internal_app_name' => $internal_app_name, 'mode' => $mode])
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return  $variant == "enabled";
     }
 
     /**
