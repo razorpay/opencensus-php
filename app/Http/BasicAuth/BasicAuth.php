@@ -12,6 +12,7 @@ use Lcobucci\Clock\SystemClock;
 use Lcobucci\JWT\Signer as JWTSigner;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Encoding\JoseEncoder;
+use RZP\Models\Merchant\Detail\Status;
 use Lcobucci\JWT\Encoding\ChainedFormatter;
 use Lcobucci\JWT\Token\Builder as JWTBuilder;
 
@@ -3267,14 +3268,13 @@ class BasicAuth
 
             if (!empty($adminId))
             {
-                $merchantId = "";
-                $activationStatus = "";
-
                 $merchantId = $this->isProxyAuth() ? ($this->authCreds->creds[self::KEY_ID] ?? $this->authCreds->getMerchant()->getId()) : "";
+
+                $wasMerchantEverActivated = true;
 
                 if (empty($merchantId) === false)
                 {
-                    $activationStatus = $this->getMerchantActivationStatus($merchantId);
+                    $wasMerchantEverActivated = $this->wasMerchantEverActivated($merchantId);
                 }
 
                 $permissions = $this->getAdminPermissions($adminId);
@@ -3290,8 +3290,6 @@ class BasicAuth
 
                 $hasNonActivatedEditPerm = $permissions['hasNonActivatedEditPermission'];
 
-                $isAccountActivated = $activationStatus == Merchant\Detail\Status::ACTIVATED ||
-                                       $activationStatus == Merchant\Detail\Status::ACTIVATED_MCC_PENDING;
                 $this->trace->info(
                     TraceCode::ADMIN_MERCHANT_LOGIN_PERMISSION,
                     [
@@ -3301,7 +3299,7 @@ class BasicAuth
                         'hasReadPerm'                       => $hasReadPerm,
                         'hasEditPerm'                       => $hasEditPerm,
                         'hasNonActivatedEditPerm'           => $hasNonActivatedEditPerm,
-                        'isactivatedMerchant'               => $isAccountActivated
+                        'isactivatedMerchant'               => $wasMerchantEverActivated,
                     ]
                 );
 
@@ -3325,7 +3323,7 @@ class BasicAuth
                     return;
                 }
                 if ($hasViewLoginPerm === true && $hasReadPerm === true && $hasEditPerm === false &&
-                    ($hasNonActivatedEditPerm === true && $isAccountActivated == true))
+                    ($hasNonActivatedEditPerm === true && $wasMerchantEverActivated == true))
                 {
                     $this->userRole = Role::ADMIN_READONLY;
 
@@ -3440,11 +3438,9 @@ class BasicAuth
         return $this->request->header(RequestHeader::X_DASHBOARD_ADMIN_ID);;
     }
 
-    public function getMerchantActivationStatus($merchantId)
+    public function wasMerchantEverActivated($merchantId)
     {
-        $merchant = $this->repo->merchant->find($merchantId);
-
-        return $merchant->merchantDetail->getActivationStatus();
+        return $this->repo->action_state->isActionNameExistsForEntityIdAndType($merchantId, \RZP\Models\Merchant\Detail\Entity::MERCHANT_DETAIL, [Status::ACTIVATED_MCC_PENDING, Status::ACTIVATED]);
     }
 
     public function getAdminPermissions($adminId)
