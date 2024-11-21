@@ -402,7 +402,8 @@ class Core extends Base\Core
                 $this->trace->count(Metric::OFFERS_ENGINE_ORDER_APPLICABILITY_DIFF,
                     [
                         'applicability' => $applicabilityOnOrder,
-                        'validity' => $validityOnOrder
+                        'validity' => $validityOnOrder,
+                        'route' => app('api.route')->getCurrentRouteName(),
                     ]
                 );
             }
@@ -1349,6 +1350,7 @@ class Core extends Base\Core
                 [
                     'offer_type' => $offer->getOfferType(),
                     'emi_subvention' => $offer->getEmiSubvention(),
+                    'route' => app('api.route')->getCurrentRouteName(),
                 ]);
 
             $this->trace->debug(TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH, [

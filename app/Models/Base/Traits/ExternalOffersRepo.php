@@ -38,7 +38,10 @@ trait ExternalOffersRepo
                 return $this->fetchOffersWithLimitsFromAPI([$offer])[0];
             } catch (\Exception $e)
             {
-                $this->trace->count(Metric::OFFERS_ENGINE_FETCH_BY_ID_FAIL);
+                $this->trace->count(
+                    Metric::OFFERS_ENGINE_FETCH_BY_ID_FAIL, [
+                        'route' => app('api.route')->getCurrentRouteName(),
+                    ]);
 
                 $this->trace->traceException(
                     $e,
@@ -97,7 +100,10 @@ trait ExternalOffersRepo
 
             } catch (\Exception $exception)
             {
-                $this->trace->count(Metric::OFFERS_ENGINE_FETCH_OFFERS_FAIL);
+                $this->trace->count(
+                    Metric::OFFERS_ENGINE_FETCH_OFFERS_FAIL,[
+                    'route' => app('api.route')->getCurrentRouteName(),
+                ]);
 
                 $this->trace->traceException(
                     $exception,
@@ -158,7 +164,9 @@ trait ExternalOffersRepo
 
             } catch (\Exception $exception)
             {
-                $this->trace->count(Metric::OFFERS_ENGINE_FETCH_SUBSCRIPTION_OFFER_BY_ID_FAIL);
+                $this->trace->count(Metric::OFFERS_ENGINE_FETCH_SUBSCRIPTION_OFFER_BY_ID_FAIL,[
+                    'route' =>app('api.route')->getCurrentRouteName(),
+                ]);
 
                 $this->trace->traceException(
                     $exception,
@@ -207,7 +215,9 @@ trait ExternalOffersRepo
 
             } catch (\Exception $exception)
             {
-                $this->trace->count(Metric::OFFERS_ENGINE_FETCH_ACTIVE_NONSUBSCRIPTION_OFFERS_FAIL);
+                $this->trace->count(Metric::OFFERS_ENGINE_FETCH_ACTIVE_NONSUBSCRIPTION_OFFERS_FAIL,[
+                    'route' => app('api.route')->getCurrentRouteName(),
+                ]);
 
                 $this->trace->traceException(
                     $exception,
@@ -275,7 +285,9 @@ trait ExternalOffersRepo
             }
             catch (\Exception $exception)
             {
-                $this->trace->count(Metric::OFFERS_ENGINE_FETCH_SUBSCRIPTION_OFFERS_FAIL);
+                $this->trace->count(Metric::OFFERS_ENGINE_FETCH_SUBSCRIPTION_OFFERS_FAIL,[
+                    'route' => app('api.route')->getCurrentRouteName(),
+                ]);
                 $this->trace->traceException(
                     $exception,
                     Trace::ERROR,
@@ -311,7 +323,10 @@ trait ExternalOffersRepo
 
             } catch (\Exception $exception)
             {
-                $this->trace->count(Metric::OFFERS_ENGINE_FETCH_DEFAULT_OFFERS_FAIL);
+                $this->trace->count(
+                    Metric::OFFERS_ENGINE_FETCH_DEFAULT_OFFERS_FAIL, [
+                    'route' => app('api.route')->getCurrentRouteName(),
+                ]);
                 $this->trace->traceException(
                     $exception,
                     Trace::ERROR,

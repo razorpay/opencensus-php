@@ -6766,6 +6766,7 @@ class Processor
                     [
                         'offer_type' => $this->offer->getOfferType(),
                         'emi_subvention' => $this->offer->getEmiSubvention(),
+                        'route' => app('api.route')->getCurrentRouteName(),
                     ]);
 
                     $this->trace->info(

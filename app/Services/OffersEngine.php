@@ -211,7 +211,11 @@ class OffersEngine
         }
         catch(\Throwable $e)
         {
-            $this->trace->count(Metric::OFFERS_ENGINE_REQUEST_FAILURE);
+            $this->trace->count(
+                Metric::OFFERS_ENGINE_REQUEST_FAILURE,[
+                'route' => app('api.route')->getCurrentRouteName(),
+                'endpoint' => $endpoint,
+            ]);
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,

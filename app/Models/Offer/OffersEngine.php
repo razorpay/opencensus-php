@@ -57,7 +57,9 @@ class OffersEngine extends Base\Core
 
             if (empty($oeResponse))
             {
-                $this->trace->count(Metric::OFFERS_ENGINE_CREATE_OFFER_RESPONSE_NIL);
+                $this->trace->count(Metric::OFFERS_ENGINE_CREATE_OFFER_RESPONSE_NIL,[
+                    'route' => app('api.route')->getCurrentRouteName(),
+                ]);
                 // raise slack alert
                 $this->trace->debug(TraceCode::OFFERS_ENGINE_CREATE_OFFER_RESPONSE_NIL, [
                     'api_response' => $offer,
@@ -87,7 +89,9 @@ class OffersEngine extends Base\Core
         }
         catch (\Exception $exception)
         {
-            $this->trace->count(Metric::OFFERS_ENGINE_CREATE_OFFER_FAIL);
+            $this->trace->count(Metric::OFFERS_ENGINE_CREATE_OFFER_FAIL,[
+                'route' => app('api.route')->getCurrentRouteName(),
+            ]);
             $this->trace->traceException($exception, Logger::ERROR,
                 TraceCode::OFFERS_ENGINE_CREATE_OFFER_FAIL, [
                 'api_response' => $offer
@@ -147,7 +151,9 @@ class OffersEngine extends Base\Core
 
         if ($mismatchPresent === true)
         {
-            $this->trace->count(Metric::CREATE_OFFER_RESPONSE_MISMATCH);
+            $this->trace->count(Metric::CREATE_OFFER_RESPONSE_MISMATCH,[
+                'route' => app('api.route')->getCurrentRouteName(),
+            ]);
         }
     }
 
@@ -192,7 +198,9 @@ class OffersEngine extends Base\Core
 
             if (empty($offersEngineResponse))
             {
-                $this->trace->count(Metric::OFFERS_ENGINE_UPDATE_OFFER_RESPONSE_NIL);
+                $this->trace->count(Metric::OFFERS_ENGINE_UPDATE_OFFER_RESPONSE_NIL,[
+                    'route' => app('api.route')->getCurrentRouteName(),
+                ]);
                 // raise slack alert
                 $this->trace->debug(TraceCode::OFFERS_ENGINE_UPDATE_OFFER_RESPONSE_NIL, [
                     'api_response' => $offer,
@@ -202,7 +210,9 @@ class OffersEngine extends Base\Core
         }
         catch (\Exception $exception)
         {
-            $this->trace->count(Metric::OFFERS_ENGINE_UPDATE_OFFER_FAIL);
+            $this->trace->count(Metric::OFFERS_ENGINE_UPDATE_OFFER_FAIL,[
+                'route' => app('api.route')->getCurrentRouteName(),
+            ]);
             $this->trace->traceException($exception, Logger::ERROR,
                 TraceCode::OFFERS_ENGINE_UPDATE_OFFER_FAIL, [
                 'api_response' => $offer,
@@ -1218,7 +1228,8 @@ class OffersEngine extends Base\Core
     private function traceTransactionFailure(string $action, array $input, \Exception $e)
     {
         $this->trace->count(Metric::OFFERS_ENGINE_TRANSACTION_FAILURE, [
-            'action' => $action
+            'action' => $action,
+            'route' => app('api.route')->getCurrentRouteName(),
         ]);
 
         $this->trace->traceException(
@@ -1252,7 +1263,7 @@ class OffersEngine extends Base\Core
                 'offer_id' => $offer->getPublicId(),
                 'fact' => $fact,
             ]);
-
+            #TODO ::OFFERS to check why this is there
             if (isset($response['error']))
             {
                 // if card number is necessary, rebuild the fact and call again
@@ -1276,6 +1287,7 @@ class OffersEngine extends Base\Core
             [
                 'offer_type' => $offer->getOfferType(),
                 'emi_subvention' => $offer->getEmiSubvention(),
+                'route' => app('api.route')->getCurrentRouteName(),
             ]);
 
             $this->trace->traceException(
