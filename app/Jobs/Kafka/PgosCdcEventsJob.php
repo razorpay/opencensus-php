@@ -4,6 +4,10 @@
 namespace RZP\Jobs\Kafka;
 
 use App;
+use Database\Connection;
+use Illuminate\Database\QueryException;
+use RZP\Base\Database\Connectors\MySqlConnector;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Metric;
@@ -26,8 +30,13 @@ class PgosCdcEventsJob extends Job
         "The validation id field is required."
     ];
 
+
+    const PGOS_CDC_EVENTS_PROCESSING_ATTEMPT_COUNT              = 'pgos_cdc_event_processing_attempt_count';
+    const PGOS_CDC_EVENTS_PROCESSING_ATTEMPT_COUNT_TTL_IN_SEC   = 1800;
+
     /**
      * @throws \Exception
+     * @throws \Throwable
      */
     public function handle()
     {
@@ -58,8 +67,12 @@ class PgosCdcEventsJob extends Job
 
         $isMetricExperimentEnabled =  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
 
+        $pgosCdcEventsProcessingAttempt = 0;
+
         try
         {
+            $pgosCdcEventsProcessingAttempt = $this->incrementKafkaMessageProcessingAttempt($merchantId, self::PGOS_CDC_EVENTS_PROCESSING_ATTEMPT_COUNT);
+
             (new Service)->savePGOSDataToAPI($this->payload);
         }
         catch (ExtraFieldsException|BadRequestValidationFailureException|BadRequestException|UniqueConstraintViolationException $e)
@@ -83,9 +96,48 @@ class PgosCdcEventsJob extends Job
             }
 
         }
-        catch (DbQueryException $e)
+        catch (QueryException $e)
         {
             //Continue to retry the same message in this case, increasing the consumer lag to trigger an alert
+            $this->trace->error(TraceCode::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
+                'code'      => $e->getCode(),
+                'message'   => $e->getMessage(),
+                'payload'   => $this->payload,
+                'attempt'   => $pgosCdcEventsProcessingAttempt
+            ]);
+
+            if ($isMetricExperimentEnabled) {
+                $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
+                    'level'           => self::ERROR,
+                    'code'            => $e->getCode(),
+                    'attempt'         => $pgosCdcEventsProcessingAttempt,
+                    'retry'           => true
+                ]);
+            }
+
+            $sleepDuration = $this->getSleepDuration($pgosCdcEventsProcessingAttempt);
+            sleep($sleepDuration);
+
+            $connections = [Mode::LIVE, Connection::ASV_WRITER, Mode::TEST];
+            $causedByLostConnectionAtleastOnce = false;
+
+            foreach ($connections as $connection)
+            {
+                $causedByLostConnection = (new MySqlConnector($app))->checkAndReloadDBIfCausedByLostConnection($e, $connection);
+
+                if ($causedByLostConnection) {
+                    $causedByLostConnectionAtleastOnce = true;
+                }
+
+            }
+
+            if ($causedByLostConnectionAtleastOnce) {
+                throw $e;
+            }
+        }
+        catch (DbQueryException $e)
+        {
+            //Not propagating the error post this, we don't want to re-attempt here
             $this->trace->error(TraceCode::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
                 'code'      => $e->getCode(),
                 'message'   => $e->getMessage(),
@@ -98,14 +150,15 @@ class PgosCdcEventsJob extends Job
                     'level'           => self::ERROR,
                     'code'            => $e->getCode(),
                     'attempt'         => $this->attempts(),
-                    'retry'           => true
+                    'retry'           => false
                 ]);
             }
+
         }
         catch (\Throwable $e)
         {
             //For unknown errors, we want to reattempt until successful, or else lag increases to trigger an alert.
-
+            //We are re-attempting for Query exception now, will re-attempt for unknown errors in the next phase.
             $payload = ['payload' => $this->payload,
                         'error_block' => "GENERIC_ERROR",
                         'attempt'   => $this->attempts()];
@@ -125,7 +178,40 @@ class PgosCdcEventsJob extends Job
                 ]);
             }
         }
+    }
 
+
+    /**
+     * Increment the retry count.
+     *
+     * @param string $redisKey
+     * @param string $attribute
+     * @return int
+     */
+    public function incrementKafkaMessageProcessingAttempt(string $redisKey, string $attribute): int
+    {
+        $pgosCdcEventsProcessingAttemptKey = $attribute . $redisKey;
+
+        $pgosCdcEventsProcessingAttempt = $this->cache->get($pgosCdcEventsProcessingAttemptKey) ?? 0;
+
+        $this->cache->put($pgosCdcEventsProcessingAttemptKey, $pgosCdcEventsProcessingAttempt + 1, self::PGOS_CDC_EVENTS_PROCESSING_ATTEMPT_COUNT_TTL_IN_SEC);
+
+        return $pgosCdcEventsProcessingAttempt + 1;
+    }
+
+
+    // Function to determine sleep time based on attempts
+    private function getSleepDuration($attempt)
+    {
+        $shorterDelays = [2, 5, 10]; // in seconds
+
+        // Use shorter delays for initial attempts, then increase linearly
+        if ($attempt <= count($shorterDelays)) {
+            return $shorterDelays[$attempt - 1];
+        }
+
+        // Cap the sleep duration at 300 seconds for larger attempts
+        return min(($attempt - count($shorterDelays)) * 60, 300);
     }
 
 }
