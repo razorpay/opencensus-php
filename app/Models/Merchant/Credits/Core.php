@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Credits;
 use App;
 use Mail;
 
+use Ramsey\Uuid\Uuid;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -18,7 +19,9 @@ use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 use RZP\Models\Merchant;
 use RZP\Base\ConnectionType;
 use RZP\Models\Merchant\Constants;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Metric;
+use RZP\Services\Ledger as LedgerService;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Promotion;
@@ -43,6 +46,16 @@ class Core extends Base\Core
     const FUND_ADDITION_WEBHOOK_MUTEX_RETRIES = 40;
     const FUND_ADDITION_WEBHOOK_MUTEX_MIN_RETRY_DELAY = 500;
     const FUND_ADDITION_WEBHOOK_MUTEX_MAX_RETRY_DELAY = 1000;
+
+    const EVENT_NAME = 'name';
+    const ENTITIES = 'entities';
+    const TENANT = 'tenant';
+    const MODE = 'mode';
+    const MERCHANT_ID = 'merchant_id';
+    const EVENTS = 'events';
+    const CREDIT_ID = 'credit_id';
+    const EXPIRED_AT = 'expired_at';
+    const PG_MERCHANT_CREDIT_ONBOARDING_EVENT_NAME = 'pg_merchant_credit_onboarding';
 
     // This map indicates credit point to money ratio for a product.
     // example for banking, only payouts will be consuming credits and
@@ -443,7 +456,18 @@ class Core extends Base\Core
                 return;
             }
 
-            (new ReverseShadowCreditLoading\Core())->createReverseShadowLedgerEntries($creditsLog, $payment);
+            $amountCreditsSplitEnabled = false;
+            if ($creditsLog->getType() === Credits\Type::AMOUNT)
+            {
+                $amountCreditsSplitEnabled = $this->isAmountCreditsSplitEnabled($creditsLog->getMerchantId());
+
+                if ($amountCreditsSplitEnabled === true)
+                {
+                    $this->createAmountCreditsAccountInLedger($creditsLog->merchant, $creditsLog);
+                }
+            }
+
+            (new ReverseShadowCreditLoading\Core())->createReverseShadowLedgerEntries($creditsLog, $payment, $amountCreditsSplitEnabled);
         }
         catch(\Exception $e)
         {
@@ -457,6 +481,42 @@ class Core extends Base\Core
                 ]);
             throw $e;
         }
+    }
+
+    private function isAmountCreditsSplitEnabled($merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.amount_credits_split_in_ledger_experiment_id'),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    private function createAmountCreditsAccountInLedger($merchant, $creditsLog)
+    {
+        $eventObj = [
+            self::EVENT_NAME            => self::PG_MERCHANT_CREDIT_ONBOARDING_EVENT_NAME,
+            self::ENTITIES => [
+                self::CREDIT_ID =>  [$creditsLog->getId()],
+                self::EXPIRED_AT => [$creditsLog->getExpiredAt()]
+            ]
+        ];
+
+        $payload = [
+            LedgerConstants::TENANT      => LedgerConstants::TENANT_PG,
+            self::MODE                   => $this->mode,
+            Constants::MERCHANT_ID       => $merchant->getId(),
+            self::EVENTS      => [
+                $eventObj
+            ],
+        ];
+
+        $requestHeaders = [
+            LedgerService::LEDGER_TENANT_HEADER    => LedgerConstants::TENANT_PG,
+            LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()
+        ];
+        $this->app['ledger']->createAccountsOnEvent($payload, $requestHeaders, true);
     }
 
     private function createLedgerEntriesForMerchantCreditLoading(Entity $creditsLog, $payment)

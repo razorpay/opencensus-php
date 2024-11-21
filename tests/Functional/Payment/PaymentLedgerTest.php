@@ -628,19 +628,32 @@ class PaymentLedgerTest extends TestCase
         $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
 
         $splitzInput = [
-            'experiment_id' => 'NwlHNFPY1mPCBm',
-            'id'            => '10000000000000',
-        ];
-
-        $splitzOutput = [
-            'response' => [
-                'variant' => [
-                    'name' => 'control',
-                ]
+            [
+                'experiment_id' => 'NwlHNFPY1mPCBm',
+                'id'            => '10000000000000',
+            ],
+            [
+                'experiment_id' => 'OfAzGZfcmRLgrT',
+                'id'            => '10000000000000',
             ]
         ];
 
-        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+        $splitzOutput = [
+            [
+                'experiment' => [
+                    'id' => 'NwlHNFPY1mPCBm',
+                ],
+                'variant' => null,
+            ],
+            [
+                'experiment' => [
+                    'id' => 'OfAzGZfcmRLgrT',
+                ],
+                'variant' => null,
+            ]
+        ];
+
+        $this->mockBulkEvalSplitzTreatment($splitzInput, $splitzOutput);
 
         $this->app['config']->set('applications.ledger.enabled', true);
 
@@ -1166,6 +1179,268 @@ class PaymentLedgerTest extends TestCase
         $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
     }
 
+    public function testNormalCapturePaymentWithAmountCreditsHigherPriorityOverFeeCreditsWithAccountsSplit()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $splitzInput = [
+            [
+                'experiment_id' => 'NwlHNFPY1mPCBm',
+                'id'            => '10000000000000',
+            ],
+            [
+                'experiment_id' => 'OfAzGZfcmRLgrT',
+                'id'            => '10000000000000',
+            ]
+        ];
+
+        $splitzOutput = [
+            [
+                'experiment' => [
+                    'id' => 'NwlHNFPY1mPCBm',
+                ],
+                'variant' => null,
+            ],
+            [
+                'experiment' => [
+                    'id' => 'OfAzGZfcmRLgrT',
+                ],
+                'variant' => [
+                    'name' => 'enable'
+                ],
+            ]
+        ];
+
+        $this->mockBulkEvalSplitzTreatment($splitzInput, $splitzOutput);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $now = time();
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "1000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id"                => "sampleAccountID1",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "8000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GY"],
+                                    "expired_at" => [$now + 10000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID2",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "90.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GX"],
+                                    "expired_at" => [$now - 10000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID3",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "200.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GV"],
+                                    "expired_at" => [$now + 11000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID0",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "600.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GZ"],
+                                    "expired_at" => [$now + 5000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID4",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GW"],
+                                    "expired_at" => [$now + 12000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID5",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "40000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6KP"],
+                                    "expired_at" => [$now + 15000]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+
+        $paymentArray['billing_address'] = $billingAddressArray;
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($paymentArray);
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "payment_merchant_captured",
+            "money_params" => [
+                "base_amount" => "50000",
+                "gmv_amount" => "50000",
+                "merchant_balance_amount" => "50000",
+                'razorpay_rewards' => '50000'
+            ],
+            "dynamic_money_params" => [
+                'account_discovery_config' => [
+                    'account_category' => 'liability',
+                    'account_type' => 'payable',
+                    'fund_account_type' => 'reward'
+                ],
+                'dynamic_identifiers' => [
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6GZ',
+                        ],
+                        'money_params' => [
+                            'amount' => '600',
+                        ]
+                    ],
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6GY',
+                        ],
+                        'money_params' => [
+                            'amount' => '8000',
+                        ]
+                    ],
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6GV',
+                        ],
+                        'money_params' => [
+                            'amount' => '200',
+                        ]
+                    ],
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6GW',
+                        ],
+                        'money_params' => [
+                            'amount' => '10000',
+                        ]
+                    ],
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6KP',
+                        ],
+                        'money_params' => [
+                            'amount' => '31200',
+                        ]
+                    ]
+                ],
+            ],
+            "additional_params" => [
+                "credit_accounting" =>  "amount_credits_redemption",
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($paymentFromResponse['id'], $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertEquals($expectedLedgerOutboxEntry['additional_params'], $actualLedgerOutboxEntry['additional_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
+    }
+
     public function testNormalCapturePaymentWithCommissionPostpaidHigherPriorityOverFeeAndAmountCredits()
     {
         $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
@@ -1676,19 +1951,32 @@ class PaymentLedgerTest extends TestCase
         $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
 
         $splitzInput = [
-            'experiment_id' => 'NwlHNFPY1mPCBm',
-            'id'            => '10000000000000',
-        ];
-
-        $splitzOutput = [
-            'response' => [
-                'variant' => [
-                    'name' => 'control',
-                ]
+            [
+                'experiment_id' => 'NwlHNFPY1mPCBm',
+                'id'            => '10000000000000',
+            ],
+            [
+                'experiment_id' => 'OfAzGZfcmRLgrT',
+                'id'            => '10000000000000',
             ]
         ];
 
-        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+        $splitzOutput = [
+            [
+                'experiment' => [
+                    'id' => 'NwlHNFPY1mPCBm',
+                ],
+                'variant' => null,
+            ],
+            [
+                'experiment' => [
+                    'id' => 'OfAzGZfcmRLgrT',
+                ],
+                'variant' => null,
+            ]
+        ];
+
+        $this->mockBulkEvalSplitzTreatment($splitzInput, $splitzOutput);
 
         $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
         $this->app->instance('ledger', $mockLedger);
@@ -1993,19 +2281,32 @@ class PaymentLedgerTest extends TestCase
         $this->fixtures->edit('merchant','10000000000000' ,['pricing_plan_id' => $plan->getPlanId()]);
 
         $splitzInput = [
-            'experiment_id' => 'NwlHNFPY1mPCBm',
-            'id'            => '10000000000000',
-        ];
-
-        $splitzOutput = [
-            'response' => [
-                'variant' => [
-                    'name' => 'control',
-                ]
+            [
+                'experiment_id' => 'NwlHNFPY1mPCBm',
+                'id'            => '10000000000000',
+            ],
+            [
+                'experiment_id' => 'OfAzGZfcmRLgrT',
+                'id'            => '10000000000000',
             ]
         ];
 
-        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+        $splitzOutput = [
+            [
+                'experiment' => [
+                    'id' => 'NwlHNFPY1mPCBm',
+                ],
+                'variant' => null,
+            ],
+            [
+                'experiment' => [
+                    'id' => 'OfAzGZfcmRLgrT',
+                ],
+                'variant' => null,
+            ]
+        ];
+
+        $this->mockBulkEvalSplitzTreatment($splitzInput, $splitzOutput);
 
         $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
         $this->app->instance('ledger', $mockLedger);
@@ -2497,6 +2798,288 @@ class PaymentLedgerTest extends TestCase
         $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
     }
 
+    public function testNormalPaymentCaptureWithDynamicFeeBearerWithPrepaidAmountCreditsAndAccountsSplit()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $splitzInput = [
+            [
+                'experiment_id' => 'NwlHNFPY1mPCBm',
+                'id'            => '10000000000000',
+            ],
+            [
+                'experiment_id' => 'OfAzGZfcmRLgrT',
+                'id'            => '10000000000000',
+            ]
+        ];
+
+        $splitzOutput = [
+            [
+                'experiment' => [
+                    'id' => 'NwlHNFPY1mPCBm',
+                ],
+                'variant' => null,
+            ],
+            [
+                'experiment' => [
+                    'id' => 'OfAzGZfcmRLgrT',
+                ],
+                'variant' => [
+                    'name' => 'enable',
+                ],
+            ]
+        ];
+
+        $this->mockBulkEvalSplitzTreatment($splitzInput, $splitzOutput);
+
+        $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_bearer' => 'dynamic']);
+
+        $this->fixtures->merchant->addFeatures(['customer_fee_dont_settle']);
+
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "customer", "percentage_value": 40}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['pricing_plan_id' => $plan->getPlanId()]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $now = time();
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "1000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id"                => "sampleAccountID1",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "8000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GY"],
+                                    "expired_at" => [$now + 10000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID2",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "90.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GX"],
+                                    "expired_at" => [$now - 10000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID3",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "200.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GV"],
+                                    "expired_at" => [$now + 11000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID0",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "600.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GZ"],
+                                    "expired_at" => [$now + 5000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID4",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GW"],
+                                    "expired_at" => [$now + 12000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID4",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6KP"],
+                                    "expired_at" => [$now + 15000]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $payment[Payment\Entity::ORDER_ID]        = $order->getPublicId();
+        $payment[Payment\Entity::AMOUNT]          = $order['amount'] + 120;
+        $payment[Payment\Entity::FEE]             = 0;
+
+        $payment['notes']['merchant_order_id'] = $order->getPublicId();
+
+        $payment = $this->doAuthAndCapturePayment($payment, $payment['amount'], "INR");
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "payment_merchant_captured",
+            "money_params" => [
+                "base_amount" => '10120',
+                "gmv_amount" => '10120',
+                "merchant_balance_amount" => '10000',
+                "tax" => "0",
+                "commission" => '120',
+                'razorpay_rewards' => '10120'
+            ],
+            "dynamic_money_params" => [
+                'account_discovery_config' => [
+                    'account_category' => 'liability',
+                    'account_type' => 'payable',
+                    'fund_account_type' => 'reward'
+                ],
+                'dynamic_identifiers' => [
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6GZ',
+                        ],
+                        'money_params' => [
+                            'amount' => '600',
+                        ]
+                    ],
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6GY',
+                        ],
+                        'money_params' => [
+                            'amount' => '8000',
+                        ]
+                    ],
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6GV',
+                        ],
+                        'money_params' => [
+                            'amount' => '200',
+                        ]
+                    ],
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6GW',
+                        ],
+                        'money_params' => [
+                            'amount' => '1320',
+                        ]
+                    ]
+                ],
+            ],
+            "additional_params" => [
+                "credit_accounting" => "dfb_amount_credits"
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        d($actualLedgerOutboxEntry);
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($payment['id'], $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertEquals($expectedLedgerOutboxEntry['additional_params'], $actualLedgerOutboxEntry['additional_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
+    }
+
     public function testNormalPaymentCaptureWithPrepaidMerchantDFBAndPaymentCFBWithFeeCredits()
     {
         $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
@@ -2651,19 +3234,32 @@ class PaymentLedgerTest extends TestCase
         $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
 
         $splitzInput = [
-            'experiment_id' => 'NwlHNFPY1mPCBm',
-            'id'            => '10000000000000',
-        ];
-
-        $splitzOutput = [
-            'response' => [
-                'variant' => [
-                    'name' => 'control',
-                ]
+            [
+                'experiment_id' => 'NwlHNFPY1mPCBm',
+                'id'            => '10000000000000',
+            ],
+            [
+                'experiment_id' => 'OfAzGZfcmRLgrT',
+                'id'            => '10000000000000',
             ]
         ];
 
-        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+        $splitzOutput = [
+            [
+                'experiment' => [
+                    'id' => 'NwlHNFPY1mPCBm',
+                ],
+                'variant' => null,
+            ],
+            [
+                'experiment' => [
+                    'id' => 'OfAzGZfcmRLgrT',
+                ],
+                'variant' => null,
+            ]
+        ];
+
+        $this->mockBulkEvalSplitzTreatment($splitzInput, $splitzOutput);
 
         $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
         $this->app->instance('ledger', $mockLedger);
@@ -2958,6 +3554,259 @@ class PaymentLedgerTest extends TestCase
         $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
     }
 
+    public function testDSPaymentCaptureAmountCreditsDeductionWithAccountsSplit()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $splitzInput = [
+            [
+                'experiment_id' => 'NwlHNFPY1mPCBm',
+                'id'            => '10000000000000',
+            ],
+            [
+                'experiment_id' => 'OfAzGZfcmRLgrT',
+                'id'            => '10000000000000',
+            ]
+        ];
+
+        $splitzOutput = [
+            [
+                'experiment' => [
+                    'id' => 'NwlHNFPY1mPCBm',
+                ],
+                'variant' => null,
+            ],
+            [
+                'experiment' => [
+                    'id' => 'OfAzGZfcmRLgrT',
+                ],
+                'variant' => [
+                    'name' => 'enable',
+                ],
+            ]
+        ];
+
+        $this->mockBulkEvalSplitzTreatment($splitzInput, $splitzOutput);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $now = time();
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "1000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id"                => "sampleAccountID1",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "8000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GY"],
+                                    "expired_at" => [$now + 10000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID2",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "90.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GX"],
+                                    "expired_at" => [$now - 10000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID3",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "200.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GV"],
+                                    "expired_at" => [$now + 11000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID0",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "600.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GZ"],
+                                    "expired_at" => [$now + 5000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID4",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6GW"],
+                                    "expired_at" => [$now + 12000]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID5",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "40000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"],
+                                    "credit_id" => ["Of8rSFF0CJh6KP"],
+                                    "expired_at" => [$now + 15000]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        $payment = $this->createDirectSettlementPayment();
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "payment_merchant_captured",
+            "money_params" => [
+                "base_amount" => "0",
+                'razorpay_rewards' => '50000'
+            ],
+            "dynamic_money_params" => [
+                'account_discovery_config' => [
+                    'account_category' => 'liability',
+                    'account_type' => 'payable',
+                    'fund_account_type' => 'reward'
+                ],
+                'dynamic_identifiers' => [
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6GZ',
+                        ],
+                        'money_params' => [
+                            'amount' => '600',
+                        ]
+                    ],
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6GY',
+                        ],
+                        'money_params' => [
+                            'amount' => '8000',
+                        ]
+                    ],
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6GV',
+                        ],
+                        'money_params' => [
+                            'amount' => '200',
+                        ]
+                    ],
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6GW',
+                        ],
+                        'money_params' => [
+                            'amount' => '10000',
+                        ]
+                    ],
+                    [
+                        'identifiers' => [
+                            'credit_id' => 'Of8rSFF0CJh6KP',
+                        ],
+                        'money_params' => [
+                            'amount' => '31200',
+                        ]
+                    ]
+                ],
+            ],
+            "additional_params" => [
+                "direct_settlement_accounting" =>  "direct_settlement",
+                "credit_accounting"            =>  "amount_credits_redemption"
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($payment['id'], $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertEquals($expectedLedgerOutboxEntry['additional_params'], $actualLedgerOutboxEntry['additional_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
+    }
+
     public function testDSPaymentCaptureWithVASFeatureEnabledMerchant()
     {
         $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
@@ -2965,19 +3814,32 @@ class PaymentLedgerTest extends TestCase
         $this->fixtures->merchant->addFeatures(['vas_merchant']);
 
         $splitzInput = [
-            'experiment_id' => 'NwlHNFPY1mPCBm',
-            'id'            => '10000000000000',
-        ];
-
-        $splitzOutput = [
-            'response' => [
-                'variant' => [
-                    'name' => 'control',
-                ]
+            [
+                'experiment_id' => 'NwlHNFPY1mPCBm',
+                'id'            => '10000000000000',
+            ],
+            [
+                'experiment_id' => 'OfAzGZfcmRLgrT',
+                'id'            => '10000000000000',
             ]
         ];
 
-        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+        $splitzOutput = [
+            [
+                'experiment' => [
+                    'id' => 'NwlHNFPY1mPCBm',
+                ],
+                'variant' => null,
+            ],
+            [
+                'experiment' => [
+                    'id' => 'OfAzGZfcmRLgrT',
+                ],
+                'variant' => null,
+            ]
+        ];
+
+        $this->mockBulkEvalSplitzTreatment($splitzInput, $splitzOutput);
 
         $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
         $this->app->instance('ledger', $mockLedger);
@@ -3278,19 +4140,32 @@ class PaymentLedgerTest extends TestCase
         $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
 
         $splitzInput = [
-            'experiment_id' => 'NwlHNFPY1mPCBm',
-            'id'            => '10000000000000',
-        ];
-
-        $splitzOutput = [
-            'response' => [
-                'variant' => [
-                    'name' => 'control',
-                ]
+            [
+                'experiment_id' => 'NwlHNFPY1mPCBm',
+                'id'            => '10000000000000',
+            ],
+            [
+                'experiment_id' => 'OfAzGZfcmRLgrT',
+                'id'            => '10000000000000',
             ]
         ];
 
-        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+        $splitzOutput = [
+            [
+                'experiment' => [
+                    'id' => 'NwlHNFPY1mPCBm',
+                ],
+                'variant' => null,
+            ],
+            [
+                'experiment' => [
+                    'id' => 'OfAzGZfcmRLgrT',
+                ],
+                'variant' => null,
+            ]
+        ];
+
+        $this->mockBulkEvalSplitzTreatment($splitzInput, $splitzOutput);
 
         $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
         $this->app->instance('ledger', $mockLedger);
@@ -5084,19 +5959,32 @@ class PaymentLedgerTest extends TestCase
         $this->fixtures->merchant->addFeatures(['customer_fee_dont_settle']);
 
         $splitzInput = [
-            'experiment_id' => 'NwlHNFPY1mPCBm',
-            'id'            => '10000000000000',
-        ];
-
-        $splitzOutput = [
-            'response' => [
-                'variant' => [
-                    'name' => 'control',
-                ]
+            [
+                'experiment_id' => 'NwlHNFPY1mPCBm',
+                'id'            => '10000000000000',
+            ],
+            [
+                'experiment_id' => 'OfAzGZfcmRLgrT',
+                'id'            => '10000000000000',
             ]
         ];
 
-        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+        $splitzOutput = [
+            [
+                'experiment' => [
+                    'id' => 'NwlHNFPY1mPCBm',
+                ],
+                'variant' => null,
+            ],
+            [
+                'experiment' => [
+                    'id' => 'OfAzGZfcmRLgrT',
+                ],
+                'variant' => null,
+            ]
+        ];
+
+        $this->mockBulkEvalSplitzTreatment($splitzInput, $splitzOutput);
 
         $payment = $this->createPaymentInReverseShadowDfbPostPaid();
 

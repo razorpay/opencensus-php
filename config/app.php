@@ -978,6 +978,8 @@ return array(
 
     'fee_breakup_in_ledger_experiment_id' => env('FEE_BREAKUP_IN_LEDGER_EXP_ID'),
 
+    'amount_credits_split_in_ledger_experiment_id' => env('AMOUNT_CREDITS_SPLIT_IN_LEDGER_EXPERIMENT_ID'),
+
     'get_merchant_activation_response_from_pgos' => env('GET_MERCHANT_ACTIVATION_FROM_PGOS'),
 
     'onboarding_api_bmc_experiment_id'  => env('ONBOARDING_API_BMC_EXPERIMENT_ID'),

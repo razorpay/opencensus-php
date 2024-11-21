@@ -144,6 +144,13 @@ trait ReverseShadowTrait
 
     public function getMerchantAccountBalances($ledgerService, $merchantId): array
     {
+        $merchantAccountBalancesList = $this->getMerchantAccounts($ledgerService, $merchantId);
+
+        return $this->getMerchantAccountBalancesMap($merchantAccountBalancesList);
+    }
+
+    public function getMerchantAccounts($ledgerService, $merchantId): array
+    {
         $accountPayload = $this->getAccountBalancePayload($merchantId);
 
         $requestHeaders = [
@@ -153,14 +160,13 @@ trait ReverseShadowTrait
 
         $response = $ledgerService->fetchAccountsByEntitiesAndMerchantID($accountPayload, $requestHeaders, true);
 
-        $merchantAccountBalancesList = $response['body']['accounts'];
-
-        return $this->getMerchantAccountBalancesMap($merchantAccountBalancesList);
+        return $response['body']['accounts'];
     }
 
     private function getMerchantAccountBalancesMap($merchantAccountBalancesList): array
     {
         $accountBalances = [];
+        $now = time();
 
         foreach ($merchantAccountBalancesList as $account)
         {
@@ -174,10 +180,29 @@ trait ReverseShadowTrait
                     $accountBalances[Constants::MERCHANT_FEE_CREDITS] = $account[Constants::BALANCE];
                     break;
 
+                case Constants::REWARD_CREDITS:
                 case Constants::REWARD:
                     if ($accountType == Constants::PAYABLE)
                     {
-                        $accountBalances[Constants::MERCHANT_AMOUNT_CREDITS] = $account[Constants::BALANCE];
+                        $entities = $account[Constants::ENTITIES];
+
+                        if (($entities != null) && (empty($entities[Constants::EXPIRED_AT]) === false))
+                        {
+                            $expiredAt = $entities[Constants::EXPIRED_AT][0];
+
+                            if ($expiredAt < $now)
+                            {
+                                continue;
+                            }
+                        }
+                        if (isset($accountBalances[Constants::MERCHANT_AMOUNT_CREDITS]))
+                        {
+                            $accountBalances[Constants::MERCHANT_AMOUNT_CREDITS] += $account[Constants::BALANCE];
+                        }
+                        else
+                        {
+                            $accountBalances[Constants::MERCHANT_AMOUNT_CREDITS] = $account[Constants::BALANCE];
+                        }
                     }
                     break;
 
@@ -191,6 +216,38 @@ trait ReverseShadowTrait
             }
         }
         return $accountBalances;
+    }
+
+    private function getValidAmountCreditsAccounts($merchantAccountBalancesList): array
+    {
+        $amountCreditsAccounts = [];
+        $now = time();
+
+        foreach ($merchantAccountBalancesList as $account)
+        {
+            $fundAccountType = $account[Constants::ENTITIES][Constants::FUND_ACCOUNT_TYPE][0];
+
+            $accountType = $account[Constants::ENTITIES][Constants::ACCOUNT_TYPE][0];
+
+            if (($fundAccountType == Constants::REWARD_CREDITS) && ($accountType == Constants::PAYABLE))
+            {
+                $entities = $account[Constants::ENTITIES];
+                if (($entities != null) && (empty($entities[Constants::CREDIT_ID]) === false))
+                {
+                    $expiredAt = $entities[Constants::EXPIRED_AT][0];
+                    if ($expiredAt < $now)
+                    {
+                        continue;
+                    }
+                    $amountCreditsAccounts[] = $account;
+                }
+            }
+        }
+
+        usort($amountCreditsAccounts, function($a, $b) {
+            return $a[Constants::ENTITIES][Constants::EXPIRED_AT][0] <=> $b[Constants::ENTITIES][Constants::EXPIRED_AT][0];
+        });
+        return $amountCreditsAccounts;
     }
 
     protected function prepareOutboxPayload($payloadName, $payloadSerialized)
@@ -289,6 +346,11 @@ trait ReverseShadowTrait
                 [
                     Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
                     Constants::FUND_ACCOUNT_TYPE => [Constants::REWARD]
+                ],
+                // PG Merchant Split Account Amount Credit Account
+                [
+                    Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
+                    Constants::FUND_ACCOUNT_TYPE => [Constants::REWARD_CREDITS]
                 ],
                 // PG Merchant Refund Credit Account
                 [
@@ -761,6 +823,14 @@ trait ReverseShadowTrait
         $taxBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::RZP_GST);
 
         $merchantReceivableLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::RECEIVABLE, Constants::MERCHANT_INVOICE);
+
+        // Here, for new split account feature of merchants amount credit accounts.
+        // Adding a check if the previous entry amount credit entry was nil, inferring, either amount credit was not used ot the new account was used.
+        if ($merchantAmountCreditsLedgerEntry === null) {
+            // Although ledger entry in journal can have multiple amount credit account, but we are fetching only the first one.
+            // As the only use case here is adding in entity if it is gratis or not.
+            $merchantAmountCreditsLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::PAYABLE, Constants::REWARD_CREDITS);
+	    }
 
         $merchantRefundCreditLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::MERCHANT_REFUND_CREDITS);
 

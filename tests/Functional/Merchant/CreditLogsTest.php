@@ -12,9 +12,8 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Traits\MocksSplitz;
 
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForKycUsers;
@@ -23,8 +22,8 @@ class CreditLogsTest extends TestCase
 {
     use BatchTestTrait;
     use TestsBusinessBanking;
+    use MocksSplitz;
     use DbEntityFetchTrait;
-
 
     protected function setUp(): void
     {
@@ -56,7 +55,91 @@ class CreditLogsTest extends TestCase
 
     public function testCreateCreditsBulk()
     {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
         $this->startTest();
+
+        $ledgerOutboxEntry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull($ledgerOutboxEntry);
+
+        $payload = base64_decode($ledgerOutboxEntry['payload_serialized']);
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "amount_credit_loading",
+            "money_params" => [
+                'razorpay_reward' => '250000',
+                'amount_credits' => '250000'
+            ],
+            "additional_params" => null,
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertEquals("credits_".$ledgerOutboxEntry["entity_id"]."-amount_credit_loading", $ledgerOutboxEntry["payload_name"]);
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($expectedLedgerOutboxEntry['additional_params'], $actualLedgerOutboxEntry['additional_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['identifiers'], $actualLedgerOutboxEntry['identifiers']);
+    }
+
+    public function testCreateCreditsBulkWithAccountsSplitInCLS()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(1)
+            ->andReturn([]);
+
+        $splitzInput = [
+            'experiment_id' => 'OfAzGZfcmRLgrT',
+            'id'            => '10000000000000',
+        ];
+
+        $splitzOutput = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+
+        $this->startTest();
+
+        $ledgerOutboxEntry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull($ledgerOutboxEntry);
+
+        $payload = base64_decode($ledgerOutboxEntry['payload_serialized']);
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+        $creditId = $ledgerOutboxEntry["entity_id"];
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "amount_credit_loading",
+            "money_params" => [
+                'razorpay_reward' => '250000',
+                'amount_credits' => '250000'
+            ],
+            "identifiers" => [
+                'credit_id' => $creditId,
+            ],
+            "additional_params" => null,
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertEquals("credits_".$creditId."-amount_credit_loading", $ledgerOutboxEntry["payload_name"]);
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($expectedLedgerOutboxEntry['additional_params'], $actualLedgerOutboxEntry['additional_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['identifiers'], $actualLedgerOutboxEntry['identifiers']);
     }
 
     public function testCreateCreditsBulkInternal()

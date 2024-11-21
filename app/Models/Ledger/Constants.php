@@ -221,6 +221,7 @@ class Constants
     const KAFKA_MESSAGE_DATA                                    = 'data';
     const CREATE_LEDGER_JOURNAL_EVENT                           = 'create-ledger-journal-event';
     const CREDIT_ID                                             = 'credit_id';
+    const EXPIRED_AT                                            = 'expired_at';
 
     const RESERVE_BALANCE_ID                                    = 'reserve_balance_id';
 
@@ -246,6 +247,7 @@ class Constants
     const MERCHANT_GMV               = 'merchant_gmv';
     const MERCHANT_ONDEMAND_SETTLEMENT_LEDGER = 'merchant_ondemand_settlement';
     const REWARD                     = 'reward';
+    const REWARD_CREDITS             = 'reward_credits';
     const PAYABLE                    = 'payable';
     const BALANCE                    = 'balance';
     const ACCOUNT_TYPE               = 'account_type';
@@ -257,6 +259,12 @@ class Constants
     const TYPE                       = 'type';
     const SHADOW                     = 'shadow';
     const REVERSE_SHADOW             = 'reverse-shadow';
+    const LIABILITY                  = "liability";
+
+    const ACCOUNT_DISCOVERY_CONFIG   = "account_discovery_config";
+    const ACCOUNT_CATEGORY           = "account_category";
+    const DYNAMIC_IDENTIFIERS        = "dynamic_identifiers";
+    const DYNAMIC_MONEY_PARAMS       = "dynamic_money_params";
 
     const JOURNAL_PAYLOAD               = 'JOURNAL_PAYLOAD';
 

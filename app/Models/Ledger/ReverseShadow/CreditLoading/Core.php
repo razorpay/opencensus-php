@@ -136,12 +136,12 @@ class Core extends Base\Core
         return $transactionMessage;
     }
 
-    public function createReverseShadowLedgerEntries(CreditEntity $creditLogs, $payment)
+    public function createReverseShadowLedgerEntries(CreditEntity $creditLogs, $payment, $amountCreditsSplitEnabled=false)
     {
         $transactionMessage = [];
         if($creditLogs->getType() === Credits\Type::AMOUNT )
         {
-            $transactionMessage = $this->createTransactionMessageForMerchantAmountCreditLoading($creditLogs);
+            $transactionMessage = $this->createTransactionMessageForMerchantAmountCreditLoading($creditLogs, $amountCreditsSplitEnabled);
         }
         else
         {
@@ -158,14 +158,14 @@ class Core extends Base\Core
         $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
     }
 
-    public function createTransactionMessageForMerchantAmountCreditLoading(CreditEntity $creditLogs): array
+    public function createTransactionMessageForMerchantAmountCreditLoading(CreditEntity $creditLogs, $amountCreditsSplitEnabled=false): array
     {
         $credit_type= self::CREDIT_TYPES[Credits\Type::AMOUNT];
 
         $transactorEvent = $credit_type[Constants::TRANSACTOR_EVENT];
         $amount =  abs($creditLogs->getValue());
 
-        return array(
+        $msg = array(
             Constants::TRANSACTOR_ID             => $creditLogs->getPublicId(),
             Constants::TRANSACTOR_EVENT          => $transactorEvent,
             Constants::MONEY_PARAMS              => [
@@ -180,6 +180,15 @@ class Core extends Base\Core
             Constants::LEDGER_INTEGRATION_MODE      => Constants::REVERSE_SHADOW,
             Constants::TENANT                       => Constants::TENANT_PG
         );
+
+        if($amountCreditsSplitEnabled === true)
+        {
+            $msg[Constants::IDENTIFIERS] = [
+                Constants::CREDIT_ID => $creditLogs->getId(),
+            ];
+        }
+
+        return $msg;
     }
 
 }
