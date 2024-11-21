@@ -166,7 +166,6 @@ final class RepoAndFunctionToSplitzMap
         "getFailedSettlementsForRetry",
         "fetchLinkedAccountsForParentMerchantId",
         "restoreModel",
-        "baseEagerLoadRelation",
         "getMerchantBankAccountsBetweenTimestamp"
     );
 

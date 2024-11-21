@@ -1072,6 +1072,31 @@ class RepositoryTest extends RepositoryTestHelper
 
 
         $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
+
+
+        $merchantRelations = [
+            'emails',
+        ];
+
+        $this->fixtures->create('merchant_email', ['merchant_id' => $id3]);
+        $this->fixtures->create('merchant_email', ['merchant_id' => $id3, 'type' => "support"]);
+
+        $this->setSplitzWithOutput("false");
+        $entityObj = new Entity();
+        $merchantRequestsWithSplitzOff = $entityObj->newQuery()
+            ->where(Entity::ID, $id3)
+            ->with($merchantRelations)
+            ->get();
+
+        $this->setSplitzWithOutput("true");
+        $entityObj = new Entity();
+        $merchantRequestsWithSplitzOn = $entityObj->newQuery()
+            ->where(Entity::ID, $id3)
+            ->with($merchantRelations)
+            ->get();
+
+        $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
+
     }
 
 
