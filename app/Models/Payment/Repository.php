@@ -4603,7 +4603,7 @@ EOT;
 
         if ($variant === true)
         {
-            $obj = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))->where(Entity::GATEWAY, $gateway)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)->where(Entity::GATEWAY, $gateway)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
         }
         else
         {
@@ -4617,7 +4617,7 @@ EOT;
 
         if ($variant === true)
         {
-            $obj = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))->where(Entity::GATEWAY, $gateway)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+            $obj = $this->newQueryWithConnection(Connection::SLAVE_TEST)->where(Entity::GATEWAY, $gateway)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
         }
         else
         {
@@ -4670,7 +4670,7 @@ EOT;
 
         if ($variant === true)
         {
-            $obj = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
         }
         else
         {
@@ -4685,7 +4685,7 @@ EOT;
 
         if ($variant === true)
         {
-            $obj = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+            $obj = $this->newQueryWithConnection(Connection::SLAVE_TEST)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
         }
         else
         {

@@ -1777,6 +1777,92 @@ class PaymentLedgerTest extends TestCase
         $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
     }
 
+
+    public function testDSPaymentCaptureFeeMerchantBalanceDeductionInsufficientBalance()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $splitzInput = [
+            'experiment_id' => 'NwlHNFPY1mPCBm',
+            'id'            => '10000000000000',
+        ];
+
+        $splitzOutput = [
+            'response' => [
+                'variant' => [
+                    'name' => 'control',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        try
+        {
+            $payment = $this->createDirectSettlementPayment();
+        }
+        catch (\Throwable $exception)
+        {
+            $this->assertExceptionClass($exception, Exception\BadRequestException::class);
+        }
+    }
+
     public function testDSPaymentCaptureFeeMerchantBalanceDeductionWithFeeSplit()
     {
         $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow', 'subscriptions', 'recurring_auto', 'raas', 'es_automatic']);

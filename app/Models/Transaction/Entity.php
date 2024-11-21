@@ -1170,6 +1170,16 @@ class Entity extends Base\PublicEntity
             return true;
         }
 
+        // Re-arch Payment Transaction gets created in async , for a usecase
+        // where amount is less than fee charged and payment becomes a debit
+        // scenario, we are letting balance to go negative in order to not have
+        // recon issues.
+        if ($this->isTypePayment() === true and
+            in_array($this->source->getCpsRoute(), Payment\Entity::REARCH_PAYMENT_SERVICES, true) === true)
+        {
+            return true;
+        }
+
         // product_charge transactions are created by subscription pricing service on recurring basis
         // from merchants and this needs to be collected even if it takes balance -ve
         if ($this->isTypeProductCharge() === true)

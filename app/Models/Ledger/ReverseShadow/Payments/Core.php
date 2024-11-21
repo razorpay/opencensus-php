@@ -94,6 +94,8 @@ class Core extends Base\Core
             ]
         );
 
+        $this->validateInsufficientBalance($payment, $moneyParams, $merchantAccountBalances, $additionalParams);
+
         if ($payment->getGateway() === Gateway::WALLET_OPENWALLET)
         {
             $merchantCaptureData[Constants::NOTES][Constants::GATEWAY] = Gateway::WALLET_OPENWALLET;
@@ -117,6 +119,71 @@ class Core extends Base\Core
         $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
 
         return [($fee-$tax), $tax];
+    }
+
+    /** validate insufficient balance for normal and DS payments
+     * @param $payment
+     * @param $moneyParams
+     * @param $merchantAccountBalances
+     * @param $additionalParams
+     * @return void
+     * @throws \RZP\Exception\AssertionException
+     */
+    protected function validateInsufficientBalance($payment, $moneyParams, $merchantAccountBalances, $additionalParams)
+    {
+        $properties = [
+            "id" => $payment->getMerchantId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_insufficient_balance_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        if ($variant === true)
+        {
+            if (isset($moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]) === true)
+            {
+                $merchantBalance = $merchantAccountBalances[Constants::MERCHANT_BALANCE];
+
+                if (isset($moneyParams[Constants::MERCHANT_BALANCE_LIMIT]) === true)
+                {
+                    $merchantBalance += intval($moneyParams[Constants::MERCHANT_BALANCE_LIMIT]);
+                }
+
+                $calculatedMerchantBalance = intval($moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]);
+
+                if (isset($additionalParams[Constants::MERCHANT_BALANCE_ACCOUNTING]) === true)
+                {
+                    $this->trace->info(
+                        TraceCode::BALANCE_VALIDATION_FOR_NORMAL_PAYMENTS,
+                        [
+                            'payment_id'                => $payment->getId(),
+                            'merchant_id'               => $payment->getMerchantId(),
+                            'money_params'              => $moneyParams,
+                            'additional_params'         => $additionalParams,
+                            'merchant_account_balance'  => $merchantAccountBalances
+                        ]);
+
+                    assertTrue($merchantBalance >= $calculatedMerchantBalance);
+                }
+
+                if (isset($additionalParams[Constants::DIRECT_SETTLEMENT_ACCOUNTING]) &&
+                    (!isset($additionalParams[Constants::ACCOUNTING]) ||
+                        $additionalParams[Constants::ACCOUNTING] !== Constants::HDFC_VAS_DS_CFB_SURCHARGE_FLOW))
+                {
+                    $this->trace->info(
+                        TraceCode::BALANCE_VALIDATION_FOR_DS_PAYMENTS,
+                        [
+                            'payment_id'                => $payment->getId(),
+                            'merchant_id'               => $payment->getMerchantId(),
+                            'money_params'              => $moneyParams,
+                            'additional_params'         => $additionalParams,
+                            'merchant_account_balance'  => $merchantAccountBalances
+                        ]);
+
+                    assertTrue($merchantBalance >= $calculatedMerchantBalance);
+                }
+            }
+        }
     }
 
     private function getMoneyParamsForFeeBreakupAndTax($feeSplit, $totalCommission, $totalTax, $enableFeeSplitInLedger)

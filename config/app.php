@@ -1090,6 +1090,8 @@ return array(
 
     'splitz_payout_harvester_query_experiment_id'       => env('SPLITZ_PAYOUT_HARVESTER_QUERY_EXPERIMENT_ID'),
 
+    'splitz_insufficient_balance_experiment_id'          => env('SPLITZ_INSUFFICIENT_BALANCE_EXPERIMENT_ID'),
+
     'qr_code_v1_failed_payment_experiment' => env('QRCODEV1_FAILED_PAYMENT_EXPERIMENT'),
 
     'transaction_read_experiment' => env('TRANSACTION_READ_EXPERIMENT_ID'),
