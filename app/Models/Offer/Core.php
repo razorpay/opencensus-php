@@ -1107,7 +1107,10 @@ class Core extends Base\Core
 
     public function bulkCalltoSplitz(string $merchantId): array
     {
-        if (app()->runningUnitTests() === true)
+        if ((app()->runningUnitTests() === true) or
+            ($this->env === 'bvt' or $this->env === 'automation' or
+             $this->env === 'func' or $this->env === 'availability' or
+             $this->env === 'perf' or $this->env === 'perf2'))
         {
             return [
                 Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP => false,
@@ -1123,7 +1126,10 @@ class Core extends Base\Core
 
     public function shouldRouteToOffersEngine(string $merchantId, $experiment, $throwError = false): bool
     {
-        if (app()->runningUnitTests() === true)
+        if ((app()->runningUnitTests() === true) or
+        ($this->env === 'bvt' or $this->env === 'automation' or
+         $this->env === 'func' or $this->env === 'availability' or
+         $this->env === 'perf' or $this->env === 'perf2'))
         {
             return false;
         }
