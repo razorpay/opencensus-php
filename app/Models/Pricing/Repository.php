@@ -549,6 +549,11 @@ class Repository extends Base\Repository
         return $this->getPlan($id, null, true, true, $orgId, $skipOrgCheck);
     }
 
+    public function getPlanByIdOrFailPublicLegacy($id, $orgId = null, $skipOrgCheck = false)
+    {
+        return $this->getPlanLegacy($id, null, true, true, $orgId, $skipOrgCheck);
+    }
+
     public function getZeroPricingPlanRuleForMethod($feature, $method, $merchant, $product = Product::PRIMARY)
     {
         $legacyCallable = function () use ($feature, $method, $merchant, $product) {

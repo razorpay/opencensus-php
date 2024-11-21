@@ -6,6 +6,7 @@ use App;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Metric;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Pricing;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Pricing\Plan as PlanCollection;
 use RZP\Models\Pricing\Entity as PricingEntity;
@@ -132,6 +133,7 @@ class CCRouter
         if($planId == null) $planId = '';
         $startTimeMs = round(microtime(true) * 1000);
         $rampPhase = $this->shouldRouteRequestToChargeCollections($fqcn, $planId);
+
         $methodName = Utils::extractMethodFromFunction($fqcn);
 
         // Modify the legacyCallable to pass rampPhase only if the legacy method accepts it
@@ -260,16 +262,42 @@ class CCRouter
             if ($methodName == 'createPlan'){
                 $response = $this->app->charge_collections->createPricingPlan($input, $headers);
             }else if ($methodName == 'updatePlanRule'){
+                if ($routeName == 'pricing_update_plan_rule') {
+                    $headers = [ChargeCollections::X_PRICING_WORKFLOW_ACTION => 'validate-only'];
+                } else {
+                    $headers = [ChargeCollections::X_PRICING_WORKFLOW_ACTION => 'validate-and-write'];
+                }
+
                 $response = $this->app->charge_collections->updatePricingPlanRule($input, $headers);
                 if (isset($response['rule'])){
                     $response = $response['rule'];
+                }
+
+                $originalRule = (new Pricing\Repository)->getPlanRule($input['plan_id'], $input['rule_id']);
+
+                if ($routeName == 'pricing_update_plan_rule') {
+                    $this->app['workflow']
+                        ->setEntityAndId('pricing', $input['plan_id'])
+                        ->handle( $originalRule, $response);
                 }
             }else if ($methodName == 'deletePlanRuleForce'){
                 $response = $this->app->charge_collections->deletePricingPlanRule($input);
             }else if ($methodName == 'postAddBulkPricingRules'){
                 $response = $this->app->charge_collections->addBulkPricingPlanRule($input, $headers);
             }else if($methodName == 'addPlanRule'){
-                $response = $this->app->charge_collections->addPricingPlanRule($input);}
+                if ($routeName == 'pricing_add_plan_rule') {
+                    $headers = [ChargeCollections::X_PRICING_WORKFLOW_ACTION => 'validate-only'];
+                } else {
+                    $headers = [ChargeCollections::X_PRICING_WORKFLOW_ACTION => 'validate-and-write'];
+                }
+                $response = $this->app->charge_collections->addPricingPlanRule($input, $headers);
+
+                if ($routeName == 'pricing_add_plan_rule') {
+                    $this->app['workflow']
+                        ->setEntityAndId('pricing', $input['plan_id'])
+                        ->handle((new \stdClass), $response);
+                }
+            }
             else if($methodName == 'replicatePlanAndAssign'){
                 $response = $this->app->charge_collections->replicatePlanAndAssign($input, $headers);
                 return $this->transformToPlanModel($response);
