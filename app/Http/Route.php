@@ -17387,6 +17387,8 @@ class Route
             'payment_fetch_by_id',
             'qr_code_create',
             'qr_code_close',
+            'merchant_analytics',
+            'payment_fetch_multiple',
             'qr_code_fetch',
             'qr_payment_fetch_for_qr_code',
             'qr_code_fetch_multiple',
