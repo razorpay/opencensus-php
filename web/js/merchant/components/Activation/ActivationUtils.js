@@ -804,6 +804,12 @@ const isEligibleForFtux = ({ user = {}, abExperiments = {}, isAdmin = false } = 
   if (isAdmin) {
     return false;
   }
+
+  const isMasterKyc = user?.workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING';
+
+  if (isMasterKyc) {
+    return false;
+  }
   const { physical_store } = user?.merchant_business_detail?.website_details ?? {};
 
   const isPOSMerchant = isExperimentEnabled(abExperiments?.omniChannelGtm) && !!physical_store;
