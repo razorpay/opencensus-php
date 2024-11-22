@@ -46,6 +46,14 @@ export const fetchTransfersFn = (paymentId) => {
   };
 };
 
+export const fetchBankTransfersFn = (paymentId) => {
+  return (): Promise<any> => {
+    return merchantFetch({
+      url: `payments/${paymentId}/bank_transfer`,
+    });
+  };
+};
+
 export const refundPaymentFn = (paymentId) => {
   return (params): Promise<any> => {
     const method = 'post';

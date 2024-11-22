@@ -27,15 +27,19 @@ import { getTooltipContent } from 'merchant/views/Transactions/v2/Payments/compo
 const SettlementInfo = ({
   orgName,
   settlement,
+  orgId,
 }: {
   orgName: string;
   settlement: SettlementPropsInterface;
+  orgId: string;
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const toggleAccordian = () => {
     setIsOpen((prevState) => !prevState);
   };
   const isMobile = useMobile();
+  // Org id for HDFC Collect Now
+  const isOrgHdfcCollectNow = orgId === 'org_ISCBolfdHQnhj4';
 
   useEffect(() => {
     // if device type changes to desktop, ensure isOpen is reset to true
@@ -101,33 +105,37 @@ const SettlementInfo = ({
                     </Text>
                   </CopyWrapper>
                 </RowWrapper>
-                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <RowWrapper tooltipSpacing="5px">
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.subtle"
-                  >
-                    UTR number <Tooltip content={getTooltipContent(orgName).bankRRN} />
-                  </Text>
-                  {settlement.utr ? (
-                    <CopyWrapper
-                      onClick={() => {
-                        trackSettlmentDetailsCopied({
-                          type: 'UTR number',
-                        });
-                        copyToClipboard(settlement.utr);
-                      }}
-                    >
-                      <Text variant="body">{settlement.utr}</Text>
-                    </CopyWrapper>
-                  ) : (
-                    <Text variant="body" color="surface.text.gray.muted">
-                      generated after settlement gets processed
-                    </Text>
-                  )}
-                </RowWrapper>
+                {isOrgHdfcCollectNow ? null : (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <RowWrapper tooltipSpacing="5px">
+                      <Text
+                        variant="body"
+                        size="medium"
+                        weight="regular"
+                        color="surface.text.gray.subtle"
+                      >
+                        UTR number <Tooltip content={getTooltipContent(orgName).bankRRN} />
+                      </Text>
+                      {settlement.utr ? (
+                        <CopyWrapper
+                          onClick={() => {
+                            trackSettlmentDetailsCopied({
+                              type: 'UTR number',
+                            });
+                            copyToClipboard(settlement.utr);
+                          }}
+                        >
+                          <Text variant="body">{settlement.utr}</Text>
+                        </CopyWrapper>
+                      ) : (
+                        <Text variant="body" color="surface.text.gray.muted">
+                          generated after settlement gets processed
+                        </Text>
+                      )}
+                    </RowWrapper>
+                  </>
+                )}
               </RowsWrapper>
             </CardBody>
           </Card>
@@ -141,6 +149,7 @@ const mapStateToProps = (state) => {
   const { session, settlement } = state;
   return {
     orgName: session.org?.business_name,
+    orgId: session.org?.id,
     settlement: settlement.settlement,
   };
 };

@@ -88,6 +88,7 @@ const PaymentsListFilter = ({
 }: PaymentsListFilterProps): JSX.Element => {
   const splitz = useSplitzService();
   const isProviderSelectorForV2 = isPaymentV2ParityFeatureEnabled(splitz, user);
+  const isCurlecMerchant = user.isOrgCurlec;
 
   const {
     defaultPaymentDuration,
@@ -118,7 +119,7 @@ const PaymentsListFilter = ({
   const isMediumDesktopAndMobile = useMobile(mobileBreakoints);
   const defaultFocusedInput = useRef<'startDate' | null>(null);
   const { paymentDurationOptions, paymentMethodOptions, statusOptions, searchByOptions } =
-    getOptions(isMobile);
+    getOptions(isMobile, isCurlecMerchant);
   const numberOfMonths = isMediumDesktopAndMobile
     ? MOBILE_CALENDAR_NUMBER_OF_MONTHS
     : DESKTOP_CALENDAR_NUMBER_OF_MONTHS;

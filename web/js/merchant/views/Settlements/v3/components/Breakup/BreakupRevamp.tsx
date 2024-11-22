@@ -84,7 +84,7 @@ const Breakup = ({
                     <Text size="medium" color="surface.text.gray.subtle">
                       {each.name}
                     </Text>
-                    <Tooltip content={each.tooltipInfo} />
+                    {each.tooltipInfo ? <Tooltip content={each.tooltipInfo} /> : null}
                   </Box>
                   <Amount amount={each.amount} type="subBreakup" currency={currency} />
                 </Box>
@@ -135,7 +135,7 @@ const Breakup = ({
                         <Text size="medium" color="surface.text.gray.subtle">
                           {each.name}
                         </Text>
-                        <Tooltip content={each.tooltipInfo} />
+                        {each.tooltipInfo ? <Tooltip content={each.tooltipInfo} /> : null}
                       </Box>
                       <Amount amount={each.amount} type="subBreakup" currency={currency} />
                     </Box>

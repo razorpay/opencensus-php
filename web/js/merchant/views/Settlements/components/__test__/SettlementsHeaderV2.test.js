@@ -205,7 +205,7 @@ describe('SettlementsHeaderV2', () => {
     };
 
     render(<SettlementsHeaderV2 />, { initialState });
-    const url = 'http://razorpay.com/settlement';
+    const url = 'https://razorpay.com/docs/payments/settlements/';
     await waitFor(() => {
       const docLink = screen.getByRole('link', { name: 'Documentation' });
       expect(docLink).toHaveAttribute('href', url);

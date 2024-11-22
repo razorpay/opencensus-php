@@ -12,7 +12,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 
 import SettlementCard from './SettlementCard';
 import { FlexBetween, CardWrapper, CardFooterIcon, TextFooter } from './styledUtils';
-import { BADGE_INFO, HEADING_INFO } from './utils';
+import { BADGE_INFO, getSettlementTimeFormat, HEADING_INFO } from './utils';
 
 const UpcomingSettlementCard = ({ next_settlement, settlementConfig, currency, isLoading }) => {
   const no_settlement = next_settlement?.no_settlement;
@@ -56,7 +56,7 @@ const UpcomingSettlementCard = ({ next_settlement, settlementConfig, currency, i
           <ClockIcon color="currentColor" size="small" />
         </CardFooterIcon>
         <span className="pr-5">
-          To be processed on {nextSettlementTime.format('DD MMM, h:mm A')}
+          To be processed on {nextSettlementTime.format(getSettlementTimeFormat('DD MMM, h:mm A'))}
         </span>
       </TextFooter>
     );

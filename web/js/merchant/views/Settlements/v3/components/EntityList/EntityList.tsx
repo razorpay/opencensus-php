@@ -37,6 +37,7 @@ import { BreakupDetailsInterface } from 'merchant/views/Settlements/v3/typings';
 import { ColumnHeader, StyledSpinner, StyledTd } from './styled';
 import { getEntityColumns, getNetValue } from './utils';
 import { keys, tooltipConfig } from './constants';
+import { getSettlementTimeFormat } from 'merchant/views/Settlements/components/utils';
 
 const DEFAULT_SKIP = 0;
 const DEFAULT_COUNT = 10;
@@ -271,7 +272,10 @@ const ListItem = ({
             row = (
               <td key={idx}>
                 <Text color="surface.text.gray.subtle">
-                  <Time value={created_at} format="DD MMM YYYY, hh:mm:ss a" />
+                  <Time
+                    value={created_at}
+                    format={getSettlementTimeFormat('DD MMM YYYY, hh:mm:ss a')}
+                  />
                 </Text>
                 {isMobileResolution ? (
                   <Text size="small" color="surface.text.gray.muted">

@@ -18,19 +18,30 @@ import Tooltip from 'merchant/views/Settlements/v3/components/Tooltip';
 import { User } from 'common/typings';
 import { OverviewIcon } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentDetailsOverview';
 import { useMobile } from 'common/hooks/useMobile';
+import { isOrgFeatureExist } from 'merchant/models/User';
+import { calculateSettledAmount } from 'merchant/views/Settlements/Settlements/components/Modals/BreakupModal';
 
 interface ISettlementDetailsOverview {
   settlement: SettlementPropsInterface;
   user: Required<User>;
+  breakupDetails: any;
 }
 
-function SettlementDetailsOverview({ settlement, user }: ISettlementDetailsOverview) {
+function SettlementDetailsOverview({
+  settlement,
+  user,
+  breakupDetails,
+}: ISettlementDetailsOverview) {
   const { amount, created_at, status } = settlement;
+  const { items, isBreakupNew } = breakupDetails;
   const {
     merchant: { currency },
   } = user;
+  const isVASMerchant = !(user.isOrgCurlec || user.isOrgRZP);
   const [createdDay, createdTime] = useTime(created_at);
   const isMobile = useMobile();
+  const shouldHideSettlementTime = isOrgFeatureExist('hide_settlement_time');
+  const totalAmount = calculateSettledAmount(items, isBreakupNew);
 
   return (
     <Box testID="settlement-details-overview">
@@ -60,14 +71,19 @@ function SettlementDetailsOverview({ settlement, user }: ISettlementDetailsOverv
                     </Badge>
                   </Box>
                   <StyledAmountWrapper type="regular" fontSize={28}>
-                    <Amount currency={currency || INR_CURRENCY} value={amount} />
+                    <Amount
+                      currency={currency || INR_CURRENCY}
+                      value={isVASMerchant ? totalAmount : amount}
+                    />
                   </StyledAmountWrapper>
                 </Box>
                 <Box display="flex" justifyContent="center" marginTop="spacing.3">
                   <OverviewSubtextWrapper isMobile={isMobile}>
                     <Text color="surface.text.gray.normal" display="flex">
-                      Created on {createdDay},
-                      <Text color="surface.text.gray.muted">{createdTime}</Text>
+                      Created on {createdDay}
+                      {shouldHideSettlementTime ? null : (
+                        <Text color="surface.text.gray.muted">, {createdTime}</Text>
+                      )}
                     </Text>
                   </OverviewSubtextWrapper>
                 </Box>
@@ -82,7 +98,10 @@ function SettlementDetailsOverview({ settlement, user }: ISettlementDetailsOverv
               >
                 <Box display="flex" gap="spacing.3">
                   <StyledAmountWrapper type="regular" fontSize={28}>
-                    <Amount currency={currency || INR_CURRENCY} value={amount} />
+                    <Amount
+                      currency={currency || INR_CURRENCY}
+                      value={isVASMerchant ? totalAmount : amount}
+                    />
                   </StyledAmountWrapper>
 
                   <Box display="flex" alignItems="center">
@@ -102,8 +121,10 @@ function SettlementDetailsOverview({ settlement, user }: ISettlementDetailsOverv
                 </Box>
                 <OverviewSubtextWrapper isMobile={isMobile}>
                   <Text color="surface.text.gray.normal" display="flex">
-                    Created on {createdDay},
-                    <Text color="surface.text.gray.muted">{createdTime}</Text>
+                    Created on {createdDay}
+                    {shouldHideSettlementTime ? null : (
+                      <Text color="surface.text.gray.muted">, {createdTime}</Text>
+                    )}
                   </Text>
                 </OverviewSubtextWrapper>
               </Box>
@@ -119,6 +140,7 @@ const mapStateToProps = (state) => {
   const { settlement, session } = state;
   return {
     settlement: settlement.settlement,
+    breakupDetails: settlement.breakupDetails,
     user: session.user,
   };
 };

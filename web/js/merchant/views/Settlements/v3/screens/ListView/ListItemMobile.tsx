@@ -8,6 +8,7 @@ import { StyledSettlementRow } from 'merchant/views/Settlements/v3/screens/ListV
 import { withRouter } from 'common/deprecated/withRouter';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { getSettlementTimeFormat } from 'merchant/views/Settlements/components/utils';
 
 type Props = RouteComponentProps & {
   settlement: SettlementInfo;
@@ -49,7 +50,7 @@ const SettlementListItemMobile = ({
           marginBottom="spacing.2"
         >
           <Text color="surface.text.gray.subtle">
-            <Time value={settlement.created_at} format="MMM DD, YYYY" />
+            <Time value={settlement.created_at} format={getSettlementTimeFormat('MMM DD, YYYY')} />
           </Text>
           <StatusBadge status={settlement.status} />
         </Box>

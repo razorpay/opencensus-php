@@ -7,9 +7,12 @@ import {
   DisputeStatus,
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/types';
 import { SettlementStatusIcons } from 'merchant/views/Settlements/v3/typings';
+import { getSettlementTimeFormat } from 'merchant/views/Settlements/components/utils';
 
-export const getHumanReadableTimestamp = (epochTime: number): string => {
-  const readableTimeStamp = moment.unix(epochTime).format('llll');
+export const getHumanReadableTimestamp = (epochTime: number, isViewSettlements = false): string => {
+  const readableTimeStamp = moment
+    .unix(epochTime)
+    .format(isViewSettlements ? getSettlementTimeFormat('llll') : 'llll');
   return readableTimeStamp;
 };
 

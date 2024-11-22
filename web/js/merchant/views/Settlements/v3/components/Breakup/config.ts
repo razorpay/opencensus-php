@@ -1,4 +1,5 @@
 import { titleCase } from 'common/utils/rzp-utils';
+import { getOrg } from 'merchant/store';
 import {
   BreakupComponentInterface,
   BreakupDetailsInterface,
@@ -19,7 +20,7 @@ const InstrumentMapper = {
   },
   fee: {
     displayName: 'Fee',
-    tooltipInfo: 'Platform fees charged by Razorpay',
+    tooltipInfo: `Platform fees charged by ${getOrg()?.business_name ?? 'Razorpay'}`,
   },
   dispute: {
     displayName: 'Disputes',

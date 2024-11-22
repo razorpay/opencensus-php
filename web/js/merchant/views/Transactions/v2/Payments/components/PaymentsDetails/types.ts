@@ -90,7 +90,8 @@ type PaymentMethod =
   | 'cod'
   | 'app'
   | 'bank_transfer'
-  | 'emi';
+  | 'emi'
+  | 'fpx';
 
 export interface IQuestionDetails {
   question: {

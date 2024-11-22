@@ -92,11 +92,19 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
   };
 };
 
-export const getOptions = (isMobile: boolean): AllOptions => {
+const curlecPaymentMethods = ['all', 'card', 'wallet', 'fpx', 'paylater'];
+
+export const getOptions = (isMobile: boolean, isOrgCurlec = false): AllOptions => {
+  let paymentMethodOptions = paymentMethodSectionOptions;
+  if (isOrgCurlec) {
+    paymentMethodOptions = paymentMethodSectionOptions.filter(({ value }) =>
+      curlecPaymentMethods.includes(value),
+    );
+  }
   if (isMobile) {
     return {
       paymentDurationOptions: paymentDurationSectionOptions,
-      paymentMethodOptions: paymentMethodSectionOptions,
+      paymentMethodOptions,
       statusOptions: statusSectionOptions,
       searchByOptions: searchBySectionOptions,
       countryCodeOptions: countryCodeSectionOptions,
@@ -105,7 +113,7 @@ export const getOptions = (isMobile: boolean): AllOptions => {
   }
   return {
     paymentDurationOptions,
-    paymentMethodOptions: paymentMethodSectionOptions,
+    paymentMethodOptions,
     statusOptions,
     searchByOptions,
     countryCodeOptions,

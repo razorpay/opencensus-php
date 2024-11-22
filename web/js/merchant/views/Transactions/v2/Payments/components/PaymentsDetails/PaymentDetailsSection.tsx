@@ -26,7 +26,11 @@ import { User } from 'common/typings';
 import copyToClipboard from 'common/utils/copyToClipboard';
 import { noop } from 'common/utils/rzp-utils';
 import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
-import { fetchEncodedPaymentReceipt, fetchTransfersFn } from 'merchant/views/Transactions/model';
+import {
+  fetchBankTransfersFn,
+  fetchEncodedPaymentReceipt,
+  fetchTransfersFn,
+} from 'merchant/views/Transactions/model';
 import {
   isPaymentV2ParityFeatureEnabled,
   isTransactionsV2Enabled,
@@ -55,7 +59,7 @@ import { imageDownload, isChargeSlipForPosEnabled, isPosTransaction, onCopy } fr
 
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { PaymentFeeBreakdown } from 'merchant/views/Transactions/v1/Payments/components/PaymentFee';
-import { fetchTransfers } from 'merchant/reducers/payments/details';
+import { fetchTransfers, fetchBankTransfer } from 'merchant/reducers/payments/details';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import PaymentOptimizerDetails from './PaymentOptimizerDetails';
 
@@ -76,6 +80,8 @@ interface IPaymentDetailsSectionProps extends RouteComponentProps<{ id: string }
   orgFeatures: string[];
   fetchTransfers: (paymentModel: any) => void;
   transfers: any;
+  fetchBankTransfer: (paymentModel: any) => void;
+  bankTransfer: any;
   terminalProviders: any;
   shouldShowOptimizerDetails: boolean;
 }
@@ -128,6 +134,8 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   orgFeatures,
   fetchTransfers,
   transfers,
+  fetchBankTransfer,
+  bankTransfer,
   terminalProviders,
   shouldShowOptimizerDetails,
 }) => {
@@ -176,6 +184,12 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
     }
   }, [paymentDetails.status]);
 
+  useEffect(() => {
+    if (method === 'bank_transfer') {
+      fetchBankTransfer({ fetchBankTransfer: fetchBankTransfersFn(id) });
+    }
+  }, [method, id]);
+
   const { abExperiments } = splitz || {
     abExperiments: {
       enable_trxn_v2_parity_features: undefined,
@@ -192,6 +206,8 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   const isLateAuthAttributeEnabled = orgFeatures?.includes('show_late_auth_attributes');
 
   const isOmniChannelMerchant = isPosTransaction(source_channel) && _isOmniChannelMerchant(user);
+
+  const bankReferenceNumber = bankTransfer?.details?.bank_reference;
 
   const onDownloadClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -334,6 +350,12 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     />
                   }
                 />
+                {isTxnV2ParityFeaturesEnabled && bankReferenceNumber ? (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow label="Bank Reference" value={bankReferenceNumber} />
+                  </>
+                ) : null}
                 {isPaymentReceiptSectionAllowed() && isTxnV2ParityFeaturesEnabled ? (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />
@@ -361,14 +383,16 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                       {contact ? (
                         <Box display="inline-flex" gap="spacing.3" alignItems="center">
                           <PhoneIcon size="medium" color="interactive.icon.gray.subtle" />
-                          <Text
-                            variant="body"
-                            size="medium"
-                            weight="regular"
-                            color="surface.text.gray.normal"
-                          >
-                            {getI18FormattedPhoneNumber(contact)}
-                          </Text>
+                          <CopyWrapper onClick={copyToClipboard.bind(null, contact)}>
+                            <Text
+                              variant="body"
+                              size="medium"
+                              weight="regular"
+                              color="surface.text.gray.normal"
+                            >
+                              {getI18FormattedPhoneNumber(contact)}
+                            </Text>
+                          </CopyWrapper>
                         </Box>
                       ) : null}
                       {email ? (
@@ -606,6 +630,7 @@ const mapStateToProps = (state) => ({
   orgName: state.session.org?.business_name,
   orgFeatures: state.session.org?.features,
   transfers: state.payment.transfers,
+  bankTransfer: state.payment.bankTransfer,
 });
 
 function mapDispatchToProps(dispatch) {
@@ -613,6 +638,7 @@ function mapDispatchToProps(dispatch) {
     {
       showNotification: showNotificationAction,
       fetchTransfers,
+      fetchBankTransfer,
     },
     dispatch,
   );

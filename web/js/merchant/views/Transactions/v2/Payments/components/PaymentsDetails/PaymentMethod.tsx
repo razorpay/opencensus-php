@@ -32,6 +32,7 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
   const user = useStore((state) => state.session.user);
 
   const isTxnV2ParityFeaturesEnabled = isPaymentV2ParityFeatureEnabled(splitz, user);
+  const shouldShowBankNameForFpx = method === 'fpx' && isTxnV2ParityFeaturesEnabled;
 
   const getPaymentMethod = () => {
     if (method === 'card') {
@@ -129,6 +130,11 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
 
     if (method === 'cardless_emi') {
       return <>Cardless EMI</>;
+    }
+
+    if (shouldShowBankNameForFpx) {
+      const bankName = bank ? bank.toUpperCase() : '';
+      return `${bankName ? bankName : null} Fpx`;
     }
 
     return <>{titleCase(method)}</>;

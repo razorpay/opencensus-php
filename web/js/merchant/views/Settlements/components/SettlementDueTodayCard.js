@@ -12,7 +12,13 @@ import { getFormattedAmount } from 'common/utils/rzp-utils';
 
 import SettlementCard from './SettlementCard';
 import { FlexBetween, CardFooterIcon, TextFooter } from './styledUtils';
-import { BADGE_INFO, HEADING_INFO, SETTLEMENT_SLA_IN_HOURS, SETTLEMENT_STATUS } from './utils';
+import {
+  BADGE_INFO,
+  getSettlementTimeFormat,
+  HEADING_INFO,
+  SETTLEMENT_SLA_IN_HOURS,
+  SETTLEMENT_STATUS,
+} from './utils';
 
 const InitiatedSettlementStatuses = [SETTLEMENT_STATUS.CREATED, SETTLEMENT_STATUS.INITIATED];
 
@@ -33,7 +39,7 @@ const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency })
   const settlementETA = moment
     .unix(initiatedSettlements?.[0]?.created_at)
     .add(SETTLEMENT_SLA_IN_HOURS, 'hours')
-    .format('DD MMM, h:mm A');
+    .format(getSettlementTimeFormat('DD MMM, h:mm A'));
 
   let currencySym;
 

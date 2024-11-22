@@ -248,7 +248,7 @@ const EntityStatusTimeline = ({
         </Box>
         {journeyPoint.timestamp && (
           <Text size="small" color="surface.text.gray.subtle" weight="regular">
-            {getHumanReadableTimestamp(journeyPoint.timestamp)}
+            {getHumanReadableTimestamp(journeyPoint.timestamp, true)}
           </Text>
         )}
         <Box paddingTop="spacing.3" marginBottom="spacing.8">

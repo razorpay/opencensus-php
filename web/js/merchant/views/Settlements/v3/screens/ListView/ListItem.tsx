@@ -8,6 +8,7 @@ import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import Time from 'common/ui/Time';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { fetchBreakupDetails, isBreakupNew } from 'merchant/reducers/settlements/details';
+import { getSettlementTimeFormat } from 'merchant/views/Settlements/components/utils';
 import { getBreakUpDetails } from 'merchant/views/Settlements/v3/components/Breakup/config';
 import StatusBadge from 'merchant/views/Settlements/v3/components/StatusBadge';
 import CopyButton from 'merchant/views/Settlements/v3/screens/ListView/CopyButton';
@@ -117,7 +118,10 @@ const SettlementListItem = ({
     <StyledSettlementRow>
       <td>
         <Text color="surface.text.gray.subtle">
-          <Time value={settlement.created_at} format="MMM DD YYYY, hh:mma" />
+          <Time
+            value={settlement.created_at}
+            format={getSettlementTimeFormat('MMM DD YYYY, hh:mma')}
+          />
         </Text>
       </td>
       <td>

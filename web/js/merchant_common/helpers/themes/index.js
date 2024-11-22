@@ -10,7 +10,7 @@ const base = {
   quillTextColor: '#0d2366',
 };
 
-const THEMES = {
+export const THEMES = {
   hdfc: {
     primary: '#084c8d',
     navBarBandColor: 'rgba(0,0,0,0.2)',

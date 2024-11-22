@@ -21,6 +21,7 @@ import {
 import store from 'merchant/store';
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
+import { THEMES } from 'merchant_common/helpers/themes';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,7 +59,9 @@ const Wrapper: React.FC<Props> = ({ context, children }) => {
   let customTheme = bladeTheme;
 
   if (isCustomTheme) {
-    const color = window?.rzp_org?.merchant_styles?.primary;
+    const color =
+      window?.rzp_org?.merchant_styles?.primary || THEMES[window?.rzp_org?.custom_code]?.primary;
+
     if (color) {
       const { theme: customColorTheme } = createTheme({ brandColor: color });
       customTheme = customColorTheme;

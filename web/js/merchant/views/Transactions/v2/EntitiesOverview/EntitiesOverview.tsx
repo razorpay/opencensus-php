@@ -32,6 +32,7 @@ const { FAILED_PAYMENTS, DISPUTES, SUCCESS_RATE, REFUNDS, BATCH_REFUNDS, BATCH_R
 
 const EntitiesOverview = ({ location: { pathname }, user, mode }: any): JSX.Element => {
   const { id: merchantId } = user;
+  const isCurlecMerchant = user.isOrgCurlec;
   const splitz = useSplitzService();
   const isBounceModalMemoEnabled = isBounceMemoEnabled(splitz);
   const shouldShowHeading = [FAILED_PAYMENTS, SUCCESS_RATE].includes(
@@ -60,7 +61,9 @@ const EntitiesOverview = ({ location: { pathname }, user, mode }: any): JSX.Elem
         <StyledHeading id="transactions-header">
           <Heading size="medium">{getHeading(pathname as TransactionsEntityRoute)}</Heading>
           <ShowWhen
-            additionalCondition={() => pathname === FAILED_PAYMENTS && isBounceModalMemoEnabled}
+            additionalCondition={() =>
+              pathname === FAILED_PAYMENTS && isBounceModalMemoEnabled && !isCurlecMerchant
+            }
           >
             <div style={{ marginLeft: 'auto' }}>
               <Box marginRight="spacing.5">

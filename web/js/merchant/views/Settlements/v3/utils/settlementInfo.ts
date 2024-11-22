@@ -17,6 +17,7 @@ import {
 } from 'merchant/views/Settlements/v3/typings';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { getHumanReadableTimestamp } from 'merchant/views/Transactions/v2/Payments/components/Timeline/utils';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
 const FailedBannerConfig = {
   FAILED: {
@@ -139,6 +140,8 @@ export const getTimelineJourneyDetailsRevamp = ({
   const { created_at, status, amount, utr } = settlement;
   const now = moment();
   const breachTime = moment.unix(created_at).add(7, 'hours');
+  const shouldHideSettlementTime = isOrgFeatureExist('hide_settlement_time');
+  const isVASMerchant = !(user.isOrgRZP || user.isOrgCurlec);
 
   let failedType;
   const {
@@ -180,7 +183,7 @@ export const getTimelineJourneyDetailsRevamp = ({
     {
       status,
       title: 'Settlement created',
-      subtitle: getHumanReadableTimestamp(created_at),
+      subtitle: getHumanReadableTimestamp(created_at, true),
       icon: SettlementStatusIcons.DONE,
     },
   ];
@@ -196,7 +199,9 @@ export const getTimelineJourneyDetailsRevamp = ({
         status,
         title: 'Money to be deposited in bank account',
         subtitle: `Net amount: ${netAmount}`,
-        secondarySubtitle: 'To be deposited latest by 11:00 pm, today',
+        secondarySubtitle: `To be deposited latest by ${
+          shouldHideSettlementTime ? '' : '11:00 pm'
+        }, today`,
         icon: SettlementStatusIcons.IN_PROGRESS,
       },
     );
@@ -204,17 +209,17 @@ export const getTimelineJourneyDetailsRevamp = ({
 
   if (status === SettlementStatus.PROCESSED) {
     const shouldHaveSettled = isPastSettlementTime(created_at);
-    journey.push(
-      {
-        status,
-        title: 'Settlement processed',
-        subtitle: getSettlementProcessedTime(created_at),
-        mutedInfo: `We have successfully processed the settlement. It may take 2-3 hours for the funds to reflect in your bank account. If the money has still not been deposited after this time, please contact your bank using the UTR number (${
-          utr ?? '-'
-        }).`,
-        icon: SettlementStatusIcons.DONE,
-      },
-      {
+    journey.push({
+      status,
+      title: 'Settlement processed',
+      subtitle: getSettlementProcessedTime(created_at),
+      mutedInfo: `We have successfully processed the settlement. It may take 2-3 hours for the funds to reflect in your bank account. If the money has still not been deposited after this time, please contact your bank using the UTR number (${
+        utr ?? '-'
+      }).`,
+      icon: SettlementStatusIcons.DONE,
+    });
+    if (!isVASMerchant) {
+      journey.push({
         status,
         title: shouldHaveSettled
           ? 'Money deposited in bank account'
@@ -224,8 +229,8 @@ export const getTimelineJourneyDetailsRevamp = ({
           ? `UTR number: ${utr ?? '-'}`
           : 'To be deposited latest by 11:00 pm, today',
         icon: shouldHaveSettled ? SettlementStatusIcons.DONE : SettlementStatusIcons.IN_PROGRESS,
-      },
-    );
+      });
+    }
   }
 
   if (status === SettlementStatus.FAILED) {

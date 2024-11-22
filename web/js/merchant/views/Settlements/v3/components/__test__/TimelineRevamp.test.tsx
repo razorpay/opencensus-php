@@ -31,6 +31,8 @@ const getInitialState = ({ settlement = {}, FOH_HOLD = false, SOH_HOLD = false }
     session: {
       ...globalStore.session,
       user: {
+        isOrgRZP: true,
+        isOrgCurlec: false,
         merchant: {
           currency: 'INR',
           hold_funds: FOH_HOLD,
