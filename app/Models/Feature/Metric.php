@@ -14,4 +14,6 @@ final class Metric
 
     const MFN_WEBHOOK_CREATE_FAILURE = 'mfn_webhook_create_failure';
     const LEDGER_FEATURE_REMOVAL_COUNT = 'ledger_feature_removal_count';
+
+    const DCS_FEATURE_SYNC_FAIL = 'dcs_feature_sync_fail';
 }

@@ -12292,6 +12292,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTION_CREATED_WEBHOOK_SYNC_FIRE = "TRANSACTION_CREATED_WEBHOOK_SYNC_FIRE";
     const TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE = "TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE";
 
+    const DCS_FEATURE_SYNC_FAIL = "DCS_FEATURE_SYNC_FAIL";
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
