@@ -144,9 +144,9 @@ class Base extends BaseProcessor
                                 'id' => $this->gatewayFile->getId()
                             ]);
 
-            $operation = 'combined file send failed @nbplus-oncall';
+            $operation = 'combined file send failed @nbplus-oncall @pgrecon-ml_alerts @im_team';
             $username = "NB_CLAIM_FILE";
-            (new SlackNotification)->send($operation, $mailData, null, 1,'tech_payments_nbplus_alerts', $username);
+            (new SlackNotification)->send($operation, $mailData, null, 1,'potential_outages', $username);
 
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,

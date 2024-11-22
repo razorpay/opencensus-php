@@ -314,7 +314,7 @@ class Dbs extends Base
 
             $mailInfo = [
                 'fileInfo'  => $fileInfo,
-                'channel'   => 'tech_payments_nbplus_alerts',
+                'channel'   => 'potential_outages',
                 'filetype'  => self::BEAM_FILE_TYPE,
                 'subject'   => 'DBS Combined File send failure',
                 'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SETTLEMENT_ALERTS]
@@ -344,7 +344,7 @@ class Dbs extends Base
                     'id' => $this->gatewayFile->getId()
                 ]);
 
-            $operation = $mailInfo['filetype'] .' file send failed through Beam @nbplus-oncall';
+            $operation = $mailInfo['filetype'] .' file send failed through Beam @nbplus-oncall @pgrecon-ml_alerts @im_team';
             $username = "NB_CLAIM_FILE";
             (new SlackNotification)->send($operation, $mailInfo, null, 1,$mailInfo['channel'], $username);
 

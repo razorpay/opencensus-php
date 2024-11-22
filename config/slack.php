@@ -174,6 +174,8 @@ return array(
         'tech_alerts'            => 'C5FD7THSP',
         // tech_payments_nbplus_alerts channel
         'tech_payments_nbplus_alerts' => 'C0127MCDRRP',
+        //potential_outages channel
+        'potential_outages' => 'C02B75CA8V9',
         // pgob_alerts channel
         'pgob_alerts'            => 'CL985FWUX',
         // fta alerts
