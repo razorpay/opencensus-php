@@ -16,6 +16,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payment;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Transaction\Entity;
 use RZP\Models\Transaction\Processor\Ledger;
@@ -165,6 +166,9 @@ class Core extends Base\Core
         }
         catch (\Exception $e)
         {
+            $result[$this->app['config']->get('app.fee_breakup_in_ledger_experiment_id')] = false;
+
+            $result[$this->app['config']->get('app.amount_credits_split_in_ledger_experiment_id')] = false;
 
             $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
 
@@ -322,7 +326,7 @@ class Core extends Base\Core
             $moneyParams[Constants::MERCHANT_VAS_AMOUNT]        = strval($fee);
             $moneyParams = array_merge($moneyParams, $this->getMoneyParamsForFeeBreakupAndTax($feesSplit, $commission, $tax, $enableFeeSplitInLedger));
 
-            return $moneyParams;
+            return [$moneyParams, $dynamicMoneyParams];
         }
 
         //Todo: Check with banking team , fee and tax is populated but do not get deducted from balance.
