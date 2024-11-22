@@ -745,6 +745,7 @@ class Core extends Base\Core
                 $jobInput['merchant_id']    = $subMerchant->getId();
                 $jobInput['partner_id']     = $aggregatorMerchant->getId();
                 $jobInput['linked_account'] = $linkedAccount;
+                $jobInput['oauth_application_id'] = $this->app['basicauth']->getOauthApplicationId();
                 SubMerchantSupportEntitiesCreateJob::dispatch($this->mode, $jobInput);
             });
 

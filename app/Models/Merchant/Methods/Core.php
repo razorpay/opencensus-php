@@ -1016,8 +1016,9 @@ class Core extends Base\Core
         }
     }
 
-    public function setMethods($merchant, Merchant\Entity $aggregatorMerchant = null, string $source=null)
+    public function setMethods($merchant, Merchant\Entity $aggregatorMerchant = null, string $source=null )
     {
+
         $this->trace->info(TraceCode::SET_PAYMENT_METHODS_UNDER_MUTEX_LOCK,
             [
                 'merchant_id' => $merchant->getId(),
@@ -1377,6 +1378,9 @@ class Core extends Base\Core
     protected function getDefaultPaymentMethodsForPurePlatformPartner(Merchant\Entity $aggregatorMerchant)
     {
         $oauthAppId = $this->app['basicauth']->getOAuthApplicationId() ?? null;
+
+        if($oauthAppId == null)
+            return null;
 
         $partnerConfig = $this->repo->partner_config->getApplicationConfig($oauthAppId);
 
