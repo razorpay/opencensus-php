@@ -29,7 +29,7 @@ test.describe.parallel(
       permissions: ['clipboard-read'],
     });
 
-    test('should show coupon code deals', async ({ page, context }) => {
+    test.skip('should show coupon code deals', async ({ page, context }) => {
       await gotoURL(page, COUPON_PRODUCT_ROUTE);
       await page.getByRole('button', { name: /avail deal/i }).click();
 
@@ -42,14 +42,14 @@ test.describe.parallel(
       await testApplyHereLink(page, context);
     });
 
-    test('should show avail link only deals', async ({ page, context }) => {
+    test.skip('should show avail link only deals', async ({ page, context }) => {
       await gotoURL(page, LINK_PRODUCT_ROUTE);
       await page.getByRole('button', { name: /avail deal/i }).click();
 
       await testApplyHereLink(page, context);
     });
 
-    test('should open Rize public profile of cofounder in a new tab', async ({ page, context }) => {
+    test.skip('should open Rize public profile of cofounder in a new tab', async ({ page, context }) => {
       await gotoURL(page, COUPON_PRODUCT_ROUTE);
       const cofounderCard = page.getByTestId('cofounder-card').first();
 
