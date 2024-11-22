@@ -21,6 +21,7 @@ class Constants
     const ACCOUNTING                                        = "accounting";
     const AMOUNT_CREDITS                                    = 'amount_credits';
     const AMOUNT_CREDITS_REDEMPTION                         = 'amount_credits_redemption';
+    const VERSION                                           = 'version';
     const FEE_CREDITS                                       = 'fee_credits';
     const POSTPAID                                          = 'postpaid';
     const DIRECT_SETTLEMENT_ACCOUNTING                      = 'direct_settlement_accounting';
