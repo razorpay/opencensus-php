@@ -289,7 +289,7 @@ class Service extends Base\Service
         {
             $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::RX_WHATSAPP_LIVE);
         }
-        else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER OR $entity === Entity::TOKEN OR $entity === Entity::TRANSACTION OR $entity === Entity::TRANSFER)
+        else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER OR $entity === Entity::TOKEN OR $entity === Entity::TRANSACTION OR $entity === Entity::TRANSFER OR $entity === Entity::PRODUCT )
         {
             $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
