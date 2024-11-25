@@ -999,6 +999,24 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchHoldReasonCodeMappingsInternal()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getHoldReasonCodeMappingsInternal($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchHoldReasonCodeMappingsAdmin()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getHoldReasonCodeMappingsInternal($input);
+
+        return ApiResponse::json($data);
+    }
+
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('1024M');

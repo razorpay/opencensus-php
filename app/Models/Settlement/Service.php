@@ -2037,6 +2037,11 @@ class Service extends Base\Service
         return app('settlements_api')->triggerFileGeneration($input);
     }
 
+    public function getHoldReasonCodeMappingsInternal(array $input) : array
+    {
+        return app('settlements_dashboard')->getHoldReasonCodeMappingsDashboard($input);
+    }
+
     public function updateSchedule(array $input) : array
     {
         return app('settlements_api')->updateSchedule($input);

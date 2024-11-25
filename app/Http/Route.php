@@ -1185,6 +1185,8 @@ class Route
         'setl_update_optimiser_execution_status'   => ['put',      'settlements/optimizer/update_status_of_execution','SettlementController@updateStatusofOptimiserExecution'            ],
         'setl_trigger_file_generation'             => ['post',     'settlements/file_generation',                    'SettlementController@triggerFileGeneration'                                ],
         'setl_transaction_timeline'                => ['get',      'settlements/transaction/timeline',               'SettlementController@getTransactionTimeline'                       ],
+        'setl_reason_code_mapping_internal'        => ['get',      'internal/settlements/on_hold/{reason_codes?}',   'SettlementController@fetchHoldReasonCodeMappingsInternal'          ],
+        'setl_reason_code_mapping_admin'           => ['get',      'admin/settlements/on_hold/{reason_codes?}',      'SettlementController@fetchHoldReasonCodeMappingsAdmin'             ],
 
 
 
@@ -6099,6 +6101,7 @@ class Route
         'setl_service_blocked_migration',
         'setl_entity_alerts',
         'setl_trigger_file_generation',
+        'setl_reason_code_mapping_internal',
         'settlement_ondemand_feature_enable',
         'early_settlement_feature_period_create',
         'settlement_ondemand_partial_scheduled',
@@ -9124,6 +9127,7 @@ class Route
         'scrooge_fetch_merchant_mode_configs',
         'toggle_transaction_hold',
         'toggle_transaction_release',
+        'setl_reason_code_mapping_admin',
 
         'commissions_capture',
         'commissions_capture_by_partner',
@@ -10186,6 +10190,7 @@ class Route
         'setl_update_bene_name'                    => Permission::SETTLEMENT_SERVICE_MERCHANT_CONFIG_EDIT,
         'setl_get_scheduleableEntities'            => Permission::VIEW_ALL_ENTITY,
         'setl_bank_account_create'                 => Permission::MERCHANT_SETTLEMENT_BANK_ACCOUNT_CREATE,
+        'setl_reason_code_mapping_admin'           => Permission::VIEW_ALL_ENTITY,
         'setl_bank_account_update'                 => Permission::MERCHANT_SETTLEMENT_BANK_ACCOUNT_UPDATE,
         'setl_bank_account_get'                    => Permission::VIEW_ALL_ENTITY,
         'setl_bank_account_delete'                 => Permission::MERCHANT_SETTLEMENT_BANK_ACCOUNT_DELETE,
@@ -14264,6 +14269,7 @@ class Route
             'admin_trigger_2fa_otp',
             'admin_account_lock_unlock',
             'setl_merchant_dashboard_config_get',
+            'setl_reason_code_mapping_admin',
             'setl_fetch_details',
             'setl_transaction_timeline',
             'setl_get_details_admin',

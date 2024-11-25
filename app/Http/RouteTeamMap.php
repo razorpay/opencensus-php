@@ -495,6 +495,8 @@ class RouteTeamMap
         'setl_merchant_config_update'                     => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_merchant_config_bulk_update'                => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_bank_account_create'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_reason_code_mapping_internal'               => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_reason_code_mapping_admin'                  => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_bank_account_update'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_update_bene_name'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_bank_account_get'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],
