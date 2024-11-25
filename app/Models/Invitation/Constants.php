@@ -14,5 +14,5 @@ class Constants
     const ACCEPT_INVITE_SROUCE_VENDOR_PORTAL_V2 = 'vendor_portal_v2';
 
     const PARTNER_AGENT_APP_INSTALL_URL_PREFIX = 'https://accounts.razorpay.com/auth/?redirecturl=https%3A%2F%2Fdashboard.razorpay.com%2Fapp%2Fpos-sales%2Fbasic-info%3Fflow%3Dpos-ekyc-agent&invitation=';
-    const PARTNER_AGENT_APP_INVITE_SMS_TEMPLATE = 'sms.partnerships.invite_partner_agent';
+    const PARTNER_AGENT_APP_INVITE_SMS_TEMPLATE = 'sms.partnerships.invite_partner_agent_v2';
 }

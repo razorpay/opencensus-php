@@ -339,18 +339,21 @@ class InvitationTest extends TestCase
             'contact_mobile' => self::DEFAULT_USER_MERCHANT_CONTACT_MOBILE,
         ]);
 
+        $this->fixtures->edit('merchant', self::DEFAULT_MERCHANT_ID, ['name' => 'Partner Merchant Name']);
+
         $this->mockAllSplitzTreatment();
 
         $this->mockGimliURLShortener("https://rzp.io/i/test");
 
         $this->merchantTestUtil->expectStorkSmsRequest(
             $this->storkMock,
-            'sms.partnerships.invite_partner_agent',
+            'sms.partnerships.invite_partner_agent_v2',
             '+918888888888',
             [
                 'name'             => 'invitee name',
                 'inviteLink'       => "https://rzp.io/i/test",
-                'partnerContact'   => self::DEFAULT_USER_MERCHANT_CONTACT_MOBILE
+                'partnerContact'   => self::DEFAULT_USER_MERCHANT_CONTACT_MOBILE,
+                'partnerName'      => 'Partner Merch',
             ]
         );
         $this->startTest();

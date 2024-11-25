@@ -554,13 +554,14 @@ class Core extends Base\Core
         }
     }
 
-    private function sendSMSForPartnerAgentInvite(Entity     $invitation, bool $invitedUserExists)
+    private function sendSMSForPartnerAgentInvite(Entity $invitation, bool $invitedUserExists)
     {
         $invitationToken = $invitation->getToken();
         $partnerMerchant = $this->merchant;
 
         $metadata = $invitation->getMetadata();
         $trimmedName = trim_string_to_width($metadata["name"] ?? '', 13, "");
+        $trimmedPartnerName = $partnerMerchant->getTrimmedName(13, "");
 
         $appInstallUrl = InvitationConstants::PARTNER_AGENT_APP_INSTALL_URL_PREFIX.''.$invitationToken;
         $inviteLink = $this->elfin->shorten($appInstallUrl);
@@ -569,6 +570,7 @@ class Core extends Base\Core
             'name'             => $trimmedName,
             'inviteLink'       => $inviteLink,
             'partnerContact'   => optional($partnerMerchant->merchantDetail)->getContactMobile() ?? '',
+            'partnerName'      => $trimmedPartnerName
         ];
 
         $smsPayload = [
