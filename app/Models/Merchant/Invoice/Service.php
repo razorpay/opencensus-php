@@ -34,6 +34,10 @@ class Service extends Base\Service
         return (new Core)->queueCreateInvoiceEntities($input);
     }
 
+    public  function createInvoiceEntitiesForLinkedAccount(array $input)
+    {
+        return (new Core)->queueCreateInvoiceEntitiesForLinkedAccount($input);
+    }
     public function createMultipleInvoiceEntities(array $input)
     {
         (new Core)->dispatchForAdjustmentInvoiceEntityCreate($input);
@@ -601,6 +605,74 @@ class Service extends Base\Service
         }
         return $res;
     }
+
+    protected function performInvoiceControlActionForLinkedAccounts($mids, $res, $values, $input, $redis): array
+    {
+        foreach ($mids as $merchantId)
+        {
+            $skip = 0;
+
+            try
+            {
+                switch ($input['action'])
+                {
+                    case Constants::ADD_TO_PARENT_MIDS_WHITELIST:
+                        if(in_array($merchantId, $values) === true)
+                        {
+                            $res['failed_mids'][] = $merchantId;
+
+                            $this->trace->info(
+                                TraceCode::MERCHANT_INVOICE_GENERATION_CONTROL_FAILED_FOR_LINKED_ACCOUNT,
+                                [
+                                    'merchant_id' => $merchantId,
+                                    'reason'      => 'merchant is already present in the skipped list',
+                                ]);
+                            $skip = 1;
+                            break;
+                        }
+
+                        $redis->LPUSH(Constants::WHITELISTED_PARENT_IDS_FOR_LINKED_INVOICE_KEY, $merchantId);
+                        break;
+
+                    case Constants::REMOVE_FROM_PARENT_MIDS_WHITELIST:
+                        if(in_array($merchantId, $values) === false)
+                        {
+                            $res['failed_mids'][] = $merchantId;
+
+                            $this->trace->info(
+                                TraceCode::MERCHANT_INVOICE_GENERATION_CONTROL_FAILED_FOR_LINKED_ACCOUNT,
+                                [
+                                    'merchant_id' => $merchantId,
+                                    'reason'      => 'merchant is not present in the skipped list',
+                                ]);
+
+                            $skip = 1;
+                            break;
+                        }
+                        $redis->LREM(Constants::WHITELISTED_PARENT_IDS_FOR_LINKED_INVOICE_KEY, 0, $merchantId);
+                        break;
+                }
+                if($skip === 0)
+                {
+                    $res['success_mids'][] = $merchantId;
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::MERCHANT_INVOICE_GENERATION_CONTROL_FAILED_FOR_LINKED_ACCOUNT,
+                    [
+                        'merchant_id' => $merchantId,
+                        'reason'      => 'failed to' . $input['action']. 'to redis skipped list'
+                    ]);
+
+                $res['failed_mids'][] = $merchantId;
+            }
+        }
+        return $res;
+    }
     public function generationControl($input)
     {
         (new Validator())->validateRequestInput($input);
@@ -664,6 +736,28 @@ class Service extends Base\Service
         return $result;
     }
 
+    public function linkedAccountGenerationControl($input)
+    {
+        (new Validator)->validateInput('linked_account_generation_control', $input);
+
+        $redis = $this->app->redis->Connection('mutex_redis');
+
+        $values = $redis->LRANGE(Constants::WHITELISTED_PARENT_IDS_FOR_LINKED_INVOICE_KEY, 0, -1);
+
+        if ($input['action'] === Constants::SHOW_WHITELISTED_PARENT_MIDS_LIST)
+        {
+            return $values;
+        }
+
+        $result = [
+            'failed_mids'  => [],
+            'success_mids' => [],
+        ];
+
+        $result = $this->performInvoiceControlActionForLinkedAccounts($input['merchant_ids'], $result, $values, $input, $redis);
+
+        return $result;
+    }
     private function isChargeCollectionsInvoicingExptEnabledForX($mid): bool
     {
         $properties = [

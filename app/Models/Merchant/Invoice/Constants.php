@@ -24,11 +24,19 @@ final class Constants
 
     const MERCHANT_INVOICE_SKIPPED_MIDS_KEY = 'merchant_invoice_skipped_mids';
 
+    const WHITELISTED_PARENT_IDS_FOR_LINKED_INVOICE_KEY = 'whitelisted_parent_ids_for_linked_invoice';
+
     const ADD_TO_SKIPPED_MIDS_LIST = 'add';
+
+    const ADD_TO_PARENT_MIDS_WHITELIST = 'add';
+
+    const REMOVE_FROM_PARENT_MIDS_WHITELIST = 'remove';
 
     const REMOVE_FROM_SKIPPED_MIDS_LIST = 'remove';
 
     const SHOW_SKIPPED_MIDS_LIST = 'show';
+
+    const SHOW_WHITELISTED_PARENT_MIDS_LIST = 'show';
 
     const FEE = 'fee';
 

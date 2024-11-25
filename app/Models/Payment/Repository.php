@@ -4382,6 +4382,60 @@ EOT;
         return $query->first();
     }
 
+    public function fetchFeesAndTaxForPaymentByTypeForLinkedMerchants(
+        string $parentMerchantId,
+        string $merchantId,
+        int $start,
+        int $end,
+        string $filterType
+    )
+    {
+        $query = "
+SELECT
+    CASE
+        WHEN payment_amount <= 2000 AND type IN ('Debit card LTE2k', 'Credit Card LTE2k') THEN 'card_lte_2k'
+        WHEN payment_amount > 2000 AND type IN ('Debit Card GT2k', 'Credit Card GT2k') THEN 'card_gt_2k'
+        ELSE 'others'
+    END AS card_type,
+    SUM(fee_inc_tax) AS fee,
+    SUM(tax) AS tax,
+    SUM(payment_amount) AS total_amount
+
+FROM
+    aggregate_ba.aggregators_finance
+WHERE
+    parent_merchant_id = '%s'
+    AND linked_account = '%s'
+    AND transfer_created_date BETWEEN '%s' AND '%s'
+GROUP BY
+    CASE
+        WHEN payment_amount <= 2000 AND type IN ('Debit card LTE2k', 'Credit Card LTE2k') THEN 'card_lte_2k'
+        WHEN payment_amount > 2000 AND type IN ('Debit Card GT2k', 'Credit Card GT2k') THEN 'card_gt_2k'
+        ELSE 'others'
+    END
+ HAVING
+        CASE
+            WHEN payment_amount <= 2000 AND type IN ('Debit card LTE2k', 'Credit Card LTE2k') THEN 'card_lte_2k'
+            WHEN payment_amount > 2000 AND type IN ('Debit Card GT2k', 'Credit Card GT2k') THEN 'card_gt_2k'
+            ELSE 'others'
+        END = '%s'
+    ";
+
+        $startDate =  Carbon::createFromTimestamp($start)->format('d-m-Y');
+        $endDate = Carbon::createFromTimestamp($end)->format('d-m-Y');
+
+        $dataLakeQuery = sprintf($query, $parentMerchantId, $merchantId, $startDate, $endDate, $filterType);
+
+        $results = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+
+        $this->trace->info(TraceCode::LINKED_MERCHANT_INVOICE_DATALAKE_QUERY, [
+            "DL_QUERY" => $dataLakeQuery,
+            "DL_QUERY_RESULT" => $results,
+        ]);
+
+        return !empty($results) ? $results[0]:[];
+    }
+
     /**
      * select `payments`.*, `bank_accounts`.`id` as `bank_account_id` from `payments` inner join
      * `bank_transfers` on `bank_transfers`.`payment_id` = `payments`.`id` inner join `virtual_accounts`

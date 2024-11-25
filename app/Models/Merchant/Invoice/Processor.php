@@ -37,6 +37,8 @@ class Processor extends Base\Core
 
     protected $merchantId;
 
+    protected $linked_account;
+
     protected $beginTimestamp = 0;
 
     protected $endTimestamp = 0;
@@ -67,7 +69,8 @@ class Processor extends Base\Core
     const RESPONSE_NAME     = 'name';
     const RESPONSE_AMOUNT   = 'amount';
 
-    public function __construct(string $merchantId, int $month, int $year)
+    public function __construct(string $merchantId, int $month, int $year,bool $linked_account)
+
     {
         parent::__construct();
 
@@ -76,6 +79,8 @@ class Processor extends Base\Core
         $this->month = $month;
 
         $this->year = $year;
+
+        $this->linked_account = $linked_account;
 
         $this->initializeVars();
 
@@ -797,19 +802,56 @@ class Processor extends Base\Core
 
         if ($this->isInvoiceTypeOfPayment($type) === true)
         {
-            $paymentFeeAmount = $this->repo
-                ->payment
-                ->fetchFeesAndTaxForPaymentByType(
-                    $this->merchantId,
-                    $this->beginTimestamp,
-                    $this->endTimestamp,
-                    $type);
-            // if optimizer cfb feature is enabled
-            // we need to remove optimizer conveninec fee from total payment fee amount
-            if ($this->merchant->isAtLeastOneFeatureEnabled(Feature\Constants::OPTIMIZER_CFB_FEATURES) === true)
-            {
-                $this->removeOptimizerConvenienceFeeFromFeeDeatils($paymentFeeAmount, $type);
+            if ($this->linked_account === true){
+                // calculating the fees for linked_merchants with the parent_id of merchant
+                // and linked_account id, using linked_acc_id to calculate the parent_id
+
+                try {
+
+                    $parentMerchantId = $this->merchant->getParentId();
+
+                    $paymentFeeAmount = $this->repo
+                        ->payment
+                        ->fetchFeesAndTaxForPaymentByTypeForLinkedMerchants(
+                            $parentMerchantId,
+                            $this->merchantId,
+                            $this->beginTimestamp,
+                            $this->endTimestamp,
+                            $type
+                        );
+
+                } catch (\Exception $e) {
+                    // Log the error message and details for debugging
+
+                    $this->trace->info(
+                        TraceCode::MERCHANT_INVOICE_PDF_CREATION_FAILED,
+                        [
+                            'parentMerchantId' => $parentMerchantId,
+                            'merchantId' => $this->merchantId,
+                            'beginTimestamp' => $this->beginTimestamp,
+                            'endTimestamp' => $this->endTimestamp,
+                            'type' => $type,
+                            'error_message' => $e->getMessage(),
+                            'stack_trace' => $e->getTraceAsString(),
+                        ]);
+
+                }
             }
+            else {
+                $paymentFeeAmount = $this->repo
+                    ->payment
+                    ->fetchFeesAndTaxForPaymentByType(
+                        $this->merchantId,
+                        $this->beginTimestamp,
+                        $this->endTimestamp,
+                        $type);
+            }
+                // if optimizer cfb feature is enabled
+                // we need to remove optimizer conveninec fee from total payment fee amount
+                if ($this->merchant->isAtLeastOneFeatureEnabled(Feature\Constants::OPTIMIZER_CFB_FEATURES) === true)
+                {
+                    $this->removeOptimizerConvenienceFeeFromFeeDeatils($paymentFeeAmount, $type);
+                }
 
             $this->logMerchantInvoiceResult(
                 $type,

@@ -332,6 +332,47 @@ class Repository extends Base\Repository
                      ->toArray();
     }
 
+    public function fetchLinkedMerchantsBeforeTimestamp(
+        int $limit,
+        int $skip,
+        int $end,
+        array $merchantIds = [],
+        array $parentMerchantIdsToBeIncluded = []
+    ):array
+    {
+        if ($this->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER));
+            }
+            else
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT)
+                );
+            }
+
+        // Build the query to select merchant IDs where parent_id is not null
+        $query = $query->select(Entity::ID)
+            ->where(Entity::ACTIVATED, '=', 1)
+            ->where(Entity::ACTIVATED_AT, '<=', $end)
+            ->whereNotNull(Entity::PARENT_ID)
+            ->whereIn(Entity::PARENT_ID, $parentMerchantIdsToBeIncluded)
+            ->orderBy(Entity::ID, 'ASC')
+            ->take($limit)
+            ->skip($skip);
+
+        // Filter by merchant IDs if provided
+        if (!empty($merchantIds)) {
+            $query = $query->whereIn(Entity::ID, $merchantIds);
+        }
+
+        // Execute the query and return the results as an array of IDs
+        return $query->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
     /*
      * Since PG onboarding has been blocked, X has been using a new flag to mark merchants as activated on X
      * Read https://docs.google.com/document/d/1iVUFQu2ZoBBD5CNZoIwX6syw_armtk5TQRQgu9-1D_c/edit

@@ -19,6 +19,8 @@ class MerchantInvoice extends Job
 
     public $timeout = 5400;
 
+    public $linked_account = false;
+
     const MERCHANT_INVOICE_MUTEX_RESOURCE = 'MERCHANT_INVOICE_CREATE_%s_%s_%s';
 
 
@@ -29,11 +31,13 @@ class MerchantInvoice extends Job
     // interval will be in seconds
     const RETRY_INTERVAL = 900;
 
+
     public function __construct(
         string $merchantId,
         int $month,
         int $year,
-        string $mode)
+        string $mode,
+        bool $linked_account = false )
     {
         parent::__construct($mode);
 
@@ -42,6 +46,9 @@ class MerchantInvoice extends Job
         $this->month        = $month;
 
         $this->year         = $year;
+
+
+        $this->linked_account = $linked_account;
     }
 
     public function handle()
@@ -56,7 +63,8 @@ class MerchantInvoice extends Job
                     'month' => $this->month,
                     'year' => $this->year,
                 ]);
-            $creator = new Processor($this->merchantId, $this->month, $this->year);
+
+            $creator = new Processor($this->merchantId, $this->month, $this->year, $this->linked_account);
 
             $resource = sprintf(self::MERCHANT_INVOICE_MUTEX_RESOURCE, $this->merchantId, $this->month, $this->year);
 
