@@ -7433,7 +7433,7 @@ class Core extends Base\Core
 
             if ($this->blockMerchantActivations($merchantDetails->merchant) === false)
             {
-                return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                return Status::ACTIVATED_MCC_PENDING;
             }
 
             return Status::UNDER_REVIEW;
@@ -7455,18 +7455,18 @@ class Core extends Base\Core
             $merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false
         )
         {
-            return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+            return  Status::ACTIVATED_MCC_PENDING;
         }
 
         if ($this->isAdditionalDocRequired($merchantDetails->getBusinessCategory(), $merchantDetails->getBusinessSubcategory()) === true)
         {
-            return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+            return Status::ACTIVATED_MCC_PENDING;
         }
 
         //This checks automation activation exclusion logic in PGOS
         if ($this->isEligibleForAutomationActivation() === false)
         {
-            return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+            return Status::ACTIVATED_MCC_PENDING;
         }
 
         $signatory = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
@@ -7479,7 +7479,7 @@ class Core extends Base\Core
         {
             if ($this->hasAppUrls($merchantDetails) === true)
             {
-                return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                return  Status::ACTIVATED_MCC_PENDING;
             }
             else
             {
@@ -7502,7 +7502,7 @@ class Core extends Base\Core
 
                     if (empty($mccResult[MVD\Constants::CATEGORY]) === true)
                     {
-                        return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                        return  Status::ACTIVATED_MCC_PENDING;
                     }
 
                     $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($mccResult[MVD\Constants::CATEGORY], $mccResult[MVD\Constants::SUBCATEGORY]);
@@ -7515,14 +7515,8 @@ class Core extends Base\Core
                     }
 
                     if ($this->isActivationFlowEligible($merchantDetails, $activationFlow) === false) {
-                        return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                        return  Status::ACTIVATED_MCC_PENDING;
                     }
-
-                    if ($this->isSubCategoryExcluded($merchant, $mccResult[MVD\Constants::SUBCATEGORY], $businessType) === true)
-                    {
-                        return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
-                    }
-
                 }
 
                 try {
@@ -7533,20 +7527,16 @@ class Core extends Base\Core
                         optional($signatory)->getStatus() === BvsValidationConstants::VERIFIED) {
                         return Status::ACTIVATED;
                     } else {
-                        return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                        return Status::ACTIVATED_MCC_PENDING;
                     }
                 } catch (BadRequestException $e) {
                     $this->trace->traceException($e, Logger::ERROR, TraceCode::FETCH_MERCHANT_POLICY_VERIFICATION_RESULT_FAILED);
-                    return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                    return Status::ACTIVATED_MCC_PENDING;
                 }
             }
         }
         else
         {
-            if ($this->isSubCategoryExcluded($merchant, $merchantDetails->getBusinessSubcategory(), $businessType) === true)
-            {
-                return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
-            }
 
             if ($this->hasAppUrls($merchantDetails) === false)
             {
@@ -7556,7 +7546,7 @@ class Core extends Base\Core
                 }
             }
 
-            return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+            return Status::ACTIVATED_MCC_PENDING;
         }
     }
 
@@ -13678,13 +13668,7 @@ class Core extends Base\Core
         if ($activationFlow === ActivationFlow::GREYLIST) {
           if ($subcategoryInclusionExpEnabled === false) return false;
 
-            switch ($businessType) {
-                case BusinessType::NOT_YET_REGISTERED:
-                case BusinessType::INDIVIDUAL:
-                    return in_array($subCategory, SubcategoryV2::UNREGISTERED_GREYLISTED_MERCHANTS_ALLOWED_FOR_AUTOMATION);
-                default:
-                    return in_array($subCategory, SubcategoryV2::REGISTERED_GREYLISTED_MERCHANTS_ALLOWED_FOR_AUTOMATION);
-            }
+          return true;
         }
 
         return false;

@@ -5164,7 +5164,7 @@ class CoreTest extends TestCase
 
         $this->mockSplitzTreatment($input, $output);
 
-        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
     // This test case verifies the exclusion of greylisted merchants from activation because sub-category is a part of hard exclusion
@@ -5273,9 +5273,7 @@ class CoreTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($input, $output);
-
-        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+        $this->assertEquals(Status::ACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
     // This test verifies that certain grey listed sub-categories should not be activated after bmc phase 2 experiment is enabled
@@ -5370,7 +5368,7 @@ class CoreTest extends TestCase
             ]
         ];
 
-        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+        $this->assertEquals(Status::ACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
     public function testGetApplicableActivationStatusWebsiteActivatedPhantomOnboarding()
