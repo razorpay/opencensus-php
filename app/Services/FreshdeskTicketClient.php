@@ -10,6 +10,8 @@ use RZP\Foundation\Application;
 use RZP\Models\Merchant\FreshdeskTicket\Metric;
 use RZP\Models\Merchant\FreshdeskTicket\Constants;
 
+/* any changes in the following code will need a
+ CDT(https://razorpay.atlassian.net/jira/software/c/projects/CDT/boards/2092) ticket */
 class FreshdeskTicketClient
 {
     protected $isSandbox;
