@@ -6,6 +6,7 @@ use Mail;
 use Cache;
 use Config;
 use Request;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -80,6 +81,9 @@ class Processor extends VirtualAccount\Processor
 
 
         $offlinePayment->setExpected(false);
+
+        (new Core)->checkIfChallanExpiredOrFailed($offlinePayment);
+
         $this->refundOrCapturePayment($offlinePayment);
 
         return $offlinePayment;
@@ -137,14 +141,21 @@ class Processor extends VirtualAccount\Processor
                 $offlinePayment['payer_details'] = $pid;
             }
 
+            if($offlinePayment[Entity::STATUS] !== Status::FAILED and $this->virtualAccount->isClosed() === true)
+            {
+                $offlinePayment[Entity::STATUS] = Status::FAILED;
+            }
+
             $this->repo->saveOrFail($offlinePayment);
 
 
             $this->trace->info(TraceCode::OFFLINE_CREATED,
             [
-                Entity::VIRTUAL_ACCOUNT_ID     => $this->virtualAccount->getId(),
-                Entity::CHALLAN_NUMBER         => $offlinePayment[Entity::CHALLAN_NUMBER],
-                Entity::UNEXPECTED_REASON      => $offlinePayment->getUnexpectedReason(),
+                Entity::VIRTUAL_ACCOUNT_ID          =>  $this->virtualAccount->getId(),
+                Entity::VIRTUAL_ACCOUNT_STATUS      =>  $this->virtualAccount->getStatus(),
+                Entity::CHALLAN_NUMBER              =>  $offlinePayment[Entity::CHALLAN_NUMBER],
+                Entity::STATUS                      =>  $offlinePayment[Entity::STATUS],
+                Entity::UNEXPECTED_REASON           =>  $offlinePayment->getUnexpectedReason(),
             ]
             );
 
@@ -228,6 +239,10 @@ class Processor extends VirtualAccount\Processor
         $paymentArray = [
             Payment\Entity::CURRENCY    => Currency::INR,
             Payment\Entity::METHOD      => Payment\Method::OFFLINE,
+            Payment\Entity::META       => [
+                Constants\Entity::OFFLINE_PAYMENT =>    $offlinePayment->getStatus(),
+                Constants\Entity::VIRTUAL_ACCOUNT =>    $this->virtualAccount->getStatus(),
+            ],
             Payment\Entity::AMOUNT      => $offlinePayment->getAmount(),
             Payment\Entity::DESCRIPTION => $offlinePayment->getDescription() ?? '',
         ];

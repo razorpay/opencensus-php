@@ -4,11 +4,15 @@ namespace RZP\Models\OfflinePayment;
 
 use Config;
 
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\OfflineChallan;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Core extends Base\Core
@@ -88,4 +92,49 @@ class Core extends Base\Core
         return $data['fees'];
     }
 
+    public function checkIfChallanExpiredOrFailed($offlinePayment)
+    {
+        $offlineChallan = (new OfflineChallan\Repository)->fetchByChallanNumber($offlinePayment[Entity::CHALLAN_NUMBER]);
+
+        if (isset($offlineChallan) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_CHALLAN_NOT_FOUND,
+                Constants\Entity::OFFLINE_CHALLAN,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_CHALLAN_NOT_FOUND
+                ]);
+        }
+
+        $virtualAccount = $this->app['repo']->virtual_account->findOrFailPublic($offlineChallan[Entity::VIRTUAL_ACCOUNT_ID]);
+
+        if (isset($virtualAccount) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_CHALLAN_NOT_FOUND,
+                Constants\Entity::VIRTUAL_ACCOUNT,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_CHALLAN_NOT_FOUND
+                ]);
+        }
+
+        if($virtualAccount->isClosed() === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED,
+                Constants\Entity::OFFLINE_PAYMENT,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED
+                ]);
+        }
+        else if($offlinePayment->getStatus() === Status::FAILED)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_CHALLAN_FAILED_BY_BANK,
+                Constants\Entity::OFFLINE_PAYMENT,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_CHALLAN_FAILED_BY_BANK
+                ]);
+        }
+    }
 }

@@ -12,7 +12,7 @@ use Request;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Constants\Country;
-use RZP\Error\PublicErrorDescription;
+use RZP\Constants as RzpConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Gateway\Upi\Base\RecurringTrait;
 use RZP\Http\Edge\PassportUtil;
@@ -22,6 +22,7 @@ use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Card\Type;
 use RZP\Models\Emi\CardlessEmiProvider;
 use RZP\Models\Emi\DebitProvider;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Emi\PaylaterProvider;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Constants\Entity as Constants2;
@@ -322,7 +323,7 @@ trait Authorize
             return $ret;
         }
 
-        return $this->processPaymentFinal($payment, $gatewayInput, $data);
+        return $this->processPaymentFinal($payment, $gatewayInput, $data, $input);
     }
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
@@ -1688,7 +1689,62 @@ trait Authorize
         throw new Exception\LogicException('Should not be called for any payment other than Card Auto Recurring');
     }
 
-    protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput, array $data): array
+    protected function shouldSkipCapturedForOfflinePayments(Payment\Entity $payment, array $input)
+    {
+        //Trace metadata for offline payment method.
+        $this->trace->info(
+            TraceCode::OFFLINE_PAYMENT_METADATA_STATUS_DURING_AUTHORIZE_FLOW,
+            [
+                'payment_metadata'        => $input[Payment\Entity::META],
+                'payment_id'              => $payment->getId(),
+                'payment_status'          => $payment->getStatus(),
+                'payment_method'          => $input[Payment\Entity::METHOD],
+            ]
+        );
+
+        // Check if the payment method is set and is 'OFFLINE'
+        if ((isset($input[Payment\Entity::METHOD]) === false) or ($input[Payment\Entity::METHOD] !== Payment\Method::OFFLINE))
+        {
+            return []; // If not offline, return empty array immediately
+        }
+
+        $data = [
+            'razorpay_payment_id'   => $payment->getPublicId(),
+            'razorpay_order_id'     => $input[Payment\Entity::ORDER_ID] ?? $payment->getOrderId(),
+        ];
+
+        // Extract the 'META' array from input or set it to an empty array if not present
+        $meta = $input[Payment\Entity::META] ?? [];
+
+        // Get the virtual account status and offline payment status from 'META'
+        $virtualAccountStatus = $meta[RzpConstants\Entity::VIRTUAL_ACCOUNT] ?? null;
+        $offlinePaymentStatus = $meta[RzpConstants\Entity::OFFLINE_PAYMENT] ?? null;
+
+        if ($virtualAccountStatus !== null and $virtualAccountStatus === VirtualAccount\Status::CLOSED)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED;
+
+            $exception = new BadRequestException($errorCode);
+
+            $this->failOfflinePaymentByChallanExpiry($payment, $exception);
+
+            return $data; // Return Non-empty array indicating the payment captured should be skipped
+        }
+        else if($offlinePaymentStatus !== null and $offlinePaymentStatus === Payment\Status::FAILED)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CHALLAN_FAILED_BY_BANK;
+
+            $exception = new BadRequestException($errorCode);
+
+            $this->failOfflinePaymentByChallanExpiry($payment, $exception);
+
+            return $data; // Return Non-empty array indicating the payment captured should be skipped
+        }
+
+        return [];
+    }
+
+    protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput, array $data, array $input): array
     {
         if ((isset($gatewayInput['skip_gateway_call']) === true) and
             ($gatewayInput['skip_gateway_call'] === true))
@@ -1723,6 +1779,16 @@ trait Authorize
         if($payment->isInAppUPI() === true)
         {
             return $this->processInAppPaymentCreated($payment);
+        }
+
+        if($payment->isOffline() === true)
+        {
+            $returnData = $this->shouldSkipCapturedForOfflinePayments($payment, $input);
+
+            if(empty($returnData) === false)
+            {
+                return $returnData;
+            }
         }
 
         if ($this->shouldSkipAuthorizeOnRecurringForUpi($payment, $data) === true)

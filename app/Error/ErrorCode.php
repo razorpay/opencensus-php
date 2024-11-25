@@ -1226,6 +1226,7 @@ class ErrorCode
     const BAD_REQUEST_CHALLAN_NOT_FOUND                                         = 'BAD_REQUEST_CHALLAN_NOT_FOUND';
     const BAD_REQUEST_CHALLAN_NOT_FOUND_IN_NOTES                                = 'BAD_REQUEST_CHALLAN_NOT_FOUND_IN_NOTES';
     const BAD_REQUEST_CHALLAN_EXPIRED                                           = 'BAD_REQUEST_CHALLAN_EXPIRED';
+    const BAD_REQUEST_CHALLAN_FAILED_BY_BANK                                    = 'BAD_REQUEST_CHALLAN_FAILED_BY_BANK';
     const BAD_REQUEST_OFFLINE_CHALLAN_DUPLICATE_REQUEST                         = 'BAD_REQUEST_OFFLINE_CHALLAN_DUPLICATE_REQUEST';
     const BAD_REQUEST_CLIENT_CODE_NOT_FOUND                                     = 'BAD_REQUEST_CLIENT_CODE_NOT_FOUND';
     const BAD_REQUEST_IDENTIFICATION_ID_NOT_FOUND                               = 'BAD_REQUEST_IDENTIFICATION_ID_NOT_FOUND';

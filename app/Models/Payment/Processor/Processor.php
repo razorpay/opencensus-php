@@ -4723,6 +4723,11 @@ class Processor
             return;
         }
 
+        if($payment->getMethod() === Payment\Method::OFFLINE and $payment->isCaptured() === false)
+        {
+            return;
+        }
+
         if($payment->isPos() === true and $payment->getMethod() === Payment\Method::UPI and $payment->isCaptured() === false)
         {
             return;
@@ -8539,6 +8544,15 @@ class Processor
         $this->fillReturnRequestDataForMerchant($payment,$returnData);
 
         return $returnData;
+    }
+
+    public function failOfflinePaymentByChallanExpiry(Payment\Entity $payment, $exception)
+    {
+        $this->payment = $payment;
+
+        $traceCode = TraceCode::PAYMENT_CAPTURE_FAILURE;
+
+        $this->updatePaymentFailed($exception, $traceCode);
     }
 
     public function failInvalidRecurringTokenCardAutoRecurringPayment(Payment\Entity $payment, $exception)
