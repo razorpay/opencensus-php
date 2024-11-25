@@ -223,6 +223,48 @@ class DEventsKafkaConsumer extends Command
 
             $conf->set('auto.offset.reset', 'largest');
         }
+        elseif (count($topics) == 1 && $topics[0] == env('PG_LEDGER_DUAL_WRITE_CLS_TOPIC'))
+        {
+            $consumerGroup = env('PG_LEDGER_DUAL_WRITE_CLS_CONSUMER_GROUP');
+
+            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
+
+            $conf->set('group.id', $consumerGroup);
+
+            $conf->set('session.timeout.ms', 240000);
+
+            $conf->set('heartbeat.interval.ms', 120000);
+
+            $conf->set('auto.offset.reset', 'largest');
+        }
+        elseif (count($topics) == 1 && $topics[0] == env('PG_LEDGER_DUAL_WRITE_API_TOPIC'))
+        {
+            $consumerGroup = env('PG_LEDGER_DUAL_WRITE_API_CONSUMER_GROUP');
+
+            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
+
+            $conf->set('group.id', $consumerGroup);
+
+            $conf->set('session.timeout.ms', 240000);
+
+            $conf->set('heartbeat.interval.ms', 120000);
+
+            $conf->set('auto.offset.reset', 'largest');
+        }
+        elseif (count($topics) == 1 && $topics[0] == env('PG_LEDGER_DUAL_WRITE_RETRY_TOPIC'))
+        {
+            $consumerGroup = env('PG_LEDGER_DUAL_WRITE_RETRY_CONSUMER_GROUP');
+
+            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
+
+            $conf->set('group.id', $consumerGroup);
+
+            $conf->set('session.timeout.ms', 240000);
+
+            $conf->set('heartbeat.interval.ms', 120000);
+
+            $conf->set('auto.offset.reset', 'largest');
+        }
         elseif (count($topics) == 1 && $topics[0] == env('ES_SYNC_TOPIC_NAME'))
         {
             $consumerGroup = env('ES_SYNC_CONSUMER_GROUP');

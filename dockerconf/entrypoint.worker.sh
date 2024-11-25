@@ -153,6 +153,13 @@ main() {
     topics=$4
     create_kafka_credentials_dir
     php artisan "${command}" "${mode}" "${APP_MODE}-${topics}"
+  elif [[ "${app_type}" == "kafka-consumer-ledger-dual-write" ]]; then
+    echo "Starting Kafka Consumer Job"
+    command=$2
+    mode=$3
+    topics=$4
+    create_kafka_credentials_dir
+    php artisan "${command}" "${mode}" "${topics}"
   elif [[ "${app_type}" == "kafka-general-consumer" ]]; then
     echo "Starting Kafka general Consumer Job"
     mode=$5

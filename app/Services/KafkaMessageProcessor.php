@@ -27,6 +27,21 @@ class KafkaMessageProcessor
     const MERCHANT_PAYMENTS_ENABLED_CALLBACK_EVENTS = 'merchant-payments-enabled-callback';
     const PGOS_STAGE_CDC_EVENTS                     = 'cdc_events_mysql_stage_pg_onboarding';
     const PGOS_PROD_CDC_EVENTS                      = 'cdc_events_mysql_prod_pg_onboarding';
+    const STAGE_TEST_PAYMENT_EVENTS                 = 'stage_test_payment_events';
+    const STAGE_LIVE_PAYMENT_EVENTS                 = 'stage_live_payment_events';
+    const PROD_LIVE_PAYMENT_EVENTS                  = 'prod_live_payment_events';
+    const PROD_TEST_PAYMENT_EVENTS                  = 'prod_test_payment_events';
+    const PROD_LIVE_API_LEDGER_DUAL_WRITE_EVENTS    = 'prod_live_api_cls_events';
+    const PROD_TEST_API_LEDGER_DUAL_WRITE_EVENTS    = 'prod_test_api_cls_events';
+
+    const PROD_LIVE_API_LEDGER_DUAL_WRITE_RETRY_EVENTS   = 'prod_live_api_ledger_dual_write_retry_events';
+    const PROD_TEST_API_LEDGER_DUAL_WRITE_RETRY_EVENTS   = 'prod_test_api_ledger_dual_write_retry_events';
+
+    const STAGE_LIVE_API_LEDGER_DUAL_WRITE_EVENTS   = 'stage_live_api_cls_events';
+    const STAGE_TEST_API_LEDGER_DUAL_WRITE_EVENTS   = 'stage_test_api_cls_events';
+
+    const STAGE_LIVE_API_LEDGER_DUAL_WRITE_RETRY_EVENTS   = 'stage_live_api_ledger_dual_write_retry_events';
+    const STAGE_TEST_API_LEDGER_DUAL_WRITE_RETRY_EVENTS   = 'stage_test_api_ledger_dual_write_retry_events';
     const MERCHANT_POS_ACTIVATION_STAGE             = 'merchant_pos_activation_stage';
     const MERCHANT_POS_ACTIVATION_PROD              = 'merchant_pos_activation_prod';
     const PROD_LIVE_REFUND_EVENTS                   = 'prod_live_refund_events';
@@ -157,7 +172,19 @@ class KafkaMessageProcessor
 
             case self::API_PG_LEDGER_ACKNOWLEDGMENTS:
                 return new KafkaJobs\PGLedgerAcknowledgmentJob($payload, $mode);
-
+            case self::STAGE_TEST_PAYMENT_EVENTS:
+            case self::STAGE_LIVE_PAYMENT_EVENTS:
+            case self::PROD_LIVE_PAYMENT_EVENTS:
+            case self::PROD_TEST_PAYMENT_EVENTS:
+            case self::PROD_LIVE_API_LEDGER_DUAL_WRITE_EVENTS:
+            case self::PROD_TEST_API_LEDGER_DUAL_WRITE_EVENTS:
+            case self::STAGE_LIVE_API_LEDGER_DUAL_WRITE_EVENTS:
+            case self::STAGE_TEST_API_LEDGER_DUAL_WRITE_EVENTS:
+            case self::PROD_LIVE_API_LEDGER_DUAL_WRITE_RETRY_EVENTS:
+            case self::PROD_TEST_API_LEDGER_DUAL_WRITE_RETRY_EVENTS:
+            case self::STAGE_LIVE_API_LEDGER_DUAL_WRITE_RETRY_EVENTS:
+            case self::STAGE_TEST_API_LEDGER_DUAL_WRITE_RETRY_EVENTS:
+                return new KafkaJobs\PGLedgerDualWriteJob($payload, $mode);
             case self::INVALID_ADDRESS_EVENTS:
                 return new InvalidAddressConsumer($payload, $mode);
 
