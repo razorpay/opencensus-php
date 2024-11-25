@@ -11,7 +11,6 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Card;
 use RZP\Models\Currency\Core;
 use RZP\Models\Currency\Currency;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrV2Entity;
 use RZP\Trace\TraceCode;

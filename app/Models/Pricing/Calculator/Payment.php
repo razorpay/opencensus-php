@@ -36,6 +36,7 @@ class Payment extends Base
     const KRBE_IFSC      = 'KRBE';
     const CSHE_IFSC      = 'CSHE';
     const TVSC_IFSC      = 'TVSC';
+    const MERCHANT_PROCURER_MIDS = ['GtFwVSbNTDTM9C', 'GtG3WLjGVjzx2n', 'CgtLpPjpmyg9ct', 'ELi8nocD30pFkb', 'G09v5FON5fsU9v', 'FlZgyQ2HD6eIET'];
 
     protected $fallbackStandardPlanExperimentId   = null;
 
@@ -73,13 +74,7 @@ class Payment extends Base
 
         if ($this->isMerchantProcuredPayment() === true){
 
-            $mode = $this->mode ?? Mode::LIVE;
-
-            $featureFlag = "apply_procurer_pricing";
-
-            $variant = $this->app->razorx->getTreatment($merchantId, $featureFlag, $mode);
-
-            if ($variant === "on")
+            if($this->isMerchantWhitelistedForProcurerPricing($merchantId))
             {
                 $procurer = $payment->terminal->getProcurer();
 
@@ -1103,25 +1098,15 @@ class Payment extends Base
             if ($payment->isEligibleForFeeModelOverride())
             {
                 $feeModel = $this->validateAndGetFeeModel($this->pricingRules);
-
                 if (empty($feeModel) === false) {
-
-                    $mode = $this->app['rzp.mode'] ?? null;
-                    $feeModelOverride = $this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::FEE_MODEL_OVERRIDE, $mode);
-
-                    if ($feeModelOverride == RazorxTreatment::RAZORX_VARIANT_ON) {
-
-                        $this->trace->info(TraceCode::RULE_LEVEL_FEE_MODEL,
-                            [
-                                'fee_model' => $feeModel,
-                                'merchant_id' => $payment->getMerchantId(),
-                                'payment_id' => $payment->getId(),
-                                'transaction_id' => $payment->transaction->getId(),
-                            ]);
-
-                        $payment->transaction->setFeeModel($feeModel);
-
-                    }
+                    $this->trace->info(TraceCode::RULE_LEVEL_FEE_MODEL,
+                        [
+                            'fee_model' => $feeModel,
+                            'merchant_id' => $payment->getMerchantId(),
+                            'payment_id' => $payment->getId(),
+                            'transaction_id' => $payment->transaction->getId(),
+                        ]);
+                    $payment->transaction->setFeeModel($feeModel);
                 }
             }
         } catch (\Throwable $e){
@@ -1129,7 +1114,6 @@ class Payment extends Base
                 [
                    'error'=> $e->getMessage()
                 ]);
-
         }
 
         // this is an side effect that is unavoidable.
@@ -1367,5 +1351,10 @@ class Payment extends Base
         }
 
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    private function isMerchantWhitelistedForProcurerPricing($merchantId)
+    {
+        return in_array($merchantId, self::MERCHANT_PROCURER_MIDS);
     }
 }

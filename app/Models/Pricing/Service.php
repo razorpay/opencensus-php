@@ -400,6 +400,10 @@ class Service extends Base\Service
                     $item['update'] = $item['update'] ? "true" : "false";
                 }
 
+                if (isset($item['international']) && is_bool($item['international'])) {
+                    $item['international'] = $item['international'] ? "1" : "0";
+                }
+
                 if (isset($item['percent_rate']) && !is_string($item['percent_rate'])) {
                     $item['percent_rate'] = (string) $item['percent_rate'];
                 }
@@ -412,7 +416,7 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::CC_ROUTING_TRANSFORMED_REQUEST,
             [
-                'method' => 'createPlan',
+                'method' => 'postAddBulkPricingRules',
                 'request' => $input,
             ]);
 
