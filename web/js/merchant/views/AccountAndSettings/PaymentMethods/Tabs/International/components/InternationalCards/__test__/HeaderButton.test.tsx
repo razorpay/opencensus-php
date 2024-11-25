@@ -5,6 +5,7 @@ import React from 'react';
 import * as selfServeActions from 'common/utils/selfServeAnalytics';
 import * as trackActions from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/utils/track';
 import { updateInternationalStatusHandler } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/__test__/mocks/handlers';
+import store from 'merchant/store';
 
 jest.mock('common/ui/Forms/SwitchField', () => ({
   __esModule: true,
@@ -27,6 +28,11 @@ jest.mock('@razorpay/blade/components', () => ({
     );
   },
 }));
+
+const updateStore = () => {
+  const updatedStore = store.getState();
+  return updatedStore;
+};
 
 const selfServeTrackInitiateSpy = jest.spyOn(selfServeActions, 'selfServeTrackInitiate');
 const selfServeTrackSuccessSpy = jest.spyOn(selfServeActions, 'selfServeTrackSuccess');
@@ -165,7 +171,11 @@ describe('HeaderButton', () => {
     });
 
     test('should call openQuestionnaire and trackIEEvent on click', async () => {
-      renderApp();
+      const props = { ...defaultProps };
+      const updatedState = updateStore();
+      const user = updatedState.session.user;
+      jest.spyOn(user, 'isOrgRZP', 'get').mockReturnValue(true);
+      renderApp({ props });
       const requestForInternationalCardsBtn = getRequestForInternationalCardsBtn();
       await userEvent.click(requestForInternationalCardsBtn);
       expect(defaultProps.openQuestionnaire).toHaveBeenCalled();

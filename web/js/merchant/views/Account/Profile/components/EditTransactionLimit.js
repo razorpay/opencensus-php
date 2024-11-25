@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import IntoView from 'common/ui/IntoView';
 import DetailRow from 'merchant/components/DetailRow';
 import Button from 'common/new-ui/Button';
@@ -24,6 +24,8 @@ import { bindActionCreators } from 'redux';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { useValidatePermissions } from 'merchant/helpers/permissions/utils';
 import { PERMISSIONS } from 'merchant/helpers/permissions/constant';
+import { Link } from '@razorpay/blade/components';
+import InternationalCardRequestContainer from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/components/InternationalCardRequestContainer';
 
 function linkHandler() {
   analyticsTrack({
@@ -48,6 +50,7 @@ const EditTransactionLimit = (props) => {
     permissions: [PERMISSIONS.UPDATE_TRANSACTION_LIMIT],
   });
 
+  const navigate = useNavigate();
   const amountValue = useMemo(
     () => (isTypeDomestic ? max_payment_amount : max_international_payment_amount),
     [isTypeDomestic, max_international_payment_amount, max_payment_amount],
@@ -111,6 +114,13 @@ const EditTransactionLimit = (props) => {
     });
   }, [amountValue, isTypeDomestic, openModal, transactionType, workflowKey]);
 
+  const showInternationalCardRequest = user.isOrgRZP || user.isOrgCurlec;
+
+  const handleInternationalCardRequest = () => {
+    linkHandler();
+    navigate('/payment-methods?instrument=international');
+  };
+
   return (
     <IntoView hashedWith={[NC_INCREASE_TXN_LIMIT, RR_INCREASE_TXN_LIMIT]}>
       <DetailRow
@@ -145,9 +155,17 @@ const EditTransactionLimit = (props) => {
         value={() =>
           !user?.international && !isTypeDomestic ? (
             <span>
-              <Link to="/payment-methods?instrument=international" onClick={linkHandler}>
-                Apply for international
-              </Link>
+              <InternationalCardRequestContainer
+                showInternationalCardRequest={showInternationalCardRequest}
+              >
+                <Link
+                  onClick={handleInternationalCardRequest}
+                  variant="button"
+                  isDisabled={!showInternationalCardRequest}
+                >
+                  Apply for international
+                </Link>
+              </InternationalCardRequestContainer>
             </span>
           ) : (
             <div>

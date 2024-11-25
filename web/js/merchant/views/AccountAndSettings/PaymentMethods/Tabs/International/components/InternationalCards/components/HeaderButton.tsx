@@ -11,6 +11,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { trackIEEvent } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/utils/track';
+import InternationalCardRequestContainer from './InternationalCardRequestContainer';
 
 type Props = CommonICProductsState & {
   showNotification: ShowNotificationType;
@@ -32,6 +33,8 @@ const HeaderButton = ({
   isRequestRejectedFor90Days,
   isMobileDevice,
 }: Props): JSX.Element | null => {
+  const showInternationalCardRequest: boolean = user.isOrgRZP || user.isOrgCurlec;
+
   const toggleInternationalization = (enableInternational, postActionCB) => {
     selfServeTrackInitiate({
       selfServeAction: 'International Payments Applied',
@@ -112,18 +115,23 @@ const HeaderButton = ({
     );
   } else if (!isAnyProductRequested || (isAnyProductRejected && !isRequestRejectedFor90Days)) {
     return (
-      <Button
-        size={isMobileDevice ? 'medium' : 'small'}
-        onClick={() => {
-          trackIEEvent({
-            objectName: 'Request For International Cards',
-            actionName: 'Clicked',
-          });
-          openQuestionnaire();
-        }}
+      <InternationalCardRequestContainer
+        showInternationalCardRequest={showInternationalCardRequest}
       >
-        Request for international cards
-      </Button>
+        <Button
+          size={isMobileDevice ? 'medium' : 'small'}
+          onClick={() => {
+            trackIEEvent({
+              objectName: 'Request For International Cards',
+              actionName: 'Clicked',
+            });
+            openQuestionnaire();
+          }}
+          isDisabled={!showInternationalCardRequest}
+        >
+          Request for international cards
+        </Button>
+      </InternationalCardRequestContainer>
     );
   }
 

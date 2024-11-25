@@ -178,6 +178,7 @@ export const renderApp = ({ productStatus = {}, workflowInfo = {}, user = {} } =
           user: {
             business_website: null,
             international: false,
+            isOrgRZP: true,
             ...user,
           },
         },
