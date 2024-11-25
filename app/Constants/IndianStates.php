@@ -57,7 +57,7 @@ class IndianStates
         'ASSAM'                         => self::AS,
         'BIHAR'                         => self::BI,
         'CHANDIGARH'                    => self::CH,
-        'CHATTISGARH'                   => self::CT,
+        'CHHATTISGARH'                  => self::CT,
         'DADRA & NAGAR HAVELI'          => self::DN,
         'DADRA AND NAGAR HAVELI'        => self::DN,
         'DAMAN & DIU'                   => self::DD,
