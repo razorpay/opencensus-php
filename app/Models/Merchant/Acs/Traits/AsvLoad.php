@@ -43,6 +43,8 @@ trait AsvLoad
                     'routeOrWorkerName' => app()->runningInQueue() ? app('worker.ctx')->getJobName() : app('request.ctx')->getRoute(),
                     'reason' => 'GOT_EXCEPTION',
                 ]);
+
+                throw $e;
             }
         }
         return parent::load($relations);
