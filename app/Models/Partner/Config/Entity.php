@@ -443,6 +443,15 @@ class Entity extends PublicEntity
         return ($merchant->merchantDetail->getBusinessName()) ?? ($merchant->getName());
     }
 
+    public function initializeDefaults()
+    {
+        foreach ($this->defaults as $key => $value) {
+            if ($this->getAttribute($key) === null) {
+                $this->setAttribute($key, $value);
+            }
+        }
+    }
+
     public function toBuildArray()
     {
         $buildExclusionArray = ['id', 'entity_type', 'entity_id', 'origin_type', 'origin_id', 'created_at', 'updated_at', 'deleted_at'];

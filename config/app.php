@@ -685,6 +685,8 @@ return array(
 
     'prts_commission_dual_write_exp_id' => env('PRTS_COMMISSION_DUAL_WRITE_EXP_ID'),
 
+    'prts_switch_over_partnerships_exp_id' => env('PRTS_SWITCH_OVER_PARTNERSHIPS_EXP_ID'),
+
     'prts_commission_invoice_exp_id' => env('PRTS_COMMISSION_INVOICE_SHADOW_PHASE_EXP_ID'),
 
     'prts_read_api_exp_id' => env('PRTS_READ_API_EXP_ID'),

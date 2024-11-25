@@ -4,8 +4,12 @@
 namespace RZP\Services\Partnerships;
 
 use App;
+use Illuminate\Support\Facades\Cache;
 use Request;
 use RZP\Models\Base\Core;
+use RZP\Models\Merchant\AccessMap\PartnershipsAccessMapDTO;
+use RZP\Models\Merchant\MerchantApplications\PartnershipsMerchantApplicationsDTO;
+use RZP\Models\Partner\Config\PartnershipsConfigDTO;
 use Throwable;
 use ApiResponse;
 use RZP\Exception;
@@ -29,6 +33,9 @@ use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\EntityOrigin\Core as EntityOriginCore;
 use RZP\Models\Partner\Commission\Invoice as CommissionInvoice;
+use RZP\Models\Merchant\AccessMap\Entity as MerchantAccessMapEntity;
+use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
+use RZP\Models\Partner\Config\Entity as PartnerConfigEntity;
 
 class PartnershipsService extends Base\Service
 {
@@ -78,10 +85,13 @@ class PartnershipsService extends Base\Service
     CONST UPDATE_MERCHANT_APPLICATION    = '/twirp/rzp.commissions.merchant_application.v1.MerchantApplicationAPI/Update';
 
     CONST DELETE_MERCHANT_APPLICATION    = '/twirp/rzp.commissions.merchant_application.v1.MerchantApplicationAPI/Delete';
+    const GET_MERCHANT_APPLICATION_LIST  = '/twirp/rzp.commissions.merchant_application.v1.MerchantApplicationAPI/List';
 
     CONST UPDATE_MERCHANT_ACCESS_MAP     = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/Update';
 
     CONST DELETE_MERCHANT_ACCESS_MAP     = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/Delete';
+
+    CONST GET_MERCHANT_ACCESS_MAP_LIST   = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/List';
 
     const GET_REFERRAL_LINK_WITH_KYC_ACCESS = '/twirp/rzp.commissions.settings.v1.SettingsAPI/FindOrCreate';
 
@@ -106,6 +116,7 @@ class PartnershipsService extends Base\Service
     const FETCH_EVENT_AUDITS = "/twirp/rzp.partnerships.eventauditlogs.v1.EventAuditLogsAPI/Fetch";
 
     const GET_LAST_EVENT_AUDITS = "/twirp/rzp.partnerships.eventauditlogs.v1.EventAuditLogsAPI/FetchLastEventAudits";
+    const GET_PARTNER_CONFIG_LIST   = '/twirp/rzp.commissions.partner_config.v1.PartnerConfigAPI/List';
 
     const ACTIVATED = 'ACTIVATED';
 
@@ -451,7 +462,7 @@ class PartnershipsService extends Base\Service
 
             $payload = CommissionCreateEventDataUtil::getPayloadForCommissionCreate($commissions, $components, $payment, $experimentMode);
 
-            \Event::dispatch(new TransactionalClosureEvent(function() use ($payload) {
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($payload) {
                 try
                 {
                     // Job will be dispatched only after the transaction commits.
@@ -497,9 +508,9 @@ class PartnershipsService extends Base\Service
      * Dispatch commission invoice event to partnership service
      *
      * @param CommissionInvoice\Entity $invoice
-     * @param int                                        $month
-     * @param int                                        $year
-     * @param bool                                          $regenerateInvoice
+     * @param int                      $month
+     * @param int                      $year
+     * @param bool                     $regenerateInvoice
      *
      * @return void
      */
@@ -542,7 +553,7 @@ class PartnershipsService extends Base\Service
                 catch (\Exception $ex)
                 {
                     $this->trace->error(TraceCode::PRTS_COMMISSION_INVOICE_DISPATCHING_ERROR, [
-                        'error'      => $ex->getMessage(),
+                        'error'       => $ex->getMessage(),
                         'job_payload' => $jobPayload,
                     ]);
                     $this->trace->count(Metric::PRTS_COMMISSION_INVOICE_PUSH,['success'=> false]);
@@ -642,7 +653,7 @@ class PartnershipsService extends Base\Service
                 'payload'     => json_encode($signupSourcePayload),
                 'event_name'  => 'CREATE_SIGN_UP_SOURCE',
             ];
-            \Event::dispatch(new TransactionalClosureEvent(function() use ($jobPayload) {
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($jobPayload) {
                 try
                 {
                     // Job will be dispatched only after the transaction commits.
@@ -714,7 +725,7 @@ class PartnershipsService extends Base\Service
                 'payload'    => json_encode($upsertOauthReferralLinkPayload),
                 'event_name' => 'UPSERT_OAUTH_REFERRAL_LINK',
             ];
-            \Event::dispatch(new TransactionalClosureEvent(function() use ($jobPayload) {
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($jobPayload) {
                 try
                 {
                     // Job will be dispatched only after the transaction commits.
@@ -743,6 +754,70 @@ class PartnershipsService extends Base\Service
             }));
         }
 
+    }
+
+    public function evaluateSwitchOverPartnershipsSplitzExperiment($functionName) : bool
+    {
+        if($this->app->runningUnitTests())
+        {
+            return false;
+        }
+        $merchantId=$this->app['basicauth']->getMerchantId();
+        $properties = [
+            'id'            => $merchantId,
+            'request_data'  => json_encode(['function' => $functionName]),
+            'experiment_id' => $this->app['config']->get('app.prts_switch_over_partnerships_exp_id'),
+        ];
+        $response=Cache::remember($this->getPartnershipsSwitchOverCacheKey($merchantId,$functionName),
+            2,
+            function () use ($properties) {
+            return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable',TraceCode::SWITCH_OVER_PARTNERSHIPS_SPLITZ_EXPERIMENT);
+        });
+        $this->trace->info(TraceCode::SWITCH_OVER_PARTNERSHIPS_EXPERIMENT,[
+            'properties' => $properties,
+            'flag'  => $response
+        ]);
+
+        $this->trace->count(Metric::SWITCH_OVER_PARTNERSHIPS_EXPERIMENT,[
+            'function' => $functionName,
+            'id'       => $merchantId,
+            'isSplitzExperimentEnabled' => $response,
+        ]);
+
+        return $response;
+    }
+
+    public function getPartnershipsSwitchOverCacheKey($merchantId,$functionName)
+    {
+        return $functionName . "_".$merchantId."_PARTNERSHIPS_EXPERIMENT";
+    }
+
+    public function fetchMerchantAccessMapsOnFilter(PartnershipsAccessMapDTO $input): array
+    {
+        $request=$input->toArray();
+        $request[self::ADD_BASIC_AUTH_CREDS]=true;
+        $response=$this->fetchPartnershipsResponse($request,self::GET_MERCHANT_ACCESS_MAP_LIST);
+        $merchantAccessMapResponses=$response['merchant_access_maps'] ?? [];
+        if(!empty($input->getFields()))
+        {
+            return $merchantAccessMapResponses;
+        }
+        return $this->convertMerchantAccessPartnershipResponsestoEntities($merchantAccessMapResponses);
+    }
+
+    private function convertMerchantAccessPartnershipResponsestoEntities(array $merchantAccessMapResponses): array
+    {
+        return array_map(function($response) {
+            return $this->convertMerchantAccessPartnershipApiResponseToEntity($response);
+        }, $merchantAccessMapResponses);
+    }
+
+    private function convertMerchantAccessPartnershipApiResponseToEntity(array $merchantAccessMapResponse): MerchantAccessMapEntity
+    {
+            $merchantAccessMapEntity=new MerchantAccessMapEntity();
+            $merchantAccessMapEntity->removeKycAccess();
+            $merchantAccessMapEntity->forceFill($merchantAccessMapResponse);
+            return $merchantAccessMapEntity;
     }
 
     public function fetchMaskedData(string $payload, string $partnerId, string $eventName)
@@ -897,7 +972,7 @@ class PartnershipsService extends Base\Service
         $res = null;
         $exception = null;
 
-        while($attempts--)
+        while ($attempts--)
         {
             try
             {
@@ -1015,7 +1090,7 @@ class PartnershipsService extends Base\Service
 
         $resBody = json_decode($res->body, true);
 
-        $partnershipsServiceResponse = ['status_code' => $code, 'response' => $resBody!=null? $resBody: $res->body ];
+        $partnershipsServiceResponse = ['status_code' => $code, 'response' => $resBody!=null? $resBody: $res->body];
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception\RuntimeException('Malformed json response', $partnershipsServiceResponse);
@@ -1025,4 +1100,96 @@ class PartnershipsService extends Base\Service
 
         return $partnershipsServiceResponse;
     }
+
+    private function fetchPartnershipsResponse(
+        array $input,
+        string $endpoint
+    ): array
+    {
+        $response = $this->sendRequest($input, $endpoint, Requests::POST);
+
+        if (!isset($response['status_code']) || $response['status_code'] != '200')
+        {
+            throw new Exception\ServerErrorException(
+                'Error completing the request: ' . ($response['response'] ?? 'No response'),
+                ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE,
+                [
+                    "input" => $input,
+                    "response" => $response
+                ]
+            );
+        }
+        $this->trace->info(TraceCode::PARTNERSHIPS_RESPONSE, $response);
+        $partnershipResponse=$response['response'] ?? [];
+        if(!is_array($partnershipResponse))
+        {
+            return [];
+        }
+        return $partnershipResponse;
+    }
+
+    public function fetchMerchantApplicationsOnFilter(PartnershipsMerchantApplicationsDTO $input): array
+    {
+        $request=$input->toArray();
+        $request[self::ADD_BASIC_AUTH_CREDS]=true;
+        $partnershipsResponses = $this->fetchPartnershipsResponse(
+            $request,
+            self::GET_MERCHANT_APPLICATION_LIST
+        );
+        $responses = $partnershipsResponses['merchant_application']??[];
+        return $this->convertMerchantApplicationsPartnershipResponseToEntity($responses);
+    }
+
+    private function convertMerchantApplicationsPartnershipResponseToEntity(array $merchantApplicationsResponses): array
+    {
+        if (empty($merchantApplicationsResponses))
+        {
+            return [];
+        }
+
+        return array_map(function ($response)
+        {
+            return $this->convertMerchantApplicationsPartnershipApiResponseToEntity($response);
+        }, $merchantApplicationsResponses);
+    }
+
+    private function convertMerchantApplicationsPartnershipApiResponseToEntity(array $merchantApplicationsResponse): MerchantApplicationsEntity
+    {
+        $merchantApplicationsEntity = new MerchantApplicationsEntity();
+        $merchantApplicationsEntity->setAttribute(MerchantApplicationsEntity::DELETED_AT,null);
+        $merchantApplicationsEntity->forceFill($merchantApplicationsResponse);
+        return $merchantApplicationsEntity;
+    }
+
+    public function fetchPartnerConfigOnFilter(PartnershipsConfigDTO $input): array
+    {
+        $request=$input->toArray();
+        $request[self::ADD_BASIC_AUTH_CREDS]=true;
+        $partnershipsResponses = $this->fetchPartnershipsResponse(
+            $request,
+            self::GET_PARTNER_CONFIG_LIST
+        );
+        $response = $partnershipsResponses['partner_config']??[];
+        return $this->convertConfigPartnershipResponseToEntity($response);
+    }
+
+    private function convertConfigPartnershipResponseToEntity(array $partnerConfigResponses): array
+    {
+        if (empty($partnerConfigResponses))
+        {
+            return [];
+        }
+
+        return array_map(function($response) {
+            return $this->convertConfigPartnershipApiResponseToEntity($response);
+        }, $partnerConfigResponses);
+    }
+    private function convertConfigPartnershipApiResponseToEntity(array $partnerConfigResponses): PartnerConfigEntity
+    {
+        $partnerConfigEntity=new PartnerConfigEntity();
+        $partnerConfigEntity->initializeDefaults();
+        $partnerConfigEntity->forceFill($partnerConfigResponses);
+        return $partnerConfigEntity;
+    }
+
 }
