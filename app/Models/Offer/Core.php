@@ -768,11 +768,11 @@ class Core extends Base\Core
     }
 
     //increment the offer usage count after failed payment for max offer validation.
-    public function lockIncrementCurrentOfferUsage(Entity $offer)
+    public function lockIncrementCurrentOfferUsage(Entity $offer, $payment = null)
     {
         if ($offer !== null)
         {
-            $offer = $this->repo->transaction(function () use ($offer)
+            $offer = $this->repo->transaction(function () use ($offer, $payment)
             {
                 $offer = $this->repo->offer->lockForUpdate($offer->getId());
 
@@ -780,7 +780,8 @@ class Core extends Base\Core
                     "offer_id"      => $offer->getId(),
                     "current_usage" => $offer->getCurrentOfferUsage(),
                     "new_usage"     => $offer->getCurrentOfferUsage() + 1,
-                    "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null
+                    "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null,
+                    "payment_id"    => optional($payment)->getId(),
                 ]);
 
                 $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
@@ -802,7 +803,7 @@ class Core extends Base\Core
 
         if ($offer !== null && $offer->getMaxOfferUsage() !== null)
         {
-            $offer = $this->repo->transaction(function () use ($offer)
+            $offer = $this->repo->transaction(function () use ($offer, $payment)
             {
                 $offer = $this->repo->offer->lockForUpdate($offer->getId());
 
@@ -810,7 +811,8 @@ class Core extends Base\Core
                     "offer_id"      => $offer->getId(),
                     "current_usage" => $offer->getCurrentOfferUsage(),
                     "new_usage"     => $offer->getCurrentOfferUsage() - 1,
-                    "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null
+                    "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null,
+                    "payment"       => optional($payment)->getId(),
                 ]);
 
                 $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() - 1);
@@ -822,8 +824,6 @@ class Core extends Base\Core
 
             return $offer;
         }
-
-
     }
 
     private function addSubscriptionData(Entity $offer, array $subscriptionInput = [])
@@ -1136,6 +1136,51 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    public function shouldRouteToOffersEngineForPayments(string $merchantId, $experiment, $throwError = false): bool
+    {
+        if ((app()->runningUnitTests() === true) or
+            ($this->env === 'bvt' or $this->env === 'automation' or
+             $this->env === 'func' or $this->env === 'availability' or
+             $this->env === 'perf' or $this->env === 'perf2'))
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                "id"            => $merchantId,
+                "experiment_id" => $this->app['config']->get($experiment),
+                "request_data"  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === 'variant_on';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
+                [
+                    'msg' => $e->getMessage()
+                ]);
+
+            if ($throwError === true)
+            {
+                throw $e;
+            }
+        }
+
+        return false;
     }
 
     /**

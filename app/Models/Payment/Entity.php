@@ -5709,6 +5709,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->morphOne(\RZP\Models\EntityOrigin\Entity::class, 'entity');
     }
 
+    /**
+     * Points to the pivot table entity `entityOffer` for the payment
+     */
+    private function entityOffer()
+    {
+        return $this->morphOne(Offer\EntityOffer\Entity::class, 'entity');
+    }
+
     public function offers()
     {
         return $this->morphToMany(
@@ -5722,6 +5730,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         // Creates row in entity_offers table
         $this->offers()->attach($offer);
+
+        $offerCollection = new Base\PublicCollection();
+        $offerCollection->push($offer);
+        $this->setRelation('offers', $offerCollection);
     }
 
     public function associateReward($rewardId)
@@ -5733,6 +5745,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function dissociateOffer(Offer\Entity $offer)
     {
         $this->offers()->detach($offer->getId());
+
+        $this->unsetRelation('offers');
     }
 
     /**
@@ -5741,6 +5755,58 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function getOffer()
     {
+        if ((new Offer\Core())->shouldRouteToOffersEngineForPayments(
+                $this->getMerchantId(), Offer\Constants::OFFERS_ENGINE_FETCH_EXP) === true)
+        {
+            if ($this->relationLoaded('offers') === true)
+            {
+                return $this->getRelation('offers')->first();
+            }
+
+            try
+            {
+                $offerIds = $this->entityOffer()
+                                 ->pluck(Offer\EntityOffer\Entity::OFFER_ID)
+                                 ->toArray();
+
+                if (empty($offerIds) === true)
+                {
+                    return null;
+                }
+
+                $offersEngineRepo = new Offer\Repository();
+
+                // fetches normal offers from OE and limited offers from API db
+                $offersArray = $offersEngineRepo->findManyFromOE($offerIds, $this->getMerchantId());
+
+                $offersCollection = new Base\PublicCollection();
+
+                foreach ($offersArray as $offer)
+                {
+                    $offersCollection->push($offer);
+                }
+
+                $this->setRelation('offers', $offersCollection);
+
+                app('trace')->info(TraceCode::OFFER_FOR_PAYMENT_FOUND);
+
+                return $offersCollection->first();
+            }
+            catch (\Throwable $ex)
+            {
+                app('trace')->count(
+                    Offer\Metric::OFFERS_ENGINE_FETCH_OFFERS_FAIL_FOR_PAYMENTS, [
+                    'route' => app('api.route')->getCurrentRouteName(),
+                ]);
+
+                app('trace')->traceException($ex, Trace::ERROR, TraceCode::PAYMENT_OFFER_NOT_FOUND, [
+                    'data' => $ex->getMessage(),
+                    'id'   => $this->getId(),
+                ]);
+            }
+        }
+
+        // Keeping fallback on API DB for now.
         return $this->offers()->first();
     }
 

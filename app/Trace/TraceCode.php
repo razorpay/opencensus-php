@@ -8780,6 +8780,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PG_ROUTER_OFFER_NOT_FOUND                           = "PG_ROUTER_OFFER_NOT_FOUND";
 
+    const PAYMENT_OFFER_NOT_FOUND                             = "PAYMENT_OFFER_NOT_FOUND";
+    const OFFER_FOR_PAYMENT_FOUND                             = "OFFER_FOR_PAYMENT_FOUND";
     const PAYOUT_SOURCE_ENTITY_CREATE_REQUEST                 = 'PAYOUT_SOURCE_ENTITY_CREATE_REQUEST';
     const PAYOUT_SOURCE_ENTITY_CREATED                        = 'PAYOUT_SOURCE_ENTITY_CREATED';
     const VAULT_ENCRYPTION_FAILED                             = 'VAULT_ENCRYPTION_FAILED';

@@ -462,6 +462,11 @@ trait ExternalOffersRepo
         }
 
         if (count($fallbackOffers) > 0) {
+
+            $this->trace->count(Metric::OFFERS_ENGINE_API_FALLBACK_COUNTER, [
+                'route_name' => app('api.route')->getCurrentRouteName(),
+            ]);
+
             $this->trace->info(
                 TraceCode::OFFERS_ENGINE_FETCH_FALLBACK,
                 [
