@@ -44115,6 +44115,107 @@ class PayoutTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    public function testCreatePayoutViaDashboardBeneficiaryHashGenerationSuccess()
+    {
+        $testData = $this->testData['testCreatePayoutViaDashboard'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $splitzResp = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.generate_bene_hash_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.payout_properties_event_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testBulkPayoutBeneficiaryHashGenerationSuccess()
+    {
+        $testData = $this->testData['testBulkPayout'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $splitzResp = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.generate_bene_hash_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.payout_properties_event_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+    public function testPayoutCreateBeneficiaryHashGenerationSuccess()
+    {
+        $splitzResp = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.generate_bene_hash_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.payout_properties_event_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $this->testCreatePayout();
+    }
+
     /*
  * -------------------HELPER FUNCTIONS-------------------
  */

@@ -46,6 +46,7 @@ use RZP\Services\PayoutService\BulkPayout;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\Payout\PayoutTest;
 use RZP\Models\Merchant\Balance\Type as Type;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -87,6 +88,7 @@ use RZP\Services\PayoutService\DashboardScheduleTimeSlots as PayoutServiceDashbo
 class PayoutServiceTest extends TestCase
 {
     use PayoutTrait;
+    use MocksSplitz;
     use TestsMetrics;
     use WorkflowTrait;
     use DbEntityFetchTrait;
@@ -11931,5 +11933,51 @@ class PayoutServiceTest extends TestCase
                              $payoutServiceBankingAccountStatementClient);
 
         $this->startTest();
+    }
+
+    public function testCreateInternalPayoutViaMicroServiceBeneficiaryHashGenerationSuccess()
+    {
+        $testData = $this->testData['testCreateInternalPayoutViaMicroService'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true, $assertionBody);
+
+        $splitzResp = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.generate_bene_hash_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.payout_properties_event_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $payout = $this->testCreatePayoutServiceFtaCreation();
+
+        $this->mockRazorxDefault();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = '10000000000000';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));
     }
 }

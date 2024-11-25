@@ -12073,6 +12073,7 @@ class Core extends Base\Core
 
         $eventExperimentName = 'payout_properties_event_experiment';
         $eventExperimentIdConfigKey = 'app.'.$eventExperimentName.'_id';
+
         $properties = [
             'id'            => $merchantId,
             'experiment_id' => $this->app['config']->get($eventExperimentIdConfigKey),
@@ -12109,7 +12110,8 @@ class Core extends Base\Core
 
         $beneHash = null;
         if($this->isSplitzExperimentEnable($properties,'enable', TraceCode::PAYOUT_PROPERTIES_EVENT_SPLITZ_ERROR)){
-             $beneHash = $this->getBeneficiaryHash($payout);
+
+             $beneHash = $this->getBeneficiaryHash($payoutId);
         }
 
         $eventAttributes = [
@@ -12134,9 +12136,23 @@ class Core extends Base\Core
         ]);
     }
 
-    public function getBeneficiaryHash($payout)
+    public function getBeneficiaryHash($payoutId)
     {
         try {
+
+            /* @var \RZP\Models\Payout\Entity $payout */
+            $payout = $this->repo->payout->find($payoutId);
+
+            if(!isset($payout))
+            {
+                $payout = $this->getAPIModelPayoutFromPayoutService($payoutId);
+
+                $balance = (new Balance\Repository())->find($payout->getBalanceId());
+                $fundAccount = (new FundAccount\Repository())->find($payout->getFundAccountId());
+
+                $payout->balance()->associate($balance);
+                $payout->fundAccount()->associate($fundAccount);
+            }
 
             $mode = $payout->getMode();
             $merchantId = $payout->getMerchantId();
@@ -12185,9 +12201,9 @@ class Core extends Base\Core
             $hashWithoutSource = hash('sha256', $input);
             $hashWithSource = hash('sha256', $input . $sourceAccount);
 
-        } catch (\Exception $e)
+        } catch (\Throwable $e)
         {
-            $hash = 'DEFAULT_'.$input;
+            $hashWithoutSource = $hashWithSource = 'DEFAULT_'.$input;
             $this->trace->info(TraceCode::BENEFICIARY_HASH_GENERATION_FAILURE,[
                 'payout_id' => $payoutId,
                 'error' => $e->getMessage()
