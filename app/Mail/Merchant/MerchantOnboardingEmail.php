@@ -129,6 +129,7 @@ class MerchantOnboardingEmail extends Mailable
         [
             'template_name' => 'banking_mail_activated_mcc_pending_success',
             'template_namespace' => 'payments_banking',
+            'org_id'             => $this->org['id'],
             'params' => $this->data,
         ];
         $storkParams['params']['payment_url'] = 'https://' . $this->data['merchant']['org']['hostname'];

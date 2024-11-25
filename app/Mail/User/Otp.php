@@ -32,7 +32,9 @@ class Otp extends Mailable
      */
     public $otp;
 
-    public function __construct(array $input, User\Entity $user, array $otp)
+    public $orgID;
+
+    public function __construct(array $input, User\Entity $user, array $otp, $orgID = '')
     {
         parent::__construct();
 
@@ -40,6 +42,7 @@ class Otp extends Mailable
         $this->user  = $user->toArrayPublic();
         $this->otp   = $otp;
         $this->debug = array_get($input, 'debug', false);
+        $this->orgID = $orgID;
     }
 
     protected function addRecipients()
@@ -204,7 +207,7 @@ class Otp extends Mailable
         switch ($this->input['action'])
         {
             case 'verify_email':
-                $flag =  (new EmailHelper)->isStorkSupportedCheckViaSplitz($this->user['id'], '', 'otp_email_verify') ?? false;
+                $flag =  (new EmailHelper)->isStorkSupportedCheckViaSplitz($this->user['id'],$this->orgID,'otp_email_verify') ?? false;
                 break;
             default:
                 break;
@@ -231,6 +234,7 @@ class Otp extends Mailable
                 [
                     'template_name' => 'banking_mail_otp_email_verify',
                     'template_namespace' => 'payments_banking',
+                    'org_id' => $this->orgID,
                     'params' => $data,
                 ];
                 break;

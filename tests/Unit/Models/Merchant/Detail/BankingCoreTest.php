@@ -350,6 +350,7 @@ class BankingCoreTest extends TestCase
 
         $this->assertArrayHasKey('template_name', $getParamsForStork);
         $this->assertArrayHasKey('template_namespace', $getParamsForStork);
+        $this->assertArrayHasKey('org_id', $getParamsForStork);
         $this->assertArrayHasKey('params', $getParamsForStork);
         $this->assertArrayHasKey('merchant', $getParamsForStork['params']);
         $this->assertArrayHasKey('name', $getParamsForStork['params']['merchant']);

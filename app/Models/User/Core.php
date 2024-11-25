@@ -5206,7 +5206,15 @@ class Core extends Base\Core
             $payload['debug'] = true;
         }
 
-        $mailable = new OtpMail($payload, $user, $otp);
+        // Add org id for stork
+        $orgID = '';
+
+        if ($merchant !== null)
+        {
+            $orgID = $merchant->getOrgId();
+        }
+
+        $mailable = new OtpMail($payload, $user, $otp, $orgID);
 
         if($directMailEnabled === true)
         {
