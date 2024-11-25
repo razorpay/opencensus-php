@@ -838,7 +838,7 @@ class Core extends Base\Core
                 ConfigKey::ODS_CAPPING_CHECK_REQUIRED => (bool) $featureConfig['global_limit_check_required'],
                 ConfigKey::ODS_GLOBAL_LIMIT => (int) $featureConfig['global_limit'],
                 ConfigKey::ODS_CAPPING_SCALE_FACTOR => (float) $featureConfig['global_limit_capping_scale_factor'],
-                ConfigKey::ODS_CAPPED_MID_LIST => $featureConfig['global_limit_capped_merchant_ids'],
+                ConfigKey::ODS_CAPPED_MID_LIST => explode(',', $featureConfig['global_limit_capped_merchant_ids'])
             ];
         }
 
