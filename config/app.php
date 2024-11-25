@@ -413,6 +413,8 @@ return array(
 
     'ledger_makeshift_dual_write_enabled' => env('LEDGER_MAKESHIFT_DUAL_WRITE_ENABLED'),
 
+    'api_ledger_dual_write_transfer_rearch' => env('API_LEDGER_DUAL_WRITE_TRANSFER_REARCH'),
+
     'partner_regenerate_referrals_links_exp_id' => env('PARTNER_REGENERATE_REFERRAL_LINKS_EXP_ID'),
 
     'partner_config_auditing_experiment_id' => env('PARTNER_CONFIG_AUDITING_EXPERIMENT_ID'),

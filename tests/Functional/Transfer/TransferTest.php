@@ -36,6 +36,7 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\EntityOrigin;
+use RZP\Tests\Functional\Payment\Transfers\PaymentMarketplaceTransferLedgerTest;
 
 class TransferTest extends TestCase
 {
@@ -3338,6 +3339,619 @@ class TransferTest extends TestCase
         $this->assertSame(0, $transfer['tax']);
         $this->assertSame(0, $transferPayment['fee']);
         $this->assertSame(0, $transferPayment['tax']);
+        $this->assertEquals($ikeyValue, $ikey->getIdempotencyKey());
+
+        return $transfer;
+    }
+
+    public function testCreateDirectTransferForLedgerReverseShadowWithNssMerchant($ikeyValue = 'unique-ikey', $amount = null)
+    {
+        $headers = [
+            'HTTP_' . RequestHeader::X_TRANSFER_IDEMPOTENCY => $ikeyValue,
+        ];
+
+        $mockLedger = $this->initialiseLedger(1000000, 0, 0);
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->fixtures->merchant->addFeatures([ 'pg_ledger_reverse_shadow'], '10000000000001');
+
+        $this->fixtures->merchant->addFeatures(['new_settlement_service']);
+
+        if (empty($amount) === false)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['amount'] = $amount;
+        }
+
+        $expectedJournalPayload = [
+            "currency" => "",
+            "transactor_event" =>  "transfer_processed",
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG",
+            "journals" => [
+                [
+                    "merchant_id"=>"10000000000000",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "1000",
+                        "base_amount" => "1000",
+                        "merchant_payable_amount" => "1000",
+                        "merchant_balance_amount" => "1000",
+                        "tax" => "0",
+                        "transfer_commission" => "0",
+                    ],
+                    "additional_params"=>["entry_type"=>"debit"]
+                ],
+                [
+                    "merchant_id"=>"10000000000001",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "1000",
+                        "base_amount" => "1000",
+                        "merchant_payable_amount" => "1000",
+                        "merchant_balance_amount" => "1000",
+                    ],
+                    "additional_params"=>["entry_type"=>"credit"]
+                ]
+            ],
+        ];
+
+        $mockLedger->shouldReceive('createBulkJournal')
+                   ->times(1)
+                   ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload)
+                   {
+                       $this->assertArrayHasKey('transactor_id',$journalPayload);
+                       $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                       $this->assertEquals($expectedJournalPayload['journals'][0]['money_params'], $journalPayload['journals'][0]['money_params']);
+                       $this->assertEquals($expectedJournalPayload['journals'][1]['money_params'], $journalPayload['journals'][1]['money_params']);
+                       $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                       $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                       $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                       $this->assertTrue($throwException);
+
+                       return true;
+                   })
+                   ->andReturn([
+                                   'code' => 200,
+                                   'body' => [
+                                       "journals"=> [
+                                           [
+                                               "id"=> "MopI0tL6gDzBe6",
+                                               "created_at"=> "1697447934",
+                                               "updated_at"=> "1697447934",
+                                               "merchant_id"=> "Kkd0zXqqYyNBLh",
+                                               "amount"=> "13757",
+                                               "base_amount"=> "13757",
+                                               "currency"=> "INR",
+                                               "tenant"=> "PG",
+                                               "transactor_id"=> "trf_MooQ9OMQJdZI3d",
+                                               "transactor_event"=> "transfer_processed",
+                                               "transaction_date"=> "1697444875",
+                                               "ledger_entry"=> [
+                                                   [
+                                                       "id"=> "MopI0tNlyVsICK",
+                                                       "created_at"=> "1697447934",
+                                                       "updated_at"=> "1697447934",
+                                                       "merchant_id"=> "Kkd0zXqqYyNBLh",
+                                                       "journal_id"=> "MopI0tL6gDzBe6",
+                                                       "account_id"=> "KNIZxfkC0t9wJT",
+                                                       "amount"=> "13757",
+                                                       "base_amount"=> "13757",
+                                                       "type"=> "debit",
+                                                       "currency"=> "INR",
+                                                       "balance"=> "",
+                                                       "balance_updated"=> false,
+                                                       "account_entities"=> [
+                                                           "account_type"=> [
+                                                               "payable"
+                                                           ],
+                                                           "fund_account_type"=> [
+                                                               "merchant_va_merchant"
+                                                           ]
+                                                       ]
+                                                   ],
+                                                   [
+                                                       "id"=> "MopI0tNmzEwohI",
+                                                       "created_at"=> "1697447934",
+                                                       "updated_at"=> "1697447934",
+                                                       "merchant_id"=> "Kkd0zXqqYyNBLh",
+                                                       "journal_id"=> "MopI0tL6gDzBe6",
+                                                       "account_id"=> "KoAnIvRweUzEFa",
+                                                       "amount"=> "13757",
+                                                       "base_amount"=> "13757",
+                                                       "type"=> "credit",
+                                                       "currency"=> "INR",
+                                                       "balance"=> "128725508.000000",
+                                                       "balance_updated"=> true,
+                                                       "account_entities"=> [
+                                                           "account_type"=> [
+                                                               "payable"
+                                                           ],
+                                                           "fund_account_type"=> [
+                                                               "merchant_balance"
+                                                           ]
+                                                       ]
+                                                   ]
+                                               ]
+                                           ],
+                                           [
+                                               "id"=> "MopI0tcz3YJFZS",
+                                               "created_at"=> "1697447934",
+                                               "updated_at"=> "1697447934",
+                                               "merchant_id"=> "IDVkQFXRWGybl9",
+                                               "amount"=> "13791",
+                                               "base_amount"=> "13791",
+                                               "currency"=> "INR",
+                                               "tenant"=> "PG",
+                                               "transactor_id"=> "trf_MooQ9OMQJdZI3d",
+                                               "transactor_event"=> "transfer_processed",
+                                               "transaction_date"=> "1697444875",
+                                               "ledger_entry"=> [
+                                                   [
+                                                       "id"=> "MopI0tfC05hUWx",
+                                                       "created_at"=> "1697447934",
+                                                       "updated_at"=> "1697447934",
+                                                       "merchant_id"=> "IDVkQFXRWGybl9",
+                                                       "journal_id"=> "MopI0tcz3YJFZS",
+                                                       "account_id"=> "KoAYVJwu2nd4Jx",
+                                                       "amount"=> "28",
+                                                       "base_amount"=> "28",
+                                                       "type"=> "credit",
+                                                       "currency"=> "INR",
+                                                       "balance"=> "314745055.000000",
+                                                       "balance_updated"=> true,
+                                                       "account_entities"=> [
+                                                           "account_type"=> [
+                                                               "cash"
+                                                           ],
+                                                           "fund_account_type"=> [
+                                                               "rzp_transfer_fee"
+                                                           ]
+                                                       ]
+                                                   ],
+                                                   [
+                                                       "id"=> "MopI0tfD3bRsnw",
+                                                       "created_at"=> "1697447934",
+                                                       "updated_at"=> "1697447934",
+                                                       "merchant_id"=> "IDVkQFXRWGybl9",
+                                                       "journal_id"=> "MopI0tcz3YJFZS",
+                                                       "account_id"=> "KoAYVBdA2cIrps",
+                                                       "amount"=> "6",
+                                                       "base_amount"=> "6",
+                                                       "type"=> "credit",
+                                                       "currency"=> "INR",
+                                                       "balance"=> "143606046.000000",
+                                                       "balance_updated"=> true,
+                                                       "account_entities"=> [
+                                                           "account_type"=> [
+                                                               "payable"
+                                                           ],
+                                                           "fund_account_type"=> [
+                                                               "rzp_gst"
+                                                           ]
+                                                       ]
+                                                   ],
+                                                   [
+                                                       "id"=> "MopI0tfDY2FDv5",
+                                                       "created_at"=> "1697447934",
+                                                       "updated_at"=> "1697447934",
+                                                       "merchant_id"=> "IDVkQFXRWGybl9",
+                                                       "journal_id"=> "MopI0tcz3YJFZS",
+                                                       "account_id"=> "KNIZxfkC0t9wJT",
+                                                       "amount"=> "13757",
+                                                       "base_amount"=> "13757",
+                                                       "type"=> "credit",
+                                                       "currency"=> "INR",
+                                                       "balance"=> "",
+                                                       "balance_updated"=> false,
+                                                       "account_entities"=> [
+                                                           "account_type"=> [
+                                                               "payable"
+                                                           ],
+                                                           "fund_account_type"=> [
+                                                               "merchant_va_merchant"
+                                                           ]
+                                                       ]
+                                                   ],
+                                                   [
+                                                       "id"=> "MopI0tfE1HxJdG",
+                                                       "created_at"=> "1697447934",
+                                                       "updated_at"=> "1697447934",
+                                                       "merchant_id"=> "IDVkQFXRWGybl9",
+                                                       "journal_id"=> "MopI0tcz3YJFZS",
+                                                       "account_id"=> "KoAYV3CBjmb8l2",
+                                                       "amount"=> "13791",
+                                                       "base_amount"=> "13791",
+                                                       "type"=> "debit",
+                                                       "currency"=> "INR",
+                                                       "balance"=> "16089554434.000000",
+                                                       "balance_updated"=> true,
+                                                       "account_entities"=> [
+                                                           "account_type"=> [
+                                                               "payable"
+                                                           ],
+                                                           "fund_account_type"=> [
+                                                               "merchant_balance"
+                                                           ]
+                                                       ]
+                                                   ]
+                                               ]
+                                           ]
+                                       ]
+                                   ]
+                               ]);
+
+        $debitTxnPayload = [
+            'id'                    => 'MopI0tcz3YJFZS',
+            'merchant_id'           => '10000000000000',
+            'source_id'             => 'MooQ9OMQJdZI3d',
+            'source_type'           => 'transfer',
+            'balance_type'          => 'PRIMARY',
+            'currency'              => 'INR',
+            'credit'                => 0,
+            'debit'                 => 50000,
+            'fee'                   => 0,
+            'tax'                   => 0,
+            'settled_by'            => 'Razorpay',
+            'on_hold'               => null,
+            'on_hold_reason'        => '',
+            'meta'                  => [
+                'source_type'    => 'payment',
+                'source_id'      => explode('_', $this->payment['id'])[1],
+                'source_method'  => 'card',
+                'source_settled' => false,
+                'international'  => false,
+            ]
+        ];
+
+        $creditTxnPayload = [
+            'id'                    => 'MopI0tL6gDzBe6',
+            'merchant_id'           => 'Kkd0zXqqYyNBLh',
+            'source_id'             => 'dummyN3uSlFkHT',
+            'source_type'           => 'payment',
+            'balance_type'          => 'PRIMARY',
+            'currency'              => 'INR',
+            'credit'                => 50000,
+            'debit'                 => 0,
+            'fee'                   => 0,
+            'tax'                   => 0,
+            'settled_by'            => 'Razorpay',
+            'on_hold'               => false,
+            'on_hold_reason'        => '',
+            'meta'                  => [
+                'method'        => 'transfer',
+                'origin_method' => 'card',
+                'international' => false,
+            ]
+        ];
+
+        $this->mockSns($debitTxnPayload, $creditTxnPayload);
+        $this->ba->privateAuth();
+
+        $transfer = $this->startTest();
+
+        $ikey = $this->getDbLastEntity(Entity::IDEMPOTENCY_KEY);
+
+        $this->assertEquals($transfer['id'], 'trf_' . $ikey->getSourceId());
+        $this->assertEquals('processed', $transfer['status']);
+        $this->assertEquals($ikeyValue, $ikey->getIdempotencyKey());
+
+        return $transfer;
+    }
+
+    private function mockSns($debitTxnPayload, $creditTxnPayload)
+    {
+        $sns = Mockery::mock('RZP\Services\Aws\Sns');
+
+        $this->app->instance('sns', $sns);
+
+        $sns->shouldReceive('publish')
+            ->with(Mockery::type('string'), Mockery::type('string'))
+            ->andReturnUsing(function ($input) use ($creditTxnPayload, $debitTxnPayload)
+            {
+                $json_decoded_input = json_decode($input, true);
+
+                if ($json_decoded_input['id'] === $debitTxnPayload['id'])
+                {
+                    $this->assertEquals($debitTxnPayload['merchant_id'], $json_decoded_input['merchant_id']);
+                    $this->assertEquals($debitTxnPayload['source_id'], $json_decoded_input['source_id']);
+                    $this->assertEquals($debitTxnPayload['source_type'], $json_decoded_input['source_type']);
+                    $this->assertEquals($debitTxnPayload['balance_type'], $json_decoded_input['balance_type']);
+                    $this->assertEquals($debitTxnPayload['currency'], $json_decoded_input['currency']);
+                    $this->assertEquals($debitTxnPayload['credit'], $json_decoded_input['credit']);
+                    $this->assertEquals($debitTxnPayload['debit'], $json_decoded_input['debit']);
+                    $this->assertEquals($debitTxnPayload['fee'], $json_decoded_input['fee']);
+                    $this->assertEquals($debitTxnPayload['tax'], $json_decoded_input['tax']);
+                    $this->assertEquals($debitTxnPayload['settled_by'], $json_decoded_input['settled_by']);
+                    $this->assertEquals($debitTxnPayload['on_hold'], $json_decoded_input['on_hold']);
+                    $this->assertEquals($debitTxnPayload['on_hold_reason'], $json_decoded_input['on_hold_reason']);
+                    $this->assertEquals($debitTxnPayload['meta']['source_type'], $json_decoded_input['meta']['source_type']);
+                    $this->assertEquals($debitTxnPayload['meta']['source_id'], $json_decoded_input['meta']['source_id']);
+                    $this->assertEquals($debitTxnPayload['meta']['source_method'], $json_decoded_input['meta']['source_method']);
+                    $this->assertEquals($debitTxnPayload['meta']['source_settled'], $json_decoded_input['meta']['source_settled']);
+                    $this->assertEquals($debitTxnPayload['meta']['international'], $json_decoded_input['meta']['international']);
+                }
+                else if ($json_decoded_input['id'] === $creditTxnPayload['id'])
+                {
+                    $this->assertEquals($creditTxnPayload['merchant_id'], $json_decoded_input['merchant_id']);
+                    $this->assertEquals($creditTxnPayload['source_id'], $json_decoded_input['source_id']);
+                    $this->assertEquals($creditTxnPayload['source_type'], $json_decoded_input['source_type']);
+                    $this->assertEquals($creditTxnPayload['balance_type'], $json_decoded_input['balance_type']);
+                    $this->assertEquals($creditTxnPayload['currency'], $json_decoded_input['currency']);
+                    $this->assertEquals($creditTxnPayload['credit'], $json_decoded_input['credit']);
+                    $this->assertEquals($creditTxnPayload['debit'], $json_decoded_input['debit']);
+                    $this->assertEquals($creditTxnPayload['fee'], $json_decoded_input['fee']);
+                    $this->assertEquals($creditTxnPayload['tax'], $json_decoded_input['tax']);
+                    $this->assertEquals($creditTxnPayload['settled_by'], $json_decoded_input['settled_by']);
+                    $this->assertEquals($creditTxnPayload['on_hold'], $json_decoded_input['on_hold']);
+                    $this->assertEquals($creditTxnPayload['on_hold_reason'], $json_decoded_input['on_hold_reason']);
+                    $this->assertEquals($creditTxnPayload['meta']['method'], $json_decoded_input['meta']['method']);
+                    $this->assertEquals($creditTxnPayload['meta']['international'], $json_decoded_input['meta']['international']);
+                    $this->assertEquals($creditTxnPayload['meta']['origin_method'], $json_decoded_input['meta']['origin_method']);
+                }
+
+                return $input;
+            });
+
+        $this->app->instance('sns', $sns);
+    }
+
+    public function testCreateDirectTransferForNssAndLedgerReverseShadowWithVariantOff($ikeyValue = 'unique-ikey', $amount = null)
+    {
+        $headers = [
+            'HTTP_' . RequestHeader::X_TRANSFER_IDEMPOTENCY => $ikeyValue,
+        ];
+
+        $mockLedger = $this->initialiseLedger(1000000, 0, 0);
+
+        $this->mockAllSplitzResponseDisable(['response' => ['variant' => ['name' => 'disable', ]]]);
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->fixtures->merchant->addFeatures([ 'pg_ledger_reverse_shadow'], '10000000000001');
+
+        $this->fixtures->merchant->addFeatures(['new_settlement_service']);
+
+        if (empty($amount) === false)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['amount'] = $amount;
+        }
+
+        $expectedJournalPayload = [
+            "currency" => "",
+            "transactor_event" =>  "transfer_processed",
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG",
+            "journals" => [
+                [
+                    "merchant_id"=>"10000000000000",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "1000",
+                        "base_amount" => "1000",
+                        "merchant_payable_amount" => "1000",
+                        "merchant_balance_amount" => "1000",
+                        "tax" => "0",
+                        "transfer_commission" => "0",
+                    ],
+                    "additional_params"=>["entry_type"=>"debit"]
+                ],
+                [
+                    "merchant_id"=>"10000000000001",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "1000",
+                        "base_amount" => "1000",
+                        "merchant_payable_amount" => "1000",
+                        "merchant_balance_amount" => "1000",
+                    ],
+                    "additional_params"=>["entry_type"=>"credit"]
+                ]
+            ],
+        ];
+
+        $mockLedger->shouldReceive('createBulkJournal')
+                   ->times(1)
+                   ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload)
+                   {
+                       $this->assertArrayHasKey('transactor_id',$journalPayload);
+                       $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                       $this->assertEquals($expectedJournalPayload['journals'][0]['money_params'], $journalPayload['journals'][0]['money_params']);
+                       $this->assertEquals($expectedJournalPayload['journals'][1]['money_params'], $journalPayload['journals'][1]['money_params']);
+                       $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                       $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                       $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                       $this->assertTrue($throwException);
+
+                       return true;
+                   })
+                   ->andReturn([
+                                   'code' => 200,
+                                   'body' => [
+                                       "journals"=> [
+                                           [
+                                               "id"=> "MopI0tL6gDzBe6",
+                                               "created_at"=> "1697447934",
+                                               "updated_at"=> "1697447934",
+                                               "merchant_id"=> "",
+                                               "amount"=> "13757",
+                                               "base_amount"=> "13757",
+                                               "currency"=> "INR",
+                                               "tenant"=> "PG",
+                                               "transactor_id"=> "trf_MooQ9OMQJdZI3d",
+                                               "transactor_event"=> "transfer_processed",
+                                               "transaction_date"=> "1697444875",
+                                               "ledger_entry"=> [
+                                                   [
+                                                       "id"=> "MopI0tNlyVsICK",
+                                                       "created_at"=> "1697447934",
+                                                       "updated_at"=> "1697447934",
+                                                       "merchant_id"=> "Kkd0zXqqYyNBLh",
+                                                       "journal_id"=> "MopI0tL6gDzBe6",
+                                                       "account_id"=> "KNIZxfkC0t9wJT",
+                                                       "amount"=> "13757",
+                                                       "base_amount"=> "13757",
+                                                       "type"=> "debit",
+                                                       "currency"=> "INR",
+                                                       "balance"=> "",
+                                                       "balance_updated"=> false,
+                                                       "account_entities"=> [
+                                                           "account_type"=> [
+                                                               "payable"
+                                                           ],
+                                                           "fund_account_type"=> [
+                                                               "merchant_va_merchant"
+                                                           ]
+                                                       ]
+                                                   ],
+                                                   [
+                                                       "id"=> "MopI0tNmzEwohI",
+                                                       "created_at"=> "1697447934",
+                                                       "updated_at"=> "1697447934",
+                                                       "merchant_id"=> "Kkd0zXqqYyNBLh",
+                                                       "journal_id"=> "MopI0tL6gDzBe6",
+                                                       "account_id"=> "KoAnIvRweUzEFa",
+                                                       "amount"=> "13757",
+                                                       "base_amount"=> "13757",
+                                                       "type"=> "credit",
+                                                       "currency"=> "INR",
+                                                       "balance"=> "128725508.000000",
+                                                       "balance_updated"=> true,
+                                                       "account_entities"=> [
+                                                           "account_type"=> [
+                                                               "payable"
+                                                           ],
+                                                           "fund_account_type"=> [
+                                                               "merchant_balance"
+                                                           ]
+                                                       ]
+                                                   ]
+                                               ]
+                                           ],
+                                           [
+                                               "id"=> "MopI0tcz3YJFZS",
+                                               "created_at"=> "1697447934",
+                                               "updated_at"=> "1697447934",
+                                               "merchant_id"=> "",
+                                               "amount"=> "13791",
+                                               "base_amount"=> "13791",
+                                               "currency"=> "INR",
+                                               "tenant"=> "PG",
+                                               "transactor_id"=> "trf_MooQ9OMQJdZI3d",
+                                               "transactor_event"=> "transfer_processed",
+                                               "transaction_date"=> "1697444875",
+                                               "ledger_entry"=> [
+                                                   [
+                                                       "id"=> "MopI0tfC05hUWx",
+                                                       "created_at"=> "1697447934",
+                                                       "updated_at"=> "1697447934",
+                                                       "merchant_id"=> "IDVkQFXRWGybl9",
+                                                       "journal_id"=> "MopI0tcz3YJFZS",
+                                                       "account_id"=> "KoAYVJwu2nd4Jx",
+                                                       "amount"=> "28",
+                                                       "base_amount"=> "28",
+                                                       "type"=> "credit",
+                                                       "currency"=> "INR",
+                                                       "balance"=> "314745055.000000",
+                                                       "balance_updated"=> true,
+                                                       "account_entities"=> [
+                                                           "account_type"=> [
+                                                               "cash"
+                                                           ],
+                                                           "fund_account_type"=> [
+                                                               "rzp_transfer_fee"
+                                                           ]
+                                                       ]
+                                                   ],
+                                                   [
+                                                       "id"=> "MopI0tfD3bRsnw",
+                                                       "created_at"=> "1697447934",
+                                                       "updated_at"=> "1697447934",
+                                                       "merchant_id"=> "IDVkQFXRWGybl9",
+                                                       "journal_id"=> "MopI0tcz3YJFZS",
+                                                       "account_id"=> "KoAYVBdA2cIrps",
+                                                       "amount"=> "6",
+                                                       "base_amount"=> "6",
+                                                       "type"=> "credit",
+                                                       "currency"=> "INR",
+                                                       "balance"=> "143606046.000000",
+                                                       "balance_updated"=> true,
+                                                       "account_entities"=> [
+                                                           "account_type"=> [
+                                                               "payable"
+                                                           ],
+                                                           "fund_account_type"=> [
+                                                               "rzp_gst"
+                                                           ]
+                                                       ]
+                                                   ],
+                                                   [
+                                                       "id"=> "MopI0tfDY2FDv5",
+                                                       "created_at"=> "1697447934",
+                                                       "updated_at"=> "1697447934",
+                                                       "merchant_id"=> "IDVkQFXRWGybl9",
+                                                       "journal_id"=> "MopI0tcz3YJFZS",
+                                                       "account_id"=> "KNIZxfkC0t9wJT",
+                                                       "amount"=> "13757",
+                                                       "base_amount"=> "13757",
+                                                       "type"=> "credit",
+                                                       "currency"=> "INR",
+                                                       "balance"=> "",
+                                                       "balance_updated"=> false,
+                                                       "account_entities"=> [
+                                                           "account_type"=> [
+                                                               "payable"
+                                                           ],
+                                                           "fund_account_type"=> [
+                                                               "merchant_va_merchant"
+                                                           ]
+                                                       ]
+                                                   ],
+                                                   [
+                                                       "id"=> "MopI0tfE1HxJdG",
+                                                       "created_at"=> "1697447934",
+                                                       "updated_at"=> "1697447934",
+                                                       "merchant_id"=> "IDVkQFXRWGybl9",
+                                                       "journal_id"=> "MopI0tcz3YJFZS",
+                                                       "account_id"=> "KoAYV3CBjmb8l2",
+                                                       "amount"=> "13791",
+                                                       "base_amount"=> "13791",
+                                                       "type"=> "debit",
+                                                       "currency"=> "INR",
+                                                       "balance"=> "16089554434.000000",
+                                                       "balance_updated"=> true,
+                                                       "account_entities"=> [
+                                                           "account_type"=> [
+                                                               "payable"
+                                                           ],
+                                                           "fund_account_type"=> [
+                                                               "merchant_balance"
+                                                           ]
+                                                       ]
+                                                   ]
+                                               ]
+                                           ]
+                                       ]
+                                   ]
+                               ]);
+
+
+        $this->ba->privateAuth();
+
+        $transfer = $this->startTest();
+
+        $ikey = $this->getDbLastEntity(Entity::IDEMPOTENCY_KEY);
+
+        $this->assertEquals($transfer['id'], 'trf_' . $ikey->getSourceId());
+        $this->assertEquals('processed', $transfer['status']);
         $this->assertEquals($ikeyValue, $ikey->getIdempotencyKey());
 
         return $transfer;

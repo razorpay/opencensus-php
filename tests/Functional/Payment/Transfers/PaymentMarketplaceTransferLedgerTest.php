@@ -69,7 +69,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->ba->privateAuth();
     }
 
-    protected function mockSns($debitTxnPayload, $creditTxnPayload)
+    private function mockSns($debitTxnPayload, $creditTxnPayload)
     {
         $sns = Mockery::mock('RZP\Services\Aws\Sns');
 
@@ -1812,10 +1812,11 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         // run test
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
-
+        $this->mockAllSplitzResponseDisable();
         // fetch transfer again to check if txn id associated
         $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
         $this->assertNotNull($transfer, 'transfer not found');
+
         $this->assertNotNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
         $this->assertEquals('processed', $transfer['status'], 'transfer status not marked processed');
         $this->assertEquals('pending', $transfer['settlement_status'], 'transfer settlement status not marked processed');
@@ -1871,6 +1872,103 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         return $transferId;
     }
+
+    public function testFullPaymentTransferReverseShadowKafkaAckSuccessWithVariantOn()
+    {
+        $sourceMID = '10000000000000';
+        $destnMID = '10000000000001';
+
+        $this->assertNotNull($this->payment);
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], $destnMID);
+
+        $this->mockAllSplitzTreatment();
+
+        $oldDestnMarketBalance = $this->getAccountBalance($destnMID);
+        $this->assertEquals(0, $oldDestnMarketBalance);
+
+        $oldSourceMarketBalance = $this->getAccountBalance($sourceMID);
+        $this->assertGreaterThanOrEqual($this->payment['amount'],$oldSourceMarketBalance);
+
+        $this->initialiseLedger(1000000, 0, 0);
+
+        // create transfer
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 50000,
+            'currency'=> 'INR',
+        ];
+
+        $content = $this->transferPayment($this->payment['id'], $transfers);
+
+        $this->assertNotNull($content);
+
+        $this->assertEquals($transfers[0]["amount"], $content['items'][0]["amount"]);
+
+        $publicTransferId = $content['items'][0]['id'];
+
+        $transferId =  str_replace('trf_', '', $publicTransferId);
+
+        $transfer = $this->getDbEntity('transfer', ['id'=>$transferId]);
+        $this->assertNotNull($transfer, 'transfer entity does nit exist');
+        $this->assertNull($transfer['transaction_id'], 'transfer txn created in sync');
+
+        $transferPayment = $this->getDbEntity('payment',['transfer_id' => $transferId ] );
+        $this->assertNull($transferPayment, 'dummy payment entity does not exist');
+
+        $debitJID = 'LsqR14zUg9dbDB' ;
+        $creditJID = 'LsqR157oYgCrCR';
+
+        $this->mockAllSplitzResponseDisable();
+
+        $journal = $this->getPaymentTransferJournalResponsePayload($publicTransferId, $debitJID, $creditJID, $sourceMID, $destnMID, $transfers[0]['amount']);
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        // run test
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        // fetch transfer again to check if txn id associated
+        $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
+        $this->assertNotNull($transfer, 'transfer not found');
+
+        $this->assertNotNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
+        $this->assertEquals('processed', $transfer['status'], 'transfer status not marked processed');
+        $this->assertEquals('pending', $transfer['settlement_status'], 'transfer settlement status not marked processed');
+        $this->assertEquals($debitJID, $transfer['transaction_id'], 'transfer txn_id not equal to debit journal_id');
+
+        // fetch source_payment again to check if amount_transferred updated
+        $sourcePayment = $this->getDbEntity('payment', ['id' => str_replace('pay_', '', $this->payment['id'])]);
+        $newTransferPaymentEntity = $this->getLastEntity('transfer_payment', true);
+        $this->assertNotNull($sourcePayment, 'source payment not found');
+        $this->assertEquals($transfer['amount'], $newTransferPaymentEntity['amount_transferred'], 'amount_transferred incorrect in source_payment ');
+
+        // fetch transfer payment again to check if txn id associated
+        $transferPayment = $this->getDbEntity('payment',['transfer_id' => $transferId ] );
+        $this->assertNotNull($transferPayment, 'dummy payment entity does not exist');
+        $this->assertEquals('transfer', $transferPayment['method']);
+        $this->assertNotNull($transferPayment['transaction_id'], 'transfer txn and transfer_payment txn should not be created');
+        $this->assertEquals('captured', $transferPayment['status'], 'transfer_payment not captured');
+        $this->assertEquals($creditJID, $transferPayment['transaction_id'], 'transfer_payment txn_id not equal to credit journal_id');
+
+        // fetch  outbox entry
+        $ledgerOutboxEntities = $this->getTrashedDbEntities('ledger_outbox', ['payload_name' => $publicTransferId.'-'.'transfer_processed']);
+        $this->assertCount(1,$ledgerOutboxEntities, ' ledger_outbox entry for transfer_processed event not found');
+        $this->assertEquals( $ledgerOutboxEntities[0]['is_deleted'], 1, 'outbox entry not soft deleted');
+        $this->assertNotNull( $ledgerOutboxEntities[0]['deleted_at'], 'outbox entry not soft deleted');
+
+        // check new source balance
+        $newSourceMarketBalance = $this->getAccountBalance($sourceMID);
+        $this->assertEquals($oldSourceMarketBalance - $transfer->getAmount(), $newSourceMarketBalance, 'source balance not deeducted');
+
+        // check new destn balance
+        $newDestnMarketBalance = $this->getAccountBalance($destnMID);
+        $this->assertEquals($oldDestnMarketBalance + $transfer->getAmount(), $newDestnMarketBalance, 'destn balance not deeducted');
+
+        return $transferId;
+    }
+
     public function testPaymentIdFromJournalInFullPaymentTransferReverseShadowKafkaAckSuccess()
     {
         $transferPaymentId = 'ONnhOfz1UPaAXf';
@@ -2014,6 +2112,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
             'amount'  => 10000,
             'currency'=> 'INR',
         ];
+        $this->mockAllSplitzResponseDisable();
 
         $content = $this->transferPayment($this->payment['id'], $transfers);
 
@@ -2044,6 +2143,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         // fetch transfer again to check if txn id associated
         $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
+
         $this->assertNotNull($transfer, 'transfer not found');
         $this->assertNotNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
         $this->assertEquals('processed', $transfer['status'], 'transfer status not marked processed');
@@ -2638,7 +2738,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $publicTransferId = $content['items'][0]['id'];
 
         $transferId =  str_replace('trf_', '', $publicTransferId);
-
+        $this->mockAllSplitzResponseDisable();
         $transferPayment = $this->getDbEntity('payment',['transfer_id' => $transferId ] );
         $this->assertNull($transferPayment, 'dummy payment entity exist');
 
@@ -2671,6 +2771,8 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         // fetch transfer again to check if txn id associated
         $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
+
+        $this->mockAllSplitzResponseDisable();
         $this->assertNotNull($transfer, 'transfer not found');
         $this->assertNotNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
         $this->assertEquals('processed', $transfer['status'], 'transfer status not marked processed');
@@ -2787,6 +2889,8 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         // fetch transfer again to check if txn id associated
         $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
+
+        $this->mockAllSplitzResponseDisable();
         $this->assertNotNull($transfer, 'transfer not found');
         $this->assertNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
         $this->assertNotEquals('processed', $transfer['status'], 'transfer status not marked processed');
@@ -3042,6 +3146,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         // fetch transfer again to check if txn id associated
         $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
+        $this->mockAllSplitzResponseDisable();
         $this->assertNotNull($transfer, 'transfer not found');
         $this->assertNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
         $this->assertNotEquals('processed', $transfer['status'], 'transfer status not marked processed');
@@ -3530,6 +3635,8 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         // fetch transfer again to check if txn id associated
         $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
+
+        $this->mockAllSplitzResponseDisable();
         $this->assertNotNull($transfer, 'transfer not found');
         $this->assertNotNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
         $this->assertEquals('processed', $transfer['status'], 'transfer status not marked processed');

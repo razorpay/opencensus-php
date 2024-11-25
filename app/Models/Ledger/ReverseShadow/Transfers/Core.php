@@ -16,6 +16,7 @@ use Ramsey\Uuid\Uuid;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Feature;
 use RZP\Models\Currency;
+use RZP\Models\Settlement\Bucket;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -778,25 +779,136 @@ class Core extends Base\Core
             return;
         }
 
-        $transferTxn = $this->createTransferTransactionFromLedgerJournal($debitJournal, $transfer);
+        $properties = [
+            'request_data' => json_encode(["merchant_id" => $transferMerchant->getId()]),
+            'id'            => $transferMerchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.api_ledger_dual_write_transfer_rearch'),
+        ];
 
-        $transferPaymentTxn = $this->createTransferPaymentTransactionFromLedgerJournal($creditJournal, $transferPayment);
+        // dual write re-arch enabled for both child+parent if enabled for parent
+        $dualWriteRearchEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
 
-        $txnCore = (new Transaction\Core());
+        if($dualWriteRearchEnabled===false){
 
-        $txnCore->dispatchForSettlementBucketing($transferTxn);
+            $transferTxn = $this->createTransferTransactionFromLedgerJournal($debitJournal, $transfer);
 
-        $txnCore->dispatchForSettlementBucketing($transferPaymentTxn);
+            $transferPaymentTxn = $this->createTransferPaymentTransactionFromLedgerJournal($creditJournal, $transferPayment);
 
-        (new Transfer\Core())->dispatchForAsyncBalanceUpdate($transfer);
+            // write api txn as is and dispatch for settlement. along with that trigger balance update
+            $txnCore = (new Transaction\Core());
 
-        $this->trace->info(TraceCode::TRANSFER_REVERSE_SHADOW_TXN_CREATION_SUCCESS,
-            [
-                'transfer_id'               => $transfer->getId(),
-                'transfer_txn_id'           => $transferTxn->getId(),
-                'transfer_payment_txn_id'   => $transferPaymentTxn->getId(),
-            ]);
+            $txnCore->dispatchForSettlementBucketing($transferTxn);
+
+            $txnCore->dispatchForSettlementBucketing($transferPaymentTxn);
+
+            (new Transfer\Core())->dispatchForAsyncBalanceUpdate($transfer);
+
+            $this->trace->info(TraceCode::TRANSFER_REVERSE_SHADOW_TXN_CREATION_SUCCESS,
+                   [
+                       'transfer_id'               => $transfer->getId(),
+                       'transfer_txn_id'           => $transferTxn->getId(),
+                       'transfer_payment_txn_id'   => $transferPaymentTxn->getId(),
+                   ]);
+        }else {
+            // merchant is on RS, child+parent both.
+            // do early dispatch of settlement and dispatch transfers for dual write.
+            // ensure that job does dual write+balance update on api.
+
+            //note:  if nss dispatch fails+ or dual write dispatch/write fails, the job is to be retried
+            $transferTxn = $this->createTransferTransactionFromLedgerJournalRearch($debitJournal, $transfer);
+
+            $transferPaymentTxn = $this->createTransferPaymentTransactionFromLedgerJournalRearch($creditJournal, $transferPayment);
+
+
+            $bucketCore = new Bucket\Core;
+
+            // dispatch transfer and payment to nss
+            $parentStatus = $bucketCore->shouldProcessViaNewService($transferMerchant->getId());
+
+            if ($parentStatus === true)
+            {
+                $bucketCore->publishForSettlement($transferTxn);
+            }
+
+            $childStatus = $bucketCore->shouldProcessViaNewService($paymentMerchant->getId());
+
+            if ($childStatus === true)
+            {
+                $bucketCore->publishForSettlement($transferPaymentTxn);
+            }
+
+            // dispatch for dual write job
+            $this->pushTransferDataToKafkaForAPIDualWrite($transfer,$transferPayment,$creditJournal,$debitJournal);
+
+        }
+
     }
+
+
+    private function pushTransferDataToKafkaForAPIDualWrite($transfer, $transferPayment, $creditJournal, $debitJournal)
+    {
+        if (($this->app->runningUnitTests() === true))
+        {
+            return;
+        }
+
+        $producerKey =  $transfer->getId();
+
+        $data = [
+            'payload_api'=>[
+                'transfer_id' => $transfer->getId(),
+                'payment_id' => $transferPayment->getId(),
+                'journals'=>[
+                    $creditJournal,
+                    $debitJournal
+                ]
+            ]
+        ];
+
+        $message = [
+            Constants::KAFKA_MESSAGE_DATA      => $data,
+            Constants::KAFKA_MESSAGE_TASK_NAME  => Constants::DUAL_WRITE_TRANSACTION_FOR_TRANSFER
+        ];
+
+        $topic = env('DUAL_WRITE_TRANSACTION_FOR_TRANSFER', Constants::DUAL_WRITE_TRANSACTION_FOR_TRANSFER);
+
+        try
+        {
+            $kafkaProducer = (new KafkaProducer($topic, stringify($message)));
+
+            $kafkaProducer->Produce();
+
+            $this->trace->info(TraceCode::KAFKA_TRANSFER_API_TXN_PUSH_SUCCESS, [
+                Constants::PRODUCER_KEY => $producerKey,
+                Constants::TOPIC        => $topic,
+                Constants::MESSAGE      => $message
+            ]);
+
+            $this->trace->count(Metric::KAFKA_TRANSFER_API_TXN_PUSH_SUCCESS, [
+                Constants::TOPIC        => $topic,
+            ]);
+
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->count(Metric::KAFKA_TRANSFER_API_TXN_PUSH_FAILURE, [
+                Constants::TOPIC        => $topic,
+            ]);
+
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::KAFKA_TRANSFER_API_TXN_PUSH_FAILURE,
+                [
+                    Constants::PRODUCER_KEY => $producerKey,
+                    Constants::TOPIC        => $topic,
+                    Constants::MESSAGE      => $message
+                ]);
+
+            throw $ex;
+        }
+    }
+
 
     public function createTransferTransactionFromLedgerJournal($journal, $transfer)
     {
@@ -980,6 +1092,159 @@ class Core extends Base\Core
                 'payment_id'            => $transferPayment->getId(),
                 'transfer_id'           => $transferPayment->getTransferId(),
             ]);
+
+        return $txn;
+    }
+
+    public function createTransferPaymentTransactionFromLedgerJournalRearch($journal, $transferPayment)
+    {
+        $txn = $this->transformJournalResponseToTransactionEntityBase($journal);
+
+        if ($transferPayment->hasTransaction() === true && $transferPayment->isExternal() === false)
+        {
+            $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($transferPayment);
+        }
+        else if ($transferPayment->isExternal() === true)
+        {
+            $txn->setEntityId($transferPayment->getId());
+
+            $txn->setType($transferPayment->getEntity());
+        }
+        else
+        {
+            $transferPayment->setAttribute(Payment\Entity::TRANSACTION_ID,$txn->getId());
+
+            $txn->setEntityId($transferPayment->getId());
+
+            $txn->setType($transferPayment->getEntity());
+
+            $txn->merchant()->associate($transferPayment->merchant);
+        }
+
+        $txnData = [
+            Transaction\Entity::CHANNEL         => $transferPayment->merchant->getChannel(),
+        ];
+
+        if ($transferPayment->getGateway() === Payment\Gateway::WALLET_OPENWALLET)
+        {
+            $txnData[Transaction\Entity::RECONCILED_AT]     = time();
+            $txnData[Transaction\Entity::RECONCILED_TYPE]   = ReconciledType::NA;
+        }
+
+        $txn->fill($txnData);
+
+        $settledAt = (new Transaction\Core())->getSettledAtTimestamp($transferPayment);
+
+        $onHold = $transferPayment->getOnHold() ?? false;
+
+        $txn->setReconciledAt(time());
+
+        $txn->setReconciledType(ReconciledType::NA);
+
+        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $txn->setAttribute(Transaction\Entity::ON_HOLD, $onHold);
+
+        $txn->setBalanceUpdated(false);
+
+        $merchant = $txn->merchant;
+
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            $txn->setReference3("disabled");
+        }
+
+        $this->trace->info(TraceCode::TIDB_STREAMING_MAKESHIFT_LOGIC, [
+            "txnReference3"        => $txn->getReference3(),
+            "enableTidbStreaming"   => false
+        ]);
+
+        if ($transferPayment->isExternal() === false)
+        {
+            $this->repo->saveOrFail($transferPayment);
+        }
+
+        $this->trace->info(TraceCode::TRANSFER_TXN_CREATED_IN_REVERSE_SHADOW,
+                           [
+                               'txn_id'                => $txn->getId(),
+                               'payment_id'            => $transferPayment->getId(),
+                               'transfer_id'           => $transferPayment->getTransferId(),
+                           ]);
+
+        return $txn;
+    }
+
+    public function createTransferTransactionFromLedgerJournalRearch($journal, $transfer)
+    {
+        $txn = $this->transformJournalResponseToTransactionEntityBase($journal);
+
+        $merchant = $transfer->merchant;
+
+        // source_associate does 2 way mapping. Txn ->Transfer and Transfer->Txn.
+        //  for dual write rearch cases for enabled variant scenarios only transfer will be mapped txn and not vice versa.
+        // Kafka dual writes will do the pending mapping for same
+        if ($transfer->isExternal() === false)
+        {
+            $txn->setEntityId($transfer->getId());
+
+            $txn->setType($transfer->getEntity());
+
+            $transfer->setAttribute(Transfer\Entity::TRANSACTION_ID,$txn->getId());
+        }
+        else
+        {
+            $txn->setEntityId($transfer->getId());
+
+            $txn->setType($transfer->getEntity());
+        }
+
+        $txn->merchant()->associate($merchant);
+
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $commissionLedgerEntry = $this->getCommissionLedgerEntryForTransactionTypeFromJournal($journal, Transaction\Type::TRANSFER);
+
+        $taxBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journal,Constants::PAYABLE, Constants::RZP_GST);
+
+        $apiFee = $commissionLedgerEntry['amount'] + $taxBalanceLedgerEntry['amount'];
+
+        $values = [
+            Transaction\Entity::API_FEE         => (int) $apiFee,
+            Transaction\Entity::GATEWAY_FEE     => 0,
+            Transaction\Entity::RECONCILED_AT   => time(),
+            Transaction\Entity::RECONCILED_TYPE => ReconciledType::NA,
+            Transaction\Entity::SETTLED         => 0,
+            Transaction\Entity::SETTLED_AT      => $settledAt,
+            Transaction\Entity::CHANNEL         => $transfer->merchant->getChannel(),
+        ];
+
+        $txn->fill($values);
+
+        $txn->setBalanceUpdated(false);
+
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+           $txn->setReference3("disabled");
+        }
+
+        $this->trace->info(TraceCode::TIDB_STREAMING_MAKESHIFT_LOGIC, [
+            "txnReference3"        => $txn->getReference3(),
+            "enableTidbStreaming"   => false
+        ]);
+
+        // note: txn is not db saved, only transfer is saved to db here in rearch. Api ledger is created via kafka dual write job
+        if ($transfer->isExternal() === false)
+        {
+            $this->repo->saveOrFail($transfer);
+        }
+
+        $this->trace->info(TraceCode::TRANSFER_TXN_CREATED_IN_REVERSE_SHADOW,
+                           [
+                               'txn_id'                => $txn->getId(),
+                               'transfer_id'           => $transfer->getId(),
+                               'transfer_source_id'    => $transfer->getSourceId(),
+                               'transfer_source_type'  => $transfer->getSourceType(),
+                           ]);
 
         return $txn;
     }
