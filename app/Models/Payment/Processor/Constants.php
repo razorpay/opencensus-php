@@ -154,4 +154,6 @@ class Constants
 
     const RESPAWN = 'respawn';
 
+    const HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID = 'app.handle_async_balance_update_by_redis_queue_exp_id';
+
 }

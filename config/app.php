@@ -1131,4 +1131,6 @@ return array(
     'cms_create_override_test_experiment_id' => env('CMS_CREATE_OVERRIDE_TEST_EXPERIMENT_ID'),
 
     'cms_create_override_live_experiment_id' => env('CMS_CREATE_OVERRIDE_LIVE_EXPERIMENT_ID'),
+
+    'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID')
 );

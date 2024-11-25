@@ -303,6 +303,7 @@
             <exclude>/tests/Functional/Payment/PaymentCreateDCCTest.php</exclude>
             <file>./tests/Functional/Order/Product/ProductDecompTest.php</file>
             <file>./tests/Unit/Payments/TestProcessor.php</file>
+            <file>./tests/Unit/Payments/TestAsyncBalanceUpdate.php</file>
         </testsuite>
         <testsuite name="Payment Test Suite - 1">
             <exclude>./tests/Functional/Payment/TerminalSelectionTest.php</exclude>

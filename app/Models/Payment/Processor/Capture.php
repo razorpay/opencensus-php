@@ -1148,8 +1148,17 @@ trait Capture
             //This will only be enabled for live mode in production. Non-prod & prod test mode won't be broken down to multiple queues.
             if ($this->app['env'] === Environment::PRODUCTION && $this->mode === Mode::LIVE)
             {
-                $ascii = ord($payment->getMerchantId());
-                $queueNo = $ascii%5;
+                $merchantId = $payment->getMerchantId();
+                $ascii = ord($merchantId);
+                $queueNo = $ascii % 5;
+
+                if ($this->isHandleAsyncBalanceUpdateByRedisQueueEnabled($merchantId)) {
+
+                    $queueNoFromRedis = $this->getQueueNumberFromRedis($merchantId);
+                    if ($queueNoFromRedis != -1) {
+                        $queueNo = $queueNoFromRedis;
+                    }
+                }
 
                 if ($queueNo === 0)
                 {
@@ -1187,6 +1196,55 @@ trait Capture
 
             $this->updateMerchantBalance($payment, $txn);
         }
+    }
+
+    /**
+     * @param $merchantId
+     * @return int
+     */
+    public function getQueueNumberFromRedis($merchantId): int
+    {
+        $queueNo = -1;
+        $redisData = $this->app['redis']->hGetAll('merchant_based_balance_update_common_queue');
+
+        if (isset($redisData[$merchantId]) === true)
+        {
+            $queueNo = $redisData[$merchantId];
+
+            // Map Redis queue name (e.g., Queue1, Queue2) to queue number
+            if (preg_match('/Queue(\d+)/', $queueNo, $matches)) {
+                $queueNo = (int)$matches[1] - 1;
+            }
+        }
+        return $queueNo;
+    }
+
+    public function isHandleAsyncBalanceUpdateByRedisQueueEnabled(string $merchantId)
+    {
+        $default_variant = 'enable';
+
+        try
+        {
+            $properties = [
+                'id' => $merchantId,
+                'experiment_id' => $this->app['config']->get(PaymentConstants::HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === $default_variant;
+        }
+        catch (\Throwable $e){
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get(PaymentConstants::HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID) ?? null
+            ]);
+
+            return false;
+        }
+
     }
 
     public function updateMerchantBalance(Payment\Entity $payment, Transaction\Entity $txn, $asyncTxnEnabled = false)
