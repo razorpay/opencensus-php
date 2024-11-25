@@ -6877,7 +6877,13 @@ class Service extends Base\Service
         $data[EntityConstants::MERCHANT_DETAIL][Constants::TOTAL_LEAD_SCORE] = optional($merchant->merchantBusinessDetail)->getTotalLeadScore() ?? 0;
 
         $data[EntityConstants::MERCHANT_DETAIL][BusinessDetailConstants::ACQUISITION_MODEL] = optional($businessDetails)->getAcquisitionModel();
-
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchant->getMerchantId());
+        if (empty($userDeviceDetail) === false)
+        {
+            $data[EntityConstants::MERCHANT_DETAIL][DeviceDetailConstants::WORKFLOW_TYPE] = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
+            $data[EntityConstants::MERCHANT_DETAIL][DeviceDetailConstants::WORKFLOW_DETAILS] = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS);
+        }
+       
         if($merchantDetail != null) {
 
             $merchantAov = $merchantDetail->avgOrderValue;

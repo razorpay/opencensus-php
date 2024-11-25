@@ -121,7 +121,7 @@ class Events
 
         self::PAYMENTS_ENABLED                            => 'sms.onboarding.payments_enabled',
         self::NEEDS_CLARIFICATION                         => 'sms.onboarding.needs_clarification_v2',
-        self::EDD_PENDING                                 => 'sms.onboarding.edd_pending',
+        self::EDD_PENDING                                 => 'Sms.Onboarding.Edd_pending',
         self::UNREGISTERED_PAYMENTS_ENABLED               => 'sms.onboarding.unregistered.payments_enabled_v2',
         self::UNREGISTERED_SETTLEMENTS_ENABLED            => 'sms.onboarding.unregistered.settlements_enabled',
         self::REGISTERED_PAYMENTS_ENABLED                 => 'sms.onboarding.registered.payments_enabled',

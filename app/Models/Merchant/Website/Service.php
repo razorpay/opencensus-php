@@ -21,6 +21,7 @@ use RZP\Exception\ServerErrorException;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\VerificationDetail as MVD;
