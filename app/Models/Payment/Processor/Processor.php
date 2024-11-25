@@ -378,16 +378,6 @@ class Processor
     const OPEN_WALLET_CARD_PAYMENTS_VIA_PGROUTER = 'open_wallet_card_payments_via_pg_router';
 
     /**
-     * Razorx flag to indicate if  Payment links should go via PG Router and CPS or just via API service
-     */
-    const PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER = 'payment_links_card_payments_via_pg_router';
-
-    /**
-     * Razorx flag to indicate if PP/PB/PH card payment should go via PG Router and CPS or just via API service
-     */
-    const PL_CARD_PAYMENTS_VIA_PGROUTER = 'pl_card_payments_via_pg_router';
-
-    /**
      * Razorx flag to indicate if a saved card token payment should go via PG Router and CPS or just via API service
      */
     const SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER = 'saved_card_token_payments_via_pg_router';
@@ -1482,33 +1472,6 @@ class Processor
                     }
                 }
 
-                if (empty($order) === false and $order->getProductType() === ProductType::PAYMENT_LINK_V2)
-                {
-                    // Added the experiment back to stop PL traffic for MIDs on cards re-arch.
-                    // JIRA: https://razorpay.atlassian.net/browse/CARDREARCH-195
-                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-                    if ($result != 'on') {
-                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                            'reason' => "payment_link_v2",
-                            'merchant_id' => $merchant->getId(),
-                        ]);
-                        return false;
-                    }
-                }
-
-                if (empty($order) === false and ($order->getProductId() !== null
-                        and in_array($order->getProductType(), PaymentLink\Entity::paymentLinkEntityProductTypes())))
-                {
-
-                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::PL_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-                    if ($result != 'on') {
-                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                            'reason' => "pp_pb_ph",
-                            'merchant_id' => $merchant->getId(),
-                        ]);
-                        return false;
-                    }
-                }
                 //invoice rearch card payment
                 if (empty($order) === false and ($order->getProductId() !== null
                         and $order->getProductType() === ProductType::INVOICE))
@@ -13337,26 +13300,19 @@ class Processor
 
     /**
      * shouldRouteAppsViaUPS checks if Apps traffic should be routed to UPI Rearch flow
+     * Only auth_links, subscriptions are not ready for rearch flow
+     * If product_type is not auth_links, subscriptions route via upi rearch
+     * Other products such as pl, pp, pb, ph, invoices, payment store, magic checkout are 100% ramped up
      * @param $order
      * @return bool
      */
     public function shouldRouteAppsViaUPS($order): bool
     {
-        $productType = optional($order)->getProductType() ?? 'unknown';
+        if (!in_array($order->getProductType(), [ProductType::AUTH_LINK, ProductType::SUBSCRIPTION])) {
+            return true;
+        }
 
-        $feature = self::ALLOW_APPS_MERCHANTS_ON_REARCH_UPS . '_' . $productType;
-
-        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(), $feature, $this->mode);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_APPS_RAZORX_VARIANT, [
-            'merchant_id'  => $this->merchant->getMerchantId(),
-            'product_type' => $productType,
-            'variant'      => $variant,
-            'mode'         => $this->mode,
-            'feature'      => $feature,
-        ]);
-
-        return str_starts_with($variant, 'on') === true;
+        return false;
     }
 
     // calculateAndAddConvenienceFeeForUpiIfApplicable is temporary function to calculate convenience fee for UPIPayments until this is moved to API By-pass
