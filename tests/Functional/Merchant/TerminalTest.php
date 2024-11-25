@@ -16,6 +16,7 @@ use RZP\Models\Currency;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Terminal;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use \RZP\Models\Terminal\Shared;

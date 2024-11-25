@@ -3783,6 +3783,9 @@ class Repository extends Base\Repository
         }
 
         $connectionArray = [Mode::LIVE, Mode::TEST, Connection::ASV_WRITER];
+        if ($this->asvRouter->shouldStopWritesToApiLiveAndApiTestDb(new Entity())) {
+            $connectionArray = [Connection::ASV_WRITER];
+        }
 
         foreach ($connectionArray as $mode)
         {
@@ -3829,6 +3832,10 @@ class Repository extends Base\Repository
         }
 
         $connectionArray = [Mode::LIVE, Mode::TEST, Connection::ASV_WRITER];
+
+        if ($this->asvRouter->shouldStopWritesToApiLiveAndApiTestDb(new Entity())) {
+            $connectionArray = [Connection::ASV_WRITER];
+        }
 
         foreach ($connectionArray as $mode)
         {

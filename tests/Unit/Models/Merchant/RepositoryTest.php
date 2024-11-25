@@ -859,7 +859,7 @@ class RepositoryTest extends RepositoryTestHelper
         assertNotEquals(1234, $merchantEntity2->getUpdatedAt());
     }
 
-    public function testMerchantSaveOrFailMigration()
+    public function testMerchantSaveOrFailReadMigration()
     {
         $attributes = [
             "name" => "saveorfailreadmigration",
@@ -868,6 +868,30 @@ class RepositoryTest extends RepositoryTestHelper
         ];
 
         $this->validateSaveOrFailReadMigration("merchant", $attributes, new Repository());
+    }
+
+    public function testMerchantSaveOrFailMigration()
+    {
+        $entity = $this->fixtures->create("merchant");
+
+        $attributes = [
+            "name" => "saveorfailreadmigration",
+            "email" => "saveorfailreadmigration@gmail.com",
+            "website" => "www.saveorfailreadmigration.com"
+        ];
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_account', false);
+        $this->validateSaveOrFailMigration("merchant", $attributes, new Repository(), $entity, true);
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_account', true);
+
+        $attributes = [
+            "name" => "saveorfailWriteFalsemigration",
+            "email" => "saveorfailfritefalsemigration@gmail.com",
+            "website" => "www.saveorfailWriteFalsemigration.com"
+        ];
+
+        $this->validateSaveOrFailMigration("merchant", $attributes, new Repository(), $entity, false);
     }
 
     public function testMerchantUniqueEmailValidation()

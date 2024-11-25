@@ -79,11 +79,11 @@ trait RepositoryUpdateTestAndLiveAndAsv
 
                 $asvEntity->saveOrFail($options);
 
-                $liveEntity->saveOrFail($options);
+                if ($this->asvRouter->shouldStopWritesToApiLiveAndApiTestDb($entity) === false) {
+                    $liveEntity->saveOrFail($options);
 
-                $testEntity->saveOrFail($options);
-
-                $this->validateEntitiesMatch($liveEntity, $testEntity);
+                    $testEntity->saveOrFail($options);
+                }
 
                 return $liveEntity;
             });
@@ -177,11 +177,12 @@ trait RepositoryUpdateTestAndLiveAndAsv
             list($liveEntity, $testEntity) = $this->cloneEntity($entity);
             $asvEntity = $this->createAsvEntity($entity);
 
-            $res1 = $liveEntity->delete();
-            $res2 = $testEntity->delete();
-            $asvEntity->delete();
+            if ($this->asvRouter->shouldStopWritesToApiLiveAndApiTestDb($entity) === false) {
+                $res1 = $liveEntity->delete();
+                $res2 = $testEntity->delete();
+            }
 
-            $this->validateEntitiesMatch($liveEntity, $testEntity);
+            $asvEntity->delete();
 
             return $res1;
         });

@@ -320,6 +320,65 @@ class AsvRouter
         }
     }
 
+    public function shouldStopWritesToApiLiveAndApiTestDb($entity): bool
+    {
+        try {
+            $entityName = $entity->getEntityName();
+
+            // Define individual entity flags
+            $entityConfigMapping = [
+                E::MERCHANT_EMAIL => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_EMAIL,
+                E::STAKEHOLDER => ASVV2Constant::STOP_ASV_ENTITY_WRITES_STAKEHOLDER,
+                E::MERCHANT_BUSINESS_DETAIL => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_BUSINESS_DETAIL,
+                E::MERCHANT_DOCUMENT => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_DOCUMENT,
+                E::MERCHANT_WEBSITE => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_WEBSITE,
+                E::MERCHANT => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_ACCOUNT, // Shared constant for MERCHANT and ACCOUNT
+                E::MERCHANT_DETAIL => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_DETAIL,
+                E::ACCOUNT => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_ACCOUNT,  // Shared constant for MERCHANT and ACCOUNT
+            ];
+
+            if (isset($entityConfigMapping[$entityName])) {
+                $configKey = $entityConfigMapping[$entityName];
+
+                if ($this->asvConfig[$configKey] === false) {
+                    $this->trace->count(Metric::ASV_ENTITIES_STOP_WRITES_TO_API_DB, [
+                        'routeOrWorkerName' => $this->getRouteOrJobName(),
+                        'reason' => "ENV_FLAG_DISABLED",
+                        'entity' => $entityName,
+                        'configKey' => $configKey,
+                    ]);
+
+                    return false;
+                }
+
+                $this->trace->count(Metric::ASV_ENTITIES_STOP_WRITES_TO_API_DB, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => "REQUEST_ROUTED",
+                    'entity' => $entityName,
+                    'configKey' => $configKey,
+                ]);
+
+                if ($this->app['env'] === Environment::AUTOMATION) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            return false;
+        } catch (\Exception $e) {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_EXCEPTION_WRITE_FLOW);
+            $this->trace->count(Metric::ASV_ENTITIES_STOP_WRITES_TO_API_DB, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => "GOT_EXCEPTION",
+                'entity' => $entity->getEntityName(),
+            ]);
+
+            return false;
+        }
+    }
+
+
     public function shouldRouteImplicitJoinToAccountService($id, $entityName, $repoClass, $functionName): bool {
         try {
 

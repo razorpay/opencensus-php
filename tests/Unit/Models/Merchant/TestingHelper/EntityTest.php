@@ -62,6 +62,35 @@ class RepositoryTestHelper extends TestCase
         }
     }
 
+    public function validateSaveOrFailMigration($entityName, $attributes, $repo, $entity, $enableSave = true)
+    {
+        $entity->fill($attributes);
+
+        $repo->saveOrFail($entity);
+        $entityClass = $this->getEntityObjectForMode($entityName, 'test');
+        $testEntity = $entityClass->on(Connection::TEST)->findOrFailPublic($entity->getKey());
+        $liveEntity = $entityClass->on(Connection::LIVE)->findOrFailPublic($entity->getKey());
+        $asvEntity  = $entityClass->on(Connection::ASV_WRITER)->findOrFailPublic($entity->getKey());
+
+
+        if ($enableSave === true) {
+            $this->assertEquals($testEntity->getAttributes(), $liveEntity->getAttributes());
+            foreach ($attributes as $fieldName => $fieldValue) {
+                $this->assertEquals($fieldValue, $liveEntity->getAttribute($fieldName));
+                $this->assertEquals($fieldValue, $asvEntity->getAttribute($fieldName));
+                $this->assertEquals($fieldValue, $testEntity->getAttribute($fieldName));
+            }
+        } else {
+            // update won't happen in
+            $this->assertEquals($testEntity->getAttributes(), $liveEntity->getAttributes());
+            foreach ($attributes as $fieldName => $fieldValue) {
+                $this->assertNotEquals($fieldValue, $liveEntity->getAttribute($fieldName));
+                $this->assertEquals($fieldValue, $asvEntity->getAttribute($fieldName));
+                $this->assertNotEquals($fieldValue, $testEntity->getAttribute($fieldName));
+            }
+        }
+    }
+
     public function runTestsForImplicitJoin( $entitiesData)
     {
         for ($i = 0; $i < count($entitiesData); $i++)

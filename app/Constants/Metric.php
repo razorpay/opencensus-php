@@ -73,6 +73,9 @@ class Metric
     const ACCOUNT_SERVICE_CHECK_WRITE_FLOW_RESULT = 'account_service_check_write_flow_result';
 
     const ASV_REQUEST_NOT_ROUTED = 'asv_read_request_not_routed';
+
+
+    const ASV_ENTITIES_STOP_WRITES_TO_API_DB = 'asv_entities_stop_writes_to_api_db';
     const ASV_READ_REQUEST_ROUTING_RESULT = 'asv_read_request_routing_result';
 
     const ASV_FALLBACK_TO_API_DB_RESULT = 'asv_fallback_to_api_db_result';

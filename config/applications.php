@@ -1764,6 +1764,14 @@ return [
 
         //
         'disable_read_in_write_flow' => env('ASV_V2_DISABLE_READ_IN_WRITE_FLOW', false),
+        'stop_asv_entity_writes_merchant_email' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_MERCHANT_EMAIL', false),
+        'stop_asv_entity_writes_stakeholder' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_STAKEHOLDER', false),
+        'stop_asv_entity_writes_merchant_business_detail' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_MERCHANT_BUSINESS_DETAIL', false),
+        'stop_asv_entity_writes_merchant_document' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_MERCHANT_DOCUMENT', false),
+        'stop_asv_entity_writes_merchant_website' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_MERCHANT_WEBSITE', false),
+        'stop_asv_entity_writes_merchant_account' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_MERCHANT_ACCOUNT', false), // Shared for MERCHANT and ACCOUNT
+        'stop_asv_entity_writes_merchant_detail' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_MERCHANT_DETAIL', false),
+
 
         // splitz experiment ids
         'splitz_experiment_website_read_merchantid' => env('ASV_SPLITZ_EXPERIMENT_WEBSITE_READ_MERCHANTID', ''),
