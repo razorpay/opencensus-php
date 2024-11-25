@@ -2181,6 +2181,11 @@ class Constants
     const STMT_RBL_FTP_ENABLED = 'stmt_rbl_ftp_enabled';
 
     /**
+     * Feature flag for Small merchant Program
+     */
+    const SMALL_MERCHANT_PROGRAM = 'small_merchant_program';
+
+    /**
      * Feature flag for Penniless Validation
      */
     const PENNILESS_VALIDATION = 'penniless_validation';
@@ -3216,6 +3221,7 @@ class Constants
         self::STMT_RBL_DISABLED                      => true,
         self::STMT_ICICI_FTP_ENABLED                 => true,
         self::STMT_RBL_FTP_ENABLED                   => true,
+        self::SMALL_MERCHANT_PROGRAM => true,
         self::PENNILESS_VALIDATION                   => true,
         self::FAV_SERVICE_ENABLED                    => true,
         self::EXCLUDE_FROM_CA_BILLING                => true,
