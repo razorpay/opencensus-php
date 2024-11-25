@@ -534,12 +534,9 @@ class Service extends Base\Service
 
         $contact = (new DisputeCore())->getChargebackPOCMobile($merchant);
 
-        $isWhatsappEnabled = (new MecrchantRZP\Core())->isRazorxExperimentEnable($merchantId,
-            MecrchantRZP\RazorxTreatment::FRAUD_WHATSAPP_NOTIFICATIONS_MIDS);
 
-        if ($isWhatsappEnabled){
-            $this->notifyEnabledMerchant($merchant, $ticketDetails, $contact);
-        }
+        $this->notifyEnabledMerchant($merchant, $ticketDetails, $contact);
+
     }
 
     public function notifyEnabledMerchant($merchant, $ticketDetails, $contact)

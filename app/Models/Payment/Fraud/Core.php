@@ -135,15 +135,15 @@ class Core extends Base\Core
             $createdTimestamp = strtotime($createdDate);
             $currentTimestamp = time();
 
-//            if (($currentTimestamp - $createdTimestamp) <= 86400) {
-            $tableRow = array();
-            $tableRow[CyberHelpdeskConstants::PAYMENT_ID] = $payment[CyberHelpdeskConstants::PAYMENT_ID];
-            $tableRow[CyberHelpdeskConstants::AMOUNT] = $payment[CyberHelpdeskConstants::AMOUNT];
-            $tableRow[CyberHelpdeskConstants::SOURCE] = $payment[CyberHelpdeskConstants::SOURCE_OF_NOTIFICATION];
-            $tableRow[CyberHelpdeskConstants::CREATED_DATE] = date('Y-m-d H:i:s', $payment[CyberHelpdeskConstants::CREATED_DATE]);
-            $tableRow[CyberHelpdeskConstants::RESPOND_BY] = $payment[CyberHelpdeskConstants::RESPOND_BY];
-            $tableData[] = $tableRow;
-//            }
+            if (($currentTimestamp - $createdTimestamp) <= 86400) {
+                $tableRow = array();
+                $tableRow[CyberHelpdeskConstants::PAYMENT_ID] = $payment[CyberHelpdeskConstants::PAYMENT_ID];
+                $tableRow[CyberHelpdeskConstants::AMOUNT] = $payment[CyberHelpdeskConstants::AMOUNT];
+                $tableRow[CyberHelpdeskConstants::SOURCE] = $payment[CyberHelpdeskConstants::SOURCE_OF_NOTIFICATION];
+                $tableRow[CyberHelpdeskConstants::CREATED_DATE] = date('Y-m-d H:i:s', $payment[CyberHelpdeskConstants::CREATED_DATE]);
+                $tableRow[CyberHelpdeskConstants::RESPOND_BY] = $payment[CyberHelpdeskConstants::RESPOND_BY];
+                $tableData[] = $tableRow;
+            }
             $this->app['trace']->info(
                 TraceCode::WHATSAPP_FRAUD_MESSAGE_FOR_SINGLE_MERCHANT_TIMESTAMP,
                 [

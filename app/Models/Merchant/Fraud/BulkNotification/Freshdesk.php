@@ -172,12 +172,7 @@ class Freshdesk extends Base\Core
                 'response'  => $response,
             ]);
 
-            $isWhatsappEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchantId,
-                Merchant\RazorxTreatment::FRAUD_WHATSAPP_NOTIFICATIONS_MIDS);
-
-            if ($isWhatsappEnabled){
-                (new \RZP\Models\Payment\Fraud\Core())->notifyFraudVIAWhatsAPP($merchantData, $merchantId);
-            }
+            (new \RZP\Models\Payment\Fraud\Core())->notifyFraudVIAWhatsAPP($merchantData, $merchantId);
 
             $fdTicketId = $response['id'] ?? null;
         }
