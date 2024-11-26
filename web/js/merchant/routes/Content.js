@@ -57,7 +57,10 @@ import { importRemote } from 'merchant/utils/dynamic-remotes';
 import { isSettlementsV3detailsRevamp } from 'merchant/views/Settlements/v3/utils/common';
 import { isGCMSExperimentEnabled } from 'merchant/views/GCMS/shared/utils';
 import { isHelpWidgetDisabled } from 'merchant/components/Support/utils';
-import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
+import {
+  checkReconSaasEnabled,
+  checkCustomReportingEnabled,
+} from 'merchant/views/Reconciliations/utils';
 import AssistedFinancing from 'merchant/views/Affordability/AssistedFinancing';
 import { isExperimentEnabled } from 'common/splitz/utils';
 
@@ -621,6 +624,16 @@ const ReconRunDetail = lazy(() =>
 );
 const PosMerchantAgreement = lazy(() =>
   import(/* webpackChunkName: "PosMerchantAgreement" */ 'merchant/views/POS/MerchantAgreement'),
+);
+const CreateReport = lazy(() =>
+  import(
+    /* webpackChunkName: "CreateReport" */ 'merchant/views/Reconciliations/Dashboard/CreateReport'
+  ),
+);
+const EditReport = lazy(() =>
+  import(
+    /* webpackChunkName: "EditReport" */ 'merchant/views/Reconciliations/Dashboard/EditReport'
+  ),
 );
 
 @withI18Service
@@ -2468,6 +2481,30 @@ class Content extends Component {
               element={
                 <RouteGuard additionalCondition={() => checkReconSaasEnabled(splitz)}>
                   <ReconRunDetail />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="reports"
+              element={
+                <RouteGuard
+                  additionalCondition={() =>
+                    checkReconSaasEnabled(splitz) && checkCustomReportingEnabled(splitz)
+                  }
+                >
+                  <CreateReport />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="reports/:configId"
+              element={
+                <RouteGuard
+                  additionalCondition={() =>
+                    checkReconSaasEnabled(splitz) && checkCustomReportingEnabled(splitz)
+                  }
+                >
+                  <EditReport />
                 </RouteGuard>
               }
             />

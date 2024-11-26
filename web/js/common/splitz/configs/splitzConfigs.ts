@@ -507,6 +507,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'enable_custom_reporting',
+        experimentId: {
+          beta: 'P6R9W5TW65FnG4',
+          production: 'P4V6IAJs154hVG',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'turned',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'nocode_monetization',
         experimentId: {
           beta: 'OemGz3a8jmYDvi',

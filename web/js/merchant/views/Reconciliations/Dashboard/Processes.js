@@ -15,19 +15,25 @@ import {
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 
+import { useSplitzService } from 'common/splitz';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { RenderErrorLoadingOrChild } from 'merchant/views/Reconciliations/commonComponents';
 import { ReconScreens } from 'merchant/views/Reconciliations/const';
 import { useReconTracking } from 'merchant/views/Reconciliations/hooks';
+import { checkCustomReportingEnabled } from 'merchant/views/Reconciliations/utils';
 
-import { DashboardTabs, ProcessTabs } from './constants';
+import { DashboardTabs, RECON_CREATE_REPORT_URL, ProcessTabs } from './constants';
 const cols = ['Name', 'Product', 'Type', 'Last Run', ''];
+
 const Processes = () => {
+  const { abExperiments } = useSplitzService();
+
   const [processList, setProcessList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
   const navigate = useNavigate();
+
   const fetchProcesses = async () => {
     try {
       setError(false);
@@ -49,6 +55,7 @@ const Processes = () => {
       setIsLoading(false);
     }
   };
+
   const createConfig = () => {
     analyticsTrackWithUserInfo({
       screen: ReconScreens.ProcessListing,
@@ -57,6 +64,11 @@ const Processes = () => {
     });
     navigate(`/reconciliations/create-config/2`);
   };
+
+  const goToCreateReport = () => {
+    navigate(RECON_CREATE_REPORT_URL);
+  };
+
   const goToProcessListingPage = ({ processData }) => {
     analyticsTrackWithUserInfo({
       screen: ReconScreens.ProcessListing,
@@ -72,18 +84,26 @@ const Processes = () => {
       `/reconciliations/dashboard/${DashboardTabs.PROCESSES}/${processData?.id}/${ProcessTabs.OVERVIEW}`,
     );
   };
+
   useReconTracking({
     objectName: 'recon process list',
     screen: ReconScreens.ProcessListing,
   });
+
   useEffect(() => {
     fetchProcesses();
   }, []);
+
   return (
     <Box testID="recon-process-listing">
-      <Box display="flex" justifyContent="flex-end" marginBottom="spacing.4">
-        <Button variant="secondary" icon={PlusIcon} onClick={createConfig}>
-          New Configuration
+      <Box display="flex" justifyContent="flex-end" marginBottom="spacing.4" gap="spacing.6">
+        {checkCustomReportingEnabled({ abExperiments }) ? (
+          <Button variant="secondary" onClick={goToCreateReport}>
+            Create Report
+          </Button>
+        ) : null}
+        <Button variant="primary" icon={PlusIcon} onClick={createConfig}>
+          New Process
         </Button>
       </Box>
       <RenderErrorLoadingOrChild isError={error} isLoading={isLoading}>

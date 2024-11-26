@@ -33,6 +33,7 @@ export enum Teams {
   RAZORPAY_WALLET = 'Razorpay Wallet',
   OMNI_CHANNEL = 'OMNI_CHANNEL',
   RAY = 'Ray',
+  RECON_SAAS = 'recon-saas',
 }
 
 // Maintain this list in ascending order

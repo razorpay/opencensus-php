@@ -29,6 +29,7 @@ import {
 import moment from 'moment';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { COMMON_Z_INDEX } from 'common/constant';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { getStartDateFromDiff } from 'common/utils/rzp-utils';
@@ -234,6 +235,7 @@ export default function RunDetail() {
     if (fileWorkflowId) {
       setSelectedRunId(fileWorkflowId);
       fetchRuns();
+      fetchDetails();
     }
   }, [fileWorkflowId]);
 

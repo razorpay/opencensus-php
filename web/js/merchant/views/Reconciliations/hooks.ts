@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@razorpay/blade/components';
 import moment, { Moment } from 'moment';
 
@@ -71,4 +71,42 @@ const useCalendarRange = () => {
   };
 };
 
-export { useCalendarRange, useReconTracking };
+const useScrollPosition = (ref: React.RefObject<HTMLElement>) => {
+  const [scrollPosition, setScrollPosition] = useState<{ scrollLeft: number; scrollTop: number }>({
+    scrollLeft: 0,
+    scrollTop: 0,
+  });
+
+  const isScrolling = useRef<boolean>(false);
+
+  const handleScroll = () => {
+    if (ref.current) {
+      const { scrollLeft, scrollTop } = ref.current;
+      if (!isScrolling.current) {
+        isScrolling.current = true;
+        requestAnimationFrame(() => {
+          setScrollPosition({ scrollLeft, scrollTop });
+          isScrolling.current = false;
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    const currentRef = ref.current;
+    if (currentRef) {
+      currentRef.addEventListener('scroll', handleScroll);
+      handleScroll();
+
+      return () => {
+        currentRef.removeEventListener('scroll', handleScroll);
+      };
+    }
+
+    return () => {};
+  }, [ref]);
+
+  return scrollPosition;
+};
+
+export { useCalendarRange, useReconTracking, useScrollPosition };
