@@ -1367,7 +1367,7 @@ class UpiAirtelQRCodeTest extends TestCase
         $content = $this->buildQRUnexpectedPaymentRequest($terminal);
         $content['upi']['gateway_merchant_id'] = null;
         unset($content['terminal']['gateway_merchant_id']);
-        $content['terminal']['gateway_merchant_id2'] = 'testvpaOffline@mairtel';
+        $content['terminal']['gateway_merchant_id2'] = 'testvpaoffline@mairtel';
 
         $response = $this->makeUnexpectedLivePaymentAndGetContent($content);
         $this->assertTrue($response['success']);
@@ -1757,7 +1757,7 @@ class UpiAirtelQRCodeTest extends TestCase
         $response = $this->makeRequestAndGetContent($this->testData['testPOSDeviceDetailOnDashboardForOfflineQRCode']['request']);
 
         $this->assertEquals(null, $response['device_detail']);
-        $this->assertEquals('testvpaOffline@mairtel', $response['payee_vpa']);
+        $this->assertEquals('testvpaoffline@mairtel', $response['payee_vpa']);
     }
 
     public function testEzetapNotificationOfflineQRCode()
@@ -2040,7 +2040,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type'  => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@mairtel',
+                         'vpa'   => 'testvpaoffline@mairtel',
                      ],
             headers: [
                          'X-Razorpay-Request-Source' => 'ezetap'
