@@ -93,7 +93,6 @@ const FormField = ({
           value={field.value}
           validationState={errors?.[name] ? 'error' : 'none'}
           errorText={errorText}
-          rules={rules}
           onChange={(args) => {
             onDropdownChange(args);
           }}

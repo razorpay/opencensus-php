@@ -22,6 +22,7 @@ import {
   DeviceFees,
   DeviceOptionalFeatures,
   MODULAR_FLAGS,
+  RentalChargeFrequencyLabels,
 } from 'apps/pos/src/app/constants/DeviceSelection';
 import {
   EditDeviceInCartForm,
@@ -197,6 +198,7 @@ const AddDeviceToCart = ({
   };
 
   const devicePlan = watch(MODULAR_DEVICE_FIELDS.DEVICE_PLAN);
+  const selectionPlanRate = latestRateConfig?.plans?.find((plan) => plan?.planName === devicePlan);
 
   useEffect(() => {
     // Track whenever the drawer is opened //
@@ -214,7 +216,9 @@ const AddDeviceToCart = ({
   }, [isDetailsOpen]);
 
   const shouldShowOptionalFeatures = () => {
-    if (!isPosEkycAgent) {
+    if (!selectionPlanRate?.rentalCharge && !isPosEkycAgent) {
+      return false;
+    } else if (!isPosEkycAgent) {
       return true;
     } else if (deviceConfig.title === DeviceModel.SOUNDBOX_KIT) {
       return true;
@@ -260,10 +264,10 @@ const AddDeviceToCart = ({
               {!isPosEkycAgent ? (
                 <Box testID="device-fees-container">
                   {DeviceFees.map((deviceFee, index) =>
-                    deviceFee?.isHidden?.(devicePlan) ? null : (
+                    deviceFee?.isHidden?.(selectionPlanRate as PlanConfig) ? null : (
                       <React.Fragment key={deviceFee.field}>
                         <DeviceFee deviceFee={deviceFee} />
-                        {index !== DeviceFees.length - 1 ? (
+                        {index !== DeviceFees.length - 1 && selectionPlanRate?.rentalCharge ? (
                           <Divider orientation="horizontal" width="100%" marginBottom="spacing.5" />
                         ) : null}
                       </React.Fragment>
@@ -272,12 +276,18 @@ const AddDeviceToCart = ({
                 </Box>
               ) : null}
               {shouldShowOptionalFeatures()
-                ? DeviceOptionalFeatures.map((optionalFeature) => (
-                    <OptionalFeatures
-                      key={optionalFeature.field}
-                      optionalFeature={optionalFeature}
-                    />
-                  ))
+                ? DeviceOptionalFeatures.map((optionalFeature) => {
+                    let updatedOptionalFeature = {
+                      ...optionalFeature,
+                      title: RentalChargeFrequencyLabels[devicePlan] ?? '',
+                    };
+                    return (
+                      <OptionalFeatures
+                        key={optionalFeature.field}
+                        optionalFeature={updatedOptionalFeature}
+                      />
+                    );
+                  })
                 : null}
               <Box marginBottom="spacing.6" display="flex" alignItems="center">
                 <Button

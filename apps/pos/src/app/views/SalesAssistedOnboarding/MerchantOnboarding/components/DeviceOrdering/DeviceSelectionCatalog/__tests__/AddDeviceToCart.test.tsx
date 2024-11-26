@@ -104,7 +104,7 @@ describe('AddDeviceToCart', () => {
   test('should clear custom field if optional feature unchecked', async () => {
     renderApp();
     await userEvent.click(screen.getByText('Add Device'));
-    await userEvent.click(screen.getByTestId('lifetime-plan-card-radio'));
+    await userEvent.click(screen.getByTestId('monthly-plan-card-radio'));
     await userEvent.click(screen.getByText('Collecting Rental Charges in Advance (in months)'));
     const optionalField = screen.getByTestId(
       'Collecting Rental Charges in Advance (in months)-optional-field',

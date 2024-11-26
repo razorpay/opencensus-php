@@ -12,7 +12,6 @@ import {
 import { ControllerRenderProps } from 'react-hook-form';
 import { SelectDropdownOptions } from 'apps/pos/src/app/types/common';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
-import { FieldRules } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
 
 interface DropdownSelectProps {
   field: ControllerRenderProps;
@@ -21,7 +20,6 @@ interface DropdownSelectProps {
   value: any;
   validationState: 'none' | 'error' | 'success' | undefined;
   errorText: string;
-  rules?: FieldRules;
   onChange: (args) => void;
   selectOptions: Array<SelectDropdownOptions>;
   necessityIndicator: 'required' | 'none' | 'optional' | undefined;
@@ -36,7 +34,6 @@ const DropdownSelect = ({
   field,
   selectOptions,
   errorText = 'Required',
-  rules,
   necessityIndicator,
   validationState,
   onChange,
@@ -48,7 +45,6 @@ const DropdownSelect = ({
   const renderBody = (selectOptions) => {
     return (
       <ActionList>
-        {!rules?.required ? <ActionListItem title="None" value="" /> : null}
         {selectOptions?.map((option: SelectDropdownOptions) => (
           <ActionListItem key={option.value} title={option.label} value={option.value} />
         ))}

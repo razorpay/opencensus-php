@@ -1,4 +1,4 @@
-import { DeviceConfig, DeviceOrderSummaryItem } from 'apps/pos/src/app/types/modular';
+import { DeviceConfig, DeviceOrderSummaryItem, PlanConfig } from 'apps/pos/src/app/types/modular';
 
 export enum MODULAR_DEVICE_FIELDS {
   DEVICE_NAME = 'device_item_name_field',
@@ -46,7 +46,7 @@ export enum QuantityActions {
   reduce = 'reduce',
 }
 
-export type AvailableDevicePlans = 'monthly' | 'halfyearly' | 'quarterly' | 'yearly' | 'lifetime';
+export type AvailableDevicePlans = 'monthly' | 'half_yearly' | 'quarterly' | 'yearly' | 'lifetime';
 export type DeviceExtraFeatures = MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE;
 
 export interface DeviceFee {
@@ -55,7 +55,7 @@ export interface DeviceFee {
   customAmountField:
     | MODULAR_DEVICE_FIELDS.DEVICE_SETUP_CUSTOM_FEE_AMOUNT
     | MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_CUSTOM_AMOUNT;
-  isHidden?: (args: AvailableDevicePlans) => boolean;
+  isHidden?: (args: PlanConfig) => boolean;
 }
 
 export interface DeviceOptionalFeature {

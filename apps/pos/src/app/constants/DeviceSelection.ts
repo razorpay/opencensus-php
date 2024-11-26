@@ -1,5 +1,5 @@
 import { titleCase } from '@dashboard/shared-utils/rzp-utils';
-import { ModularPayload } from '../types/modular';
+import { ModularPayload, PlanConfig } from '../types/modular';
 import {
   AvailableDevicePlans,
   MODULAR_DEVICE_FIELDS,
@@ -19,7 +19,9 @@ export const DeviceFees: DeviceFee[] = [
     title: (devicePlan: string) => `${titleCase(devicePlan)} Rental Charges`,
     field: MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_TYPE,
     customAmountField: MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_CUSTOM_AMOUNT,
-    isHidden: (value: AvailableDevicePlans) => value === 'lifetime',
+    isHidden: (plan: PlanConfig) => {
+      return !plan?.rentalCharge;
+    },
   },
 ];
 
@@ -74,8 +76,15 @@ export const MODULAR_FLAGS: Record<string, ModularPayload> = {
 
 export const DEVICE_PLAN_TO_NAME_MAPPING: Record<AvailableDevicePlans, string> = {
   monthly: 'Monthly',
-  halfyearly: 'Half Yearly',
+  half_yearly: 'Half Yearly',
   quarterly: 'Quarterly',
   yearly: 'Yearly',
   lifetime: 'Lifetime',
 };
+
+export const RentalChargeFrequencyLabels: Record<Exclude<AvailableDevicePlans, 'lifetime'>, string> = {
+  monthly: 'Collecting Rental Charges in Advance (in months)',
+  quarterly: 'Collecting Rental Charges in Advance (in quarters)',
+  half_yearly: 'Collecting Rental Charges in Advance (in half years)',
+  yearly: 'Collecting Rental Charges in Advance (in years)',
+}
