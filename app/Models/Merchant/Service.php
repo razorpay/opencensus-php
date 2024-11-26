@@ -205,6 +205,8 @@ use RZP\Models\Merchant\Consent as Consent;
 use RZP\Models\Merchant\Analytics\DataProcessor;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AccountSDKWrapper;
+use RZP\Models\DeviceDetail\Entity as DeviceDetailEntity;
+use RZP\Models\DeviceDetail;
 
 class Service extends Base\Service
 {
@@ -7700,7 +7702,7 @@ class Service extends Base\Service
         return [$subMerchantUser, $created];
     }
 
-    protected function createUserAndAttachMerchant(Entity $subMerchant, string $email, string $product = null): User\Entity
+    protected function createUser(Entity $subMerchant, string $email, string $product = null): User\Entity
     {
         $skipCaptcha = Request::all()[User\Entity::SKIP_CAPTCHA_VALIDATION] ?? false;
 
@@ -7718,9 +7720,13 @@ class Service extends Base\Service
         {
             $subMerchantUser = (new User\Core)->create($userData,'create', $isLinkedAccountUser);
         }
+        return $subMerchantUser;
+    }
 
+    protected function createUserAndAttachMerchant(Entity $subMerchant, string $email, string $product = null): User\Entity
+    {
+        $subMerchantUser = $this->createUser($subMerchant, $email, $product );
         $this->core()->attachSubMerchantUser($subMerchantUser->getId(), $subMerchant, $product);
-
         return $subMerchantUser;
     }
 
@@ -7935,7 +7941,42 @@ class Service extends Base\Service
                 throw $ex;
             }
         }
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get(MerchantOnboardingProxyController::LINKED_ACCOUNT_MODULAR_ONBOARDING_ACTIVATE_EXPERIMENT_ID),
+        ];
+        $linkedAccountModularOnboardingEnabled =  $this->core()->isSplitzExperimentEnable($properties, 'enable');
+        if(ORG_ENTITY::isOrgCurlec($merchant->getOrgId()) and $linkedAccountModularOnboardingEnabled){
 
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNT_MODULAR_ONBOARDING,
+                [
+                    'input'     => $input,
+                ]);
+
+            if (!$enableDashboardAccess){
+                $newUser = $this->createUser($subMerchant, $subMerchant->getEmail(), $product);
+            }
+            $signupCampaign = DeviceDetailConstants::COUNTRY_SIGNUP_CAMPAIGN_MAPPING[$subMerchant->getCountry()] ?? DeviceDetailConstants::I18N_MY_LINKED_ACCOUNT_SIGNUP;
+            $deviceDetailInput = [
+                DeviceDetailEntity::MERCHANT_ID => $subMerchant->getId(),
+                DeviceDetailEntity::USER_ID => $newUser->getId(),
+                DeviceDetailEntity::SIGNUP_CAMPAIGN => $signupCampaign,
+            ];
+
+            (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
+
+            $input['product'] =  DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::PRODUCT] ?? DeviceDetailConstants::CURLEC_LINKED_ACCOUNT_ONBOARDING;
+            $input['workflow_type'] = DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::WORKFLOW_TYPE] ?? DeviceDetailConstants::MODULAR_ONBOARDING;
+            (new User\Service())->handlePGOSOnboarding($subMerchant, $signupCampaign, $subMerchant->getCountry(), $input, $newUser);
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNT_MODULAR_ONBOARDING,
+                [
+                    'input'     => $input,
+                    'done'      => true
+                ]);
+
+        }
         if ($product === Product::BANKING)
         {
             $this->enableBusinessBankingIfApplicable($subMerchant, true);

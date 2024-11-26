@@ -467,6 +467,8 @@ return array(
 
     'easy_submerchant_pgos_live_mode_experiment_id' => env('EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID'),
 
+    'linked_account_modular_onboarding_activate_experiment_id' => env('LINKED_ACCOUNT_MODULAR_ONBOARDING_ACTIVATE_EXPERIMENT_ID', false),
+
     'pgos_phantom_live_mode_experiment_id' => env('PGOS_PHANTOM_LIVE_MODE_EXPERIMENT_ID'),
 
     'others_m3_experiment_id' => env('OTHERS_M3_EXPERIMENT_ID'),

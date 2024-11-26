@@ -980,7 +980,7 @@ class Service extends Base\Service
         return ($product === DeviceDetailConstants::PRODUCT_PG_ONBOARDING);
     }
 
-    private function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
+    public function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
     {
         $shouldOnboardViaPGOS = false;
 

@@ -3273,6 +3273,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_INTERNATIONAL_TOGGLE_REQUEST                 = 'MERCHANT_INTERNATIONAL_TOGGLE_REQUEST';
 
+    const LINKED_ACCOUNT_MODULAR_ONBOARDING                      = 'LINKED_ACCOUNT_MODULAR_ONBOARDING';
+
     const MERCHANT_INVOICE_QUERY_RESULT                         = 'MERCHANT_INVOICE_QUERY_RESULT';
 
     // ES related trace codes

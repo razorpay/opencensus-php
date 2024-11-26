@@ -463,6 +463,7 @@ class Constants
     const FEE_BASED_GATING_FLOW  = "fee_based_gating_flow";
     const MODULAR_MERCHANT_ACTIVATION  = "modular_merchant_activation";
     const SALES_ASSISTED_FORM_SUBMISSION  = "SALES_ASSISTED_FORM_SUBMISSION";
+    const SAVE_MERCHANT_DETAILS_FOR_ACTIVATION  = "SAVE_MERCHANT_DETAILS_FOR_ACTIVATION";
 
     const VIRTUAL_BANK_ACCOUNTS_PREFIX = [
         [

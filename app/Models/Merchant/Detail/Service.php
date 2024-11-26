@@ -14,6 +14,7 @@ use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\VerificationDetail as MVD;
 use RZP\Models\Merchant\Balance\Type as ProductType;
@@ -93,7 +94,6 @@ use RZP\Notifications\Dashboard\Events as DashboardEvents;
 use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
 use \RZP\Models\DeviceDetail\Attribution\Core as AttributionCore;
@@ -5413,6 +5413,14 @@ class Service extends Base\Service
                 return $this->core->deleteMerchantStoreInternal($merchantId, $input);
             case DetailConstants::SALES_ASSISTED_FORM_SUBMISSION:
                 return $this->core->submitSalesAssistedActivationForm($merchantId);
+            case DetailConstants::SAVE_MERCHANT_DETAILS_FOR_ACTIVATION:
+                unset($input["action"]);
+                $subMerchant = $this->repo->merchant->findOrFail($merchantId);
+                if (empty($this->app['basicauth']->getMerchant()) === true)
+                {
+                    $this->app['basicauth']->setMerchant($subMerchant);
+                }
+                return $this->saveMerchantDetailsForActivation($input);
             default:
                 $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
                 return $this->core->submitMerchantInternal($input, $merchantDetails);

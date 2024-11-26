@@ -4302,6 +4302,11 @@ class Entity extends Base\PublicEntity
         return $country ?? 'IN';
     }
 
+    public function setCountry(string $country)
+    {
+        $this->setAttribute(self::COUNTRY_CODE ,  $country);
+    }
+
     public function getCurrency()
     {
         return Currency::getCurrencyForCountry($this->getCountry()) ?? "INR";

@@ -679,6 +679,7 @@ class Core extends Base\Core
         {
             $subMerchant->setMaxPaymentAmount($aggregatorMerchant->getMaxPaymentAmount());
             $subMerchant->setMaxInternationalPaymentAmount($aggregatorMerchant->getMaxPaymentAmountTransactionType(true));
+            $subMerchant->setCountry($aggregatorMerchant->getCountry());
 
             $subMerchant->parent()->associate($aggregatorMerchant);
 

@@ -106,6 +106,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const PGOS_LIVE_MODE_EXPERIMENT_ID                  = 'app.pgos_live_mode_experiment_id';
     const EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID = 'app.easy_submerchant_pgos_live_mode_experiment_id';
     const PHANTOM_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID = 'app.pgos_phantom_live_mode_experiment_id';
+    CONST LINKED_ACCOUNT_MODULAR_ONBOARDING_ACTIVATE_EXPERIMENT_ID = "app.linked_account_modular_onboarding_activate_experiment_id";
 
     const ENABLE                         = 'enable';
     const LIVE                           = 'live';
@@ -414,7 +415,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         $this->registerMerchantRoutes(self::MERCHANT_ROUTES);
 
-        $this->setDefaultTimeout(10);
+        $this->setDefaultTimeout(20);
 
         $this->registerAdminRoutes(self::ADMIN_ROUTES, self::ADMIN_ROUTES_VS_PERMISSION);
 

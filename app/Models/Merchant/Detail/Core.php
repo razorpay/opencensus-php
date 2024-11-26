@@ -329,7 +329,10 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateBusinessTypeForBankingMerchants($input, $merchant);
 
-        $merchantDetails->getValidator()->validateMerchantFieldsForBankingCompliance($input, $merchant);
+        if ((new Detail\Core)->isIndianMerchant($merchant) === true)
+        {
+            $merchantDetails->getValidator()->validateMerchantFieldsForBankingCompliance($input, $merchant);
+        }
 
         if ($merchant->isLinkedAccount() === true)
         {
@@ -6628,6 +6631,16 @@ class Core extends Base\Core
     public function isMalaysianMerchant($merchant)
     {
         if (Country::matches($merchant->getCountry(), Country::MY))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isIndianMerchant($merchant)
+    {
+        if (Country::matches($merchant->getCountry(), Country::IN))
         {
             return true;
         }
