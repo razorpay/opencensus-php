@@ -76,16 +76,16 @@ test.describe
     test('should search PL with payment link id @priority=critical @suite=nocode-P1-automation', async ({
       page,
     }) => {
-      const container = page.locator(COMMON_SELECTORS.tabbedContainer);
-      await waitForLoader({ page, selector: '[data-testid="spinner"]' });
+      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+      await waitForLoader({ page, selector: '[data-testid="table-spinner"]' });
       await searchAndVerifyByPLId({ container, paymentLinksId: createdPaymentLinkId });
     });
 
     test.skip('should search PL with receipt id @priority=critical @suite=nocode-P1-automation', async ({
       page,
     }) => {
-      const container = page.locator(COMMON_SELECTORS.tabbedContainer);
-      await waitForLoader({ page, selector: '[data-testid="spinner"]' });
+      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+      await waitForLoader({ page, selector: '[data-testid="table-spinner"]' });
       await searchAndVerifyByPLReferenceId({ container, referenceId: createdReferenceId });
     });
   });
@@ -106,8 +106,8 @@ test.describe
       page,
     }) => {
       const statusToVerify = 'Paid';
-      const container = page.locator(COMMON_SELECTORS.tabbedContainer);
-      await waitForLoader({ page, selector: '[data-testid="spinner"]' });
+      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+      await waitForLoader({ page, selector: '[data-testid="table-spinner"]' });
       const statusToCheck = statusToKey[statusToVerify];
       await mockFetchPaymentLinkApi({
         targetUrl: `**/merchant/api/test/payment_links?skip=0&count=25&status=${statusToCheck}*`,
@@ -136,8 +136,8 @@ test.describe
     }) => {
       const statusToVerify = 'Partially Paid';
 
-      const container = page.locator(COMMON_SELECTORS.tabbedContainer);
-      await waitForLoader({ page, selector: '[data-testid="spinner"]' });
+      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+      await waitForLoader({ page, selector: '[data-testid="table-spinner"]' });
 
       const statusToCheck = statusToKey[statusToVerify];
       await mockFetchPaymentLinkApi({

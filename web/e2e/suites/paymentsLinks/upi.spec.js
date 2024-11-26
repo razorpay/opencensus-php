@@ -67,8 +67,8 @@ test.describe
     test('should search UPI PL with payment link id @priority=critical @suite=nocode-P1-automation', async ({
       page,
     }) => {
-      const container = page.locator(COMMON_SELECTORS.tabbedContainer);
-      await waitForLoader({ page, selector: '[data-testid="spinner"]' });
+      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+      await waitForLoader({ page, selector: '[data-testid="table-spinner"]' });
       await searchAndVerifyByPLId({ container, paymentLinksId: createdPaymentLinkId });
     });
   });
