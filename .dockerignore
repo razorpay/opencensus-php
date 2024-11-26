@@ -11,3 +11,4 @@ public/docs
 public/js
 */public/dist
 */web/dist
+.pnpm-store
