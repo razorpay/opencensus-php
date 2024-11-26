@@ -64,6 +64,7 @@ class Core extends Base\Core
 {
     // July 1st, 2016 00:00:00 IST
     const JULY_FIRST_EPOCH = '1467311400';
+    const ATOME = 'atome';
 
     protected $merchantBalance = null;
 
@@ -71,7 +72,16 @@ class Core extends Base\Core
 
     protected $merchant;
 
+    protected static $providersOnRearch = [
+        self::ATOME,
+    ];
+
     use Payment\Processor\Capture;
+
+    public static function paylaterProvidersOnRearch(string $provider): bool
+    {
+        return in_array($provider, self::$providersOnRearch, true);
+    }
 
     public function __construct()
     {
@@ -373,7 +383,7 @@ class Core extends Base\Core
             {
                 CardsPaymentTransaction::dispatch($data);
             }
-            else if ($payment->isNetbanking() === true || $payment->isFpx() === true || $payment->isWallet() === true || $payment->isRazorpayAccountPayment() === true || $payment->isDuitNowPay() === true)
+            else if ($payment->isNetbanking() === true || $payment->isFpx() === true || $payment->isWallet() === true || $payment->isRazorpayAccountPayment() === true || $payment->isDuitNowPay() === true || ($payment->isPayLater() === true and $this->paylaterProvidersOnRearch($payment->getWallet()) === true))
             {
                 $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
 
