@@ -37,10 +37,7 @@ class DisputeList extends ListContainer {
       <>
         <DisputeOverview />
         <div className="content-wrapper" data-testid="disputes-list">
-          <DisputeListHeader
-            pathname={this.props.history.location.pathname}
-            mid={this.props.user.merchant.id}
-          />
+          <DisputeListHeader mid={this.props.user.merchant.id} isFetchingTableData={loading} />
           <DisputeListFilter onSubmit={onSearch(history)} loading={loading} />
           <DisputesTable
             title="Disputes"

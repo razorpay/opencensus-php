@@ -1,27 +1,35 @@
-import React from 'react';
 import { Box, Button, DownloadIcon, Heading } from '@razorpay/blade/components';
 import { useMutation } from '@tanstack/react-query';
+import React from 'react';
 
+import { exportFileAsExcel } from '@dashboard/shared-utils/rzp-utils';
 import { fetchDownloadReportData } from 'apps/self-serve/src/App/Transactions/v2/Disputes/components/DisputeListHeader/queries';
-import { getExcelReportData } from 'apps/self-serve/src/App/Transactions/v2/Disputes/components/DisputeListHeader/utils';
+import {
+  getDownloadReportQueryParams,
+  getExcelReportData,
+} from 'apps/self-serve/src/App/Transactions/v2/Disputes/components/DisputeListHeader/utils';
 import { TransactionsPagesMap } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { track } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
+import isEmpty from 'lodash/isEmpty';
 import { useStore } from 'shell/commonStore';
-import { exportFileAsExcel } from '@dashboard/shared-utils/rzp-utils';
 
 interface IDisputeListHeader {
-  pathname: string;
+  isFetchingTableData: boolean;
   mid: string;
   showNotification: (args: { type: string; message: string }) => void;
 }
 
-const DisputeListHeader: React.FC<IDisputeListHeader> = ({ pathname, mid }) => {
+const DisputeListHeader: React.FC<IDisputeListHeader> = ({ mid, isFetchingTableData }) => {
   const showNotification = useStore((state) => state.showNotification);
 
   const { mutate: getDownloadReports, isLoading } = useMutation({
-    mutationFn: fetchDownloadReportData,
+    mutationFn: (params: string) => fetchDownloadReportData(params),
     onSuccess: (reportData) => {
-      exportFileAsExcel(getExcelReportData({ mid, downloadData: reportData }));
+      if (isEmpty(reportData)) {
+        showNotification({ type: 'error', message: 'No records available to download' });
+      } else {
+        exportFileAsExcel(getExcelReportData({ mid, downloadData: reportData }));
+      }
     },
     onError: () => {
       showNotification({ type: 'error', message: 'Failed to fetch download report' });
@@ -29,11 +37,13 @@ const DisputeListHeader: React.FC<IDisputeListHeader> = ({ pathname, mid }) => {
   });
 
   const handleDownloadReportClick = () => {
-    track({
-      objectName: 'Download Disputes report',
-      properties: { section: TransactionsPagesMap[pathname] },
-    });
-    getDownloadReports();
+    if (!isFetchingTableData && !isLoading) {
+      getDownloadReports(getDownloadReportQueryParams());
+      track({
+        objectName: 'Download Disputes report',
+        properties: { section: TransactionsPagesMap[window.location.pathname] },
+      });
+    }
   };
 
   return (
@@ -43,7 +53,7 @@ const DisputeListHeader: React.FC<IDisputeListHeader> = ({ pathname, mid }) => {
         variant="tertiary"
         onClick={handleDownloadReportClick}
         icon={DownloadIcon}
-        isDisabled={isLoading}
+        isDisabled={isLoading || isFetchingTableData}
         accessibilityLabel="download-dispute-report-file"
         isLoading={isLoading}
         testID="download-testID"

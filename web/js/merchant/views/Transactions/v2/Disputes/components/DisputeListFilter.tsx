@@ -175,11 +175,14 @@ const DisputeListFilter = ({
     setIsFilterModalOpen(false);
     setSelectedFilters(selectedFilters);
     const filters = getValidFilterKeys(selectedFilters);
-    const filterNames = Object.values(selectedFilters).flat().join(',');
 
-    track({
-      objectName: `${filterNames} Filter`,
-      properties: { section: TransactionsPagesMap[pathname] },
+    Object.values(selectedFilters).forEach((selectedFilter) => {
+      selectedFilter.forEach((filter) => {
+        track({
+          objectName: `${filter} filter`,
+          properties: { section: TransactionsPagesMap[pathname] },
+        });
+      });
     });
 
     handleSearch(filters, 'filter');

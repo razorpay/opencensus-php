@@ -1,4 +1,6 @@
+import isEmpty from 'lodash/isEmpty';
 import moment from 'moment';
+
 import { REPORT_HEADER_MAP } from 'merchant/views/Transactions/v2/Disputes/components/DisputeListHeader/constants';
 import {
   disputePhaseMap,
@@ -31,4 +33,15 @@ export const getExcelReportData = ({ mid, downloadData }) => {
     fileFormat: 'xlsx',
     fileName: `Dispute_report_${mid}_${moment().format('DDMMYY_hhmm')}`,
   };
+};
+
+export const getDownloadReportQueryParams = () => {
+  const url = new URL(window.location.href);
+  const params = new URLSearchParams(url.search);
+  params.delete('payment_id');
+  params.delete('id');
+  const defaultDuration = `from=${moment().add(-7, 'd').startOf('day').unix()}&to=${moment()
+    .endOf('day')
+    .unix()}`;
+  return `?${isEmpty(params.toString()) ? defaultDuration : params.toString()}`;
 };
