@@ -6745,6 +6745,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             $data[Refund\Constants::MERCHANT_NAME] = $this->merchant->getBillingLabel();
 
+            $data[Payment\Entity::CAPTURED_AT] = $this->getCapturedAt();
+
+            if (isset($this->order))
+            {
+                $data[Payment\Entity::ORDER_ID] = $this->order->getPublicId();
+            }
+
             $data[Refund\Constants::PRIMARY_MESSAGE] =
                 $this->getMessageForTransactionTracker(
                     $transactionTrackerMessages,

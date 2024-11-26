@@ -18397,6 +18397,7 @@ class Route
             'checkout_1cc_configs_get',
             'customer_truecaller_verify_internal',
             'customer_truecaller_callback_internal',
+            'payment_fetch_by_id_internal',
         ],
 
         'wallet_service' => [

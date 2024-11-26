@@ -2574,7 +2574,7 @@ class ApiEventSubscriber extends Base\Core
                         'id' => $payment->getMerchantId(),
                         'email' => $payment->merchant->merchantDetail?->getContactEmail(),
                         'name' => $payment->merchant->getName(),
-                        'brand_name' => $payment->merchant->getFilteredDba(),
+                        'billing_label' => $payment->merchant->getBillingLabel(),
                         'category2' => $payment->merchant->getCategory2(),
                         'details' => [
                             'contact_mobile' => $payment->merchant->merchantDetail?->getContactMobile(),
