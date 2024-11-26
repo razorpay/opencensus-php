@@ -34,6 +34,7 @@ const commonProps = {
   handleBrandNameChange: jest.fn(),
   resetBrandRelatedFields: jest.fn(),
   isFormDisabled: false,
+  optionalBrandFields: [],
 };
 describe('<BrandEMIForm/>', () => {
   test('should show brand emi form heading with store type and brand name fields', () => {
@@ -47,6 +48,42 @@ describe('<BrandEMIForm/>', () => {
     renderApp(props);
     expect(screen.getAllByLabelText(/Type of store/i)).toHaveLength(2);
     expect(screen.getAllByLabelText(/Brand name/i)).toHaveLength(2);
+    expect(screen.getAllByText(/\*/i)).toHaveLength(4); // 2 for type-of-store + brand-name dropdown and 2 for dealer-code and gst-field
+  });
+  test('should show brand emi form heading with store type and brand name fields but dealer code is optional', () => {
+    const props: BrandEMIFormProps = {
+      ...commonProps,
+      brandRelatedFields: MOCK_BRAND_RELATED_FIELDS,
+      merchantGstNumber: 'HDIWJ33232',
+      hasAddedBrandEMIData: false,
+      brandEmiFields: getMockBrandEmiFields({}),
+      optionalBrandFields: [
+        {
+          name: 'dealer_code_field',
+          isDisabled: false,
+          isRequired: false,
+          isHidden: false,
+          meta: {
+            title: 'Dealer Code',
+            description: '',
+            defaultValue: '',
+            size: '',
+            accessibilityLabel: '',
+            hideOnReviewScreen: false,
+            dataType: 'string',
+            selectionType: '',
+          },
+          failureReason: '',
+          failureReasonType: '',
+          stringValue: '',
+        },
+      ],
+    };
+    renderApp(props);
+    screen.logTestingPlaygroundURL();
+    expect(screen.getAllByLabelText(/Type of store/i)).toHaveLength(2);
+    expect(screen.getAllByLabelText(/Brand name/i)).toHaveLength(2);
+    expect(screen.getAllByText(/\*/i)).toHaveLength(3); // 2 for type-of-store + brand-name dropdown and 1 for gst-field since dealer-code is optional
   });
   test('should show brand emi form with selectable type of store', () => {
     const props: BrandEMIFormProps = {

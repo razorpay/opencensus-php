@@ -412,6 +412,7 @@ export interface GetMockModularResponseProps {
   storeType?: 'multi_brand_outlet';
   brandName?: 'vivo';
   brandDataFields?: string[];
+  optionalBrandFields?: string[];
   dealerCode?: string;
   stateCode?: string;
   distributorCode?: string;

@@ -125,6 +125,7 @@ export interface ModularComponentMeta {
   isHidden?: boolean;
   deviceConfig?: DeviceConfig[];
   brandDataFields?: string[];
+  optionalBrandFields?: string[];
   merchantGstField?: string;
   isLast?: boolean;
   type?: string;

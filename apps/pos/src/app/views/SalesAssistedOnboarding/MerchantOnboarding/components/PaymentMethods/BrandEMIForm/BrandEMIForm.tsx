@@ -25,6 +25,7 @@ export interface BrandEMIFormProps {
   handleBrandNameChange: (brandName: string) => void;
   resetBrandRelatedFields: () => void;
   brandRelatedFields: ModularOnboardingField[];
+  optionalBrandFields: ModularOnboardingField[];
   merchantGstNumber: string;
   gstErrorMsg: string;
   hasAddedBrandEMIData: boolean;
@@ -49,6 +50,7 @@ const BrandEMIForm = ({
   onBrandEmiFieldInputChange,
   handleBrandNameChange,
   brandRelatedFields,
+  optionalBrandFields,
   merchantGstNumber,
   gstErrorMsg,
   hasAddedBrandEMIData,
@@ -204,9 +206,21 @@ const BrandEMIForm = ({
                       control={control}
                       name={item.name}
                       label={item.meta?.title ?? ''}
-                      necessityIndicator="required"
+                      necessityIndicator={
+                        getFieldRules({
+                          fieldName: item.name,
+                          brandEmiFields: brandRelatedFields,
+                          optionalBrandFields,
+                        }).required
+                          ? 'required'
+                          : 'none'
+                      }
                       type={item.meta?.dataType ?? 'string'}
-                      rules={getFieldRules(item.name, brandRelatedFields)}
+                      rules={getFieldRules({
+                        fieldName: item.name,
+                        brandEmiFields: brandRelatedFields,
+                        optionalBrandFields,
+                      })}
                       errorText={getFieldErrorText({ item, errors })}
                       isDisabled={isFieldDisabled({
                         fieldName: item.name,

@@ -184,6 +184,7 @@ export const MODULAR_CONFIG = gql`
                     validations
                     defaultValues
                     brandDataFields
+                    optionalBrandFields
                     merchantGstField
                     deviceConfig {
                       title
@@ -417,6 +418,7 @@ export const UPDATE_MODULAR_CONFIG = gql`
                     validations
                     defaultValues
                     brandDataFields
+                    optionalBrandFields
                     merchantGstField
                     deviceConfig {
                       title

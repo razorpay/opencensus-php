@@ -14,8 +14,24 @@ export const getFieldErrorText = ({ item, errors }: FieldErrorTextProps): string
   return error;
 };
 
-export const getFieldRules = (fieldName: string, brandRelatedFields: ModularOnboardingField[]) => {
-  const isRelatedField = brandRelatedFields.find((field) => field.name === fieldName);
-  if (isRelatedField) return { required: true, pattern: /^[a-zA-Z0-9]+$/ };
+interface BrandFieldRules {
+  fieldName: string;
+  brandEmiFields: ModularOnboardingField[];
+  optionalBrandFields: ModularOnboardingField[];
+}
+export const getFieldRules = ({
+  fieldName,
+  brandEmiFields,
+  optionalBrandFields,
+}: BrandFieldRules) => {
+  //if a field present in brandemifields is also present in optionalfuelds array, then it is an optional field.
+  const isBrandEmiField = brandEmiFields.find((field) => field.name === fieldName);
+  let isOptionalField: ModularOnboardingField | null = null;
+  if (optionalBrandFields?.length) {
+    isOptionalField =
+      optionalBrandFields.find((field) => field.name === isBrandEmiField?.name) ?? null;
+  }
+  if (isOptionalField) return { required: false, pattern: /^[a-zA-Z0-9]+$/ };
+  if (isBrandEmiField) return { required: true, pattern: /^[a-zA-Z0-9]+$/ };
   return { required: false };
 };

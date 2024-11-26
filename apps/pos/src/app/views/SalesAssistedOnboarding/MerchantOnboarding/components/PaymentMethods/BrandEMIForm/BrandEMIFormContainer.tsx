@@ -47,8 +47,12 @@ const BrandEMIFormContainer = ({
   const { modularConfig, isUpdateModularLoading } = states;
   const { updateModularConfig, handleProceedToNextComponent } = handlers;
   const [brandFields, setBrandFields] = useState<ModularOnboardingField[]>([]);
+  const [brandOptionalFields, setBrandOptionalFields] = useState<ModularOnboardingField[]>([]);
 
-  const resetBrandFields = () => setBrandFields([]);
+  const resetBrandFields = () => {
+    setBrandFields([]);
+    setBrandOptionalFields([]);
+  };
 
   const brandNames =
     getBrandEmiField({
@@ -95,6 +99,18 @@ const BrandEMIFormContainer = ({
     return data;
   };
 
+  const getBrandRelatedOptionalFields = () => {
+    const component = getComponentFromStep({
+      modularConfig,
+      step: MODULAR_PRICING_FIELDS.PRICING_STEP,
+      component: PricingStepComponents.BRAND_EMI_COMPONENT,
+    });
+    if (!component) return [];
+    const brandFields = component.meta.optionalBrandFields ?? [];
+    const data = component.fields.filter((field) => brandFields.includes(field.name));
+    return data;
+  };
+
   const getMerchantGstDetails = (): { gstNumber: string; gstError: string } => {
     const component = getComponentFromStep({
       modularConfig,
@@ -123,8 +139,10 @@ const BrandEMIFormContainer = ({
 
   useEffect(() => {
     if (modularConfig) {
-      const data = getBrandRelatedFields();
-      setBrandFields(data);
+      const allBrandRelatedFields = getBrandRelatedFields();
+      const allBrandOptionalFields = getBrandRelatedOptionalFields();
+      setBrandFields(allBrandRelatedFields);
+      setBrandOptionalFields(allBrandOptionalFields);
     }
   }, [modularConfig]);
 
@@ -148,6 +166,7 @@ const BrandEMIFormContainer = ({
         <BrandEMIForm
           hasAddedBrandEMIData={hasAddedBrandEMIData}
           brandRelatedFields={brandFields}
+          optionalBrandFields={brandOptionalFields}
           brandEmiFields={getAllBrandEmiFields({ modularConfig })}
           storeTypes={storeTypes}
           brandNames={getFilteredBrandNames(brandNames)}
