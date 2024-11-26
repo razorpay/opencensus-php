@@ -110,6 +110,8 @@ function getDependencies(depCommits) {
         settlements_entity_alert_live_worker_replica: 0,
         settlements_entity_alert_test_worker_replica: 0,
         settlements_entity_alert_live_worker_replicas: 0,
+        optimizer_transactions_recorder_test_worker_replicas: 0,
+        optimizer_transactions_recorder_live_worker_replicas: 0,
       };
     }
 
