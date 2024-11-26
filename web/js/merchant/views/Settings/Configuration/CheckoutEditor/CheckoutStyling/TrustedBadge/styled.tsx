@@ -39,7 +39,7 @@ export const RightChildrenWrapper = styled.div`
 export const TrustedIconWrapper = styled.div(
   ({ theme }) => `
     display: flex;
-    padding: ${theme.spacing[1]}px  ${theme.spacing[3]}px ${theme.spacing[1]}px ${theme.spacing[5]}px;
+    padding: ${theme.spacing[1]}px  ${theme.spacing[3]}px ${theme.spacing[1]}px ${theme.spacing[3]}px;
     justify-content: center;
     align-items: center;
     gap: 8px;

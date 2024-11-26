@@ -1,6 +1,5 @@
-import React, { memo, useMemo } from 'react';
-
-import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
+import React from 'react';
+import { connect } from 'react-redux';
 
 import BrandColor from './CheckoutStyling/BrandColor/BrandColor';
 import ButtonStyle from './CheckoutStyling/ButtonStyle/ButtonStyle';
@@ -13,19 +12,26 @@ import { TrustedBadgeType } from './context/types';
 interface CheckoutStylesProps {
   trustedBadge: TrustedBadgeType;
 }
-const CheckoutStyles: React.FC<CheckoutStylesProps> = memo(({ trustedBadge }) => {
-  const badgeStatus = useMemo(() => trustedBadge?.status?.badgeStatus, [trustedBadge]);
+const CheckoutStyles: React.FC<CheckoutStylesProps> = ({ trustedBadge }: CheckoutStylesProps) => {
+  const isRTBActive =
+    trustedBadge.status.original.merchant_status !== 'optout' &&
+    (trustedBadge.status.original.status === 'eligible' ||
+      trustedBadge.status.original.status === 'whitelist');
   return (
     <>
       <BrandColor />
-      {badgeStatus !== STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED && <RazorpayTrustesBadge />}
+      {isRTBActive && <RazorpayTrustesBadge isActive={isRTBActive} />}
       <TitleStyle />
       <ButtonStyle />
       <FontStyle />
       <SidebarGraphic />
-      {badgeStatus === STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED && <RazorpayTrustesBadge />}
+      {!isRTBActive && <RazorpayTrustesBadge isActive={isRTBActive} />}
     </>
   );
-});
+};
 
-export default CheckoutStyles;
+export default connect((state) => {
+  return {
+    trustedBadge: state.trustedBadge,
+  };
+})(CheckoutStyles);

@@ -3,23 +3,19 @@ import {
   Box,
   Link,
   Text,
-  Button,
   Modal,
   ModalBody,
   ModalHeader,
-  ModalFooter,
   AlertCircleIcon,
   Badge,
   Switch,
 } from '@razorpay/blade/components';
 import BadgeIcon from 'assets/checkout-editor/trusted-badge/rtb-icon.svg';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { updateRTBMerchantStatus } from 'merchant/reducers/trustedBadge';
+import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge';
 import TrustedBadge from 'merchant/views/Account/TrustedBadge';
-import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
 import { TRUSTED_BADGE_DEFAULT_VALUE } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/constants/DefaultValue';
 import {
   CHECKOUT_EDITOR_FIELDS,
@@ -29,9 +25,15 @@ import {
 import { LeftWrapper, TopWrapper, Wrapper, TrustedIconWrapper } from './styled';
 import track from './track';
 
-const RazorpayTrustedBadge = ({ trustedBadge, updateRTBMerchantStatus: updateStatus }) => {
-  const badgeStatus = trustedBadge?.status?.badgeStatus;
+export type RazorpayTrustedBadgeProps = {
+  isActive: boolean;
+  fetchTrustedBadgeStatus: typeof fetchTrustedBadgeStatus;
+};
 
+const RazorpayTrustedBadge = ({
+  isActive = false,
+  fetchTrustedBadgeStatus,
+}: RazorpayTrustedBadgeProps) => {
   const { values, handleRtbEnable } = useCheckoutEditor();
 
   function handleRTBToggle(isChecked: boolean) {
@@ -40,18 +42,17 @@ const RazorpayTrustedBadge = ({ trustedBadge, updateRTBMerchantStatus: updateSta
   }
 
   const [isShowTrutedBadgeModal, setShowTrustedBadgeModal] = useState(false);
-  const rightChildren =
-    badgeStatus === STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED ? (
-      <Badge color="neutral" size="medium" emphasis="subtle" icon={AlertCircleIcon}>
-        Not Active
-      </Badge>
-    ) : (
-      <Switch
-        accessibilityLabel="razorpay-trusted-badge"
-        isChecked={values[CHECKOUT_EDITOR_FIELDS.RTB_ENABLED]}
-        onChange={({ isChecked }) => handleRTBToggle(isChecked)}
-      />
-    );
+  const rightChildren = !isActive ? (
+    <Badge color="neutral" size="medium" emphasis="subtle" icon={AlertCircleIcon}>
+      Inactive
+    </Badge>
+  ) : (
+    <Switch
+      accessibilityLabel="razorpay-trusted-badge"
+      isChecked={values[CHECKOUT_EDITOR_FIELDS.RTB_ENABLED]}
+      onChange={({ isChecked }) => handleRTBToggle(isChecked)}
+    />
+  );
 
   return (
     <>
@@ -62,14 +63,17 @@ const RazorpayTrustedBadge = ({ trustedBadge, updateRTBMerchantStatus: updateSta
               {TRUSTED_BADGE_DEFAULT_VALUE.title}
             </Text>
             <Box display="flex" justifyContent="center" gap="spacing.2">
-              <Text color="surface.text.gray.muted" variant="body" size="small" weight="regular">
-                {TRUSTED_BADGE_DEFAULT_VALUE.subTitle}
-                <Link
-                  marginLeft="spacing.2"
+              <Text>
+                <Text
+                  color="surface.text.gray.muted"
+                  variant="body"
                   size="small"
-                  onClick={() => setShowTrustedBadgeModal(true)}
-                  variant="button"
+                  weight="regular"
+                  marginRight="spacing.2"
                 >
+                  {TRUSTED_BADGE_DEFAULT_VALUE.subTitle}
+                </Text>
+                <Link size="small" onClick={() => setShowTrustedBadgeModal(true)} variant="button">
                   Know More
                 </Link>
               </Text>
@@ -87,58 +91,26 @@ const RazorpayTrustedBadge = ({ trustedBadge, updateRTBMerchantStatus: updateSta
       {isShowTrutedBadgeModal && (
         <Modal
           isOpen={isShowTrutedBadgeModal}
-          onDismiss={() => setShowTrustedBadgeModal(false)}
+          onDismiss={() => {
+            setShowTrustedBadgeModal(false);
+            fetchTrustedBadgeStatus();
+          }}
           size="large"
         >
           <ModalHeader title="Razorpay Trusted Badge" />
           <ModalBody>
             <TrustedBadge />
           </ModalBody>
-          {badgeStatus === 'NOT_ELIGIBLE_DELISTED_YES_WAITLISTED' ||
-          badgeStatus === 'YES_ELIGIBLE_LIVE' ||
-          badgeStatus === 'NOT_ELIGIBLE_YES_WAITLISTED_DELISTED' ? null : (
-            <ModalFooter>
-              <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
-                <Button
-                  onClick={() => {
-                    updateStatus(
-                      badgeStatus === STATUS.NOT_ELIGIBLE_WAITLISTED_DELISTED
-                        ? 'waitlist'
-                        : 'optin',
-                    );
-                  }}
-                >
-                  {badgeStatus === STATUS.NOT_ELIGIBLE_WAITLISTED_DELISTED
-                    ? 'Join the waitlist'
-                    : 'Activate your badge'}
-                </Button>
-              </Box>
-            </ModalFooter>
-          )}
         </Modal>
       )}
     </>
   );
 };
 
-RazorpayTrustedBadge.propTypes = {
-  trustedBadge: PropTypes.shape({
-    status: PropTypes.shape({
-      status: PropTypes.string,
-      original: PropTypes.any,
-    }),
-    loading: PropTypes.bool,
-    updatePending: PropTypes.bool,
-    updateError: PropTypes.bool,
-    updateAction: PropTypes.string,
-  }),
-  updateRTBMerchantStatus: PropTypes.func,
-};
-
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
-      updateRTBMerchantStatus,
+      fetchTrustedBadgeStatus,
     },
     dispatch,
   );
