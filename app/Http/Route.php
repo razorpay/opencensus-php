@@ -17438,6 +17438,7 @@ class Route
             'internal_workflow_create',
             'internal_post_website_update',
             'internal_merchant_get_tags',
+            'merchant_fetch_internal_users',
         ],
 
         'mandate_hq' => [
