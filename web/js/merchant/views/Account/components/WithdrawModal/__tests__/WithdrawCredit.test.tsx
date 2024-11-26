@@ -66,54 +66,36 @@ describe('Withdraw Self Serve Balance', () => {
   });
 
   test('input sanitaion is working as expected', async () => {
-    userEvent.clear(inputEl);
-    userEvent.type(inputEl, '1234');
-    await waitFor(() => expect(inputEl).toHaveValue('1234'));
-
-    userEvent.clear(inputEl);
-    userEvent.type(inputEl, '1234..3');
-    await waitFor(() => expect(inputEl).toHaveValue('1234.3'));
-
-    userEvent.clear(inputEl);
-    userEvent.type(inputEl, 'abc12345');
-    await waitFor(() => expect(inputEl).toHaveValue('12345'));
+    await userEvent.clear(inputEl);
+    await userEvent.type(inputEl, '12a3..5');
+    await waitFor(() => expect(inputEl).toHaveValue('123.5'));
   });
 
   test('error shows if user inputs value more than their balance', async () => {
-    userEvent.clear(inputEl);
-    userEvent.type(inputEl, '1000');
-    await waitFor(() => {
-      const err = screen.getByText('Withdrawal must be within your current balance');
-      expect(err).toBeInTheDocument();
-    });
+    await userEvent.clear(inputEl);
+    await userEvent.type(inputEl, '1000');
+    const errorMessage = 'Withdrawal must be within your current balance';
+    expect(await screen.findByText(errorMessage)).toBeInTheDocument();
   });
 
   test('submit button is disabled if the input value is more than the user balance', async () => {
-    userEvent.clear(inputEl);
-    userEvent.type(inputEl, '1000');
+    await userEvent.clear(inputEl);
+    await userEvent.type(inputEl, '1000');
     await waitFor(() => expect(btn).toBeDisabled());
   });
 
   test('error disappears when user clears the input or enters a value less than or equal to their balance', async () => {
-    userEvent.clear(inputEl);
-    userEvent.type(inputEl, '1000');
-    await waitFor(() => {
-      const err = screen.getByText('Withdrawal must be within your current balance');
-      expect(err).toBeInTheDocument();
-    });
+    await userEvent.clear(inputEl);
+    await userEvent.type(inputEl, '1000');
+    const errorMessage = 'Withdrawal must be within your current balance';
+    expect(await screen.findByText(errorMessage)).toBeInTheDocument();
 
-    userEvent.clear(inputEl);
-    userEvent.type(inputEl, '500');
-    await waitFor(() => {
-      const err = screen.queryByText('Withdrawal must be within your current balance');
-      expect(err).toBeNull();
-    });
+    await userEvent.clear(inputEl);
+    await userEvent.type(inputEl, '500');
+    expect(screen.queryByText(errorMessage)).toBeNull();
 
-    userEvent.clear(inputEl);
-    await waitFor(() => {
-      const err = screen.queryByText('Withdrawal must be within your current balance');
-      expect(err).toBeNull();
-    });
+    await userEvent.clear(inputEl);
+    expect(screen.queryByText(errorMessage)).toBeNull();
   });
 
   test('on withdraw success, the current modal should change to a success modal', async () => {
