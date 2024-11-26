@@ -80,7 +80,6 @@ export type CheckoutConfigState = {
 export type CheckoutConfigPayload = {
   brandColor?: {
     brand_color: string;
-    transaction_report_email: string[] | undefined;
   };
   uploadLogo?: {
     file: File;

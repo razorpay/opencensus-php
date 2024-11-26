@@ -181,7 +181,6 @@ export const createPayloadToSaveConfig = (
   if (values.color !== accountConfig?.brand_color) {
     payload.brandColor = {
       brand_color: values.color.replace('#', ''),
-      transaction_report_email: accountConfig?.transaction_report_email?.split(',') ?? [],
     };
   }
 

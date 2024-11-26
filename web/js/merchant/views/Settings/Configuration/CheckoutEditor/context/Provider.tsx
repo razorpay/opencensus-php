@@ -266,7 +266,7 @@ const CheckoutEditorProvider = ({
       dispatch({
         type: ACTIONS.SET_VALUES,
         payload: {
-          [CHECKOUT_EDITOR_FIELDS.BORDER_STYLE]: merchantCheckoutStyledConfig.button?.shape || '',
+          [CHECKOUT_EDITOR_FIELDS.BORDER_STYLE]: merchantCheckoutStyledConfig?.button?.shape || '',
           [CHECKOUT_EDITOR_FIELDS.FONT_FAMILY]: merchantCheckoutStyledConfig?.text?.font,
           [CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]: merchantCheckoutStyledConfig?.sidebar_graphic,
           [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: checkForTitleStyleDefaultValue(

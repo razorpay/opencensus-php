@@ -208,7 +208,7 @@ export const hasValuesChanged = (
     return true;
   }
 
-  if (values[CHECKOUT_EDITOR_FIELDS.RTB_ENABLED] !== merchantCheckoutStyledConfig.rtb_enabled) {
+  if (values[CHECKOUT_EDITOR_FIELDS.RTB_ENABLED] !== merchantCheckoutStyledConfig?.rtb_enabled) {
     return true;
   }
 
@@ -352,7 +352,6 @@ export const createPayloadToSaveConfig = (
   if (values.color !== accountConfig?.brand_color) {
     payload.brandColor = {
       brand_color: values.color.replace('#', ''),
-      transaction_report_email: accountConfig?.transaction_report_email?.split(',') ?? [],
     };
   }
 

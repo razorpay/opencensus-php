@@ -110,7 +110,7 @@ const CheckoutFeatures = ({
   }, [fetchMerchantCheckoutConfig, merchantCheckoutConfig, isCustomMessageFeatureEnabled]);
 
   useEffect(() => {
-    if (!merchantCheckoutStyledConfig) {
+    if (merchantCheckoutStyledConfig && Object.keys(merchantCheckoutStyledConfig).length === 0) {
       fetchMerchantCheckoutStylingConfig();
     }
   }, [fetchMerchantCheckoutStylingConfig, merchantCheckoutStyledConfig]);

@@ -739,7 +739,7 @@ const initialState = {
   },
   checkoutStylingConfig: {
     loading: true,
-    data: null,
+    data: {},
     error: null,
   },
 };

@@ -124,7 +124,6 @@ export type CheckoutEditorPayload = {
   };
   brandColor?: {
     brand_color: string;
-    transaction_report_email: string[] | undefined;
   };
   uploadLogo?: {
     file: File;

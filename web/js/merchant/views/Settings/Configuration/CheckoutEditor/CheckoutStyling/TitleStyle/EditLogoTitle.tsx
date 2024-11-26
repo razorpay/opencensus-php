@@ -80,7 +80,10 @@ const EditLogoTitle: React.FC<EditLogoTitleProps> = ({
     if (values.logoRaw || (values.logo === EMPTY_LOGO && accountConfig.logo_url)) {
       handleLogoChange(null, accountConfig.logo_url ?? EMPTY_LOGO);
     }
-    if (wordmarkRaw || (wordmark === EMPTY_WORDMARK && merchantCheckoutStyledConfig.wordmark_url)) {
+    if (
+      wordmarkRaw ||
+      (wordmark === EMPTY_WORDMARK && merchantCheckoutStyledConfig?.wordmark_url)
+    ) {
       handleWordmarkChange(null, merchantCheckoutStyledConfig.wordmark_url ?? EMPTY_WORDMARK);
     }
     if (merchantCheckoutStyledConfig?.brand_name)
@@ -102,7 +105,7 @@ const EditLogoTitle: React.FC<EditLogoTitleProps> = ({
     ) {
       return true;
     } else if (
-      values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE] !== merchantCheckoutStyledConfig.title_style
+      values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE] !== merchantCheckoutStyledConfig?.title_style
     ) {
       return true;
     }
