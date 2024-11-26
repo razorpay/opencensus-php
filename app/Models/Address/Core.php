@@ -329,4 +329,11 @@ class Core extends Base\Core
             }
         }
     }
+
+    // Wrapper function to ensure other services don't directly use address repo.
+    // Contact typically includes `+` with the country code.
+    public function fetchAddressesForContact(string $contact)
+    {
+        return $this->repo->address->fetchAddressesForContact($contact);
+    }
 }

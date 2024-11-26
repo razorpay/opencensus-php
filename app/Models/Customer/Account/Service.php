@@ -1842,4 +1842,18 @@ class Service extends Base\Service
             'addresses' => $savedAddress
         ];
     }
+
+    // fetchAddressesForCustomer allows services to fetch all addresses of a customer based on diff
+    // atrributes like contact, customer_id, etc.
+    public function fetchAddressesForCustomer(array $input) : array
+    {
+        if (empty($input['contact']) == false)
+        {
+            $contact = $input['contact'];
+            $addresses = (new Address\Core)->fetchAddressesForContact($contact);
+            return $addresses->toArrayPublic();
+        }
+        // NOTE: Add additional query param support here.
+        return [];
+    }
 }
