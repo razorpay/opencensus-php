@@ -55,7 +55,6 @@ export const getState = ({ userData = {}, userProfile = {}, config = {} } = {}):
       activation_status: undefined,
       isOrgAxis: undefined,
       isOrgRZP: undefined,
-      isInstrumentRequestAllowed: jest.fn(),
       isInstrumentRequestHidden: undefined,
       isWebsiteComplianceFlowEnabled: undefined,
       isFeatureEnabled: jest.fn(),

@@ -18,9 +18,7 @@ export default function CSATSurveyBanner({ user }) {
     SurveyForm.open();
   }, [SurveyForm]);
 
-  const shouldShowBannerToUser = user.showCSATSurvey(); // check user mid to show banner
-
-  if (shouldShowBannerToUser && showSurvey) {
+  if (showSurvey) {
     return (
       <div className="announcement-banner-container">
         <AnnouncementBanner

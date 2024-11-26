@@ -87,7 +87,6 @@ type Getters = {
   isMultiCouponsEnabled: boolean;
   isAdminOrOwner: boolean;
   isOwner: boolean;
-  isAdditionalDomainWhitelistSelfServeOn: boolean;
   isRRNSearchEnabled: boolean;
   isMagicCouponEngineEnabled: boolean;
   isMoreInternationalMethodsEnabledForVAS: boolean;

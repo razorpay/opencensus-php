@@ -4,7 +4,6 @@ export const user = {
   isWebsiteSelfServeOn: true,
   business_website: 'http://www.example.com/',
   additional_websites: ['www.google.com', 'www.twitter.com'],
-  isAdditionalDomainWhitelistSelfServeOn: true,
   has_key_access: true,
   id: 'LLlV9ud8etevh8',
 };

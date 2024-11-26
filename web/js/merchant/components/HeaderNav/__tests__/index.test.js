@@ -168,7 +168,6 @@ describe('test for HeaderNav component', () => {
       { features: [] },
     );
     const user = updatedState.session.user;
-    jest.spyOn(user, 'isAppSwitcherEnabled', 'get').mockReturnValue(true);
     jest.spyOn(user, 'isAccepted', 'get').mockReturnValue(true);
     jest.spyOn(user, 'isOrgAxis', 'get').mockReturnValue(false);
     jest.spyOn(user, 'isOrgKotak', 'get').mockReturnValue(false);
@@ -196,7 +195,6 @@ describe('test for HeaderNav component', () => {
       { features: [] },
     );
     const user = updatedState.session.user;
-    jest.spyOn(user, 'isAppSwitcherEnabled', 'get').mockReturnValue(true);
     jest.spyOn(user, 'isAccepted', 'get').mockReturnValue(true);
     jest.spyOn(user, 'isOrgAxis', 'get').mockReturnValue(false);
     jest.spyOn(user, 'isOrgKotak', 'get').mockReturnValue(false);
@@ -248,7 +246,6 @@ describe('test for HeaderNav component', () => {
         { features: [] },
       );
       const user = updatedState.session.user;
-      jest.spyOn(user, 'isAppSwitcherEnabled', 'get').mockReturnValue(true);
       jest.spyOn(user, 'isAccepted', 'get').mockReturnValue(true);
       jest.spyOn(user, 'isOrgAxis', 'get').mockReturnValue(false);
       jest.spyOn(user, 'isOrgKotak', 'get').mockReturnValue(false);
@@ -335,7 +332,6 @@ describe('test for HeaderNav component', () => {
       );
       const user = updatedState.session.user;
       jest.spyOn(user, 'isOrgRZP', 'get').mockReturnValue(true);
-      jest.spyOn(user, 'isInternalStatusPageEnabled', 'get').mockReturnValue(true);
       jest.spyOn(user, 'isEcosystemDowntimeEnabled', 'get').mockReturnValue(true);
 
       const text = 'Ecosystem downtimes Component';

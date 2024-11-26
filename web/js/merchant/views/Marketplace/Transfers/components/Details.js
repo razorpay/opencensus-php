@@ -293,12 +293,6 @@ export default class TransferDetails extends Component {
                   )}
                 </EntityDetailRow>
 
-                {/* {transfer.transaction && this.props.user.isUxRevampPhase2Enabled && (
-                  <EntityDetailRow label="Settlement Details">
-                    <SettlementInfo data={transfer} />
-                  </EntityDetailRow>
-                )} */}
-
                 <EntityDetailRow label="Settlement Status">
                   {this.state.editView ? (
                     <form onSubmit={this.onSubmit} name="updatePaymentTransfer">

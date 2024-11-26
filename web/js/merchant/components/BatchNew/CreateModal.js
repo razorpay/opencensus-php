@@ -341,11 +341,7 @@ class BatchCreateModal extends Component {
               </Fragment>
             }
 
-            <ShowWhen
-              additionalCondition={(user) => user.isBatchSchedulingOptionsExperimentEnabled}
-            >
-              {this.props.processingOptions ? <ProcessingOptions /> : null}
-            </ShowWhen>
+            <ShowWhen>{this.props.processingOptions ? <ProcessingOptions /> : null}</ShowWhen>
 
             {/* extra fields sent with create batch */}
             {children}

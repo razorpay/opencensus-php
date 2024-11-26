@@ -105,7 +105,6 @@ const renderAdditionalWebsites = (user, handleEditWebsite, additionalWebsiteWork
         )}
       </div>
       {user.business_website &&
-        user.isAdditionalDomainWhitelistSelfServeOn &&
         isWorkflowChangeAllowed(additionalWebsiteWorkflow) &&
         (user.role === 'owner' || user.role === 'admin') &&
         !isLimitReached && (

@@ -61,17 +61,19 @@ export const getUpdateStatus = ({
   isOpgspImportMerchant,
   settlementStatus,
   isBankUpdateEnabled,
+  isBlockBankAccountUpdate,
 }: Pick<BankAccountDetailsPropsInterface, 'org' | 'user'> & {
   isBankUpdateEnabled: boolean | null;
   isOpgspImportMerchant: boolean;
   settlementStatus: SettlementInfoType;
+  isBlockBankAccountUpdate: boolean;
 }): boolean => {
   const { isHold, hold_type } = settlementStatus;
   const isHideRequestChange = org.features.includes('block_account_update');
   return !!(
     !isOpgspImportMerchant &&
     (!isHold || (isHold && hold_type === BannerType.SOH)) &&
-    !user.blockBankAccountUpdate() &&
+    !isBlockBankAccountUpdate &&
     user.activation_status === 'activated' &&
     !isHideRequestChange &&
     isBankUpdateEnabled

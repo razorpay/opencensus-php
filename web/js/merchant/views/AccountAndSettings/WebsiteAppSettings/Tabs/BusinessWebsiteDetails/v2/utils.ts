@@ -95,7 +95,6 @@ export const getCTACondition = ({
   // 3. No other workflow for additional website shouldn't be in progress
   const isAdditionalWebsitedActionAllowedOld =
     Boolean(user.business_website) &&
-    user.isAdditionalDomainWhitelistSelfServeOn &&
     isAdditionalWebsiteWorfklowChangeAllowed &&
     user.isAdminOrOwner &&
     !isLimitReached;

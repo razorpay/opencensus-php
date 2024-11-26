@@ -4,7 +4,6 @@ export const mockUser = {
   isAdminOrOwner: true,
   id: 'LEHESQGCPP3TsA',
   tags: [],
-  blockBankAccountUpdate: () => true,
   activation_status: 'activated',
   activation_form_milestone: 'L2',
   merchant: {

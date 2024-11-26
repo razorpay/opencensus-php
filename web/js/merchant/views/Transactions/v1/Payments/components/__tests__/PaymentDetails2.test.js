@@ -2,12 +2,10 @@ import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryHistory } from 'history';
-import { render, screen, fireEvent } from 'test-utils';
-import {
-  defaultProps,
-  App,
-} from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
+
 import { analyticsTrack } from 'common/utils/analytics';
+import { App } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
+import { render, screen, fireEvent } from 'test-utils';
 
 export const queryClient = new QueryClient();
 
@@ -72,12 +70,12 @@ describe('PaymentDetails', () => {
   });
 
   describe('Settlement details', () => {
-    test('should render settlement details when isUxRevampPhase2Enabled is true', () => {
+    test('should render settlement details', () => {
       render(<App />);
       expect(screen.getByText('Settlement Details')).toBeInTheDocument();
     });
 
-    test('should call trackKnowMore when clicked on settlement know more & when isUxRevampPhase2Enabled is true', () => {
+    test('should call trackKnowMore when clicked on settlement know more', () => {
       render(<App />);
       fireEvent.click(screen.getByText('Know More'));
       expect(analyticsTrack).toHaveBeenCalledWith({
@@ -91,7 +89,7 @@ describe('PaymentDetails', () => {
       });
     });
 
-    test('should call trackSameDaySettlement when clicked on same day settlement & when isUxRevampPhase2Enabled is true', () => {
+    test('should call trackSameDaySettlement when clicked on same day settlement', () => {
       render(<App />);
       fireEvent.click(screen.getByText('Track Same Day Settlement'));
       expect(analyticsTrack).toHaveBeenCalledWith({
@@ -105,7 +103,7 @@ describe('PaymentDetails', () => {
       });
     });
 
-    test('should call trackSettlementClose when clicked on settlement close & when isUxRevampPhase2Enabled is true', () => {
+    test('should call trackSettlementClose when clicked on settlement close', () => {
       render(<App />);
       fireEvent.click(screen.getByText('Track Settlement Close'));
       expect(analyticsTrack).toHaveBeenCalledWith({
@@ -119,7 +117,7 @@ describe('PaymentDetails', () => {
       });
     });
 
-    test('should call trackSettlementOverView when clicked on settlement info & when isUxRevampPhase2Enabled is true', () => {
+    test('should call trackSettlementOverView when clicked on settlement info', () => {
       render(<App />);
       fireEvent.click(screen.getByText('SettlementInfo'));
       expect(analyticsTrack).toHaveBeenCalledWith({
@@ -133,7 +131,7 @@ describe('PaymentDetails', () => {
       });
     });
 
-    test('should call handleSettlementGuideClick when clicked on settlement guide info & when isUxRevampPhase2Enabled is true', () => {
+    test('should call handleSettlementGuideClick when clicked on settlement guide info', () => {
       render(<App />);
       fireEvent.click(screen.getByText('Settlement Guide'));
       expect(analyticsTrack).toHaveBeenCalledWith({
@@ -147,7 +145,7 @@ describe('PaymentDetails', () => {
       });
     });
 
-    test('should call trackContactSupport when clicked on settlement contact support & when isUxRevampPhase2Enabled is true', () => {
+    test('should call trackContactSupport when clicked on settlement contact support', () => {
       render(<App />);
       fireEvent.click(screen.getByText('Contact Support'));
       expect(analyticsTrack).toHaveBeenCalledWith({
@@ -159,44 +157,6 @@ describe('PaymentDetails', () => {
         screen: 'payments',
         toLumberjack: true,
       });
-    });
-
-    test('should render settlement details when isUxRevampPhase2Enabled is false', () => {
-      render(<App user={{ ...defaultProps.user, isUxRevampPhase2Enabled: false }} />);
-      expect(screen.getByText('Settlement Details')).toBeInTheDocument();
-    });
-
-    test('should render settled settlement details when isUxRevampPhase2Enabled is false', () => {
-      render(
-        <App
-          user={{ ...defaultProps.user, isUxRevampPhase2Enabled: false }}
-          payment={{
-            ...defaultProps.payment,
-            transaction: {
-              settlement: {},
-              settled_at: '10-10-2022',
-            },
-          }}
-        />,
-      );
-      expect(screen.getByText('Settlement Details')).toBeInTheDocument();
-      expect(screen.getByText(/Settled on/)).toBeInTheDocument();
-    });
-
-    test('should render to be settled on settlement details when isUxRevampPhase2Enabled is false', () => {
-      render(
-        <App
-          user={{ ...defaultProps.user, isUxRevampPhase2Enabled: false }}
-          payment={{
-            ...defaultProps.payment,
-            transaction: {
-              settled_at: '10-10-2022',
-            },
-          }}
-        />,
-      );
-      expect(screen.getByText('Settlement Details')).toBeInTheDocument();
-      expect(screen.getByText(/To be settled on/)).toBeInTheDocument();
     });
   });
 });

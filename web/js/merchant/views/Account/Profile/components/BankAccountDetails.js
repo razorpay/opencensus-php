@@ -13,6 +13,8 @@ import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/Workfl
 import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const REVIEW_STATUS =
   'Your bank account change request is under review - This should take 2-3 working days';
@@ -88,11 +90,13 @@ const BankAccountDetails = ({
   // Hide Bank Account "Request Change" button if org feature is enabled
   const hideRequestChange = org.features.indexOf('block_account_update') > -1;
 
+  const { abExperiments } = useSplitzService();
+
   const showRequestChange =
     !isOpgspImportMerchant &&
     !isSettlementOnHold &&
     isBankAccountChangeAllowed !== null &&
-    !user.blockBankAccountUpdate() &&
+    !isExperimentEnabled(abExperiments.block_bank_account_update) &&
     user.activation_status === 'activated' &&
     !hideRequestChange &&
     !(isOnTemporaryHold && bankAccountChangeStatus) &&

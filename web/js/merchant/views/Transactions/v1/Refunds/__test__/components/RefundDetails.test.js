@@ -120,7 +120,6 @@ describe('Refunds - RefundDetails Component', () => {
     const drivingState = {
       session: {
         user: {
-          isUxRevampPhase2Enabled: true,
           isSingleReconEnabled: true,
           isOptimizerEnabled: true,
         },

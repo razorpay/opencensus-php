@@ -3,7 +3,6 @@ export const initialState = {
     user: {
       findTag: () => false,
       isOrgAllowedFunctionality: () => true,
-      showCSATSurvey() {},
       merchant: {
         id: 'K4NamuuWSvmcmX',
         entity: 'merchant',

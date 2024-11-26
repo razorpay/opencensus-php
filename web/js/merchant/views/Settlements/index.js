@@ -197,7 +197,7 @@ const Settlements = ({
     <>
       {/* instant settlements banner */}
       <div className="settlements-banner-container">
-        {user.isISBannerEnabled && <EarlySettlementsAnnouncement userId={user.current} />}
+        <EarlySettlementsAnnouncement userId={user.current} />
         {current_balance.data.balance < 0 && !user.isCountrySingapore && (
           <AnnouncementBanner
             title="Add Funds"

@@ -138,10 +138,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
       return this.onCloseCallback();
     }
     const userHasPassword = res.data.set_password;
-    if (
-      (user.isCriticalRouteExperimentEnabled || onBankAccountUpdateReq) &&
-      modes.includes(modeOfApp)
-    ) {
+    if (modes.includes(modeOfApp)) {
       // 2fa mobile signup flow
       if (!userHasPassword && user.is2FAMobileSignupEnabled) {
         if (!twoFactorVerified || onBankAccountUpdateReq) {

@@ -339,7 +339,6 @@ class AnalyticsDesktop extends Component {
 
   isWhatsappNotificationEnabled = (user) => {
     return (
-      user.isWhatsappNotificationEnabled() &&
       user.contact_mobile &&
       user.activation_status === 'activated' &&
       user.role === 'owner'

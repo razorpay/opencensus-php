@@ -30,7 +30,6 @@ export const isEmailNotificationEnabled = (user: User): boolean =>
 
 export const isWhatsappNotificationEnabled = (user: User, extraConfig: ExtraConfig): boolean =>
   !extraConfig.isConfigTagEnabled('account.whatsapp_notification') &&
-  user.isWhatsappNotificationEnabled() &&
   user.user &&
   !!user.user.contact_mobile &&
   user.activation_status === 'activated' &&
@@ -43,8 +42,7 @@ export const isTrustedBadgeAllowed = (user: User, extraConfig: ExtraConfig): boo
   !extraConfig.isConfigTagEnabled('account.trusted_badge');
 
 export const isPaymentMethodEnabled = (user: User, mode: string): boolean =>
-  ((user.isOrgRZP === true && user.isCountryIndia && user.isInstrumentRequestAllowed()) ||
-    user.isInstrumentRequestHidden) &&
+  ((user.isOrgRZP === true && user.isCountryIndia) || user.isInstrumentRequestHidden) &&
   mode !== 'test';
 
 export const shouldShowFeeBearerSelfServe = ({

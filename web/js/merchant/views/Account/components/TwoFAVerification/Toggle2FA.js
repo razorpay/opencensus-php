@@ -22,7 +22,6 @@ import {
   ACTION_QUERY_PARAM_KEY,
   ENABLE_2FA,
 } from 'merchant/views/Account/Profile/deeplink-constants';
-import PasswordVerification from './PasswordVerification';
 
 @connect((state) => ({ user: state.session.user }), {
   openModal,
@@ -52,18 +51,7 @@ class Toggle2FA extends Component {
     const user = this.props.user;
     const secondFactorAuthPayload = { second_factor_auth: flag };
 
-    if (user.isCriticalRouteExperimentEnabled) {
-      this.sendUpdateSecondFactorAuthRequest(secondFactorAuthPayload);
-    } else {
-      this.showModal(
-        <PasswordVerification
-          closeModal={this.abort}
-          onSubmit={this.sendUpdateSecondFactorAuthRequest}
-          dataSentWithPassword={secondFactorAuthPayload}
-          enable={flag}
-        />,
-      );
-    }
+    this.sendUpdateSecondFactorAuthRequest(secondFactorAuthPayload);
   };
 
   sendUpdateSecondFactorAuthRequest = (data) => {

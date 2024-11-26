@@ -1,3 +1,5 @@
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import {
   AccountData,
   useAccountHookInterface,
@@ -34,6 +36,8 @@ export const useBankAccountDetails = ({
     return isOpgspImportMerchantFn(user);
   }, [user.tags]);
 
+  const { abExperiments } = useSplitzService();
+
   useEffect(() => {
     if (isDataSettled) {
       const { global_hold_config, hold } = settlementConfig?.data?.config?.features || {};
@@ -62,6 +66,7 @@ export const useBankAccountDetails = ({
         isOpgspImportMerchant,
         settlementStatus,
         isBankUpdateEnabled,
+        isBlockBankAccountUpdate: isExperimentEnabled(abExperiments?.block_bank_account_update),
       });
       setBankAccountDetails((prevState) => ({
         ...prevState,

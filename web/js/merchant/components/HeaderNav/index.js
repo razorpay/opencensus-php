@@ -95,14 +95,13 @@ class HeaderNav extends Component {
       toggleDropdown();
     }
 
-    if (this.props.user.isAppSwitcherEnabled) {
-      this.props.tracking.trackEvent(
-        window.rzpQ.onbr().success('dashboard.display_appswitcher', {
-          menu_title: 'App Switcher',
-          session_id: window.session_id,
-        }),
-      );
-    }
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().success('dashboard.display_appswitcher', {
+        menu_title: 'App Switcher',
+        session_id: window.session_id,
+      }),
+    );
+
     this.fetchMTUOfferConfigDetails();
   }
 
@@ -324,7 +323,7 @@ class HeaderNav extends Component {
                         </GrowthAssetEB>
                       </li>
                     </ShowWhen>
-                    {user?.isOrgRZP && user?.isInternalStatusPageEnabled && user.isCountryIndia && (
+                    {user?.isOrgRZP && user.isCountryIndia && (
                       <li id="status-details" data-testid="header-status-details">
                         {user.isEcosystemDowntimeEnabled ? (
                           <EcosystemDowntimes
@@ -345,7 +344,6 @@ class HeaderNav extends Component {
                     <ShowWhen
                       additionalCondition={(_user) =>
                         !isRTUXHomepage &&
-                        _user?.isAppSwitcherEnabled &&
                         _user?.isAccepted &&
                         !_user?.isOrgAxis &&
                         !_user?.isOrgKotak &&

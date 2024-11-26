@@ -11,7 +11,6 @@ export const defaultUserExtra = {
   isRBLRoleEnabled: false,
   isMerchantRestricted: false,
   isEmailSelfServeEnabled: false,
-  isCriticalRouteExperimentEnabled: true,
   isTwoFactorSetupDone: true,
   merchant: {
     country_code: 'IN',

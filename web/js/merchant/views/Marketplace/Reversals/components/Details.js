@@ -73,7 +73,7 @@ export default class ReversalDetails extends Component {
                   )}
                 />
 
-                {reversal.transaction && this.props.user.isUxRevampPhase2Enabled && (
+                {reversal.transaction && (
                   <EntityDetailRow label="Settlement Details">
                     <SettlementInfo data={reversal} page="Reversal Detail" />
                   </EntityDetailRow>

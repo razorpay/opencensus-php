@@ -182,7 +182,6 @@ export const defaultProps = {
   user: {
     isSingleReconEnabled: true,
     isOptimizerEnabled: true,
-    isUxRevampPhase2Enabled: true,
     isPaymentPageReceiptsEnabled: true,
     merchant: {
       currency: 'INR',

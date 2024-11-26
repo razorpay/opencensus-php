@@ -77,6 +77,7 @@ import FestiveAnimation from './FestiveAnimation';
 import { withI18Service } from 'common/i18';
 import { withSplitzService } from 'common/splitz';
 import { isRTUXHomepageEnabled } from './RTUX/utils';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const Desktop = lazyLoader(() => import(/* webpackChunkName: 'merchantDesktop' */ './Desktop'));
 const Mobile = lazyLoader(() => import(/* webpackChunkName: 'merchantMobile' */ './Mobile'));
@@ -735,7 +736,12 @@ class HomeContainer extends Component {
     window.addEventListener('resize', this.onResize);
 
     const shouldShowMobileHotjarSurvey = showWhenUtil({
-      additionalCondition: (user) => user.isMobileHotjarSurveyEnabled,
+      additionalCondition: () => {
+        const { abExperiments } = this.props.splitz || {
+          abExperiments: { mobile_hotjar_survey: undefined },
+        };
+        return isExperimentEnabled(abExperiments?.mobile_hotjar_survey);
+      },
     });
 
     if (shouldShowMobileHotjarSurvey) {

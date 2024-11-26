@@ -12,7 +12,6 @@ import Alert from 'common/ui/Forms/Alert';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
-import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { isInteger } from 'common/utils/validators';
@@ -46,7 +45,6 @@ import PaymentDisputes from './PaymentDisputes';
 import PaymentPageDetails from './PaymentPageDetails';
 import PaymentReceipt from './PaymentReceipt';
 import PaymentSplitInItems from './PaymentSplitInItems';
-import SettlementOverview from './SettlementOverview';
 import './Payments.styl';
 
 import { DownloadIcon } from '@razorpay/blade/components';
@@ -71,7 +69,6 @@ function PaymentDetails(props) {
     onRefundDetailsToggleClick = () => {},
     onUpdateReferenceId = () => {},
     isRoleAllowedEdit,
-    viewSettlementOverview,
     user,
     org,
     location,
@@ -479,7 +476,6 @@ function PaymentDetails(props) {
 
                 <ShowWhen
                   additionalCondition={() =>
-                    user.isUxRevampPhase2Enabled &&
                     payment.transaction &&
                     (!user.isSingleReconEnabled ||
                       !user.isOptimizerEnabled ||
@@ -641,31 +637,6 @@ function PaymentDetails(props) {
                 )}
 
                 <PaymentSplitInItems payment={payment} />
-
-                {!user.isUxRevampPhase2Enabled &&
-                payment.transaction &&
-                (!user.isSingleReconEnabled ||
-                  !user.isOptimizerEnabled ||
-                  payment.optimizer_provider === 'Razorpay') ? (
-                  <EntityDetailRow label="Settlement Details">
-                    {payment.transaction.settlement ? (
-                      <ContentToggler onToggleClick={viewSettlementOverview}>
-                        <span>
-                          Settled on{' '}
-                          <Time value={payment.transaction.settled_at} format="DD MMM YYYY" />
-                        </span>
-                        <SettlementOverview payment={payment} user={user} />
-                      </ContentToggler>
-                    ) : payment.transaction.settled_at ? (
-                      <span className="link">
-                        To be settled on{' '}
-                        <Time value={payment.transaction.settled_at} format="DD MMM YYYY" />
-                      </span>
-                    ) : (
-                      '--'
-                    )}
-                  </EntityDetailRow>
-                ) : null}
               </div>
               {isOptimizerView && (
                 <OptimizerDetails

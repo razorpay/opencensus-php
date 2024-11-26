@@ -1126,14 +1126,6 @@ export default class User {
     );
   }
 
-  get isUxRevampPhase2Enabled() {
-    return this.getExpStatus('settlement_ux_revamp_p2');
-  }
-
-  get iscaptureSettingsRevampEnabled() {
-    return this.getExpStatus('capture_settings_revamp');
-  }
-
   get isFeeCreditSelfServeEnabled() {
     return this.getExpStatus('fee_credit_self_serve');
   }
@@ -1192,10 +1184,6 @@ export default class User {
     return true;
   }
 
-  get isAdditionalDomainWhitelistSelfServeOn() {
-    return this.getExpStatus('additional_domain_whitelist_self_serve');
-  }
-
   get isCreditPullEnabled() {
     return this.isFeatureEnabled('show_credit_score');
   }
@@ -1207,11 +1195,6 @@ export default class User {
   // Allowed roles can be revoked refund access selectively with this tag
   get isRefundAllowed() {
     return this.isAllowedEdit('refunds') && !this.isRefundsDisabled;
-  }
-
-  //instant settlements
-  get isISBannerEnabled() {
-    return this.getExpStatus('is_banner');
   }
 
   get isExpireByRequired() {
@@ -1261,10 +1244,6 @@ export default class User {
 
   get isEnhancedEPOSEnabled() {
     return this.getExpStatus('sellerapp_plus');
-  }
-
-  get isMobileHotjarSurveyEnabled() {
-    return this.getExpStatus('mobile_hotjar_survey');
   }
 
   get isNPSSurveyBannerEnabled() {
@@ -1366,14 +1345,6 @@ export default class User {
     return true;
   }
 
-  get isCriticalRouteExperimentEnabled() {
-    return this.getExpStatus('validate_user_2fa_status');
-  }
-
-  get isBatchSchedulingOptionsExperimentEnabled() {
-    return this.getExpStatus('batch_scheduling_options');
-  }
-
   get isEmandateOnSubscriptionEnabled() {
     return this.getExpStatus('emandate_subscription');
   }
@@ -1470,10 +1441,6 @@ export default class User {
       return false;
     }
     return this.getExpStatus('aadharEkyc_for_trust_society_ngo') && this.isOrgRZP;
-  }
-
-  get isInternalStatusPageEnabled() {
-    return this.getExpStatus('status_page_enable');
   }
 
   // TODO: Remove from razorX bcoz it's rolled out 100%
@@ -1589,10 +1556,6 @@ export default class User {
     return this.isFeatureEnabled('pl_v2_disable_rmndr_email');
   }
 
-  get isAppSwitcherEnabled() {
-    return this.getExpStatus('app_switcher');
-  }
-
   get isSourceRX() {
     const query = QueryString.parse(window.location.search);
     const isSourceRX = !!(query && query.merchant && query.merchant === 'x');
@@ -1668,10 +1631,6 @@ export default class User {
     return this.getExpStatus(`disable-edit-${moduleName}`);
   }
 
-  isInstrumentRequestAllowed() {
-    return this.getExpStatus('instrument_request_merchant_dashboard');
-  }
-
   get isInstrumentRequestHidden() {
     return isOrgFeatureExist('hide_instrument_request');
   }
@@ -1685,11 +1644,6 @@ export default class User {
     return true;
   }
 
-  // Blocks bank account update feature
-  blockBankAccountUpdate() {
-    return this.getExpStatus('block_bank_account_update_merchant_dashboard');
-  }
-
   // NPS survey feature
   showNPSSurvey() {
     return this.getExpStatus('dashboard_show_nps_survey');
@@ -1699,11 +1653,6 @@ export default class User {
     return this.getExpStatus('csm_experience_survey');
   }
 
-  // CSAT Survey feature
-  showCSATSurvey() {
-    return this.getExpStatus('show_csat_survey');
-  }
-
   // Setter Methods
   set secondFactorAuthOfCurrentMerchant(secondFactorAuth) {
     this.merchants[this.current].second_factor_auth = secondFactorAuth;
@@ -1711,10 +1660,6 @@ export default class User {
 
   set secondFactorAuthOfUser(secondFactorAuth) {
     this.user.second_factor_auth = secondFactorAuth;
-  }
-
-  isWhatsappNotificationEnabled() {
-    return this.getExpStatus('whatsapp_notification_enablement');
   }
 
   get isAppStoreEnabled() {

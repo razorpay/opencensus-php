@@ -1051,6 +1051,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'mobile_hotjar_survey',
+          experimentId: {
+            beta: 'PHfspNoG4RCAOf',
+            production: 'PHfpO51O3j3ahk',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {
@@ -1061,6 +1077,27 @@ export const splitzConfig: SplitzInitConfig = {
           experimentId: {
             beta: 'MxTTd86ndTW9w8',
             production: 'MxU5rA1OJAmx3s',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      routesToMatch: ['/profile', '/account-settings', /bank-accounts-settlements.*/i],
+      abExperiments: [
+        {
+          uniqueHashKey: 'block_bank_account_update',
+          experimentId: {
+            beta: 'PIKiCEIp6GFaJ5',
+            production: 'PIK1zH5Q4ajNWS',
           },
           defaultVariant: {
             name: 'variables',

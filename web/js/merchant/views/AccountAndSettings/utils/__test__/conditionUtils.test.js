@@ -24,7 +24,6 @@ const getUser = () => ({
   },
   isOrgAxis: undefined,
   isOrgRZP: undefined,
-  isInstrumentRequestAllowed: jest.fn(),
   isInstrumentRequestHidden: undefined,
   isWebsiteComplianceFlowEnabled: undefined,
   isFeatureEnabled: jest.fn(),
@@ -115,22 +114,14 @@ describe('Condition Utils', () => {
 
   describe('isWhatsappNotificationEnabled', () => {
     test.each([
-      [true, false, true, 'test-contact-mobile', 'activated', rolesList.OWNER],
-      [true, false, true, 'test-contact-mobile', 'activated', rolesList.ADMIN],
-      [false, true, true, 'test-contact-mobile', 'activated', rolesList.ADMIN],
-      [false, false, false, undefined, 'activated', rolesList.ADMIN],
-      [false, false, false, undefined, 'activated-test', rolesList.MANAGER],
+      [true, false, 'test-contact-mobile', 'activated', rolesList.OWNER],
+      [true, false, 'test-contact-mobile', 'activated', rolesList.ADMIN],
+      [false, true, 'test-contact-mobile', 'activated', rolesList.ADMIN],
+      [false, false, undefined, 'activated', rolesList.ADMIN],
+      [false, false, undefined, 'activated-test', rolesList.MANAGER],
     ])(
-      `should return %s when user.isWhatsappNotificationEnabled returns %s, user.isOrgAllowedFunctionality returns %s, user.contact_mobile returns %s, isConfigTagEnabled returns %s and user.role returns %s on passing WhatsappNotification`,
-      (
-        output,
-        configTag,
-        isWhatsappNotificationEnabled,
-        contact_mobile,
-        activationStatus,
-        role,
-      ) => {
-        user.isWhatsappNotificationEnabled.mockReturnValueOnce(isWhatsappNotificationEnabled);
+      `should return %s, user.isOrgAllowedFunctionality returns %s, user.contact_mobile returns %s, isConfigTagEnabled returns %s and user.role returns %s on passing WhatsappNotification`,
+      (output, configTag, contact_mobile, activationStatus, role) => {
         user.user = {
           contact_mobile,
         };
@@ -166,34 +157,25 @@ describe('Condition Utils', () => {
       user = {
         isOrgRZP: false,
         isCountryIndia: false,
-        isInstrumentRequestAllowed: jest.fn().mockReturnValue(false),
         isInstrumentRequestHidden: false,
       };
     });
 
     test.each([
-      // Expected result, isOrgRZP, isCountryIndia, isInstrumentRequestAllowed, isInstrumentRequestHidden, mode
-      [false, false, false, false, false, 'test'],
-      [false, false, true, false, false, 'live'],
-      [false, true, true, true, false, 'test'],
-      [false, false, false, true, false, 'live'],
-      [true, true, true, true, true, 'live'],
-      [true, true, true, true, false, 'live'],
-      [true, false, true, true, true, 'live'],
-      [false, true, false, true, false, 'test'],
+      // Expected result, isOrgRZP, isCountryIndia, isInstrumentRequestHidden, mode
+      [false, false, false, false, 'test'],
+      [false, false, true, false, 'live'],
+      [false, true, true, false, 'test'],
+      [false, false, false, false, 'live'],
+      [true, true, true, true, 'live'],
+      [true, true, true, false, 'live'],
+      [true, false, true, true, 'live'],
+      [false, true, false, false, 'test'],
     ])(
-      'should return %s when isOrgRZP is %s, isCountryIndia is %s, isInstrumentRequestAllowed returns %s, isInstrumentRequestHidden is %s, and mode is %s',
-      (
-        expectedResult,
-        isOrgRZP,
-        isCountryIndia,
-        isInstrumentRequestAllowedOutput,
-        isInstrumentRequestHiddenOutput,
-        mode,
-      ) => {
+      'should return %s when isOrgRZP is %s, isCountryIndia is %s, isInstrumentRequestHidden is %s, and mode is %s',
+      (expectedResult, isOrgRZP, isCountryIndia, isInstrumentRequestHiddenOutput, mode) => {
         user.isOrgRZP = isOrgRZP;
         user.isCountryIndia = isCountryIndia;
-        user.isInstrumentRequestAllowed.mockReturnValueOnce(isInstrumentRequestAllowedOutput);
         user.isInstrumentRequestHidden = isInstrumentRequestHiddenOutput;
 
         expect(conditionalUtils.isPaymentMethodEnabled(user, mode)).toBe(expectedResult);
