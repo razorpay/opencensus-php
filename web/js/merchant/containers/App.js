@@ -51,6 +51,7 @@ import { isMobileDevice } from 'merchant/components/Home/data';
 import LogoutDialog from 'merchant/components/LogoutDialog';
 import Sidebar from 'merchant/components/Sidebar';
 import SidebarV2 from 'merchant/components/SidebarV2';
+import { FullPageLoader, FullPageLoaderCenterToMainContent } from 'common/components/Loader';
 import currencies from 'merchant/constants/currency';
 import { LOGOUT_ERROR, DEFAULT_TIMEOUT_IN_SECONDS } from 'merchant/constants/dates';
 import rolesList from 'merchant/helpers/permissions/roles-list';
@@ -1356,7 +1357,11 @@ class App extends Component {
             )} */}
 
             {this.getSurveyForm()}
-            <SplitzRoutesBasedService>
+            <SplitzRoutesBasedService
+              customLoader={() =>
+                isMobileDevice() ? <FullPageLoader /> : <FullPageLoaderCenterToMainContent />
+              }
+            >
               <Content
                 user={user}
                 modeFormatted={currentModeFormatted}

@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect } from 'react';
-import { Box, Spinner } from '@razorpay/blade/components';
+import { Box } from '@razorpay/blade/components';
 
 import { useUCSDataQuery } from 'merchant/containers/Home/RTUX/hooks/useUCSDataQuery';
 import { useUCSLayoutQuery } from 'merchant/containers/Home/RTUX/hooks/useUCSLayoutQuery';
@@ -8,12 +8,8 @@ import { getUcsAliasFromQueryKey, getBaseWidget, track } from 'merchant/widgets/
 import { ResponsiveWrapper } from './styles';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
-const DefaultLoader = (): JSX.Element => (
-  <Box minHeight="150px" display="flex" alignItems="center" justifyContent="center">
-    <Spinner accessibilityLabel="home page loading" />
-  </Box>
-);
+import { FullPageLoader, FullPageLoaderCenterToMainContent } from 'common/components/Loader';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 const RTUX_HOMEPAGE_LAYOUT_KEY = ['rtux-homepage', 'layout'];
 const RTUX_HOMEPAGE_DATA_KEY = ['rtux-homepage', 'data'];
@@ -64,8 +60,9 @@ const RTUXHomepage = (): JSX.Element => {
   }, [isFetching, error]);
 
   // if layout errors out, fallback to default loader
-  if (isFetchingLayout || (isErrorLayout && isFetching)) return <DefaultLoader />;
-
+  if (isFetchingLayout || (isErrorLayout && isFetching)) {
+    return isMobileDevice() ? <FullPageLoader /> : <FullPageLoaderCenterToMainContent />;
+  }
   // only retry for data, layout error is handled by default loader
   if (isError)
     return (

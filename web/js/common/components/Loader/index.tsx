@@ -32,6 +32,15 @@ const FullPageView = styled(View)`
   right: 0;
 `;
 
+const MainContentFullPageView = styled(View)`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin-left: 248px;
+`;
+
 export interface LoaderPropsT {
   height?: number | string;
   width?: number | string;
@@ -66,6 +75,16 @@ export const FullPageLoader: React.FC<LoaderPropsT> = ({ ...LoaderProps }) => {
       <FullPageView>
         <Loader {...LoaderProps} />
       </FullPageView>
+    </Flex>
+  );
+};
+
+export const FullPageLoaderCenterToMainContent: React.FC<LoaderPropsT> = ({ ...LoaderProps }) => {
+  return (
+    <Flex flexDirection="column" justifyContent="center" alignItems="center">
+      <MainContentFullPageView>
+        <Loader {...LoaderProps} />
+      </MainContentFullPageView>
     </Flex>
   );
 };

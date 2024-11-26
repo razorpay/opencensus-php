@@ -2664,7 +2664,7 @@ class Content extends Component {
                 team={this.isRAYEnabled() ? Teams.RAY : Teams.CARE}
                 FallbackComponent={() => <></>}
               >
-                <Suspense fallback={<Spinner />}>
+                <Suspense fallback={null}>
                   {this.isRAYEnabled() ? <RayWidget /> : <HelpSection user={user} />}
                 </Suspense>
               </ErrorBoundary>

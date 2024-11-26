@@ -1345,7 +1345,7 @@ class HomeContainer extends Component {
           )}
         </ShowWhen>
         {isRTUXHomepage ? (
-          <SuspenseWithLoader type="full">
+          <SuspenseWithLoader type={isMobile ? 'full' : 'centerToMainContent'}>
             <RTUXHomepage />
           </SuspenseWithLoader>
         ) : isMobile ? (
@@ -1353,7 +1353,7 @@ class HomeContainer extends Component {
             <Mobile {...commonProps} />
           </SuspenseWithLoader>
         ) : (
-          <SuspenseWithLoader type="full">
+          <SuspenseWithLoader type="centerToMainContent">
             <Desktop {...commonProps} />
           </SuspenseWithLoader>
         )}
