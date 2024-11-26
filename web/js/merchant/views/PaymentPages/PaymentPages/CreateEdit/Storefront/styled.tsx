@@ -8,8 +8,12 @@ import PaymentPagesHeader from 'merchant/views/PaymentPages/PaymentPages/compone
 
 const tabletView = '1200px';
 const mobileView = '900px';
+
+type StyledProps = { theme: Theme };
+
 export const StorefrontLeftWrapper = styled.div`
   width: 500px;
+  background-color: #fff;
   border-right: 1px solid rgba(21, 102, 241, 0.18);
   overflow: auto;
   @media screen and (max-width: ${tabletView}) {
@@ -17,6 +21,7 @@ export const StorefrontLeftWrapper = styled.div`
   }
   @media screen and (max-width: ${mobileView}) {
     width: 100%;
+    padding-bottom: ${({ theme }: StyledProps) => theme.spacing[6]}px;
   }
 `;
 export const StorefrontRightWrapper = styled.div`
@@ -58,6 +63,7 @@ export const StoreFrontWrapper = styled.div`
   overflow: auto;
   @media screen and (max-width: ${mobileView}) {
     flex-direction: column;
+    height: calc(100vh - 110px);
   }
 `;
 
@@ -154,7 +160,6 @@ export const Iframe = styled.iframe<any>`
 
 export const ProductsWrapper = styled.div`
   background: #ffffff;
-  border: 1px solid #dfe3e9;
   border-radius: 4px;
   padding: 16px;
   max-height: calc(100vh - 50px - 68px - 180px); // header, sticky footer, storefront title section
@@ -630,6 +635,9 @@ export const FooterWrapper = styled.div(
 export const StorefrontHeader = styled(PaymentPagesHeader)`
   & > div {
     min-width: 335px;
+    background-color: ${({ theme }: StyledProps) => theme.colors.surface.background.gray.subtle};
+    border-bottom: 1px solid ${({ theme }: StyledProps) => theme.colors.surface.border.gray.subtle};
+    color: ${({ theme }: StyledProps) => theme.colors.surface.text.gray.normal};
   }
 `;
 

@@ -53,6 +53,7 @@ function MobileActionButtons({
         <>
           <Button
             variant="secondary"
+            size="small"
             icon={EyeIcon}
             iconPosition="left"
             isFullWidth
@@ -62,6 +63,7 @@ function MobileActionButtons({
           </Button>
           <Button
             variant="primary"
+            size="small"
             icon={ArrowRightIcon}
             iconPosition="right"
             onClick={onPublish}

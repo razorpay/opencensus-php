@@ -1,3 +1,5 @@
+import { Box, Text, Theme } from '@razorpay/blade/components';
+import { isMobile } from 'common/utils/validators';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -9,6 +11,8 @@ export interface IPaymentPagesHeader {
   handleClose: () => void;
   children: React.ReactElement;
   isSticky?: boolean;
+  isStorefront?: boolean;
+  isMobile?: boolean;
 }
 
 const PageNavContainer = styled.div<{ isSticky?: boolean }>(
@@ -122,12 +126,13 @@ const PageSizeContainer = styled.div`
   position: relative;
 `;
 
-const CloseButton = styled.span`
+const CloseButton = styled.span<{ isStorefront?: boolean; theme: Theme }>(
+  ({ isStorefront, theme }) => `
   font-size: 24px;
   line-height: 14px;
   position: absolute;
   right: 4px;
-  color: #fff;
+  color: ${isStorefront ? `${theme.colors.interactive.icon.gray.muted}` : '#fff'};
   cursor: pointer;
   padding: 4px;
 
@@ -136,10 +141,11 @@ const CloseButton = styled.span`
   }
 
   &:hover {
-    color: #fff;
+    color: ${isStorefront ? `${theme.colors.interactive.icon.gray.muted}` : '#fff'};
     opacity: 0.7;
   }
-`;
+`,
+);
 
 const PageNav = styled.div`
   color: #fff;
@@ -161,17 +167,43 @@ const PaymentPagesHeader = ({
   handleClose,
   children,
   isSticky,
+  isStorefront,
+  isMobile,
   ...restProps
 }: IPaymentPagesHeader): React.ReactElement => {
   return (
     <PageNavContainer className="page-nav-container" isSticky={isSticky} {...restProps}>
       <PageNav>
         <PageSizeContainer>
-          <PageTitle>{title}</PageTitle>
+          {isStorefront ? (
+            <Text
+              color="surface.text.gray.normal"
+              weight="semibold"
+              size={isMobile ? 'medium' : 'large'}
+              variant="body"
+            >
+              {title}
+            </Text>
+          ) : (
+            <PageTitle>{title}</PageTitle>
+          )}
 
-          {actionBtns && <PageAction>{actionBtns}</PageAction>}
+          {actionBtns &&
+            (isStorefront ? (
+              <Box
+                display="flex"
+                justifyContent="flex-end"
+                width={isMobile ? '100px' : '330px'}
+                gap="spacing.4"
+                marginRight="34px"
+              >
+                {actionBtns}
+              </Box>
+            ) : (
+              <PageAction>{actionBtns}</PageAction>
+            ))}
 
-          <CloseButton data-testid="close-btn" onClick={handleClose}>
+          <CloseButton data-testid="close-btn" onClick={handleClose} isStorefront={isStorefront}>
             ×
           </CloseButton>
         </PageSizeContainer>

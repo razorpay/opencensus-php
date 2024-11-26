@@ -40,6 +40,7 @@ export const _livePreviewResponse = {
     id: 'store_invalid_id',
     currency: 'INR',
     title: 'Preview store',
+    storefront_v1_enabled: false,
     description: '',
     slug: 'my-store1123',
     status: 'active',
@@ -137,3 +138,9 @@ export const generateCheckboxesFromAllProducts = (
 export function getPrimaryImage(images: IPaymentPagesProduct['images']): string {
   return (images[0] && images[0].original) || ProductPlaceholderImage;
 }
+
+export const isStorefrontV1 = (splitzConfig: any): boolean => {
+  const experimentName = 'storefront_v1';
+  const { abExperiments } = splitzConfig;
+  return abExperiments?.[experimentName]?.variables?.result === 'on';
+};

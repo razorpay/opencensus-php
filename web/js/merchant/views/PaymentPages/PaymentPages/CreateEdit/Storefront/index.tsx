@@ -52,6 +52,8 @@ import {
   Button as BladeButton,
   PlusCircleIcon,
   Heading,
+  SettingsIcon,
+  Box,
 } from '@razorpay/blade/components';
 import {
   emitIframeEvent,
@@ -61,13 +63,17 @@ import {
   getAllowedStorefrontDomain,
 } from './iframe';
 import { IHostedPagesMerchant, IStorefrontProps, TripleState } from './types';
+import { useSplitzService } from 'common/splitz';
 import {
   convertToHostedPagesProduct,
   getStorefrontHostedPagesFormat,
+  isStorefrontV1,
   sampleProduct,
 } from './utils';
 import ConfirmModal from 'merchant/views/PaymentPages/common/ConfirmModal';
 import ContactDetails from './ContactDetails';
+import AddBuisnessDetails from './AddBuisnessDetails';
+import AddBannerDetails from './AddBannerDetails';
 import {
   generateStorefrontRequest,
   validateStorefront,
@@ -112,6 +118,8 @@ const StoreFront = ({
   addCategory,
   isMobile,
 }: IStorefrontProps): JSX.Element => {
+  const splitzConfig = useSplitzService();
+  const isStorefrontV1Enabled = isStorefrontV1(splitzConfig);
   // Used to manage products skeleton & determining if 0 products exist in central catalog or more (used to determine which drawer opens on button click)
   // we use -1 is loading state, 0 is no products added in central catalog, 1 is products previously exist in catalog
   const [isInitialLoaded, setIsInitialLoaded] = useState<TripleState>(-1);
@@ -128,6 +136,8 @@ const StoreFront = ({
   const [isMobilePreview, setIsMobilePreview] = useState(false);
   const [isPageSettingsOpen, setIsPageSettingsOpen] = useState(false);
   const [isReceiptSettingsOpen, setIsReceiptSettingsOpen] = useState(false);
+  const [openBuisnessDetailsDrawer, setOpenBuisnessDetailsDrawer] = useState(false);
+  const [openAddBannerDrawer, setOpenAddBannerDrawer] = useState(false);
   const navigate = useNavigate();
 
   const setIsIframeLoadedRef = (data: boolean) => {
@@ -137,6 +147,14 @@ const StoreFront = ({
   const {
     entity: { products },
   } = storefront;
+
+  const handleBuisnessDetailsClick = (val: boolean) => {
+    setOpenBuisnessDetailsDrawer(val);
+  };
+
+  const handleAddBannerClick = (val: boolean) => {
+    setOpenAddBannerDrawer(val);
+  };
 
   const getMerchantDetails = useCallback(
     function getMerchantDetail() {
@@ -595,33 +613,31 @@ const StoreFront = ({
         <i className="i i-receipt" />
         {!isMobile && <span style={{ marginBottom: '4px' }}>Payment Receipts</span>}
       </Button.Transparent> */}
-
-      <Button.Transparent
-        type="button"
-        style={{ color: '#fff' }}
-        onClick={() => {
-          setIsPageSettingsOpen(true);
-          track.pageSettingsClicked({
-            storefrontId: id ?? undefined,
-            isNewStorefront: Boolean(isCreate),
-          });
-        }}
-        className="Button--header"
-        // disabled={!isEntityLoaded}
-      >
-        <i className="i i-settings-outline" />
-        {!isMobile && <span style={{ marginBottom: '4px' }}>Page Settings</span>}
-      </Button.Transparent>
       {!isMobile ? (
-        <AsyncBtn.Primary
-          onClick={onSubmit}
-          // disabled={!isAllowedToSubmit || !isEntityLoaded}
-          pendingState="Publishing"
-          style={{ minWidth: 120 }}
-          class="hidden-xs"
+        <BladeButton
+          variant="secondary"
+          color="primary"
+          size="medium"
+          icon={SettingsIcon}
+          iconPosition="left"
+          isFullWidth
+          onClick={() => {
+            setIsPageSettingsOpen(true);
+            track.pageSettingsClicked({
+              storefrontId: id ?? undefined,
+              isNewStorefront: Boolean(isCreate),
+            });
+          }}
         >
+          Page settings
+        </BladeButton>
+      ) : (
+        <BladeButton variant="secondary" color="primary" size="xsmall" icon={SettingsIcon} />
+      )}
+      {!isMobile ? (
+        <BladeButton variant="primary" color="primary" size="medium" onClick={onSubmit} isFullWidth>
           Publish page
-        </AsyncBtn.Primary>
+        </BladeButton>
       ) : (
         <MobileActionButtons
           onPublish={onSubmit}
@@ -675,6 +691,8 @@ const StoreFront = ({
         actionBtns={actionBtns}
         handleClose={handleClose}
         isSticky
+        isStorefront={true}
+        isMobile={isMobile}
       >
         <StoreFrontWrapper>
           {storefront.error ? (
@@ -741,7 +759,17 @@ const StoreFront = ({
                         </StickyFooter>
                       </ProductSection>
                     )}
-                    <ContactDetails isLoaded={isInitialLoaded !== -1} />
+                    {isStorefrontV1Enabled ? (
+                      <Box display="flex" flexDirection="column" gap="spacing.8" marginTop="32px">
+                        <AddBuisnessDetails
+                          handleClick={handleBuisnessDetailsClick}
+                          openBuisnessDetailsDrawer={openBuisnessDetailsDrawer}
+                        />
+                        <AddBannerDetails />
+                      </Box>
+                    ) : (
+                      <ContactDetails isLoaded={isInitialLoaded !== -1} />
+                    )}
                   </LeftContentWrapper>
                 </StorefrontLeftWrapper>
               )}
