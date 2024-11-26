@@ -13,6 +13,7 @@ export default function sendToSegment(
     objectName,
     actionName,
     toCleverTap,
+    screen: 'Checkout Settings',
     properties: {
       ...getCommonAnalyticsProperties(window.rzp_user),
       ...properties,
