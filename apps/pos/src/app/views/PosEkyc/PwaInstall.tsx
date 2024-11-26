@@ -11,9 +11,9 @@ import {
   UserPlusIcon,
 } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
-import React, { useEffect, useRef, useState } from 'react';
+import { PwaInstallBg, RazorpayLogoWhite } from 'apps/pos/src/assets';
+import React, { useEffect, useRef } from 'react';
 import { BeforeInstallPromptEvent } from './types';
-import { RazorpayLogoWhite, PwaInstallBg } from 'apps/pos/src/assets';
 
 declare global {
   interface WindowEventMap {
@@ -58,13 +58,11 @@ const Instruction = ({
 };
 
 const PwaInstall = () => {
-  const [isInstallReady, setIsInstallReady] = useState(false);
   const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null);
 
   const installPromptCallback = (e: BeforeInstallPromptEvent) => {
     e.preventDefault();
     deferredPrompt.current = e; // 'beforeinstallprompt' will be fired only once per browsing session. Hence, this is deferred so that it can be used anywhere, multiple times.
-    setIsInstallReady(true);
   };
 
   useEffect(() => {
@@ -149,13 +147,7 @@ const PwaInstall = () => {
         </Box>
 
         <Box borderTopColor="surface.border.gray.muted" borderTopWidth="thin" padding="spacing.3">
-          <Button
-            isFullWidth
-            icon={DownloadIcon}
-            iconPosition="right"
-            onClick={onInstallClick}
-            isDisabled={!isInstallReady}
-          >
+          <Button isFullWidth icon={DownloadIcon} iconPosition="right" onClick={onInstallClick}>
             Install Now
           </Button>
         </Box>
