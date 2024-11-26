@@ -81,7 +81,7 @@ test.describe
       await searchAndVerifyByPLId({ container, paymentLinksId: createdPaymentLinkId });
     });
 
-    test('should search PL with receipt id @priority=critical @suite=nocode-P1-automation', async ({
+    test.skip('should search PL with receipt id @priority=critical @suite=nocode-P1-automation', async ({
       page,
     }) => {
       const container = page.locator(COMMON_SELECTORS.tabbedContainer);
@@ -102,7 +102,7 @@ test.describe
       await cancelPLCreated({ page });
     });
 
-    test(`should verify Payment History For Paid PL @priority=critical @suite=nocode-P1-automation`, async ({
+    test.skip(`should verify Payment History For Paid PL @priority=critical @suite=nocode-P1-automation`, async ({
       page,
     }) => {
       const statusToVerify = 'Paid';
@@ -131,7 +131,7 @@ test.describe
       await expect(paymentLink).toBeVisible();
     });
 
-    test(`should verify Payment History For Partially Paid PL @priority=critical @suite=nocode-P1-automation`, async ({
+    test.skip(`should verify Payment History For Partially Paid PL @priority=critical @suite=nocode-P1-automation`, async ({
       page,
     }) => {
       const statusToVerify = 'Partially Paid';

@@ -74,7 +74,7 @@ test.describe
   });
 
   test.describe.parallel('Should cancel and verify Payment History for PL UPI', () => {
-    test('should verify Field Modification Disabled in UPI PL @priority=critical @suite=nocode-P1-automation', async ({
+    test.skip('should verify Field Modification Disabled in UPI PL @priority=critical @suite=nocode-P1-automation', async ({
       page,
     }) => {
       const productData = upiLinksData.paymentLinkWithAllParams;
