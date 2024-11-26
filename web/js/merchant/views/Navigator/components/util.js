@@ -359,44 +359,40 @@ const getExpStatus = (name) => {
   return ((user?.experiments || {})[name] || {}).result === 'on';
 };
 
-const eMandatePaymentMethod = getExpStatus('optimizer_emandate') ? [{ value: 'emandate' }] : [];
-
-const tokenAuthTypeParameter = getExpStatus('optimizer_emandate')
-  ? [
+const tokenAuthTypeParameter = [
+  {
+    name: 'Emandate Authentication Type',
+    value: '$payment.optimizer_token_auth_type',
+    description: 'Netbanking, Debit Card, Aadhaar',
+    id: 2,
+    values: [
       {
-        name: 'Emandate Authentication Type',
-        value: '$payment.optimizer_token_auth_type',
-        description: 'Netbanking, Debit Card, Aadhaar',
-        id: 2,
-        values: [
-          {
-            value: 'netbanking',
-          },
-          {
-            value: 'debitcard',
-          },
-          {
-            value: 'aadhaar',
-          },
-        ],
-        operators: {
-          '==': {
-            multiple: false,
-            type: 'dropdown',
-          },
-          in: {
-            multiple: true,
-            type: 'dropdown',
-          },
-          '!=': {
-            multiple: false,
-            type: 'dropdown',
-          },
-        },
-        type: 'string',
+        value: 'netbanking',
       },
-    ]
-  : [];
+      {
+        value: 'debitcard',
+      },
+      {
+        value: 'aadhaar',
+      },
+    ],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      in: {
+        multiple: true,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'string',
+  },
+];
 
 export const parameters = [
   {
@@ -455,7 +451,9 @@ export const parameters = [
       {
         value: 'emi',
       },
-      ...eMandatePaymentMethod,
+      {
+        value: 'emandate',
+      },
     ],
     operators: {
       '==': {

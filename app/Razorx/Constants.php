@@ -127,9 +127,7 @@ class Constants
         '1cc_wooc_magic_enable',
         'enable_workbox',
         'pp_onboarding_redirection_exp',
-        'optimizer_emandate',
         'batch_service_recurring_charge_bulk',
-        'hide_PI_details',
         'sync_call_for_fresh_balance',
         'dedicated_terminal_qr_code',
     ];

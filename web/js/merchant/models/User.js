@@ -1064,7 +1064,9 @@ export default class User {
   }
 
   get isHidePIDetails() {
-    return this.getExpStatus('hide_PI_details');
+    // Hide details of customer contact and email <Used by Optimizer>
+    // In future merchant requires this then we can add splitz experiment check here
+    return false;
   }
 
   get isCareHealthOwner() {
