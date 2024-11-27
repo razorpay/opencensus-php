@@ -5,6 +5,7 @@ import { DeviceMappingSuccessContainer } from '../DeviceMapping/DeviceMappingSca
 import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
 import { AvailableComponents } from 'apps/pos/src/app/types/common';
 import SuccessIcon from 'apps/pos/src/assets/paymentSuccess.svg';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DeviceMappingSuccessComponentProps {
   deviceName: string;
@@ -20,13 +21,29 @@ export const DeviceMappingSuccessComponent = ({
   const { id, step } = useParams();
   const navigate = useNavigate();
 
+  const triggerTrackEvent = (label: string) => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: label,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.EXPLORE_DEVICE_DEPLOYMENT,
+        section: 'Device Mapped Successfully',
+        subSection: 'Device Mapped Successfully',
+      },
+    });
+  };
+
   const handleDeployAnotherDevice = () => {
+    triggerTrackEvent('Deploy Another Device');
     navigate(
       `/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}/${step}/${AvailableComponents.DEVICE_DEPLOYMENT_LIST}`,
     );
   };
 
   const handleCompleteDeviceSetup = () => {
+    triggerTrackEvent('Complete Device Set-up');
     navigate(
       `/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}/${step}/${AvailableComponents.DEVICE_CONFIGURATION}`,
     );

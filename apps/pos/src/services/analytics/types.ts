@@ -44,6 +44,7 @@ export enum L1_FUNNEL_STAGE {
   POST_CHECKOUT = 'Post checkout',
   MERCHANT_ONBOARDING = 'Merchant Onboarding',
   AGREEMENT_SIGNING = 'Agreement Signing',
+  DEVICE_DEPLOYMENT = 'Device Deployment',
 }
 
 export enum L2_FUNNEL_STAGE {
@@ -97,6 +98,8 @@ export enum L2_FUNNEL_STAGE {
   AGREEMENT_SIGNING = 'Agreement Signing',
   MERCHANT_SIGNING_ONLINE = 'Merchant Signing-online',
   MERCHANT_ONBOARDING = 'MERCHANT_ONBOARDING',
+  DEVICE_DEPLOYMENT = 'Device Deployment',
+  EXPLORE_DEVICE_DEPLOYMENT = 'Explore Device Deployment',
 }
 
 export enum FIELD_TYPES {

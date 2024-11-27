@@ -7,6 +7,7 @@ import { DEVICE_DEPLOYMENT_FIELDS } from 'apps/pos/src/app/types/DeviceDeploymen
 import { getDeviceMappingDetailsFromModularConfig } from 'apps/pos/src/app/utils/deviceDeployment';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
 import { ScannerType } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/DeviceDeployment/DeviceMapping/DeviceMappingScannerComponent/DeviceMappingScannerContainer';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 const DeviceMappingManualComponent = (): JSX.Element | null => {
   const [serialNumber, setSerialNumber] = useState('');
@@ -34,6 +35,17 @@ const DeviceMappingManualComponent = (): JSX.Element | null => {
   };
 
   const handleConfirmSerialNumber = () => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Confirm Serial Number',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.EXPLORE_DEVICE_DEPLOYMENT,
+        section: 'Device Serial Number',
+        subSection: 'Device Serial Number',
+      },
+    });
     const payload = {
       [DEVICE_DEPLOYMENT_FIELDS.CURRENT_DEVICE_ID_FIELD]: deviceId,
       [DEVICE_DEPLOYMENT_FIELDS.DEVICE_SERIAL_NUMBER_FIELD]: serialNumber,

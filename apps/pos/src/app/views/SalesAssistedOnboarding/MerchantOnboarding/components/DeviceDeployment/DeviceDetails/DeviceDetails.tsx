@@ -16,6 +16,7 @@ import { AvailableComponents } from 'apps/pos/src/app/types/common';
 import { CurrentDeviceDetails, ModularPayload } from 'apps/pos/src/app/types/modular';
 import { MappingStatusType } from 'apps/pos/src/app/utils/deviceDeployment';
 import WifiInstructions from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/DeviceDeployment/DeviceConfiguration/components/WifiInstructions';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DeviceDetailsProps {
   isLoading: boolean;
@@ -44,7 +45,30 @@ const DeviceDetails = ({
   const isWifiConfigured = mappingStatus.isWifiConfigured;
   const isDeviceMapped = mappingStatus.isDeviceMapped;
 
+  const triggerTrackEvent = (label: string, section: string, subSection: string) => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.LINK,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.EXPLORE_DEVICE_DEPLOYMENT,
+        section,
+        subSection,
+      },
+    });
+  };
+
   const handleRedirection = (page: string) => {
+    if (page === AvailableComponents.DEVICE_TESTING) {
+      triggerTrackEvent('Start Now', 'Device Testing', 'Device Testing');
+    } else if (AvailableComponents.LANGUAGE_CONFIGURATION) {
+      triggerTrackEvent('Change', 'Language setting', 'Language setting');
+    } else {
+      setIsWifiConfigModalOpen(true);
+      triggerTrackEvent('Start Now', 'Wifi-Configuration', 'Wifi-Configuration');
+      return;
+    }
     navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${merchantId}/${step}/${page}`);
   };
 
@@ -160,7 +184,7 @@ const DeviceDetails = ({
               <Link
                 icon={ChevronRightIcon}
                 iconPosition="right"
-                onClick={() => setIsWifiConfigModalOpen(true)}
+                onClick={() => handleRedirection(AvailableComponents.WIFI_CONFIGURATION)}
                 variant="button"
                 testID="wifi-configuration-start-now"
               >

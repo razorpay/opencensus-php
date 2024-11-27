@@ -10,6 +10,7 @@ import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
 import { AvailableComponents } from 'apps/pos/src/app/types/common';
 import { DEVICE_DEPLOYMENT_FIELDS } from 'apps/pos/src/app/types/DeviceDeployment';
 import { ModularPayload } from 'apps/pos/src/app/types/modular';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DeviceMappingScannerComponentProps {
   isLoading: boolean;
@@ -104,6 +105,17 @@ const DeviceMappingScannerComponent = ({
   }, [isLoading]);
 
   const handleManualEntryClick = () => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Enter Details Manually',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.EXPLORE_DEVICE_DEPLOYMENT,
+        section: 'Device Serial Number',
+        subSection: 'Device Serial Number',
+      },
+    });
     navigate(
       `/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}/${step}/${AvailableComponents.DEVICE_MAPPING_MANUAL}?deviceId=${deviceId}`,
     );
@@ -177,13 +189,7 @@ const DeviceMappingScannerComponent = ({
             </Text>
             <StyledLine />
           </Box>
-          <Button
-            marginTop="spacing.4"
-            isFullWidth
-            onClick={() => {
-              handleManualEntryClick();
-            }}
-          >
+          <Button marginTop="spacing.4" isFullWidth onClick={handleManualEntryClick}>
             Enter Details Manually
           </Button>
         </Box>

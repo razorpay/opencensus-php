@@ -25,6 +25,7 @@ import { AvailableComponents } from 'apps/pos/src/app/types/common';
 import { ModularPayload } from 'apps/pos/src/app/types/modular';
 import { MappingStatusType } from 'apps/pos/src/app/utils/deviceDeployment';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DeviceConfigurationProps {
   isUpdateModularLoading: boolean;
@@ -52,10 +53,26 @@ const DeviceConfiguration = ({
   const { isDeviceMapped, isDeviceTested, isWifiConfigured } = mappingStatus;
   const isAllDevicesDeployed = isDeviceMapped && isDeviceTested && isWifiConfigured;
 
+  const triggerTrackEvent = (label: string) => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: label,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.EXPLORE_DEVICE_DEPLOYMENT,
+        section: 'Device Details',
+        subSection: 'Device Details',
+      },
+    });
+  };
+
   const handleDeployAnotherDevice = () => {
     if (isAllDevicesDeployed) {
+      triggerTrackEvent('Done');
       setIsSuccessModalOpen(true);
     } else {
+      triggerTrackEvent('Deploy Another Device');
       navigate(
         `/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}/${step}/${AvailableComponents.DEVICE_DEPLOYMENT_LIST}`,
       );
@@ -67,12 +84,14 @@ const DeviceConfiguration = ({
   };
 
   const handleViewAllDevices = () => {
+    triggerTrackEvent('View All Devices');
     navigate(
       `/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}/${step}/${AvailableComponents.DEVICE_DEPLOYMENT_LIST}`,
     );
   };
 
   const handleGoToHomepage = () => {
+    triggerTrackEvent('Go To Homepage');
     navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}`);
   };
 

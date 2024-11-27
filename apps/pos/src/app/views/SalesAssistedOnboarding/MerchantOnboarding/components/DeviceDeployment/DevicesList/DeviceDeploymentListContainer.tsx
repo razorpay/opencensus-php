@@ -17,6 +17,7 @@ import { AvailableComponents, MODULES } from 'apps/pos/src/app/types/common';
 import { DeviceModel } from 'apps/pos/src/app/utils/deviceSelection';
 import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 import PageError from 'apps/pos/src/app/components/PageError';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 const DeviceDeploymentList = (): JSX.Element | null => {
   const { states, handlers } = useOnboardingContext();
@@ -39,6 +40,17 @@ const DeviceDeploymentList = (): JSX.Element | null => {
   }, []);
 
   const handleTabChange = (tabValue: string) => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.LINK,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: tabValue === 'allDevices' ? 'All Devices' : 'Deployed Devices',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.EXPLORE_DEVICE_DEPLOYMENT,
+        section: 'Device Deployment',
+        subSection: 'Device Deployment',
+      },
+    });
     if (devicesList) {
       const filteredDevices: any = devicesList.filter((_device: any) => {
         if (tabValue === 'deployedDevices') {
@@ -61,6 +73,18 @@ const DeviceDeploymentList = (): JSX.Element | null => {
     );
   };
   const handleDeployNow = (device: DeviceType) => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.LINK,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Deploy Now',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.EXPLORE_DEVICE_DEPLOYMENT,
+        section: 'Choosing Devices to Deploy',
+        subSection: device.details_page_name,
+      },
+    });
+
     setCurrentDeployingDeviceId(device?.id);
     const payload = {
       [DEVICE_DEPLOYMENT_FIELDS.CURRENT_DEVICE_ID_FIELD]: device.id,

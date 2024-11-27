@@ -7,6 +7,7 @@ import {
   WD10_WIFI_CONFIG_URL,
 } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/DeviceDeployment/constants';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface WifiInstructionsProps {
   onWifiConfigSuccess: () => void;
@@ -19,6 +20,17 @@ const WifiInstructions = ({ onWifiConfigSuccess }: WifiInstructionsProps): JSX.E
   const { isMobile } = useScreen();
 
   const handleConfigureDeviceWifi = () => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Configure Device',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.EXPLORE_DEVICE_DEPLOYMENT,
+        section: 'Wifi Setup Instructions',
+        subSection: 'Wifi Setup Instructions',
+      },
+    });
     window.open(WD10_WIFI_CONFIG_URL, '_blank');
   };
 

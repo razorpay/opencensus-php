@@ -14,8 +14,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { DeviceCard } from './components/DeviceCard';
 import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
 import { DEVICE_DEPLOYMENT_STATUS } from 'apps/pos/src/app/utils/deviceDeployment';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 export interface DeviceType {
+  details_page_name?: string;
   device_model: string;
   device_order_item_id: string;
   device_serial: string;
@@ -71,12 +73,32 @@ export const DevicesList = ({
     });
   }, [devices, searchQuery, status]);
 
+  const triggerTrackEvent = (label: string, subSection: string) => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.EXPLORE_DEVICE_DEPLOYMENT,
+        section: 'Devices Deployed',
+        subSection,
+      },
+    });
+  };
+
   const handleBackToDashboard = () => {
+    triggerTrackEvent('Back to Dashboard', 'Devices Deployed');
     navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}`);
   };
 
   const handleChipChange = (values: StatusType[]) => {
     setStatus(values[0]);
+  };
+
+  const handleDeviceSearch = () => {
+    triggerTrackEvent('Search Icon', 'Search Device');
+    setSearchQuery(searchQuery);
   };
 
   return (
@@ -99,7 +121,7 @@ export const DevicesList = ({
           />
         </Box>
         <Box display="flex" flexDirection="column" justifyContent="flex-end">
-          <Button onClick={() => setSearchQuery(searchQuery)} icon={SearchIcon} />
+          <Button onClick={handleDeviceSearch} icon={SearchIcon} />
         </Box>
       </Box>
       {type === 'allDevices' ? (

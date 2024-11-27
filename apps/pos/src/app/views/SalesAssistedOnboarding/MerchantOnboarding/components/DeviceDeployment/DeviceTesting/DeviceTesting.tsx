@@ -14,6 +14,7 @@ import { DEVICE_DEPLOYMENT_FIELDS } from 'apps/pos/src/app/types/DeviceDeploymen
 import { ModularPayload } from 'apps/pos/src/app/types/modular';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
 import { DEVICE_TESTING_AMOUNT_REGEX } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/DeviceDeployment/constants';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DeviceTestingProp {
   description: string;
@@ -53,7 +54,27 @@ const DeviceTesting = ({
     navigate(-1);
   };
 
+  const triggerTrackEvent = (label: string, section: string, subSection: string) => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.EXPLORE_DEVICE_DEPLOYMENT,
+        section,
+        subSection,
+      },
+    });
+  };
+
   const handleSendAmount = () => {
+    if (showAmountResend) {
+      triggerTrackEvent('Re-send Amount', 'Device Testing', 'Device Testing');
+    } else {
+      triggerTrackEvent('send Amount', 'Device Testing', 'Device Testing');
+    }
+
     const payload = {
       [DEVICE_DEPLOYMENT_FIELDS.DEVICE_TESTING_AMOUNT_FIELD]: Number(testAmount),
       [DEVICE_DEPLOYMENT_FIELDS.MODULAR_CALLBACK]: sendAmountCallback,
@@ -62,6 +83,7 @@ const DeviceTesting = ({
   };
 
   const handleAmountReceived = () => {
+    triggerTrackEvent('Amount Received', 'Amount Sent Successfully', 'Amount Sent Successfully');
     const payload = {
       [DEVICE_DEPLOYMENT_FIELDS.DEVICE_TESTING_AMOUNT_RECEIVED_FIELD]: true,
       [DEVICE_DEPLOYMENT_FIELDS.MODULAR_CALLBACK]: handleProceed,

@@ -42,6 +42,13 @@ import {
 } from 'apps/pos/src/app/types/common';
 import { MODULAR_AGREEMENT_FIELDS } from 'apps/pos/src/app/types/AgreementSigning';
 import NACHFormEkycContainer from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/MerchantAdditionalDetails/NACHFormEkyc/NACHFormEkycContainer';
+import { ClickAnalytics } from './MerchantOnboardingConfig';
+import {
+  ANALYTICS_ACTIONS,
+  ANALYTICS_EVENTS,
+  L1_FUNNEL_STAGE,
+  L2_FUNNEL_STAGE,
+} from 'apps/pos/src/services/analytics/types';
 
 export interface Component {
   slug: OnboardingComponentType;
@@ -70,6 +77,7 @@ export interface OnboardingStep {
   customOnClickHandler?: () => void;
   checkIfCompleted?: (args: MethodArgs) => boolean;
   components: Component[];
+  clickAnalytics?: ClickAnalytics;
 }
 
 export const ONBOARDING_STEPS_POS_EKYC: OnboardingStep[] = [
@@ -232,6 +240,17 @@ export const ONBOARDING_STEPS_POS_EKYC: OnboardingStep[] = [
         step: DEVICE_DEPLOYMENT_FIELDS.DEVICE_DEPLOYMENT_STEP,
       }) === 'completed',
     icon: <CheckCircleIcon />,
+    clickAnalytics: {
+      eventName: ANALYTICS_EVENTS.LINK,
+      action: ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Image click',
+        l1FunnelStage: L1_FUNNEL_STAGE.MERCHANT_ONBOARDING,
+        l2FunnelStage: L2_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
+        section: 'Device Deployment',
+        subSection: 'Device Deployment',
+      },
+    },
     components: [
       {
         slug: AvailableComponents.DEVICE_DEPLOYMENT_LIST,

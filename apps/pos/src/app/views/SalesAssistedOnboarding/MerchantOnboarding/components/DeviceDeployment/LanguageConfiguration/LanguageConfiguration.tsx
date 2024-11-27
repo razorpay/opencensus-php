@@ -5,6 +5,7 @@ import { DEVICE_DEPLOYMENT_FIELDS } from 'apps/pos/src/app/types/DeviceDeploymen
 import { ModularPayload } from 'apps/pos/src/app/types/modular';
 import { LanguageOption } from 'apps/pos/src/app/utils/deviceDeployment';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface LanguageConfigurationProps {
   languageList: LanguageOption[];
@@ -30,6 +31,17 @@ const LanguageConfiguration = ({
   };
 
   const handleConfirmLanguage = () => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Confirm Language',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.EXPLORE_DEVICE_DEPLOYMENT,
+        section: 'Preferred Language',
+        subSection: 'Preferred Language',
+      },
+    });
     const payload = {
       [DEVICE_DEPLOYMENT_FIELDS.DEVICE_LANGUAGE_FIELD]: language,
       [DEVICE_DEPLOYMENT_FIELDS.MODULAR_CALLBACK]: handleProceed,
