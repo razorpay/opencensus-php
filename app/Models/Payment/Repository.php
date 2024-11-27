@@ -6,6 +6,7 @@ use DB;
 use App;
 use Carbon\Carbon;
 use Database\Connection;
+use RZP\Constants\Metric;
 use Exception\BadRequestException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -678,6 +679,15 @@ EOT;
 
         $startTimeMsForTrace = round(microtime(true) * 1000);
 
+        if ($this->printApiDecompLog())
+        {
+            $this->trace->info(TraceCode::API_DECOMP_ORDER_PAYMENTS_ROUTE_PARAM, [
+                'params'     => $params,
+                'merchantId' => $merchantId,
+                'route_auth'       => $this->auth->getAuthType(),
+            ]);
+        }
+
         // Process params (sanitization, validation, modification, etc.)
         $this->processFetchParams($params);
 
@@ -788,6 +798,27 @@ EOT;
         // Splits the params into mysqlParams and esParams. Check methods doc on
         // how that happens.
         list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+
+        if ($this->printApiDecompLog())
+        {
+            $this->trace->info(TraceCode::API_DECOMP_ES_AND_MYSQL_PARAMETER, [
+                'params'           => $params,
+                'es_params'        => $esParams,
+                'mysql_params'     => $mysqlParams,
+                'expands_params'   => $expands,
+                'merchantId'       => $merchantId,
+                'route_auth'       => $this->auth->getAuthType(),
+                'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+        $this->trace->count(Metric::API_DECOMP_PARAMETERS, [
+            'route_auth'       => $this->auth->getAuthType(),
+            'es_params'        => empty($esParams) === false,
+            'mysql_params'     => empty($mysqlParams) === false,
+            'expands_param'    => empty($expands) === false,
+            'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+        ]);
 
         // If we find that there are es params then we do es search.
         // Currently (as commented in getMysqlAndEsParams method) we raise bad
@@ -1109,6 +1140,15 @@ EOT;
     {
         $startTimeMsForTrace = round(microtime(true) * 1000);
 
+        if ($this->printApiDecompLog())
+        {
+            $this->trace->info(TraceCode::API_DECOMP_ORDER_PAYMENTS_ROUTE_PARAM, [
+                'params'     => $params,
+                'merchantId' => $merchantId,
+                'route_auth'       => $this->auth->getAuthType(),
+            ]);
+        }
+
         // Process params (sanitization, validation, modification, etc.)
         $this->processFetchParams($params);
 
@@ -1209,6 +1249,27 @@ EOT;
         // Splits the params into mysqlParams and esParams. Check methods doc on
         // how that happens.
         list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+
+        if ($this->printApiDecompLog())
+        {
+            $this->trace->info(TraceCode::API_DECOMP_ES_AND_MYSQL_PARAMETER, [
+                'params'           => $params,
+                'es_params'        => $esParams,
+                'mysql_params'     => $mysqlParams,
+                'expands_params'   => $expands,
+                'merchantId'       => $merchantId,
+                'route_auth'       => $this->auth->getAuthType(),
+                'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+        $this->trace->count(Metric::API_DECOMP_PARAMETERS, [
+            'route_auth'       => $this->auth->getAuthType(),
+            'es_params'        => empty($esParams) === false,
+            'mysql_params'     => empty($mysqlParams) === false,
+            'expands_param'    => empty($expands) === false,
+            'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+        ]);
 
         // If we find that there are es params then we do es search.
         // Currently (as commented in getMysqlAndEsParams method) we raise bad

@@ -285,5 +285,7 @@ class Metric
     const OPGSP_UFH_FILE_PUSH                                   = 'opgsp_ufh_file_push';
     const OPGSP_BEAM_PUSH                                       = 'opgsp_beam_push';
     const OPGSP_FILE_SEND_STARTED                               = 'opgsp_file_send_started';
-    const OPGSP_IMPORT_NO_SETTLEMENTS_FOUND                        = 'opgsp_import_no_settlements_found';
+    const OPGSP_IMPORT_NO_SETTLEMENTS_FOUND                     = 'opgsp_import_no_settlements_found';
+    const API_DECOMP_ENTITY_FETCH                               = 'api_decomp_entity_fetch';
+    const API_DECOMP_PARAMETERS                                 = 'api_decomp_parameters';
 }

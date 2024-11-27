@@ -13,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Constants\Table;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Constants\Metric;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Services\WDAService;
@@ -157,6 +158,15 @@ trait RepositoryFetch
         // Process params (sanitization, validation, modification, etc.)
         $startTimeMs = round(microtime(true) * 1000);
 
+        if ($this->printApiDecompLog())
+        {
+            $this->trace->info(TraceCode::API_DECOMP_ORDER_PAYMENTS_ROUTE_PARAM, [
+                'params'     => $params,
+                'merchantId' => $merchantId,
+                'route_auth'       => $this->auth->getAuthType(),
+            ]);
+        }
+
         $this->processFetchParams($params);
 
         $expands = $this->getExpandsForQueryFromInput($params);
@@ -238,6 +248,27 @@ trait RepositoryFetch
         // Splits the params into mysqlParams and esParams. Check methods doc on
         // how that happens.
         list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+
+        if ($this->printApiDecompLog())
+        {
+            $this->trace->info(TraceCode::API_DECOMP_ES_AND_MYSQL_PARAMETER, [
+                'params'           => $params,
+                'es_params'        => $esParams,
+                'mysql_params'     => $mysqlParams,
+                'expands_params'   => $expands,
+                'merchantId'       => $merchantId,
+                'route_auth'       => $this->auth->getAuthType(),
+                'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+        $this->trace->count(Metric::API_DECOMP_PARAMETERS, [
+            'route_auth'       => $this->auth->getAuthType(),
+            'es_params'        => empty($esParams) === false,
+            'mysql_params'     => empty($mysqlParams) === false,
+            'expands_param'    => empty($expands) === false,
+            'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+        ]);
 
         // If we find that there are es params then we do es search.
         // Currently (as commented in getMysqlAndEsParams method) we raise bad
@@ -388,6 +419,19 @@ trait RepositoryFetch
         }
 
         return $entities;
+    }
+
+    public function printApiDecompLog(){
+        if ($this->app['api.route']->getCurrentRouteName() === 'order_payments')
+            return true;
+        else if ($this->app['api.route']->getCurrentRouteName() === 'payment_fetch_by_id' || $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_multiple')
+        {
+            $rand = rand(1, 10000);
+            if ($rand < 10) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function checkWdaRoute($expands, $baseQueryPresent, $connectionType)
@@ -1166,6 +1210,11 @@ trait RepositoryFetch
     {
         if ($this->hasEntityFetch() === true)
         {
+            $this->trace->count(Metric::API_DECOMP_ENTITY_FETCH, [
+                'route_auth'       => $this->auth->getAuthType(),
+                'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+
             return $this->entityFetch->processFetchParams($params);
         }
 
@@ -2059,6 +2108,7 @@ trait RepositoryFetch
             $max    = 1000;
             $count  = 1000;
         }
+
 
         // In case multiple assertions are checked with different auths in same testcase, the max value for count
         // needs to always replaced. Hence preg_replace is being used to achieve that.
