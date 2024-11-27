@@ -30,6 +30,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise\PromiseInterface;
 use App\Services\Razorassist\RazorassistClient;
 use App\Services\Insightx\InsightXClient;
+use App\Splitz\Service as SplitzService;
 
 class Service extends Base\Service
 {
@@ -789,40 +790,12 @@ class Service extends Base\Service
 
         return $data;
     }
-
-    public function getTreatment($featureFlag)
+    
+    public function getTreatment($featureFlag, $merchantId = '')
     {
-        $startTime = microtime(true) * 1000;
+        $razorxService = (new Razorx\Service());
 
-        $this->trace->info(TraceCode::GET_RAZORX_EXPERIMENTS_ROUTE_INFO, [
-            'action'                => 'FetchStarted',
-            'start_time'            => $startTime
-        ]);
-
-        $request = new ApiRequestAny(['client_type' => 'merchant']);
-
-        list($error, $data) = $request->send("razorx/evaluate/$featureFlag", 'GET');
-
-        if (empty($error) === false)
-        {
-            throw new BadRequestError(
-                $error[0],
-                ErrorCode::BAD_REQUEST_ERROR,
-                400
-            );
-        }
-
-        $endTime  = microtime(true) * 1000;
-        $duration = round($endTime - $startTime);
-
-        $this->trace->info(TraceCode::GET_RAZORX_EXPERIMENTS_ROUTE_INFO, [
-            'action'              => 'FetchEnded',
-            'end_time'            => $endTime,
-            'duration'            => $duration,
-            'controller'          => app('request')->route()->getAction()['controller']
-        ]);
-
-        return $data;
+        return $razorxService->getRazorxTreatment($featureFlag, $merchantId);
     }
 
     /**
@@ -1211,6 +1184,11 @@ class Service extends Base\Service
 
     public function getExperiments($razorxCachingEnabled = false, $merchantId = '')
     {
+        if ($merchantId === '')
+        {
+            $merchantId = $this->getCurrentMerchantId();
+        }
+        
         $response = [];
 
             $razorxService = (new Razorx\Service());

@@ -1621,10 +1621,23 @@ class Service extends Base\Service
         $this->setResponseForEachApiPromises($apiPromiseAny, $allApiResponses);
 
         $merchantService = new Merchant\Service;
-
-        if (empty($data[Constants::EXPERIMENTS]) && isset($allApiResponses[self::EXPERIMENT_PROMISE]))
+    
+        $razorxService = (new razorx\Service());
+        
+        $data[Constants::EXPERIMENTS] = [];
+        
+        if (empty($data[Constants::EXPERIMENTS]))
         {
-            $experiments = $merchantService->processExperimentPromiseResponse($apiPromiseAny[self::EXPERIMENT_PROMISE]);
+            if((isset($allApiResponses[self::EXPERIMENT_PROMISE]) === true) and
+               ($razorxService->isRazorxApiCallDisable($currentMerchantId) === false))
+            {
+                $experiments = $merchantService->processExperimentPromiseResponse($apiPromiseAny[self::EXPERIMENT_PROMISE]);
+            }
+            
+            if ($razorxService->isRazorxApiCallDisable($currentMerchantId) === true)
+            {
+                $experiments = $merchantService->getExperiments(true, $currentMerchantId);
+            }
 
             $data['experiments'] = $experiments;
 
@@ -1632,7 +1645,6 @@ class Service extends Base\Service
             {
                 (new Razorx\Service())->setRazorxCacheByIdAsyncPromise($currentMerchantId, $experiments);
             }
-
             $data = $this->updateNewUsersOnlyTypeExperiments($globalMerchant, $data);
 
             $data = $this->updateRXCASelfServeExperiment($globalMerchant, $data);
@@ -1718,13 +1730,16 @@ class Service extends Base\Service
         $isBankingRequest = ApiUrl::isBankingOriginRequest();
 
         $merchantService = new Merchant\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
-
+    
+        $razorxService = (new razorx\Service());
+        
         $currentMerchantId = $currentMerchant->id;
-
+        
         // API 1.1
         if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
-                ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
-            ($experiments === "1") and empty($data[Constants::EXPERIMENTS]))
+            ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
+            ($experiments === "1") and empty($data[Constants::EXPERIMENTS]) and
+            ($razorxService->isRazorxApiCallDisable($currentMerchantId) === false))
         {
             $start = self::millitime();
             $promise = $merchantService->getExperimentPromise();
@@ -2375,7 +2390,7 @@ class Service extends Base\Service
                             ]
                         );
 
-                        $experiments = $merchantService->getExperiments();
+                        $experiments = $merchantService->getExperiments(false, $currentMerchantId);
 
                         $data['experiments'] = $experiments;
 
@@ -3229,13 +3244,15 @@ class Service extends Base\Service
     protected function updateNewUsersOnlyTypeExperiments(array $merchant, array $data): array
     {
         $merchantService = new Merchant\Service;
-
+    
+        $merchantId = array_get($merchant, 'id', '');
+        
         foreach (config('razorx.new_signup_experiments_config') as $experimentFeatureFlag => $experimentConfig)
         {
             if (($this->isRequestOriginSatisfied($experimentConfig) === true)
                 and ($merchant['created_at'] > $experimentConfig[Constants::TIMESTAMP_THRESHOLD]))
             {
-                $data['experiments'][$experimentFeatureFlag] = $merchantService->getTreatment($experimentFeatureFlag);
+                $data['experiments'][$experimentFeatureFlag] = $merchantService->getTreatment($experimentFeatureFlag, $merchantId);
             }
             else
             {
@@ -3267,6 +3284,8 @@ class Service extends Base\Service
             return $data;
         }
 
+        $merchantId = array_get($merchant, 'id', '');
+        
         /*
          * This flag is to tell FE whether to show NeoStone, SelfServe or None flow
          * to current account applicants
@@ -3324,7 +3343,7 @@ class Service extends Base\Service
                 // Here there is a chance that both rx_ca_self_serve_flow_neo and rx_ca_self_serve_flow
                 // experiment may be on
                 $data['experiments']['rx_ca_self_serve_flow_neo'] =
-                    $merchantService->getTreatment('rx_ca_self_serve_flow_neo');
+                    $merchantService->getTreatment('rx_ca_self_serve_flow_neo', $merchantId);
 
                 if ($data['experiments']['rx_ca_self_serve_flow_neo'] === ['result' => 'on'])
                 {
@@ -3348,7 +3367,7 @@ class Service extends Base\Service
                 and $merchant['business_banking_signup_at'] < strtotime('- 60 days'))
             {
                 $data['experiments']['rx_non_self_serve_ca_flow'] =
-                    $merchantService->getTreatment('rx_non_self_serve_ca_flow');
+                    $merchantService->getTreatment('rx_non_self_serve_ca_flow', $merchantId);
             }
             else
             {

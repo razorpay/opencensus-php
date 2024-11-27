@@ -254,5 +254,8 @@ return [
         
         // to refine the url path
         'URL_PATH_REFINEMENT_EXPERIMENT_NAME' => env('URL_PATH_REFINEMENT_EXPERIMENT_NAME', ''),
+        
+        // razorx api call disabled
+        'RAZORX_API_CALL_DISBALED' => env('RAZORX_API_CALL_DISBALED', ''),
     ]
 ];
