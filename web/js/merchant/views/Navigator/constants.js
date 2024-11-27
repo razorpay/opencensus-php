@@ -47,6 +47,7 @@ export const METHODS_MAP = {
   wallet: 'Wallet',
   sodexo: 'Sodexo',
   cod: 'Cash on Delivery (COD)',
+  paylater: 'Pay Later',
 };
 
 export const INIT_PROVIDER_STATE = {
@@ -142,6 +143,8 @@ export const INSTANT_PROVIDER_UNSUPPORTED_METHODS = {
   payu: ['emi', 'emandate'],
   cashfree: ['card'],
 };
+
+export const PREREQUISITES_SUPPORTED_GATEWAYS = ['ingenico', 'getsimpl_optimizer'];
 
 export const SEAMLESS_NOT_SUPPORTED = ['checkout_dot_com_optimizer', RAZORPAY_GATEWAY_KEY];
 

@@ -166,6 +166,9 @@ export const PARAMETERS: Parameter[] = [
       {
         value: 'emandate',
       },
+      {
+        value: 'paylater',
+      },
     ],
     operators: {
       '==': {
@@ -1096,6 +1099,32 @@ export const PARAMETERS: Parameter[] = [
     },
     type: 'string',
   },
+  {
+    name: 'Paylater Provider',
+    value: '$payment.optimizer_wallet',
+    description: 'Simpl',
+    id: 19,
+    values: [
+      {
+        value: 'getsimpl',
+      },
+    ],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      in: {
+        multiple: true,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'string',
+  },
 ];
 
 export const SMART_ROUTER = 'smart_router';
@@ -1139,6 +1168,7 @@ export const gatewayLogos = {
   wallet_payzapp: require('assets/optimizer/payzapp.png'),
   pay10: require('assets/optimizer/pay10.png'),
   phonepe: require('assets/optimizer/phonepe.svg'),
+  getsimpl_optimizer: getLogoPath('simpl', 'svg'),
 };
 
 export const getValue = (type, value) => {

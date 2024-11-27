@@ -14,6 +14,7 @@ import { PayuPoints } from './PayuPoints';
 import { PineLabsPoints } from './PineLabsPoints';
 import { UpiAxisPoints } from './UpiAxisPoints';
 import { UpiIciciPoints } from './UpiIciciPoints';
+import { GetSimplPoints } from './GetSimplPoints';
 
 export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
   switch (selectedProvider) {
@@ -49,6 +50,8 @@ export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
       return <PayZappPoints />;
     case 'pay10':
       return <Pay10Points />;
+    case 'getsimpl_optimizer':
+      return <GetSimplPoints />;
     default:
       return (
         <ol>

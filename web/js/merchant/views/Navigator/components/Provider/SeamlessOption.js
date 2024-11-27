@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { SeamlessHowto } from './SeamlessComponents';
 
+import { PREREQUISITES_SUPPORTED_GATEWAYS } from 'merchant/views/Navigator/constants';
+
 export const SeamlessOption = ({ type = 'warning', providers, selectedProvider }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -14,13 +16,13 @@ export const SeamlessOption = ({ type = 'warning', providers, selectedProvider }
         <div className="seamless-header">
           <i className="i i-info-outline" />
           <span>
-            {selectedProvider === 'ingenico'
+            {PREREQUISITES_SUPPORTED_GATEWAYS.includes(selectedProvider)
               ? `${gatewayName} Prerequisites*`
               : 'Enable seamless option*'}
           </span>
         </div>
         <div className="seamless-desc">
-          {selectedProvider === 'ingenico'
+          {PREREQUISITES_SUPPORTED_GATEWAYS.includes(selectedProvider)
             ? `Your ${gatewayName} account should have the required features enabled to use optimizer.`
             : `Your ${gatewayName} account should have the seamless option enabled to use optimizer.`}
         </div>
@@ -32,7 +34,7 @@ export const SeamlessOption = ({ type = 'warning', providers, selectedProvider }
             onClick={collapseHowTo}
           >
             <span>
-              {selectedProvider === 'ingenico'
+              {PREREQUISITES_SUPPORTED_GATEWAYS.includes(selectedProvider)
                 ? `Steps to enable ${gatewayName}`
                 : `How to enable seamless option on ${gatewayName}?`}
             </span>

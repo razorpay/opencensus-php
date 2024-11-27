@@ -170,6 +170,22 @@ const SUPPORTED_GATEWAYS = {
       terminals_key: '',
     },
   },
+  getsimpl_optimizer: {
+    'Gateway Name': {
+      data_type: 'string',
+      data_value: 'Simpl',
+    },
+    TID: {
+      data_type: 'string',
+      data_value: 'terminal id',
+      terminals_key: '',
+    },
+    'Payment Methods': {
+      data_type: 'array',
+      data_value: ['paylater'],
+      terminals_key: '',
+    },
+  },
 };
 
 const TERMINAL_PROVIDERS = [

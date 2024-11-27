@@ -1341,6 +1341,7 @@ export const gatewayLogos = {
   wallet_payzapp: require('assets/optimizer/payzapp.png'),
   pay10: require('assets/optimizer/pay10.png'),
   phonepe: require('assets/optimizer/phonepe.svg'),
+  getsimpl_optimizer: getLogoPath('simpl', 'svg'),
 };
 
 export const mapRulesObjectToArray = (e) => {
@@ -1538,6 +1539,11 @@ export const gatewayDetailsMapping = {
     dashboardImg: null,
     dashboardUrl: 'https://www.pay10.com/contact-us.php',
     dashboardUrlLabel: 'pay10.com',
+  },
+  getsimpl_optimizer: {
+    dashboardImg: null,
+    dashboardUrl: 'https://getsimpl.com/merchants',
+    dashboardUrlLabel: 'getsimpl.com',
   },
 };
 

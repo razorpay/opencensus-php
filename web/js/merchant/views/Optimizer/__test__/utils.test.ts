@@ -62,6 +62,9 @@ describe('Optimizer Utils > getValue', () => {
         {
           value: 'emandate',
         },
+        {
+          value: 'paylater',
+        },
       ],
       operators: {
         '==': {
