@@ -74,14 +74,6 @@ export const MODULAR_FLAGS: Record<string, ModularPayload> = {
   },
 };
 
-export const DEVICE_PLAN_TO_NAME_MAPPING: Record<AvailableDevicePlans, string> = {
-  monthly: 'Monthly',
-  half_yearly: 'Half Yearly',
-  quarterly: 'Quarterly',
-  yearly: 'Yearly',
-  lifetime: 'Lifetime',
-};
-
 export const RentalChargeFrequencyLabels: Record<Exclude<AvailableDevicePlans, 'lifetime'>, string> = {
   monthly: 'Collecting Rental Charges in Advance (in months)',
   quarterly: 'Collecting Rental Charges in Advance (in quarters)',

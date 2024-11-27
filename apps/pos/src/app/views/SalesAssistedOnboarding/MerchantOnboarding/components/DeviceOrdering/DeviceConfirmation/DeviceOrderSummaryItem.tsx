@@ -6,10 +6,7 @@ import {
   MODULAR_DEVICE_FIELDS,
   OrderSummaryItemWithDeviceConfig,
 } from 'apps/pos/src/app/types/DeviceSelection';
-import {
-  DEVICE_PLAN_TO_NAME_MAPPING,
-  MODULAR_FLAGS,
-} from 'apps/pos/src/app/constants/DeviceSelection';
+import { MODULAR_FLAGS } from 'apps/pos/src/app/constants/DeviceSelection';
 import { getDeviceChargesFromModularConfig } from 'apps/pos/src/app/utils/deviceSelection';
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
@@ -66,6 +63,9 @@ const DeviceOrderSummaryItem = ({
 
   if (!deviceConfig) return null;
 
+  const latestRateConfig = deviceConfig?.rateConfig?.find((config) => config?.active);
+  const currentPlan = latestRateConfig?.plans?.find((plan) => plan?.planName === device?.renewal);
+
   return (
     <Box marginBottom="spacing.5">
       <Box
@@ -92,7 +92,7 @@ const DeviceOrderSummaryItem = ({
               {device?.deviceName}
             </Text>
             <Text color="surface.text.gray.muted">
-              {DEVICE_PLAN_TO_NAME_MAPPING[device?.renewal ?? ''] ?? device?.renewal}
+              {currentPlan?.planDisplayName ?? device?.renewal}
             </Text>
           </Box>
         </Box>
