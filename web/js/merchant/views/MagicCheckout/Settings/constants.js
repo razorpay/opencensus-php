@@ -546,7 +546,7 @@ export const ROUTES = {
     },
     {
       className: 'cod-settings',
-      path: '/magic/settings/cod',
+      path: '/magic/settings/cod-settings',
       label: 'COD Setup',
       Component: CODComponentV2,
       condition: (_user) => _user.isMagicPrepayCODEnabled || _user.isMagicCODEngineEnabled,

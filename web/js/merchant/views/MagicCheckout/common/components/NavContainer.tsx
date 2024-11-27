@@ -99,7 +99,7 @@ const NavContainer: React.FC<NavContainerProps> = (props) => {
 };
 const mapStateToProps = (state) => ({
   user: state.session.user,
-  platform: state?.magicCheckout?.platform,
+  platform: state?.magic_settings?.platform,
   isRCOD: state?.magicCheckout?.rcod,
 });
 
