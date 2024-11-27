@@ -6,6 +6,7 @@ import { bindActionCreators } from 'redux';
 import { useI18Service } from 'common/i18';
 import { ShowNotificationType, User } from 'common/typings';
 import ProductWrapper from 'common/ui/ProductWrapper';
+import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import ProductClientAccounts from 'merchant/views/PartnerDashboard/ClientAccounts//ProductTabsWrapper/ProductClientAccounts';
 import {
   trackAddMerchantClicked,
@@ -49,8 +50,9 @@ const ClientProductsWrapper = ({
 
   const partnerId = user.id as string;
 
+  const { criticalFlow } = useTwoFactorVerificationContext();
   const experiments = usePartnerDashboardExperiments();
-  const { isPlatformPartnerInviteFlowEnabled } = experiments;
+  const { isPlatformPartnerInviteFlowEnabled, is2FaEnabled } = experiments;
 
   const { isInviteFlowEnabled, isPlatformPartnerWithPGInviteFlow } = getIsInviteFlowEnabled(
     productType,
@@ -69,6 +71,25 @@ const ClientProductsWrapper = ({
     trackAddMerchantClicked(productType);
     if (isInviteFlowEnabled) {
       setIsInviteMerchantModalOpen(true);
+    } else if (is2FaEnabled) {
+      criticalFlow({
+        enforceVerifyOtp: true,
+        modes: ['live', 'test'],
+        onUserTwoFaVerified: () => {
+          openModal({
+            size: 'med-large',
+            component: (
+              <AddMerchant
+                closeModal={closeModal}
+                referralData={referralData}
+                addType={productType}
+                org={org}
+                isConfigTagEnabled={i18.isConfigTagEnabled}
+              />
+            ),
+          });
+        },
+      });
     } else {
       openModal({
         size: 'med-large',

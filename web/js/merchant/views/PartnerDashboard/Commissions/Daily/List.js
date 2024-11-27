@@ -7,6 +7,7 @@ import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service } from 'common/i18';
 import Amount from 'common/ui/Amount';
 import DataTable from 'common/ui/Table/DataTable';
+import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { without } from 'common/utils/rzp-utils';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchAggregate } from 'merchant/reducers/commission';
@@ -70,6 +71,8 @@ class CommissionsDailyList extends ListContainer {
     };
   }
 
+  static contextType = TwoFactorVerificationContext;
+
   onDatesChange = (from, to) => {
     this.search({ from, to });
   };
@@ -92,6 +95,24 @@ class CommissionsDailyList extends ListContainer {
 
     if (experiments.isPartnershipsInviteFlowEnabled) {
       this.setState({ isInviteMerchantModalOpen: true });
+    } else if (experiments.is2FaEnabled) {
+      this.context.criticalFlow({
+        enforceVerifyOtp: true,
+        modes: ['live', 'test'],
+        onUserTwoFaVerified: () => {
+          openModal({
+            size: 'med-large',
+            component: (
+              <AddMerchant
+                closeModal={this.props.closeModal}
+                source="daily-earning"
+                org={this.props.org}
+                isConfigTagEnabled={isConfigTagEnabled}
+              />
+            ),
+          });
+        },
+      });
     } else {
       this.props.openModal({
         size: 'med-large',

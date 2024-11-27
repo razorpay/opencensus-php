@@ -7,6 +7,7 @@ import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import Loader from 'common/ui/Loader';
+import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { trackShorterKYCEvents } from 'common/utils/analytics';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -48,8 +49,9 @@ const Home = ({
   org,
   partnerSwitchFlag,
 }: PartnerHomeT): JSX.Element => {
-  const { isPartnershipsInviteFlowEnabled, isPartnershipsForPosEnabled } =
+  const { isPartnershipsInviteFlowEnabled, isPartnershipsForPosEnabled, is2FaEnabled } =
     usePartnerDashboardExperiments();
+  const { criticalFlow } = useTwoFactorVerificationContext();
   const [FUXStatus, setFUXStatus] = useState<FUXStatusStateT>({
     value: null,
     isFetching: true,
@@ -111,6 +113,26 @@ const Home = ({
     if (isPartnershipsInviteFlowEnabled) {
       setIsInviteMerchantModalOpen(true);
       setInviteMerchantProductType(type || '');
+    } else if (is2FaEnabled) {
+      criticalFlow({
+        enforceVerifyOtp: true,
+        modes: ['live', 'test'],
+        onUserTwoFaVerified: () => {
+          openModal({
+            size: 'med-large',
+            component: (
+              <AddMerchant
+                closeModal={closeModal}
+                addType={type}
+                onAddSuccess={onAddMerchantSuccess}
+                source={source}
+                org={org}
+                isConfigTagEnabled={isConfigTagEnabled}
+              />
+            ),
+          });
+        },
+      });
     } else {
       openModal({
         size: 'med-large',

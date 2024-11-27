@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { getInitialUserOrgState } from 'common/tests/utils';
+import TwoFaVerificationContextProvider from 'common/ui/TwoFactorVerification/TwoFactorVerificationProvider';
 import ClientAccounts from 'merchant/views/PartnerDashboard/ClientAccounts';
 import { fetchReferralsHandler } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/once-handlers';
 import { allInvitesListSuccess } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/__tests__/mocks/handlers';
@@ -51,11 +52,16 @@ const renderApp = ({ userExtra = {}, orgExtra = {} } = {}, props = {}, experimen
     },
     orgExtra,
   });
-  render(<ClientAccounts {...props} />, {
-    initialState: {
-      session,
+  render(
+    <TwoFaVerificationContextProvider>
+      <ClientAccounts {...props} />
+    </TwoFaVerificationContextProvider>,
+    {
+      initialState: {
+        session,
+      },
     },
-  });
+  );
 };
 
 describe('ClientAccounts', () => {

@@ -16,6 +16,7 @@ import Loader from 'common/ui/Loader';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import DataTable from 'common/ui/Table/DataTable';
 import Time from 'common/ui/Time';
+import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { getTime } from 'common/ui/item';
 import {
   submerchant as submerchantColumn,
@@ -260,6 +261,8 @@ class ProductSubMerchantsList extends ListContainer {
     this.isCapitalProduct = product === PRODUCT_TYPE.CAPITAL;
   }
 
+  static contextType = TwoFactorVerificationContext;
+
   getActivationBulkData = (items) => {
     const { showNotification, products, loading } = this.props;
     const isDataFetched = !loading && !products?.loading;
@@ -482,11 +485,29 @@ class ProductSubMerchantsList extends ListContainer {
       product,
       i18: { isConfigTagEnabled },
     } = this.props;
-    const { isPartnershipsInviteFlowEnabled, isPlatformPartnerInviteFlowEnabled } = experiments;
+    const { isPartnershipsInviteFlowEnabled, isPlatformPartnerInviteFlowEnabled, is2FaEnabled } =
+      experiments;
     const isPlatformPartnerWithPGInviteFlow =
       isPlatformPartnerInviteFlowEnabled && product === PRODUCT_TYPE.PG;
     if (isPlatformPartnerWithPGInviteFlow || isPartnershipsInviteFlowEnabled) {
       this.setState({ isInviteMerchantModalOpen: true });
+    } else if (is2FaEnabled) {
+      this.context.criticalFlow({
+        enforceVerifyOtp: true,
+        modes: ['live', 'test'],
+        onUserTwoFaVerified: () => {
+          openModal({
+            size: 'med-large',
+            component: (
+              <AddMerchant
+                closeModal={this.props.closeModal}
+                org={this.props?.org}
+                isConfigTagEnabled={isConfigTagEnabled}
+              />
+            ),
+          });
+        },
+      });
     } else {
       openModal({
         size: 'med-large',

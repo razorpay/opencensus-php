@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { getInitialUserOrgState } from 'common/tests/utils';
+import TwoFaVerificationContextProvider from 'common/ui/TwoFactorVerification/TwoFactorVerificationProvider';
 import ProductTabsWrapper from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper';
 import { fetchReferralsHandler } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/once-handlers';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
@@ -49,14 +50,19 @@ const renderApp = (
     },
     orgExtra,
   });
-  render(<ProductTabsWrapper {...props} />, {
-    showModal: true,
-    initialEntries,
-    path: '',
-    initialState: {
-      session,
+  render(
+    <TwoFaVerificationContextProvider>
+      <ProductTabsWrapper {...props} />
+    </TwoFaVerificationContextProvider>,
+    {
+      showModal: true,
+      initialEntries,
+      path: '',
+      initialState: {
+        session,
+      },
     },
-  });
+  );
 };
 
 describe('ProductTabsWrapper', () => {

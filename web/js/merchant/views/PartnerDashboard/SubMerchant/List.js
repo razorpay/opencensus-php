@@ -7,6 +7,7 @@ import RTracking from 'react-tracking';
 import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service } from 'common/i18';
 import ProductWrapper from 'common/ui/ProductWrapper';
+import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Announcement from 'merchant/components/Announcements/Instant';
@@ -51,6 +52,8 @@ const AllInvitesTable = lazy(() =>
 )
 @RTracking(() => window.rzpQ.component('SubMerchantsList'))
 class SubMerchantsList extends Component {
+  static contextType = TwoFactorVerificationContext;
+
   componentDidMount() {
     const { user, location } = this.props;
     if (location?.state?.addType) {
@@ -123,7 +126,8 @@ class SubMerchantsList extends Component {
     } = this.props;
     const { referralData } = this.state;
     const product = this.getProductType();
-    const { isPartnershipsInviteFlowEnabled, isPlatformPartnerInviteFlowEnabled } = experiments;
+    const { isPartnershipsInviteFlowEnabled, isPlatformPartnerInviteFlowEnabled, is2FaEnabled } =
+      experiments;
 
     const isPlatformPartnerWithPGInviteFlow =
       isPlatformPartnerInviteFlowEnabled && product === PRODUCT_TYPE.PG;
@@ -132,6 +136,25 @@ class SubMerchantsList extends Component {
       (product === PRODUCT_TYPE.PG && isPartnershipsInviteFlowEnabled)
     ) {
       this.setState({ isInviteMerchantModalOpen: true });
+    } else if (is2FaEnabled) {
+      this.context.criticalFlow({
+        enforceVerifyOtp: true,
+        modes: ['live', 'test'],
+        onUserTwoFaVerified: () => {
+          openModal({
+            size: 'med-large',
+            component: (
+              <AddMerchant
+                closeModal={closeModal}
+                referralData={referralData}
+                addType={product}
+                org={org}
+                isConfigTagEnabled={isConfigTagEnabled}
+              />
+            ),
+          });
+        },
+      });
     } else {
       openModal({
         size: 'med-large',

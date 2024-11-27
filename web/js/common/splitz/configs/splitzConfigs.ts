@@ -650,6 +650,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'enable_2fa_for_protected_flows',
+        experimentId: {
+          beta: 'OvqHENDSx92RDN',
+          production: 'OwEKutd9QhLehI',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],
@@ -1857,22 +1873,6 @@ export const splitzConfig: SplitzInitConfig = {
         '/team',
       ],
       abExperiments: [
-        {
-          uniqueHashKey: 'enable_2fa_for_protected_flows',
-          experimentId: {
-            beta: 'OvqHENDSx92RDN',
-            production: 'OwEKutd9QhLehI',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-            ],
-          },
-        },
         {
           uniqueHashKey: 'enable_modular_onboarding_linked_account',
           experimentId: {

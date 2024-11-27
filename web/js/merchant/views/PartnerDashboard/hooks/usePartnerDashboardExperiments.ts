@@ -5,7 +5,7 @@ import { SpiltzContextState } from 'common/splitz/types';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
-import { filterBy } from 'common/utils/rzp-utils';
+import { filterBy, is2FaExperimentEnabled } from 'common/utils/rzp-utils';
 import { getUser } from 'merchant/store';
 
 /**
@@ -83,6 +83,7 @@ export type PartnerDashboardExperiments = {
   isPartnershipsForPosEnabled: boolean;
   isPartnershipCapitalBureauLinkEnabled: boolean;
   isPosPartnerOwnerAccount: boolean;
+  is2FaEnabled: boolean;
 };
 const usePartnerDashboardExperiments = (): PartnerDashboardExperiments => {
   const user = getUser();
@@ -113,6 +114,7 @@ const usePartnerDashboardExperiments = (): PartnerDashboardExperiments => {
       }),
       isPosPartnerOwnerAccount: !!checkIfPosSalesAgent({ user, abExperiments })?.isOwner,
       isPosEkycEnabled: getIsPosKycEnabled({ user }),
+      is2FaEnabled: is2FaExperimentEnabled(abExperiments),
     }),
     [user, abExperiments],
   );
