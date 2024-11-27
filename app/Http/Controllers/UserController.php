@@ -239,13 +239,6 @@ class UserController extends Controller
                 'session_id'            => Session::getId(),
             ];
 
-            if ($this->isPg3V1RedirectionApplicable($details) === true)
-            {
-                $redirectUrl = env(self::EASY_DASHBOARD_URL) . self::PG_V3_REDIRECT_URL;
-
-                return redirect($redirectUrl);
-            }
-
             if ($this->isRedirectionApplicable($details) === true)
             {
                 $ttl = 12 * 60;
@@ -300,6 +293,13 @@ class UserController extends Controller
                 ]);
 
                 return redirect(env('EASY_DASHBOARD_URL') . '/onboarding/overview');
+            }
+
+            if ($this->isPg3V1RedirectionApplicable($details) === true)
+            {
+                $redirectUrl = env(self::EASY_DASHBOARD_URL) . self::PG_V3_REDIRECT_URL;
+
+                return redirect($redirectUrl);
             }
 
             $signupCampaign = $details['user']['signup_campaign'] ?? null;
@@ -939,6 +939,11 @@ class UserController extends Controller
         ]);
 
         $merchantId = $details['current'];
+
+        if (array_get($details,'activation_status') !== 'activated')
+        {
+            return false;
+        }
 
         if (isset(config(self::SPLITZ_EXPERIMENTS)[self::PG3_V1_ENABLED]) === false) {
             return false;
