@@ -13,7 +13,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import ajax from 'merchant/utils/ajax';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
-const SuccessScreen = (closeScreen) => (
+const SuccessScreen = ({ closeScreen = () => {} }) => (
   <div class="modal-body rzp-early-stl-modal success-modal">
     <div class="success-banner-cnt">
       <img class="banner-header" src="/img/early_settlements/es-banner-1-header.png" />
