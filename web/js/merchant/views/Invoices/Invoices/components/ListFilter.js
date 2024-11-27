@@ -96,7 +96,7 @@ export default ({
         />
       </div>
 
-      {isInttCurrenciesEnabled && user.isINCountry && (
+      {isInttCurrenciesEnabled && user.isCountryIndia && (
         <div class="form-group list-filter-item">
           <label>Currency Type</label>
           <Field name="international" component="select" class="form-control input-sm">

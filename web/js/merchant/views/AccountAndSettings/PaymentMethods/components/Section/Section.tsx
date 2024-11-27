@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link as BladeLink, ExternalLinkIcon } from '@razorpay/blade/components';
 import {
   PaymentMethodsStyledTabContentContainer,
   SectionContent,
@@ -18,6 +19,7 @@ import { trackLinkClick } from 'merchantLA/containers/TestModeBanner/ga';
 import { Link } from 'react-router-dom';
 import SectionShimmer from 'merchant/views/AccountAndSettings/PaymentMethods/components/Shimmer';
 import { Alert, Text } from '@razorpay/blade/components';
+import { PAYMENT_METHOD_DOCS } from 'merchant/views/AccountAndSettings/PaymentMethods/constants';
 
 type Props = {
   type: PaymentMethodsFields;
@@ -98,17 +100,25 @@ const PaymentMethodsSection = ({
         <SectionHeader>
           <div>
             <h3>{currentPaymentMethodInfo?.name}</h3>
-            <p>{currentPaymentMethodInfo?.description}</p>
+
+            {/* Only display description if it is not OrgCurlec or MYCountry */}
+            {!user.isOrgCurlec && <p>{currentPaymentMethodInfo?.description}</p>}
           </div>
-          <a
-            href="https://razorpay.com/docs/payment-gateway/dashboard-guide/settings/payment-methods/"
+
+          {/* Conditionally set the href based on the user's OrgCurlec and MYCountry status */}
+          <BladeLink
+            variant="anchor"
+            href={
+              user.isOrgCurlec ? PAYMENT_METHOD_DOCS.curlec_docs : PAYMENT_METHOD_DOCS.razorpay_docs
+            }
             target="_blank"
             rel="noopener noreferrer"
             onClick={onClickKnowMore}
+            icon={ExternalLinkIcon}
+            iconPosition="right"
           >
-            Know More about payment methods{' '}
-            <i className="i i-external-link" style={{ marginLeft: '5px' }} />
-          </a>
+            Know More about payment methods
+          </BladeLink>
         </SectionHeader>
         <>
           {type !== PaymentMethodsFields.INTERNATIONAL ? (

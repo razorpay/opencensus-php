@@ -98,6 +98,26 @@ describe('PaymentMethodsSection', () => {
     });
   });
 
+  test('should render with curlec url', () => {
+    renderApp({
+      initialState: {
+        ...defaultInitialState,
+        session: {
+          user: {
+            isOrgCurlec: true,
+          },
+        },
+      },
+    });
+    const paymentMethodsLink = screen.getByRole('link', {
+      name: 'Know More about payment methods',
+    });
+    expect(paymentMethodsLink).toHaveAttribute(
+      'href',
+      'https://curlec.com/docs/payments/payment-methods/',
+    );
+  });
+
   describe('Shimmer', () => {
     test('should be shown if showLoader is true', () => {
       renderApp({
@@ -154,5 +174,24 @@ describe('PaymentMethodsSection', () => {
     expect(screen.getByTestId('non-live-banner')).toHaveTextContent(
       'Request for Payment methods is unavailable as your account is not enabled to accept transactions',
     );
+  });
+
+  test('should not render description for curlec org', () => {
+    const mockCurrentPaymentMethodInfo = { description: 'Test description' };
+    renderApp({
+      initialState: {
+        ...defaultInitialState,
+        session: {
+          user: {
+            isOrgCurlec: true,
+          },
+        },
+        instrumentRequests: {
+          ...defaultInitialState.instrumentRequests,
+          pg: [{ slug: PaymentMethodsFields.INTERNATIONAL, ...mockCurrentPaymentMethodInfo }],
+        },
+      },
+    });
+    expect(screen.queryByText('Test description')).not.toBeInTheDocument();
   });
 });

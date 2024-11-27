@@ -1889,6 +1889,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'curlec_paypal_onboarding',
+          experimentId: {
+            beta: 'PIOvoDyg5mmRXR',
+            production: 'PIOmfUioCCNCC0',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

@@ -2,10 +2,16 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 import * as conditionalUtils from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 jest.mock('merchant/models/User', () => ({
   ...jest.requireActual('merchant/models/User'),
   isOrgFeatureExist: jest.fn(),
+}));
+
+jest.mock('common/splitz/utils', () => ({
+  ...jest.requireActual('common/splitz/utils'),
+  isExperimentEnabled: jest.fn(),
 }));
 
 const { isFlashCheckoutAllowed, accountAccessHoverDescription } = conditionalUtils;
@@ -21,9 +27,11 @@ const getUser = () => ({
   user: {
     contact_mobile: undefined,
     isCountryIndia: true,
+    isCountryMalaysia: false,
   },
   isOrgAxis: undefined,
   isOrgRZP: undefined,
+  isOrgCurlec: undefined,
   isInstrumentRequestHidden: undefined,
   isWebsiteComplianceFlowEnabled: undefined,
   isFeatureEnabled: jest.fn(),
@@ -156,26 +164,40 @@ describe('Condition Utils', () => {
     beforeEach(() => {
       user = {
         isOrgRZP: false,
+        isOrgCurlec: false,
         isCountryIndia: false,
+        isCountryMalaysia: false,
         isInstrumentRequestHidden: false,
       };
     });
 
     test.each([
-      // Expected result, isOrgRZP, isCountryIndia, isInstrumentRequestHidden, mode
-      [false, false, false, false, 'test'],
-      [false, false, true, false, 'live'],
-      [false, true, true, false, 'test'],
-      [false, false, false, false, 'live'],
-      [true, true, true, true, 'live'],
-      [true, true, true, false, 'live'],
-      [true, false, true, true, 'live'],
-      [false, true, false, false, 'test'],
+      // Expected result, isOrgRZP, isOrgCurlec, isCountryIndia, isCountryMalaysia, isInstrumentRequestHidden, mode
+      [false, false, false, false, false, false, 'test'],
+      [false, false, false, true, false, false, 'live'],
+      [false, true, false, true, false, false, 'test'],
+      [false, false, false, false, false, false, 'live'],
+      [true, true, false, true, false, true, 'live'],
+      [true, true, false, true, false, false, 'live'],
+      [true, false, false, true, false, true, 'live'],
+      [false, true, false, false, false, false, 'test'],
+      [true, false, true, false, true, false, 'live'],
+      [false, false, true, false, true, false, 'test'],
     ])(
-      'should return %s when isOrgRZP is %s, isCountryIndia is %s, isInstrumentRequestHidden is %s, and mode is %s',
-      (expectedResult, isOrgRZP, isCountryIndia, isInstrumentRequestHiddenOutput, mode) => {
+      'should return %s when isOrgRZP is %s, isOrgCurlec is %s, isCountryIndia is %s, isCountryMalaysia is %s, isInstrumentRequestHidden is %s, and mode is %s',
+      (
+        expectedResult,
+        isOrgRZP,
+        isOrgCurlec,
+        isCountryIndia,
+        isCountryMalaysia,
+        isInstrumentRequestHiddenOutput,
+        mode,
+      ) => {
         user.isOrgRZP = isOrgRZP;
+        user.isOrgCurlec = isOrgCurlec;
         user.isCountryIndia = isCountryIndia;
+        user.isCountryMalaysia = isCountryMalaysia;
         user.isInstrumentRequestHidden = isInstrumentRequestHiddenOutput;
 
         expect(conditionalUtils.isPaymentMethodEnabled(user, mode)).toBe(expectedResult);
@@ -508,5 +530,22 @@ describe('Condition Utils', () => {
         }),
       ).toBeFalsy();
     });
+  });
+});
+
+describe('isCurlecPaypalOnboardingEnabled', () => {
+  test('should return true if experiment enabled', () => {
+    const extraConfig = {
+      abExperiments: { curlec_paypal_onboarding: { variables: { result: 'on' } } },
+    };
+    isExperimentEnabled.mockReturnValueOnce(true);
+    expect(conditionalUtils.isCurlecPaypalOnboardingEnabled(extraConfig)).toBe(true);
+  });
+  test('should return false if experiment enabled', () => {
+    const extraConfig = {
+      abExperiments: { curlec_paypal_onboarding: { variables: { result: 'off' } } },
+    };
+    isExperimentEnabled.mockReturnValueOnce(false);
+    expect(conditionalUtils.isCurlecPaypalOnboardingEnabled(extraConfig)).toBe(false);
   });
 });

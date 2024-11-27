@@ -143,6 +143,7 @@ export const initialState = {
       actionItems: {},
       slug: 'cards',
       icon: 'card',
+      additionalCondition: (user) => !user.isOrgCurlec,
       leafList: [
         {
           header: 'Domestic Cards',
@@ -204,6 +205,7 @@ export const initialState = {
       description: 'GooglePay, PhonePe, BHIM & more',
       slug: 'upi',
       icon: 'upi',
+      additionalCondition: (user) => !user.isOrgCurlec,
       actionItems: {},
       leafList: [
         {
@@ -265,6 +267,7 @@ export const initialState = {
       description: 'All Indian Banks',
       slug: 'netbanking',
       icon: 'netbanking',
+      additionalCondition: (user) => !user.isOrgCurlec,
       actionItems: {},
       intermediateList: [
         {
@@ -711,6 +714,7 @@ export const initialState = {
       description: 'Credit/Debit cards, Zest money & more',
       slug: 'emi',
       icon: 'emi',
+      additionalCondition: (user) => !user.isOrgCurlec,
       actionItems: {},
       leafList: [
         {
@@ -825,6 +829,7 @@ export const initialState = {
       description: 'Phonepe, Freecharge etc.',
       slug: 'wallet',
       icon: 'wallet',
+      additionalCondition: (user) => !user.isOrgCurlec,
       actionItems: {},
       leafList: [
         {
@@ -930,6 +935,7 @@ export const initialState = {
       description: 'Buy now and pay later with ePay Later',
       slug: 'paylater',
       icon: 'paylater',
+      additionalCondition: (user) => !user.isOrgCurlec,
       actionItems: {},
       leafList: [
         {
@@ -1099,7 +1105,7 @@ export const initialState = {
       actionItems: {},
       slug: 'meal-card',
       icon: 'mealcard',
-      additionalCondition: (user) => user.isSodexoInstrumentEnabled,
+      additionalCondition: (user) => user.isSodexoInstrumentEnabled && !user.isOrgCurlec,
       leafList: [
         {
           header: 'Sodexo',

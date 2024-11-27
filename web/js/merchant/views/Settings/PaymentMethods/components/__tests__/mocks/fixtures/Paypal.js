@@ -12,6 +12,10 @@ export const defaultProps = {
     path: 'pg.international.paypal',
     created_at: 0,
   },
+  user: {
+    isCountryIndia: true,
+    isOrgCurlec: false,
+  },
   terminals: [],
   isIERevamp: true,
 };

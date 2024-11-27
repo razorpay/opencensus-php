@@ -82,6 +82,7 @@ type Getters = {
   isActivated: boolean;
   isHideMonthlyInvoiceEnabled: boolean;
   isCountryIndia: boolean;
+  isCountryMalaysia: boolean;
   isCountrySingapore: boolean;
   isVasTestingMerchant: boolean;
   isMultiCouponsEnabled: boolean;

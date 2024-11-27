@@ -21,6 +21,7 @@ class PaypalOnboardingButton extends Component {
   };
 
   getOnboardingStatus = () => {
+    this.setState({ loading: true });
     return this.props
       .getOnboardingStatus('wallet_paypal')
       .then(() => {
@@ -31,6 +32,9 @@ class PaypalOnboardingButton extends Component {
           type: 'error',
           message: err.errors,
         });
+      })
+      .finally(() => {
+        this.setState({ loading: false });
       });
   };
 

@@ -101,7 +101,7 @@ jest.mock('merchant/views/AccountAndSettings/PaymentMethods/utils', () => ({
   isInternationalLeafItemDisabled: jest.fn(),
 }));
 
-const renderApp = () =>
+const renderApp = (userObj = {}) =>
   render(<International />, {
     initialState: {
       instrumentRequests: {
@@ -111,6 +111,7 @@ const renderApp = () =>
         user: {
           international: true,
           id: 'test',
+          ...userObj,
         },
       },
       unlockIntlPaymentMethods: {
@@ -250,5 +251,24 @@ describe('International', () => {
 
     renderApp();
     expect(fetchUserSpy).not.toHaveBeenCalled();
+  });
+
+  test('should render Paypal for Curlec', async () => {
+    // eslint-disable-next-line
+    // @ts-ignore
+    isInternationalLeafItemDisabled.mockReturnValue(false);
+
+    renderApp({
+      isOrgCurlec: true,
+    });
+
+    // Wait for loader to disappear
+    await waitFor(() => {
+      expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
+    });
+
+    // Check that PayPal section is present in the document
+    expect(screen.getByTestId('paypal')).toBeInTheDocument();
+    expect(screen.queryByTestId('instant-wire-transfer')).not.toBeInTheDocument();
   });
 });

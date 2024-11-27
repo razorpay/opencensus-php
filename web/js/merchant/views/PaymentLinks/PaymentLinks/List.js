@@ -61,7 +61,7 @@ const isOutsideRange = (day) => {
 const getExtraFields = (user, tracking, onDatesChange) => {
   const fields = [];
 
-  if (user.isPaymentLinkCreationV2Enabled && user.isINCountry) {
+  if (user.isPaymentLinkCreationV2Enabled && user.isCountryIndia) {
     fields.push(
       <div key="upi_link" class="form-group list-filter-item">
         <label>Payment Link Type</label>

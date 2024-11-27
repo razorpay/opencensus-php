@@ -66,6 +66,7 @@ import {
   isCustomerSupportDetailsEnabled,
   isExporterRewardsEnabled,
   isCheckoutV2SettingsAllowed,
+  isCurlecPaypalOnboardingEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 export const AccountNSettingsIcons = {
@@ -83,6 +84,7 @@ export const AccountNSettingsIcons = {
 
 export const Sections: SectionCardInterface[] = [
   {
+    // Disabling all subsections instrument for curlec as only international payments is enabled behind experiment
     id: SectionCardDataFields.PAYMENT_METHODS,
     title: 'Payment methods',
     icon: AccountNSettingsIcons.payment_methods,
@@ -99,7 +101,7 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            user.isIERevampEnabled,
+            user.isIERevampEnabled && !user.isOrgCurlec,
       },
       {
         id: PaymentMethodsFields.UPI,
@@ -108,7 +110,7 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            user.isIERevampEnabled,
+            user.isIERevampEnabled && !user.isOrgCurlec,
       },
       {
         id: PaymentMethodsFields.NETBANKING,
@@ -117,7 +119,7 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            user.isIERevampEnabled,
+            user.isIERevampEnabled && !user.isOrgCurlec,
       },
       {
         id: PaymentMethodsFields.EMI,
@@ -126,7 +128,7 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            user.isIERevampEnabled,
+            user.isIERevampEnabled && !user.isOrgCurlec,
       },
       {
         id: PaymentMethodsFields.WALLET,
@@ -135,7 +137,7 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            user.isIERevampEnabled,
+            user.isIERevampEnabled && !user.isOrgCurlec,
       },
       {
         id: PaymentMethodsFields.PAYLATER,
@@ -144,16 +146,21 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            user.isIERevampEnabled,
+            user.isIERevampEnabled && !user.isOrgCurlec,
       },
       {
         id: PaymentMethodsFields.INTERNATIONAL,
         title: PaymentMethodsTitles[PaymentMethodsFields.INTERNATIONAL],
         href: ROUTES_INFO.INTERNATIONAL_PAYMENTS,
         additionalCondition:
-          () =>
-          (user: User): boolean =>
-            user.isIERevampEnabled,
+          ({ extraConfig }: AdditionalContextInterface) =>
+          (user: User): boolean => {
+            // For curlec, only international payments is enabled behind experiment
+            if (user.isOrgCurlec) {
+              return user.isIERevampEnabled && isCurlecPaypalOnboardingEnabled(extraConfig);
+            }
+            return user.isIERevampEnabled;
+          },
       },
       {
         id: PaymentMethodsFields.MEAL_CARD,
@@ -162,7 +169,7 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            user.isIERevampEnabled && user.isSodexoInstrumentEnabled,
+            user.isIERevampEnabled && user.isSodexoInstrumentEnabled && !user.isOrgCurlec,
       },
       {
         id: PaymentMethodsFields.CARDS,
@@ -171,7 +178,7 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            !user.isIERevampEnabled,
+            !user.isIERevampEnabled && !user.isOrgCurlec,
       },
       {
         id: PaymentMethodsFields.UPI,
@@ -180,7 +187,7 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            !user.isIERevampEnabled,
+            !user.isIERevampEnabled && !user.isOrgCurlec,
       },
       {
         id: PaymentMethodsFields.NETBANKING,
@@ -189,7 +196,7 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            !user.isIERevampEnabled,
+            !user.isIERevampEnabled && !user.isOrgCurlec,
       },
       {
         id: PaymentMethodsFields.EMI,
@@ -198,7 +205,7 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            !user.isIERevampEnabled,
+            !user.isIERevampEnabled && !user.isOrgCurlec,
       },
       {
         id: PaymentMethodsFields.WALLET,
@@ -207,7 +214,7 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            !user.isIERevampEnabled,
+            !user.isIERevampEnabled && !user.isOrgCurlec,
       },
       {
         id: PaymentMethodsFields.PAYLATER,
@@ -216,16 +223,21 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            !user.isIERevampEnabled,
+            !user.isIERevampEnabled && !user.isOrgCurlec,
       },
       {
         id: PaymentMethodsFields.INTERNATIONAL,
         title: 'International payments',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=international`,
         additionalCondition:
-          () =>
-          (user: User): boolean =>
-            !user.isIERevampEnabled,
+          ({ extraConfig }: AdditionalContextInterface) =>
+          (user: User): boolean => {
+            // For curlec, only international payments is enabled behind experiment
+            if (user.isOrgCurlec) {
+              return !user.isIERevampEnabled && isCurlecPaypalOnboardingEnabled(extraConfig);
+            }
+            return !user.isIERevampEnabled;
+          },
       },
       {
         id: PaymentMethodsFields.MEAL_CARD,
@@ -234,7 +246,7 @@ export const Sections: SectionCardInterface[] = [
         additionalCondition:
           () =>
           (user: User): boolean =>
-            !user.isIERevampEnabled && user.isSodexoInstrumentEnabled,
+            !user.isIERevampEnabled && user.isSodexoInstrumentEnabled && !user.isOrgCurlec,
       },
     ],
   },

@@ -162,6 +162,7 @@ const International = ({
       const commonProps = {
         instrument: leafListItem,
         key: leafListItem.name,
+        user: user,
       };
       switch (leafListItem.slug) {
         case 'internationalcards':
@@ -229,6 +230,24 @@ const International = ({
                     </Box>
                   ))}
                 </Box>
+              );
+            }
+
+            if (user.isOrgCurlec) {
+              const allowedItems = (leafListItem) => leafListItem.slug === 'paypal';
+              return (
+                <>
+                  {leafListItem.list.some(allowedItems) && (
+                    <LeafListItemDiv
+                      data-testid="leaf-list-item"
+                      key={leafListItem.header}
+                      className="level-3"
+                      ref={listItemRef}
+                    >
+                      {renderLeafListItem(leafListItem)}
+                    </LeafListItemDiv>
+                  )}
+                </>
               );
             }
 

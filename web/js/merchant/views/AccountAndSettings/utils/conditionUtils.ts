@@ -41,9 +41,18 @@ export const isTrustedBadgeAllowed = (user: User, extraConfig: ExtraConfig): boo
   !isOrgFeatureExist('hide_razorpay_text_link') &&
   !extraConfig.isConfigTagEnabled('account.trusted_badge');
 
-export const isPaymentMethodEnabled = (user: User, mode: string): boolean =>
-  ((user.isOrgRZP === true && user.isCountryIndia) || user.isInstrumentRequestHidden) &&
-  mode !== 'test';
+// Function to check whether a particular payment method is enabled for Razorpay and/or Curlec
+export const isPaymentMethodEnabled = (user: User, mode: string): boolean => {
+  const isOrgValid = user.isOrgRZP || user.isOrgCurlec;
+  const isCountryValid = user.isCountryIndia || user.isCountryMalaysia;
+  const isInstrumentHidden = user.isInstrumentRequestHidden;
+  const isModeLive = mode === 'live';
+
+  const isPaymentMethodConditionMet =
+    (isOrgValid && isCountryValid) || isInstrumentHidden;
+
+  return isPaymentMethodConditionMet && isModeLive;
+};
 
 export const shouldShowFeeBearerSelfServe = ({
   user: { isOrgRZP, isAccepted, role, isFeeBearerSelfServeOn, isPayPalEnabled, international },
@@ -182,4 +191,12 @@ export const isWhatsAppAccountSetupEnabled = (
     return isExperimentEnabled(abExperiments.whatsAppPLEnabled) && user.isOwner;
   }
   return isExperimentEnabled(abExperiments.whatsAppPLEnabled);
+};
+
+export const isCurlecPaypalOnboardingEnabled = (extraConfig: ExtraConfig): boolean => {
+  const { abExperiments } = extraConfig || {
+    abExperiments: { curlec_paypal_onboarding: undefined },
+  };
+  if (!abExperiments?.curlec_paypal_onboarding) return false;
+  return isExperimentEnabled(abExperiments.curlec_paypal_onboarding);
 };

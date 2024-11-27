@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import PaypalOnboardingButton from 'merchant/views/Settings/Configuration/PaypalOnboarding';
-import { getIcon } from './InstrumentIcons';
-import { GREYED } from 'merchant/views/Settings/PaymentMethods/constants';
+import { Alert, Badge, InfoIcon } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
+
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { capitalize } from 'common/utils/rzp-utils';
+import { LeafListItemHeader } from 'merchant/views/AccountAndSettings/PaymentMethods/components/LeafListItem';
 import {
   getClassName,
   getStatusMessage,
   getBadgeVariant,
 } from 'merchant/views/Settings/Configuration/InternationalPayments';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import { connect } from 'react-redux';
-import { Alert, Badge, InfoIcon } from '@razorpay/blade/components';
-import { LeafListItemHeader } from 'merchant/views/AccountAndSettings/PaymentMethods/components/LeafListItem';
-import { capitalize } from 'common/utils/rzp-utils';
+import PaypalOnboardingButton from 'merchant/views/Settings/Configuration/PaypalOnboarding';
+import { GREYED } from 'merchant/views/Settings/PaymentMethods/constants';
 
-const Paypal = ({ instrument, terminals, isIERevamp }) => {
+import { getIcon } from './InstrumentIcons';
+
+const Paypal = ({ user, instrument, terminals, isIERevamp }) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [status, setStatus] = useState(null);
   const disabled = status === GREYED;
@@ -32,11 +34,15 @@ const Paypal = ({ instrument, terminals, isIERevamp }) => {
     }
   }, [terminals]);
 
+  const instrumentDescription = user?.isOrgCurlec
+    ? instrument.description.replace('Razorpay', 'Curlec')
+    : instrument.description;
+
   return isIERevamp ? (
     <>
       <LeafListItemHeader
         name={instrument.name}
-        description={instrument.description}
+        description={instrumentDescription}
         actionComponent={
           showStatus ? (
             <Badge
@@ -71,7 +77,7 @@ const Paypal = ({ instrument, terminals, isIERevamp }) => {
         setStatus={(st) => setStatus(st)}
         isIERevamp={isIERevamp}
       />
-      {!disabled && (
+      {!user?.isOrgCurlec && !disabled && (
         <div className="mt20">
           <Alert
             description={
@@ -139,15 +145,14 @@ const Paypal = ({ instrument, terminals, isIERevamp }) => {
         />
       </div>
       {terminals.length === 0 && instrument.description && (
-        <p class="desc">{instrument.description}</p>
+        <p class="desc">{instrumentDescription}</p>
       )}
 
-      {!disabled && (
+      {!user?.isOrgCurlec && !disabled && (
         <div class="paypal-info mt20">
           <p>
             You can accept Payments in <strong>International Currencies only</strong> using PayPal
           </p>
-
           <p class="mt10">You CANNOT accept Payments in INR</p>
         </div>
       )}

@@ -920,6 +920,11 @@ export default class User {
     return this.merchant.country_code === 'IN';
   }
 
+  get isCountryMalaysia() {
+    // eslint-disable-next-line i18n-rules/no-hardcoded-i18n-types
+    return this.merchant.country_code === 'MY';
+  }
+
   get isRBLRoleEnabled() {
     return this.findTag('enable_RBL_role');
   }

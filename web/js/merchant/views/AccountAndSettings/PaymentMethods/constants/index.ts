@@ -11,3 +11,9 @@ export const PaymentMethodsTabsRoutesConfig = {
   [PaymentMethodsFields.INTERNATIONAL]: ROUTES_INFO.INTERNATIONAL_PAYMENTS,
   [PaymentMethodsFields.MEAL_CARD]: ROUTES_INFO.MEAL_CARD,
 };
+
+export const PAYMENT_METHOD_DOCS = {
+  razorpay_docs:
+    'https://razorpay.com/docs/payment-gateway/dashboard-guide/settings/payment-methods/',
+  curlec_docs: 'https://curlec.com/docs/payments/payment-methods/',
+};

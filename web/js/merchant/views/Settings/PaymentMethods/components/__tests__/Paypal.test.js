@@ -44,6 +44,58 @@ describe('Paypal', () => {
       });
       expect(screen.getByText('Activated')).toBeInTheDocument();
     });
+
+    test('should render curlec changes for Paypal and show pending status', () => {
+      renderApp({
+        props: {
+          user: {
+            isCountryIndia: false,
+            isOrgCurlec: true,
+          },
+        },
+        initialState: {
+          config: {
+            paypal_terminals: [
+              {
+                terminal: {
+                  status: 'created',
+                },
+              },
+            ],
+          },
+        },
+      });
+      expect(
+        screen.getByText('Accept International Payments using PayPal on Curlec Checkout'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Pending')).toBeInTheDocument();
+    });
+
+    test('should render curlec changes for Paypal and show activated status', () => {
+      renderApp({
+        props: {
+          user: {
+            isCountryIndia: false,
+            isOrgCurlec: true,
+          },
+        },
+        initialState: {
+          config: {
+            paypal_terminals: [
+              {
+                terminal: {
+                  status: 'activated',
+                },
+              },
+            ],
+          },
+        },
+      });
+      expect(
+        screen.getByText('Accept International Payments using PayPal on Curlec Checkout'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Activated')).toBeInTheDocument();
+    });
   });
 
   describe('When IE Revamp is disabled', () => {
@@ -96,6 +148,55 @@ describe('Paypal', () => {
         },
       });
       expect(screen.getByText('activated')).toBeInTheDocument();
+    });
+
+    test('should render pending badge when terminal status is created for Curlec', () => {
+      renderApp({
+        props: {
+          isIERevamp: false,
+          user: {
+            isCountryIndia: false,
+            isOrgCurlec: true,
+          },
+        },
+        initialState: {
+          config: {
+            paypal_terminals: [
+              {
+                terminal: {
+                  status: 'created',
+                },
+              },
+            ],
+          },
+        },
+      });
+      expect(screen.getByText('pending')).toBeInTheDocument();
+    });
+
+    test('should render activated badge when terminal status is activated for Curlec', () => {
+      renderApp({
+        props: {
+          isIERevamp: false,
+          user: {
+            isCountryIndia: false,
+            isOrgCurlec: true,
+          },
+        },
+        initialState: {
+          config: {
+            paypal_terminals: [
+              {
+                terminal: {
+                  status: 'activated',
+                },
+              },
+            ],
+          },
+        },
+      });
+      expect(screen.getByText('activated')).toBeInTheDocument();
+      expect(screen.getByText('You are now accepting payments via PayPal.')).toBeInTheDocument();
     });
   });
 });
