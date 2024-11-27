@@ -78,7 +78,7 @@ const Header = ({ openModal, gstList, defaultGSTIn, setAlertStatus }: HeaderProp
           <Text size="large">GST details</Text>
         </Box>
       )}
-      <ValidatePermissions permissions={[PERMISSIONS.UPDATE_GST_DETAIL]}>
+      <ValidatePermissions permissions={[PERMISSIONS.UPDATE_GST_DETAILS]}>
         <ShowWhen
           myRole={isRBACEnabled ? undefined : 'owner admin'}
           additionalCondition={(usr) => usr.isAllowedEdit('profile', isRBACEnabled)}

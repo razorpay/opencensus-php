@@ -81,7 +81,7 @@ const PaymentsAndRefundsSettings = ({
     permissions: [PERMISSIONS.VIEW_TRANSACTION_LIMIT],
   });
   const canViewBalance = isActionAllowed({
-    permissions: [PERMISSIONS.VIEW_BALANCE],
+    permissions: [PERMISSIONS.VIEW_MERCHANT_BALANCE],
   });
 
   useEffect(() => {

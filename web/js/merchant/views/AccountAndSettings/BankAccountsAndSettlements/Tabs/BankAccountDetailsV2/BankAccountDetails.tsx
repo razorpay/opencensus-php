@@ -44,7 +44,7 @@ const BankAccountDetails = ({
   const { isActionAllowed, isRBACEnabled } = useValidatePermissions();
   // Get this permission assigned to admin and owner
   const canUpdateBankAccount = isActionAllowed({
-    permissions: [PERMISSIONS.UPDATE_BANK_ACCOUNT_DETAIL],
+    permissions: [PERMISSIONS.UPDATE_BANK_ACCOUNT],
   });
 
   const context = useTwoFactorVerificationContext();

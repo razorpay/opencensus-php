@@ -73,7 +73,7 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
 
   const { isActionAllowed } = useValidatePermissions();
   const canViewSettlementDetails = isActionAllowed({
-    permissions: [PERMISSIONS.VIEW_SETTLEMENT],
+    permissions: [PERMISSIONS.VIEW_SETTLEMENT_BALANCE],
   });
 
   if (!user.isAccountAndSettingsRevampEnabled) {

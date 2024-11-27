@@ -402,7 +402,7 @@ export const Sections: SectionCardInterface[] = [
             return (
               isBalancesEnabled(user, extraConfig, isRBACEnabled) &&
               isActionAllowed({
-                permissions: [PERMISSIONS.VIEW_BALANCE],
+                permissions: [PERMISSIONS.VIEW_MERCHANT_BALANCE],
               })
             );
           },
@@ -501,7 +501,7 @@ export const Sections: SectionCardInterface[] = [
           return (user: User) => {
             const isActionAllowed = initIsActionAllowed(user, rbacExperiment);
             return isActionAllowed({
-              permissions: [PERMISSIONS.VIEW_SETTLEMENT],
+              permissions: [PERMISSIONS.VIEW_SETTLEMENT_BALANCE],
             });
           };
         },
