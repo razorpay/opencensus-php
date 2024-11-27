@@ -2139,7 +2139,7 @@ class QrCodeRefactorTest extends TestCase
         $this->assertEquals(100, $qrPayment->getAmount());
         $this->assertEquals($qrCode->getId() . 'qrv2', $qrPayment->getMerchantReference());
         $this->assertEquals('payervpa@upi', $qrPayment->getAttribute('payer_vpa'));
-        $this->assertNotNull($qrPayment->getTransactionTime());
+
 
         $this->assertEquals('RndmNpciRefId', $payment->getReference16());
         $this->assertEquals('qr_code', $payment->getReceiverType());
@@ -2319,7 +2319,7 @@ class QrCodeRefactorTest extends TestCase
 
         $this->ba->appAuth('rzp_live');
 
-        $this->testData[__FUNCTION__]['request']['content']['upi']['merchant_reference']
+        $this->testData[__FUNCTION__]['request']['content']['data']['upi']['merchant_reference']
             = $qrCode->getId() . 'qrv2';
 
         $resp = $this->makeRequestAndGetContent($this->testData[__FUNCTION__]['request']);
@@ -2344,7 +2344,6 @@ class QrCodeRefactorTest extends TestCase
         $this->assertEquals(100, $qrPayment->getAmount());
         $this->assertEquals($qrCode->getId() . 'qrv2', $qrPayment->getMerchantReference());
         $this->assertEquals('payervpa@upi', $qrPayment->getAttribute('payer_vpa'));
-        $this->assertNotNull($qrPayment->getTransactionTime());
 
         $this->assertEquals('RndmNpciRefId', $payment->getReference16());
         $this->assertEquals('qr_code', $payment->getReceiverType());
@@ -2380,7 +2379,7 @@ class QrCodeRefactorTest extends TestCase
 
         $this->ba->appAuth('rzp_live');
 
-        $this->testData[__FUNCTION__]['request']['content']['upi']['merchant_reference']
+        $this->testData[__FUNCTION__]['request']['content']['data']['upi']['merchant_reference']
             = $qrCode->getId() . 'qrv2';
 
         $countOfQrPaymentBefore = count($this->getDbEntities(entity: 'qr_payment', mode: 'live'));

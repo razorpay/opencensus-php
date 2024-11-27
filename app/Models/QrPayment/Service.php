@@ -629,11 +629,11 @@ class Service extends Base\Service
             BharatQr\GatewayResponseParams::GATEWAY               => $gateway,
         ];
 
-        if (empty($inputFields['upi']['gateway_timestamp']) === false)
+        if (empty($inputFields['upi']['gateway_timestamp']) === false and $gateway !== 'upi_rzpapb')
         {
             $output[BharatQr\GatewayResponseParams::TRANSACTION_TIME] = $inputFields['upi']['gateway_timestamp'];
         }
-        else if (empty($inputFields['gateway_timestamp']) === false)
+        else if (empty($inputFields['gateway_timestamp']) === false and $gateway !== 'upi_rzpapb')
         {
             $output[BharatQr\GatewayResponseParams::TRANSACTION_TIME] = $inputFields['gateway_timestamp'];
         }

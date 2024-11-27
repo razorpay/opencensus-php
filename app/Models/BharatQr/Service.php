@@ -169,7 +169,7 @@ class Service extends Base\Service
 
         if (($isQrCodeV2 === true) or
             ($terminal->isQrV2Terminal() === true))
-        {
+        {           
             $valid = (new QrPayment\Core())->processPayment($gatewayResponse, $terminal, $qrPaymentRequest);
         }
         else
@@ -266,7 +266,7 @@ class Service extends Base\Service
                 (QrGatewayModule::checkIfOldGatewayProcessedThroughNewQrPaymentProcessingFlow($gateway) === true))
             {
                 $qrRearchRequest = true;
-
+                $input = $input['data'];
                 $terminal        = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $input['terminal']);
                 $gatewayResponse = [
                     'qr_data'       => (new QrPayment\Service())->getQrPaymentDataFromInput(null, $input, $gateway, $terminal),
