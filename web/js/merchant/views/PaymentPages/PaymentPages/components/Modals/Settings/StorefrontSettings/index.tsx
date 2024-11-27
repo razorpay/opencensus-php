@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import moment from 'moment';
 
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import Input from 'common/new-ui/Input';
@@ -61,12 +62,18 @@ const StorefrontSettings = ({
   const [hasPaymentSuccessRedirectUrl, setHasPaymentSuccessRedirectUrl] = useState(
     !!paymentSuccessRedirectUrl,
   );
-  const [expireBy, setExpireBy] = useState(storefrontEntity.expire_by || null);
+  const [expireBy, setExpireBy] = useState(
+    moment(Number(storefrontEntity.expire_by * 1000)) || null,
+  );
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
 
   const handleSubmit = (formData) => {
-    onSave(formData);
+    const updatedFormData = {
+      ...formData,
+      expire_by: formData?.expire_by ? formData.expire_by / 1000 : undefined,
+    };
 
+    onSave(updatedFormData);
     onClose();
   };
 
@@ -152,7 +159,12 @@ const StorefrontSettings = ({
             </CustomSlugSection>
             <div>
               <SettingsSection>
-                <input name="expire_by" value={expireBy || ''} readOnly hidden />
+                <input
+                  name="expire_by"
+                  value={expireBy ? expireBy.valueOf() : ''}
+                  readOnly
+                  hidden
+                />
                 <Input.DateTime
                   label="Page Expiry Date"
                   checkboxFieldLabel="No Expiry"

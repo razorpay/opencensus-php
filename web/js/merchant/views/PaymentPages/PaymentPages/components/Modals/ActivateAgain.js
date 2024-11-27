@@ -171,9 +171,7 @@ export default class ActivateAgainModal extends React.Component {
 
                   if (this.props.expireBy) {
                     reqPayload.expire_by =
-                      this.state.hasNoExpiry == '1'
-                        ? null
-                        : Math.floor(this.state.expire_by / 1000);
+                      this.state.hasNoExpiry == '1' ? null : Math.floor(this.state.expireBy / 1000);
                   }
 
                   return this.props
