@@ -339,11 +339,7 @@ class AnalyticsDesktop extends Component {
   };
 
   isWhatsappNotificationEnabled = (user) => {
-    return (
-      user.contact_mobile &&
-      user.activation_status === 'activated' &&
-      user.role === 'owner'
-    );
+    return user.contact_mobile && user.activation_status === 'activated' && user.role === 'owner';
   };
 
   onClickCovidEnableNow = async () => {

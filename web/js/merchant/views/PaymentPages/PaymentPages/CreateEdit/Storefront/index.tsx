@@ -52,8 +52,9 @@ import {
   Button as BladeButton,
   PlusCircleIcon,
   Heading,
-  SettingsIcon,
   Box,
+  ExternalLinkIcon,
+  SettingsIcon,
 } from '@razorpay/blade/components';
 import {
   emitIframeEvent,
@@ -63,11 +64,9 @@ import {
   getAllowedStorefrontDomain,
 } from './iframe';
 import { IHostedPagesMerchant, IStorefrontProps, TripleState } from './types';
-import { useSplitzService } from 'common/splitz';
 import {
   convertToHostedPagesProduct,
   getStorefrontHostedPagesFormat,
-  isStorefrontV1,
   sampleProduct,
 } from './utils';
 import ConfirmModal from 'merchant/views/PaymentPages/common/ConfirmModal';
@@ -88,6 +87,9 @@ import SelectProductDrawer from './SelectProductDrawer';
 import MobileActionButtons from './MobileActionButtons';
 import { PRODUCT_MESSAGES } from 'merchant/views/PaymentPages/common/Products/constants';
 import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
+import ChromeSearchBar from './ChromeSearchBar';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const allowedIframeDomain: string = getAllowedStorefrontDomain();
 
@@ -118,8 +120,6 @@ const StoreFront = ({
   addCategory,
   isMobile,
 }: IStorefrontProps): JSX.Element => {
-  const splitzConfig = useSplitzService();
-  const isStorefrontV1Enabled = isStorefrontV1(splitzConfig);
   // Used to manage products skeleton & determining if 0 products exist in central catalog or more (used to determine which drawer opens on button click)
   // we use -1 is loading state, 0 is no products added in central catalog, 1 is products previously exist in catalog
   const [isInitialLoaded, setIsInitialLoaded] = useState<TripleState>(-1);
@@ -139,6 +139,9 @@ const StoreFront = ({
   const [openBuisnessDetailsDrawer, setOpenBuisnessDetailsDrawer] = useState(false);
   const [openAddBannerDrawer, setOpenAddBannerDrawer] = useState(false);
   const navigate = useNavigate();
+  const splitzConfig = useSplitzService();
+  const { abExperiments } = splitzConfig;
+  const isStorefrontV1Enabled = isExperimentEnabled(abExperiments?.storefront_v1);
 
   const setIsIframeLoadedRef = (data: boolean) => {
     isIframeLoadedRef.current = data;
@@ -775,30 +778,40 @@ const StoreFront = ({
               )}
               {(!isMobile || (isMobile && isMobilePreview)) && (
                 <StorefrontRightWrapper>
-                  <Heading weight="semibold" size="small" color="surface.text.gray.subtle">
-                    Preview of your store
-                  </Heading>
                   <DescriptionWrapper>
                     <DescriptionLeftWrapper>
-                      <InfoIcon size="medium" color="interactive.icon.neutral.normal" />
-                      <Text
-                        variant="body"
-                        size="small"
-                        weight="regular"
-                        color="surface.text.gray.subtle"
-                      >
-                        Customize your store with your{' '}
-                        <Link
-                          onClick={() => openBrandColorSettingsPage('brand color')}
-                          variant="button"
+                      <Heading weight="semibold" size="small" color="surface.text.gray.normal">
+                        Preview of your store
+                      </Heading>
+                      <Box>
+                        <Text
+                          variant="body"
+                          size="small"
+                          weight="regular"
+                          color="surface.text.gray.normal"
                         >
-                          brand color
-                        </Link>{' '}
-                        and{' '}
-                        <Link onClick={() => openBrandColorSettingsPage('logo')} variant="button">
-                          logo
-                        </Link>
-                      </Text>
+                          Customise your store with your{' '}
+                          <Link
+                            size="small"
+                            onClick={() => openBrandColorSettingsPage('brand color')}
+                            variant="button"
+                            icon={ExternalLinkIcon}
+                            iconPosition="right"
+                          >
+                            brand color
+                          </Link>{' '}
+                          and{' '}
+                          <Link
+                            onClick={() => openBrandColorSettingsPage('logo')}
+                            variant="button"
+                            size="small"
+                            icon={ExternalLinkIcon}
+                            iconPosition="right"
+                          >
+                            logo
+                          </Link>
+                        </Text>
+                      </Box>
                     </DescriptionLeftWrapper>
                     <PreviewButtons
                       isDesktop={storefront.isDesktopPreview}
@@ -812,15 +825,23 @@ const StoreFront = ({
                       }}
                     />
                   </DescriptionWrapper>
+                  {isStorefrontV1Enabled && (
+                    <ChromeSearchBar
+                      isDesktopPreview={storefront.isDesktopPreview}
+                      isMobile={isMobile}
+                    />
+                  )}
                   <Iframe
                     // src="http://localhost:8888/preview_store"
                     src={`${window.PP_ECOMMERCE_URL}/stores/preview_store`}
-                    width={storefront.isDesktopPreview ? '100%' : '400'}
+                    width={storefront.isDesktopPreview || isMobile ? '100%' : '400'}
                     className={`${storefront.isDesktopPreview ? '' : 'is-mobile'}`}
                     height={deviceHeight}
                     frameBorder="0"
                     ref={iframeRef}
                     loading="lazy"
+                    isDesktopPreview={storefront.isDesktopPreview}
+                    isMobile={isMobile}
                     // scrolling="no"
                   />
                 </StorefrontRightWrapper>

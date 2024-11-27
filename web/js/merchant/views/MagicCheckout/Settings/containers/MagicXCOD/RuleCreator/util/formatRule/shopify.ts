@@ -5,11 +5,11 @@ import type {
   ConditionGroup,
   SRCondition,
   SRConditionGroup,
-} from "../../types";
+} from '../../types';
 
 export const formatter: (rule: Rule) => ShopifyRule = (rule) => {
   function parseConditionGroup(group: ConditionGroup): SRConditionGroup {
-    if (group.combinator === "and") {
+    if (group.combinator === 'and') {
       return {
         all: group.conditions.map(parseConditionOrGroup),
       };
@@ -23,7 +23,7 @@ export const formatter: (rule: Rule) => ShopifyRule = (rule) => {
   function parseConditionOrGroup(
     conditionOrGroup: Condition | ConditionGroup,
   ): SRCondition | SRConditionGroup {
-    if ("fact" in conditionOrGroup) {
+    if ('fact' in conditionOrGroup) {
       return {
         fact: conditionOrGroup.fact,
         op: conditionOrGroup.operator,

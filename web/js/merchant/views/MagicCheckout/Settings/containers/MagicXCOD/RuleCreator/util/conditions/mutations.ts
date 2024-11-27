@@ -1,8 +1,8 @@
-import { generateId } from "../id";
-import { findByPath, getParentPath } from "../path";
-import { isConditionGroup } from "./index";
+import { generateId } from '../id';
+import { findByPath, getParentPath } from '../path';
+import { isConditionGroup } from './index';
 
-import { Rule, ConditionOrGroup, Path } from "../../types";
+import { Rule, ConditionOrGroup, Path } from '../../types';
 
 const prepareConditionOrGroup = (
   cg: ConditionOrGroup,
@@ -16,7 +16,7 @@ const prepareConditionOrGroup = (
   }
 
   if (isConditionGroup(cg)) {
-    cg.combinator = "and";
+    cg.combinator = 'and';
   }
 
   return cg;
@@ -67,12 +67,7 @@ export const remove: RemoveConditionOrGroup = (rule, path) => {
   return { ...rule };
 };
 
-type UpdateConditionOrGroup = (
-  rule: Rule,
-  prop: string,
-  value: any,
-  path: Path,
-) => Rule;
+type UpdateConditionOrGroup = (rule: Rule, prop: string, value: any, path: Path) => Rule;
 export const update: UpdateConditionOrGroup = (rule, prop, value, path) => {
   const conditionOrGroup = findByPath(path, rule);
 
@@ -82,13 +77,10 @@ export const update: UpdateConditionOrGroup = (rule, prop, value, path) => {
 
   const isGroup = isConditionGroup(conditionOrGroup);
 
-  if (prop in conditionOrGroup && prop !== "id" && prop !== "path") {
-    if (isGroup && prop === "combinator") {
+  if (prop in conditionOrGroup && prop !== 'id' && prop !== 'path') {
+    if (isGroup && prop === 'combinator') {
       conditionOrGroup[prop] = value;
-    } else if (
-      !isGroup &&
-      (prop === "fact" || prop === "operator" || prop === "value")
-    ) {
+    } else if (!isGroup && (prop === 'fact' || prop === 'operator' || prop === 'value')) {
       conditionOrGroup[prop] = value;
     }
   }

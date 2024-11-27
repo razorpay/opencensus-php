@@ -1,8 +1,6 @@
 import React from 'react';
-import { Theme } from '@razorpay/blade/components';
+import { MobileAppIcon, MonitorIcon, Theme } from '@razorpay/blade/components';
 import styled from 'styled-components';
-import DesktopIcon from 'assets/payment_pages/desktop-icon.svg';
-import MobileIcon from 'assets/payment_pages/mobile-icon.svg';
 import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
 import PaymentPagesHeader from 'merchant/views/PaymentPages/PaymentPages/components/Header';
 
@@ -24,9 +22,10 @@ export const StorefrontLeftWrapper = styled.div`
     padding-bottom: ${({ theme }: StyledProps) => theme.spacing[6]}px;
   }
 `;
-export const StorefrontRightWrapper = styled.div`
+export const StorefrontRightWrapper = styled.div(
+  ({ theme }: { theme: Theme }) => `
   flex: 1;
-  padding: 50px 85px 56px 50px;
+  padding: ${theme.spacing[9]}px;
   overflow: auto;
 
   display: flex;
@@ -38,9 +37,10 @@ export const StorefrontRightWrapper = styled.div`
   }
 
   @media screen and (max-width: 1300px) {
-    padding: 50px 30px 56px 30px;
+    padding: ${theme.spacing[3]}px;
   }
-`;
+`,
+);
 
 export const PageTitleWrapper = styled.div`
   min-height: 180px;
@@ -118,45 +118,19 @@ export const AddProductBox = styled.div`
   }
 `;
 
-export const Iframe = styled.iframe<any>`
+export const Iframe = styled.iframe(
+  ({ isDesktopPreview, isMobile }: { isDesktopPreview?: boolean; isMobile?: boolean }) => `
   border: 0.6px solid rgba(121, 135, 156, 0.09);
   box-shadow: 0px 12.4019px 39.2727px rgba(21, 45, 75, 0.12),
     0px 0px 2.06699px rgba(21, 45, 75, 0.2);
-  border-radius: 8px;
+  border-radius: 0 0 8px 8px;
   min-width: 800px;
 
-  @media screen and (max-width: 1500px) {
-    transform: scale(0.9);
-    transform-origin: top;
-  }
-  @media screen and (max-width: 1400px) {
-    transform: scale(0.8);
-    transform-origin: top;
-  }
   &.is-mobile {
-    min-width: 400px;
-    transform: none;
-    transform-origin: unset;
+    min-width: ${isDesktopPreview || isMobile ? '100%' : '400px'};
   }
-  @media screen and (max-width: ${mobileView}) {
-    &.is-mobile {
-      transform: none;
-      transform-origin: unset;
-    }
-  }
-  @media screen and (max-width: 450px) {
-    &.is-mobile {
-      transform: scale(0.9);
-      transform-origin: top;
-    }
-  }
-  @media screen and (max-width: 425px) {
-    &.is-mobile {
-      transform: scale(0.85);
-      transform-origin: top;
-    }
-  }
-`;
+`,
+);
 
 export const ProductsWrapper = styled.div`
   background: #ffffff;
@@ -458,7 +432,8 @@ export const DescriptionWrapper = styled.div(
 export const DescriptionLeftWrapper = styled.div(
   ({ theme }: { theme: Theme }) => `
   display: flex;
-  align-items: center;
+  flex-direction: column;
+
   & > p {
     padding-left: ${theme.spacing[2]}px;
 
@@ -474,21 +449,27 @@ export const DescriptionLeftWrapper = styled.div(
 
 const PreviewSizeWrapper = styled.div(
   ({ theme }: { theme: Theme }) => `
-  & > img:first-child {
-    margin-right: ${theme.spacing[3]}px;
-  }
+  display: flex;
+  padding: ${theme.spacing[2]}px;
+  justify-content: center;
+  align-items: center;
+  gap: ${theme.spacing[1]}px;
+  border-radius: ${theme.border.radius.small}px;
+  border: 1px solid ${theme.colors.interactive.border.gray.faded};
+  background: ${theme.colors.surface.background.gray.intense};
+
   @media screen and (max-width: ${tabletView}) {
     display: none;
   }
 `,
 );
 
-const PreviewImage = styled.img(
+const PreviewImage = styled.div(
   ({ theme, isActive }: { theme: Theme; isActive: boolean }) => `
   background: ${
     isActive
-      ? theme.colors.interactive.background.gray.default
-      : theme.colors.interactive.background.gray.default
+      ? theme.colors.interactive.background.primary.faded
+      : theme.colors.surface.background.gray.intense
   };
   border: 1px solid transparent;
   border-radius: ${theme.border.radius.small}px;
@@ -508,18 +489,12 @@ export const PreviewButtons = ({
 }): React.ReactElement => {
   return (
     <PreviewSizeWrapper>
-      <PreviewImage
-        src={MobileIcon}
-        alt="mobile-icon"
-        isActive={!isDesktop}
-        onClick={onClick.bind(null, false)}
-      />
-      <PreviewImage
-        src={DesktopIcon}
-        alt="desktop-icon"
-        isActive={isDesktop}
-        onClick={onClick.bind(null, true)}
-      />
+      <PreviewImage isActive={!isDesktop} onClick={onClick.bind(null, false)}>
+        <MobileAppIcon color="interactive.icon.primary.subtle" size="medium" />
+      </PreviewImage>
+      <PreviewImage isActive={isDesktop} onClick={onClick.bind(null, true)}>
+        <MonitorIcon color="interactive.icon.primary.subtle" size="medium" />
+      </PreviewImage>
     </PreviewSizeWrapper>
   );
 };
