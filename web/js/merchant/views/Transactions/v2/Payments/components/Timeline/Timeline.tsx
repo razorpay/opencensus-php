@@ -45,6 +45,8 @@ import { getHumanReadableTimestamp } from './utils';
 
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
+import { useSplitzService } from 'common/splitz';
+import { isPaymentV2ParityFeatureEnabled } from 'merchant/views/Transactions/v2/common/utils';
 
 interface EntityStatusTimelineProps extends RouteComponentProps {
   data: TimelineJourneyPoint[];
@@ -79,6 +81,8 @@ const EntityStatusTimeline = ({
     breakpoints: theme.breakpoints,
   });
   const isMobile = matchedDeviceType === 'mobile';
+  const splitz = useSplitzService();
+  const isTxnV2ParityFeaturesEnabled = isPaymentV2ParityFeatureEnabled(splitz, user);
 
   const openAndShowTimeline = (item): void => {
     if (item.id === 0) {
@@ -237,7 +241,17 @@ const EntityStatusTimeline = ({
   const getSettlementJourneyMeta = (journeyPoint: TimelineJourneyPoint): JSX.Element => {
     return (
       <StyledJourneyMetadata>
-        <Box paddingBottom="spacing.2">
+        <Box paddingBottom="spacing.2" display="flex" gap="spacing.2" flexDirection="column">
+          {journeyPoint.id ? (
+            <Text size="small" color="surface.text.gray.subtle" weight="regular">
+              ID: {journeyPoint.id}
+            </Text>
+          ) : null}
+          {journeyPoint.utr ? (
+            <Text size="small" color="surface.text.gray.subtle" weight="regular">
+              UTR number: {journeyPoint.utr}
+            </Text>
+          ) : null}
           <Text size="small" color="surface.text.gray.subtle" weight="regular">
             Net amount:{' '}
             <Amount
@@ -251,6 +265,7 @@ const EntityStatusTimeline = ({
             {getHumanReadableTimestamp(journeyPoint.timestamp, true)}
           </Text>
         )}
+
         <Box paddingTop="spacing.3" marginBottom="spacing.8">
           <Link
             iconPosition="right"
@@ -329,6 +344,17 @@ const EntityStatusTimeline = ({
             Created on {getHumanReadableTimestamp(journeyPoint.timestamp)}
           </Text>
         )}
+        {isTxnV2ParityFeaturesEnabled &&
+        journeyPoint.metadata?.amount &&
+        journeyPoint.metadata?.currency ? (
+          <Text size="small" color="surface.text.gray.subtle" weight="regular">
+            Dispute Amount :&nbsp;
+            <Amount
+              value={journeyPoint.metadata.amount}
+              currency={journeyPoint.metadata.currency}
+            />
+          </Text>
+        ) : null}
         <Box paddingTop="spacing.3" marginBottom="spacing.8">
           <Link
             iconPosition="right"

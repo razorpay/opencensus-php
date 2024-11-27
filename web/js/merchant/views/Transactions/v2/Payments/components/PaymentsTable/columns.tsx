@@ -11,6 +11,7 @@ import {
 
 import Amount from 'common/ui/Amount';
 import MaskedContact from 'merchant/components/Mask/Contact';
+import MaskedEmail from 'merchant/components/Mask/Email';
 import { createCustomColumnView } from 'merchant/views/Transactions/utils';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/v2/Payments/components/PaymentOptimizerProvider';
 import { FailureCategoryMapping } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/utils';
@@ -29,6 +30,8 @@ import { getCreatedOnTime } from 'merchant/views/Transactions/v2/common/utils';
 
 import { getPaymentStatusVariantMap } from './constants';
 import { getPaymentMethod, getSourceChannelType } from './utils';
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import { getUser } from 'merchant/store';
 
 const { FAILED_PAYMENTS, PAYMENTS } = TransactionsEntityRoute;
 
@@ -112,11 +115,68 @@ export const customerDetail = {
       Customer detail
     </Text>
   ),
-  value: ({ contact }: Item): JSX.Element => (
-    <Box pointerEvents="none">
-      <Text>{contact ? <MaskedContact contact={contact} /> : '--'}</Text>
-    </Box>
-  ),
+  value: ({ contact, email }: Item): JSX.Element => {
+    const user = getUser();
+    const shouldShowCopyIcon = !user?.isHidePIDetails;
+    return (
+      <Box display="flex" gap="spacing.2" alignItems="center">
+        <Box display="flex" flexDirection="column" gap="spacing.1">
+          <Text>{contact ? <MaskedContact contact={contact} /> : '--'}</Text>
+          <Text size="small" color="surface.text.gray.muted">
+            {email ? <MaskedEmail email={email} /> : '--'}
+          </Text>
+        </Box>
+        <Box as="span" display="flex">
+          <CustomClipboard value="" hideTooltip>
+            <CopyIcon size="medium" color="interactive.icon.gray.normal" />
+          </CustomClipboard>
+          <PopoverComponent align="right" theme="light">
+            <PopoverBody>
+              <Box display="flex" marginBottom="spacing.3">
+                <Text size="large" weight="semibold">
+                  Copy Customer Detail
+                </Text>
+              </Box>
+              <Box display="flex" marginBottom="spacing.1" gap="spacing.2">
+                <Text color="surface.text.gray.muted">Email :</Text>
+                {email ? (
+                  <>
+                    <Text color="surface.text.gray.subtle">
+                      <MaskedEmail email={email} />
+                    </Text>
+                    {shouldShowCopyIcon ? (
+                      <CustomClipboard value={email}>
+                        <CopyIcon />
+                      </CustomClipboard>
+                    ) : null}
+                  </>
+                ) : (
+                  <Text color="surface.text.gray.subtle">--</Text>
+                )}
+              </Box>
+              <Box display="flex" gap="spacing.2">
+                <Text color="surface.text.gray.muted">Contact :</Text>
+                {contact ? (
+                  <>
+                    <Text color="surface.text.gray.subtle">
+                      <MaskedContact contact={contact} />
+                    </Text>
+                    {shouldShowCopyIcon ? (
+                      <CustomClipboard value={contact}>
+                        <CopyIcon />
+                      </CustomClipboard>
+                    ) : null}
+                  </>
+                ) : (
+                  <Text color="surface.text.gray.subtle">--</Text>
+                )}
+              </Box>
+            </PopoverBody>
+          </PopoverComponent>
+        </Box>
+      </Box>
+    );
+  },
 };
 
 export const createdOn = {

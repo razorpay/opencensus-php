@@ -165,6 +165,7 @@ type UserProperties = {
   playstore_url: string;
   has_key_access: boolean;
   permissions?: Array<string>;
+  isLRSEducationFlow: boolean;
 };
 
 // as user properties are not available initially

@@ -51,6 +51,7 @@ import { DownloadIcon } from '@razorpay/blade/components';
 import { openModal } from 'merchant_common/reducers/modals';
 import BounceMemoPopup from '../BounceMemoPopup';
 import { PaymentFeeBreakdown } from './PaymentFee';
+import { getPaymentReferenceNumber } from 'merchant/views/Transactions/v1/utils';
 const INIT_POINT = 'payment-details';
 
 function PaymentDetails(props) {
@@ -105,17 +106,6 @@ function PaymentDetails(props) {
   const page = initiatePage?.split('.')[1];
 
   const showPlatformFee = isPlatformTransaction(transfers);
-
-  const getPaymentReferenceNumber = (method, acquirer_data) => {
-    switch (method) {
-      case 'netbanking':
-        return acquirer_data?.bank_transaction_id;
-      case 'wallet':
-        return acquirer_data?.transaction_id;
-      default:
-        return acquirer_data?.rrn;
-    }
-  };
 
   const paymentByCardOffline = payment.method === 'card' && payment.receiver_type === 'pos';
   const { refetch: refetchEzetapAppKey, data: ezetapData } = useQuery({

@@ -32,6 +32,7 @@ import {
   BoxContainer,
   CardWrapper,
   CopyWrapper,
+  NotesKey,
   RowsWrapper,
   RowWrapper,
   SectionFooter,
@@ -260,12 +261,15 @@ function PaymentRefundContent({
   const bankCode = refund.acquirer_data?.rrn || refund.acquirer_data?.arn;
 
   const splitz = useSplitzService();
+  const isTxnV2ParityFeaturesEnabled = isPaymentV2ParityFeatureEnabled(splitz, user);
+
   const { theme } = useTheme();
   const { matchedBreakpoint } = useBreakpoint({
     breakpoints: theme.breakpoints,
   });
   const isDesktop = matchedBreakpoint === 'xl';
   const createdAt = useTime(refund.created_at).join(', ');
+  const processedAt = useTime(refund.processed_at).join(', ');
 
   const getRefundSpeed = () => refund.speed[0].toUpperCase() + refund.speed.slice(1);
 
@@ -359,6 +363,30 @@ function PaymentRefundContent({
                   <Amount value={refund.amount} currency={currency} />
                 </StyledAmountWrapper>
               </RowWrapper>
+              {isTxnV2ParityFeaturesEnabled ? (
+                <>
+                  <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                  <RowWrapper>
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="regular"
+                      color="surface.text.gray.subtle"
+                    >
+                      Currency
+                    </Text>
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="regular"
+                      color="surface.text.gray.normal"
+                    >
+                      {refund.currency ?? '--'}
+                    </Text>
+                  </RowWrapper>
+                </>
+              ) : null}
+
               <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
                 <Text
@@ -397,6 +425,29 @@ function PaymentRefundContent({
                   {createdAt}
                 </Text>
               </RowWrapper>
+              {isTxnV2ParityFeaturesEnabled && refund.processed_at ? (
+                <>
+                  <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                  <RowWrapper>
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="regular"
+                      color="surface.text.gray.subtle"
+                    >
+                      Processed At
+                    </Text>
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="regular"
+                      color="surface.text.gray.normal"
+                    >
+                      {processedAt}
+                    </Text>
+                  </RowWrapper>
+                </>
+              ) : null}
               {isLateAuthAttributeEnabled ? (
                 <>
                   <Divider dividerStyle="solid" thickness="thick" variant="muted" />
@@ -461,6 +512,31 @@ function PaymentRefundContent({
                   </RowWrapper>
                 </>
               ) : null}
+              {/* {isTxnFeeBreakupEnabled && refund.fees && refund.tax ? (
+                <>
+                  <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                  <RowWrapper>
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="regular"
+                      color="surface.text.gray.subtle"
+                    >
+                      Total Fee
+                    </Text>
+                    <Definition>
+                      <Amount value={refund.fees} />
+                      <span>
+                        Instant refund fee -{' '}
+                        <Amount value={refund.fees - refund.tax} currency={refund.currency} />
+                      </span>
+                      <span>
+                        GST - <Amount value={refund.tax} currency={refund.currency} />
+                      </span>
+                    </Definition>
+                  </RowWrapper>
+                </>
+              ) : null} */}
               <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
                 <Text
@@ -475,6 +551,38 @@ function PaymentRefundContent({
                   <RefundMiniTimeline refund={refund} />
                 </StyledRefundTimelineContainer>
               </RowWrapper>
+              {isTxnV2ParityFeaturesEnabled ? (
+                <>
+                  <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                  <RowWrapper>
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="regular"
+                      color="surface.text.gray.subtle"
+                    >
+                      Notes
+                    </Text>
+                    {Object.keys(refund.notes || {}).length > 0 ? (
+                      <Box display="flex" flexDirection="column" gap="spacing.1">
+                        {Object.keys(refund.notes).map((key) => (
+                          <Text
+                            variant="body"
+                            size="medium"
+                            weight="regular"
+                            key={`${key}`}
+                            color="surface.text.gray.normal"
+                          >
+                            <NotesKey>{key} :</NotesKey> {String(refund.notes?.[key] || '--')}
+                          </Text>
+                        ))}
+                      </Box>
+                    ) : (
+                      '--'
+                    )}
+                  </RowWrapper>
+                </>
+              ) : null}
             </RowsWrapper>
           </CardBody>
         </Card>

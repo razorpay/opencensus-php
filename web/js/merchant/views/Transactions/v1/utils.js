@@ -78,3 +78,14 @@ export const addIdLinkAndSelfServeInitiate = (
     </Link>
   );
 };
+
+export const getPaymentReferenceNumber = (method, acquirer_data) => {
+  switch (method) {
+    case 'netbanking':
+      return acquirer_data?.bank_transaction_id;
+    case 'wallet':
+      return acquirer_data?.transaction_id;
+    default:
+      return acquirer_data?.rrn;
+  }
+};

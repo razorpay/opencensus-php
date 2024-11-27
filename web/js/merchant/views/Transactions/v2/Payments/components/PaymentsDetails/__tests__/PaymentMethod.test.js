@@ -13,7 +13,7 @@ import {
   walletAppProps,
   miscAppProps,
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/fixtures/PaymentMethod';
-import { render, screen } from 'test-utils';
+import { render, screen, waitFor } from 'test-utils';
 
 describe('Payment Method component', () => {
   const App = ({ props }) => {
@@ -24,7 +24,7 @@ describe('Payment Method component', () => {
     test('should show Domestic Card payment method', () => {
       render(<App props={cardAppProps} />);
       const cardType = cardAppProps.card.type;
-      expect(screen.getByText(`Domestic ${titleCase(cardType)} card`)).toBeInTheDocument();
+      expect(screen.getByText(`Consumer Domestic ${titleCase(cardType)} card`)).toBeInTheDocument();
     });
 
     test('should show International Card payment method', () => {
@@ -32,14 +32,19 @@ describe('Payment Method component', () => {
         <App props={{ ...cardAppProps, card: { ...cardAppProps.card, international: true } }} />,
       );
       const cardType = cardAppProps.card.type;
-      expect(screen.getByText(`International ${titleCase(cardType)} card`)).toBeInTheDocument();
+      expect(
+        screen.getByText(`Consumer International ${titleCase(cardType)} card`),
+      ).toBeInTheDocument();
     });
   });
 
   describe(`UPI method`, () => {
-    test('should show UPI payment method', () => {
+    test('should show UPI payment method', async () => {
       render(<App props={upiAppProps} />);
-      expect(screen.getByText(`UPI`)).toBeInTheDocument();
+
+      await waitFor(() => {
+        expect(screen.getByText(`UPI`)).toBeInTheDocument();
+      });
     });
 
     test('should show Turbo UPI payment method', () => {

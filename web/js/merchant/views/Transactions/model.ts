@@ -75,6 +75,10 @@ export const fetchBankTransfer = (id): Promise<any> => {
   return merchantFetch(`payments/${id}/bank_transfer`);
 };
 
+export const fetchUPITransfer = (id: string): Promise<any> => {
+  return merchantFetch(`payments/${id}/upi_transfer`);
+};
+
 export const fetchPaymentIdTimelineData = (id): Promise<any> => {
   return merchantFetch(`merchant/payment/${id}/timeline`);
 };

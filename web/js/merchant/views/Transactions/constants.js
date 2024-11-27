@@ -26,3 +26,8 @@ export const ERROR_MESSAGES = {
 };
 
 export const POS_TRANSACTION_CHANNEL = 'in_person';
+
+export const CARD_SUB_TYPE_MAP = {
+  consumer: 'Consumer',
+  business: 'Business',
+};

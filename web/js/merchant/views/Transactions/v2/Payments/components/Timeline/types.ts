@@ -7,6 +7,7 @@ export interface TimelineJourneyPoint {
   title: string;
   timestamp: number | null;
   metadata: Record<string, any>;
+  utr?: string;
 }
 
 export interface SkipTransactions {

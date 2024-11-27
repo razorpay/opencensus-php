@@ -38,6 +38,7 @@ import {
 import { isOmniChannelMerchant as _isOmniChannelMerchant } from 'merchant/utils/omniUtils';
 import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification as showNotificationAction } from 'merchant_common/reducers/notifications';
+import PaymentDownloadSwiftCopy from 'merchant/views/Transactions/v1/Payments/components/PaymentDownloadSwiftCopy/DownloadSwiftCopy';
 
 import getNotes from './Notes';
 import PaymentMethod from './PaymentMethod';
@@ -62,6 +63,9 @@ import { PaymentFeeBreakdown } from 'merchant/views/Transactions/v1/Payments/com
 import { fetchTransfers, fetchBankTransfer } from 'merchant/reducers/payments/details';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import PaymentOptimizerDetails from './PaymentOptimizerDetails';
+import { getPaymentReferenceNumber } from 'merchant/views/Transactions/v1/utils';
+import { isOrgFeatureExist } from 'merchant/models/User';
+import PaymentProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentProvider';
 
 const PaymentReceipt = lazy(
   () =>
@@ -321,7 +325,15 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow
                   label="Order ID"
-                  value={order_id || '--'}
+                  value={
+                    order_id ? (
+                      <Link onClick={() => history.push(`/orders/${order_id}`)} variant="button">
+                        {order_id}
+                      </Link>
+                    ) : (
+                      '--'
+                    )
+                  }
                   tooltipType="orderId"
                   copyable
                   onCopyAction={onCopy('Order ID', { transactionIDActual, orderId: order_id }).bind(
@@ -332,7 +344,18 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow
                   label="Invoice ID"
-                  value={invoice_id || '--'}
+                  value={
+                    invoice_id ? (
+                      <Link
+                        onClick={() => history.push(`/invoices/${invoice_id}`)}
+                        variant="button"
+                      >
+                        {invoice_id}
+                      </Link>
+                    ) : (
+                      '--'
+                    )
+                  }
                   copyable
                   onCopyAction={copyToClipboard.bind(null, invoice_id)}
                 />
@@ -347,6 +370,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                       bank={bank}
                       vpa={vpa}
                       wallet={wallet}
+                      upi={upi}
                     />
                   }
                 />
@@ -436,6 +460,37 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     />
                   </>
                 ) : null}
+                {/* {isTxnFeeBreakupEnabled &&
+                isInteger(`${paymentDetails.customer_fee}`) &&
+                isInteger(`${paymentDetails.customer_fee_gst}`) ? (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow
+                      label="Total Convenience Fee"
+                      value={
+                        <Definition>
+                          <Amount
+                            value={paymentDetails.customer_fee + paymentDetails.customer_fee_gst}
+                          />
+                          <span>
+                            Convenience Fee -{' '}
+                            <Amount
+                              value={paymentDetails.customer_fee}
+                              currency={paymentDetails.currency}
+                            />
+                          </span>
+                          <span>
+                            GST -{' '}
+                            <Amount
+                              value={paymentDetails.customer_fee_gst}
+                              currency={paymentDetails.currency}
+                            />
+                          </span>
+                        </Definition>
+                      }
+                    />
+                  </>
+                ) : null} */}
                 {user?.isPayerNameEnabled && (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />
@@ -451,11 +506,19 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                       : 'The customer has paid the fees for this payment'
                   }
                 />
+                {isTxnV2ParityFeaturesEnabled && isOrgFeatureExist('vas_merchant') ? (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow
+                      label="Payment Reference Number"
+                      value={getPaymentReferenceNumber(method, acquirer_data)}
+                    />
+                  </>
+                ) : null}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow label="App Name" value={applicationDetails?.name || '--'} />
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow label="App ID" value={applicationDetails?.id || '--'} />
-
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow label="Description" value={description || '--'} />
                 {isOmniChannelMerchant && (
@@ -543,6 +606,21 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow label="Notes" value={getNotes({ notes, isStorefront })} />
 
+                {paymentDetails.provider && isTxnV2ParityFeaturesEnabled && (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow
+                      label="Provider"
+                      value={
+                        <PaymentProvider
+                          payment={paymentDetails}
+                          isTransactionV2DetailsView={true}
+                        />
+                      }
+                    />
+                  </>
+                )}
+
                 {hash && isPaymentSplitSectionAllowed(hash.substring(1)) ? (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />
@@ -552,20 +630,26 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                         size="medium"
                         weight="regular"
                         color="surface.text.gray.subtle"
+                        marginBottom="spacing.2"
                       >
                         Payment Split
                       </Text>
-                    </RowWrapper>
-                    <RowWrapper>
                       <PaymentSplitItems order_id={paymentDetails.order_id} />
                     </RowWrapper>
                   </>
                 ) : null}
-
                 {(user.isOrgCurlec || !isConfigTagEnabled('payment_transfer.transfers')) && (
                   <PaymentTransfers paymentDetails={paymentDetails} />
                 )}
-
+                {isTxnV2ParityFeaturesEnabled && user.isLRSEducationFlow ? (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow
+                      label="Documents"
+                      value={<PaymentDownloadSwiftCopy paymentId={paymentDetails.id} />}
+                    />
+                  </>
+                ) : null}
                 {isLateAuthAttributeEnabled ? (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />

@@ -1,15 +1,15 @@
 import React from 'react';
-import { Box, Text } from '@razorpay/blade/components';
+import { Box, Text, Amount } from '@razorpay/blade/components';
 
 import BankTransferDetails from './BankTransferDetails';
 
 import CardIcon from 'assets/transactions/card.svg';
-import UpiIcon from 'assets/transactions/upi.svg';
 import TurboUpiIcon from 'assets/transactions/turbo-upi.svg';
+import UpiIcon from 'assets/transactions/upi.svg';
 import EmiIcon from 'assets/transactions/emi.svg';
 import NetbankingIcon from 'assets/transactions/netbanking.svg';
 import WalletIcon from 'assets/transactions/wallet.svg';
-import { titleCase } from 'common/utils/rzp-utils';
+import { getEMI, titleCase } from 'common/utils/rzp-utils';
 
 import { IPaymentDetails } from './types';
 import { useSplitzService } from 'common/splitz';
@@ -17,6 +17,8 @@ import { isPaymentV2ParityFeatureEnabled } from 'merchant/views/Transactions/v2/
 import { cardNetworkLogoMap } from './constants';
 import { StyledPaymentMethodLogo } from './styled';
 import { useStore } from 'shell/commonStore';
+import UPITransferDetails from './UPITransferDetails';
+import { CARD_SUB_TYPE_MAP } from 'merchant/views/Transactions/constants';
 
 interface IPaymentMethod {
   payment: any;
@@ -25,9 +27,18 @@ interface IPaymentMethod {
   bank: IPaymentDetails['bank'];
   vpa: IPaymentDetails['vpa'];
   wallet: IPaymentDetails['wallet'];
+  upi: IPaymentDetails['upi'];
 }
 
-function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMethod): JSX.Element {
+function PaymentMethod({
+  payment,
+  method,
+  card,
+  bank,
+  vpa,
+  wallet,
+  upi,
+}: IPaymentMethod): JSX.Element {
   const splitz = useSplitzService();
   const user = useStore((state) => state.session.user);
 
@@ -41,6 +52,7 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
         : {};
       return (
         <>
+          {card?.sub_type ? CARD_SUB_TYPE_MAP[card.sub_type] : null}{' '}
           {card?.international ? 'International' : 'Domestic'} {titleCase(card?.type)} card{' '}
           <span style={{ marginLeft: '8px' }}>
             (<img src={CardIcon} alt="card-icon" style={{ marginLeft: '4px' }} />
@@ -51,17 +63,37 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
             <Text>{card?.network ? `${card.network} ` : ''}</Text>
             {name ? <StyledPaymentMethodLogo src={`/img/${name}`} widthToken={widthToken} /> : null}
           </Box>
+          <Text>Name on card: {card?.name || '--'}</Text>
+          {card?.id ? <Text>Card ID: {card.id}</Text> : null}
         </>
       );
     }
 
     if (method === 'emi') {
-      const emiPlan = payment.emi_plan;
+      const emiPlan = payment.emi_plan || {};
+      const { duration, rate } = emiPlan;
+      const emiAmount = duration && rate ? getEMI(payment.amount, duration, rate / 100) : 0;
       return (
         <>
-          EMI ({`  `}
-          <img src={EmiIcon} alt="emi-icon" /> {` `}
-          xx{card?.last4}, {emiPlan.duration} months | {emiPlan.rate / 100}% interest)
+          <Text>
+            EMI on {card?.sub_type ? CARD_SUB_TYPE_MAP[card.sub_type] : null}{' '}
+            {card?.international ? 'International' : 'Domestic'} {titleCase(card?.type)} card{' '}
+          </Text>
+          <Text>
+            ({`  `}
+            <img src={EmiIcon} alt="emi-icon" /> {` `}xx{card?.last4}, {emiPlan.duration} months |{' '}
+            {emiPlan.rate / 100}% interest)
+            {emiAmount && isTxnV2ParityFeaturesEnabled && (
+              <Amount
+                size="medium"
+                value={emiAmount / 100}
+                currency={payment.currency || 'INR'}
+                isAffixSubtle={false}
+              />
+            )}
+          </Text>
+          <Text>Name on card: {card?.name || '--'}</Text>
+          {card?.id ? <Text>Card ID: {card.id}</Text> : null}
         </>
       );
     }
@@ -88,7 +120,9 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
           </>
         );
       } else {
-        return (
+        return isTxnV2ParityFeaturesEnabled ? (
+          <UPITransferDetails paymentID={payment.id} vpa={vpa} upi={upi} />
+        ) : (
           <>
             UPI
             <span style={{ marginLeft: '8px' }}>

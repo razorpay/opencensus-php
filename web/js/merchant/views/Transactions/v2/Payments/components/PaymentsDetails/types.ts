@@ -155,6 +155,8 @@ export interface IPaymentDetails {
     auth_code?: string;
     arn?: string;
     rrn?: string;
+    amount?: number;
+    discount?: number;
   };
   emi_plan: null;
   disputes: {
@@ -168,6 +170,7 @@ export interface IPaymentDetails {
   instant_refund_support: boolean;
   gateway_refund_support: boolean;
   direct_settlement_refund: boolean;
+  provider: string;
   authentication: {
     version: string;
     authentication_channel: string;
@@ -183,10 +186,13 @@ export interface IPaymentDetails {
   upi?: {
     vpa: string;
     payer_name: string;
+    payer_account_type: string;
   };
   late_authorized: boolean;
   auto_captured: boolean;
   gateway_provider?: string;
+  customer_fee: number;
+  customer_fee_gst: number;
 }
 
 export interface IPaymentIdRefundDetail {
@@ -217,6 +223,8 @@ export interface IPaymentIdRefundDetail {
     refund_message: string;
   } | null;
   optimizer_provider: string;
+  fees: number;
+  tax: number;
 }
 export type IPaymentIdRefundDetails = Array<IPaymentIdRefundDetail>;
 
@@ -322,6 +330,20 @@ export interface IBankTransferDetails {
     ifsc: string;
     account_number: string;
   };
+}
+
+export interface IUPITransferDetails {
+  virtual_account: {
+    description: string;
+  };
+  virtual_account_id: string;
+}
+
+export interface IUPITransferDetailsProps {
+  paymentID: string;
+  showNotification: ShowNotificationType;
+  upi: IPaymentDetails['upi'];
+  vpa: null | string;
 }
 
 export interface IBankTransferDetailsProps {

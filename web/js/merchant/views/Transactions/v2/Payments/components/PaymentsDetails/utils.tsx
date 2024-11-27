@@ -151,6 +151,7 @@ export const getSettlementTimelineData = (payment: IPaymentDetails): TimelineJou
       status: data.status,
       title: 'Settlement',
       timestamp: data.timestamp,
+      utr: `${settlement.utr ?? ''}`,
       metadata: {
         statusInfo: titleCase(data.status),
         amount: settlement.amount,
@@ -176,6 +177,8 @@ export const getDisputesTimelineData = (payment): TimelineJourneyPoint[] => {
         metadata: {
           statusInfo: titleCase(dispute.status),
           disputeId: dispute.id,
+          amount: dispute.amount,
+          currency: dispute.currency,
         },
       });
     });
