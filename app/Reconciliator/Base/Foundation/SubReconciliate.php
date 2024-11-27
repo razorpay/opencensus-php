@@ -498,6 +498,43 @@ class SubReconciliate extends Base\Core
         $this->pushReconNFCDataToKafka($kafkaPayload, $payment->getId());
     }
 
+    public function sendRefundReconNFCDataToCLS($refundId, $data = [])
+    {
+        $payload = [
+            "event" => [
+                "name"=> "prod_live_art_events",
+                "data" => [
+                    "dual_write_request"=> [
+                        "reconciled_at"  => $data[BaseReconciliate::RECONCILED_AT] ?? '',
+                        "reconciled_type" => $data[BaseReconciliate::RECONCILED_TYPE] ?? '',
+                        "entity_id"=> $refundId,
+                        "entity_type"=> "refund"
+                    ]
+                ],
+                "metadata"=> [
+                    "version" => "v2"
+                ]
+            ]
+        ];
+
+        $payloadString = json_encode($payload);
+
+        $encodedPayload = base64_encode($payloadString);
+
+        $kafkaPayload = [
+            "after"=> [
+                "payload"=> $encodedPayload,
+            ],
+            "op"=> "dummy"
+        ];
+
+        $this->trace->info(TraceCode::NFC_RECON_REFUND_DATA, [
+            "message"      => $kafkaPayload
+        ]);
+
+        $this->pushReconNFCDataToKafka($kafkaPayload, $refundId);
+    }
+
     private function pushReconNFCDataToKafka($payload, $paymentId)
     {
         if (($this->app->runningUnitTests() === true))

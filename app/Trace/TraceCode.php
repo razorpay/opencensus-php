@@ -9675,6 +9675,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const KAFKA_TRANSFER_API_TXN_PUSH_FAILURE                       = "KAFKA_TRANSFER_API_TXN_PUSH_FAILURE";
     const KAFKA_ADJUSTMENT_API_TXN_PUSH_SUCCESS                     = "KAFKA_ADJUSTMENT_API_TXN_PUSH_SUCCESS";
     const NFC_RECON_DATA                                            = "NFC_RECON_DATA";
+    const NFC_RECON_REFUND_DATA                                            = "NFC_RECON_REFUND_DATA";
     const NFC_RECON_DATA_PUSH_SUCCESS                               = "NFC_RECON_DATA_PUSH_SUCCESS";
     const NFC_RECON_DATA_PUSH_FAILURE                               = "NFC_RECON_DATA_PUSH_FAILURE";
     const NFC_RECON_DATA_KAFKA_DELETE                               = "NFC_RECON_DATA_KAFKA_DELETE";
