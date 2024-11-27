@@ -6,6 +6,9 @@ export const initialState = {
         currency: 'INR',
       },
     },
+    org: {
+      features: ['hide_settlement_time'],
+    },
   },
 };
 

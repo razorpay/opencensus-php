@@ -91,6 +91,7 @@ import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import { OnDemandModalEntry } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandModalEntry';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
+import { getSettlementTimeFormat } from 'merchant/views/Settlements/components/utils';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
@@ -894,7 +895,7 @@ class AnalyticsDesktop extends Component {
                           <Time
                             className="pr-5"
                             value={settlement_amount.data.next_settlement_time}
-                            format="DD MMM YYYY, hh:mm a"
+                            format={getSettlementTimeFormat('DD MMM YYYY, hh:mm a')}
                           />
                           {settlement_amount.data.reason_for_delay && (
                             <span>

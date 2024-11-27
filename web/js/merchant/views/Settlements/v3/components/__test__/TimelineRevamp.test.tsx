@@ -1,10 +1,11 @@
 import React from 'react';
+import moment from 'moment';
 import { render, screen, userEvent, waitFor } from 'test-utils';
+
 import store from 'merchant/store';
 import Timeline from 'merchant/views/Settlements/v3/components/Timeline/TimelineRevamp';
-import moment from 'moment';
-import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { FailedSettlementInfo } from 'merchant/views/Settlements/v3/utils/settlementInfo';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 
 jest.mock('merchant/views/TicketSupport/utils', () => ({
   CreateTicketEmitter: {

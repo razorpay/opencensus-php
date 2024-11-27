@@ -51,6 +51,13 @@ describe('Timeline component', () => {
       expect(screen.getByText('Settlement')).toBeInTheDocument();
       expect(screen.getByText('Net amount:')).toBeInTheDocument();
     });
+
+    test('should show only settlement date if org feature flag hide_settlement_time is enabled', () => {
+      render(<App props={happyFlowProps} />, { initialState });
+
+      expect(screen.getByText('Settlement')).toBeInTheDocument();
+      expect(screen.getByText(/Mon, Aug 14, 2023/)).toBeInTheDocument();
+    });
   });
 
   describe(`Payment capture flow failed(Bank Transfer)`, () => {

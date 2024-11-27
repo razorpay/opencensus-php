@@ -1,13 +1,13 @@
 import { Theme } from '@razorpay/blade/components';
 import moment from 'moment';
 
+import { getSettlementTimeFormat } from 'merchant/views/Settlements/components/utils';
+import { SettlementStatusIcons } from 'merchant/views/Settlements/v3/typings';
 import {
   PaymentStatus,
   RefundStatus,
   DisputeStatus,
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/types';
-import { SettlementStatusIcons } from 'merchant/views/Settlements/v3/typings';
-import { getSettlementTimeFormat } from 'merchant/views/Settlements/components/utils';
 
 export const getHumanReadableTimestamp = (epochTime: number, isViewSettlements = false): string => {
   const readableTimeStamp = moment
