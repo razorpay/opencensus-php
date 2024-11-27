@@ -118,16 +118,8 @@ class Activate extends Base\Core
         if ($triggerWorkflow === true)
         {
             // Triggering workflow for the activation_status change in merchantDetail entity
-            try {
-                $this->app['workflow']->handle();
-            }
-            catch (Exception\EarlyWorkflowResponse $e)
-            {
-                // Catching exception because we do not want to abort the code flow
-                $workflowActionData = json_decode($e->getMessage(), true);
-                $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
-
-            }
+            $this->app['workflow']
+                ->handle();
         }
 
         $this->enableOneClickCheckoutIfApplicable($merchant);
@@ -438,16 +430,8 @@ class Activate extends Base\Core
         if ($triggerWorkflow)
         {
             // Triggering workflow for the activation_status change in merchantDetail entity
-            try {
-                $this->app['workflow']->handle();
-            }
-            catch (Exception\EarlyWorkflowResponse $e)
-            {
-                // Catching exception because we do not want to abort the code flow
-                $workflowActionData = json_decode($e->getMessage(), true);
-                $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
-
-            }
+            $this->app['workflow']
+                ->handle();
         }
 
         if ($this->shouldCreateBankAccount($merchantDetail) === true)
