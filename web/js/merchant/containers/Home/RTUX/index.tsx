@@ -1,15 +1,17 @@
 import React, { Fragment, useEffect } from 'react';
 import { Box } from '@razorpay/blade/components';
 
+import { FullPageLoader, FullPageLoaderCenterToMainContent } from 'common/components/Loader';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { isMobileDevice } from 'merchant/components/Home/data';
 import { useUCSDataQuery } from 'merchant/containers/Home/RTUX/hooks/useUCSDataQuery';
 import { useUCSLayoutQuery } from 'merchant/containers/Home/RTUX/hooks/useUCSLayoutQuery';
 import { ErrorState } from 'merchant/widgets/common/ErrorState';
 import { getUcsAliasFromQueryKey, getBaseWidget, track } from 'merchant/widgets/utils';
+
 import { ResponsiveWrapper } from './styles';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { FullPageLoader, FullPageLoaderCenterToMainContent } from 'common/components/Loader';
-import { isMobileDevice } from 'merchant/components/Home/data';
+import DiwaliReportBanner from '../DiwaliReportBanner';
 
 const RTUX_HOMEPAGE_LAYOUT_KEY = ['rtux-homepage', 'layout'];
 const RTUX_HOMEPAGE_DATA_KEY = ['rtux-homepage', 'data'];
@@ -87,6 +89,7 @@ const RTUXHomepage = (): JSX.Element => {
   return (
     <ResponsiveWrapper>
       <Box display="flex" flexDirection="column" paddingY="spacing.5" gap="spacing.6">
+        <DiwaliReportBanner isRtux={true} />
         {dataSource.components.map((widgetData) => (
           <Fragment key={widgetData.type}>
             {getBaseWidget({

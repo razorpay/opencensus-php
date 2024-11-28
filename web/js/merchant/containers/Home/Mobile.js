@@ -49,7 +49,7 @@ import OnboardingCard from 'merchant/views/onboarding/mobile/Screens/Home';
 import { openModal } from 'merchant_common/reducers/modals';
 
 import DateRangeTooltip from './DateRangeTooltip';
-import SettlementSkipBanner from './SettlementSkipBanner';
+import DiwaliReportBanner from './DiwaliReportBanner';
 import {
   trackPresetChange,
   trackSettlementsClick,
@@ -288,7 +288,6 @@ class AnalyticsMobile extends Component {
             Google Chrome, Edge, Safari, Firefox.
           </AnnouncementBanner>
         )}
-        <SettlementSkipBanner user={user} />
         <DashboardBanner />
         <div
           ref={(node) => onExtraContentMount(node)}
@@ -296,6 +295,7 @@ class AnalyticsMobile extends Component {
             !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
+          <DiwaliReportBanner isMobileView={true} />
           <ShowWhen
             additionalCondition={() =>
               !isConfigTagEnabled('product_recommendations_kyc.product_recommendation_kyc')

@@ -35,7 +35,6 @@ import {
 } from 'merchant/components/Activation/ActivationUtils';
 import NCModal from 'merchant/components/Activation/NCModal';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
 import CatalystCampaignBannerPhase2 from 'merchant/components/Announcements/CatalystCampaignBannerPhase2';
 import CongratulatoryBanner from 'merchant/components/Announcements/CongratulatoryBanner';
 import CovidCampaignAnnouncement from 'merchant/components/Announcements/CovidCampaign';
@@ -97,7 +96,7 @@ import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 
 import DateRangeTooltip from './DateRangeTooltip';
-import SettlementSkipBanner from './SettlementSkipBanner';
+import DiwaliReportBanner from './DiwaliReportBanner';
 import {
   EVENT_CATEGORY_DASHBOARD_HOME,
   selfServeSettleTracking,
@@ -553,7 +552,6 @@ class AnalyticsDesktop extends Component {
 
     return (
       <div className="home-analytics-desktop">
-        <SettlementSkipBanner user={user} />
         <PricingSubscriptionWrapper />
         {user.activation_form_milestone === 'L1' &&
         user.isOrgCurlec &&
@@ -575,6 +573,7 @@ class AnalyticsDesktop extends Component {
               !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
             }`}
           >
+            <DiwaliReportBanner />
             {ticketsRaisedByAgents.length && user.isMobileSignupCareActive ? (
               <SupportRequest tickets={ticketsRaisedByAgents} />
             ) : null}

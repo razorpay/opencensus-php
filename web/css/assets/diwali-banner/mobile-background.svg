@@ -1,0 +1,52 @@
+<svg width="100%" height="100%" viewBox="0 0 360 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+	<g clip-path="url(#clip0_2288_15837)">
+		<path
+			d="M0 4C0 1.79086 1.79086 0 4 0H356C358.209 0 360 1.79086 360 4V76C360 78.2091 358.209 80 356 80H4.00001C1.79087 80 0 78.2091 0 76V4Z"
+			fill="#2243B6" />
+		<path d="M-75.3291 0C-75.3291 0 -43.2458 21.9348 -6.42514 21.9348C30.3955 21.9348 62.4788 0 62.4788 0"
+			stroke="#4FAADD" />
+		<ellipse cx="21.2554" cy="19.1834" rx="0.715266" ry="1.90738" transform="rotate(12.5744 21.2554 19.1834)"
+			fill="#FFFCB4" />
+		<ellipse cx="45.5738" cy="9.64674" rx="0.715266" ry="1.90738" transform="rotate(12.5744 45.5738 9.64674)"
+			fill="#FFFCB4" />
+		<ellipse cx="5.14676" cy="22.4205" rx="0.715266" ry="1.90738" transform="rotate(0.794425 5.14676 22.4205)"
+			fill="#85FF7B" />
+		<ellipse cx="30.4198" cy="16.6994" rx="0.715266" ry="1.90738" transform="rotate(-29.2695 30.4198 16.6994)"
+			fill="#85FF7B" />
+		<ellipse cx="53.6454" cy="6.30439" rx="0.715266" ry="1.90738" transform="rotate(-29.2695 53.6454 6.30439)"
+			fill="#85FF7B" />
+		<ellipse cx="13.6015" cy="21.0839" rx="0.715266" ry="1.90738" transform="rotate(-29.7441 13.6015 21.0839)"
+			fill="#EE88FF" />
+		<ellipse cx="37.8948" cy="13.4582" rx="0.715266" ry="1.90738" transform="rotate(-61.557 37.8948 13.4582)"
+			fill="#EE88FF" />
+		<ellipse cx="60.7832" cy="2.01439" rx="0.715266" ry="1.90738" transform="rotate(-61.557 60.7832 2.01439)"
+			fill="#EE88FF" />
+		<path d="M286 -4.98486C286 -4.98486 318.083 16.95 354.904 16.95C391.725 16.95 423.808 -4.98486 423.808 -4.98486"
+			stroke="#4FAADD" />
+		<ellipse cx="331.062" cy="15.0422" rx="0.715266" ry="1.90738" transform="rotate(12.5744 331.062 15.0422)"
+			fill="#FFFCB4" />
+		<ellipse cx="307.142" cy="7.99909" rx="0.715266" ry="1.90738" transform="rotate(35.6427 307.142 7.99909)"
+			fill="#FFFCB4" />
+		<ellipse cx="357.688" cy="18.013" rx="0.715266" ry="1.90738" transform="rotate(12.5744 357.688 18.013)"
+			fill="#FFFCB4" />
+		<ellipse cx="339.195" cy="16.4825" rx="0.715266" ry="1.90738" transform="rotate(0.794425 339.195 16.4825)"
+			fill="#85FF7B" />
+		<ellipse cx="290.08" cy="-1.16121" rx="0.715266" ry="1.90738" transform="rotate(41.325 290.08 -1.16121)"
+			fill="#85FF7B" />
+		<ellipse cx="315.826" cy="10.8108" rx="0.715266" ry="1.90738" transform="rotate(35.5749 315.826 10.8108)"
+			fill="#85FF7B" />
+		<ellipse cx="347.778" cy="17.4365" rx="0.715266" ry="1.90738" transform="rotate(-29.7441 347.778 17.4365)"
+			fill="#EE88FF" />
+		<ellipse cx="323.331" cy="13.7153" rx="0.715266" ry="1.90738" transform="rotate(16.8071 323.331 13.7153)"
+			fill="#EE88FF" />
+		<ellipse cx="298.204" cy="3.24708" rx="0.715266" ry="1.90738" transform="rotate(16.8071 298.204 3.24708)"
+			fill="#EE88FF" />
+	</g>
+	<defs>
+		<clipPath id="clip0_2288_15837">
+			<path
+				d="M0 4C0 1.79086 1.79086 0 4 0H356C358.209 0 360 1.79086 360 4V76C360 78.2091 358.209 80 356 80H4.00001C1.79087 80 0 78.2091 0 76V4Z"
+				fill="white" />
+		</clipPath>
+	</defs>
+</svg>
