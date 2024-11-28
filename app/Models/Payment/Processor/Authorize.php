@@ -12066,9 +12066,23 @@ trait Authorize
 
                 $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
 
+                $reverseShadowCore = (new ReverseShadowPaymentsCore());
                 if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                 {
-                    (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($payment);
+                    $apiTxnId = null;
+
+                    if ($this->payment->hasBeenCaptured())
+                    {
+                        $apiTxnId = $reverseShadowCore->getAPITransactionId($this->payment->getPublicId(), $this->payment, \RZP\Models\Ledger\Constants::MERCHANT_CAPTURED);
+
+                        $this->trace->info(
+                            TraceCode::API_TXN_FETCH_PAYMENT_GATEWAY_CAPTURED,
+                            [
+                                'api_txn_id'        => $apiTxnId,
+                            ]);
+                    }
+
+                    $reverseShadowCore->createLedgerEntryForGatewayCaptureReverseShadow($this->payment, $apiTxnId);
 
                 } else {
 
