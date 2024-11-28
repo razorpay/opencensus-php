@@ -3367,13 +3367,36 @@ EOT;
                 "connection"      => $query->getConnection()->getName() ?? ''
             ]);
 
-            $connectionType = $this->getPaymentFetchReplicaConnection();
+            $properties = [
+                "id" => UniqueIdEntity::generateUniqueId(),
+                "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
+            ];
 
-            return $this->newQueryWithConnection($connectionType)
-                ->where(Entity::TRANSFER_ID, $transferId)
-                ->merchantId($accountId)
-                ->with($relations)
-                ->firstOrFailPublic();
+            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+            if ($variant === true)
+            {
+                $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+                $payment = $this->newQueryWithConnection($connectionType)
+                    ->where(Entity::TRANSFER_ID, $transferId)
+                    ->with($relations)
+                    ->firstOrFailPublic();
+
+                $this->resetDefaultConnInEntity($payment);
+
+                return $payment;
+            }
+            else
+            {
+                $connectionType = $this->getPaymentFetchReplicaConnection();
+
+                return $this->newQueryWithConnection($connectionType)
+                    ->where(Entity::TRANSFER_ID, $transferId)
+                    ->merchantId($accountId)
+                    ->with($relations)
+                    ->firstOrFailPublic();
+            }
         }
     }
 
