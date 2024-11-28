@@ -6863,14 +6863,7 @@ class Processor
             }
         }
 
-        // For No Cost Emi Offers, there's a chance the offer wasn't availed due to
-        // empty calculated benefits
-        if ($isOfferAvailed === false)
-        {
-            return false;
-        }
-
-        if (!$isOfferValidAtOE || $hasException) {
+        if (!$isOfferValidAtOE || $hasException || !$isOfferAvailed) {
             if($isReverseShadowEnabled && $this->offer->shouldBlockPayment() === true) {
                 $errorMessage = $this->offer->getErrorMessage();
                 $this->trace->info(
