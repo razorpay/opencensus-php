@@ -16,8 +16,9 @@ class Utility
         'Unexpected response code received from Ledger service.',
         'cURL error 28: Operation timed out',
         'invalid username/password for authentication',
-        'SQLSTATE[HY000]: General error: 2002',
-
+        'SQLSTATE[HY000]',
+        'cURL error',
+        'Error completing the request'
     ];
 
     protected $errorCodeToRetryDelayInSecsMap = [

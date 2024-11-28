@@ -769,9 +769,9 @@ class Core extends Base\Core
             $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
         }
 
-        $transferMerchant = $transfer->merchant;
+        $transferMerchant = $this->repo->merchant->findOrFail($transfer->getMerchantId());
 
-        $paymentMerchant = $transferPayment->merchant;
+        $paymentMerchant = $this->repo->merchant->findOrFail($transferPayment->getMerchantId());
 
         if (($transferMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
             or ($paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))

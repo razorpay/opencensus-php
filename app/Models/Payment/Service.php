@@ -4860,7 +4860,25 @@ class Service extends Base\Service
         }
         else
         {
-            $txn = $this->createVirtualPaymentTxnFromLedger($payment);
+            try
+            {
+                $txn = $this->createVirtualPaymentTxnFromLedger($payment);
+            }
+            catch (\Throwable $e)
+            {
+                // Fallback to TiDB incase of failure
+                $this->trace->traceException(
+                    $e,
+                    Trace::WARNING,
+                    TraceCode::PAYMENT_TXN_CREATION_FROM_LEDGER_FAILED,
+                    [
+                        'payment_id'     => $payment->getId(),
+                        'transaction_id' => $payment->getTransactionId(),
+                    ]
+                );
+
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($payment->getId());
+            }
 
             $txn->setOnHold(false);
         }

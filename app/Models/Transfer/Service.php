@@ -1035,7 +1035,12 @@ class Service extends Base\Service
             ]
         );
 
-        return $this->core->createTransactionForTransferViaCron($transferIds);
+        foreach ($transferIds as $transferId)
+        {
+            $transfer = $this->repo->transfer->findOrFail($transferId);
+
+            $this->core->createTransactionsForFromLedgerJournal($transfer);
+        }
     }
 
     public function processOrderTransfersForRearch(array $input)

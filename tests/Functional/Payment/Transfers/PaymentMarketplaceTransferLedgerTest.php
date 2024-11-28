@@ -1810,9 +1810,11 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $kafkaEventPayload = $this->getKafkaEventPayload($journal);
 
+        $this->mockAllSplitzResponseDisable();
+
         // run test
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
-        $this->mockAllSplitzResponseDisable();
+
         // fetch transfer again to check if txn id associated
         $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
         $this->assertNotNull($transfer, 'transfer not found');
