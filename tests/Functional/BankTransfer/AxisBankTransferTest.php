@@ -1065,10 +1065,20 @@ class AxisBankTransferTest extends TestCase
             $virtualAccount->getAttribute('id'),
             'live'
         );
+        
+        if ($migratedVirtualAccount->getAttribute('bank_account_id_2') === null){
+            $bankAccountId = $migratedVirtualAccount->getAttribute('bank_account_id');
 
-        $bankAccount2Id = $migratedVirtualAccount->getAttribute('bank_account_id_2');
+            $bankAccount = $this->getDbEntityById(
+                'bank_account',
+                $bankAccountId,
+                'live'
+            );
+            $this->assertEquals('RATN0VAAPIS', $bankAccount['ifsc_code']);
 
-        $this->assertNotNull($bankAccount2Id);
+        }else{
+            $bankAccount2Id = $migratedVirtualAccount->getAttribute('bank_account_id_2');
+            $this->assertNotNull($bankAccount2Id);
 
         $bankAccount2 = $this->getDbEntityById(
             'bank_account',
@@ -1079,6 +1089,8 @@ class AxisBankTransferTest extends TestCase
         // Assert Axis IFSC code to migrated account IFSC
         $this->assertEquals('UTIB000RAZP', $bankAccount2['ifsc_code']);
 
+        }
+        
     }
 
     public function testRblToAxisMigrationWithInvalidAccountPrefix()

@@ -1136,10 +1136,15 @@ class Core extends Base\Core
             }
         }
 
-        // Only accounts with  2223, 2224, VAJSWCA prefix can be migrated
-        $accountPrefix = substr($bankAccount->getAccountNumber(), 0, 4);
 
-        if (in_array($accountPrefix, $validPrefixes))
+       
+
+        // Only accounts with  2223, 2224, VAJSWCA prefix can be migrated
+        $accountPrefixForBankAccount = substr($bankAccount->getAccountNumber(), 0, 4);
+        $accountPrefixForBankAccount2 = substr($bankAccount2->getAccountNumber(), 0, 4);
+
+
+        if (in_array($accountPrefixForBankAccount, $validPrefixes) || in_array($accountPrefixForBankAccount2, $validPrefixes))
         {
             if ($virtualAccount->hasBankAccount2() === true)
             {
@@ -1259,59 +1264,71 @@ class Core extends Base\Core
         }
 
         // default whitespace ' ' is on purpose
-        $afterId = $input['after_id'] ?? ' ';
-        $nextAfterId = ' ';
-
-        $fromTime     = $input['from_time'];
-        $toTime       = $input['to_time'];
-        $limit        = $input['limit'] ?? 1000;
-        $processTimes = $input['process_count'] ?? 1;  // Number of Batches
-        $merchantIds  = $input['merchant_ids'] ?? [];
-
-        for ($currentCount = 1; $currentCount <= $processTimes; $currentCount++)
-        {
-            $this->trace->debug(TraceCode::VA_MIGRATE_PROCESS_TRIGGERING,
-                [
+        $afterId       = $input['after_id'] ?? ' ';
+        $nextAfterId   = ' ';
+        $fromTime      = $input['from_time'];
+        $toTime        = $input['to_time'];
+        $limit         = $input['limit'] ?? 1000;
+        $processTimes  = $input['process_count'] ?? 1;
+        $merchantIds   = $input['merchant_ids'] ?? [];
+        $virtualAccountIds = $input['VirtualAccountIds'] ?? [];
+    
+        if (!empty($merchantIds)) {
+            for ($currentCount = 1; $currentCount <= $processTimes; $currentCount++) {
+                $this->trace->debug(TraceCode::VA_MIGRATE_PROCESS_TRIGGERING, [
                     'after_id'     => $afterId,
                     'job_mode'     => $jobMode,
                     'from_time'    => $fromTime,
                     'count'        => $currentCount,
                     'merchant_ids' => $merchantIds,
                 ]);
-
-            $subQuery = $this->repo->virtual_account->getMigrateQuery($afterId, $fromTime, $toTime, $limit, $merchantIds, $ifscCode);
-
-            // get the max(id) of the above dataset. This is used as the $afterId for the next run.
-            $nextAfterId = $this->getNextBatchIdForRblBankMigrate($subQuery);
-
-            if ($jobMode === 'sync')
-            {
-                $this->migrateRblBankVirtualAccounts($afterId, $nextAfterId, $fromTime, $toTime, $limit, $ifscCode, $merchantIds);
+    
+                $subQuery = $this->repo->virtual_account->getMigrateQuery($afterId, $fromTime, $toTime, $limit, $merchantIds, $ifscCode);
+                $nextAfterId = $this->getNextBatchIdForRblBankMigrate($subQuery);
+    
+                if ($jobMode === 'sync') {
+                    $this->migrateRblBankVirtualAccounts($afterId, $nextAfterId, $fromTime, $toTime, $limit, $ifscCode, $merchantIds);
+                } else {
+                    VirtualAccountMigrate::dispatch($this->mode, $afterId, $nextAfterId, $fromTime, $toTime, $limit, $ifscCode, $merchantIds);
+                }
+    
+                if ($currentCount === $processTimes || $afterId === $nextAfterId) {
+                    break;
+                }
+    
+                $afterId = $nextAfterId;
             }
-            elseif ($jobMode === 'async')
-            {
-                VirtualAccountMigrate::dispatch(
-                    $this->mode,
-                    $afterId,
-                    $nextAfterId,
-                    $fromTime,
-                    $toTime,
-                    $limit,
-                    $ifscCode,
-                    $merchantIds);
+        } else {
+            $startTime = millitime();
+            $virtualAccounts = $this->repo->virtual_account->fetchActiveVirtualAccountIds($virtualAccountIds);
+    
+            $this->trace->debug(TraceCode::VA_MIGRATE_PROCESS_TRIGGERING, [
+                'after_id'        => $afterId,
+                'job_mode'        => $jobMode,
+                'from_time'       => $fromTime,
+                'virtualAccounts' => $virtualAccounts,
+            ]);
+    
+            $count = 0;
+            foreach ($virtualAccounts as $virtualAccount) {
+                try {
+                    $whetherMigrated = $this->repo->transaction(function() use ($virtualAccount) {
+                        return $this->migrateRblBankToAxisIfsc($virtualAccount);
+                    });
+                    $count += $whetherMigrated;
+                } catch (\Throwable $e) {
+                    $this->trace->traceException($e);
+                }
             }
-
-            // Check if all done
-            if ($currentCount === $processTimes)
-            {
-                break;
-            }
-
-            $afterId = $nextAfterId;
+    
+            $this->trace->info(TraceCode::VA_MIGRATE_TIME, [
+                'time_taken' => millitime() - $startTime ?? 0,
+                'migrated'   => $count,
+            ]);
         }
-
+    
         return [
-            'Success' => true,
+            'Success'       => true,
             'next_after_id' => $nextAfterId
         ];
     }
