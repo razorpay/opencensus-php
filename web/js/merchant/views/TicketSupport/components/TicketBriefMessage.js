@@ -1,11 +1,12 @@
+import Popover, { PopoverBody } from 'common/ui/Popover';
+
+import { TICKET_STATUS_LABELS } from './data';
 import {
   getResponseArrivalType,
   getTicketStatus,
   getFormattedDate,
   getEscalationType,
 } from '../utils';
-import { TICKET_STATUS_LABELS } from './data';
-import Popover, { PopoverBody } from 'common/ui/Popover';
 
 export default function TicketBriefMessage(props) {
   const ticketStatus = getTicketStatus(props.ticket);
@@ -33,12 +34,12 @@ export default function TicketBriefMessage(props) {
                 </PopoverBody>
               </Popover>
             </span>{' '}
-            Response expected before <b>{expectedResponseDate}</b>
+            Response expected within <b>4-8 business hours</b>
           </div>
         ) : (
           <div class="Ticket-Brief-Message-Status-Desc">
-            <i class="i i-clock ticket-message-icn" /> Response expected before{' '}
-            <b>{expectedResponseDate}</b>
+            <i class="i i-clock ticket-message-icn" /> Response expected within{' '}
+            <b>4-8 business hours</b>
           </div>
         )
       ) : ticketResponseArrivalType === 'waiting-for-customer' ? (

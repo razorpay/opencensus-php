@@ -2,27 +2,16 @@ import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+
 import { withRouter } from 'common/deprecated/withRouter';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { withSplitzService } from 'common/splitz';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import Spinner from 'common/ui/Spinner';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, noop } from 'common/utils/rzp-utils';
 import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
-import {
-  SAMPLE_TICKET,
-  MAX_CONVERSATION,
-  MIN_TIME_TO_REFRESH,
-  PRERECORDED_RESPONSES,
-  TICKET_STATUS_LABELS,
-} from './data';
-import {
-  getExpiryTime,
-  getEscalationType,
-  getResponseArrivalType,
-  getTicketStatus,
-  createWorkFlowTicket,
-} from 'merchant/views/TicketSupport/utils';
-import { merchantFetch } from 'merchant/utils/ajax';
-import Spinner from 'common/ui/Spinner';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import { getPosActivationStatus } from 'merchant/components/Support/utils';
 import {
   fetchSupportTickets,
   replyToConversation,
@@ -31,13 +20,27 @@ import {
   FETCH_TICKET,
   FETCH_TICKETS,
 } from 'merchant/reducers/config';
-import Reply from './Reply';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import FailedScreen from './FailedScreen';
 import lazy from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { withSplitzService } from 'common/splitz';
-import { getPosActivationStatus } from 'merchant/components/Support/utils';
+import { merchantFetch } from 'merchant/utils/ajax';
+import {
+  getExpiryTime,
+  getEscalationType,
+  getResponseArrivalType,
+  getTicketStatus,
+  createWorkFlowTicket,
+} from 'merchant/views/TicketSupport/utils';
+
+import Reply from './Reply';
+import {
+  SAMPLE_TICKET,
+  MAX_CONVERSATION,
+  MIN_TIME_TO_REFRESH,
+  PRERECORDED_RESPONSES,
+  TICKET_STATUS_LABELS,
+} from './data';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import FailedScreen from './FailedScreen';
 
 const Ticket = lazy(() => import(/* webpackChunkName: 'Ticket' */ './Ticket'));
 
@@ -470,7 +473,7 @@ class Conversations extends React.Component {
             <span>You can</span>
             <br />
             <span>
-              expect reply within <b>{this.getExpectedReplyTime()} working hours</b>.
+              expect reply within <b>4-8 working hours</b>.
             </span>
           </>
         ) : null}
