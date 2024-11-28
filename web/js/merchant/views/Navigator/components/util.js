@@ -1342,6 +1342,8 @@ export const gatewayLogos = {
   pay10: require('assets/optimizer/pay10.png'),
   phonepe: require('assets/optimizer/phonepe.svg'),
   getsimpl_optimizer: getLogoPath('simpl', 'svg'),
+  netbanking_icici: getLogoPath('icici'),
+  netbanking_hdfc: getLogoPath('hdfc'),
 };
 
 export const mapRulesObjectToArray = (e) => {
@@ -1544,6 +1546,16 @@ export const gatewayDetailsMapping = {
     dashboardImg: null,
     dashboardUrl: 'https://getsimpl.com/merchants',
     dashboardUrlLabel: 'getsimpl.com',
+  },
+  netbanking_icici: {
+    dashboardImg: null,
+    dashboardUrl: null,
+    dashboardUrlLabel: null,
+  },
+  netbanking_hdfc: {
+    dashboardImg: null,
+    dashboardUrl: null,
+    dashboardUrlLabel: null,
   },
 };
 

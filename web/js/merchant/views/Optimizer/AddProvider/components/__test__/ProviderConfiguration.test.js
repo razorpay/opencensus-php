@@ -10,8 +10,10 @@ import {
   NETBANKING_AXIS_PROVIDER,
   CKO_PROVIDER,
   OPTIMIZER_RAZORPAY_PROVIDER,
+  NETBANKING_HDFC_PROVIDER,
+  NETBANKING_ICICI_PROVIDER,
 } from 'merchant/views/Navigator/components/AddProvider/components/__test__/mocks/Step3';
-import { SUPPORTED_GATEWAYS } from 'merchant/views/Navigator/components/AddProvider/components/__test__/mocks/constants';
+import { SUPPORTED_GATEWAYS } from 'merchant/views/Navigator/tests/data/mockData';
 import ProviderConfiguration from 'merchant/views/Optimizer/AddProvider/components/ProviderConfiguration';
 import { render, screen } from 'test-utils';
 
@@ -214,6 +216,48 @@ describe('Add Provider > ProviderConfiguration', () => {
     test('should not render Gateway Acquirer field', () => {
       render(<App {...OPTIMIZER_RAZORPAY_PROVIDER} />);
       expect(screen.queryByText('Gateway Acquirer')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('For netbanking_hdfc gateway', () => {
+    const FIELDS = ['Payee Id', 'TPV', 'Payment Methods'];
+
+    test('should render without any errors', () => {
+      expect(() => render(<App {...NETBANKING_HDFC_PROVIDER} />)).not.toThrowError();
+    });
+
+    test('should render correct text for gateway', () => {
+      render(<App {...mockProps} {...NETBANKING_HDFC_PROVIDER} />);
+      expect(screen.getByText('HDFC Netbanking Production API Details')).toBeInTheDocument();
+      expect(
+        screen.queryByText('Where do I find HDFC Netbanking API Keys details?'),
+      ).not.toBeInTheDocument();
+    });
+
+    test.each(FIELDS)('should rendered the required fields: %s', (field) => {
+      render(<App {...NETBANKING_HDFC_PROVIDER} />);
+      expect(screen.getByText(field)).toBeInTheDocument();
+    });
+  });
+
+  describe('For netbanking_icici gateway', () => {
+    const FIELDS = ['Sp Id', 'Payee Id', 'TPV', 'Payment Methods'];
+
+    test('should render without any errors', () => {
+      expect(() => render(<App {...NETBANKING_ICICI_PROVIDER} />)).not.toThrowError();
+    });
+
+    test('should render correct text for gateway', () => {
+      render(<App {...mockProps} {...NETBANKING_ICICI_PROVIDER} />);
+      expect(screen.getByText('ICICI Netbanking Production API Details')).toBeInTheDocument();
+      expect(
+        screen.queryByText('Where do I find ICICI Netbanking API Keys details?'),
+      ).not.toBeInTheDocument();
+    });
+
+    test.each(FIELDS)('should rendered the required fields: %s', (field) => {
+      render(<App {...NETBANKING_ICICI_PROVIDER} />);
+      expect(screen.getByText(field)).toBeInTheDocument();
     });
   });
 });

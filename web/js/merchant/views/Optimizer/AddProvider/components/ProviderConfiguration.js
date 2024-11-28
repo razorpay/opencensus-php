@@ -24,6 +24,7 @@ import {
   TPV_OPTIONS,
   SKIP_INPUT_FOR_PROVIDER_KEYS,
 } from 'merchant/views/Navigator/constants';
+import { gatewayDetailsMapping } from 'merchant/views/Navigator/components/util';
 import {
   isIntegrationAuditEnabled,
   isGatewaySupportIntegrationAudit,
@@ -129,6 +130,10 @@ const ProviderConfiguration = (props) => {
 
   const updateBlocked = isEdit ? !showMethods : false;
 
+  const isGatewayDetailsAvailable =
+    gatewayDetailsMapping[selectedProvider]?.dashboardImg ||
+    gatewayDetailsMapping[selectedProvider]?.dashboardUrl;
+
   return (
     <Box
       display="flex"
@@ -154,17 +159,19 @@ const ProviderConfiguration = (props) => {
                   NOT the Test Details
                 </Text>
               </Text>
-              <Box display="flex" alignItems="center" marginTop="spacing.2">
-                <HelpCircleIcon
-                  size="medium"
-                  color="interactive.icon.primary.subtle"
-                  marginRight="spacing.2"
-                />
-                <Link onClick={onLinkClick} variant="anchor" size="small">
-                  Where do I find {selectedProviderDetails?.['Gateway Name']?.data_value || ''} API
-                  Keys details?
-                </Link>
-              </Box>
+              {isGatewayDetailsAvailable ? (
+                <Box display="flex" alignItems="center" marginTop="spacing.2">
+                  <HelpCircleIcon
+                    size="medium"
+                    color="interactive.icon.primary.subtle"
+                    marginRight="spacing.2"
+                  />
+                  <Link onClick={onLinkClick} variant="anchor" size="small">
+                    Where do I find {selectedProviderDetails?.['Gateway Name']?.data_value || ''}{' '}
+                    API Keys details?
+                  </Link>
+                </Box>
+              ) : null}
             </Box>
           )}
         </Box>

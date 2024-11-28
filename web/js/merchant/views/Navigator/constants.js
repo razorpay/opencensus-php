@@ -15,6 +15,8 @@ export const BANK_GATEWAYS = [
   'cybersource_hdfc',
   'cybersource_axis',
   'axis_migs',
+  'netbanking_icici',
+  'netbanking_hdfc',
 ];
 
 export const GATEWAY_CATEGORIES = {
@@ -122,8 +124,20 @@ export const HAS_UPI_FEATURES = [
   'upi_axis',
   'billdesk_optimizer',
   'pay10',
+  'optimizer_razorpay',
+  'easebuzz_optimizer',
 ];
-export const HAS_NETBANKING_FEATURES = ['atom', 'netbanking_axis', 'billdesk_optimizer', 'pay10'];
+
+export const HAS_NETBANKING_FEATURES = [
+  'atom',
+  'netbanking_axis',
+  'billdesk_optimizer',
+  'pay10',
+  'netbanking_icici',
+  'netbanking_hdfc',
+  'optimizer_razorpay',
+  'easebuzz_optimizer',
+];
 
 export const ACCOUNT_TYPE_OPTIONS = [
   { label: 'Regular', value: false },
@@ -144,7 +158,12 @@ export const INSTANT_PROVIDER_UNSUPPORTED_METHODS = {
   cashfree: ['card'],
 };
 
-export const PREREQUISITES_SUPPORTED_GATEWAYS = ['ingenico', 'getsimpl_optimizer'];
+export const PREREQUISITES_SUPPORTED_GATEWAYS = [
+  'ingenico',
+  'getsimpl_optimizer',
+  'netbanking_icici',
+  'netbanking_hdfc',
+];
 
 export const SEAMLESS_NOT_SUPPORTED = ['checkout_dot_com_optimizer', RAZORPAY_GATEWAY_KEY];
 

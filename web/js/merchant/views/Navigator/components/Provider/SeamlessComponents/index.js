@@ -15,6 +15,8 @@ import { PineLabsPoints } from './PineLabsPoints';
 import { UpiAxisPoints } from './UpiAxisPoints';
 import { UpiIciciPoints } from './UpiIciciPoints';
 import { GetSimplPoints } from './GetSimplPoints';
+import { IciciNetbankingPoints } from './IciciNetbankingPoints';
+import { HdfcNetbankingPoints } from './HdfcNetbankingPoints';
 
 export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
   switch (selectedProvider) {
@@ -52,6 +54,10 @@ export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
       return <Pay10Points />;
     case 'getsimpl_optimizer':
       return <GetSimplPoints />;
+    case 'netbanking_icici':
+      return <IciciNetbankingPoints />;
+    case 'netbanking_hdfc':
+      return <HdfcNetbankingPoints />;
     default:
       return (
         <ol>

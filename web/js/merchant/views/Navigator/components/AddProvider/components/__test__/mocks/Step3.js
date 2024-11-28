@@ -1,6 +1,6 @@
 import { Step3 } from 'merchant/views/Navigator/components/AddProvider/components/Step3';
 import { RAZORPAY_GATEWAY_KEY } from 'merchant/views/Navigator/constants';
-import { SUPPORTED_GATEWAYS } from './constants';
+import { SUPPORTED_GATEWAYS } from 'merchant/views/Navigator/tests/data/mockData';
 
 export const PAYU_PROVIDER = {
   isEdit: true,
@@ -96,6 +96,38 @@ export const OPTIMIZER_RAZORPAY_PROVIDER = {
     Provider_name: 'razorpay test 1',
     Description: 'test',
     Gateway: RAZORPAY_GATEWAY_KEY,
+    Gateway_details: {
+      'Payment Methods': [],
+    },
+  },
+  validationErrors: {},
+  changeGatewayDetails: jest.fn(),
+};
+
+export const NETBANKING_HDFC_PROVIDER = {
+  isEdit: true,
+  selectedProvider: 'netbanking_hdfc',
+  providers: SUPPORTED_GATEWAYS,
+  provider: {
+    Provider_name: 'netbaking hdfc 1',
+    Description: 'test',
+    Gateway: 'netbanking_hdfc',
+    Gateway_details: {
+      'Payment Methods': [],
+    },
+  },
+  validationErrors: {},
+  changeGatewayDetails: jest.fn(),
+};
+
+export const NETBANKING_ICICI_PROVIDER = {
+  isEdit: true,
+  selectedProvider: 'netbanking_icici',
+  providers: SUPPORTED_GATEWAYS,
+  provider: {
+    Provider_name: 'netbaking icici 1',
+    Description: 'test',
+    Gateway: 'netbanking_icici',
     Gateway_details: {
       'Payment Methods': [],
     },

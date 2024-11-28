@@ -1169,6 +1169,8 @@ export const gatewayLogos = {
   pay10: require('assets/optimizer/pay10.png'),
   phonepe: require('assets/optimizer/phonepe.svg'),
   getsimpl_optimizer: getLogoPath('simpl', 'svg'),
+  netbanking_icici: getLogoPath('icici'),
+  netbanking_hdfc: getLogoPath('hdfc'),
 };
 
 export const getValue = (type, value) => {
