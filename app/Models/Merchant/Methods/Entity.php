@@ -340,6 +340,7 @@ class Entity extends Base\PublicEntity
     protected static $shouldAcceptSubMethods = [
         self::UPI,
         self::DUITNOW_PAY,
+        self::CARD
     ];
 
 
