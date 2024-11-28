@@ -64,6 +64,7 @@ class Metric
     const TIDB_FILTER_ROUTING_RESULT    = 'tidb_filter_routing_result';
     const DB_REQUESTS_BEFORE_MIGRATION          = 'db_requests_before_migration';
     const ASV_SYNC_ACCOUNT_DEVIATION_FAILED     = 'asv_sync_account_deviation_failed';
+    const DUAL_WRITE_ENTITIES_USAGE     = 'dual_write_entities_usage';
 
     const ACCOUNT_SERVICE_CHECK_EXCLUSION_FLOW_RESULT = 'account_service_check_exclusion_flow_result';
 

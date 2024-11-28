@@ -1089,6 +1089,18 @@ class Entity
         self::ORDER,
     ];
 
+    /**
+     * entities that are dual written between API and PGOS and is not owned by ASV
+     */
+    const DUAL_WRITE_ENTITIES = [
+        self::ACTION_STATE,
+        self::MERCHANT_VERIFICATION_DETAIL,
+        self::BVS_VALIDATION,
+        self::CLARIFICATION_DETAIL,
+        self::MERCHANT_CONSENT_DETAILS,
+        self::MERCHANT_CONSENTS,
+    ];
+
     public static $namespace = [
         self::TOKENISED_IIN             => \RZP\Models\Card\TokenisedIIN::class,
         self::IIN                       => \RZP\Models\Card\IIN::class,

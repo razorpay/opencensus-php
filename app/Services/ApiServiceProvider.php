@@ -7,6 +7,7 @@ use Illuminate\Cache\CacheManager;
 use RZP;
 use Cache;
 use RZP\Http\Controllers\NeedsClarificationProxyController;
+use RZP\Models\Base\DualWriteEntitiesUsageMetricObserver;
 use RZP\Trace\TraceCode;
 use Swift_Mailer;
 use Buzz\Client\MultiCurl;
@@ -195,6 +196,12 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
                     'because they provide getMerchantId()');
             }
             $entityClass::observe(Acs\SyncEventObserver::class);
+        }
+
+        foreach (E::DUAL_WRITE_ENTITIES as $entity)
+        {
+            $entityClass = E::getEntityClass($entity);
+            $entityClass::observe(DualWriteEntitiesUsageMetricObserver::class);
         }
     }
 
@@ -610,6 +617,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(DbRequestsBeforeMigrationMetric::class, function($app)
         {
             return new DbRequestsBeforeMigrationMetric($app);
+        });
+
+        $this->app->singleton(DualWriteEntitiesUsageMetric::class, function($app)
+        {
+            return new DualWriteEntitiesUsageMetric($app);
         });
 
 

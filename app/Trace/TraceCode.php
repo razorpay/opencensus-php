@@ -7673,6 +7673,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUPPORT_NOTIFICATION_ELIGIBILITY                      = 'SUPPORT_NOTIFICATION_ELIGIBILITY';
 
     const TRACE_DB_MIGRATION_METRIC                             = 'TRACE_DB_MIGRATION_METRIC';
+    const TRACE_DUAL_WRITE_USAGE_METRIC                         = 'TRACE_DUAL_WRITE_USAGE_METRIC';
 
     //Terminals service
     const TERMINALS_SERVICE_CREATE_MIGRATE_JOB_FAILURE          = 'TERMINALS_SERVICE_CREATE_MIGRATE_JOB_FAILURE';
