@@ -3184,6 +3184,7 @@ class ErrorCode
 
     const BANK_TRANSFER_NOT_FOUND                                      = 'BANK_TRANSFER_NOT_FOUND';
     const BANK_TRANSFER_PROCESSING_FAILED                              = 'BANK_TRANSFER_PROCESSING_FAILED';
+    const BAD_REQUEST_QR_CODE_REFERENCE_REQUIRED = 'BAD_REQUEST_QR_CODE_REFERENCE_REQUIRED' ;
 
     static function getConstants()
     {

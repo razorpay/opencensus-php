@@ -1079,7 +1079,7 @@ class Generator extends QrCode\Generator
         }
     }
 
-    private function getQrCodeModeAccountingForOnlineAndOfflineRequestSource($qrCode, Terminal\Entity $terminal)
+    public function getQrCodeModeAccountingForOnlineAndOfflineRequestSource($qrCode, Terminal\Entity $terminal)
     {
         $isOffline = $terminal->isOffline();
         $isOnline = $terminal->isOnline();
