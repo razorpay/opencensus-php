@@ -4477,4 +4477,60 @@ class Service extends Base\Service
     {
         return in_array($signupCampaign, [DeviceDetailConstants::ASSISTED_ONBOARDING, DeviceDetailConstants::PARTNER_ASSISTED_ONBOARDING]);
     }
+
+    public function addSalesUserToMerchant(array $input): array
+    {
+        $this->validator->validateInput('addSalesUserToMerchant', $input);
+
+        try {
+            // Fetch the user using the provided email
+            $user = $this->repo->user->getUserFromEmail(strtolower($input['email']));
+
+            // Check if the user was found, if not, throw an exception
+            if (empty($user))
+            {
+                throw new Exception\BadRequestValidationFailureException(ErrorCode::ERROR_USER_NOT_FOUND_BY_EMAIL);
+            }
+
+            $merchant = $this->repo->merchant->findOrFailPublic($input['merchant_id']);
+            
+            if (empty($merchant))
+            {
+                throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND);
+            }
+
+            // Check if the user is already assigned to the merchant with the specified role and product
+            $userMapping = $this->repo->merchant_user->getUserRoleMapping(
+                $user->getId(),
+                $input['merchant_id'],
+                Role::RAZORPAY_SALES,
+                Product::PRIMARY
+            );
+
+            // If a mapping exists, throw an exception indicating the merchant user mapping already exists
+            if (!empty($userMapping))
+            {
+                throw new Exception\BadRequestValidationFailureException(ErrorCode::ERROR_MERCHANT_USER_ALREADY_EXISTS);
+            }
+
+            $response = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $input)
+            {
+                // Attach a new merchant user mapping for the specified user, merchant, role, and product
+                $userMerchantMappingInputData = [
+                    'action' => 'attach',
+                    'role' => Role::RAZORPAY_SALES,
+                    'merchant_id' =>$input['merchant_id'],
+                ];
+
+                return $this->updateUserMerchantMapping($user->getId(), $userMerchantMappingInputData);
+            });
+
+            return $response->toArrayPublic();
+        }
+        catch (\Throwable $exception)
+        {
+            throw new Exception\BadRequestValidationFailureException($exception->getMessage());
+        }
+    }
+
 }

@@ -362,6 +362,11 @@ class Validator extends Base\Validator
         Entity::ROLE        => 'sometimes|string',
     ];
 
+    protected static $addSalesUserToMerchantRules = [
+        Entity::EMAIL       => 'required|email',
+        Entity::MERCHANT_ID => 'required|alpha_num|size:14',
+    ];
+
     protected static $createMerchantRules = self::CREATE_MERCHANT_RULES;
 
     protected static $createMerchantInternalRules = self::CREATE_MERCHANT_RULES + [

@@ -8773,4 +8773,68 @@ return [
             ],
         ],
     ],
+
+    'testAssignUserToMerchantFailsForNonexistentUserEmail' => [
+        'request'   => [
+            'content' => [
+                'email' => 'udittest16@gmail.com',
+                'merchant_id' => 'P0rCsM0wzu62Vb'
+            ],
+            'url'     => '/merchants/assign_sales_user',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'ERROR_USER_NOT_FOUND_BY_EMAIL',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDuplicateRoleAssignmentToMerchantUserFails' => [
+        'request'   => [
+            'content' => [
+                'email' => 'udittest16@gmail.com',
+                'merchant_id' => 'NBmMve28Nvwq44'
+            ],
+            'url'     => '/merchants/assign_sales_user',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'User with given role already exists',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testAssignRazorpaySalesUserToMerchantByPosSalesAdmin' => [
+        'request'   => [
+            'content' => [
+                'email' => 'udittest16@gmail.com',
+                'merchant_id' => 'NBmMve28Nvwq66'
+            ],
+            'url'     => '/merchants/assign_sales_user',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'udittest16@gmail.com',
+            ],
+        ],
+    ],
+
 ];

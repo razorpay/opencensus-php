@@ -814,4 +814,13 @@ class UserController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function addSalesUserToMerchant()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addSalesUserToMerchant($input);
+
+        return ApiResponse::json($data);
+    }
 }

@@ -8,6 +8,7 @@ use RZP\Constants\Country;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\IdempotencyKey\Metric;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
+use RZP\Models\User\Role;
 use RZP\Services\TerminalsService;
 use Throwable;
 use RZP\Exception;
@@ -289,6 +290,14 @@ class Activate extends Base\Core
             $this->repo->saveOrFail($merchantDetail);
 
             $merchantCore->addMerchantEmailToMailingList($merchant);
+
+            $merchantPosActivationStatus = (new Merchant\Detail\Core)->fetchMerchantPosActivationStatus($merchantDetail);
+
+            if ($merchantPosActivationStatus === Detail\Status::ACTIVATED) {
+
+                $this->repo->merchant_user->deleteByMerchantIdAndRole($merchant->getId(), Role::RAZORPAY_SALES);
+
+            }
         });
 
         $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_POST_TRANSCACTION,$merchant->toArrayPublic());

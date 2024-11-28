@@ -16097,4 +16097,150 @@ class UserTest extends TestCase
 
         $this->assertNull($accessMap);
     }
+
+
+
+    public function testAssignUserToMerchantFailsForNonexistentUserEmail()
+    {
+        $posSalesAdminMid = 'NBmMve28Nvwq43';
+        
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+        $merchantId = 'NBmMve28Nvwq44';
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $this->fixtures->create('merchant', [
+            'id' => $posSalesAdminMid,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $partnerAgentUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9892818372','contact_mobile_verified'=>true],'partner_agent');
+
+        $razorpaySalesUser = $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchantId,
+            'user_id'       => $partnerAgentUser->getId(),
+            'role'          => 'razorpay_sales',
+            'product'       =>'primary'
+        ]);
+
+        $posSalesAdminUser = $this->fixtures->user->createUserForMerchant($posSalesAdminMid,['contact_mobile' =>'9892818376','contact_mobile_verified'=>true],'pos_sales_admin');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId,['contact_mobile' =>'9891817377','contact_mobile_verified'=>true],'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $posSalesAdminMid, $posSalesAdminUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testDuplicateRoleAssignmentToMerchantUserFails()
+    {
+        $posSalesAdminMid = 'NBmMve28Nvwq43';
+
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+        $merchantId = 'NBmMve28Nvwq44';
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $this->fixtures->create('merchant', [
+            'id' => $posSalesAdminMid,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $partnerAgentUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9892818372','contact_mobile_verified'=>true],'partner_agent');
+
+        $razorpaySalesUser = $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchantId,
+            'user_id'       => $partnerAgentUser->getId(),
+            'role'          => 'razorpay_sales',
+            'product'       =>'primary'
+        ]);
+
+        $posSalesAdminUser = $this->fixtures->user->createUserForMerchant($posSalesAdminMid,['contact_mobile' =>'9892818376','contact_mobile_verified'=>true],'pos_sales_admin');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId,['contact_mobile' =>'9891817377','email'=>'udittest16@gmail.com','contact_mobile_verified'=>true],'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $posSalesAdminMid, $posSalesAdminUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testAssignRazorpaySalesUserToMerchantByPosSalesAdmin()
+    {
+        $posSalesAdminMid = 'NBmMve28Nvwq43';
+
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+
+        $merchantId = 'NBmMve28Nvwq44';
+
+        $newMerchantId = 'NBmMve28Nvwq66';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $this->fixtures->create('merchant', [
+            'id' => $newMerchantId,
+        ]);
+
+        $this->fixtures->create('merchant', [
+            'id' => $posSalesAdminMid,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $partnerAgentUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9892818372','contact_mobile_verified'=>true],'partner_agent');
+
+        $razorpaySalesUser = $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchantId,
+            'user_id'       => $partnerAgentUser->getId(),
+            'role'          => 'razorpay_sales',
+            'product'       =>'primary'
+        ]);
+
+        $posSalesAdminUser = $this->fixtures->user->createUserForMerchant($posSalesAdminMid,['contact_mobile' =>'9892818376','contact_mobile_verified'=>true],'pos_sales_admin');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId,['contact_mobile' =>'9891817377','email'=>'udittest16@gmail.com','contact_mobile_verified'=>true],'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $posSalesAdminMid, $posSalesAdminUser->getId());
+
+        $this->startTest();
+
+        $merchantUserMapping = DB::table('merchant_users')->where('merchant_id', '=', $newMerchantId)->get();
+
+        $this->assertEquals($merchantUserMapping[0]->role, 'razorpay_sales');
+
+        $this->assertEquals($merchantUserMapping[0]->user_id, $merchantUser->getId());
+
+        $this->assertEquals($merchantUserMapping[0]->merchant_id, $newMerchantId);
+
+    }
+
 }

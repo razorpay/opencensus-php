@@ -2816,6 +2816,7 @@ class Route
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_account_unlock'                      => ['put',      'users/account/{id}/{action}',                    'UserController@accountLockUnlock'                                  ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMapping'                                   ],
+        'add_sales_user_mapping'                   => ['post',     'merchants/assign_sales_user',                    'UserController@addSalesUserToMerchant'                             ],
         'user_merchant_mapping_action_with_otp_verification' => ['put',      'users/{id}/{action}/otp_verify',       'UserController@updateUserMappingWithOtpVerification'                                   ],
         'user_roles_mapping_bulk'                  => ['put',      'users/roles-mapping/bulk',                       'UserController@bulkUpdateUserMapping'                              ],
         'user_roles_mapping_bulk_internal'         => ['put',      'users/roles-mapping/bulk/internal',              'UserController@bulkUpdateUserMapping'                              ],
@@ -7033,6 +7034,7 @@ class Route
     //
 
     public static $proxy = [
+        'add_sales_user_mapping',
         'merchant_activation_details_sales',
         'initiate_pos_onboarding',
         'onboarding_get_sales',
@@ -12510,6 +12512,7 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'add_sales_user_mapping',
             'merchant_activation_details_sales',
             'initiate_pos_onboarding',
             'onboarding_get_sales',
