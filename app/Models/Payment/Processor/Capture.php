@@ -42,6 +42,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Offer;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Ledger\CaptureJournalEvents;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Base\Database\DetectsLostConnections;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Partner\Metric as PartnerMetric;
@@ -845,6 +846,21 @@ trait Capture
         // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
         // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
         //
+
+        if ($payment->getGateway() === Payment\Gateway::FULCRUM || $payment->getGateway() === Payment\Gateway::PAYSECURE)
+        {
+            if ($this->checkAsyncCaptureSplitzExperiment($payment) === true)
+            {
+                $this->trace->info(TraceCode::SKIPPING_GATEWAY_CAPTURE_RETRY_ON_FAILURE,
+                    [
+                        'id'   => $payment->getId(),
+                        'merchant_id' => $payment->getMerchantId()
+                    ]
+                );
+                return false;
+            }
+        }
+
         switch ($payment->getGateway())
         {
             case Payment\Gateway::HDFC:
@@ -2399,5 +2415,16 @@ trait Capture
             );
         }
         return false;
+    }
+
+    public function checkAsyncCaptureSplitzExperiment(Payment\Entity $payment): bool
+    {
+        $properties = [
+            'id'            => $payment->getMerchantId(),
+            'experiment_id' => $this->app['config']->get('app.stop_async_capture_card_gateways'),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
     }
 }
