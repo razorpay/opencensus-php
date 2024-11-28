@@ -4416,4 +4416,8 @@ class Entity extends Base\PublicEntity
 
         return $terminals;
     }
+
+    public function getOrgAttribute() {
+        return parent::getRelationValue('org');
+    }
 }

@@ -2531,31 +2531,32 @@ class Repository extends Base\Repository
         ]);
         if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
-            if ($this->repo->isTransactionActive())
-            {
-                $query = $this->newQueryWithConnection(
-                    $this->getConnectionFromType(Connection::ASV_WRITER)
-                );
-            }
-            else
-            {
-                $results        = new PublicCollection();
-                $lastMerchantId = '';
-
-                do
-                {
-                    $subset = (new AsvSdkMerchantQuery())->fetchLinkedAccountIdsFromParentIdWithActivated(
-                        $parentMerchantId, $checkForActivated, $lastMerchantId
-                    );
-
-                    $lastMerchantId = $subset->pluck(Entity::ID)->last();
-
-                    $results->push(...$subset);
-
-                } while(sizeof($subset) >= Acs\AsvSdkIntegration\Base::FETCH_LINKED_ACCOUNT_IDS_FOR_PARENT_MERCHANT_LIMIT);
-
-                return $results->pluck(MerchantEntity::ID)->toArray();
-            }
+//            if ($this->repo->isTransactionActive())
+//            {
+//                $query = $this->newQueryWithConnection(
+//                    $this->getConnectionFromType(Connection::ASV_WRITER)
+//                );
+//            }
+//            else
+//            {
+//                $results        = new PublicCollection();
+//                $lastMerchantId = '';
+//
+//                do
+//                {
+//                    $subset = (new AsvSdkMerchantQuery())->fetchLinkedAccountIdsFromParentIdWithActivated(
+//                        $parentMerchantId, $checkForActivated, $lastMerchantId
+//                    );
+//
+//                    $lastMerchantId = $subset->pluck(Entity::ID)->last();
+//
+//                    $results->push(...$subset);
+//
+//                } while(sizeof($subset) >= Acs\AsvSdkIntegration\Base::FETCH_LINKED_ACCOUNT_IDS_FOR_PARENT_MERCHANT_LIMIT);
+//
+//                return $results->pluck(MerchantEntity::ID)->toArray();
+//            }
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
         else
         {

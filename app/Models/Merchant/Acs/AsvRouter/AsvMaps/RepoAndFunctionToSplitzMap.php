@@ -181,7 +181,6 @@ final class RepoAndFunctionToSplitzMap
         "MERCHANT_EMAIL_VALIDATION",
         "MERCHANT_HANDLE_VALIDATION",
         "MERCHANT_DETAIL_CONTACT_MOBILE_VALIDATION",
-        "baseEagerLoadRelation",
         "deletePartnerDashboardAccessOnSubmerchants",
         "getMerchantsAttributeForAdmin"
     );

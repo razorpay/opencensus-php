@@ -117,7 +117,7 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
     protected function eagerLoadRelation(array $models, $name, Closure $constraints)
     {
         // Define the valid relation names
-        $migratedEagerLoadRelations = ['merchant', 'merchantDetail', 'maker', 'emails'];
+        $migratedEagerLoadRelations = ['merchant', 'merchantDetail', 'maker', 'emails', 'org'];
 
         // Call parent method for relations not in the valid list
         if (!in_array($name, $migratedEagerLoadRelations, true)) {

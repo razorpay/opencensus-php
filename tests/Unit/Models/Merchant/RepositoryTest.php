@@ -1026,38 +1026,12 @@ class RepositoryTest extends RepositoryTestHelper
             'states',
             'states.rejectionReasons',
             'merchant',
-            'merchant.merchantDetail'
+            'merchant.merchantDetail',
+            'merchant.org'
         ];
 
 
-        $this->setSplitzWithOutput("false", 2);
-        $entityObj = new MEREQEntity();
-        $merchantRequestsWithSplitzOff = $entityObj->newQuery()
-            ->where(MEREQEntity::ID, $id)
-            ->with($relations)
-            ->get();
-
-        $this->setSplitzWithOutput("true", 2);
-        $entityObj = new MEREQEntity();
-        $merchantRequestsWithSplitzOn = $entityObj->newQuery()
-            ->where(MEREQEntity::ID, $id)
-            ->with($relations)
-            ->get();
-
-
-        $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
-
-        // relations with nesting level more than 2 should also not fail, in this case we will fallback to parent
-        // in this case merchant detail is null
-        $relations = [
-            'states',
-            'states.rejectionReasons',
-            'merchant',
-            'merchant.merchantDetail.merchant'
-        ];
-
-
-        $this->setSplitzWithOutput("false", 2);
+        $this->setSplitzWithOutput("false", 3);
         $entityObj = new MEREQEntity();
         $merchantRequestsWithSplitzOff = $entityObj->newQuery()
             ->where(MEREQEntity::ID, $id)
@@ -1074,10 +1048,15 @@ class RepositoryTest extends RepositoryTestHelper
 
         $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
 
-
         // relations with nesting level more than 2 should also not fail, in this case we will fallback to parent
-        // in this case merchant detail is not null
-        $this->fixtures->create('merchant_detail', ['merchant_id' => $id3]);
+        // in this case merchant detail is null
+        $relations = [
+            'states',
+            'states.rejectionReasons',
+            'merchant',
+            'merchant.merchantDetail.merchant',
+            'merchant.org'
+        ];
 
 
         $this->setSplitzWithOutput("false", 3);
@@ -1088,6 +1067,29 @@ class RepositoryTest extends RepositoryTestHelper
             ->get();
 
         $this->setSplitzWithOutput("true", 4);
+        $entityObj = new MEREQEntity();
+        $merchantRequestsWithSplitzOn = $entityObj->newQuery()
+            ->where(MEREQEntity::ID, $id)
+            ->with($relations)
+            ->get();
+
+
+        $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
+
+
+        // relations with nesting level more than 2 should also not fail, in this case we will fallback to parent
+        // in this case merchant detail is not null
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $id3]);
+
+
+        $this->setSplitzWithOutput("false", 4);
+        $entityObj = new MEREQEntity();
+        $merchantRequestsWithSplitzOff = $entityObj->newQuery()
+            ->where(MEREQEntity::ID, $id)
+            ->with($relations)
+            ->get();
+
+        $this->setSplitzWithOutput("true", 5);
         $entityObj = new MEREQEntity();
         $merchantRequestsWithSplitzOn = $entityObj->newQuery()
             ->where(MEREQEntity::ID, $id)
