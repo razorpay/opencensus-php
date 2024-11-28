@@ -345,7 +345,6 @@ class AsvRouter
                         'routeOrWorkerName' => $this->getRouteOrJobName(),
                         'reason' => "ENV_FLAG_DISABLED",
                         'entity' => $entityName,
-                        'configKey' => $configKey,
                     ]);
 
                     return false;
@@ -355,7 +354,6 @@ class AsvRouter
                     'routeOrWorkerName' => $this->getRouteOrJobName(),
                     'reason' => "REQUEST_ROUTED",
                     'entity' => $entityName,
-                    'configKey' => $configKey,
                 ]);
 
                 if ($this->app['env'] === Environment::AUTOMATION) {

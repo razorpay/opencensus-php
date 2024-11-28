@@ -655,7 +655,7 @@ class Service extends Base\Service
         {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::RX_ACCOUNT_STATEMENTS);
         }
-        else if (in_array($entity, E::ACS_SYNCED_ENTITIES) === true && (new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+        else if (in_array($entity, self::ASV_ENTITIES) === true && (new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
         else if($entity === Entity::BALANCE)

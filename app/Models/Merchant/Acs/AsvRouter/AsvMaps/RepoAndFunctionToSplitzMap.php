@@ -167,7 +167,6 @@ final class RepoAndFunctionToSplitzMap
         "fetchLinkedAccountsForParentMerchantId",
         "restoreModel",
         "getMerchantBankAccountsBetweenTimestamp",
-        "fetchMultipleEntities",
         "fetchEntityById",
         "createMerchantForUser",
         "getMerchantDetails",
