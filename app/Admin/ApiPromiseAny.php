@@ -442,7 +442,8 @@ class ApiPromiseAny
         }
 
         if (($rejected !== null) and
-            (!($rejected instanceof \GuzzleHttp\Exception\ClientException)))
+            (!($rejected instanceof \GuzzleHttp\Exception\ClientException)) and
+            ($httpCode >= 500))
         {
             $this->markApiCircuitBreakerAsFailure($httpCode);
         }

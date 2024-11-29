@@ -841,8 +841,8 @@ class ApiRequestAny
             $httpCode = $e->hasResponse() ? $e->getResponse()->getStatusCode() : null;
             $errorMessage = $e->getMessage();
 
-            // if $httpCode is 5XX then set the default error message
-            if ($httpCode >= 500 && $httpCode < 600)
+            // if $httpCode is >= 5XX then set the default error message
+            if ($httpCode >= 500)
             {
                 $errorMessage = "Dear merchant, We're currently fixing an unexpected issue. Sorry for any inconvenience!";
             }
@@ -881,12 +881,13 @@ class ApiRequestAny
             $end_time = self::millitime();
 
             $time_taken = $end_time - $start_time;
-
-            $exception = $e;
+            
             $errors = ["Error in connecting to API"];
 
             $httpCode = $e->getCode() ?? null;
-
+    
+            $exception = $httpCode >= 500 ? $e : null;
+            
             app('trace')->error(
                 TraceCode::API_CONNECTION_EXCEPTION,
                 [
@@ -918,11 +919,12 @@ class ApiRequestAny
 
             $time_taken = $end_time - $start_time;
 
-            $exception = $e;
             $errors = [$e->getMessage()];
 
             $httpCode = $e->getCode() ?? null;
 
+            $exception = $httpCode >= 500 ? $e : null;
+            
             Trace::error(
                 TraceCode::API_GUZZLE_EXCEPTION,
                 [
@@ -953,12 +955,12 @@ class ApiRequestAny
 
             $time_taken = $end_time - $start_time;
 
-            $exception = $e;
-
             $errors = [$e->getMessage()];
 
             $httpCode = $e->getCode() ?? null;
-
+    
+            $exception = $httpCode >= 500 ? $e : null;
+            
             Trace::error(
                 TraceCode::API_RZP_EXCEPTION,
                 [
