@@ -3,6 +3,7 @@ import React from 'react';
 import DeviceDeploymentList from '../DeviceDeploymentListContainer';
 import { getModularConfig, updateModularConfig } from '../mocks/handlers';
 import { render, screen, server, waitFor } from 'apps/pos/src/services/test/test-utils';
+import { isKycQualifiedEkyc } from 'apps/pos/src/app/utils/deviceDeployment';
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -55,5 +56,37 @@ describe('Test POS Language Configuration screen', () => {
       expect(screen.getByText(/All Devices/i)).toBeInTheDocument();
       expect(screen.getByText(/Deployed Devices/i)).toBeInTheDocument();
     });
+  });
+});
+
+describe('isKycQualifiedEkyc function', () => {
+  test('should return true for "ACTIVATED"', () => {
+    const result = isKycQualifiedEkyc('ACTIVATED');
+    expect(result).toBe(true);
+  });
+
+  test('should return true for "KYC_QUALIFIED_STB"', () => {
+    const result = isKycQualifiedEkyc('KYC_QUALIFIED_STB');
+    expect(result).toBe(true);
+  });
+
+  test('should return false for "INACTIVE"', () => {
+    const result = isKycQualifiedEkyc('INACTIVE');
+    expect(result).toBe(false);
+  });
+
+  test('should return false for "null"', () => {
+    const result = isKycQualifiedEkyc(null);
+    expect(result).toBe(false);
+  });
+
+  test('should return false for empty string', () => {
+    const result = isKycQualifiedEkyc('');
+    expect(result).toBe(false);
+  });
+
+  test('should return false for a value not in the array', () => {
+    const result = isKycQualifiedEkyc('SOME_OTHER_STATUS');
+    expect(result).toBe(false);
   });
 });

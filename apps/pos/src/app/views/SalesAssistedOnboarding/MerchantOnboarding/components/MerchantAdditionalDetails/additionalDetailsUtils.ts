@@ -1,10 +1,12 @@
 import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
 import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
 import { MerchantModularOnboardingDetailsSuccessResponse } from 'apps/pos/src/app/types/modular';
-import { getComponentFromStep } from 'apps/pos/src/app/utils/modularConfig';
+import { DeviceModel } from 'apps/pos/src/app/utils/deviceSelection';
+import { getComponentFromStep, getFieldFromComponent } from 'apps/pos/src/app/utils/modularConfig';
 import {
   isArrayOfDocumentsUpload,
   isDocumentUpload,
+  isOrderSummaryItem,
   isStringArrayValue,
   isStringValue,
 } from 'apps/pos/src/app/utils/modularTypeResolvers';
@@ -49,4 +51,29 @@ export const populateNACHFormWithModularConfigData = (
     });
   }
   return newForm;
+};
+
+export const checkIfNACHIsMandatory = (
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null,
+): boolean => {
+  if (!modularConfig) return false;
+  let isNACHMandatory = false;
+
+  const itemSummary = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_CATALOG_COMPONENT,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_ORDER_ITEMS_SUMMARY_FIELD,
+  });
+
+  const { addedDevices } =
+    itemSummary && isOrderSummaryItem(itemSummary) ? itemSummary : { addedDevices: [] };
+  if (!addedDevices.length) return false;
+
+  addedDevices.forEach((device) => {
+    if (device.deviceName === DeviceModel.SOUNDBOX_KIT && device.renewal !== 'lifetime') {
+      isNACHMandatory = true;
+    }
+  });
+  return isNACHMandatory;
 };

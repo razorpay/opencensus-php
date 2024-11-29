@@ -10,6 +10,7 @@ import {
   getFieldFromComponent,
   getProgressFromModularStep,
 } from 'apps/pos/src/app/utils/modularConfig';
+import { MILESTONE_NAME_FIELDS } from '../types/DeviceSelection';
 
 interface ModularConfigType {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
@@ -202,4 +203,16 @@ export const getDeviceConfigurationDetailsFromModularConfig = ({
     hideWifiConfiguration: wifiConfigField?.isHidden || false,
     currentDeviceDetails,
   };
+};
+
+export const isKycQualifiedEkyc = (posActivationStatus: string | null): boolean => {
+  return ['ACTIVATED', 'KYC_QUALIFIED_STB'].includes(posActivationStatus || '');
+};
+
+export const isDeviceDeploymentFlowActivated = (
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null,
+): boolean => {
+  return !!modularConfig?.workflowData?.milestones?.find(
+    (milestone) => milestone.name === MILESTONE_NAME_FIELDS.PARTNER_DEVICE_DEPLOYMENT_MILESTONE,
+  );
 };

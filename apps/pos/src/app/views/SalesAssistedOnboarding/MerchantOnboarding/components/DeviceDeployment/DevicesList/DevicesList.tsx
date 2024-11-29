@@ -38,6 +38,7 @@ interface DevicesListProps {
   isModularLoading: boolean;
   currentDeployingDeviceId?: string;
   handleDeployNow: (device: DeviceType) => void;
+  isKycQualified?: boolean;
 }
 
 enum StatusType {
@@ -53,6 +54,7 @@ export const DevicesList = ({
   devices,
   isModularLoading,
   currentDeployingDeviceId = '',
+  isKycQualified,
   handleDeployNow,
 }: DevicesListProps): JSX.Element => {
   const navigate = useNavigate();
@@ -162,6 +164,7 @@ export const DevicesList = ({
               deviceModelLabel={device.display_label}
               handleDeployNow={() => handleDeployNow(device)}
               currentDeployingDeviceId={currentDeployingDeviceId}
+              isKycQualified={isKycQualified}
             />
             <Divider />
           </>

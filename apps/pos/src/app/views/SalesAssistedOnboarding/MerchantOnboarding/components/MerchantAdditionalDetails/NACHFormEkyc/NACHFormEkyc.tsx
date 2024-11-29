@@ -31,6 +31,7 @@ export interface NachFormProps {
   isFormDisabled: boolean;
   isModularLoading: boolean;
   isUpdateModularLoading: boolean;
+  isNACHMandatory: boolean;
 }
 
 const NACHFormEkyc: React.FC<NachFormProps> = ({
@@ -42,6 +43,7 @@ const NACHFormEkyc: React.FC<NachFormProps> = ({
   isFormDisabled,
   isModularLoading,
   isUpdateModularLoading,
+  isNACHMandatory,
 }) => {
   const { id } = useParams();
   const toast = useToast();
@@ -123,7 +125,7 @@ const NACHFormEkyc: React.FC<NachFormProps> = ({
           variant="secondary"
           isFullWidth
           marginTop="spacing.5"
-          isDisabled={false}
+          isDisabled={isNACHMandatory}
         >
           Skip & add later
         </Button>

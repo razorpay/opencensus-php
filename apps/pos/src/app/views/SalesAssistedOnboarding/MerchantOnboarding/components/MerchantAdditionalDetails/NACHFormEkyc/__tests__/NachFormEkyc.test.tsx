@@ -21,6 +21,7 @@ const nachProps = {
   isFormDisabled: false,
   isModularLoading: false,
   isUpdateModularLoading: false,
+  isNACHMandatory: false,
 };
 
 describe('<NACHFormEkyc />', () => {
@@ -56,5 +57,21 @@ describe('<NACHFormEkyc />', () => {
     await userEvent.click(saveButton);
 
     expect(mockOnNachSubmitClick).toHaveBeenCalledTimes(1);
+  });
+
+  test('should disable the "Skip & add later" button if NACH is mandatory', () => {
+    nachProps['isNACHMandatory'] = true;
+    render(<NACHFormEkyc {...nachProps} />);
+
+    const skipButton = screen.getByRole('button', { name: /skip & add later/i });
+    expect(skipButton).toBeDisabled();
+  });
+
+  test('should enable the "Skip & add later" button if NACH is not mandatory', () => {
+    nachProps['isNACHMandatory'] = false;
+    render(<NACHFormEkyc {...nachProps} />);
+
+    const skipButton = screen.getByRole('button', { name: /skip & add later/i });
+    expect(skipButton).not.toBeDisabled();
   });
 });

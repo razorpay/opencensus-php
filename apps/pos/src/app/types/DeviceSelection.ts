@@ -125,4 +125,5 @@ export type DevicePaymentStatus = 'pending' | 'success' | 'payment_completed' | 
 export enum MILESTONE_NAME_FIELDS {
   SALES_MILESTONE = 'sales_milestone',
   PARTNER_MILESTONE = 'partner_milestone',
+  PARTNER_DEVICE_DEPLOYMENT_MILESTONE = 'partner_device_deployment_milestone',
 }

@@ -6,7 +6,10 @@ import { processFilesForModularSave } from 'apps/pos/src/app/components/SalesFil
 import { MODULES } from 'apps/pos/src/app/types/common';
 import { FileItem } from 'apps/pos/src/app/types/fileUpload';
 import { isKycQualified } from 'apps/pos/src/app/utils/merchantActivation';
-import { populateNACHFormWithModularConfigData } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/MerchantAdditionalDetails/additionalDetailsUtils';
+import {
+  populateNACHFormWithModularConfigData,
+  checkIfNACHIsMandatory,
+} from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/MerchantAdditionalDetails/additionalDetailsUtils';
 import NACHFormEkyc, {
   NachFormKeyNames,
   NachFormObject,
@@ -27,6 +30,7 @@ const NACHFormEkycContainer = (): JSX.Element | null => {
   const initialNachData = populateNACHFormWithModularConfigData(modularConfig);
   const [nachForm, setNachForm] = useState<NachFormObject>(initialNachData);
   const isFormDisabled = isKycQualified(merchantDetails?.activation?.posActivationStatus);
+  const isNACHMandatory = checkIfNACHIsMandatory(modularConfig);
 
   const onNachTextAreaChange = (event: TextChange) => {
     setNachForm((prev) => {
@@ -79,6 +83,7 @@ const NACHFormEkycContainer = (): JSX.Element | null => {
         onNachFileUploadChange={onNachFileUploadChange}
         onNachSubmitClick={onNachSubmitClick}
         onNachSkipClick={handleProceedToNextComponent}
+        isNACHMandatory={isNACHMandatory}
       />
     </ErrorBoundary>
   );

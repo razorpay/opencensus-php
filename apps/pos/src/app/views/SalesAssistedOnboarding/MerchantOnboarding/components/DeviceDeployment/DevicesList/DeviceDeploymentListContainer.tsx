@@ -10,6 +10,7 @@ import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding
 import {
   DEVICE_DEPLOYMENT_STATUS,
   getDeviceListDataFromModularConfig,
+  isKycQualifiedEkyc,
 } from 'apps/pos/src/app/utils/deviceDeployment';
 import { DEVICE_DEPLOYMENT_FIELDS } from 'apps/pos/src/app/types/DeviceDeployment';
 import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
@@ -30,6 +31,9 @@ const DeviceDeploymentList = (): JSX.Element | null => {
   });
   const [filteredDevicesList, setFilteredDevicesList] = useState(devicesList);
   const [currentDeployingDeviceId, setCurrentDeployingDeviceId] = useState<string>('');
+  const isKycQualified = isKycQualifiedEkyc(
+    states?.merchantDetails?.activation.posActivationStatus || '',
+  );
 
   useEffect(() => {
     const payload = {
@@ -137,6 +141,7 @@ const DeviceDeploymentList = (): JSX.Element | null => {
                 title="Choose Devices to Deploy"
                 devices={filteredDevicesList}
                 handleDeployNow={handleDeployNow}
+                isKycQualified={isKycQualified}
               />
             )}
           </TabPanel>

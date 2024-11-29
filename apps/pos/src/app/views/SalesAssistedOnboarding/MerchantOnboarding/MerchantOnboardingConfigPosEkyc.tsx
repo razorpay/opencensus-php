@@ -6,8 +6,11 @@ import {
   UserPlusIcon,
 } from '@razorpay/blade/components';
 import React from 'react';
-import { getDeviceDeploymentStatus } from '../../../utils/deviceDeployment';
-import AgreementSigning from './components/AgreementSigning';
+import {
+  getDeviceDeploymentStatus,
+  isDeviceDeploymentFlowActivated,
+} from 'apps/pos/src/app/utils/deviceDeployment';
+import AgreementSigning from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/AgreementSigning';
 import DeviceConfiguration from './components/DeviceDeployment/DeviceConfiguration';
 import DeviceDetailsContainer from './components/DeviceDeployment/DeviceDetails/';
 import DeviceMappingManualComponent from './components/DeviceDeployment/DeviceMapping/DeviceMappingManualComponent';
@@ -233,7 +236,9 @@ export const ONBOARDING_STEPS_POS_EKYC: OnboardingStep[] = [
     description: 'Provide merchant’s business information to start the POS journey.',
     getStatus: ({ states }) => getDeviceDeploymentStatus({ modularConfig: states.modularConfig }),
     checkIfDisabled: ({ states, values }) =>
-      !values.merchantId || !getAgreementComponentStatus(states.modularConfig),
+      !values.merchantId ||
+      !getAgreementComponentStatus(states.modularConfig) ||
+      !isDeviceDeploymentFlowActivated(states.modularConfig),
     checkIfCompleted: ({ states }) =>
       getProgressFromModularStep({
         modularConfig: states.modularConfig,

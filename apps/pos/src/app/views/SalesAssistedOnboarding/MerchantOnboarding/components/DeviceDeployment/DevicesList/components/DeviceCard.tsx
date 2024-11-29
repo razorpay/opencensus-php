@@ -25,6 +25,7 @@ interface DeviceCardProps {
   isModularLoading: boolean;
   vpa: string;
   currentDeployingDeviceId: string;
+  isKycQualified?: boolean;
   handleDeployNow: () => void;
 }
 export const DeviceCard = ({
@@ -39,6 +40,7 @@ export const DeviceCard = ({
   isModularLoading,
   currentDeployingDeviceId,
   vpa,
+  isKycQualified,
   handleDeployNow,
 }: DeviceCardProps): JSX.Element => {
   const { id, step } = useParams();
@@ -149,6 +151,7 @@ export const DeviceCard = ({
                     iconPosition="right"
                     onClick={handleDeployNow}
                     variant="button"
+                    isDisabled={!isKycQualified}
                   >
                     Deploy Now
                   </Link>
