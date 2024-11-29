@@ -369,22 +369,49 @@ class Core extends Base\Core
         $saveBusinessWebsite = true;
 
         Tracer::inspan(['name' => HyperTrace::PERFORM_KYC_VERIFICATION], function() use ($merchantDetails, $oldMerchantDetails, $merchant, $input, &$saveBusinessWebsite) {
+            $kycBlockFeatureFlags = [
+                FeatureConstants::KYC_BLOCK_PPAN_FOR_VAS => true,
+                FeatureConstants::KYC_BLOCK_CPAN_FOR_VAS => true,
+                FeatureConstants::KYC_BLOCK_GST_FOR_VAS => true,
+                FeatureConstants::KYC_BLOCK_CIN_FOR_VAS => true,
+                FeatureConstants::KYC_BLOCK_BAN_FOR_VAS => true,
+            ];
+
+            foreach ($kycBlockFeatureFlags as $key => $constant)
+            {
+                $kycBlockFeatureFlags[$key] = $merchant->org->isFeatureEnabled($key);
+            }
 
             $verificationStartTime = microtime(true);
             // do pan validation
-            $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
+            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_PPAN_FOR_VAS] === false)
+            {
+                $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
+            }
 
             $saveBusinessWebsite = $this->handleWebsiteInput($oldMerchantDetails, $merchantDetails, $input);
 
-            $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
+            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_CPAN_FOR_VAS] === false)
+            {
+                $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
+            }
 
-            $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
+            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_GST_FOR_VAS] === false)
+            {
+                $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
+            }
 
             $this->verifyShopEstbNumberIfApplicable($merchantDetails, $merchant, $input);
 
-            $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
+            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_CIN_FOR_VAS] === false)
+            {
+                $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
+            }
 
-            $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
+            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_BAN_FOR_VAS] === false)
+            {
+                $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
+            }
 
             $this->triggerSyncValidationRequests($merchant, $merchantDetails);
 

@@ -2337,6 +2337,18 @@ class Constants
 
     const ADD_WEBHOOK_HEADERS_ORG = 'add_webhook_headers_org';
 
+    const KYC_BLOCK_CIN_FOR_VAS = 'kyc_block_cin_for_vas';
+
+    const KYC_BLOCK_PPAN_FOR_VAS = 'kyc_block_ppan_for_vas';
+
+    const KYC_BLOCK_CPAN_FOR_VAS = 'kyc_block_cpan_for_vas';
+
+    const KYC_BLOCK_GST_FOR_VAS = 'kyc_block_gst_for_vas';
+
+    const KYC_BLOCK_BAN_FOR_VAS = 'kyc_block_ban_for_vas';
+
+    const KYC_BLOCK_OCR_FOR_VAS = 'kyc_block_ocr_for_vas';
+
     const ADD_WEBHOOK_HEADERS_MX = 'add_webhook_headers_mx';
 
     /**
@@ -3197,6 +3209,12 @@ class Constants
         self::ADD_WEBHOOK_HEADERS_ORG                      => true,
         self::ADD_WEBHOOK_HEADERS_MX                       => true,
         self::VAS_KYC_RBI                           => true,
+        self::KYC_BLOCK_CIN_FOR_VAS                  => true,
+        self::KYC_BLOCK_PPAN_FOR_VAS                 => true,
+        self::KYC_BLOCK_CPAN_FOR_VAS                 => true,
+        self::KYC_BLOCK_GST_FOR_VAS                  => true,
+        self::KYC_BLOCK_BAN_FOR_VAS                  => true,
+        self::KYC_BLOCK_OCR_FOR_VAS                  => true,
         self::ONE_CC_TAX_INCLUSION                   => true,
         self::OMNI_ENABLED                           => true,
         self::SPLIT_SETTLEMENTS_ENABLED              => true,
@@ -4762,6 +4780,38 @@ class Constants
             'display_name' => "VAS KYC RBI",
             'documentation' => "Feature flag added for the orgs where RBI requirements were added.",
         ],
+        self::KYC_BLOCK_CIN_FOR_VAS => [
+            'feature'       => self::KYC_BLOCK_CIN_FOR_VAS,
+            'display_name'  => 'KYC BLOCK CIN FOR VAS',
+            'documentation' => 'this feature flag will be used to block the specific CIN KYC parameter'
+        ],
+        self::KYC_BLOCK_PPAN_FOR_VAS => [
+            'feature'       => self::KYC_BLOCK_PPAN_FOR_VAS,
+            'display_name'  => 'KYC BLOCK PPAN FOR VAS',
+            'documentation' => 'this feature flag will be used to block the specific PPAN KYC parameter'
+        ],
+        self::KYC_BLOCK_CPAN_FOR_VAS => [
+            'feature'       => self::KYC_BLOCK_CPAN_FOR_VAS,
+            'display_name'  => 'KYC BLOCK CPAN FOR VAS',
+            'documentation' => 'this feature flag will be used to block the specific CPAN KYC parameter'
+        ],
+        self::KYC_BLOCK_GST_FOR_VAS => [
+            'feature'       => self::KYC_BLOCK_GST_FOR_VAS,
+            'display_name'  => 'KYC BLOCK GST FOR VAS',
+            'documentation' => 'this feature flag will be used to block the specific GST KYC parameter'
+        ],
+        self::KYC_BLOCK_BAN_FOR_VAS => [
+            'feature'       => self::KYC_BLOCK_BAN_FOR_VAS,
+            'display_name'  => 'KYC BLOCK BAN FOR VAS',
+            'documentation' => 'this feature flag will be used to block the specific Bank account detail KYC parameter'
+        ],
+        self::KYC_BLOCK_OCR_FOR_VAS => [
+            'feature'       => self::KYC_BLOCK_OCR_FOR_VAS,
+            'display_name'  => 'KYC BLOCK OCR FOR VAS',
+            'documentation' => 'this feature flag will be used to block the specific OCR KYC parameter'
+        ],
+
+
         self::ONE_CC_PARTIAL_COD  => [
             'feature'       => self::ONE_CC_PARTIAL_COD,
             'display_name'  => 'Feature flag for partial cod payment on merchant dashboard',

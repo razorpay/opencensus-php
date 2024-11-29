@@ -24,6 +24,7 @@ use RZP\Models\Gateway\File\Constants as GatewayConstants;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Core extends Base\Core
 {
@@ -530,6 +531,9 @@ class Core extends Base\Core
     public function shouldPerfomOcrOnDocumentUpload(
         Entity $document, Merchant\Entity $merchant, Merchant\Detail\Entity $merchantDetails): bool
     {
+        if($merchant->org->isFeatureEnabled(FeatureConstants::KYC_BLOCK_OCR_FOR_VAS) === true){
+            return false;
+        }
 
         if (Type::isDocumentTypeToPerformOcr($document->getDocumentType()) === false)
         {
