@@ -2239,8 +2239,14 @@ class UserController extends Controller
         {
             $connection = 'http://';
         }
+				$serverName = \Request::server('SERVER_NAME');
+				$env = \App::environment();
 
-        return $connection . \Request::server('SERVER_NAME');
+				if($env !== 'production' && strpos($serverName, ".int.dev") !== false) {
+					$serverName = str_replace(".int.dev", ".dev", $serverName);
+				}
+
+        return $connection . $serverName;
     }
 
     private function getLoginMethodFromSession()
