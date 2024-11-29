@@ -5413,6 +5413,15 @@ class Service extends Base\Service
                 return $this->core->deleteMerchantStoreInternal($merchantId, $input);
             case DetailConstants::SALES_ASSISTED_FORM_SUBMISSION:
                 return $this->core->submitSalesAssistedActivationForm($merchantId);
+            case Constants::CONFIRM_USER_ACTION:
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+                if (empty($this->app['basicauth']->getMerchant()) === true)
+                {
+                    $this->app['basicauth']->setMerchant($merchant);
+                }
+                $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
+                $user = $this->repo->user->getUserFromId($userDeviceDetail->getUserId());
+                return (new User\Core)->setContactMobileOrEmail($input, $user);
             case DetailConstants::SAVE_MERCHANT_DETAILS_FOR_ACTIVATION:
                 unset($input["action"]);
                 $subMerchant = $this->repo->merchant->findOrFail($merchantId);

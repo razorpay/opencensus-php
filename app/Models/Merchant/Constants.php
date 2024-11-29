@@ -347,6 +347,7 @@ final class Constants
     const TOTAL_LEAD_SCORE = 'total_lead_score';
 
     const ACTIVATED = 'activated';
+    const CONFIRM_USER_ACTION = "CONFIRM_USER_ACTION";
 
 
     public static $EntityBatchActionSettingParams = [

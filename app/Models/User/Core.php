@@ -2968,6 +2968,20 @@ class Core extends Base\Core
         return $receiver;
     }
 
+    public function setContactMobileOrEmail(array $input, Entity $user)
+    {
+        if (isset($input[Entity::CONTACT_MOBILE]) === true){
+            $user->setContactMobile($input[Entity::CONTACT_MOBILE]);
+            $this->repo->saveOrFail($user);
+        }
+        else if (isset($input[Entity::EMAIL]) === true){
+            $user->setEmail($input[Entity::EMAIL]);
+            $this->repo->saveOrFail($user);
+        }
+
+        $this->setContactMobileOrEmailVerify( $input, $user);
+    }
+
     public function setContactMobileOrEmailVerify(array $input, Entity $user)
     {
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
