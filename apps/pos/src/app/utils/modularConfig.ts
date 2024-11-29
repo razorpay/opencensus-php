@@ -166,7 +166,7 @@ export const getAgreementSigningStatus = ({
   return isOnlineAgreementExecuted || isOfflineAgreementExecuted ? COMPLETED : PENDING;
 };
 
-interface IsPosEnabledForMerchant {
+interface isPosEnabledArgs {
   states: {
     merchantDetails: {
       business: {
@@ -181,7 +181,7 @@ interface IsPosEnabledForMerchant {
     };
   };
 }
-export const isPosEnabledForMerchant = ({ states }: IsPosEnabledForMerchant) => {
+export const isPosEnabledForMerchant = ({ states }: isPosEnabledArgs) => {
   if (!states) return false;
   const businessType = states.merchantDetails?.business.type.value;
   const posActivationFlow = states.merchantDetails?.activation.posActivationFlow;
@@ -193,6 +193,5 @@ export const isPosEnabledForMerchant = ({ states }: IsPosEnabledForMerchant) => 
     posActivationFlow !== null && typeof posActivationFlow !== 'undefined'
       ? allowedFlows.includes(posActivationFlow ?? '')
       : true;
-
   return isRegisteredMerchant && isWhitelistedForPos && isPgosMerchant;
 };
