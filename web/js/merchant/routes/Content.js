@@ -715,7 +715,10 @@ class Content extends Component {
       activation_form_milestone,
       submitted,
       activation_status,
+      workflow_details
     } = user;
+
+    const isMasterKyc = workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING';
 
     const isValidMerchant =
       isOrgRZP &&
@@ -733,7 +736,7 @@ class Content extends Component {
       isL2Sumitted && activation_status !== 'activated' && activation_status !== null;
 
     if (isEasyEnabledMerchant) {
-      return isValidMerchant && isExperimentEnabled(ray_onboarding_ai);
+      return isValidMerchant && isExperimentEnabled(ray_onboarding_ai) && !isMasterKyc;
     }
 
     return isValidMerchant && isExperimentEnabled(ray_ai);
