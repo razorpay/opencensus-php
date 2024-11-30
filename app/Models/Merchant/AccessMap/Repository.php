@@ -21,6 +21,7 @@ use RZP\Models\Merchant\Acs\Traits\AsvEntityConnection;
 use RZp\Models\Merchant\MerchantApplications as MerchantApp;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration;
 
+
 class Repository extends Base\Repository
 {
     use RepositoryUpdateTestAndLive;
@@ -380,6 +381,13 @@ class Repository extends Base\Repository
      */
     public function getMappingByApplicationType(string $subMerchantId, string $appType)
     {
+        $experimentEnabled = $this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($experimentEnabled){
+            [$redirectToApi, $response] = $this->fetchAccessMapsForSubmerchant($subMerchantId, $appType);
+            if(!$redirectToApi){
+                return $response;
+            }
+        }
         $accessMapsEntityId   = $this->dbColumn(Entity::ENTITY_ID);
         $accessMapsEntityType = Table::MERCHANT_ACCESS_MAP . '.' . Entity::ENTITY_TYPE;
         $accessMapsCreatedAt  = Table::MERCHANT_ACCESS_MAP . '.' . Entity::CREATED_AT;
@@ -534,9 +542,16 @@ class Repository extends Base\Repository
         );
     }
 
-
     public function getSubMerchantCount(string $partnerId)
     {
+        $experimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($experimentEnabled){
+            [$redirectToApi,$response]=$this->fetchMerchantCount($partnerId);
+            if(!$redirectToApi)
+            {
+                return $response;
+            }
+        }
 
         return $this->newQuery()
                     ->where(Entity::ENTITY_OWNER_ID, $partnerId)
@@ -769,6 +784,42 @@ class Repository extends Base\Repository
               ->distinct();
 
         return $query->get();
+    }
+
+    private function fetchMerchantCount($partnerId, $fetchSingleEntity = false): array
+    {
+        $redirectFlag = false;
+        $response = null;
+        try {
+            $partnershipResponse = $this->app['partnerships']->getSubMerchantCount($partnerId);
+
+            $response = empty($partnershipResponse)
+                ? ($fetchSingleEntity ? null : 0)
+                : ($fetchSingleEntity ? $partnershipResponse[0] : $partnershipResponse);
+        }
+        catch (\Exception $e) {
+            $redirectFlag = true;
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PARTNERSHIPS_ACCESS_MAP_SUBMERCHANT_COUNT_ERROR);
+        }
+
+        return [$redirectFlag, $response];
+    }
+
+    private function fetchAccessMapsForSubmerchant($subMerchantId, $appType, $fetchSingleEntity = false): array
+    {
+        $redirectFlag = false;
+        $response = null;
+        try {
+            $partnershipResponse = $this->app['partnerships']->getMappingByApplicationType($subMerchantId, $appType);
+            $response = empty($partnershipResponse)
+                ? ($fetchSingleEntity ? null : [])
+                : ($fetchSingleEntity ? $partnershipResponse[0] : $partnershipResponse);
+        } catch (\Exception $e) {
+            $redirectFlag = true;
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PARTNERSHIPS_MAPPING_BY_APPLICATION_TYPE_ERROR);
+        }
+
+        return [$redirectFlag, $response];
     }
 
     private function fetchMerchantAccessMapsOnFilter(PartnershipsAccessMapDTO $partnershipsDTO, $fetchSingleEntity = false): array

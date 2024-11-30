@@ -37,59 +37,60 @@ use RZP\Models\Merchant\AccessMap\Entity as MerchantAccessMapEntity;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 use RZP\Models\Partner\Config\Entity as PartnerConfigEntity;
 
+
 class PartnershipsService extends Base\Service
 {
-    const CONTENT_TYPE_JSON           = 'application/json';
+    const CONTENT_TYPE_JSON = 'application/json';
 
-    const CREATE_RULE_GROUP           = '/twirp/rzp.commissions.rules.rule_group.v1.RuleGroupAPI/Create';
+    const CREATE_RULE_GROUP = '/twirp/rzp.commissions.rules.rule_group.v1.RuleGroupAPI/Create';
 
-    const HEALTH_CHECK                = '/twirp/rzp.common.health.v1.HealthCheckAPI/Check';
+    const HEALTH_CHECK = '/twirp/rzp.common.health.v1.HealthCheckAPI/Check';
 
-    const GET_RULE_GROUP_BY_ID        = '/twirp/rzp.commissions.rules.rule_group.v1.RuleGroupAPI/Get';
+    const GET_RULE_GROUP_BY_ID = '/twirp/rzp.commissions.rules.rule_group.v1.RuleGroupAPI/Get';
 
-    const GET_ALL_RULE_GROUP          = '/twirp/rzp.commissions.rules.rule_group.v1.RuleGroupAPI/List';
+    const GET_ALL_RULE_GROUP = '/twirp/rzp.commissions.rules.rule_group.v1.RuleGroupAPI/List';
 
-    const UPDATE_RULE_GROUP           = '/twirp/rzp.commissions.rules.v1.RuleGroupAPI/List';
+    const UPDATE_RULE_GROUP = '/twirp/rzp.commissions.rules.v1.RuleGroupAPI/List';
 
-    const CREATE_RULE                 = '/twirp/rzp.commissions.rules.rule.v1.RuleAPI/Create';
+    const CREATE_RULE = '/twirp/rzp.commissions.rules.rule.v1.RuleAPI/Create';
 
-    const GET_RULE                    = '/twirp/rzp.commissions.rules.rule.v1.RuleAPI/Get';
+    const GET_RULE = '/twirp/rzp.commissions.rules.rule.v1.RuleAPI/Get';
 
-    const UPDATE_RULE                 = '/twirp/rzp.commissions.rules.rule.v1.RuleAPI/Update';
+    const UPDATE_RULE = '/twirp/rzp.commissions.rules.rule.v1.RuleAPI/Update';
 
-    const GET_RULE_BY_RULE_GROUP      = '/twirp/rzp.commissions.rules.rule.v1.RuleAPI/GetByRuleGroup';
+    const GET_RULE_BY_RULE_GROUP = '/twirp/rzp.commissions.rules.rule.v1.RuleAPI/GetByRuleGroup';
 
-    const CREATE_RULE_CONFIG_MAPPING  = '/twirp/rzp.commissions.rules.rule_config_mapping.v1.RuleConfigMappingAPI/Create';
+    const CREATE_RULE_CONFIG_MAPPING = '/twirp/rzp.commissions.rules.rule_config_mapping.v1.RuleConfigMappingAPI/Create';
 
-    const UPDATE_RULE_CONFIG_MAPPING  = '/twirp/rzp.commissions.rules.rule_config_mapping.v1.RuleConfigMappingAPI/Update';
+    const UPDATE_RULE_CONFIG_MAPPING = '/twirp/rzp.commissions.rules.rule_config_mapping.v1.RuleConfigMappingAPI/Update';
 
-    const CREATE_AUDIT_LOG            = '/twirp/rzp.commissions.audit.v1.AuditLogAPI/Create';
+    const CREATE_AUDIT_LOG = '/twirp/rzp.commissions.audit.v1.AuditLogAPI/Create';
 
-    const LIST_AUDIT_LOG_BY_ENTITY_IDS    = '/twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityIds';
+    const LIST_AUDIT_LOG_BY_ENTITY_IDS = '/twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityIds';
 
-    const LIST_AUDIT_LOG_BY_ENTITY_ID    = '/twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityId';
+    const LIST_AUDIT_LOG_BY_ENTITY_ID = '/twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityId';
 
-    const GET_LAST_PARTNER_MIGRATION   = '/twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/GetLastPartnerMigrationAudit';
+    const GET_LAST_PARTNER_MIGRATION = '/twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/GetLastPartnerMigrationAudit';
 
     const CREATE_PARNTER_MIGRATION_AUDIT = '/twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/CreatePartnerMigrationAudit';
 
-    const UPDATE_INVOICE_STATUS          = '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/UpdateInvoiceStatus';
+    const UPDATE_INVOICE_STATUS = '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/UpdateInvoiceStatus';
 
     const PROCESS_BULK_INVOICE_SETTLEMENT = '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/ProcessBulkInvoiceSettlement';
 
 
-    const UPDATE_PARTNER_CONFIG          = '/twirp/rzp.commissions.partner_config.v1.PartnerConfigAPI/Update';
+    const UPDATE_PARTNER_CONFIG = '/twirp/rzp.commissions.partner_config.v1.PartnerConfigAPI/Update';
 
-    const DELETE_PARTNER_CONFIG          = '/twirp/rzp.commissions.partner_config.v1.PartnerConfigAPI/Delete';
+    const DELETE_PARTNER_CONFIG = '/twirp/rzp.commissions.partner_config.v1.PartnerConfigAPI/Delete';
 
-    CONST UPDATE_MERCHANT_APPLICATION    = '/twirp/rzp.commissions.merchant_application.v1.MerchantApplicationAPI/Update';
+    const UPDATE_MERCHANT_APPLICATION = '/twirp/rzp.commissions.merchant_application.v1.MerchantApplicationAPI/Update';
 
     CONST DELETE_MERCHANT_APPLICATION    = '/twirp/rzp.commissions.merchant_application.v1.MerchantApplicationAPI/Delete';
     const GET_MERCHANT_APPLICATION_LIST  = '/twirp/rzp.commissions.merchant_application.v1.MerchantApplicationAPI/List';
 
-    CONST UPDATE_MERCHANT_ACCESS_MAP     = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/Update';
+    const UPDATE_MERCHANT_ACCESS_MAP = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/Update';
 
-    CONST DELETE_MERCHANT_ACCESS_MAP     = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/Delete';
+    const DELETE_MERCHANT_ACCESS_MAP = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/Delete';
 
     CONST GET_MERCHANT_ACCESS_MAP_LIST   = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/List';
 
@@ -117,6 +118,10 @@ class PartnershipsService extends Base\Service
 
     const GET_LAST_EVENT_AUDITS = "/twirp/rzp.partnerships.eventauditlogs.v1.EventAuditLogsAPI/FetchLastEventAudits";
     const GET_PARTNER_CONFIG_LIST   = '/twirp/rzp.commissions.partner_config.v1.PartnerConfigAPI/List';
+
+    const GET_SUBMERCHANT_COUNT = "/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/GetSubMerchantCount";
+
+    const GET_MAPPING_BY_APPLICATION_TYPE = "/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/GetMappingsByApplicationType";
 
     const ACTIVATED = 'ACTIVATED';
 
@@ -149,9 +154,9 @@ class PartnershipsService extends Base\Service
         'commission_invoice_generate' => self::UPDATE_INVOICE_STATUS
     );
 
-    const ROUTE   = 'route';
+    const ROUTE = 'route';
     const SUCCESS = 'success';
-    const RETRY   = 'retry';
+    const RETRY = 'retry';
 
     /**
      * @var string
@@ -186,13 +191,13 @@ class PartnershipsService extends Base\Service
     {
         parent::__construct();
 
-        $this->env          = $this->app['env'];
+        $this->env = $this->app['env'];
         $PartnershipsConfig = $this->app['config']['applications.partnerships'];
 
         $this->baseLiveUrl = $PartnershipsConfig['url']['live'];
         $this->baseTestUrl = $PartnershipsConfig['url']['test'];
 
-        $this->key    = $PartnershipsConfig['username'];
+        $this->key = $PartnershipsConfig['username'];
         $this->secret = $PartnershipsConfig['secret'];
 
         $this->skipPassport = $PartnershipsConfig['skip_jwt_passport'];
@@ -302,18 +307,15 @@ class PartnershipsService extends Base\Service
     {
         return $this->sendRequestWithRetry($parameters, self::UPDATE_INVOICE_STATUS, Requests::POST);
     }
+
     public function updateInvoiceStatusAsync($parameters, $partnerId)
     {
-        try
-        {
-            if ($this->isPrtsInvoiceSyncEnabled($partnerId))
-            {
+        try {
+            if ($this->isPrtsInvoiceSyncEnabled($partnerId)) {
                 $path = self::UPDATE_INVOICE_STATUS;
                 PartnershipServiceAsync::dispatch($parameters, $path);
             }
-        }
-        catch(\Throwable $e)
-        {
+        } catch (\Throwable $e) {
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
@@ -368,14 +370,14 @@ class PartnershipsService extends Base\Service
      *
      * @return string | null
      */
-    public function getSubmSignupSource(string $merchantId) : mixed
+    public function getSubmSignupSource(string $merchantId): mixed
     {
         $parameters = [
-            'entity_id'  => $merchantId,
-            'entity_type'=> 'merchant',
-            'name'       => 'SIGNUP_SOURCE'
+            'entity_id' => $merchantId,
+            'entity_type' => 'merchant',
+            'name' => 'SIGNUP_SOURCE'
         ];
-        $response =  $this->sendRequestWithRetry($parameters, self::GET_SUBM_SIGNUP_SOURCE, Requests::POST, Mode::LIVE);
+        $response = $this->sendRequestWithRetry($parameters, self::GET_SUBM_SIGNUP_SOURCE, Requests::POST, Mode::LIVE);
         return (empty($response['response']) || empty($response['response']['settings'])) ? "" : $response['response']['settings']['value'];
     }
 
@@ -384,13 +386,48 @@ class PartnershipsService extends Base\Service
      *
      * @return string | null
      */
-    public function getInvoiceSignedUrl(string $invoiceId) : mixed
+    public function getInvoiceSignedUrl(string $invoiceId): mixed
     {
         $parameters = [
-            'invoice_id'  => $invoiceId,
+            'invoice_id' => $invoiceId,
         ];
-        $result =  $this->sendRequestWithRetry($parameters, self::GET_INVOICE_SIGNED_URL, Requests::POST);
+        $result = $this->sendRequestWithRetry($parameters, self::GET_INVOICE_SIGNED_URL, Requests::POST);
         return empty($result['response']) ? "" : $result['response']['signed_url'];
+    }
+
+    // GetSubMerchantCount Api returns the count of the submerchants based on the partnerId.
+    public function getSubMerchantCount($partnerId)
+    {
+        $parameters = [
+            'id' => $partnerId,
+        ];
+        $response = $this->fetchPartnershipsResponse($parameters, self::GET_SUBMERCHANT_COUNT);
+        if (empty($response)) {
+            throw new Exception\ServerErrorException(
+                'Error completing the request: ' . ($response['response'] ?? 'No response'),
+                ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE,
+                [
+                    "input" => $partnerId,
+                    "response" => $response
+                ]
+            );
+        }
+        return $response['submerchant_count'];
+    }
+
+
+    // GetMappingsByApplicationType Api returns active access maps that links submerchant to a app of partner type
+    public function getMappingByApplicationType($subMerchantId, $appType)
+    {
+        $parameters = [
+            'id' => $subMerchantId,
+            'appType' => $appType
+        ];
+        $response = $this->fetchPartnershipsResponse($parameters, self::GET_MAPPING_BY_APPLICATION_TYPE);
+        if (empty($response)) {
+            return [];
+        }
+        return $response['merchant_access_maps'];
     }
 
     public function commissionCapture($parameters)
@@ -1101,15 +1138,10 @@ class PartnershipsService extends Base\Service
         return $partnershipsServiceResponse;
     }
 
-    private function fetchPartnershipsResponse(
-        array $input,
-        string $endpoint
-    ): array
+    private function fetchPartnershipsResponse(array $input, string $endpoint): array
     {
         $response = $this->sendRequest($input, $endpoint, Requests::POST);
-
-        if (!isset($response['status_code']) || $response['status_code'] != '200')
-        {
+        if (!isset($response['status_code']) || $response['status_code'] != '200'){
             throw new Exception\ServerErrorException(
                 'Error completing the request: ' . ($response['response'] ?? 'No response'),
                 ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE,
@@ -1191,5 +1223,4 @@ class PartnershipsService extends Base\Service
         $partnerConfigEntity->forceFill($partnerConfigResponses);
         return $partnerConfigEntity;
     }
-
 }
