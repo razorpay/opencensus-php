@@ -1,7 +1,7 @@
 import moment from 'moment';
 
 import { SpiltzContextState } from 'common/splitz/types';
-import { isExperimentEnabled, isInternalTestingEnabled } from 'common/splitz/utils';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import { SettlementsCollectionReducerState, User } from 'common/typings';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { DateInfo, ERROR_TYPE, SettlementListFilters } from 'merchant/views/Settlements/v3/typings';
@@ -91,17 +91,18 @@ export const isSettlementsV3detailsRevamp = (splitz: SpiltzContextState, user: U
     abExperiments: { settlementsV3_details_revamp: undefined },
   };
 
-  const isInternalTesting = isInternalTestingEnabled(abExperiments);
-  if (isInternalTesting) return true;
+  const isExcludedSegment = !user.isOrgRZP;
+
+  if (isExcludedSegment) {
+    const isSettlementsEnabled = isExperimentEnabled(
+      abExperiments?.ramp_settlements_for_excluded_segment,
+    );
+    return isSettlementsEnabled;
+  }
 
   if (!abExperiments?.settlementsV3_details_revamp) return false;
-  if (user.isOrgCurlec) {
-    return false;
-  }
-  return (
-    isExperimentEnabled(abExperiments.settlementsV3_details_revamp) &&
-    (user.isOrgRZP || user.isVasTestingMerchant)
-  );
+
+  return isExperimentEnabled(abExperiments.settlementsV3_details_revamp) && user.isOrgRZP;
 };
 
 export const trackSettlmentDetailsCopied = ({ type }): void => {

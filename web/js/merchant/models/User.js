@@ -1889,9 +1889,13 @@ export default class User {
   }
 
   get isAccountAndSettingsRevampEnabled() {
+    const isExcludedSegmentRampEnabled =
+      getSplitzExperimentVariant('ramp_account_settings_for_excluded_segment')?.variables
+        ?.result === 'on';
+
     return (
       getSplitzExperimentVariant('account_settings_revamp')?.variables?.result === 'on' &&
-      (this.isOrgRZP || this.isOrgCurlec || this.isVasTestingMerchant)
+      (this.isOrgRZP || this.isOrgCurlec || isExcludedSegmentRampEnabled)
     );
   }
 
@@ -1969,9 +1973,13 @@ export default class User {
   }
 
   get isSettlementV3RevampEnabled() {
+    const isExcludedSegmentRampEnabled =
+      getSplitzExperimentVariant('ramp_settlements_for_excluded_segment')?.variables?.result ===
+      'on';
+
     return (
       getSplitzExperimentVariant('settlement_v3_revamp')?.variables?.result === 'on' &&
-      (this.isOrgRZP || this.isVasTestingMerchant)
+      (this.isOrgRZP || isExcludedSegmentRampEnabled)
     );
   }
 

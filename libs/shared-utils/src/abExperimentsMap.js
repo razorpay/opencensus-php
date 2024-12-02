@@ -668,4 +668,18 @@ export default {
     //prod experiment ids,
     'Okgdts0jp2QQse',
   ],
+  ramp_account_settings_for_excluded_segment: [
+    //beta experiment ids
+    'PQMn9yz3AKaBNl',
+
+    //prod experiment ids,
+    'PQMknQIuhuCeHd',
+  ],
+  ramp_settlements_for_excluded_segment: [
+    //beta experiment ids
+    'PQMyYVTn3GVaoo',
+
+    //prod experiment ids,
+    'PQMwxDcW8bE6Ma',
+  ],
 };

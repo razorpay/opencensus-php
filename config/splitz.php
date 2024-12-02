@@ -257,5 +257,11 @@ return [
         
         // razorx api call disabled
         'RAZORX_API_CALL_DISBALED' => env('RAZORX_API_CALL_DISBALED', ''),
+
+        // Ramp Account and Settings for Excluded Segment of merchants
+        'RAMP_ACCOUNT_SETTINGS_FOR_EXCLUDED_SEGMENT' => env('RAMP_ACCOUNT_SETTINGS_FOR_EXCLUDED_SEGMENT', ''),
+
+        // Ramp Account and Settings for Excluded Segment of merchants
+        'RAMP_SETTLEMENTS_FOR_EXCLUDED_SEGMENT' => env('RAMP_SETTLEMENTS_FOR_EXCLUDED_SEGMENT', ''),
     ]
 ];
