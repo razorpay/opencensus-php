@@ -1136,57 +1136,96 @@ class Core extends Base\Core
             }
         }
 
-
-       
-
         // Only accounts with  2223, 2224, VAJSWCA prefix can be migrated
-        $accountPrefixForBankAccount = substr($bankAccount->getAccountNumber(), 0, 4);
-        $accountPrefixForBankAccount2 = substr($bankAccount2->getAccountNumber(), 0, 4);
-
-
-        if (in_array($accountPrefixForBankAccount, $validPrefixes) || in_array($accountPrefixForBankAccount2, $validPrefixes))
-        {
-            if ($virtualAccount->hasBankAccount2() === true)
+        if ($virtualAccount->hasBankAccount2() === true){
+            $accountPrefixForBankAccount2 = substr($bankAccount2->getAccountNumber(), 0, 4);
+            if (in_array($accountPrefixForBankAccount2, $validPrefixes))
             {
-                $newBankAccount = $bankAccount2->replicate();
-            }
-            else
-            {
-                $newBankAccount = $bankAccount->replicate();
-            }
-
-            $newBankAccount->setIfsc(Provider::IFSC[Provider::AXIS]);
-
-            $this->repo->transaction(function() use ($virtualAccount, $bankAccount, $bankAccount2, $newBankAccount)
-            {
-                // If virtual account was migrated to RBL
-                // Then we set RBL bank account to virtualAccount->bankAccount
                 if ($virtualAccount->hasBankAccount2() === true)
                 {
-                    $virtualAccount->bankAccount()->associate($bankAccount2);
+                    $newBankAccount = $bankAccount2->replicate();
                 }
-
-                // set Axis to bankAccount2
-                $this->repo->saveOrFail($newBankAccount);
-
-                $virtualAccount->bankAccount2()->associate($newBankAccount);
-
-                $this->repo->saveOrFail($virtualAccount);
-            });
-
-            $this->trace->info(TraceCode::VA_MIGRATE_SUCCESS,
-                [
-                    'va_id'             => $virtualAccount->getPublicId(),
-                    'merchant_id'       => $virtualAccount->getMerchantId(),
-                    'old_bank_account'  => $bankAccount->getAccountNumber(),
-                    'old_ifsc'          => $bankAccount->getIfscCode(),
-                    'new_bank_account2' => $newBankAccount->getAccountNumber(),
-                    'new_ifsc'          => $newBankAccount->getIfscCode(),
-
-                ]);
-            return 1;
+                else
+                {
+                    $newBankAccount = $bankAccount->replicate();
+                }
+    
+                $newBankAccount->setIfsc(Provider::IFSC[Provider::AXIS]);
+    
+                $this->repo->transaction(function() use ($virtualAccount, $bankAccount, $bankAccount2, $newBankAccount)
+                {
+                    // If virtual account was migrated to RBL
+                    // Then we set RBL bank account to virtualAccount->bankAccount
+                    if ($virtualAccount->hasBankAccount2() === true)
+                    {
+                        $virtualAccount->bankAccount()->associate($bankAccount2);
+                    }
+    
+                    // set Axis to bankAccount2
+                    $this->repo->saveOrFail($newBankAccount);
+    
+                    $virtualAccount->bankAccount2()->associate($newBankAccount);
+    
+                    $this->repo->saveOrFail($virtualAccount);
+                });
+    
+                $this->trace->info(TraceCode::VA_MIGRATE_SUCCESS,
+                    [
+                        'va_id'             => $virtualAccount->getPublicId(),
+                        'merchant_id'       => $virtualAccount->getMerchantId(),
+                        'old_bank_account'  => $bankAccount->getAccountNumber(),
+                        'old_ifsc'          => $bankAccount->getIfscCode(),
+                        'new_bank_account2' => $newBankAccount->getAccountNumber(),
+                        'new_ifsc'          => $newBankAccount->getIfscCode(),
+    
+                    ]);
+                return 1;
+            }
+        }else{
+            $accountPrefixForBankAccount = substr($bankAccount->getAccountNumber(), 0, 4);
+            if (in_array($accountPrefixForBankAccount, $validPrefixes))
+            {
+                if ($virtualAccount->hasBankAccount2() === true)
+                {
+                    $newBankAccount = $bankAccount2->replicate();
+                }
+                else
+                {
+                    $newBankAccount = $bankAccount->replicate();
+                }
+    
+                $newBankAccount->setIfsc(Provider::IFSC[Provider::AXIS]);
+    
+                $this->repo->transaction(function() use ($virtualAccount, $bankAccount, $bankAccount2, $newBankAccount)
+                {
+                    // If virtual account was migrated to RBL
+                    // Then we set RBL bank account to virtualAccount->bankAccount
+                    if ($virtualAccount->hasBankAccount2() === true)
+                    {
+                        $virtualAccount->bankAccount()->associate($bankAccount2);
+                    }
+    
+                    // set Axis to bankAccount2
+                    $this->repo->saveOrFail($newBankAccount);
+    
+                    $virtualAccount->bankAccount2()->associate($newBankAccount);
+    
+                    $this->repo->saveOrFail($virtualAccount);
+                });
+    
+                $this->trace->info(TraceCode::VA_MIGRATE_SUCCESS,
+                    [
+                        'va_id'             => $virtualAccount->getPublicId(),
+                        'merchant_id'       => $virtualAccount->getMerchantId(),
+                        'old_bank_account'  => $bankAccount->getAccountNumber(),
+                        'old_ifsc'          => $bankAccount->getIfscCode(),
+                        'new_bank_account2' => $newBankAccount->getAccountNumber(),
+                        'new_ifsc'          => $newBankAccount->getIfscCode(),
+    
+                    ]);
+                return 1;
+            }
         }
-
         return 0;
     }
 
