@@ -2285,6 +2285,8 @@ class Constants
 
     const PG_V3_ONBOARDING_IN_PROGRESS = 'pg_v3_onboarding_progress';
 
+    const C360_MERCHANT_DASHBOARD = 'c360_merchant_dashboard';
+
     /**
      * Feature flag to make idempotency key mandatory for the merchant while creating payouts.
      */
@@ -3285,6 +3287,8 @@ class Constants
         self::SHOW_PG_V3                             => true,
         self::PG_V3_ONBOARDING_COMPLETED             => true,
         self::PG_V3_ONBOARDING_IN_PROGRESS            => true,
+        self::C360_MERCHANT_DASHBOARD                 => true,
+
 
         self::PAYOUT_IDEM_KEY_REQUIRED        => true,
         self::BANKING_UPI_REARCH                     => true,
@@ -4742,6 +4746,11 @@ class Constants
         self::PG_V3_ONBOARDING_IN_PROGRESS => [
             'feature'       => self::PG_V3_ONBOARDING_IN_PROGRESS,
             'display_name'  => 'merchant is in progress of new onboarding flow',
+            'documentation' => ''
+        ],
+        self::C360_MERCHANT_DASHBOARD => [
+            'feature'       => self::C360_MERCHANT_DASHBOARD,
+            'display_name'  => 'display c360 merchant dashboard ',
             'documentation' => ''
         ],
         self::PAYOUT_IDEM_KEY_REQUIRED => [
