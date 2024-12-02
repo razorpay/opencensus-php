@@ -18486,6 +18486,7 @@ class Route
         'credcase' => ['expire_keys'],
 
         'razorassist' => [
+            'merchant_fetch_internal_users',
             'email_user_status_for_email_update',
             'merchant_edit_email_self_serve',
             'fetch_users_internal',
