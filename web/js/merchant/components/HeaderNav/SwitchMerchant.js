@@ -16,6 +16,7 @@ import { isExperimentActive } from 'common/utils/rzp-utils';
 import { createNewAccountTrack } from './track';
 
 const CREATE_MERCHANT_CTA_LABEL = 'Create a new account';
+const EXISTING_ACCOUNT_LABEL = 'Existing Account';
 
 const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   const {
@@ -30,9 +31,17 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   linkedActs.sort((m1, m2) =>
     (m1.display_name || m1.name).localeCompare(m2.display_name || m2.name),
   );
+  let merchantsWithoutNameCount = 1;
   merchants = merchants
     .flatMap((merchant) => (merchant.parent_id ? [] : merchant))
-    .concat(linkedActs);
+    .concat(linkedActs)
+    .map((merchant) => {
+      if (!merchant.name) {
+        merchant.name = `${EXISTING_ACCOUNT_LABEL} ${merchantsWithoutNameCount}`;
+        merchantsWithoutNameCount++;
+      }
+      return merchant;
+    });
 
   const handleCreateNewAccount = () => {
     createNewAccountTrack();
@@ -95,10 +104,20 @@ class SwitchMerchantTypeaheadComponent extends Component {
     super(props);
 
     this.merchantList = Object.keys(props.user.merchants);
+    let merchantsWithoutNameCount = 1;
+    this.merchants = this.merchantList.reduce((acc, merchantID) => {
+      const merchant = { ...props.user.merchants[merchantID] };
+      if (!merchant.name) {
+        merchant.name = `${EXISTING_ACCOUNT_LABEL} ${merchantsWithoutNameCount}`;
+        merchantsWithoutNameCount++;
+      }
+      acc[merchantID] = merchant;
+      return acc;
+    }, {});
 
     this.state = {
       searchTerm: '',
-      merchants: this.merchantList,
+      merchantIds: this.merchantList,
     };
 
     this.onSearch = this.onSearch.bind(this);
@@ -106,19 +125,18 @@ class SwitchMerchantTypeaheadComponent extends Component {
 
   onSearch(e) {
     const searchTerm = e.target.value;
-    const { user } = this.props;
 
     if (searchTerm === this.state.searchTerm) {
       return;
     }
 
-    const merchants = this.merchantList.filter((item) => {
-      const name = user.merchants[item].name.toLowerCase();
+    const merchantIds = this.merchantList.filter((item) => {
+      const name = this.merchants[item].name.toLowerCase();
 
       return name.indexOf(searchTerm.toLowerCase()) >= 0;
     });
 
-    this.setState({ searchTerm, merchants });
+    this.setState({ searchTerm, merchantIds });
   }
 
   handleCreateNewAccount() {
@@ -144,14 +162,14 @@ class SwitchMerchantTypeaheadComponent extends Component {
           onChange={this.onSearch}
         />
         <ul className="merchants-list nav nav-stacked">
-          {this.state.merchants.map((item) => {
+          {this.state.merchantIds.map((item) => {
             const isActive = item === user.current;
 
             return (
               <li key={item} className={`${isActive ? 'active' : ''}`}>
-                <a onClick={() => onSwitchMerchant(user.merchants[item])}>
+                <a onClick={() => onSwitchMerchant(this.merchants[item])}>
                   <i className="i i-check" />{' '}
-                  {user.merchants[item].display_name || user.merchants[item].name}
+                  {this.merchants[item].display_name || this.merchants[item].name}
                 </a>
               </li>
             );

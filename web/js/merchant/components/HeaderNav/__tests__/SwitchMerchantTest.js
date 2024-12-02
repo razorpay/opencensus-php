@@ -11,6 +11,7 @@ const props = {
     merchants: [
       { id: 1, product: 'primary', name: 'Test1' },
       { id: 2, product: 'banking', name: 'Test2' },
+      { id: 2, product: 'primary', name: '' },
     ],
   },
   onSwitchMerchant: () => noop,
@@ -53,6 +54,18 @@ describe('SwitchMerchant', () => {
     expect(screen.getByText(CREATE_MERCHANT_CTA_LABEL)).toBeVisible();
   });
 
+  xit('should show Existing Account label for accounts with no name in the dropdown', () => {
+    render(<SwitchMerchant {...props} />);
+    fireEvent(
+      screen.getByText('Switch Merchant'),
+      new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    expect(screen.queryByText('Existing Account 1')).toBeVisible();
+  });
+
   xit('should show create account button if experiment is on', () => {
     jest.doMock('common/splitz', () => ({
       useSplitzService: () => ({
@@ -77,7 +90,7 @@ describe('SwitchMerchant', () => {
     expect(openSpy).toHaveBeenCalledWith('https://accounts.np.razorpay.in/merchants/new', '_blank');
   });
 
-  xit('should not show create account button if experiment is on', () => {
+  xit('should not show create account button if experiment is off', () => {
     render(<SwitchMerchant {...props} />);
 
     expect(screen.getByText(CREATE_MERCHANT_CTA_LABEL)).not.toBeVisible();
