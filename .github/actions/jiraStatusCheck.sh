@@ -25,7 +25,7 @@ else
 
   # Step 2: Use GitHub search API to find PRs with the JIRA ID in the body, across all open and closed PRs
   pr_search_response=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
-  "https://api.github.com/search/issues?q=repo:razorpay/api+type:pr+${JIRA_ISSUE_ID}+in:body+is:pr" \
+  "https://api.github.com/search/issues?q=repo:razorpay/api+type:pr+\"${JIRA_ISSUE_ID}\"+in:body+is:pr" \
   --write-out "%{http_code}" --output pr_search_response.json)
 
   http_status=$(tail -n1 <<< "$pr_search_response")
@@ -37,6 +37,7 @@ else
   fi
 
   pr_count=$(jq -r '.total_count' pr_search_response.json)
+
   if [ "$pr_count" -gt 1 ]; then
     echo "JIRA ID ${JIRA_ISSUE_ID} is already linked to the following PR(s):"
     jq -r '.items[].html_url' pr_search_response.json
