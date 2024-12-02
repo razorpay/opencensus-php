@@ -5260,7 +5260,7 @@ class Core extends Base\Core
             if ($isPushToQueueForAccStSourceExperimentEnabled && $isCAPayout) {
                 $this->pushToAccountServiceQueue($payout);
             }
-        } catch (\Exception $ex) {
+        } catch (\Throwable $ex) {
             $this->trace->traceException(
                 $ex,
                 Trace::ERROR,

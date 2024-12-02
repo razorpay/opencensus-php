@@ -18312,4 +18312,30 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals($enrichedData, $bas->toArray());
     }
+
+    public function testDualWriteForAccountStatementServiceForDuplicateStatementRecord()
+    {
+        $this->testDualWriteForAccountStatementServiceBas();
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceBas'];
+        $this->testData[__FUNCTION__]['request']['content']['input']['id'] = 'randomid111112';
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->startTest();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'M7878',
+            'posted_date'         => 20202020,
+            'amount'              => 200,
+            'type'                => 'debit',
+            'channel'             => 'rbl',
+            'bank_serial_number'  => '2'
+        ]);
+
+        // Assert that only 1 entry was saved
+        $this->assertEquals(1, sizeof($bas));
+    }
 }

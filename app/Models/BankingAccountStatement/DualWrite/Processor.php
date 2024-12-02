@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccountStatement\DualWrite;
 
 use App;
+use RZP\Trace\TraceCode;
 use Illuminate\Foundation\Application;
 
 use RZP\Error\ErrorCode;
@@ -94,9 +95,19 @@ class Processor
         /** @var Entity $bas */
         $bas = $this->mutex->acquireAndRelease(
             'account_statement_dual_write_' . $basId,
-            function() use ($input) {
-                return $this->repo->transaction(function() use ($input)
+            function() use ($input, $basId) {
+                return $this->repo->transaction(function() use ($input, $basId)
                 {
+                    if ($this->isDuplicateRecord($input))
+                    {
+                        $this->trace->info(
+                            TraceCode::BAS_DUAL_WRITE_SKIPPING_DUPLICATE_RECORD,
+                            ['bas_id' => $basId]
+                        );
+
+                        return null;
+                    }
+
                     $bas = (new BankingAccountStatement)->dualWriteAccountStatementBas($input);
 
                     return $bas;
@@ -106,9 +117,27 @@ class Processor
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
 
-        if ($bas->transaction != null)
+        if ($bas !== null && $bas->transaction != null)
         {
             $this->app->events->dispatch('api.transaction.created', $bas->transaction);
         }
+    }
+
+    // Function to find duplicate record from the db
+    private function isDuplicateRecord($basInput)
+    {
+        $existingBAS = $this->repo->banking_account_statement->getExistingUniqueRecord(
+            $basInput[Entity::BANK_TRANSACTION_ID],
+            $basInput[Entity::ACCOUNT_NUMBER],
+            $basInput[Entity::POSTED_DATE],
+            $basInput[Entity::AMOUNT],
+            $basInput[Entity::TYPE],
+            $basInput[Entity::CHANNEL],
+            $basInput[Entity::BANK_SERIAL_NUMBER]
+        );
+
+        // Duplicate if record exists and it has a different id
+        // For input with same id, we can have updates in multiple dual write calls
+        return $existingBAS !== null && $existingBAS->getId() != $basInput[Entity::ID];
     }
 }
