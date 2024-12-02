@@ -37,11 +37,9 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Jobs\ConnectedBankingAccountGatewayBalanceUpdate;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
-use RZP\Tests\Traits\MocksSplitz;
 
 class YesbankCaPayoutTest extends TestCase
 {
-    use MocksSplitz;
     use PayoutTrait;
     use AttemptTrait;
     use WorkflowTrait;
@@ -51,8 +49,6 @@ class YesbankCaPayoutTest extends TestCase
     private $ownerRoleUser;
 
     protected $merchant;
-
-    const ENABLE = 'enable';
 
     protected function setUp(): void
     {
@@ -386,7 +382,7 @@ class YesbankCaPayoutTest extends TestCase
 
     public function testBalanceFetch()
     {
-        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE,['id'=>'yesbank']);
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -409,7 +405,7 @@ class YesbankCaPayoutTest extends TestCase
     {
         $this->testCreatePayout();
 
-        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'yesbank']);
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -430,7 +426,7 @@ class YesbankCaPayoutTest extends TestCase
 
     public function testBalanceFetchWhenMerchantGatewayBalanceChanges()
     {
-        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'yesbank']);
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -2011,26 +2007,5 @@ class YesbankCaPayoutTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
-    }
-    protected function enableSplitzExperiment($experimentName,$variantName,$requestData=null)
-    {
-        $input = [
-            "id" => 'yesbank',
-            'experiment_name' => $experimentName
-
-        ];
-
-        if ($requestData != null)
-            $input['request_data'] =  json_encode($requestData);
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => $variantName,
-                ]
-            ]
-        ];
-        $this->mockSplitzTreatment($input, $output);
-
     }
 }

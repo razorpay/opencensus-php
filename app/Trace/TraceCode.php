@@ -12324,6 +12324,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INSUFFICIENT_FUND_TNG_SKIP_VERIFY_RESPONSE = 'INSUFFICIENT_FUND_TNG_SKIP_VERIFY_RESPONSE';
     const INSUFFICIENT_FUND_TNG_SKIP_VERIFY_RESPONSE_FAILURE ='INSUFFICIENT_FUND_TNG_SKIP_VERIFY_RESPONSE_FAILURE';
 
+    const BATCH_DOWNLOAD_REQUEST_AT_SERVICE      = "BATCH_DOWNLOAD_REQUEST_AT_SERVICE";
+    const BATCH_DOWNLOAD_REQUEST_AT_CONTROLLER      = "BATCH_DOWNLOAD_REQUEST_AT_CONTROLLER";
+    const BATCH_DOWNLOAD_REQUEST_AT_SERVICE_EXCEPTION         = "BATCH_DOWNLOAD_REQUEST_AT_SERVICE_EXCEPTION";
+    const API_BATCH_RESPONSE_DEBUG                             = "API_BATCH_RESPONSE_DEBUG";
+    const API_BATCH_REQUEST_DEBUG                             = "API_BATCH_REQUEST_DEBUG";
+    const DOWNLOAD_S3_URL_FUNC                                =  "DOWNLOAD_S3_URL_FUNC";
+    const DOWNLOAD_S3_URL_FUNC_COMPLETE                       = "DOWNLOAD_S3_URL_FUNC_COMPLETE";
+    const BATCH_DOWNLOAD_REQUEST_AT_SERVICE_COMPLETE          = "BATCH_DOWNLOAD_REQUEST_AT_SERVICE_COMPLETE";
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

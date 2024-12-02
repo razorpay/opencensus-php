@@ -1398,14 +1398,9 @@ class Core extends Base\Core
 
                 // dispatch event for txn created
                 // if merchant is in experiment, it goes in to new flow, else old flow.
-                if($this->isWebhookSyncFiringEnabled($bankTransfer->getMerchantId(),BankTransferConstants::TXN_CREATED_FIRE_WEBHOOK_SYNC,BankTransferConstants::ENABLE))
-                {
-                    (new Processor())->dispatchEventForTransactionCreatedForTxnDependentMerchants($bankTransfer, $txn);
-                }
-                else
-                {
-                    (new Processor())->dispatchEventForTransactionCreated($bankTransfer, $txn);
-                }
+
+                (new Processor())->dispatchEventForTransactionCreatedForTxnDependentMerchants($bankTransfer, $txn);
+
                 return [
                     $bankTransfer->getPublicId(),
                     $txn->getPublicId(),

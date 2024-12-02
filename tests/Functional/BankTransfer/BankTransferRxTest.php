@@ -5846,7 +5846,6 @@ class BankTransferRxTest extends TestCase
         $this->app['config']->set('applications.ledger.enabled', true);
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
         $testData = &$this->testData['testBankTransferTransactionCreation'];
-        $this->enableSplitzExperiment('app.transaction_created_fire_webhook_sync');
         $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
         $this->app->instance('ledger', $mockLedger);
         $ledgerResponse = $testData['payload'];
@@ -6062,7 +6061,7 @@ class BankTransferRxTest extends TestCase
         $this->assertEquals(5000000, $bankTransfersCreated['amount']);
     }
     // experiments  - LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE,TRANSACTION_CREATED_WEBHOOK_SYNC_FIRE_EXPERIMENT
-    public function testBankTransferProcessWebhookNotFiredWhenMerchantNotInExperiments()
+    public function testBankTransferProcessWebhookFired()
     {
         $this->app['config']->set('applications.ledger.enabled', true);
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
@@ -6162,7 +6161,7 @@ class BankTransferRxTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
 
-        $this->dontExpectAnyWebhookEvent();
+        $this->expectWebhookEventOneTime('transaction.created');
         $this->startTest();
         $bankTransfersCreated = $this->getDbLastEntity('bank_transfer', 'live');
 

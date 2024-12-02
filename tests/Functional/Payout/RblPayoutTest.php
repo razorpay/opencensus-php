@@ -21,7 +21,6 @@ use RZP\Services\Mock\Mozart;
 use RZP\Models\Payout\Status;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
-use RZP\Tests\Traits\MocksSplitz;
 use RZP\Mail\Payout\FailedPayout;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
@@ -47,7 +46,6 @@ use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 
 class RblPayoutTest extends TestCase
 {
-    use MocksSplitz;
     use PayoutTrait;
     use PaymentTrait;
     use WorkflowTrait;
@@ -60,8 +58,6 @@ class RblPayoutTest extends TestCase
     private $ownerRoleUser;
 
     private $finL3RoleUser;
-
-    const ENABLE = 'enable';
 
     protected function setUp(): void
     {
@@ -649,7 +645,7 @@ class RblPayoutTest extends TestCase
     {
         Queue::fake();
 
-        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'rbl']);
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
 
         $basDetails = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
@@ -1154,7 +1150,7 @@ class RblPayoutTest extends TestCase
 
     public function testBalanceFetch()
     {
-        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'rbl']);
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -1177,10 +1173,10 @@ class RblPayoutTest extends TestCase
     {
         $this->setMockRazorxTreatment(
             [
+                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2  => 'on',
                 RazorxTreatment::UNIQUE_RBL_BALANCE_UPDATE => 'on'
             ]
         );
-        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'rbl']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -1203,10 +1199,10 @@ class RblPayoutTest extends TestCase
     {
         $this->setMockRazorxTreatment(
             [
+                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2  => 'on',
                 RazorxTreatment::UNIQUE_RBL_BALANCE_UPDATE => 'on'
             ]
         );
-        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'rbl']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -1242,7 +1238,7 @@ class RblPayoutTest extends TestCase
     {
         $this->testCreatePayoutWithFetchAndUpdateBalanceFromGatewayAndBalanceMoreThanPayoutAmount();
 
-        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'rbl']);
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -1263,7 +1259,7 @@ class RblPayoutTest extends TestCase
 
     public function testBalanceFetchWhenMerchantGatewayBalanceChanges()
     {
-        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'rbl']);
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -1289,7 +1285,7 @@ class RblPayoutTest extends TestCase
     {
         Queue::fake();
 
-        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'rbl']);
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -2103,7 +2099,11 @@ class RblPayoutTest extends TestCase
 
     public function testRBLPriorityMerchantBalanceUpdate()
     {
-        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'rbl']);
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2  => 'on'
+            ]
+        );
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_CA_PRIORITY_BALANCE_UPDATE_LIST => ['10000000000000']]);
 
@@ -2130,11 +2130,10 @@ class RblPayoutTest extends TestCase
     {
         $this->setMockRazorxTreatment(
             [
+                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2  => 'on',
                 RazorxTreatment::UNIQUE_RBL_BALANCE_UPDATE => 'on'
             ]
         );
-
-        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'rbl']);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_CA_PRIORITY_BALANCE_UPDATE_LIST => ['10000000000000']]);
 
@@ -2159,7 +2158,11 @@ class RblPayoutTest extends TestCase
 
     public function testRBLPriorityMerchantBalanceUpdateIsNotPushedOnDefaultQueue()
     {
-        $this->enableSplitzExperiment(RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,self::ENABLE, ['id'=>'rbl']);
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2  => 'on'
+            ]
+        );
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_CA_PRIORITY_BALANCE_UPDATE_LIST => ['10000000000000']]);
 
@@ -2177,26 +2180,5 @@ class RblPayoutTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         Queue::assertNotPushed(RblBankingAccountGatewayBalanceUpdate::class);
-    }
-    protected function enableSplitzExperiment($experimentName,$variantName,$requestData=null)
-    {
-        $input = [
-            "id" => 'rbl',
-            'experiment_name' => $experimentName
-
-        ];
-
-        if ($requestData != null)
-            $input['request_data'] = json_encode($requestData);
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => $variantName,
-                ]
-            ]
-        ];
-        $this->mockSplitzTreatment($input, $output);
-
     }
 }

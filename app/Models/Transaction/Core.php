@@ -2141,6 +2141,13 @@ class Core extends Base\Core
             (new Notifier($txn))->notify();
 
             $this->app->events->dispatch('api.transaction.created', $txn);
+
+            if($txn->getType() === E::BANK_TRANSFER)
+            {
+                $this->trace->count(TxnMetric::TRANSACTION_CREATED_EVENT_TOTAL, [
+                    "type" => $txn->getType()
+                ]);
+            }
         }
         else
         {

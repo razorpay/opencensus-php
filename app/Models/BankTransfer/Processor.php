@@ -272,7 +272,7 @@ class Processor extends VirtualAccount\Processor
 
                 $ledgerJournalResponse = $this->processLedgerForReverseShadow($bankTransfer);
 
-                if (($ledgerJournalResponse != null) and ($this->isWebhookSyncFiringEnabled($bankTransfer->getMerchantId(),BankTransferConstants::TXN_CREATED_FIRE_WEBHOOK_SYNC,BankTransferConstants::ENABLE)) and (!$this->isRazorxExperimentEnabled($bankTransfer->getMerchantId(),RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE))) {
+                if (($ledgerJournalResponse != null)  and (!$this->isRazorxExperimentEnabled($bankTransfer->getMerchantId(),RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE))) {
 
                     $this->trace->info(TraceCode::TRANSACTION_CREATED_WEBHOOK_SYNC_FIRE,
                         ["merchantId" =>
