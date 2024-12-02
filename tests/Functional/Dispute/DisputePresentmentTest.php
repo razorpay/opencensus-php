@@ -789,6 +789,10 @@ class DisputePresentmentTest extends TestCase
                 'expected_recovery_method' => 'adjustment',
             ],
             [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'mpgs'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
                 'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'first_data'],
                 'expected_recovery_method' => 'adjustment',
             ],

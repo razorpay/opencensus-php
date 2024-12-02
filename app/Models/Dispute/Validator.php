@@ -529,6 +529,17 @@ class Validator extends Base\Validator
                     'Dispute gateway amount cannot exceed payment amount');
             }
         }
+
+        if (($dispute->payment->getCurrency() !== $dispute->getGatewayCurrency()))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed due to currency mismatch');
+        }
+        elseif ($dispute->getGatewayAmount() > $dispute->payment->getAmount())
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Dispute gateway amount cannot exceed payment amount');
+        }
     }
 
     /**
