@@ -837,14 +837,6 @@ EOT;
         {
             $connection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
-            // Routing all payment queries containing contact filter to harvester replica as contact index
-            // is only present in harvester replica. With API decomp this query, needs to go to WDA service in the future.
-            // Note: contact index should be added on payments table in WDA service.
-            if (isset($params['contact']))
-            {
-                $connection = $this->getConnectionFromType($this->getPaymentFetchReplicaConnection());
-            }
-
             $query = $this->newQueryWithConnection($connection);
         }
 
@@ -1289,14 +1281,6 @@ EOT;
             ($this->auth->isProxyAuth() === true))
         {
             $connection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-            // Routing all payment queries containing contact filter to harvester replica as contact index
-            // is only present in harvester replica. With API decomp this query, needs to go to WDA service in the future.
-            // Note: contact index should be added on payments table in WDA service.
-            if (isset($params['contact']))
-            {
-                $connection = $this->getConnectionFromType($this->getPaymentFetchReplicaConnection());
-            }
 
             $query = $this->newQueryWithConnection($connection);
         }

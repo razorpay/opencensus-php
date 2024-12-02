@@ -6113,7 +6113,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $mode = $app['rzp.mode'] ?? Mode::LIVE;
 
         if ($this->merchant->isFeatureEnabled(Feature\Constants::BUYER_PROTECT_SIGNED_UP) &&
-            $this->isBuyerProtectionEnabled($this->getId(), $this->merchant->getId(), $mode, $orderId) === true)
+            $this->isBuyerProtectionEnabled($this->getId(), $this->getAmount(), $this->getBaseAmount(), $this->merchant->getId(), $mode, $orderId) === true)
         {
             $features[] = Pricing\Feature::BUYER_PROTECTION;
         }
@@ -6141,13 +6141,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $isMonetizedOrder && $isFeatureEnabled;
     }
 
-    private function isBuyerProtectionEnabled(string $paymentId, string $merchantId, string $mode, ?string $orderId): bool
+    private function isBuyerProtectionEnabled(string $paymentId, int $amount, int $baseAmount, string $merchantId, string $mode, ?string $orderId): bool
     {
         $app = \App::getFacadeRoot();
 
         $requestData = [
             'payment' => [
                 'id' => $paymentId,
+                'amount' => $amount,
+                'base_amount' => $baseAmount,
             ],
             'merchant' => [
                 'id' => $merchantId,
