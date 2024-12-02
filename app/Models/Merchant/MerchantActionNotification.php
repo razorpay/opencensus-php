@@ -433,8 +433,7 @@ class MerchantActionNotification
 
     private function sendWhatsappMessage($merchant, $whatsappTemplateName, $whatappTemplate, $params)
     {
-        // Whatsapp Experiment is applicable only for FOH template.
-        $isWhatsappEnabled = $whatsappTemplateName != Constants::FOH_WHATSAPP_TEMPLATE_NAME;
+        $isWhatsappEnabled = true;
 
         $receiver = $merchant->merchantDetail->getContactMobile();
         if ($whatsappTemplateName == Constants::FOH_WHATSAPP_TEMPLATE_NAME)
