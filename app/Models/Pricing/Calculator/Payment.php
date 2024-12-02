@@ -1146,46 +1146,76 @@ class Payment extends Base
     protected function setAmount()
     {
         $amount = $this->entity->getBaseAmount();
+        $fee = $this->entity->getFee();
+
+        // log payment entity and fee details
+        if ($this->entity->getEntity() === (Entity::PAYMENT)){
+            $merchantFeeBearer = $this->entity->merchant->getFeeBearer();
+            $paymentFeeBearer = $this->entity->getFeeBearer(true);
+
+            $currentRoute = '';
+            try
+            {
+                $currentRoute = app('request.ctx')->getRoute();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->error(TraceCode::GET_ROUTE_NAME_ERROR, [
+                    'error' => $e->getMessage()
+                ]);
+            }
+
+            $this->trace->info(TraceCode::PRICING_SET_AMOUNT_ATTEMPT,[
+                'amount' => $amount,
+                'fee' => $fee,
+                'payment_fee_bearer' => $paymentFeeBearer,
+                'merchant_fee_bearer' => $merchantFeeBearer,
+                'route' => $currentRoute,
+                'convenience_fee' => $this->entity->getConvenienceFee(),
+                'convenience_fee_gst' => $this->entity->getConvenienceFeeGst(),
+                'payment_id' => $this->entity->getId(),
+            ]);
+        }
+
+        /*
+            1. The first call will have the fee = 0, hence fees will be calculated on the original amount
+            2. On validation/capture call, the fee & convenience fee can be set
+            3. Remove convenience fee if it is set. Convenience fee is the amount added on payment amount if order config is set
+            4. For cases CFB abd DFB merchants when convenience fee is not set, remove mdr fee
+            5. MCC payments have initial fees stored in MCC currency, needs to be converted to INR
+        */
+
+        if ($this->entity->getEntity() === (Entity::PAYMENT) && $this->entity->getConvenienceFee() !== null){
+            $amount = $amount - $this->entity->getConvenienceFee() - $this->entity->getConvenienceFeeGst();
+        }
 
         if ($this->isFeeBearerCustomerOrDynamic() === true && $this->shouldAdjustPaymentFee() === true)
         {
-            // 1. The first call will have the fee = 0,
-            //    hence fees will be calculated on the original amount
-            // 2. On validation/capture call, the fee will be set
-            // 3. MCC payments have initial fees stored in MCC currency, needs to be converted to INR
-
-            $fee = $this->entity->getFee();
-            $currency = $this->entity->getCurrency();
-
-            $baseCurrency = Currency::INR;
-
-            if (isset($this->entity) === true && isset($this->entity->merchant) === true)
+            if ($this->isPartnershipFeeCalculationRoute() === false )
             {
-                $baseCurrency = $this->entity->merchant->getCurrency();
-            }
+                if ($this->entity->getConvenienceFee() == 0 && $fee != 0){
+                    $currency = $this->entity->getCurrency();
+                    $baseCurrency = Currency::INR;
+                    if (isset($this->entity) === true && isset($this->entity->merchant) === true)
+                    {
+                        $baseCurrency = $this->entity->merchant->getCurrency();
+                    }
 
-            $input = [];
-            if ($this->entity->merchant->isLRSFlowEnabled() === true)
-            {
-                $input['is_lrs_merchant'] = true;
-                $input['order_id'] = $this->entity->getOrderAttribute()['id'];
-            }
+                    $input = [];
+                    if ($this->entity->merchant->isLRSFlowEnabled() === true)
+                    {
+                        $input['is_lrs_merchant'] = true;
+                        $input['order_id'] = $this->entity->getOrderAttribute()['id'];
+                    }
 
-            // incase of partnership fee calculation route currency conversion is not required
-            // as the fee in payment entity is already in base currency
-            if ($this->isPartnershipFeeCalculationRoute() === true)
+                    $amount = $amount - (new Core)->getBaseAmount($fee, $currency, $baseCurrency, $input);
+                }
+            }else
             {
+                // incase of partnership fee calculation route currency conversion is not required
+                // as the fee in payment entity is already in base currency
                 $amount = $amount - $fee;
             }
-            else
-            {
-                $amount = $amount - (new Core)->getBaseAmount($fee, $currency, $baseCurrency, $input);
-            }
-        }
-
-        if ($this->entity->getEntity() === (Entity::PAYMENT))
-        {
-            $amount = $this->entity->getBaseAmountForFeeCalculation($amount);
         }
 
         $this->amount = $amount;

@@ -411,6 +411,10 @@ class Service extends Base\Service
                 if (isset($item['fixed_rate']) && !is_string($item['fixed_rate'])) {
                     $item['fixed_rate'] = (string) $item['fixed_rate'];
                 }
+
+                if (isset($item['amount_range_active']) && is_bool($item['amount_range_active'])){
+                    $item['amount_range_active'] = $item['amount_range_active'] ? "1" : "0";
+                }
             }
         }
 

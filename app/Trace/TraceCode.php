@@ -3002,6 +3002,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BUY_PRICING_PLAN_RULE_DELETE_ATTEMPT                  = 'BUY_PRICING_PLAN_RULE_DELETE_ATTEMPT';
 
     const PRICING_FEES_GREATER_THAN_AMOUNT                      = 'PRICING_FEES_GREATER_THAN_AMOUNT';
+    const PRICING_SET_AMOUNT_ATTEMPT                            = 'PRICING_SET_AMOUNT_ATTEMPT';
 
     const WEBHOOK_EVENT_JOB_RECEIVED                            = 'WEBHOOK_EVENT_JOB_RECEIVED';
     const WEBHOOK_EVENT_DEBUG_LOG                               = 'WEBHOOK_EVENT_DEBUG_LOG';
