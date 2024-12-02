@@ -2174,6 +2174,10 @@ class Constants
 
     const DISABLE_SINCH_SMS_EMAIL = 'disable_sinch_sms_email';
 
+    const OG_SMS_VENDOR_CONFIG_TRAI = 'og_sms_vendor_config_trai';
+
+    const ME_SMS_VENDOR_CONFIG_TRAI = 'me_sms_vendor_config_trai';
+
     /**
      * Feature flags to enable/disable Account Statement in X Dashboard
      */
@@ -3311,6 +3315,8 @@ class Constants
         self::RMV_CC_TXT_FRM_LOGO          => true,
         self::ONE_CC_GSTIN_VALIDATION      => true,
         self::HIDE_RZPBRAND_ON_CHECKOUT    => true,
+        self::OG_SMS_VENDOR_CONFIG_TRAI    => true,
+        self::ME_SMS_VENDOR_CONFIG_TRAI    => true
     ];
 
     // Entity type constants
