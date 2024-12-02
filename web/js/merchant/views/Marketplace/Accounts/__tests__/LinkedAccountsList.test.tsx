@@ -28,6 +28,24 @@ jest.mock('merchant/views/Marketplace/Accounts/components/AccountsList', () => (
   ),
 }));
 
+jest.mock('common/splitz', () => ({
+  withSplitzService: jest.fn((Component) => (props) => (
+    <Component
+      {...props}
+      splitz={{
+        abExperiments: {
+          enable_modular_onboarding_linked_account: {
+            variables: {
+              result: 'on',
+            },
+          },
+        },
+      }}
+    />
+  )),
+  useSplitzService: () => ({}),
+}));
+
 const defaultReduxState = getInitialReduxState({
   isAllowedEdit: () => true,
   isRouteLinkedAccountCreationDisabled: true,

@@ -52,8 +52,25 @@ class AccountsListContainer extends ListContainer {
     confirm: PropTypes.func,
   };
 
+  constructor(props) {
+    super(props);
+    this.onMessage = this.onMessage.bind(this);
+  }
+
+  onMessage(event) {
+    // used to trigger a refresh of the accounts list on receiving a message from the opened tab on onboarding completion
+    if (event.data === 'reload-linked-accounts') {
+      this.search();
+    }
+  }
+
   componentDidMount() {
     linkedAccountTabOpenedAnalytics(this.props.user.id);
+    window.addEventListener('message', this.onMessage, false);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('message', this.onMessage);
   }
 
   onToggleDashboardAccess = (account, cb) => {
@@ -226,10 +243,14 @@ class AccountsListContainer extends ListContainer {
     if (
       typeof window !== 'undefiend' &&
       isExperimentActive(enable_modular_onboarding_linked_account) &&
-      user.isOrgCurlec
+      user.country_code === 'MY'
     ) {
       // Redirect to modular onboarding if experiment is active
-      window.location.href = `${window.CURLEC_LINKED_ACCOUNT_ONBOARDING_URL}?accountId=${account.id}`;
+      // window.location.href = `${window.CURLEC_LINKED_ACCOUNT_ONBOARDING_URL}?accountId=${account.id}`;
+      window.open(
+        `${window.CURLEC_LINKED_ACCOUNT_ONBOARDING_URL}?accountId=${account.id}`,
+        '_blank',
+      );
     } else {
       this.setState({ showAccountDetailsFor: account.id });
     }
@@ -300,6 +321,14 @@ class AccountsListContainer extends ListContainer {
     const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled || isCustomerFeeBearer;
     const is2FaExperimentActive = is2FaExperimentEnabled(splitz.abExperiments);
 
+    const {
+      abExperiments: { enable_modular_onboarding_linked_account = {} },
+    } = splitz;
+
+    const isModularOnboardingLAEnabled = isExperimentActive(
+      enable_modular_onboarding_linked_account,
+    );
+
     return (
       <ProductWrapper
         tabsData={navItems(user, isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
@@ -319,7 +348,7 @@ class AccountsListContainer extends ListContainer {
               additionalCondition={(_user) =>
                 _user.isAllowedEdit('accounts') &&
                 !isOrgFeatureExist('block_account_update') &&
-                !_user.isOrgCurlec
+                (_user.country_code !== 'MY' || isModularOnboardingLAEnabled)
               }
             >
               <Box display="inline-block">

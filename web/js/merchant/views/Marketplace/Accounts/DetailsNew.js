@@ -19,6 +19,8 @@ import * as AccountActions from 'merchant/reducers/marketplace/accounts';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { validateDashboardAccess, validateAllowRefundsMessages } from './List';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { withSplitzService } from 'common/splitz';
+import { isExperimentActive } from 'common/utils/rzp-utils';
 
 @connect(
   (state) => {
@@ -32,7 +34,7 @@ import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
     ...ModalActions,
   },
 )
-export default class Details extends Component {
+class Details extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -234,10 +236,29 @@ export default class Details extends Component {
     });
   };
 
-  showActivationForm = () =>
-    this.setState((prevState) => {
-      return { showActivationForm: !prevState.showActivationForm };
-    });
+  showActivationForm = () => {
+    const { splitz, user } = this.props;
+    const { account } = this.state;
+
+    const {
+      abExperiments: { enable_modular_onboarding_linked_account = {} },
+    } = splitz;
+
+    if (
+      isExperimentActive(enable_modular_onboarding_linked_account) &&
+      user.country_code === 'MY'
+    ) {
+      // Redirect to modular onboarding if experiment is active
+      window.open(
+        `${window.CURLEC_LINKED_ACCOUNT_ONBOARDING_URL}?accountId=${account.id}`,
+        '_blank',
+      );
+    } else {
+      this.setState((prevState) => {
+        return { showActivationForm: !prevState.showActivationForm };
+      });
+    }
+  };
 
   render() {
     const { onClose, id, user } = this.props;
@@ -416,3 +437,5 @@ const HelpText = ({ msg, ...restProps }) => (
     <div>{msg}</div>
   </div>
 );
+
+export default withSplitzService(Details);
