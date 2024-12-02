@@ -12320,6 +12320,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DCS_FEATURE_SYNC_FAIL = "DCS_FEATURE_SYNC_FAIL";
 
+    const INSUFFICIENT_FUND_TNG_SKIP_VERIFY_RESPONSE = 'INSUFFICIENT_FUND_TNG_SKIP_VERIFY_RESPONSE';
+    const INSUFFICIENT_FUND_TNG_SKIP_VERIFY_RESPONSE_FAILURE ='INSUFFICIENT_FUND_TNG_SKIP_VERIFY_RESPONSE_FAILURE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

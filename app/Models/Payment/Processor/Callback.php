@@ -29,6 +29,7 @@ use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
 use RZP\Models\UpiMandate;
 use RZP\Gateway\GooglePay;
+use RZP\Constants\Country;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Status;
 use RZP\Models\Customer\Token;
@@ -1179,6 +1180,10 @@ trait Callback
 
             if ( $this->payment->isGateway(Payment\Gateway::TNGD) === true && $this->payment->isWalletAutoRecurring() && $e->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE)
             {
+                if($this->isSkipInsufficientFundVerify())
+                {
+                    (new Payment\Core())->pushPaymentToKafkaForDeRegistrations($this->payment, microtime(true));
+                }
                 $this->updatePaymentAuthFailed($e);
             }
             else
@@ -1612,5 +1617,46 @@ trait Callback
 
             return false;
         }
+    }
+
+
+    //Splitz Experiment for Skip Insufficient Fund Verify
+    public function isSkipInsufficientFundVerify(): bool
+    {
+        $isMalaysianMerchant = Country::matches($this->merchant->getCountry(), Country::MY);
+
+        if ($isMalaysianMerchant )
+        {
+            try
+            {
+                $experimentId = $this->app['config']->get('app.insufficient_fund_tng');
+
+                $properties = [
+                    'id' => $this->app['request']->getTaskId(),
+                    'experiment_id' => $experimentId,
+                    'request_data' => json_encode(['mid' => $this->merchant->getId(), 'mode' => $this->mode]),
+                ];
+
+                $response = $this->app['splitzService']->evaluateRequest($properties);
+
+                $variant = $response['response']['variant']['variables'][0]['value'] ?? 'false';
+
+                $this->trace->info(TraceCode::INSUFFICIENT_FUND_TNG_SKIP_VERIFY_RESPONSE, [
+                    'merchant_id' =>  $this->merchant->getId(),
+                    'experiment_id' => $experimentId,
+                    'splitz_response' => $response
+                ]);
+
+                return $variant === 'true';
+            }
+            catch (\Exception $e)
+            {
+                $this->app['trace']->traceException(
+                    $e,
+                    null,
+                    TraceCode::INSUFFICIENT_FUND_TNG_SKIP_VERIFY_RESPONSE_FAILURE);
+            }
+        }
+        return false;
     }
 }
