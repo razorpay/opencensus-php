@@ -488,6 +488,40 @@ trait Authorize
         }
         unset($paymentEvent);
 
+        if ($payment->getMethod() === Method::CARD and $payment->isRecurring() === true and
+            $payment->getRecurringType() === RecurringType::AUTO) {
+            $properties = [
+                'id'            => $payment->getMerchantId(),
+                'experiment_id' => $this->app['config']->get('app.fulcrum_recurring_subsequent_experiment'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            if ($variant === 'enable') {
+                foreach ($this->selectedTerminals as $index => $terminal) {
+                    if ($terminal->getGateway() == Constants2::FULCRUM) {
+                        $this->trace->info(
+                            tracecode::MISC_TRACE_CODE,
+                            [
+                                "FOUND_FULCRUM_TERMINAL" => $terminal
+                            ]
+                        );
+                        array_splice($this->selectedTerminals, $index, 1);
+                        array_unshift($this->selectedTerminals, $terminal);
+                        break;
+                    }
+                }
+
+            }
+        }
+
         if ($this->shouldHitGatewayForPayment($payment, $gatewayInput) === false)
         {
             $currentTerminal = $this->selectedTerminals[0];
