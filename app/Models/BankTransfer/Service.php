@@ -1749,7 +1749,7 @@ class Service extends Base\Service
 
         $contact = [
             'first_name' => $name[0],
-            'last_name' => isset($name[1]) ? $name[1] : "_",
+            'last_name' => isset($name[1]) ? $name[1] : "LNU",
             'email' => $merchantDetail->getContactEmail(),
             'phone' => $merchantDetail->getContactMobile(),
             'login_id' => $merchantId . "_razorpay"
