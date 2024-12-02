@@ -627,6 +627,11 @@ class Constants
      */
     const VAS_LINK_WALLETS= 'vas_link_wallets';
 
+     /**
+     * Feature flag to close paypal popup on redirect in merchant dashboard
+     */
+    const DISABLE_PAYPAL_POP_UP= 'disable_paypal_pop_up';
+
     /**
      * Feature flag to hide settlement time from merchant dashboard
      */
@@ -3260,6 +3265,7 @@ class Constants
         self::CUSTOM_ONBOARDING_EMAILS               => true,
         self::VAS_LINK_WALLETS                       => true,
         self::HIDE_SETTLEMENT_TIME                   => true,
+        self::DISABLE_PAYPAL_POP_UP                  => true,
         self::ONE_CC_PARTIAL_COD            => true,
         self::HIDE_INVOICE_REPORT                    => true,
         self::SHOW_INVOICE_REPORT                   => true,
