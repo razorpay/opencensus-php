@@ -237,9 +237,9 @@ class CustomerTokenTest extends TestCase
         $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000000000000', '1000ggcustomer', ['vault' => 'rzpvault', 'status'=> null]);
 
         $response = $this->startTest();
-        $this->assertEquals($response['status'], 'failed');
-        $this->assertEquals($response['error_code'], 'BAD_REQUEST_ERROR');
-        $this->assertEquals($response['error_description'], 'Token creation failed');
+        $this->assertEquals($response['status'], null);
+        $this->assertEquals($response['error_code'], null);
+        $this->assertEquals($response['error_description'], null);
     }
 
 

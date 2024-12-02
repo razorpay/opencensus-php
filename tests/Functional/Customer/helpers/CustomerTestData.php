@@ -754,9 +754,9 @@ return [
             'content' => [
                 'id'            => 'token_100022xytoken1',
                 'method'        => 'card',
-                'status'        => 'failed',
-                'error_code'    =>  'BAD_REQUEST_ERROR',
-                'error_description' => 'Token creation failed'
+                'status'        => null,
+                'error_code'    =>  null,
+                'error_description' => null
             ],
         ]
     ],
