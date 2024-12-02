@@ -1668,7 +1668,13 @@ class Core extends Base\Core
 
         $amount = $response['amount'];
 
-        $formattedAmount = number_format($amount / 100, 2);
+        $specialCurrencies = ['BHD', 'KWD', 'OMR', 'IQD', 'JOD', 'TND'];
+
+        if (in_array($currency, $specialCurrencies)) {
+            $formattedAmount = number_format($amount / 1000, 3);
+        } else {
+            $formattedAmount = number_format($amount / 100, 2);
+        }
 
         $type = Type::LINK;
 

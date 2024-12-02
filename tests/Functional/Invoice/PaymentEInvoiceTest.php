@@ -174,12 +174,24 @@ class PaymentEInvoiceTest extends TestCase
 
         $invoice = $this->generateDCCEInvoice(Constants::PAYMENT_FLOW);
 
+        $currency = self::THREE_DECIMAL_PAYMENT_CURRENCY;
+
+        $specialCurrencies = ['BHD', 'KWD', 'OMR', 'IQD', 'JOD', 'TND'];
+        if (in_array($currency, $specialCurrencies)) {
+            $formattedAmount = number_format($this->getInvoiceAmount(Constants::PAYMENT_FLOW, self::THREE_DECIMAL_PAYMENT_CURRENCY) / 1000, 3);
+            $invoiceFormattedAmount = number_format(($invoice[Entity::AMOUNT]) / 1000, 3);
+        } else {
+            $formattedAmount = number_format($this->getInvoiceAmount(Constants::PAYMENT_FLOW, self::THREE_DECIMAL_PAYMENT_CURRENCY) / 100, 2);
+            $invoiceFormattedAmount = number_format(($invoice[Entity::AMOUNT]) / 100, 2);
+        }
+
         $this->assertEquals($this->payment->getId(), $invoice[Entity::ENTITY_ID]);
         $this->assertEquals($this->payment->getId(), $invoice[Entity::REF_NUM]);
         $this->assertEquals(Status::GENERATED, $invoice[Entity::STATUS]);
         $this->assertEquals(Type::DCC_INV, $invoice[Entity::TYPE]);
         $this->assertEquals(self::INVOICE_REF_NUM, $invoice[Entity::NOTES][Constants::IRN]);
         $this->assertEquals($this->getInvoiceAmount(Constants::PAYMENT_FLOW, self::THREE_DECIMAL_PAYMENT_CURRENCY), $invoice[Entity::AMOUNT]);
+        $this->assertEquals($formattedAmount, $invoiceFormattedAmount);
         $this->assertEmpty($invoice[Entity::COMMENT]);
     }
 
