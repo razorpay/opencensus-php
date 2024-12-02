@@ -1201,7 +1201,7 @@ class Repository extends Base\Repository
 
     public function findMerchantBankDetailsWithIds(array $merchantIds): array
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->select(Entity::MERCHANT_ID,
                              Entity::BANK_ACCOUNT_NAME,
                              Entity::BANK_ACCOUNT_NUMBER,

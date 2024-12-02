@@ -4420,4 +4420,8 @@ class Entity extends Base\PublicEntity
     public function getOrgAttribute() {
         return parent::getRelationValue('org');
     }
+
+    public function getFeaturesAttribute() {
+        return parent::getRelationValue('features');
+    }
 }
