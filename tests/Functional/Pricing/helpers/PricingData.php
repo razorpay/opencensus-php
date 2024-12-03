@@ -40,7 +40,16 @@ return [
                             'payment_network'       => 'paytm',
                             'percent_rate'          => 1000,
                             'percent_rate_scale_factor' => 1000
-                        ]
+                        ],
+                        [
+                            'payment_method'      => 'upi',
+                            'feature'             => 'payment',
+                            'percent_rate'        => 100,
+                            'receiver_type'       => 'credit_line',
+                            'amount_range_active' => '0',
+                            'amount_range_min'    => null,
+                            'amount_range_max'    => 5000,
+                        ],
                 ],
             ],
             'url' => '/pricing',
@@ -50,7 +59,7 @@ return [
             'content' => [
                 'name'      => 'TestUploadPlan2',
                 'entity'    => 'pricing',
-                'count'     => 4,
+                'count'     => 5,
                 'rules'     => [
                     [
                         'plan_name'             => 'TestUploadPlan2',
@@ -61,6 +70,13 @@ return [
                         'percent_rate'          => 1000,
                         'type'                  => 'pricing',
                         'percent_rate_scale_factor' => 1000,
+                    ],
+                    [
+                        'plan_name'           => 'TestUploadPlan2',
+                        'payment_method'      => 'upi',
+                        'feature'             => 'payment',
+                        'percent_rate'        => 100,
+                        'receiver_type'       => 'credit_line',
                     ],
                     [
                         'plan_name'             => 'TestUploadPlan2',
@@ -90,6 +106,7 @@ return [
                         'fixed_rate'            => 1000,
                         'percent_rate_scale_factor' => 100,
                     ],
+
                 ],
             ],
         ],
