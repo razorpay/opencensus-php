@@ -15,9 +15,25 @@ import {
   decodeSensitiveFields,
 } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 // Keep this util here, will break web/js/merchant/views/Transactions/v2/common/__tests__/utils.test.js testcases
 export const isTransactionsV2Enabled = (splitz, user) => {
+  // HDFC Bank is excluded from Transactions V2 not for long though :)
+  const excludedOrgs = [
+    ORG_CUSTOM_CODE_MAP.HDFC_SMART_HUB,
+    ORG_CUSTOM_CODE_MAP.HDFC_COLLECT_NOW,
+    ORG_CUSTOM_CODE_MAP.HDFC_GIG,
+  ];
+
+  // Omni flagged J&K merchants are excluded as well
+  if (
+    excludedOrgs.some((org) => org.toLowerCase() === user.orgCustomCode?.toLowerCase()) ||
+    user.isJnKOmniEnabled
+  ) {
+    return false;
+  }
+
   const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
 
   if (!abExperiments?.Transactions_Revamp) return false;

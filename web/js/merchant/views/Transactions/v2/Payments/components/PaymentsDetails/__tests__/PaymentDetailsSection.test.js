@@ -8,10 +8,16 @@ import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 import PaymentDetailsSection from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentDetailsSection';
 import { happyFlowProps } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/fixtures/PaymentDetailsSection';
 import { render, screen, fireEvent, waitFor } from 'test-utils';
+import { useStore } from 'shell/commonStore';
 
 jest.mock('common/hooks/useMobile', () => ({
   ...jest.requireActual('common/hooks/useMobile'),
   useMobile: jest.fn(),
+}));
+
+jest.mock('shell/commonStore', () => ({
+  ...jest.requireActual('shell/commonStore'),
+  useStore: jest.fn(),
 }));
 
 jest.mock(
@@ -30,6 +36,10 @@ jest.mock('common/i18', () => ({
 }));
 
 describe('Payment Details Section component', () => {
+  beforeAll(() => {
+    useStore.mockReturnValue({ session: { user: {} } });
+  });
+
   const App = ({ props }) => {
     return <PaymentDetailsSection {...props} />;
   };

@@ -14,8 +14,18 @@ import {
   miscAppProps,
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/fixtures/PaymentMethod';
 import { render, screen, waitFor } from 'test-utils';
+import { useStore } from 'shell/commonStore';
+
+jest.mock('shell/commonStore', () => ({
+  ...jest.requireActual('shell/commonStore'),
+  useStore: jest.fn(),
+}));
 
 describe('Payment Method component', () => {
+  beforeAll(() => {
+    useStore.mockReturnValue({ session: { user: {} } });
+  });
+
   const App = ({ props }) => {
     return <PaymentMethod {...props} />;
   };

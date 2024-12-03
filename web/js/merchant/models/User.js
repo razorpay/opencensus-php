@@ -26,8 +26,10 @@ export const ORG_CUSTOM_CODE_MAP = {
   ICICI_BANK: 'icic',
   HDFC_SMART_HUB: 'hdfc',
   HDFC_COLLECT_NOW: 'HDFC',
+  HDFC_GIG: 'HDFC GIG',
   KOTAK_MAHINDRA_BANK: 'KKBK',
   CURLEC: 'curlec',
+  JAMMU_KASHMIR_BANK: 'jkb',
 };
 
 const PRODUCT_KEY_MAPS = [
@@ -1892,7 +1894,26 @@ export default class User {
     return getSplitzExperimentVariant('enable_testing_for_vas')?.variables?.result === 'on';
   }
 
+  get isJnKOmniEnabled() {
+    return (
+      this.orgCustomCode === ORG_CUSTOM_CODE_MAP.JAMMU_KASHMIR_BANK && this.isOmniEnabledMerchant
+    );
+  }
+
   get isAccountAndSettingsRevampEnabled() {
+    const excludedOrgs = [
+      ORG_CUSTOM_CODE_MAP.HDFC_SMART_HUB,
+      ORG_CUSTOM_CODE_MAP.HDFC_COLLECT_NOW,
+      ORG_CUSTOM_CODE_MAP.HDFC_GIG,
+    ];
+
+    if (
+      excludedOrgs.some((org) => org.toLowerCase() === this.orgCustomCode?.toLowerCase()) ||
+      this.isJnKOmniEnabled
+    ) {
+      return false;
+    }
+
     const isExcludedSegmentRampEnabled =
       getSplitzExperimentVariant('ramp_account_settings_for_excluded_segment')?.variables
         ?.result === 'on';
@@ -1977,6 +1998,16 @@ export default class User {
   }
 
   get isSettlementV3RevampEnabled() {
+    const excludedOrgs = [
+      ORG_CUSTOM_CODE_MAP.HDFC_SMART_HUB,
+      ORG_CUSTOM_CODE_MAP.HDFC_COLLECT_NOW,
+      ORG_CUSTOM_CODE_MAP.HDFC_GIG,
+    ];
+
+    if (excludedOrgs.some((org) => org.toLowerCase() === this.orgCustomCode?.toLowerCase())) {
+      return false;
+    }
+
     const isExcludedSegmentRampEnabled =
       getSplitzExperimentVariant('ramp_settlements_for_excluded_segment')?.variables?.result ===
       'on';

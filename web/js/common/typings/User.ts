@@ -166,6 +166,8 @@ type UserProperties = {
   has_key_access: boolean;
   permissions?: Array<string>;
   isLRSEducationFlow: boolean;
+  orgCustomCode: string;
+  isJnKOmniEnabled: boolean;
 };
 
 // as user properties are not available initially

@@ -41,7 +41,7 @@ describe('Test PaymentsListContainer', () => {
   });
 
   test('should render without breaking', () => {
-    renderComponent({ items: [], loading: false, fetchPurposeCode });
+    renderComponent({ items: [], loading: false, fetchPurposeCode, user: MOCK_USER });
     expect(screen.getAllByText('Captured')).toHaveLength(1);
   });
 

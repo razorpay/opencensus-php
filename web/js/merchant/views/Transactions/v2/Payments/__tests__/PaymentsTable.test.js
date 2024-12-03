@@ -5,6 +5,13 @@ import {
 } from 'merchant/views/Transactions/v2/Payments/__tests__/mocks/fixtures/PaymentsTable';
 import { screen, waitFor } from 'test-utils';
 
+import { useStore } from 'shell/commonStore';
+
+jest.mock('shell/commonStore', () => ({
+  ...jest.requireActual('shell/commonStore'),
+  useStore: jest.fn(),
+}));
+
 jest.mock('common/splitz', () => ({
   useSplitzService: () => ({
     abExperiments: {
@@ -14,6 +21,9 @@ jest.mock('common/splitz', () => ({
 }));
 
 describe('PaymentsTable', () => {
+  beforeAll(() => {
+    useStore.mockReturnValue({ session: { user: {} } });
+  });
   test('should renders correct column for desktop', () => {
     const items = mockFetchPaymentItems();
     renderApp({ items });

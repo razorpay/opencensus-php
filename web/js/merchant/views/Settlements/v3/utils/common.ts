@@ -5,6 +5,7 @@ import { isExperimentEnabled } from 'common/splitz/utils';
 import { SettlementsCollectionReducerState, User } from 'common/typings';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { DateInfo, ERROR_TYPE, SettlementListFilters } from 'merchant/views/Settlements/v3/typings';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 const EMPTY_STATE_KEY = 'settlements_empty_state';
 
 export const getSettlementDate = (timestamp: number): DateInfo => {
@@ -90,6 +91,16 @@ export const isSettlementsV3detailsRevamp = (splitz: SpiltzContextState, user: U
   const { abExperiments } = splitz || {
     abExperiments: { settlementsV3_details_revamp: undefined },
   };
+
+  const excludedOrgs = [
+    ORG_CUSTOM_CODE_MAP.HDFC_SMART_HUB,
+    ORG_CUSTOM_CODE_MAP.HDFC_COLLECT_NOW,
+    ORG_CUSTOM_CODE_MAP.HDFC_GIG,
+  ];
+
+  if (excludedOrgs.some((org) => org.toLowerCase() === user.orgCustomCode?.toLowerCase())) {
+    return false;
+  }
 
   const isExcludedSegment = !user.isOrgRZP;
 

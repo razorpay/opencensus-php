@@ -34,6 +34,7 @@ import {
   TODAY,
 } from './constants';
 import { Duration, DurationOption, DurationOptionsMap, Paginate } from './types';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 export const generateOptions = (optionsMap: {
   [key: string]: string;
@@ -210,6 +211,21 @@ export const getCreatedOnTime = ({ created_at }: { created_at: number }): string
 };
 
 export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User): boolean => {
+  // HDFC Bank is excluded from Transactions V2 not for long though :)
+  const excludedOrgs = [
+    ORG_CUSTOM_CODE_MAP.HDFC_SMART_HUB,
+    ORG_CUSTOM_CODE_MAP.HDFC_COLLECT_NOW,
+    ORG_CUSTOM_CODE_MAP.HDFC_GIG,
+  ];
+
+  // Omni flagged J&K merchants are excluded as well
+  if (
+    excludedOrgs.some((org) => org.toLowerCase() === user.orgCustomCode?.toLowerCase()) ||
+    user.isJnKOmniEnabled
+  ) {
+    return false;
+  }
+
   const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
 
   if (!abExperiments?.Transactions_Revamp) return false;

@@ -4,8 +4,18 @@ import { render, screen, fireEvent } from 'test-utils';
 import SettlementsListFilter from 'merchant/views/Settlements/Settlements/components/ListFilter';
 import { waitFor } from '@testing-library/react';
 import { props } from 'merchant/views/Settlements/Settlements/components/__test__/mocks/fixtures/ListFilter';
+import { useStore } from 'shell/commonStore';
+
+jest.mock('shell/commonStore', () => ({
+  ...jest.requireActual('shell/commonStore'),
+  useStore: jest.fn(),
+}));
 
 describe('ListFilter.js', () => {
+  beforeAll(() => {
+    useStore.mockReturnValue({ session: { user: {} } });
+  });
+
   const App = (appProps) => {
     return <SettlementsListFilter {...appProps} />;
   };

@@ -4,9 +4,15 @@ import { createMemoryHistory } from 'history';
 
 import PaymentsListFilter from 'merchant/views/Transactions/v1/Payments/components/PaymentsListFilter';
 import { render, screen, userEvent, fireEvent, waitFor } from 'test-utils';
+import { useStore } from 'shell/commonStore';
 
 let history;
 jest.mock('common/ui/DateRangePicker', () => () => <div>DateRangePicker</div>);
+
+jest.mock('shell/commonStore', () => ({
+  ...jest.requireActual('shell/commonStore'),
+  useStore: jest.fn(),
+}));
 
 describe('PaymentsListFilter', () => {
   const defaultProps = {
@@ -36,6 +42,7 @@ describe('PaymentsListFilter', () => {
   beforeAll(() => {
     history = createMemoryHistory();
     history.push = jest.fn();
+    useStore.mockReturnValue({ session: { user: defaultProps.user } });
   });
 
   test('should render payment list filters', () => {
