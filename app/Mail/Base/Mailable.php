@@ -743,10 +743,9 @@ class Mailable extends BaseMailable
         $app = App::getFacadeRoot();
         $orgId = $app['basicauth']->getOrgId() ?? '';
         if (empty($this->data['payment']) === false && empty($this->data['payment']['id']) === false) {
-            $paymentId = $this->data['payment']['id'];
-            $stripped_payment_id = Payment\Entity::verifyIdAndStripSign($paymentId);
+            $payment_id = $this->data['payment']['id'];
         } else {
-            $stripped_payment_id = "empty_payment_id"; // Handle the case when payment ID is not available
+            $payment_id = "empty_payment_id"; // Handle the case when payment ID is not available
         }
 
 
@@ -756,7 +755,7 @@ class Mailable extends BaseMailable
             'org_id'             => $orgId,
             'template_name'      => $this->view,
             'template_namespace' => '',
-            'context' => json_decode(json_encode(['entity_id' => $stripped_payment_id])),
+            'context' => json_decode(json_encode(['entity_id' => $payment_id])),
             'from'               => $this->from[0] ?? [],
             'to'                 => $this->to ?? [],
             'cc'                 => $this->cc ?? [],
