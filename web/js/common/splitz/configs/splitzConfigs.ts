@@ -691,6 +691,22 @@ export const splitzConfig: SplitzInitConfig = {
       routesToMatch: [/^(?=.*\/reports(?:\/(?:downloads|schedules))?).*$/i],
       abExperiments: [
         {
+          uniqueHashKey: 'Data_Sync_Advertisement_Banner_Experiment',
+          experimentId: {
+            beta: 'P9JCe7k5KjNiUW',
+            production: 'P9M0vAVr8PD2q6',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
           uniqueHashKey: 'Reports_Revamp_Recents',
           experimentId: {
             beta: 'LhJWXVuaVbbpnR',

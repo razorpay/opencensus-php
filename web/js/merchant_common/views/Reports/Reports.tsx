@@ -22,6 +22,7 @@ import {
   handleOverviewLoading,
 } from './redux/reducer';
 import { ReportSectionProps } from './types';
+import { DataSyncAdvertisementBanner } from 'merchant/components/DataSyncAdvertisementBanner';
 
 // Features Of Reports
 const getReportsFeatures = (isSchedulesEnabled: boolean) => {
@@ -99,7 +100,8 @@ export const ReportsSection = connect(
       dashboardType,
       parseConfigs,
     });
-    const { isSchedulesEnabled } = useReportsSplitzExperiments();
+    const { isSchedulesEnabled, isDataSyncAdvertisementBannerEnabled } =
+      useReportsSplitzExperiments();
     const features = useMemo(() => getReportsFeatures(isSchedulesEnabled), []);
 
     useEffect(() => {
@@ -120,6 +122,7 @@ export const ReportsSection = connect(
           />
         </ShowWhen>
         <DashboardBanner />
+        {isDataSyncAdvertisementBannerEnabled ? <DataSyncAdvertisementBanner /> : null}
         <Tabs tabs={features} basePath={basePath} />
       </div>
     );
