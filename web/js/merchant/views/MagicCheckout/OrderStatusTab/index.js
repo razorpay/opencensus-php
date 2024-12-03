@@ -12,6 +12,7 @@ import {
   createOrderStatusBatch,
   validateOrderStatusBatch,
 } from 'merchant/reducers/magicCheckout/bulk_order_statuses';
+import { ContentWrapper, TabHeader } from 'merchant/views/MagicCheckout/styled';
 import { LIMIT } from 'merchant/views/MagicCheckout/OrderStatusTab/constants';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
@@ -64,28 +65,30 @@ const OrderStatuses = ({
       <Spinner />
     </div>
   ) : (
-    <div className="delivery-status-container content-wrapper">
-      <div className="tab-header">
-        <span className="heading">Monthly delivery data</span>
+    <ContentWrapper className="delivery-status-container content-wrapper">
+      <TabHeader className="tab-header">
+        <div>
+          <span className="heading">Monthly delivery data</span>
+          <p className="sub-text">
+            Upload delivery status periodically for orders placed via{' '}
+            {`${isRCOD ? 'Shopify' : 'Magic'}`} Checkout to get better reduction of RTOs via COD
+            Intelligence and claim RTO Protection.
+          </p>
+        </div>
         <span className="pull-right upload-cta">
           <button className="btn btn-primary" onClick={onUploadClick}>
             <i className="i i-plus" />
             Upload Delivery Statuses
           </button>
         </span>
-        <p className="sub-text">
-          Upload delivery status periodically for orders placed via{' '}
-          {`${isRCOD ? 'Shopify' : 'Magic'}`} Checkout to get better reduction of RTOs via COD
-          Intelligence and claim RTO Protection.
-        </p>
-      </div>
+      </TabHeader>
       <OrderStatusList
         sampleUrl={SAMPLE_BATCH_UPLOAD_FILE}
         maxRows={LIMIT}
         items={items}
         error={error}
       />
-    </div>
+    </ContentWrapper>
   );
 };
 

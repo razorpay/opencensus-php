@@ -86,6 +86,7 @@ const OrderFilters = ({
           <Input.Select
             id="riskTier"
             name="riskTier"
+            className="cod-review-input-dd"
             options={RISK_TIERS}
             value={riskTier}
             onChange={setField}
@@ -111,6 +112,7 @@ const OrderFilters = ({
             <Input.Select
               id="reviewMode"
               name="reviewMode"
+              className="cod-review-input-dd"
               options={REVIEW_MODE}
               value={reviewMode}
               onChange={setField}
@@ -119,7 +121,14 @@ const OrderFilters = ({
         ) : null}
         <div className="form-group list-filter-item count">
           <label for="count">Count</label>
-          <Input.Select id="count" name="count" options={COUNT} value={count} onChange={setField} />
+          <Input.Select
+            id="count"
+            name="count"
+            className="cod-review-input-dd"
+            options={COUNT}
+            value={count}
+            onChange={setField}
+          />
         </div>
       </ListFilter>
     </>

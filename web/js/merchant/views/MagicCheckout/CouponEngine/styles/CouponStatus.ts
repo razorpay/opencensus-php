@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 interface CouponStatusVaraints {
   variant: 'created' | 'active' | 'in_active' | 'expired' | 'published';
+  captitalize: boolean;
 }
 
 export const CouponStatus = styled.div<CouponStatusVaraints>`
@@ -11,6 +12,7 @@ export const CouponStatus = styled.div<CouponStatusVaraints>`
   padding: 4px 12px;
   font-size: 10px;
   font-weight: 600;
+  ${(props) => (props.capitalize ? 'text-transform: capitalize;' : '')}
 
   ${(props) => {
     switch (props.variant) {

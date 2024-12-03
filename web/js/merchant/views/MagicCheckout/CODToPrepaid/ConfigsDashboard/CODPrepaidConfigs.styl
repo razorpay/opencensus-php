@@ -1,3 +1,9 @@
+// stylelint-disable no-descending-specificity
+// stylelint-disable declaration-no-important
+// stylelint-disable color-function-notation
+// stylelint-disable max-nesting-depth
+// stylelint-disable stylus/selector-type-no-unknown
+
 .magic-settings-tabs > .tabs-content.pl-configurations-container > .tabs-component
   height: 100%
   margin: 0
@@ -16,9 +22,10 @@
 
 .magic-settings-tabs
   .tabs-content.pl-configurations-container > .tabs-component > .tabs-component-wrapper,
-.magic-settings-tabs
-  .tabs-content > .tabs-component > .tabs-component-wrapper > .tabbed-container >.content
+  .magic-settings-tabs,
+  .tabs-content > .tabs-component > .tabs-component-wrapper > .tabbed-container > .content
     padding: 24px
+
     .prepay-cod-configs-container
       padding: 24px
       border: 1px solid #EAEFF0
@@ -239,6 +246,9 @@
 
     .pl-radio-configs
       margin: 16px 0
+
+      .Input-el
+        height: 0
 
     h5
       margin: 0

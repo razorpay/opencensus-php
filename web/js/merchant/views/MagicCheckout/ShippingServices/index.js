@@ -15,6 +15,7 @@ import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicE
 
 import { MAGICX_PUBLICAPP_COD_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 import { SHIPPING_PARTNERS } from 'merchant/views/MagicCheckout/ShippingServices/constants';
+import { ContentWrapper } from 'merchant/views/MagicCheckout/styled';
 
 const ShippingAccount = ({
   fetchProviders,
@@ -52,7 +53,7 @@ const ShippingAccount = ({
   }
   return (
     <SuspenseWithLoader type="center">
-      <div className="content-wrapper">
+      <ContentWrapper className="content-wrapper">
         <div className="row">
           <div className="col-sm-5 no-padding">
             <div className="font-heading font-bold shipping-header color-black">
@@ -85,7 +86,7 @@ const ShippingAccount = ({
             />
           </div>
         </div>
-      </div>
+      </ContentWrapper>
     </SuspenseWithLoader>
   );
 };

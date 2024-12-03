@@ -222,6 +222,7 @@ const BlockList = (props) => {
         count={count}
         skip={skip.current}
         paginate={paginate}
+        gridTemplateColumns="1fr 2fr 1fr 2fr 0.5fr"
         {...props}
       />
     </>

@@ -167,6 +167,7 @@ const GenericCoupons: React.FC<GenericCouponsProps> = ({
           count={filters.count}
           paginate={paginate}
           EmptyComponent={EmptyComponent}
+          gridTemplateColumns="3fr 3fr 2fr 2fr 2fr 1fr 1fr 1fr"
         />
       </DataTableWrapper>
     </div>

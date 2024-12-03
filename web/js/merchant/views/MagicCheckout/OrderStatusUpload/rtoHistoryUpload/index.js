@@ -20,6 +20,7 @@ import {
   SHIPPING_PROVIDERS,
   SAMPLE_FILE_URL,
 } from 'merchant/views/MagicCheckout/OrderStatusUpload/rtoHistoryUpload/constants';
+import { ContentWrapper, TabHeader } from 'merchant/views/MagicCheckout/styled';
 
 const CLOSE_URL = '/magic/delivery-status';
 
@@ -75,9 +76,15 @@ const RTOHistoryUpload = ({ openModal, validateBatch, rtoHistoryData, fetchAll, 
       <Spinner />
     </div>
   ) : (
-    <div className="rto-history-container content-wrapper">
-      <div className="tab-header">
-        <span className="heading">Pre-Magic delivery data</span>
+    <ContentWrapper className="rto-history-container content-wrapper">
+      <TabHeader className="tab-header">
+        <div>
+          <span className="heading">Pre-Magic delivery data</span>
+          <p className="sub-text">
+            Sharing order details for {`${isRCOD ? 'pre-MagicX' : 'pre-Magic Checkout'}`} orders
+            will enable you to get better COD intelligence and RTO protection from Day 1.
+          </p>
+        </div>
         {isUploadAllowed && (
           <span className="pull-right upload-cta" data-testid="upload-order-history-cta">
             <button
@@ -90,17 +97,13 @@ const RTOHistoryUpload = ({ openModal, validateBatch, rtoHistoryData, fetchAll, 
             </button>
           </span>
         )}
-        <p className="sub-text">
-          Sharing order details for {`${isRCOD ? 'pre-MagicX' : 'pre-Magic Checkout'}`} orders will
-          enable you to get better COD intelligence and RTO protection from Day 1.
-        </p>
-      </div>
+      </TabHeader>
       {!items.length ? (
         <EmptyComponent sampleUrl={SAMPLE_FILE_URL} />
       ) : (
         <RTOHistoryTable items={items} error={error} />
       )}
-    </div>
+    </ContentWrapper>
   );
 };
 

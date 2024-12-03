@@ -6,8 +6,13 @@ import ActionToolbar from 'merchant/views/MagicCheckout/CouponEngine/components/
 import {
   CouponName,
   CouponDescription,
+  CapitalText,
 } from 'merchant/views/MagicCheckout/CouponEngine/styles/DataTableElements';
 import { CouponStatus } from 'merchant/views/MagicCheckout/CouponEngine/styles/CouponStatus';
+import {
+  CellItemTitleWithPadding,
+  OrderIDContainer,
+} from 'merchant/views/MagicCheckout/CouponEngine/styles/DataTableElements';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 // helpers
@@ -16,9 +21,9 @@ import { truncatedString } from 'common/utils/rzp-utils';
 
 // Component to display coupon code along with a checkbox
 export const couponCode = (onSelectId, checkedIds) => ({
-  title: 'Coupon',
+  title: <CellItemTitleWithPadding>Coupon</CellItemTitleWithPadding>,
   value: (coupon) => (
-    <div className="orderId-container">
+    <OrderIDContainer className="orderId-container">
       <Input.Check
         autoRender
         id={coupon.id}
@@ -31,11 +36,11 @@ export const couponCode = (onSelectId, checkedIds) => ({
       {coupon.code.length > 30 && (
         <Popover>
           <PopoverBody>
-            <CouponName> {coupon.code} </CouponName>
+            <CouponName htmlFor={coupon.id}> {coupon.code} </CouponName>
           </PopoverBody>
         </Popover>
       )}
-    </div>
+    </OrderIDContainer>
   ),
 });
 
@@ -87,7 +92,11 @@ export const couponStatus = {
     if (coupon.status === 'in_active') {
       displayStatus = 'inactive';
     }
-    return <CouponStatus variant={coupon.status}>{displayStatus}</CouponStatus>;
+    return (
+      <CouponStatus variant={coupon.status} capitalize>
+        {displayStatus}
+      </CouponStatus>
+    );
   },
 };
 
@@ -139,6 +148,6 @@ export const couponSource = {
   title: 'Source',
   value: (coupon: any) => {
     const source = coupon?.source ?? 'Coupon Engine';
-    return <span> {source}</span>;
+    return <CapitalText>{source}</CapitalText>;
   },
 };

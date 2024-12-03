@@ -1,3 +1,8 @@
+// stylelint-disable no-descending-specificity
+// stylelint-disable color-function-notation
+// stylelint-disable max-nesting-depth
+// stylelint-disable stylus/selector-type-no-unknown
+
 .ReactModal__Overlay > .ReactModal__Content.link-analytics-account-modal.Modal--large
   max-width: 1000px;
   min-width: 900px;
@@ -67,13 +72,14 @@
     width: fit-content
 
     .Input-el
-      height: 0
+      // stylelint-disable-next-line declaration-no-important
+      height: 0 !important
 
     .Input-checkbox
       border: 1px solid #979797
 
   .Input-desc
-    margin: 1px 0 0
+    margin: 3px 0 0
     color: #58666E
     font-weight: 600
     line-height: 17px
@@ -313,3 +319,22 @@
   .partially-fulfilled-orders
     background-color: #17A2B8
     color: #FFF
+
+.orderId-container
+  display: flex
+
+  .Input-elWrapper
+    width: fit-content
+
+    .Input-el
+      height: 0
+
+    .Input-checkbox
+      border: 1px solid #979797
+
+    .Input-desc
+      margin: 1px 0 0
+      color: #528FF0
+
+    .disable-link
+      pointer-events: none

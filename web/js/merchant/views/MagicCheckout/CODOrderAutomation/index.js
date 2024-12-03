@@ -229,12 +229,12 @@ const CODOrderAutomation = ({
           <>
             <div className="config-container">
               <div className="config-labels-container display-flex">
-                <div className="config-input-header col-md-4">Type of RTO risk</div>
-                <div className="config-input-header col-md-8">Take action</div>
+                <div className="config-input-header col-md-3">Type of RTO risk</div>
+                <div className="config-input-header col-md-5">Take action</div>
               </div>
               {configs.map((item, index) => (
                 <div className="config-inputs-wrapper display-flex" key={index}>
-                  <div className="config-input col-md-4">
+                  <div className="config-input col-md-3">
                     <Input.Select
                       name="type"
                       value={item.type}
@@ -248,7 +248,7 @@ const CODOrderAutomation = ({
                       <p className="required-text">Required</p>
                     ) : null}
                   </div>
-                  <div className="config-input col-md-6">
+                  <div className="config-input col-md-5">
                     <Input.Select
                       name="action"
                       value={item.action}

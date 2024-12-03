@@ -13,6 +13,7 @@ export interface DataTableProps<TData> {
   handleAddMore?: () => void;
   handleAddMoreViaFileUpload?: () => void;
   EmptyComponent?: React.ReactNode;
+  gridTemplateColumns?: string;
 }
 
 export function MagicDataTable<TData>({
@@ -25,6 +26,7 @@ export function MagicDataTable<TData>({
   handleAddMore,
   handleAddMoreViaFileUpload,
   EmptyComponent,
+  ...props
 }: DataTableProps<TData>): JSX.Element {
   const columnsWithClassName = columns.map((col) => ({
     ...col,
@@ -37,6 +39,7 @@ export function MagicDataTable<TData>({
         customClass={customClass}
         items={data}
         columns={columnsWithClassName}
+        {...props}
       />
       {addMoreLabel && handleAddMore && (
         <AddMoreButton data-testid="magic-add-more-button" onClick={handleAddMore}>

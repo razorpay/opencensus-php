@@ -128,9 +128,16 @@ const ProfileTable = ({
     return [];
   }, [type, shipping_profiles]);
 
+  const isDefaultProfileType = type === PROFILE_TYPES.DEFAULT;
+
   const COLUMNS: ColumnDef<ShippingProfile>[] = [Profile, Zones, ShippingMethods];
   if (type === PROFILE_TYPES.GENERAL) {
     COLUMNS.push(actions({ handleDeleteClick, handleEditClick }));
+  }
+
+  let gridTemplateColumns = 'repeat(3, 2fr)';
+  if (!isDefaultProfileType) {
+    gridTemplateColumns += ' 1fr';
   }
 
   return (
@@ -138,6 +145,7 @@ const ProfileTable = ({
       EmptyComponent={() => <EmptyComponent type={type} />}
       columns={COLUMNS}
       data={tableData}
+      gridTemplateColumns={gridTemplateColumns}
     />
   );
 };

@@ -1,3 +1,8 @@
+// stylelint-disable color-function-notation
+// stylelint-disable max-nesting-depth
+// stylelint-disable stylus/selector-type-no-unknown
+// stylelint-disable selector-id-pattern
+
 $primaryBlue = #2A86F3;
 $bgBlue = #FAFCFF;
 $white = #FFF;
@@ -492,3 +497,13 @@ $border = #E2E8EA;
 
     p
       font-size: 14px
+
+.cod-review-input-dd
+  .Select-elWrapper::before
+    // stylelint-disable-next-line declaration-no-important
+    margin-top: 15px !important
+
+  #riskTier,
+  #reviewMode,
+  #count
+    height: 30px

@@ -28,7 +28,6 @@ const PreviewSettings = ({ setProfile, default_profile }): JSX.Element => {
           display="flex"
           alignItems="left"
           justifyContent="space-between"
-          marginY="spacing.7"
           flexDirection="column"
           width="80%"
         >
@@ -48,7 +47,7 @@ const PreviewSettings = ({ setProfile, default_profile }): JSX.Element => {
           display="flex"
           alignItems="left"
           justifyContent="space-between"
-          marginY="spacing.7"
+          marginTop="spacing.7"
           flexDirection="column"
           width="75%"
         >

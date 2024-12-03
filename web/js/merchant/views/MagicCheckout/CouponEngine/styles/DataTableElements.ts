@@ -6,7 +6,20 @@ export const DataTableWrapper = styled.div`
   }
 `;
 
-export const CouponName = styled.div`
+export const CellItemTitleWithPadding = styled.p`
+  padding-left: 30px;
+`;
+
+export const OrderIDContainer = styled.div`
+  display: flex;
+  gap: 5px;
+`;
+
+export const CapitalText = styled.span`
+  text-transform: capitalize;
+`;
+
+export const CouponName = styled.label`
   font-size: 14px;
   font-weight: 600;
   line-height: 19px;

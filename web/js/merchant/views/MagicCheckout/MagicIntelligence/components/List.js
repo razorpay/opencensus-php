@@ -6,6 +6,8 @@ import {
   RCOD_HEADING_SUBTEXT,
 } from 'merchant/views/MagicCheckout/MagicIntelligence/constants';
 
+import { ListHeader } from 'merchant/views/MagicCheckout/MagicIntelligence/components/styled';
+
 export const EmptyComponent = (onUploadClick, txt, hasNoData) => () =>
   (
     <div className="empty-table-message">
@@ -63,22 +65,24 @@ const IntelligenceContainer = (props) => {
   return (
     <>
       <div className="content-wrapper">
-        <div className="row list-header">
-          <div className="col-md-10 d-flex p--0">
+        <ListHeader className="row list-header">
+          <div className="col-md-9 d-flex p--0">
             <label>{ctaText}</label>
             <p className="list-header-subText">
               {isRCOD ? RCOD_HEADING_SUBTEXT[ctaText] : HEADING_SUBTEXT[ctaText]}
             </p>
           </div>
-          <div className="col-md-2 p--0">
-            <span className="cta-container pull-right">
-              <button type="button" className="btn btn-primary btn-shine" onClick={onUploadClick}>
-                <i className="i i-plus" />
-                <span>{`Add New ${ctaText}`}</span>
-              </button>
-            </span>
+          <div className="col-md-3 p--0">
+            <button
+              type="button"
+              className="btn btn-primary btn-shine pull-right"
+              onClick={onUploadClick}
+            >
+              <i className="i i-plus" />
+              <span>{`Add New ${ctaText}`}</span>
+            </button>
           </div>
-        </div>
+        </ListHeader>
       </div>
       <ListFilter
         form={`${formName}-form`}
