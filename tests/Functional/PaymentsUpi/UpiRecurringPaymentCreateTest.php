@@ -31,10 +31,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
 
         // use old autopay pricing for old test cases
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
-        });
+        $this->mockSplitzTreatmentForAutopayPricing('variant_on');
     }
 
     public function testCreateFirstUpiRecurringPayment()
@@ -222,7 +219,6 @@ class UpiRecurringPaymentCreateTest extends TestCase
             {
                 return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
             }
-
             return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
         });
 

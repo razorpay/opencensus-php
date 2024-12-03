@@ -3883,13 +3883,7 @@ class Gateway extends Base\Gateway
         if (($this->isUpiRecurringPayment($input['payment']) === true) and
             ($input['payment']['recurring_type'] === 'initial'))
         {
-            $variant = $this->app->razorx->getTreatment($input['payment']['merchant_id'],
-                RazorxTreatment::UPI_AUTOPAY_SHOW_INITIAL_AMOUNT, $this->mode);
-
-            if(strtolower($variant) === 'on')
-            {
-                $content['entities']['fam'] = true;
-            }
+            $content['entities']['fam'] = true;
         }
     }
 

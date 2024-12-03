@@ -81,7 +81,7 @@ app/Services/Mock/BankingAccountService.php            @razorpay/x-acquisition-b
 
 app/Gateway/Upi/Icici                                  @razorpay/qr-code-devs
 app/Gateway/Upi/Yesbank                                @razorpay/qr-code-devs
-app/Gateway/Upi                                        @razorpay/techupicore sharma.nikhil@razorpay.com kalpana.meena@razorpay.com
+app/Gateway/Upi                                        @razorpay/techupicore
 
 
 #

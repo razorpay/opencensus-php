@@ -9685,26 +9685,24 @@ class Processor
             {
                 $frequencyUpiAutoPay = UPIMandateFrequency::AS_PRESENTED;
 
-                if ($this->app['razorx']->getTreatment($payment->merchant->getId(), Merchant\RazorxTreatment::UPI_AUTOPAY_CORRECT_FREQUENCY_FETCH, $this->app['rzp.mode']) === 'on')
+                try
                 {
-                    try
-                    {
-                        $subscriptionInput = [
-                            Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId())
-                        ];
+                    $subscriptionInput = [
+                        Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId())
+                    ];
 
-                        $subscriptionData = $this->app['module']->subscription->fetchSubscriptionInfoUpiAutoPay($subscriptionInput, $payment->merchant);
+                    $subscriptionData = $this->app['module']->subscription->fetchSubscriptionInfoUpiAutoPay($subscriptionInput, $payment->merchant);
 
-                        $frequencyUpiAutoPay = $subscriptionData['frequency'] ?? $frequencyUpiAutoPay;
-                    }
-                    catch (\Exception $ex)
-                    {
-                        $this->trace->traceException(
-                            $ex,
-                            Trace::CRITICAL,
-                            TraceCode::UPI_AUTOPAY_SUBSCRIPTIONS_FETCH_FAILURE);
-                    }
+                    $frequencyUpiAutoPay = $subscriptionData['frequency'] ?? $frequencyUpiAutoPay;
                 }
+                catch (\Exception $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::CRITICAL,
+                        TraceCode::UPI_AUTOPAY_SUBSCRIPTIONS_FETCH_FAILURE);
+                }
+
 
                 //upi token expires 1 week past the subscription's end_at
                 $upitoken = [
@@ -11266,29 +11264,22 @@ class Processor
     {
             if ($payment->getMethod() === Constants::UPI)
             {
-                $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
-                    Merchant\RazorxTreatment::DEFAULT_CAPTURE_SETTING_CONFIG_UPI_AUTOPAY,
-                    $this->app['rzp.mode']);
+                $notificationCore = new Notifications\Core();
 
-                if (strtolower($variant) === 'on')
+                $notificationCount = $notificationCore->fetchNotificationCount($payment['order_id']);
+
+                if($notificationCount === 0)
                 {
-                    $notificationCore = new Notifications\Core();
+                    $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO;
 
-                    $notificationCount = $notificationCore->fetchNotificationCount($payment['order_id']);
+                    $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($payment->getId(), $payment->merchant->getId());
 
-                    if($notificationCount === 0)
-                    {
-                        $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO;
-
-                        $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($payment->getId(), $payment->merchant->getId());
-
-                        if ($canRetry === true) {
-                            $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_TIMEOUT_FOR_UPI_RECURRING_AUTO_DEBIT_RETRIES;
-                        }
-
-                        if ($autoTimeoutDuration < $defaultUpiAutoCaptureExpiry) $autoTimeoutDuration = $defaultUpiAutoCaptureExpiry;
-                        if ($manualTimeoutDuration < $defaultUpiAutoCaptureExpiry) $manualTimeoutDuration = $defaultUpiAutoCaptureExpiry;
+                    if ($canRetry === true) {
+                        $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_TIMEOUT_FOR_UPI_RECURRING_AUTO_DEBIT_RETRIES;
                     }
+
+                    if ($autoTimeoutDuration < $defaultUpiAutoCaptureExpiry) $autoTimeoutDuration = $defaultUpiAutoCaptureExpiry;
+                    if ($manualTimeoutDuration < $defaultUpiAutoCaptureExpiry) $manualTimeoutDuration = $defaultUpiAutoCaptureExpiry;
                 }
 
             } elseif ($payment->getMethod() === Constants::CARD)

@@ -25,6 +25,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\UpiMandate\Metrics;
 use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\PaymentsUpi\Vpa as Vpa;
@@ -1944,29 +1945,48 @@ trait UpiRecurring
 
     public function checkUpiAutopayIncreaseDebitRetry($paymentId, $merchantId,  $upi = null)
     {
-        $app = \App::getFacadeRoot();
-
-        $variant = $app['razorx']->getTreatment($merchantId,
-            Merchant\RazorxTreatment::UPI_AUTOPAY_INCREASE_DEBIT_RETRIES,
-            $app['rzp.mode'],
-            3
-        );
-
-        $variant = strtolower($variant);
-
-        if($variant === 'on')
+        try
         {
-            $app['trace']->info(
-                TraceCode::UPI_RECURRING_DEBIT_RETRY,
-                [
-                    'payment_id' => $paymentId,
-                    'merchant_id' => $merchantId,
-                ]);
-            return true;
+            $app = \App::getFacadeRoot();
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $app['config']->get('app.upi_autopay_increase_debit_retries'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $app['trace']->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                $app['trace']->info(
+                    TraceCode::UPI_RECURRING_DEBIT_RETRY,
+                    [
+                        'payment_id' => $paymentId,
+                        'merchant_id' => $merchantId,
+                    ]);
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_INCREASE_DEBIT_RETRIES
+            );
         }
 
         return false;
     }
+
+
 
     public function getReattemptIntervalForOneTimeMandate(string $merchantId)
     {
@@ -1979,18 +1999,60 @@ trait UpiRecurring
         $interval = null;
 
         if ($shouldReattempt === true) {
-            $variant = $app['razorx']->getTreatment($merchantId,
-                Merchant\RazorxTreatment::UPI_AUTOPAY_ONE_TIME_MANDATE_REATTEMPT_INTERVAL,
-                $app['rzp.mode'],
-                3
-            );
-
-            if ($variant !== 'control') {
-                $interval = (int)$variant;
-            }
+            $interval = $this->evaluateSplitzExperimentForUpiAutopayOneTimeMandateReattemptInterval($merchantId);
         }
 
         return $interval;
+    }
+
+    /**
+     * Evaluates the Splitz experiment for UPI Autopay one-time mandate reattempt interval.
+     *
+     * This method determines the appropriate interval for reattempting a UPI Autopay one-time mandate
+     * based on the provided merchant ID and the Splitz experiment configuration.
+     *
+     * @param int $merchantId The ID of the merchant for whom the experiment is being evaluated.
+     * @return int
+     */
+    protected function evaluateSplitzExperimentForUpiAutopayOneTimeMandateReattemptInterval($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_one_time_mandate_reattempt_interval'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                $variables = $response['response']['variant']['variables'];
+                foreach ($variables as $variable) {
+                    if ($variable['key'] === "interval" && $variable['value'] > 0 ) {
+                        return (int)$variable['value'];
+                    }
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_ONE_TIME_MANDATE_REATTEMPT_INTERVAL
+            );
+        }
+
+        return null;
     }
 
     public function updateTokenAndMandateCancelledForUpiAutopayOneTimePayment(Payment\Entity $payment, array $data)

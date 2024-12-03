@@ -4215,13 +4215,36 @@ trait Refund
     {
         if (($payment->isUpi() === true) and
             ($payment->isRecurring() === true) and
-            (Payment\Gateway::isUpiRecurringSupportedGateway($payment->getGateway()) === true))
+            (Payment\Gateway::isUpiRecurringSupportedGateway($payment->getGateway()) === true) and
+            ($payment->getGateway() !== Payment\Gateway::UPI_ICICI))
         {
-            $variant =  $this->app->razorx->getTreatment($payment->getGateway(),
-                Merchant\RazorxTreatment::UPI_AUTOPAY_GATEWAY_REFUND,
-                $this->mode);
+            try
+            {
+                $properties = [
+                    'id'            => UniqueIdEntity::generateUniqueId(),
+                    'experiment_id' => $this->app['config']->get('app.upi_autopay_gateway_refund'),
+                    'request_data'  => json_encode(
+                        [
+                            'gateway' => $payment->getGateway(),
+                        ]),
+                ];
 
-            return ($variant !== 'on');
+                $response = $this->app['splitzService']->evaluateRequest($properties);
+
+                $variant = $response['response']['variant']['name'] ?? '';
+
+                $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+                return ($variant !== 'variant_on');
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::UPI_AUTOPAY_GATEWAY_REFUND
+                );
+            }
 
         }
 

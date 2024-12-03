@@ -371,12 +371,9 @@ class GatewayController extends Controller
             (isset($input['requestInfo']['pspRefNo']) === true) and
             (str_contains($input['requestInfo']['pspRefNo'], 'recuQr') === true))
         {
-            $variant = $this->app['razorx']->getTreatment($input['requestInfo']['pgMerchantId'],
-                RazorxTreatment::UPI_AUTOPAY_PROMOTIONAL_QR,
-                Mode::LIVE,
-                3);
+            $variant = $this->evaluateSplitzExperimentForUpiAutopayPromotionalQr($input['requestInfo']['pgMerchantId']);
 
-            if($variant === 'on')
+            if($variant === true)
             {
                 try {
 
@@ -635,6 +632,48 @@ class GatewayController extends Controller
         }
 
         return $response;
+    }
+
+    /**
+     * Evaluate the Splitz experiment for UPI Autopay promotional QR.
+     *
+     * @param int $merchantId The ID of the merchant.
+     * @return bool True if the variant is 'variant_on', false otherwise.
+     */
+    protected function evaluateSplitzExperimentForUpiAutopayPromotionalQr($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_promotional_qr'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_PROMOTIONAL_QR
+            );
+        }
+
+        return false;
     }
 
     /**

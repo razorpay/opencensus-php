@@ -29,6 +29,7 @@ use RZP\Models\Base\Utility;
 use RZP\Constants\Entity as E;
 use RZP\Models\Options\Constants;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -782,12 +783,7 @@ class ViewDataSerializerHosted extends Base\Core
             {
                 $serialized[E::SUBSCRIPTION_REGISTRATION]['frequency'] = $order->upiMandate['frequency'];
 
-                $upiAutopayPromoIntentVariant = $this->app->razorx->getTreatment(
-                    $order->getMerchantId(),
-                    RazorxTreatment::UPI_AUTOPAY_PROMOTIONAL_INTENT,
-                    $this->mode,
-                    3
-                );
+                $upiAutopayPromoIntentVariant = $this->evaluateSplitzExperimentForUpiAutopayPromotionalIntent($order->getMerchantId());
 
                 try
                 {
@@ -797,7 +793,7 @@ class ViewDataSerializerHosted extends Base\Core
 
                     $successfulPayment = $this->getSuccessfulPaymentForOrder($order);
 
-                    if ($upiAutopayPromoIntentVariant === 'on')
+                    if ($upiAutopayPromoIntentVariant === true)
                     {
                         (new Services\UpiRecurringEvent())->pushUpiRecurringEvents(EventCode::UPI_RECURRING_PROMO_INTENT_AUTH_LINK_CLICKED, null, null, [
                             'order_id'                  => $order->getPublicId(),
@@ -809,7 +805,7 @@ class ViewDataSerializerHosted extends Base\Core
                     }
 
                     if (($isUserAgentAndroid === true) and
-                        ($upiAutopayPromoIntentVariant === 'on') and
+                        ($upiAutopayPromoIntentVariant === true) and
                         ($this->mode === 'live') and
                         ($successfulPayment === null))
                     {
@@ -985,6 +981,51 @@ class ViewDataSerializerHosted extends Base\Core
         {
             $serialized[Entity::ENTITY_TYPE] = null;
         }
+    }
+
+    /**
+     * Evaluates the Splitz experiment for UPI Autopay promotional intent.
+     *
+     * This method assesses the Splitz experiment to determine the promotional intent
+     * for UPI Autopay based on the provided merchant ID.
+     *
+     * @param int $merchantId The ID of the merchant for whom the experiment is being evaluated.
+     * @return bool True if the variant is 'variant_on', false otherwise.
+     */
+    protected function evaluateSplitzExperimentForUpiAutopayPromotionalIntent($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_promotional_intent'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_PROMOTIONAL_INTENT
+            );
+        }
+
+        return false;
     }
 
     protected function getSelectedInputFieldValue($selectedInputFiledName)

@@ -28,6 +28,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Constants\Entity as E;
 use RZP\Models\Customer\Token;
 use RZP\Exception\LogicException;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\Feature\Constants as Feature;
@@ -125,13 +126,8 @@ class Core extends Base\Core
                 if(isset($input['subscription_registration']['method'])  and
                     $input['subscription_registration']['method'] == Method::UPI and $order === null)
                 {
-                    $maxAmountVariant = $this->app->razorx->getTreatment(
-                        $this->merchant->getId(),
-                        Merchant\RazorxTreatment::UPI_AUTOPAY_DISABLE_MAX_AMOUNT_BLACKLIST,
-                        $this->mode
-                    );
-
-                    if((strtolower($maxAmountVariant) === 'on') and
+                    $maxAmountVariant = $this->evaluateSplitzExperimentForUpiAutopayDisableMaxAmount($this->merchant->getId());
+                    if(($maxAmountVariant === true) and
                         (isset($input['subscription_registration']['max_amount']) === false))
                     {
                         $input['subscription_registration']['max_amount'] = ($merchant->isBFSIMerchantCategory() === true) ? UpiValidator::BFSI_MAX_AMOUNT_LIMIT : UpiValidator::NON_BFSI_MAX_AMOUNT_LIMIT;
@@ -162,6 +158,48 @@ class Core extends Base\Core
         $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_CREATED,$tokenRegistration->getMetricDimensions());
 
         return $invoice;
+    }
+
+    /**
+     * Evaluates the Splitz experiment for disabling UPI Autopay based on the maximum amount for a given merchant.
+     *
+     * @param int $merchantId The ID of the merchant for whom the experiment is being evaluated.
+     * @return bool Returns true if the experiment variant is 'variant_on', false otherwise.
+     */
+    protected function evaluateSplitzExperimentForUpiAutopayDisableMaxAmount($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_disable_max_amount_blacklist'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_DISABLE_MAX_AMOUNT_BLACKLIST
+            );
+        }
+
+        return false;
     }
 
     protected function associateProducts($order, array $productsArray)

@@ -747,9 +747,6 @@ final class RazorxTreatment
 
     public const REFUND_AMOUNT_VALIDATION_FROM_REFUND_ENTITY = 'refund_amt_validation_from_refund_entity';
 
-    // This is for upi autopay subsequent payment if capture setting time is less then 36 hours
-    public const DEFAULT_CAPTURE_SETTING_CONFIG_UPI_AUTOPAY = "default_capture_setting_config_upi_autopay";
-
     // This is for czrd recurring subsequent payment capture setting
     public const DEFAULT_CAPTURE_SETTING_CONFIG_CARD_RECURRING = "default_capture_setting_config_card_recurring";
 
@@ -877,12 +874,6 @@ final class RazorxTreatment
     /** Experiment used check whether mapns to be de-tokenized or not **/
     const DETOKENIZE_MPANS = "detokenize_mpans";
 
-    // Experiment to use old Pricing plan for upi autopay
-    const UPI_AUTOPAY_PRICING_BLACKLIST = 'upi_autopay_pricing_blacklist';
-
-    //Experiment of susbcription other frequency changes
-    public const UPI_AUTOPAY_CORRECT_FREQUENCY_FETCH = "upi_autopay_correct_frequency_fetch";
-
     const ALLOW_CC_ON_UPI_PRICING = 'allow_cc_on_upi_pricing';
 
     // Experiment to enable async bulk approval or not
@@ -919,37 +910,11 @@ final class RazorxTreatment
     // Experiment to push payout attachment email job to SQS instead of metro
     const PAYOUT_ATTACHMENT_EMAIL_VIA_SQS = 'payout_attachment_email_via_sqs';
 
-    // Experiment to use UPI Autopay Promo Intent flow instead of normal checkout flow for authlinks
-    const UPI_AUTOPAY_PROMOTIONAL_INTENT = 'upi_autopay_promotional_intent';
-
-    //Experiment to enable UPI Autopay Promotional QR Flow
-    const UPI_AUTOPAY_PROMOTIONAL_QR = 'upi_autopay_promotional_qr';
-
     // Partner bank hold payouts experiment
     const PARTNER_BANK_ON_HOLD_PAYOUT = 'partner_bank_on_hold_payout';
 
     // Partner bank hold payouts experiment
     const PARTNER_BANK_ON_HOLD_PAYOUT_ICICI = 'partner_bank_on_hold_payout_icici';
-
-    const UPI_AUTOPAY_REVOKE_PAUSE_TOKEN = 'upi_autopay_revoke_pause_token';
-
-    // Experiment to enable mandate non-revokable
-    const UPI_AUTOPAY_REVOKABLE_FEATURE = 'UPI_AUTOPAY_REVOKABLE_FEATURE';
-
-    // Experiment to show initial amount to customer on PSP app
-    const UPI_AUTOPAY_SHOW_INITIAL_AMOUNT = 'upi_autopay_show_initial_amount';
-
-    // Experiment to increase debit retries for merchants
-    const UPI_AUTOPAY_INCREASE_DEBIT_RETRIES = 'upi_autopay_increase_debit_retries';
-
-    //Experiment to change debit retries time gap for merchant
-    const UPI_AUTOPAY_INCREASE_DEBIT_RETRIES_TIME_GAP = 'upi_autopay_increase_debit_retries_time_gap';
-
-    const UPI_AUTOPAY_ONE_TIME_MANDATE_REATTEMPT_INTERVAL = 'upi_autopay_one_time_mandate_reattempt_interval';
-
-    const UPI_AUTOPAY_PAYMENT_REMARK            = "upi_autopay_payment_remark";
-
-    const UPI_AUTOPAY_GATEWAY_REFUND         = "upi_autopay_gateway_refund";
 
     const CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER  = "card_subscriptions_international_handler";
 
@@ -1082,9 +1047,6 @@ final class RazorxTreatment
 
     // Experiment to support multiple frequencies for card recurring payment CAW
     const CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES = "card_mandate_enable_multiple_frequencies";
-
-    // experiment to disable default max amount for upi autopay
-    const UPI_AUTOPAY_DISABLE_MAX_AMOUNT_BLACKLIST = 'upi_autopay_disable_max_amount_blacklist';
 
     /**
      * Razorx flag to use merchant_refernce as an identifier to fetch unexpected payments

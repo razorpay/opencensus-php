@@ -745,6 +745,28 @@ return array(
 
     'enable_force_auth_on_upi_autopay' => env('ENABLE_FORCE_AUTH_ON_UPI_AUTOPAY'),
 
+    'upi_autopay_one_time_mandate_reattempt_interval' => env('UPI_AUTOPAY_ONE_TIME_MANDATE_REATTEMPT_INTERVAL'),
+
+    'upi_autopay_payment_remark' => env('UPI_AUTOPAY_PAYMENT_REMARK'),
+
+    'upi_autopay_revoke_pause_token' => env('UPI_AUTOPAY_REVOKE_PAUSE_TOKEN'),
+
+    'upi_autopay_revokable_feature' => env('UPI_AUTOPAY_REVOKABLE_FEATURE'),
+
+    'upi_autopay_increase_debit_retries' => env('UPI_AUTOPAY_INCREASE_DEBIT_RETRIES'),
+
+    'upi_autopay_increase_debit_retries_time_gap' => env('UPI_AUTOPAY_INCREASE_DEBIT_RETRIES_TIME_GAP'),
+
+    'upi_autopay_gateway_refund' => env('UPI_AUTOPAY_GATEWAY_REFUND'),
+
+    'upi_autopay_promotional_qr' => env('UPI_AUTOPAY_PROMOTIONAL_QR'),
+
+    'upi_autopay_promotional_intent' => env('UPI_AUTOPAY_PROMOTIONAL_INTENT'),
+
+    'upi_autopay_pricing_blacklist' => env('UPI_AUTOPAY_PRICING_BLACKLIST'),
+
+    'upi_autopay_disable_max_amount_blacklist' => env('UPI_AUTOPAY_DISABLE_MAX_AMOUNT_BLACKLIST'),
+
     'fetch_flows_api_forex_rates_from_rearch_experiment_id' => env('FETCH_FLOWS_API_FOREX_RATES_FROM_REARCH_EXPERIMENT_ID'),
 
     'capital_partnership_experiment_id' => env('CAPITAL_PARTNERSHIP_EXPERIMENT_ID'),

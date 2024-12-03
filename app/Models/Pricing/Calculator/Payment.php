@@ -20,6 +20,7 @@ use RZP\Models\Pricing\Fee;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Order\ProductType;
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Constants\Entity ;
 use RZP\Models\Merchant;
@@ -716,14 +717,9 @@ class Payment extends Base
                 $recurringType = PaymentModel\RecurringType::INITIAL;
             }
 
-            $upiAutopayPricingVariant = $this->app->razorx->getTreatment(
-                $payment->getMerchantId(),
-                RazorxTreatment::UPI_AUTOPAY_PRICING_BLACKLIST,
-                $this->mode,
-                3
-            );
+            $upiAutopayPricingVariant = $this->evaluateSplitzExperimentForUpiAutopayPricingBlacklist($payment->getMerchantId());
 
-            if($upiAutopayPricingVariant === "on")
+            if($upiAutopayPricingVariant === true)
             {
                 $recurringType = null;
             }
@@ -734,6 +730,51 @@ class Payment extends Base
 
         $rules = $this->applyFiltersOnRules($rules, $filters);
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    /**
+     * Evaluates the Splitz experiment for UPI Autopay pricing blacklist.
+     *
+     * This method checks if the given merchant ID is part of the UPI Autopay pricing blacklist
+     * as part of the Splitz experiment.
+     *
+     * @param int $merchantId The ID of the merchant to evaluate.
+     * @return bool True if the variant is 'variant_on', false otherwise.
+     */
+    protected function evaluateSplitzExperimentForUpiAutopayPricingBlacklist($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_pricing_blacklist'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_PRICING_BLACKLIST
+            );
+        }
+
+        return false;
     }
 
     protected function getRelevantPricingRuleForAeps($rules)

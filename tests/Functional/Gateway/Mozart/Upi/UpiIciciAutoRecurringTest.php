@@ -7,8 +7,8 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
-use RZP\Services\RazorXClient;
 use RZP\Models\Customer\Token;
+use RZP\Services\RazorXClient;
 use RZP\Models\UpiMandate\Entity;
 use RZP\Models\UpiMandate\Status;
 use RZP\Models\Base\PublicEntity;
@@ -56,9 +56,10 @@ class UpiIciciAutoRecurringTest extends TestCase
         });
 
         $this->setAutopayPricing();
+        // Enable UPI payment service in config
+        $this->app['config']->set(['applications.upi_payment_service.enabled' => true]);
 
-         // Enable UPI payment service in config
-         $this->app['config']->set(['applications.upi_payment_service.enabled' => true]);
+        $this->mockSplitzTreatmentForAutopayPricing('variant_on');
     }
 
     public function testAutoRecurringPaymentSuccess()
@@ -1454,8 +1455,6 @@ class UpiIciciAutoRecurringTest extends TestCase
             }'
         ]);
 
-        $this->setMockRazorxTreatment(['default_capture_setting_config_upi_autopay' => 'on']);
-
         $this->createDbUpiToken();
 
         $input = $this->getDbUpiAutoRecurringPayment();
@@ -1621,8 +1620,6 @@ class UpiIciciAutoRecurringTest extends TestCase
                 }
             }'
         ]);
-
-        $this->setMockRazorxTreatment(['default_capture_setting_config_upi_autopay' => 'on']);
 
         $this->createDbUpiToken();
 
@@ -2144,8 +2141,6 @@ class UpiIciciAutoRecurringTest extends TestCase
     {
         Carbon::setTestNow(Carbon::parse('first day of this month', 'UTC'));
 
-        $this->setMockRazorxTreatment(['upi_autopay_pricing_blacklist' => 'on']);
-
         $this->createDbUpiMandate([
             'frequency'         => 'as_presented',
             'start_time'        => Carbon::now()->getTimestamp(),
@@ -2308,7 +2303,7 @@ class UpiIciciAutoRecurringTest extends TestCase
     {
         Carbon::setTestNow(Carbon::parse('first day of this month', 'UTC'));
 
-        $this->setMockRazorxTreatment(['upi_autopay_pricing_blacklist' => 'control']);
+        $this->mockSplitzTreatmentForAutopayPricing('control');
 
         $this->createDbUpiMandate([
             'frequency'         => 'as_presented',
@@ -2631,7 +2626,7 @@ class UpiIciciAutoRecurringTest extends TestCase
 
     public function testAutoRecurringPaymentSubsequentDebitCallbackRetry()
     {
-        $this->setMockRazorxTreatment(['upi_autopay_increase_debit_retries' => 'on']);
+        $this->mockSplitzTreatmentForAutopayPricing('variant_on', 'variant_on');
 
         Carbon::setTestNow(Carbon::parse('first day of this month', 'UTC'));
 
@@ -2999,7 +2994,7 @@ class UpiIciciAutoRecurringTest extends TestCase
 
     public function testAutoRecurringNotifyFailsAndCancelMandateAndToken()
     {
-        $this->setMockRazorxTreatment(['upi_autopay_revoke_pause_token' => 'on']);
+        $this->mockSplitzTreatmentForAutopayPricing('variant_on', 'variant_on');
 
         $this->createDbUpiMandate();
 
@@ -3071,4 +3066,5 @@ class UpiIciciAutoRecurringTest extends TestCase
             ],
         ]);
     }
+
 }
