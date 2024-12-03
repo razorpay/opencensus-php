@@ -1323,7 +1323,10 @@ trait Capture
 
                 $this->calculateAndSetMdrFeeIfApplicable($payment, $txn);
 
-                $this->repo->saveOrFail($payment);
+                if ($this->isDualWriteFlowEnabled($payment) === false)
+                {
+                    $this->repo->saveOrFail($payment);
+                }
 
                 $this->repo->saveOrFail($txn);
 
@@ -1747,9 +1750,7 @@ trait Capture
     {
         $isDualWriteFlow = ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true);
 
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),Merchant\RazorxTreatment::PG_LEDGER_ASYNC_TRANSACTION_CREATION, $this->app['rzp.mode']);
-
-        $isDualWriteFlow = $isDualWriteFlow && $this->isEnabledForPaymentFeeTaxPopulation($variant, $payment);
+        $isDualWriteFlow = $isDualWriteFlow && $this->isEnabledForPaymentFeeTaxPopulation($payment);
 
         return $isDualWriteFlow;
     }

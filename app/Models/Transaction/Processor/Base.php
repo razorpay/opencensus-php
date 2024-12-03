@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Feature;
+use RZP\Constants\Entity;
 use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
@@ -93,7 +94,22 @@ abstract class Base extends BaseCore
 
         if ($this->source->hasTransaction() === true)
         {
-            $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($this->source);
+            $merchant = $this->repo->merchant->findOrFailPublic($this->source->getMerchantId());
+
+            if (($this->source->getEntityName() === Entity::PAYMENT) and
+                ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+            {
+                $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($this->source);
+
+                if ($txn === null)
+                {
+                    $txn = $this->createNewTransaction($txnId);
+                }
+            }
+            else
+            {
+                $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($this->source);
+            }
         }
         else
         {

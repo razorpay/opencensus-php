@@ -2161,7 +2161,7 @@ class Core extends Base\Core
 
         $payloadName = $this->getPayloadName($transfer->getPublicId(),LedgerConstants::TRANSFER);
 
-        $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadName($payloadName);
+        $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadNameWithTrashedOrderByNewest($payloadName);
 
         if (count($outboxEntries) == 0)
         {

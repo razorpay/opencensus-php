@@ -58,13 +58,8 @@ trait ReverseShadowTrait
         );
     }
 
-    public function isEnabledForPaymentFeeTaxPopulation(string $variant, $payment): bool
+    public function isEnabledForPaymentFeeTaxPopulation($payment): bool
     {
-        if($variant != "on")
-        {
-            return false;
-        }
-
         if (($payment->isInternational() === true) or
             ($payment->merchant->isLRSFlowEnabled() === true) or
             ($payment->merchant->isLRSTravelCitiFlowEnabled() === true) or
@@ -1068,11 +1063,7 @@ trait ReverseShadowTrait
     {
         $payment = $this->repo->payment->findOrFail($baseTransactionEntity->getEntityId());
 
-        // First verify if its enabled if not enabled return
-        // we have a razorx exp for this, and currently we are blocking all cross border payments for this
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),Merchant\RazorxTreatment::PG_LEDGER_ASYNC_TRANSACTION_CREATION, $this->app['rzp.mode']);
-
-        if($this->isEnabledForPaymentFeeTaxPopulation($variant, $payment) === false)
+        if($this->isEnabledForPaymentFeeTaxPopulation($payment) === false)
         {
             return;
         }
