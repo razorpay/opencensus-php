@@ -4253,6 +4253,7 @@ class Core extends Base\Core
         if (empty($merchantIdsWithCrossOrgFeature) ===  true) {
             $merchantIdsWithCrossOrgFeature = (new Feature\Repository)->findMerchantIdsHavingFeatures([Features::CROSS_ORG_LOGIN]);
         }
+        $response[Entity::IS_MERCHANT_ENTITIES_EMPTY] = count($merchantEntities) === 0 ? true : false;
         $filteredMerchants = new Base\PublicCollection;
 
         if($this->app['basicauth']->isAppleWatchApp() === true or $orgId === Org\Entity::BAJAJ_ORG_ID)

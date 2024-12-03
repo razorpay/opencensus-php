@@ -16243,4 +16243,33 @@ class UserTest extends TestCase
 
     }
 
+
+    public function testMobileOtpLoginWithSuspendedMerchants()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9087654322', 'contact_mobile_verified' => true]);
+
+        $firstMerchantUser = DB::table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->first();
+        $this->fixtures->edit('merchant', $firstMerchantUser->merchant_id, ['suspended_at' => 1642901927]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'otp'            => '0007',
+            'token'          => 'Gvt61zZ3Iwzcqy',
+            'contact_mobile' => $user['contact_mobile'],
+            'captcha'        => 'faked'
+        ];
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $expectedResult = $testData['response']['content']['is_merchant_entities_empty'];
+
+        $this->assertEmpty($response['merchants']);
+        $this->assertEquals($response['is_merchant_entities_empty'], $expectedResult);
+    }
 }

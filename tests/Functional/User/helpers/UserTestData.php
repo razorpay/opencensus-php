@@ -8837,4 +8837,17 @@ return [
         ],
     ],
 
+    'testMobileOtpLoginWithSuspendedMerchants' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'is_merchant_entities_empty' => true
+            ],
+        ],
+    ]
 ];
