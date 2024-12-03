@@ -54,6 +54,7 @@ class Limit
         Type::RECURRING_CHARGE_AXIS                 => 500100,
         Type::SUB_MERCHANT                          => 5000,
         Type::MERCHANT_UPLOAD_MIQ                   => 1000,
+        Type::JAMMU_AND_KASHMIR_ONBOARDING          => 10000,
         Type::SUBMERCHANT_ASSIGN                    => 50000,
         TYPE::IIN_NPCI_RUPAY                        => 50000,
         TYPE::IIN_HITACHI_VISA                      => 500000,

@@ -136,6 +136,8 @@ class Type
 
     const PGOS_RMDETAILS_BULK = 'pgos_rmdetails_bulk';
 
+    const JAMMU_AND_KASHMIR_ONBOARDING = 'jammu_and_kashmir_onboarding';
+
     const PARTNER_REFERRAL_FETCH = 'partner_referral_fetch';
 
     const CONTACT               = 'contact';
@@ -371,6 +373,7 @@ class Type
         self::S2P_USERS_ONBOARDING,
         self::NACH_MIGRATION,
         self::PGOS_RMDETAILS_BULK,
+        self::JAMMU_AND_KASHMIR_ONBOARDING,
         self::MERCHANT_ACTIVATION,
         self::INTERNAL_INSTRUMENT_REQUEST,
         self::SUBMERCHANT_LINK,
@@ -667,6 +670,7 @@ class Type
         self::BUY_PRICING_ASSIGN,
         self::VIRTUAL_ACCOUNT_EDIT,
         self::PGOS_RMDETAILS_BULK,
+        self::JAMMU_AND_KASHMIR_ONBOARDING,
         self::EZETAP_SETTLEMENT,
         self::LOC_WITHDRAWAL,
         self::MERCHANT_CONFIG_INHERITANCE,
@@ -821,6 +825,7 @@ class Type
         self::CREATE_EXEC_RISK_ACTION            => Name::ADMIN_BATCH_CREATE,
         self::WHITELISTED_DOMAIN                 => Name::BULK_UPDATE_WHITELISTED_DOMAIN,
         self::PGOS_RMDETAILS_BULK                => Name::ADMIN_BATCH_CREATE,
+        self::JAMMU_AND_KASHMIR_ONBOARDING       => Name::ADMIN_BATCH_CREATE,
         self::EARLY_SETTLEMENT_TRIAL             => Name::ADMIN_BATCH_CREATE,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG=> Name::ADMIN_BATCH_CREATE,
         self::REWARDS                            => Name::ADMIN_BATCH_CREATE,
