@@ -92,7 +92,7 @@ export const ProviderSettings = ({
   };
 
   const sodexoTooltip =
-    'To activate the Sodexo feature, please make sure to enable the "card" method.';
+    'To activate the Pluxee feature, please make sure to enable the "card" method.';
   const recurringTooltip = 'Available for Card and UPI, coming soon for Netbanking.';
 
   return (

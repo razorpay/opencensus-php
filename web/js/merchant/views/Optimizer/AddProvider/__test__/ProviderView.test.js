@@ -39,7 +39,7 @@ describe('Optimizer ProviderView V2', () => {
             'Payment Methods': ['card', 'emi', 'netbanking', 'upi', 'emandate'],
             Recurring: true,
             Salt: '',
-            Sodexo: false,
+            Sodexo: true,
             optimizer_seamless_disabled: false,
           },
           integration_audit: true,
@@ -146,7 +146,7 @@ describe('Optimizer ProviderView V2', () => {
     expect(screen.getByText('Gateway')).toBeInTheDocument();
     expect(screen.getByText('payu')).toBeInTheDocument();
     expect(screen.getByText('Methods enabled')).toBeInTheDocument();
-    expect(screen.getByText('Card, EMI, Netbanking, UPI, E-Mandate')).toBeInTheDocument();
+    expect(screen.getByText('Card, EMI, Netbanking, UPI, E-Mandate, Pluxee')).toBeInTheDocument();
     expect(screen.getByText('Recurring')).toBeInTheDocument();
     expect(screen.getByText('Enabled')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Go back' })).toBeInTheDocument();

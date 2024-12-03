@@ -1,3 +1,3 @@
-import Sodexo from 'assets/payment-methods/sodexo.png';
+import Pluxee from 'assets/payment-methods/pluxee.png';
 
-export default () => <img src={Sodexo} alt="Sodexo" width="30px" height="30px" />;
+export default () => <img src={Pluxee} alt="Pluxee" width="30px" height="30px" />;

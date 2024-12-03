@@ -1100,7 +1100,7 @@ export const initialState = {
       ],
     },
     {
-      name: 'Meal Card/Sodexo',
+      name: 'Meal Card/Pluxee',
       description: 'Cards and Meal Pass',
       actionItems: {},
       slug: 'meal-card',
@@ -1108,12 +1108,12 @@ export const initialState = {
       additionalCondition: (user) => user.isSodexoInstrumentEnabled && !user.isOrgCurlec,
       leafList: [
         {
-          header: 'Sodexo',
+          header: 'Pluxee',
           description:
-            'Sodexo is supported via PayU. Please make sure it is enabled at downstream gateway too.',
+            'Pluxee is supported via PayU. Please make sure it is enabled at downstream gateway too.',
           list: [
             {
-              name: 'Sodexo',
+              name: 'Pluxee',
               status: 'greyed',
               slug: 'domestic.sodexo',
               icon: 'sodexo',

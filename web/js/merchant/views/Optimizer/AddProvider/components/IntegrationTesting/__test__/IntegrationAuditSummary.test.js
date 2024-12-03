@@ -121,6 +121,6 @@ describe('Optimizer IntegrationTesting IntegrationAuditSummary', () => {
     expect(screen.getByText('Others')).toBeInTheDocument();
     await userEvent.click(screen.getByText('Others'));
     expect(screen.getByText('EMI')).toBeInTheDocument();
-    expect(screen.getByText('Sodexo')).toBeInTheDocument();
+    expect(screen.getByText('Pluxee')).toBeInTheDocument();
   });
 });

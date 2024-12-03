@@ -35,7 +35,7 @@ const defaultProps = {
       href: '/payment-methods?instrument=international',
     },
     {
-      title: 'Meal Card/Sodexo',
+      title: 'Meal Card/Pluxee',
       href: '/payment-methods?instrument=meal-card',
     },
   ],

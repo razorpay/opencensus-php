@@ -231,6 +231,9 @@ export const PARAMETERS: Parameter[] = [
       {
         value: 'corporate',
       },
+      {
+        value: 'pluxee',
+      },
     ],
     operators: {
       '==': {

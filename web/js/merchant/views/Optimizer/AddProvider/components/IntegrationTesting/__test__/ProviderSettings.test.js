@@ -194,18 +194,18 @@ describe('Optimizer IntegrationTesting ProviderSettings', () => {
     });
   });
 
-  it('should render sodexo switch disabled for s2s integration when card is not selected', () => {
+  it('should render pluxee switch disabled for s2s integration when card is not selected', () => {
     const props = {
       ...mockProps,
       integrationType: 's2s',
     };
     render(<App {...props} />);
-    const sodexoSwitch = screen.getByRole('switch', { name: 'Sodexo' });
-    expect(sodexoSwitch).toBeInTheDocument();
-    expect(sodexoSwitch).toBeDisabled();
+    const pluxeeSwitch = screen.getByRole('switch', { name: 'Pluxee' });
+    expect(pluxeeSwitch).toBeInTheDocument();
+    expect(pluxeeSwitch).toBeDisabled();
   });
 
-  it('should render sodexo switch for s2s integration when card is selected', () => {
+  it('should render pluxee switch for s2s integration when card is selected', () => {
     const props = {
       ...mockProps,
       integrationType: 's2s',
@@ -214,10 +214,10 @@ describe('Optimizer IntegrationTesting ProviderSettings', () => {
       },
     };
     render(<App {...props} />);
-    const sodexoSwitch = screen.getByRole('switch', { name: 'Sodexo' });
-    expect(sodexoSwitch).toBeInTheDocument();
-    expect(sodexoSwitch).not.toBeDisabled();
-    expect(sodexoSwitch).not.toBeChecked();
+    const pluxeeSwitch = screen.getByRole('switch', { name: 'Pluxee' });
+    expect(pluxeeSwitch).toBeInTheDocument();
+    expect(pluxeeSwitch).not.toBeDisabled();
+    expect(pluxeeSwitch).not.toBeChecked();
   });
 
   it('should render recurring switch enabled when card or upi is selected', () => {

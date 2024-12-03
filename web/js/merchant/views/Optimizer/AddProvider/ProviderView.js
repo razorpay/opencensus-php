@@ -215,7 +215,7 @@ const ProviderView = (props) => {
     provider?.Gateway_details?.Sodexo;
 
   if (isSodexoEnabled) {
-    strPaymentMethods += ', Sodexo';
+    strPaymentMethods += `, ${METHODS_MAP.sodexo}`;
   }
 
   const isPaytmAutoDebitEnabled = provider?.Gateway === 'paytm' && !!user?.isPaytmAutoDebitEnabled;

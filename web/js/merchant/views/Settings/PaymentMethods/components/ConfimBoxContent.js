@@ -4,7 +4,7 @@ import { AsyncButton } from 'react-async-button';
 
 const renderConfirmMessage = (instrumentSlug, numberOfDays) => {
   if (instrumentSlug === 'domestic.sodexo') {
-    return <span>Sodexo will be visible on your checkout journey instantly.</span>;
+    return <span>Pluxee will be visible on your checkout journey instantly.</span>;
   }
 
   return (
@@ -50,8 +50,8 @@ const ConfirmBoxContext = ({ instrumentSlug, numberOfDays, onRequestAbort, onReq
         {isSodexoInstrument ? (
           <ul className="confirm-list">
             <li>PayU as a Gateway Provider on Optimizer</li>
-            <li>Card & Sodexo under PayU on Optimizer</li>
-            <li>Card & Sodexo on PayU's merchant dashboard</li>
+            <li>Card & Pluxee under PayU on Optimizer</li>
+            <li>Card & Pluxee on PayU's merchant dashboard</li>
           </ul>
         ) : (
           <ul className="confirm-list">

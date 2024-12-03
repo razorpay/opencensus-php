@@ -100,7 +100,7 @@ export const PaymentMethodsTitles: Record<PaymentMethodsFields, string> = {
   [PaymentMethodsFields.WALLET]: 'Wallet',
   [PaymentMethodsFields.PAYLATER]: 'Pay Later',
   [PaymentMethodsFields.INTERNATIONAL]: 'International payments',
-  [PaymentMethodsFields.MEAL_CARD]: 'Meal Card/Sodexo',
+  [PaymentMethodsFields.MEAL_CARD]: 'Meal Card/Pluxee',
 };
 
 export const WebsiteAppSettingsTitles: Record<WebsiteAppSettingsFields, string> = {

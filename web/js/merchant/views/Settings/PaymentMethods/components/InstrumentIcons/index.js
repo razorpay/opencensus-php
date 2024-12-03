@@ -1,4 +1,4 @@
-import Sodexo from 'assets/payment-methods/sodexo.png';
+import Pluxee from 'assets/payment-methods/pluxee.png';
 
 const instrumentIconEnum = {
   airtelmoney: 'airtelmoney',
@@ -36,7 +36,7 @@ const instrumentIconEnum = {
   giropay: 'giropay',
   sofort: 'sofort',
   bajajpay: 'bajajpay',
-  sodexo: Sodexo,
+  sodexo: Pluxee,
 };
 
 function getIconFn(iconName) {

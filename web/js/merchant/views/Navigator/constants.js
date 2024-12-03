@@ -47,7 +47,7 @@ export const METHODS_MAP = {
   netbanking: 'Netbanking',
   upi: 'UPI',
   wallet: 'Wallet',
-  sodexo: 'Sodexo',
+  sodexo: 'Pluxee',
   cod: 'Cash on Delivery (COD)',
   paylater: 'Pay Later',
 };

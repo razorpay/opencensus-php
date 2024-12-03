@@ -243,7 +243,7 @@ const ProviderConfiguration = (props) => {
                             {isSodexoCheckboxDisabled && (
                               <Popover theme="dark" align="right">
                                 <PopoverBody>
-                                  To activate the Sodexo feature, please make sure to enable the
+                                  To activate the Pluxee feature, please make sure to enable the
                                   &quot;card&quot; method.
                                 </PopoverBody>
                               </Popover>

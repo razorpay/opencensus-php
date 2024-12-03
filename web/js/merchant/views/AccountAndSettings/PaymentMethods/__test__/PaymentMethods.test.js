@@ -50,7 +50,7 @@ jest.mock('merchant/views/AccountAndSettings/PaymentMethods/Tabs/Paylater', () =
 
 jest.mock('merchant/views/AccountAndSettings/PaymentMethods/Tabs/MealCard', () => ({
   __esModule: true,
-  default: () => <>Meal Card/Sodexo</>,
+  default: () => <>Meal Card/Pluxee</>,
 }));
 
 jest.mock('common/components/Loader', () => ({
@@ -142,10 +142,10 @@ describe('PaymentMethods', () => {
       expect(screen.getByRole('link', { name: instrument })).toBeInTheDocument();
     });
 
-    // Test to check if 'Meal Card/Sodexo' is not rendered when isSodexoInstrumentEnabled is false
-    test('should not render "Meal Card/Sodexo" when isSodexoInstrumentEnabled is false', () => {
+    // Test to check if 'Meal Card/Pluxee' is not rendered when isSodexoInstrumentEnabled is false
+    test('should not render "Meal Card/Pluxee" when isSodexoInstrumentEnabled is false', () => {
       renderApp({ isSodexoInstrumentEnabled: false });
-      expect(screen.queryByRole('link', { name: 'Meal Card/Sodexo' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Meal Card/Pluxee' })).not.toBeInTheDocument();
     });
 
     test.each([
@@ -156,7 +156,7 @@ describe('PaymentMethods', () => {
       ['Wallet', ROUTES_INFO.WALLET],
       ['Paylater', ROUTES_INFO.PAY_LATER],
       ['International', ROUTES_INFO.INTERNATIONAL_PAYMENTS],
-      ['Meal Card/Sodexo', ROUTES_INFO.MEAL_CARD],
+      ['Meal Card/Pluxee', ROUTES_INFO.MEAL_CARD],
     ])('should render %s component for %s link', async (content, path) => {
       renderApp();
       await waitFor(() => {

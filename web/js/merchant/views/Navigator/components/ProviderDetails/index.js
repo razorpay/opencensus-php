@@ -87,7 +87,7 @@ class ProviderDetails extends Component {
         provider?.Gateway_details?.Sodexo;
 
       if (isSodexoEnabled) {
-        strPaymentMethods += ', Sodexo';
+        strPaymentMethods += `, ${METHODS_MAP.sodexo}`;
       }
 
       const isPaytmAutoDebitEnabled =
