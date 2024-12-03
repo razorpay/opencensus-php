@@ -22,7 +22,6 @@ export default function DataTable(props) {
     skip,
     paginate,
     title,
-    limit,
     empty_placeholder,
     progressLoader,
     customClass,
@@ -57,7 +56,6 @@ export default function DataTable(props) {
         rows={items}
         columns={columns}
         showHeaders={showHeaders}
-        limit={limit}
         progressLoader={progressLoader}
         loading={loading}
         className={classes}

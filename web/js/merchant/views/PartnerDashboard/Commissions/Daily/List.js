@@ -129,7 +129,7 @@ class CommissionsDailyList extends ListContainer {
   };
 
   renderLessThanRequiredMerchants = () => {
-    const { items, user } = this.props;
+    const { user, items } = this.props;
     const isAddMerchantView = user?.isPartner('reseller', 'aggregator') || false;
     return (
       <EmptyDailyList
@@ -142,7 +142,9 @@ class CommissionsDailyList extends ListContainer {
   };
 
   render() {
-    const { user, experiments } = this.props;
+    const { user, experiments, items } = this.props;
+    const rows = Array.isArray(items) ? items : [];
+
     const currency = user.merchant.currency;
     const volume = getVolmeListItem(currency);
 
@@ -150,16 +152,11 @@ class CommissionsDailyList extends ListContainer {
       <div class="content-wrapper CommissionList--Daily">
         <ListFilter onDatesChange={this.onDatesChange} />
         <DataTable
-          columns={[
-            this.dateColumn,
-            this.props.amountColumn,
-            volume,
-            activeMerchants,
-            transactions,
-          ]}
+          columns={[this.dateColumn, this.props.amountColumn, volume, activeMerchants, transactions]}
           title="Data"
           EmptyComponent={this.renderLessThanRequiredMerchants}
           {...this.props}
+          items={rows}
         />
         {experiments.isPartnershipsInviteFlowEnabled ? (
           <InviteMerchantModal
