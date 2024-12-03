@@ -63,7 +63,7 @@ const FirsFiles = (): React.ReactElement => {
           {bankFirs.length === 0 && (
             <Box display="flex" flexDirection="column">
               <Text size="medium" weight="regular" marginBottom="spacing.5">
-                Bank FIRS is/are usually available for download after the 15th of the next month.
+                Bank FIRS is/are usually available for download after the 18th of the next month.
               </Text>
               {customMessage && (
                 <Alert

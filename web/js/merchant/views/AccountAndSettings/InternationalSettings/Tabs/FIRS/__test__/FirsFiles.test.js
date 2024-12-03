@@ -71,7 +71,7 @@ describe('Tests for FirsFiles component when only bank FIRS are available', () =
     //infotext shouldn't be visible
     expect(
       screen.queryByText(
-        'Bank FIRS is/are usually available for download after the 15th of the next month.',
+        'Bank FIRS is/are usually available for download after the 18th of the next month.',
       ),
     ).not.toBeInTheDocument();
   });
@@ -89,7 +89,7 @@ describe('Tests for FirsFiles component when only bank FIRS are available', () =
     //infotext should be visible
     expect(
       screen.getByText(
-        'Bank FIRS is/are usually available for download after the 15th of the next month.',
+        'Bank FIRS is/are usually available for download after the 18th of the next month.',
       ),
     ).toBeInTheDocument();
   });
