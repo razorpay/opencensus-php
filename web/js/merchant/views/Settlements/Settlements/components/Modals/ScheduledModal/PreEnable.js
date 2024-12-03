@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Spinner } from '@razorpay/blade/components';
+import { Alert, AlertCircleIcon, Box, Spinner } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import styled, { css, keyframes } from 'styled-components';
 
 import User from 'merchant/models/User';
 import { updateSession as fnUpdateSession } from 'merchant/reducers/session';
 import { useODSAutomaticPricingDiscount } from 'merchant/views/Settlements/InstantSettlements/hooks/useODSAutomaticPricingDiscount';
+import { useIsManagedMerchantAccount } from 'merchant/views/Settlements/InstantSettlements/hooks/useIsManagedMerchantAccount';
 import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 
@@ -337,6 +338,7 @@ function PreEnable({
     isLoading: isPricingLoading,
     canViewDiscount,
   } = useODSAutomaticPricingDiscount(user.merchant.currency || 'INR');
+  const { isManagedMerchantAccount } = useIsManagedMerchantAccount();
   const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;
   const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
   const isFullOndemandSettlementEnabled =
@@ -347,7 +349,7 @@ function PreEnable({
   const [isLoading, setLoading] = useState(false);
   const [view, setView] = useState(PRE_ENABLE_VIEWS.SAMEDAY_SETTLEMENTS);
   const [hovered, setHovered] = useState(false);
-  const isPricingValid = canViewDiscount;
+  const isPricingValid = canViewDiscount && !isManagedMerchantAccount;
   const screen = getScreenForTrackEvent(from);
 
   useEffect(() => {
@@ -578,14 +580,26 @@ function PreEnable({
           </Box>
         ) : null}
         {!isPricingLoading ? getBottomMainContent() : null}
-        <Button
-          pendingState="Enabling..."
-          onClick={handleOnEnableClick}
-          disabled={isLoading || isPricingLoading}
-        >
-          Enable Same-day Settlements
-        </Button>
-        <OptOutAnytime>Opt-out anytime</OptOutAnytime>
+
+        {!isManagedMerchantAccount ? (
+          <>
+            <Button
+              pendingState="Enabling..."
+              onClick={handleOnEnableClick}
+              disabled={isLoading || isPricingLoading}
+            >
+              Enable Same-day Settlements
+            </Button>
+            <OptOutAnytime>Opt-out anytime</OptOutAnytime>
+          </>
+        ) : (
+          <Alert
+            color="information"
+            description="Please contact your Account Manager to enable this feature."
+            isDismissible={false}
+            icon={AlertCircleIcon}
+          />
+        )}
       </BottomSection>
     </>
   );

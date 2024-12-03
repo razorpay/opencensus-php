@@ -2016,6 +2016,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'is_managed_merchant_account',
+          experimentId: {
+            beta: 'PN6YUhAbo1OhDs',
+            production: 'PNTXEM6WDiRrc1',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

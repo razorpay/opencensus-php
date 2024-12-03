@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import styled from 'styled-components';
 
 import { useODSAutomaticPricingDiscount } from 'merchant/views/Settlements/InstantSettlements/hooks/useODSAutomaticPricingDiscount';
+import { useIsManagedMerchantAccount } from 'merchant/views/Settlements/InstantSettlements/hooks/useIsManagedMerchantAccount';
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
 import {
   trackEnableSamedayBannerRendered,
@@ -39,7 +40,7 @@ function EnableAutomatic({ user, openModal }) {
   const { isLoading, discountPercent, canViewDiscount } = useODSAutomaticPricingDiscount(
     user.merchant.currency || 'INR',
   );
-
+  const { isManagedMerchantAccount } = useIsManagedMerchantAccount();
   useEffect(() => {
     trackEnableSamedayBannerRendered();
   }, []);
@@ -60,7 +61,7 @@ function EnableAutomatic({ user, openModal }) {
         sideBorder={<LeftSideBorder />}
         title={<Title>Settle your funds the same day, automatically!</Title>}
       >
-        {canViewDiscount && (
+        {canViewDiscount && !isManagedMerchantAccount && (
           <Wrapper>
             <Percentage>-{discountPercent}%</Percentage>
             <Label>Discount on your Instant Settlements fees</Label>

@@ -265,7 +265,6 @@ const OnDemandV2 = ({ user }: { user: any }) => {
       </Box>
     );
   };
-
   return (
     <>
       {/* Render respective screen with custom layout per screen */}

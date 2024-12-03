@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import User from 'merchant/models/User';
 import { updateSession as fnUpdateSession } from 'merchant/reducers/session';
 import { useODSAutomaticPricingDiscount } from 'merchant/views/Settlements/InstantSettlements/hooks/useODSAutomaticPricingDiscount';
+import { useIsManagedMerchantAccount } from 'merchant/views/Settlements/InstantSettlements/hooks/useIsManagedMerchantAccount';
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
 import {
   trackCrossSellBannerRendered,
@@ -85,7 +86,10 @@ function Upselling({
   /** We expect the currentPrice to be already prefetched to avoid CLS in OnDemandV2   */
   const { discountPercent, currentPrice, newPrice, canViewDiscount } =
     useODSAutomaticPricingDiscount(user.merchant.currency || 'INR');
-  const isPricingValid = showDiscount && canViewDiscount;
+
+  const { isManagedMerchantAccount } = useIsManagedMerchantAccount();
+
+  const isPricingValid = showDiscount && !isManagedMerchantAccount && canViewDiscount;
 
   useEffect(() => {
     trackCrossSellBannerRendered({ screen });
@@ -194,6 +198,11 @@ function Upselling({
           05:00 PM
         </Text>{' '}
         on all working days with Same-day Settlements
+        {isManagedMerchantAccount && (
+          <Text marginTop={'spacing.6'} size="large" weight="regular" color="currentColor">
+            Please contact your Account Manager to enable this feature.
+          </Text>
+        )}
       </Text>
 
       {isPricingValid && (
@@ -242,7 +251,7 @@ function Upselling({
           </Button>
         </Box>
 
-        {showDiscount && (
+        {!isManagedMerchantAccount && showDiscount && (
           <Box whiteSpace="nowrap" flexGrow="1">
             <Button color="white" isFullWidth isLoading={isLoading} onClick={handleEnableNowClick}>
               Enable Now

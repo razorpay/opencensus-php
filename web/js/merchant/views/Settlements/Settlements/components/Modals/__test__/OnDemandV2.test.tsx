@@ -17,6 +17,7 @@ jest.mock('merchant/views/Settlements/Settlements/components/Modals/OndemandModa
 
 const mockActiveExp = { variables: { result: 'on' } };
 const mockGTMExpActive: any = { value: undefined };
+const mockSameDaySettlementDisabledExp: any = { value: undefined };
 
 jest.mock('common/splitz', () => ({
   useSplitzService: () =>
@@ -24,6 +25,7 @@ jest.mock('common/splitz', () => ({
       abExperiments: {
         capital_is_settle_now_v2: { variables: { result: 'on' } },
         capital_is_gtm: mockGTMExpActive.value,
+        is_managed_merchant_account: mockSameDaySettlementDisabledExp.value,
       },
     } as unknown as SpiltzContextState),
 }));
@@ -109,6 +111,10 @@ describe('Capital/OnDemandV2', () => {
     );
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   test('should allow to complete instant settlement - merchant type: MID Limit Enabled', async () => {
     const user = userEvent.setup();
     renderApp();
@@ -186,6 +192,112 @@ describe('Capital/OnDemandV2', () => {
         }),
       ).not.toBeInTheDocument();
     });
+  });
+  test('should show enable now cta for enabling same day settlement- merchant type: non managed merchant', async () => {
+    const user = userEvent.setup();
+
+    renderApp({
+      user: {
+        isAutomaticSettlementEnabled: false,
+        isAutomaticSettlementRestricted: false,
+        isOrgRZP: true,
+      },
+    });
+    await waitForOdsModal();
+    expect(screen.getByText('How much do you want to settle now?')).toBeInTheDocument();
+    const amountInput = screen.getByRole('textbox', {
+      name: /how much do you want to settle now\?/i,
+    });
+    await user.clear(amountInput);
+    await user.clear(amountInput);
+    await user.type(amountInput, '999');
+    expect(amountInput).toHaveValue('999');
+    expect(screen.getByText('fees')).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', {
+        name: /Confirm Settlement/i,
+      }),
+    );
+    await waitForConfirmModal();
+    expect(
+      screen.getByText(/Are you sure you want to proceed with the settlement of/i),
+    ).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', {
+        name: /Yes, Settle/i,
+      }),
+    );
+    await waitForSuccessScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Enable Now/i)).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText(/Know More/i));
+    await waitFor(() => {
+      expect(screen.getByText(/Automate your settlements/i)).toBeInTheDocument();
+    });
+    expect(
+      screen.getByRole('button', { name: /Enable Same-day Settlements/i }),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.queryByText(/Please contact your Account Manager to enable this feature./i),
+    ).not.toBeInTheDocument();
+  });
+
+  test('should not show enable now cta for enabling same day settlement- merchant type:managed merchant', async () => {
+    const user = userEvent.setup();
+    mockSameDaySettlementDisabledExp.value = mockActiveExp;
+    renderApp({
+      user: {
+        isAutomaticSettlementEnabled: false,
+        isAutomaticSettlementRestricted: false,
+        isOrgRZP: true,
+      },
+    });
+    await waitForOdsModal();
+    expect(screen.getByText('How much do you want to settle now?')).toBeInTheDocument();
+    const amountInput = screen.getByRole('textbox', {
+      name: /how much do you want to settle now\?/i,
+    });
+    await user.clear(amountInput);
+    await user.clear(amountInput);
+    await user.type(amountInput, '999');
+    expect(screen.getByText('fees')).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', {
+        name: /Confirm Settlement/i,
+      }),
+    );
+    await waitForConfirmModal();
+    expect(
+      screen.getByText(/Are you sure you want to proceed with the settlement of/i),
+    ).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', {
+        name: /Yes, Settle/i,
+      }),
+    );
+    // Success screen
+    await waitForSuccessScreen();
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Please contact your Account Manager to enable this feature./i),
+      ).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText(/Know More/i));
+    await waitFor(() => {
+      expect(screen.getByText(/Automate your settlements/i)).toBeInTheDocument();
+    });
+    expect(
+      screen.getByText(/Please contact your Account Manager to enable this feature./i),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', { name: /Enable Same-day Settlements/i }),
+    ).not.toBeInTheDocument();
   });
 
   test('should show cancel reason screen', async () => {
