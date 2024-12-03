@@ -1,5 +1,6 @@
 import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
 import { ActivationStatusKeys, APIResponse } from './common';
+import { BeforeInstallPromptEvent } from '../views/PosEkyc/types';
 
 export interface MerchantRegisterArgs {
   contactMobile: string;
@@ -100,8 +101,10 @@ export enum OnboardingWorkflowProduct {
 export type OnboardingStoreState = {
   workflowProduct: OnboardingWorkflowProduct;
   isPosEkycAgent: boolean;
-  setWorkflowProduct: (setWorkflowProduct: OnboardingWorkflowProduct) => void;
+  pwaPrompt: BeforeInstallPromptEvent | null;
+  setWorkflowProduct: (workflowProduct: OnboardingWorkflowProduct) => void;
   setIsPosEkycAgent: (isPosEkycAgent: boolean) => void;
+  setPwaPrompt: (pwaPrompt: BeforeInstallPromptEvent | null) => void;
 };
 
 export interface AddressField {

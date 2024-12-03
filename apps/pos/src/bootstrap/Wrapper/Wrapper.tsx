@@ -1,17 +1,17 @@
-import React from 'react';
-import { BladeProvider, Box, ToastContainer } from '@razorpay/blade/components';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { bladeTheme } from '@razorpay/blade/tokens';
-import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
-import errorService from '@razorpay/universe-cli/errorService';
 import { graphqlClient } from '@dashboard/shared-utils/graphql/graphql';
-import initSentry from 'apps/pos/src/services/obervability';
-import useOnboardingStore from 'apps/pos/src/bootstrap/Store';
-import { PARTNER_ASSISTED_ONBOARDING } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
+import { BladeProvider, Box, ToastContainer } from '@razorpay/blade/components';
+import { bladeTheme } from '@razorpay/blade/tokens';
+import errorService from '@razorpay/universe-cli/errorService';
+import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from 'apps/pos/src/app';
 import PageError from 'apps/pos/src/app/components/PageError';
-import useEnv from 'apps/pos/src/app/utils/hooks/useEnv';
+import { PARTNER_ASSISTED_ONBOARDING } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
 import { MODULES } from 'apps/pos/src/app/types/common';
+import useEnv from 'apps/pos/src/app/utils/hooks/useEnv';
+import useOnboardingStore from 'apps/pos/src/bootstrap/Store';
+import initSentry from 'apps/pos/src/services/obervability';
+import React, { useEffect } from 'react';
 import { OnboardingWorkflowProduct } from '../../app/types/SalesAssistedOnboarding';
 
 export const queryClient = new QueryClient();
@@ -27,7 +27,23 @@ interface WrapperProps {
 }
 
 const Wrapper: React.FC<WrapperProps> = ({ workflowProduct }) => {
-  const { setWorkflowProduct, setIsPosEkycAgent } = useOnboardingStore();
+  const { setWorkflowProduct, setIsPosEkycAgent, setPwaPrompt } = useOnboardingStore();
+
+  const installPromptCallback = (e) => {
+    e.preventDefault();
+    console.log('PWA prompt fired!!');
+    setPwaPrompt(e); // storing the PWA prompt to zustand store
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    window.addEventListener('beforeinstallprompt', installPromptCallback);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', installPromptCallback);
+    };
+  }, []);
 
   React.useEffect(() => {
     if (workflowProduct) {

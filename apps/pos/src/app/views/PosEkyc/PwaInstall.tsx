@@ -12,7 +12,8 @@ import {
 } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
 import { PwaInstallBg, RazorpayLogoWhite } from 'apps/pos/src/assets';
-import React, { useEffect, useRef } from 'react';
+import useOnboardingStore from 'apps/pos/src/bootstrap/Store';
+import React from 'react';
 import { BeforeInstallPromptEvent } from './types';
 
 declare global {
@@ -58,26 +59,14 @@ const Instruction = ({
 };
 
 const PwaInstall = () => {
-  const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null);
-
-  const installPromptCallback = (e: BeforeInstallPromptEvent) => {
-    e.preventDefault();
-    deferredPrompt.current = e; // 'beforeinstallprompt' will be fired only once per browsing session. Hence, this is deferred so that it can be used anywhere, multiple times.
-  };
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    window.addEventListener('beforeinstallprompt', installPromptCallback);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', installPromptCallback);
-    };
-  }, []);
-
+  const pwaPrompt = useOnboardingStore((state) => state.pwaPrompt);
   const onInstallClick = () => {
-    if (deferredPrompt.current) {
-      deferredPrompt.current.prompt();
+    console.log('PWA button clicked');
+    if (pwaPrompt) {
+      console.log('PWA prompt available', pwaPrompt);
+      pwaPrompt.prompt();
+    } else {
+      console.log('PWA prompt not available');
     }
   };
 
