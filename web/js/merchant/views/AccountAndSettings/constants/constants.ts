@@ -53,7 +53,7 @@ export const ROUTE_MAP = {
   [ROUTES_INFO.MEAL_CARD]: PaymentMethodsTitles['meal-card'],
   [ROUTES_INFO.TEAM_INVITATIONS]: 'Invitations',
   [ROUTES_INFO.WHATSAPP_ACCOUNT_SETUP]: PaymentRefundsTitles.whatsapp_account_setup,
-  [ROUTES_INFO.DIGITAL_BILL_SETTINGS]: BusinessSettingsTitles.digital_bill_settings,
+  [ROUTES_INFO.BILLME_SETTINGS]: BusinessSettingsTitles.billme_settings,
   [ROUTES_INFO.STORE_SETTINGS]: BusinessSettingsTitles.store_settings,
 };
 

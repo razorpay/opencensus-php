@@ -377,9 +377,9 @@ export const Sections: SectionCardInterface[] = [
             isSupportTicketEnabled(user, extraConfig),
       },
       {
-        id: BusinessSettingsFields.DIGITAL_BILL_SETTINGS,
-        title: BusinessSettingsTitles[BusinessSettingsFields.DIGITAL_BILL_SETTINGS],
-        href: ROUTES_INFO.DIGITAL_BILL_SETTINGS,
+        id: BusinessSettingsFields.BILLME_SETTINGS,
+        title: BusinessSettingsTitles[BusinessSettingsFields.BILLME_SETTINGS],
+        href: ROUTES_INFO.BILLME_SETTINGS,
         additionalCondition:
           ({ extraConfig: { abExperiments } }: AdditionalContextInterface) =>
           (): boolean =>

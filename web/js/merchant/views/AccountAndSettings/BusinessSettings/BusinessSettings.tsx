@@ -168,7 +168,7 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
           <ShowWhen
             additionalCondition={(user, { abExperiments }) => isBillMeMerchant({ abExperiments })}
           >
-            <NavLink to={ROUTES_INFO.DIGITAL_BILL_SETTINGS}>Digital Bill Settings</NavLink>
+            <NavLink to={ROUTES_INFO.BILLME_SETTINGS}>BillMe Settings</NavLink>
           </ShowWhen>
           <ShowWhen
             additionalCondition={(user, { abExperiments }) => isBillMeMerchant({ abExperiments })}

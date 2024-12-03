@@ -67,6 +67,7 @@ import { isExperimentEnabled } from 'common/splitz/utils';
 import MagicKonnect from 'merchant/views/MagicKonnect';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import TncUpdateModal from 'merchant/components/TncUpdateModal';
+import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 
 // eslint-disable-next-line require-await
 const loadModule = async ({ module, scope }) =>
@@ -624,6 +625,9 @@ const ReconRunDetail = lazy(() =>
 );
 const PosMerchantAgreement = lazy(() =>
   import(/* webpackChunkName: "PosMerchantAgreement" */ 'merchant/views/POS/MerchantAgreement'),
+);
+const BillMeSettings = lazy(() =>
+  import(/* webpackChunkName: "BillMeSettings" */ 'merchant/views/BillMeSettings'),
 );
 const CreateReport = lazy(() =>
   import(
@@ -2563,6 +2567,14 @@ class Content extends Component {
             element={
               <RouteGuard additionalCondition={() => isAssistedOnboardingUser}>
                 <PosMerchantAgreement />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="billme-settings/*"
+            element={
+              <RouteGuard additionalCondition={() => isBillMeMerchant({ abExperiments })}>
+                <BillMeSettings />
               </RouteGuard>
             }
           />

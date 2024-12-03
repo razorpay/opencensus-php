@@ -33,6 +33,7 @@ export enum Teams {
   RAZORPAY_WALLET = 'Razorpay Wallet',
   OMNI_CHANNEL = 'OMNI_CHANNEL',
   RAY = 'Ray',
+  BILLME_INTEGRATION = 'BillMe Integration',
   RECON_SAAS = 'recon-saas',
 }
 
@@ -55,6 +56,7 @@ export const RoutesConfig = {
   '/bank-accounts-settlements/firs': Teams.BANKING,
   '/bank-accounts-settlements/settlement-details': Teams.BANKING,
   '/bbps': Teams.PG_DASHBOARD,
+  '/billme-settings/brands-and-terminals': Teams.BILLME_INTEGRATION,
   '/business-settings': Teams.PG_DASHBOARD,
   '/business-settings/account-activation-details': Teams.PG_DASHBOARD,
   '/business-settings/business': Teams.PG_DASHBOARD,
@@ -201,6 +203,9 @@ export const RoutesConfig = {
   '/smartcollect/batchuploads': Teams.APPS,
   '/smartcollect/payments': Teams.APPS,
   '/smartcollect/virtualaccounts': Teams.APPS,
+
+  '/store-settings/stores-list': Teams.BILLME_INTEGRATION,
+  '/store-settings/store-create': Teams.BILLME_INTEGRATION,
 
   '/stores': Teams.APPS,
   '/stores/orders': Teams.APPS,
