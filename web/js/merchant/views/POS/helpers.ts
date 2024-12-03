@@ -1261,7 +1261,7 @@ export const getAgreementStatus = (workflowConfig) => {
 export const getDeviceChargesData = (workflowConfig) => {
   const tableStructure: Array<[string, (item: any) => string]> = [
     ['Device Type', (item) => item.device_model?.toUpperCase() ?? ''],
-    ['Subscription Plan', (item) => item.renewal ?? ''],
+    ['Subscription Plan', (item) => item.renewal_display_name || item.renewal || ''],
     ['Rental Fee Per Device Unit', (item) => item.rental_charge ?? ''],
     ['Total Device Quantity', (item) => item.quantity ?? ''],
     ['Advance Rental Period', (item) => item.advanced_rental_periods ?? ''],
