@@ -1,17 +1,12 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 
-import {
-  ROUTES,
-  DEFAULT_ROUTES,
-  PLATFORMS,
-  PATH_PREFIX,
-} from 'merchant/views/MagicCheckout/Settings/constants';
+import { ROUTES, PATH_PREFIX } from 'merchant/views/MagicCheckout/Settings/constants';
 
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import VerticalNavContainer from 'merchant/views/MagicCheckout/common/components/VerticalNavContainer';
 
-import { PlatformSpecificRoutes, GenericRecord } from 'merchant/views/MagicCheckout/types';
+import { GenericRecord } from 'merchant/views/MagicCheckout/types';
 import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 
 interface NestedVerticalTabProps {
@@ -21,14 +16,8 @@ interface NestedVerticalTabProps {
 
 const SetupAndSettings: React.FC<NestedVerticalTabProps> = ({ settings, magicCheckout }) => {
   const isMagicXPublicappCodEnabled = useMagicExperiment('magicx_publicapp_cod');
-  const { platform, one_click_checkout = true } = settings;
+  const { platform } = settings;
   const { cod_order_control: isCODOrderControlEnabled, rcod: isRCOD } = magicCheckout;
-
-  const NAV_ITEMS: PlatformSpecificRoutes = useMemo(() => {
-    return platform === PLATFORMS?.NATIVE || one_click_checkout
-      ? { ...ROUTES }
-      : { ...DEFAULT_ROUTES };
-  }, [platform, one_click_checkout]);
 
   const customRouteCheck = (item, user) => {
     /**
@@ -66,7 +55,7 @@ const SetupAndSettings: React.FC<NestedVerticalTabProps> = ({ settings, magicChe
   return (
     <SuspenseWithLoader type="center">
       <VerticalNavContainer
-        navItems={NAV_ITEMS}
+        navItems={ROUTES}
         basePath={PATH_PREFIX}
         customRouteCheck={customRouteCheck}
       />

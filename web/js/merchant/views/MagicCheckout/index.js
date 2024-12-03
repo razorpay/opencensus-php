@@ -29,6 +29,7 @@ const MagicCheckout = ({
   fetchIntelligenceConfig,
   resetIntelligenceConfig,
   fetchMagicSettings,
+  magicSettings,
 }) => {
   const isMagicXPublicappCodEnabled = useMagicExperiment(MAGICX_PUBLICAPP_COD_EXPERIMENT);
 
@@ -79,7 +80,7 @@ const MagicCheckout = ({
         isCODOrderControlEnabled={magicCheckout?.cod_order_control}
         isPrepayCODEnabled={magicCheckout?.one_cc_prepay_cod_conversion}
         isPartialCODEnabled={magicCheckout?.one_cc_partial_cod_conversion}
-        platform={magicCheckout?.platform}
+        platform={magicSettings?.platform}
         isRcodEnabled={magicCheckout?.rcod}
         dashboardView={magicCheckout?.dashboard_view}
       />
@@ -117,6 +118,7 @@ function getOnBoardingSliderDots() {
 const mapStateToProps = (state) => ({
   user: state.session.user,
   magicCheckout: state.magicCheckout,
+  magicSettings: state.magic_settings,
 });
 
 const mapDispatchToProps = (dispatch) => ({

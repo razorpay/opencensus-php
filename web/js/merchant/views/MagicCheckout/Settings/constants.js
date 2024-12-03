@@ -345,56 +345,10 @@ export const RCOD_SETTINGS_INFO =
 export const UPDATE_WOOC_PLUGIN_MSG =
   'Note: To use advance COD settings, please update your Razorpay WooCommerce plugin to version 4.5.6 or above.';
 
-/**
- * In new UI , Platform settings is under a route indifferent with current UI where its located
- * as widget/container instead of a route. we will be showing Platform Settings route by default even when other routes
- * checking fail , hence default routes
- */
-export const DEFAULT_ROUTES = {
-  [PLATFORMS?.NATIVE]: [
-    {
-      className: 'platform-settings-container',
-      path: '/magic/settings/platform-settings',
-      label: 'Platform Setup',
-      Component: PlatformSettingsV2,
-      condition: (_user) => ACCESS_ROLES.includes(_user.role),
-      onRCOD: true,
-    },
-  ],
-  [PLATFORMS?.SHOPIFY]: [
-    {
-      className: 'platform-settings-container',
-      path: '/magic/settings/platform-settings',
-      label: 'Platform Setup',
-      Component: PlatformSettingsV2,
-      condition: (_user) => ACCESS_ROLES.includes(_user.role),
-      onRCOD: true,
-    },
-  ],
-  [PLATFORMS?.WOOCOMMERCE]: [
-    {
-      className: 'platform-settings-container',
-      path: '/magic/settings/platform-settings',
-      label: 'Platform Setup',
-      Component: PlatformSettingsV2,
-      condition: (_user) => ACCESS_ROLES.includes(_user.role),
-      onRCOD: true,
-    },
-  ],
-};
-
 export const PATH_PREFIX = '/magic/settings/';
 
 export const ROUTES = {
   [PLATFORMS?.NATIVE]: [
-    {
-      className: 'platform-settings-container',
-      label: 'Platform Setup',
-      path: '/magic/settings/platform-settings',
-      Component: PlatformSettingsV2,
-      condition: (_user) => ACCESS_ROLES.includes(_user.role),
-      onRCOD: true,
-    },
     {
       className: 'magic-checkout-settings',
       path: '/magic/settings/checkout-setup',
@@ -442,14 +396,6 @@ export const ROUTES = {
         (_user.isC360OnboardingCompleted || _user.isC360OnboardingToBeResumed) &&
         abExperiments?.magicx_publicapp_cod?.variables?.result === 'on',
       onRCODOnly: true,
-    },
-    {
-      className: 'platform-settings-container',
-      label: 'Platform Setup',
-      path: '/magic/settings/platform-settings',
-      Component: PlatformSettingsV2,
-      condition: (_user) => ACCESS_ROLES.includes(_user.role),
-      onRCOD: true,
     },
     {
       className: 'magic-checkout-settings',
@@ -522,14 +468,6 @@ export const ROUTES = {
     },
   ],
   [PLATFORMS?.WOOCOMMERCE]: [
-    {
-      className: 'platform-settings-container',
-      label: 'Platform Setup',
-      path: '/magic/settings/platform-settings',
-      Component: PlatformSettingsV2,
-      condition: (_user) => ACCESS_ROLES.includes(_user.role),
-      onRCOD: true,
-    },
     {
       className: 'magic-checkout-settings',
       path: '/magic/settings/checkout-setup',

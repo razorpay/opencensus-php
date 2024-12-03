@@ -13,6 +13,7 @@ import Settings from 'merchant/views/MagicCheckout/MagicSettings';
 import PlatformSubText from 'merchant/views/MagicCheckout/Settings/components/PlatformSubText';
 import { DisplayNotificationTxt } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
 import Spinner from 'common/ui/Spinner';
+import SetupAndSettings from 'merchant/views/MagicCheckout/Settings/containers/SetupAndSettings';
 
 import { analyticsTrack } from 'common/utils/analytics';
 
@@ -126,6 +127,14 @@ const PlatformSettings: React.FC<PlatformSettingsProps> = ({
     }
   }, [status]);
 
+  const getNestedVerticalTab = () => {
+    const { one_click_checkout: isOneClickCheckoutEnabled = true } = settings;
+    if (platform === PLATFORMS.NATIVE || isOneClickCheckoutEnabled) {
+      return <SetupAndSettings />;
+    }
+    return null;
+  };
+
   if (status === 'loading') {
     return (
       <div className="page-spinner-container">
@@ -156,7 +165,11 @@ const PlatformSettings: React.FC<PlatformSettingsProps> = ({
               />
             </div>
           )}
-          {nested_view_type === NESTED_VIEW_TYPE.PLATFORM_SELECTION ? <Settings /> : null}
+          {nested_view_type === NESTED_VIEW_TYPE.PLATFORM_SELECTION ? (
+            <Settings />
+          ) : (
+            getNestedVerticalTab()
+          )}
         </div>
       </div>
     </div>

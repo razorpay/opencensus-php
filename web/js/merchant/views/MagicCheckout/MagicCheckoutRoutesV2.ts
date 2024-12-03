@@ -2,6 +2,8 @@ import lazy from 'merchant/routes/LazyLoader';
 
 import MagicDashboard from 'merchant/views/MagicCheckout/MagicDashboard';
 
+import { isValidPlatform } from 'merchant/views/MagicCheckout/helper';
+
 const CouponEngine = lazy(
   () =>
     /* webpackChunkName: 'MagicCouponEngine' */ import('merchant/views/MagicCheckout/CouponEngine'),
@@ -18,10 +20,10 @@ const ReportsAndAnalytics = lazy(
     ),
 );
 
-const SetupAndSettings = lazy(
+const PlatformSettings = lazy(
   () =>
     import(
-      /* webpackChunkName: "SetupAndSettings" */ 'merchant/views/MagicCheckout/Settings/containers/SetupAndSettings'
+      /* webpackChunkName: "SetupAndSettings" */ 'merchant/views/MagicCheckout/Settings/containers/PlatformSettingsV2'
     ),
 );
 
@@ -33,12 +35,14 @@ const routesV2 = [
     tabName: 'Magic Dashboard',
     path: '/magic/dashboard',
     Component: MagicDashboard,
+    condition: isValidPlatform,
     onRCOD: true,
   },
   {
     tabName: 'Orders',
     path: '/magic/orders',
     Component: Orders,
+    condition: isValidPlatform,
     onRCOD: true,
   },
   {
@@ -46,12 +50,14 @@ const routesV2 = [
     path: '/magic/coupons',
     Component: CouponEngine,
     onRCOD: true,
-    condition: (user) => user.isMagicCouponEngineEnabled,
+    condition: (user, abExp, platform) =>
+      user.isMagicCouponEngineEnabled && isValidPlatform(user, abExp, platform),
   },
   {
     tabName: 'Reports & Analytics',
     path: '/magic/reports-analytics',
     Component: ReportsAndAnalytics,
+    condition: isValidPlatform,
     onRCOD: true,
     /**
      * Checks are done at TabsContainer(L1 Renderer) , Reports & Analytics Component due to complexities involved
@@ -60,8 +66,8 @@ const routesV2 = [
   {
     tabName: 'Setup & Settings',
     path: '/magic/settings',
-    condition: (_user) => _user.isMagicSettingsEnabled,
-    Component: SetupAndSettings,
+    condition: (user) => user.isMagicSettingsEnabled,
+    Component: PlatformSettings,
     onRCOD: true,
   },
 ];

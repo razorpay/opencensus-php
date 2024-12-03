@@ -45,7 +45,7 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
       <StyledTabsWrapper>
         <div className="magic-settings-tabs display-flex">
           <div className="tabs-container display-flex flex--column">
-            {(isMagicConfigurationFlow ? CONFIG_TABS : TABS)?.[platform].map((item, index) => {
+            {(isMagicConfigurationFlow ? CONFIG_TABS : TABS)?.[platform]?.map((item, index) => {
               /**
                * Checkout360 Experience
                * Splitz experiment in use: `magicx_publicapp_cod`
@@ -96,7 +96,7 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
             })}
           </div>
           <Routes>
-            {(isMagicConfigurationFlow ? CONFIG_TABS : TABS)?.[platform].map((item) => {
+            {(isMagicConfigurationFlow ? CONFIG_TABS : TABS)?.[platform]?.map((item) => {
               if (item.condition && !item.condition(user, abExperiments)) return null;
               if (item.label === 'COD Review Workflow' && !isCODOrderControlEnabled) return null;
               if (isRCOD && !(item.onRCOD || item.onRCODOnly)) return null;

@@ -1,6 +1,8 @@
 import moment from 'moment';
 import { getStartDateFromDiff } from 'common/utils/rzp-utils';
 
+import { PLATFORMS } from './constants';
+
 export const onWheelPreventChange = (e) => {
   // Prevent the input value change
   e.target.blur();
@@ -74,3 +76,10 @@ export const getStartAndEndTime = (defaultDuration) => {
 
   return { startTime: start, endTime: end };
 };
+
+export const VALID_PLATFORMS = Object.values(PLATFORMS);
+
+/**
+ *This function is invoked by generic & custom route checker fn's and hence the aditional un-used params.
+ */
+export const isValidPlatform = (_user, _abEXP, platform) => VALID_PLATFORMS.includes(platform);
