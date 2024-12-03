@@ -27,7 +27,10 @@ const OnboardingStepCard = ({
   });
 
   return (
-    <StyledCard isDisabled={isDisabled} data-testid="onboarding-step-card">
+    <StyledCard
+      isDisabled={isDisabled}
+      data-testid={`onboarding-step-card-${title.replace(/\s+/g, '').toLowerCase()}`}
+    >
       <Card
         padding="spacing.5"
         marginBottom="spacing.5"

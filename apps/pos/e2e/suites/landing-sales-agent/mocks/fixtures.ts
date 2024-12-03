@@ -1,3 +1,8 @@
+import { additionalDetailsMock } from 'apps/pos/e2e/suites/landing-sales-agent/mocks//additionalDetailsMock';
+import { agreementSigningMock } from 'apps/pos/e2e/suites/landing-sales-agent/mocks/agreementSigningMock';
+import { deviceSelectionStepMock } from 'apps/pos/e2e/suites/landing-sales-agent/mocks/deviceSelectionMock';
+import { paymentMethodsAndServiceSelectionMock } from 'apps/pos/e2e/suites/landing-sales-agent/mocks//paymentMethodAndServiceMock';
+
 export const salesOnboardedMerchantsMock = {
   __typename: 'SalesOnboardedMerchants',
   limit: 10,
@@ -95,4 +100,184 @@ export const salesOnboardedMerchantsMock = {
       status: 'PENDING',
     },
   ],
+};
+
+export const merchantModularOnboardingDetailsAsSalesMock = {
+  __typename: 'merchantModularOnboardingDetailsSuccessResponse',
+  success: true,
+  workflowData: {
+    id: 'OsZirE2foWT2uY',
+    progress: 100,
+    status: 'completed',
+    milestones: [
+      {
+        canSubmit: false,
+        name: 'sales_milestone',
+        status: 'executed',
+        steps: [
+          deviceSelectionStepMock,
+          paymentMethodsAndServiceSelectionMock,
+          additionalDetailsMock,
+          agreementSigningMock,
+        ],
+      },
+    ],
+  },
+  onboardingState: {
+    milestones: [],
+    modularComponents: [],
+    steps: [],
+  },
+  countryCode: 'IN',
+  onboardingType: 'DEFAULT_ONBOARDING',
+  merchantType: 'Pos Payments',
+};
+
+export const MerchantByIdMock = {
+  createdAt: '2024-09-03T05:17:16.000Z',
+  id: 'OsZiezQv15o1KL',
+  activation: {
+    posActivationStatus: 'KYC_QUALIFIED_STB',
+    posActivationFlow: 'WHITELIST',
+    status: null,
+    isFormSubmitted: true,
+    milestone: 'L2_COMPLETED',
+    isPgosMerchant: true,
+  },
+  name: {
+    display: null,
+  },
+  contactPerson: {
+    name: {
+      value: 'Danny',
+    },
+    email: {
+      value: 'kakarla.vasanthi+03sep20242@razorpay.com',
+    },
+    phone: {
+      value: {
+        number: '+914677452266',
+      },
+    },
+  },
+  business: {
+    type: {
+      value: 'PROPRIETORSHIP',
+    },
+    address: {
+      registered: {
+        city: {
+          value: 'Bengaluru',
+        },
+        country: {
+          value: null,
+        },
+        district: {
+          value: null,
+        },
+        line1: {
+          value: 'hsr layout',
+        },
+        line2: {
+          value: null,
+        },
+        state: {
+          value: 'KA',
+        },
+        zipCode: {
+          value: '560102',
+        },
+      },
+      operation: {
+        city: {
+          value: 'Bengaluru',
+        },
+        country: {
+          value: null,
+        },
+        district: {
+          value: null,
+        },
+        line1: {
+          value: 'hsr layout',
+        },
+        line2: {
+          value: null,
+        },
+        state: {
+          value: 'KA',
+        },
+        zipCode: {
+          value: '560102',
+        },
+      },
+    },
+    paymentAcceptanceChannels: {
+      websites: {
+        urls: [
+          {
+            value: null,
+          },
+        ],
+        accept: false,
+        complianceConsent: null,
+      },
+      ios: {
+        urls: [
+          {
+            value: '',
+          },
+        ],
+        accept: false,
+      },
+      android: {
+        urls: [
+          {
+            value: '',
+          },
+        ],
+        accept: false,
+      },
+      offlineStore: {
+        accept: true,
+      },
+      socialMedia: {
+        accept: false,
+        socialMediaUrls: [],
+      },
+      whatsappSmsEmail: {
+        accept: false,
+      },
+      others: {
+        accept: false,
+        value: '',
+      },
+    },
+  },
+  document: {
+    shopFront: {
+      values: [
+        {
+          id: 'Ov5NLo8i6S5CcV',
+          fileName: null,
+        },
+        {
+          id: 'Ov5NiLZg0ZlNL4',
+          fileName: null,
+        },
+      ],
+    },
+    shopInterior: {
+      values: [
+        {
+          id: 'Ov5NuXfg9TPluv',
+          fileName: null,
+        },
+        {
+          id: 'Ov5OBxXaXPBoF4',
+          fileName: null,
+        },
+      ],
+    },
+  },
 };

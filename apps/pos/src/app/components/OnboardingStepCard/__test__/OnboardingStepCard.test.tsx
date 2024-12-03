@@ -32,7 +32,7 @@ describe('OnboardingStepCard', () => {
 
   test('should render with disabled behavior when isDisabled is true', async () => {
     renderComponent({ isDisabled: true });
-    await userEvent.click(screen.getByTestId('onboarding-step-card'));
+    await userEvent.click(screen.getByTestId('onboarding-step-card-testtitle'));
     expect(defaultProps.onClick).not.toHaveBeenCalled();
   });
 

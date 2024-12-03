@@ -96,8 +96,8 @@ const SalesTable: React.FC<DashboardTableProps> = ({
             )}
           </TableHeader>
           <TableBody>
-            {tableData.map((tableItem, index) => (
-              <TableRow key={index} item={tableItem}>
+            {tableData.map((tableItem) => (
+              <TableRow key={tableItem.merchantId} item={tableItem}>
                 {!isMobile ? (
                   <React.Fragment>
                     <TableCell>
@@ -127,6 +127,7 @@ const SalesTable: React.FC<DashboardTableProps> = ({
                         variant="anchor"
                         size="medium"
                         onClick={() => handleOnDetailsClick(tableItem.merchantId as string)}
+                        testID={tableItem.merchantId}
                       >
                         Details
                       </Link>
@@ -165,6 +166,7 @@ const SalesTable: React.FC<DashboardTableProps> = ({
                           variant="anchor"
                           size="medium"
                           onClick={() => handleOnDetailsClick(tableItem.merchantId as string)}
+                          testID={tableItem.merchantId}
                         >
                           Details
                         </Link>
