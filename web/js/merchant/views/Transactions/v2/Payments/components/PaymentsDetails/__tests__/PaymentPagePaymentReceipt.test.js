@@ -8,13 +8,18 @@ import { storeWithInitialState } from 'merchant/store';
 
 import PaymentPagePaymentReceipt from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentPagePaymentReceipt';
 
-import { getReceiptDetails, sendReceipt } from 'merchant/views/PaymentPages/PaymentPages/model';
+import {
+  getReceiptDetails,
+  sendReceipt,
+  saveReceipt,
+} from 'merchant/views/PaymentPages/PaymentPages/model';
 
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 jest.mock('merchant/views/PaymentPages/PaymentPages/model', () => ({
   getReceiptDetails: jest.fn(),
   sendReceipt: jest.fn(),
+  saveReceipt: jest.fn(),
 }));
 
 const initProps = {
@@ -162,6 +167,82 @@ describe('PaymentPagePaymentReceipt Component', () => {
         type: 'error',
         message: 'Network error',
       });
+    });
+  });
+
+  it('should show input text container and call sendReceipt and show notification when "Send" button is clicked', async () => {
+    getReceiptDetails.mockResolvedValue({
+      data: {
+        invoice_id: 'INV123',
+        receipt_download_url: 'http://example.com/receipt.pdf',
+      },
+    });
+    sendReceipt.mockResolvedValue({ data: { success: true } });
+
+    renderApp();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Send/i })).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Send/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Reference ID')).toBeInTheDocument();
+    });
+
+    const textInput = screen.getByRole('textbox', {
+      name: 'Reference ID',
+    });
+
+    expect(textInput).toBeInTheDocument();
+
+    await userEvent.type(textInput, 'test_id');
+
+    await userEvent.click(screen.getByRole('button', { name: /Send/i }));
+
+    await waitFor(() => {
+      expect(sendReceipt).toHaveBeenCalledWith(initProps.paymentId, 'test_id');
+      expect(showNotificationSpy).toHaveBeenCalledWith({
+        type: 'success',
+        message: 'Receipt sent successfully.',
+      });
+    });
+  });
+
+  it('should show input text container and call sendReceipt and show notification when "Send" button is clicked', async () => {
+    getReceiptDetails.mockResolvedValue({
+      data: {
+        invoice_id: 'INV123',
+        receipt_download_url: 'http://example.com/receipt.pdf',
+      },
+    });
+    saveReceipt.mockResolvedValue({ success: true });
+
+    renderApp();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Download/i })).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Download/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Reference ID')).toBeInTheDocument();
+    });
+
+    const textInput = screen.getByRole('textbox', {
+      name: 'Reference ID',
+    });
+
+    expect(textInput).toBeInTheDocument();
+
+    await userEvent.type(textInput, 'test_id');
+
+    await userEvent.click(screen.getByRole('button', { name: /Save/i }));
+
+    await waitFor(() => {
+      expect(saveReceipt).toHaveBeenCalledWith(initProps.paymentId, 'test_id');
     });
   });
 });
