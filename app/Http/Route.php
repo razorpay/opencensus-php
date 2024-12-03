@@ -18167,6 +18167,7 @@ class Route
             'myoperator_v1_proxy_get',
             'myoperator_v2_proxy_post',
             'freshdesk_update_ticket_internal',
+            'merchant_bank_account_change_status',
             'fd_fetch_ticket',
             'fd_fetch_tickets',
             'user_fetch_internal',
