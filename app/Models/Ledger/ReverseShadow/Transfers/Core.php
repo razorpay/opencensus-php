@@ -588,10 +588,6 @@ class Core extends Base\Core
 
         $additionalParams = $this->fetchRulesForTransferDebit($transfer, $merchantAccountBalances, $fee, $tax);
 
-        if ($amountCreditsSplitEnabled) {
-            $additionalParams[LedgerConstants::VERSION] = "v2";
-        }
-
         $resultingBalance = floatval($merchantAccountBalances[LedgerConstants::MERCHANT_BALANCE]) - floatval($moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]);
 
         $maxNegativeLimit = $this->getMaxNegativeLimitForTransfer($transfer);
@@ -623,6 +619,8 @@ class Core extends Base\Core
             ($merchantAccountBalances[LedgerConstants::MERCHANT_AMOUNT_CREDITS] >= $transfer->getAmount()))
         {
             $journalData[Constants::DYNAMIC_MONEY_PARAMS] = $this->getDynamicMoneyParams($amountCreditsAccounts, $transfer->getAmount());;
+
+            $journalData[Constants::ADDITIONAL_PARAMS][LedgerConstants::VERSION] = "v2";
         }
 
         $transactionMessage = $this->generateBaseForJournalEntry($transfer);
