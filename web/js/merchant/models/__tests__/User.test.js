@@ -267,6 +267,24 @@ describe('User model', () => {
     expect(isLinkAccountEnabled).toBe(false);
   });
 
+  test('should return true when org feature flag disable_paypal_pop_up is set', () => {
+    const user = getDefaultUserObj();
+
+    jest.spyOn(user, 'isHidePayPalPopupEnabled', 'get').mockReturnValue(true);
+
+    const isHidePayPalPopupEnabled = user.isHidePayPalPopupEnabled;
+    expect(isHidePayPalPopupEnabled).toBe(true);
+  });
+
+  test('should return false when org feature flag disable_paypal_pop_up is not set', () => {
+    const user = getDefaultUserObj();
+
+    jest.spyOn(user, 'isHidePayPalPopupEnabled', 'get').mockReturnValue(false);
+
+    const isHidePayPalPopupEnabled = user.isHidePayPalPopupEnabled;
+    expect(isHidePayPalPopupEnabled).toBe(false);
+  });
+
   test('get isIssuingBulkUploadEnabled: exp disabled', () => {
     const user = getDefaultUserObj();
 

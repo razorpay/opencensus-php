@@ -1646,6 +1646,10 @@ export default class User {
     return isOrgFeatureExist('vas_link_wallets');
   }
 
+  get isHidePayPalPopupEnabled() {
+    return isOrgFeatureExist('disable_paypal_pop_up');
+  }
+
   // Bank account auto update or old workflow with the approval from admin
   bankAccountAutoUpdateOrWorkflow() {
     return true;
