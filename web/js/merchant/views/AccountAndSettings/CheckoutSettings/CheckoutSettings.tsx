@@ -108,16 +108,15 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
           <Suspense fallback={<Loader />}>
             <StyledDivider>
               <StyledTabContentContainer className="content">
-                <ShowWhen
-                  additionalCondition={(user) =>
-                    isConfigurationViewAllowed(user) && !isCheckoutV2SettingsAllowed(extraConfig)
-                  }
-                >
+                <ShowWhen additionalCondition={(user) => isConfigurationViewAllowed(user)}>
                   <Routes>
                     <Route
                       path={getRefRoute(ROUTES_INFO.BRANDING)}
                       element={
-                        <RouteGuard>
+                        <RouteGuard
+                          additionalCondition={() => !isCheckoutV2SettingsAllowed(extraConfig)}
+                          defaultPath={ROUTES_INFO.CHECKOUT_STYLING}
+                        >
                           <StyledConfiguration showBranding />
                         </RouteGuard>
                       }
@@ -125,7 +124,10 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
                     <Route
                       path={getRefRoute(ROUTES_INFO.FLASH_CHECKOUT)}
                       element={
-                        <RouteGuard>
+                        <RouteGuard
+                          additionalCondition={() => !isCheckoutV2SettingsAllowed(extraConfig)}
+                          defaultPath={ROUTES_INFO.CHECKOUT_FEATURES}
+                        >
                           <StyledConfiguration showFlashCheckout />
                         </RouteGuard>
                       }
@@ -133,32 +135,46 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
                     <Route
                       path={getRefRoute(ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE)}
                       element={
-                        <RouteGuard>
+                        <RouteGuard
+                          additionalCondition={() => !isCheckoutV2SettingsAllowed(extraConfig)}
+                          defaultPath={ROUTES_INFO.CHECKOUT_FEATURES}
+                        >
                           <StyledConfiguration showSkipMandatorySummaryPage />
                         </RouteGuard>
                       }
                     />
                   </Routes>
                 </ShowWhen>
-                <ShowWhen
-                  additionalCondition={(user) =>
-                    isConfigurationViewAllowed(user) && isCheckoutV2SettingsAllowed(extraConfig)
-                  }
-                >
+                <ShowWhen additionalCondition={() => isCheckoutV2SettingsAllowed(extraConfig)}>
+                  <ShowWhen additionalCondition={(user) => isConfigurationViewAllowed(user)}>
+                    <Routes>
+                      <Route
+                        path={getRefRoute(ROUTES_INFO.CHECKOUT_STYLING)}
+                        element={
+                          <RouteGuard>
+                            <StyledConfiguration showStyling />
+                          </RouteGuard>
+                        }
+                      />
+                      <Route
+                        path={getRefRoute(ROUTES_INFO.CHECKOUT_FEATURES)}
+                        element={
+                          <RouteGuard>
+                            <StyledConfiguration showFeatures />
+                          </RouteGuard>
+                        }
+                      />
+                    </Routes>
+                  </ShowWhen>
                   <Routes>
                     <Route
-                      path={getRefRoute(ROUTES_INFO.CHECKOUT_STYLING)}
+                      path={getRefRoute(ROUTES_INFO.TRUSTED_BADGE)}
                       element={
-                        <RouteGuard>
-                          <StyledConfiguration showStyling />
-                        </RouteGuard>
-                      }
-                    />
-                    <Route
-                      path={getRefRoute(ROUTES_INFO.CHECKOUT_FEATURES)}
-                      element={
-                        <RouteGuard>
-                          <StyledConfiguration showFeatures />
+                        <RouteGuard
+                          additionalCondition={() => false}
+                          defaultPath={ROUTES_INFO.CHECKOUT_STYLING}
+                        >
+                          <TrustedBadge />
                         </RouteGuard>
                       }
                     />

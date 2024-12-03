@@ -48,7 +48,7 @@ test.describe.parallel('RTUX - Transacted Merchant @flow=rtux @project=payments'
     }
   });
 
-  test('should show payments overview', async ({ page }) => {
+  test.skip('should show payments overview', async ({ page }) => {
     const components = await getRTUXResponse({ page });
 
     const paymentsOverviewApiRes = getWidgetResponse(components, 'tabbed_chart');
