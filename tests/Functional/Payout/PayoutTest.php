@@ -10517,6 +10517,28 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+
+    public function testCreateBulkPayoutForMerchantBlockedOnLite()
+    {
+        $this->liveSetUp();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_BLOCKED_ON_LITE]);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+
     public function testApprovePayoutWithNWFSWithQueuingDisabled()
     {
         $this->liveSetUp();
@@ -27531,6 +27553,15 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals('on_hold', $payout['status']);
         $this->assertEquals('beneficiary_bank_down', $payout['queued_reason']);
+    }
+
+    public function testCreatePayoutForLiteBlockedMerchant()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_BLOCKED_ON_LITE]);
+
+        $this->startTest();
     }
 
     public function testCreatePayoutWhenOnHoldFeatureEnabledAndBeneUp()

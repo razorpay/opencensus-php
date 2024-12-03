@@ -1672,6 +1672,11 @@ class Constants
     const ALLOW_NON_SAVED_CARDS = 'allow_non_saved_cards';
 
     /**
+     * Feature flag to block payouts via lite account for risk merchants.
+     */
+    const PAYOUTS_BLOCKED_ON_LITE = 'payouts_blocked_on_lite';
+
+    /**
      * Feature flag to allow bu_namespace changes for payouts to cards
      */
     const PAYOUT_NAMESPACE_CHANGES = 'payout_namespace_changes';
