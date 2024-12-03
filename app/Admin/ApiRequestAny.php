@@ -126,6 +126,11 @@ class ApiRequestAny
         'xperience-edge',
         'abacus',
         'magic/shipping/shopify/sync',
+        'admin_dashboard/blocks',
+        'admin_dashboard/suggestions',
+        'admin_dashboard/feedback',
+        'admin_dashboard/tags',
+        'dashboard/blocks',
     ];
 
     /**
