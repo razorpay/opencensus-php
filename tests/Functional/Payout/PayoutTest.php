@@ -14581,7 +14581,7 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testAdd201CustomPayoutPurposes()
+    public function testAdd401CustomPayoutPurposes()
     {
         for ($count = 0; $count < Payout\Validator::MAX_PURPOSES_ALLOWED; $count++)
         {
@@ -14607,7 +14607,7 @@ class PayoutTest extends OAuthTestCase
         $this->sendRequest($request);
     }
 
-    public function testAdd301BulkCustomPayoutPurposes()
+    public function testAdd501BulkCustomPayoutPurposes()
     {
         for ($count = 0; $count < Payout\Validator::MAX_PURPOSES_ALLOWED + Payout\Validator::MAX_PURPOSES_ALLOWED_TO_XPAYROLL; $count++)
         {

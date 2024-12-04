@@ -54,10 +54,10 @@ class Validator extends Base\Validator
     public $merchant;
 
 
-    // We are increasing this from 100 to 200. Slack thread for reference:
-    // https://razorpay.slack.com/archives/C013868TRK4/p1615796447155300?thread_ts=1615544530.147100&cid=C013868TRK4
-    // TODO: Finalize on some final number that we wish to support in the long run
-    const MAX_PURPOSES_ALLOWED = 200;
+    // We are increasing this from 200 to 400. Slack thread for reference:
+    // https://razorpay.slack.com/archives/C013868TRK4/p1733080607565809?thread_ts=1732256137.940409&cid=C013868TRK4
+    // TODO: Functionality for merchants to edit / delete existing purposes
+    const MAX_PURPOSES_ALLOWED = 400;
 
     const MAX_PURPOSES_ALLOWED_TO_XPAYROLL = 100;
 

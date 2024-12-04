@@ -9775,7 +9775,7 @@ return [
         ],
     ],
 
-    'testAdd201CustomPayoutPurposes' => [
+    'testAdd401CustomPayoutPurposes' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/payouts/purposes',
@@ -9788,7 +9788,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'You have reached the maximum limit (200) of custom payout purposes that can be created.',
+                    'description' => 'You have reached the maximum limit (400) of custom payout purposes that can be created.',
                 ],
             ],
             'status_code' => 400,
@@ -9799,7 +9799,7 @@ return [
         ],
     ],
 
-    'testAdd301BulkCustomPayoutPurposes' => [
+    'testAdd501BulkCustomPayoutPurposes' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/payouts/purposes/{merchant_id}',
@@ -9814,7 +9814,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'You have reached the maximum limit (300) of custom payout purposes that can be created.',
+                    'description' => 'You have reached the maximum limit (500) of custom payout purposes that can be created.',
                 ],
             ],
             'status_code' => 400,
