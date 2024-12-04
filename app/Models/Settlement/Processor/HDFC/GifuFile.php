@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Payment\Method;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Settlement\Processor\Base;
 use RZP\Models\FileStore;
@@ -427,9 +428,11 @@ class GifuFile extends Base\BaseGifuFile
 
         foreach ($terminals as $terminal)
         {
-            if($terminal->$method === true)
-            {
-               return $terminal;
+            if (
+                ($method === Method::UPI && $terminal->upi === true) ||
+                (($method === Method::CARD && $terminal->card === true) && ($terminal->emi === false))
+            ) {
+                return $terminal;
             }
         }
 

@@ -1651,6 +1651,153 @@ class BankingSettlementTest extends TestCase
 
         Carbon::setTestNow();
     }
+
+    public function testTerminalValidationWithUPIAndCardChecks()
+    {
+        $this->app['config']->set('applications.ufh.mock', true);
+        $merchants = $this->fixtures->times(6)->create('merchant');
+        $org = $this->fixtures->create('org', [
+            'id' => 'IUXvshap3Hbzos',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+        $this->fixtures->create('feature', [
+            'name' => 'org_pool_settlement',
+            'entity_id' => 'IUXvshap3Hbzos',
+            'entity_type' => 'org',
+        ]);
+        $poolAcc = random_alphanum_string(14);
+        $channel = Channel::AXIS;
+        // working wednesday 12 july 2023
+        $todaydate = Carbon::createFromDate(2023, 7, 12, Timezone::IST);
+        Carbon::setTestNow($todaydate->copy());
+        $this->mockRazorxTreatment();
+        $this->mockAllSplitzTreatment();
+        $lastCutoffTime = Carbon::yesterday(Timezone::IST)->setTime(20, 0, 0)->getTimestamp();
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+        $cont = 0;
+        foreach ($merchants as $merchant) {
+            $merchantId = $merchant->getId();
+            if ($cont % 2 == 0) {
+                $terminal = $this->fixtures->create(
+                    'terminal',
+                    [
+                        'id' => random_alphanum_string(14),
+                        'merchant_id' => $merchantId,
+                        'gateway' => 'hdfc',
+                        'gateway_merchant_id' => '250000002',
+                        'gateway_secure_secret' => "1231424",
+                        'gateway_terminal_id' => '190000004',
+                        'card' => 1,
+                        'emi' => 0,
+                        'mode' => 2,
+                        'type' => [
+                            'direct_settlement_with_refund' => '1'
+                        ],
+                    ]);
+            } else {
+                $terminal = $this->fixtures->create(
+                    'terminal',
+                    [
+                        'id' => random_alphanum_string(14),
+                        'merchant_id' => $merchantId,
+                        'gateway' => 'hdfc',
+                        'gateway_merchant_id' => '250000002',
+                        'gateway_secure_secret' => "1231424",
+                        'gateway_terminal_id' => '250000004',
+                        'card' => 1,
+                        'emi' => 1,
+                        'mode' => 2,
+                        'type' => [
+                            'direct_settlement_with_refund' => '1'
+                        ],
+                    ]);
+                $terminal = $this->fixtures->create(
+                    'terminal',
+                    [
+                        'id' => random_alphanum_string(14),
+                        'merchant_id' => $merchantId,
+                        'gateway' => 'hdfc',
+                        'gateway_merchant_id' => '250000002',
+                        'gateway_secure_secret' => "1231424",
+                        'gateway_terminal_id' => '250000004',
+                        'card' => 1,
+                        'emi' => 0,
+                        'mode' => 2,
+                        'type' => [
+                            'direct_settlement_with_refund' => '1'
+                        ],
+                    ]);
+            }
+            $this->fixtures->edit('merchant', $merchant->getId(), [
+                'org_id' => $org['id'],
+                'channel' => $channel,
+                'activated' => true,
+                'suspended_at' => null
+            ]);
+            $this->fixtures->create('balance', ['id' => $merchantId, 'merchant_id' => $merchantId, 'balance' => 5000]);
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'account_number' => $poolAcc, // constant id for all merchant's pool account
+                    'beneficiary_name' => random_string_special_chars(10),
+                    'merchant_id' => $merchantId,
+                    'type' => 'merchant'
+                ]);
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'beneficiary_name' => random_string_special_chars(10),
+                    'merchant_id' => $merchantId,
+                    'type' => 'org_settlement'
+                ]);
+            $createdAt = Carbon::today(Timezone::IST)->setTime(23, 30, 0)->getTimestamp() + 5;
+            $capturedAt = Carbon::today(Timezone::IST)->setTime(23, 35, 0)->getTimestamp() + 10;
+            $amount = ($cont % 2 == 1) ? 10000 : 15000;
+            $this->fixtures->times(2)->create(
+                'payment',
+                [
+                    'captured_at' => $capturedAt,
+                    'method' => 'card',
+                    'merchant_id' => $merchantId,
+                    'amount' => $amount,
+                    'mdr' => 400,
+                    'fee' => 100,
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt + 10,
+                    'settled_by' => 'bank',
+                    'terminal_id' => $terminal->getId()
+                ]
+            );
+            $this->fixtures->times(2)->create(
+                'payment',
+                [
+                    'captured_at' => $capturedAt,
+                    'method' => 'emi',
+                    'merchant_id' => $merchantId,
+                    'amount' => $amount,
+                    'mdr' => 0,
+                    'fee' => 100,
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt + 10,
+                    'settled_by' => 'bank',
+                    'terminal_id' => $terminal->getId()
+                ]
+            );
+            // Assert that card is 1 and emi is 0
+            $this->assertEquals(1, $terminal->card, "Card should be 1");
+            $this->assertEquals(0, $terminal->emi, "EMI should be 0");
+            $cont++;
+        }
+        $this->initiateSettlements(Channel::AXIS);
+        Carbon::setTestNow($todaydate->copy()->addDay());
+        $this->ba->cronAuth();
+        $this->startTest();
+        Carbon::setTestNow();
+    }
+
     protected function mockRazorxTreatment(string $returnValue = 'on')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
