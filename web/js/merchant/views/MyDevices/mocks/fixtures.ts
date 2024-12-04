@@ -1,0 +1,26 @@
+export const MOCK_DEVICE = [
+  {
+    device_serial: 'AP101A009',
+    device_id: 'AP101A009',
+    created_by: '8294020341',
+    created_time: '2024-08-23 04:35:57',
+    modified_by: '8294020341',
+    modified_time: '2024-08-23 04:38:42',
+    activation_date: '2024-08-23 04:35:57',
+    batch_no: '0026',
+    firmware_version: 'Ext WD_10',
+    status: 'ACTIVE',
+    device_version: 'Ext WD_10',
+    org_code: 'SQR_SOUND_BOX_TEST_MID1',
+    supported_languages: ['HINDI', 'ENGLISH', 'MARATHI', 'KANNADA'],
+    stats: {
+      device_serial: 'AP101A009',
+      battery_percentage: 100,
+      sim: 'Jio',
+      network_strength: 40,
+      device_type: 'WD_10',
+      device_connected: false,
+      language: 'Hindi',
+    },
+  },
+];

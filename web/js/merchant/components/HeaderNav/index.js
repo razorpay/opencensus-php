@@ -39,6 +39,7 @@ import ProfileDropdown from './ProfileDropdown';
 import StatusDetails from './StatusDetails';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import UniversalSearch from './UniversalSearch';
+import { isJKOfflineMerchant } from '../Sidebar/helpers';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -204,6 +205,8 @@ class HeaderNav extends Component {
       abExperiments: splitz.abExperiments,
     });
 
+    const isJKOrg = isJKOfflineMerchant(org, user);
+
     return (
       <div className="nav-wrapper">
         <nav
@@ -348,7 +351,8 @@ class HeaderNav extends Component {
                         !_user?.isOrgAxis &&
                         !_user?.isOrgKotak &&
                         !isOrgFeatureExist('hide_razorpay_text_link') &&
-                        !isConfigTagEnabled('app_switcher.app_switcher')
+                        !isConfigTagEnabled('app_switcher.app_switcher') &&
+                        !isJKOrg
                       }
                     >
                       <li id="app-switcher">

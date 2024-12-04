@@ -1,3 +1,4 @@
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 import MerchantNavLinks from 'merchant/components/Sidebar/MerchantNavLinks';
 import User from 'merchant/models/User';
 import store from 'merchant/store';
@@ -29,6 +30,7 @@ const defaultProps = {
 
 jest.mock('merchant/components/Sidebar/helpers', () => ({
   getIsBankingEnabled: jest.fn(),
+  isJKOfflineMerchant: jest.fn(),
 }));
 
 const updateStore = (user, org = {}) => {

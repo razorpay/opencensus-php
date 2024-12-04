@@ -25,10 +25,15 @@ const mapDispatchToProps = (dispatch) => ({
   openModal: (modal) => dispatch(openModal(modal)),
 });
 
-const OverviewBannerComponent = ({ loading, openModal }): JSX.Element => {
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+  org: state.session.org,
+});
+
+const OverviewBannerComponent = ({ loading, openModal, user, org }): JSX.Element => {
   const { theme } = useTheme();
   const dashboardType = useDashboardType();
-  const { isSchedulesEnabled } = useReportsSplitzExperiments();
+  const { isSchedulesEnabled } = useReportsSplitzExperiments(org, user);
 
   const handleDownloadClick = () => {
     trackOverviewSection({
@@ -110,4 +115,4 @@ const OverviewBannerComponent = ({ loading, openModal }): JSX.Element => {
   );
 };
 
-export const OverviewBanner = connect(null, mapDispatchToProps)(OverviewBannerComponent);
+export const OverviewBanner = connect(mapStateToProps, mapDispatchToProps)(OverviewBannerComponent);

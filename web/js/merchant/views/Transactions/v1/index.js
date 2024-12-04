@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink, Outlet } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
+import { withI18Service } from 'common/i18';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { withSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
@@ -18,14 +20,13 @@ import { isMobileDevice } from 'merchant/components/Home/data';
 import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
 import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { fetchOpen as fnFetchOpenDisputes } from 'merchant/reducers/disputes/details';
 import { fetchSettlementAmount as fnFetchSettlementAmount } from 'merchant/reducers/home';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
-import { withI18Service } from 'common/i18';
-
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
 import { trackSuccessRateEvents, visitSuccessRate } from './SuccessRate/trackEvents';
@@ -104,6 +105,7 @@ class TransactionsContainer extends Component {
       openDisputes,
       settlementConfig,
       splitz,
+      org,
       i18: { isConfigTagEnabled },
     } = this.props;
     const { role, activation_status } = user;
@@ -116,6 +118,7 @@ class TransactionsContainer extends Component {
     const isOnHold = no_settlement?.on_hold;
     const isSettlementOnHold = isOnTemporaryHold || isOnHold;
     const pathname = this.props.location.pathname;
+    const isjkOrg = isJKOfflineMerchant(org, user);
 
     return (
       <React.Fragment>
@@ -154,144 +157,147 @@ class TransactionsContainer extends Component {
             >
               Payments
             </NavLink>
-            <ShowWhen
-              featureEnabled="direct_debit"
-              additionalCondition={(usr) => usr.isAllowedView('payments_batch_uploads')}
-            >
-              <NavLink
-                to="/payments/batchuploads"
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'transactions tab',
-                    actionName: 'clicked',
-                    screen: 'transactions',
-                    properties: {
-                      tabName: 'batch payments',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
+            <ShowWhen additionalCondition={() => !isjkOrg}>
+              <ShowWhen
+                featureEnabled="direct_debit"
+                additionalCondition={(usr) => usr.isAllowedView('payments_batch_uploads')}
               >
-                Batch Payments
-              </NavLink>
-            </ShowWhen>
-            <ShowWhen
-              additionalCondition={(usr) =>
-                usr.isAllowedView('refunds') && !isConfigTagEnabled('refunds.refund')
-              }
-            >
-              <NavLink
-                to="/refunds"
-                end
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'transactions tab',
-                    actionName: 'clicked',
-                    screen: 'transactions',
-                    properties: {
-                      tabName: 'refunds',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
-              >
-                Refunds
-              </NavLink>
-            </ShowWhen>
-            <ShowWhen
-              additionalCondition={(usr) =>
-                usr.isAllowedView('refunds_batch_uploads') && !isConfigTagEnabled('refunds.refund')
-              }
-            >
-              <NavLink
-                to="/refunds/batchuploads"
-                className={
-                  ['/refunds/batchupload', '/refunds/batchuploads'].includes(pathname)
-                    ? 'active'
-                    : ''
+                <NavLink
+                  to="/payments/batchuploads"
+                  onClick={() => {
+                    analyticsTrack({
+                      objectName: 'transactions tab',
+                      actionName: 'clicked',
+                      screen: 'transactions',
+                      properties: {
+                        tabName: 'batch payments',
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                  }}
+                >
+                  Batch Payments
+                </NavLink>
+              </ShowWhen>
+              <ShowWhen
+                additionalCondition={(usr) =>
+                  usr.isAllowedView('refunds') && !isConfigTagEnabled('refunds.refund')
                 }
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'transactions tab',
-                    actionName: 'clicked',
-                    screen: 'transactions',
-                    properties: {
-                      tabName: 'batch refunds',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
               >
-                Batch Refunds
-              </NavLink>
-            </ShowWhen>
-            <ShowWhen additionalCondition={(usr) => usr.isAllowedView('orders')}>
-              <NavLink
-                to="/orders"
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'transactions tab',
-                    actionName: 'clicked',
-                    screen: 'transactions',
-                    properties: {
-                      tabName: 'orders',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
+                <NavLink
+                  to="/refunds"
+                  end
+                  onClick={() => {
+                    analyticsTrack({
+                      objectName: 'transactions tab',
+                      actionName: 'clicked',
+                      screen: 'transactions',
+                      properties: {
+                        tabName: 'refunds',
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                  }}
+                >
+                  Refunds
+                </NavLink>
+              </ShowWhen>
+              <ShowWhen
+                additionalCondition={(usr) =>
+                  usr.isAllowedView('refunds_batch_uploads') &&
+                  !isConfigTagEnabled('refunds.refund')
+                }
               >
-                Orders
-              </NavLink>
-            </ShowWhen>
-            <ShowWhen additionalCondition={() => !isConfigTagEnabled('disputes.disputes')}>
-              <NavLink
-                to="/disputes"
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'transactions tab',
-                    actionName: 'clicked',
-                    screen: 'transactions',
-                    properties: {
-                      tabName: 'disputes',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
+                <NavLink
+                  to="/refunds/batchuploads"
+                  className={
+                    ['/refunds/batchupload', '/refunds/batchuploads'].includes(pathname)
+                      ? 'active'
+                      : ''
+                  }
+                  onClick={() => {
+                    analyticsTrack({
+                      objectName: 'transactions tab',
+                      actionName: 'clicked',
+                      screen: 'transactions',
+                      properties: {
+                        tabName: 'batch refunds',
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                  }}
+                >
+                  Batch Refunds
+                </NavLink>
+              </ShowWhen>
+              <ShowWhen additionalCondition={(usr) => usr.isAllowedView('orders')}>
+                <NavLink
+                  to="/orders"
+                  onClick={() => {
+                    analyticsTrack({
+                      objectName: 'transactions tab',
+                      actionName: 'clicked',
+                      screen: 'transactions',
+                      properties: {
+                        tabName: 'orders',
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                  }}
+                >
+                  Orders
+                </NavLink>
+              </ShowWhen>
+              <ShowWhen additionalCondition={() => !isConfigTagEnabled('disputes.disputes')}>
+                <NavLink
+                  to="/disputes"
+                  onClick={() => {
+                    analyticsTrack({
+                      objectName: 'transactions tab',
+                      actionName: 'clicked',
+                      screen: 'transactions',
+                      properties: {
+                        tabName: 'disputes',
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                  }}
+                >
+                  Disputes&nbsp;
+                  {openDisputes !== 0 ? (
+                    <div className="open-disputes">
+                      <span>{openDisputes}</span>
+                      <PopoverComponent theme="dark" align="bottom">
+                        <PopoverBody>
+                          <div>
+                            There are {openDisputes} pending disputes. Take action immediately
+                            before the deadline
+                          </div>
+                        </PopoverBody>
+                      </PopoverComponent>
+                    </div>
+                  ) : null}
+                </NavLink>
+              </ShowWhen>
+              <ShowWhen
+                additionalCondition={(currentUser) =>
+                  mode === 'live' && currentUser.isAllowedView('success_rate')
+                }
               >
-                Disputes&nbsp;
-                {openDisputes !== 0 ? (
-                  <div className="open-disputes">
-                    <span>{openDisputes}</span>
-                    <PopoverComponent theme="dark" align="bottom">
-                      <PopoverBody>
-                        <div>
-                          There are {openDisputes} pending disputes. Take action immediately before
-                          the deadline
-                        </div>
-                      </PopoverBody>
-                    </PopoverComponent>
-                  </div>
-                ) : null}
-              </NavLink>
-            </ShowWhen>
-            <ShowWhen
-              additionalCondition={(currentUser) =>
-                mode === 'live' && currentUser.isAllowedView('success_rate')
-              }
-            >
-              <NavLink
-                to="/success-rate"
-                onClick={() => {
-                  trackSuccessRateEvents(
-                    visitSuccessRate({
-                      tabName: 'success rate',
-                    }),
-                    splitz,
-                  );
-                }}
-              >
-                Success Rate
-              </NavLink>
+                <NavLink
+                  to="/success-rate"
+                  onClick={() => {
+                    trackSuccessRateEvents(
+                      visitSuccessRate({
+                        tabName: 'success rate',
+                      }),
+                      splitz,
+                    );
+                  }}
+                >
+                  Success Rate
+                </NavLink>
+              </ShowWhen>
             </ShowWhen>
             <ShowWhen
               additionalCondition={(user) =>
@@ -336,77 +342,79 @@ class TransactionsContainer extends Component {
                 Invoices
               </NavLink>
             </ShowWhen>
-            {no_settlement &&
-            (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') &&
-            mode === 'live' &&
-            this.props.payments &&
-            this.props.payments.items.length > 0 ? (
-              <div className="text-right settlement-caption">
-                {no_settlement.caption}
-                {no_settlement.reason && (
-                  <span>
-                    <i className="i i-info-circle" />
-                    <PopoverComponent theme="dark" align="left">
-                      <PopoverBody>
-                        <div>{no_settlement.reason}</div>
-                      </PopoverBody>
-                    </PopoverComponent>
-                  </span>
-                )}
-              </div>
-            ) : null}
-            {!isSettlementOnHold &&
-            !no_settlement &&
-            !nextSettlement &&
-            (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') ? (
-              <div className="inline-block text-right full-width no-margin">
-                <strong className="pr-5">
-                  <Amount
-                    value={this.props.settlement_amount.data.settlement_amount}
-                    currency={user?.merchant?.currency}
+            <ShowWhen additionalCondition={() => !isjkOrg}>
+              {no_settlement &&
+              (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') &&
+              mode === 'live' &&
+              this.props.payments &&
+              this.props.payments.items.length > 0 ? (
+                <div className="text-right settlement-caption">
+                  {no_settlement.caption}
+                  {no_settlement.reason && (
+                    <span>
+                      <i className="i i-info-circle" />
+                      <PopoverComponent theme="dark" align="left">
+                        <PopoverBody>
+                          <div>{no_settlement.reason}</div>
+                        </PopoverBody>
+                      </PopoverComponent>
+                    </span>
+                  )}
+                </div>
+              ) : null}
+              {!isSettlementOnHold &&
+              !no_settlement &&
+              !nextSettlement &&
+              (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') ? (
+                <div className="inline-block text-right full-width no-margin">
+                  <strong className="pr-5">
+                    <Amount
+                      value={this.props.settlement_amount.data.settlement_amount}
+                      currency={user?.merchant?.currency}
+                    />
+                  </strong>
+                  <span className="pr-5">will be settled on</span>
+                  <Time
+                    className="pr-5"
+                    value={this.props.settlement_amount.data.next_settlement_time}
+                    format="DD MMM YYYY, hh:mm a"
                   />
-                </strong>
-                <span className="pr-5">will be settled on</span>
-                <Time
-                  className="pr-5"
-                  value={this.props.settlement_amount.data.next_settlement_time}
-                  format="DD MMM YYYY, hh:mm a"
-                />
-                {this.props.settlement_amount.data.reason_for_delay && (
-                  <div style={{ display: 'inline' }}>
-                    <i className="i i-info-circle" />
-                    <PopoverComponent theme="dark" align="left">
-                      <PopoverBody>
-                        <div>{this.props.settlement_amount.data.reason_for_delay}</div>
-                      </PopoverBody>
-                    </PopoverComponent>
-                  </div>
-                )}
-                <span
-                  className="btn-link"
-                  style={{ marginLeft: '5px' }}
-                  onClick={() => {
-                    this.props.openModal({
-                      size: 'medium',
-                      component: (
-                        <SettlementDetail
-                          user={user}
-                          settlementAmount={this.props.settlement_amount.data}
-                        />
-                      ),
-                    });
+                  {this.props.settlement_amount.data.reason_for_delay && (
+                    <div style={{ display: 'inline' }}>
+                      <i className="i i-info-circle" />
+                      <PopoverComponent theme="dark" align="left">
+                        <PopoverBody>
+                          <div>{this.props.settlement_amount.data.reason_for_delay}</div>
+                        </PopoverBody>
+                      </PopoverComponent>
+                    </div>
+                  )}
+                  <span
+                    className="btn-link"
+                    style={{ marginLeft: '5px' }}
+                    onClick={() => {
+                      this.props.openModal({
+                        size: 'medium',
+                        component: (
+                          <SettlementDetail
+                            user={user}
+                            settlementAmount={this.props.settlement_amount.data}
+                          />
+                        ),
+                      });
 
-                    window.rzpAnalytics?.({
-                      eventCategory: 'Settlement Revamp',
-                      eventAction: 'Know more - Next Settlement',
-                      eventLabel: `Payments`,
-                    });
-                  }}
-                >
-                  Know more
-                </span>
-              </div>
-            ) : null}
+                      window.rzpAnalytics?.({
+                        eventCategory: 'Settlement Revamp',
+                        eventAction: 'Know more - Next Settlement',
+                        eventLabel: `Payments`,
+                      });
+                    }}
+                  >
+                    Know more
+                  </span>
+                </div>
+              ) : null}
+            </ShowWhen>
           </header>
 
           <TestModeBanner />
@@ -445,6 +453,7 @@ const mapStateToProps = (state) => {
     payments: state.payments,
     openDisputes: state.dispute.openDisputes,
     settlementConfig: state.settlement.config,
+    org: state.session.org,
   };
 };
 

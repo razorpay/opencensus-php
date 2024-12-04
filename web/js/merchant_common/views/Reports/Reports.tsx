@@ -57,7 +57,11 @@ const mapStateToProps = ({ reportsCore, session }, { dashboardType, i18 }) => {
   const { allConfigs } = reportsCore[dashboardType].overview.reportConfigs;
   return {
     allReportConfigs: allConfigs.data,
-    user: pickProps(session.user, ['current', 'international']),
+    user: {
+      ...pickProps(session.user, ['current', 'international']),
+      isFeatureEnabled: session.user.isFeatureEnabled,
+    },
+    org: pickProps(session.org, ['isjkOrg']),
     refDashboardConfig: getReportsDashboardConfig(
       dashboardType,
       session,
@@ -91,6 +95,7 @@ export const ReportsSection = connect(
     fetchReportsConfigsFailed,
     fetchAccounts,
     dashboardType,
+    org,
   }: ReportSectionProps): JSX.Element => {
     useFetchReportingConfig({
       handleOverviewLoading,
@@ -101,7 +106,8 @@ export const ReportsSection = connect(
       parseConfigs,
     });
     const { isSchedulesEnabled, isDataSyncAdvertisementBannerEnabled } =
-      useReportsSplitzExperiments();
+      useReportsSplitzExperiments(org, user);
+
     const features = useMemo(() => getReportsFeatures(isSchedulesEnabled), []);
 
     useEffect(() => {

@@ -8,7 +8,13 @@ import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import View from '@razorpay/blade-old/src/atoms/View';
 import { fetchOrg, transformFetchOrgData } from 'newAuth/apis';
 import { getBankingCaptchaColor, getTheme } from './theme';
-import { BANK_NAMES, getHostName, isTestEnvironment, IGNORE_BG_IMAGES_BANKS } from 'newAuth/utils';
+import {
+  BANK_NAMES,
+  getHostName,
+  isTestEnvironment,
+  IGNORE_BG_IMAGES_BANKS,
+  loginHelpers,
+} from 'newAuth/utils';
 import { DesktopOnlyView } from 'newAuth/commonStyles';
 import {
   Container,
@@ -19,6 +25,7 @@ import {
   LinkButton,
   CaptchaTextView,
   CaptchaText,
+  OrgInfo,
 } from './styles';
 import DefaultView from './components/DefaultView';
 import OrgView from './components/OrgView';
@@ -155,6 +162,11 @@ const Signin = () => {
                           skipCaptcha={isTestEnvironment() || captchaDisabled}
                           orgData={orgData}
                         />
+                        {orgData.orgName === BANK_NAMES.JKB ? (
+                          <OrgInfo>{loginHelpers[orgData.orgName] || ''}</OrgInfo>
+                        ) : (
+                          ''
+                        )}
                       </CommanderShieldThemeWrapper>
                       <CaptchaTextView>
                         <Flex>

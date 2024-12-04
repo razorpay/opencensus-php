@@ -28,6 +28,8 @@ const CUMULATIVE = 'Total';
 const METHOD = 'method';
 const SAVED_CARD_PAYMENTS = 'Saved Card Payments';
 
+const TABS_FOR_JK_ORG = [NUM_TRANSACTIONS, TRANSACTION_VOLUME];
+
 export {
   TRANSACTION_VOLUME,
   NUM_TRANSACTIONS,
@@ -37,6 +39,7 @@ export {
   CUMULATIVE,
   METHOD,
   SAVED_CARD_PAYMENTS,
+  TABS_FOR_JK_ORG,
 };
 
 const defaultGroupingVals = [

@@ -3,6 +3,7 @@ import { User } from 'common/typings';
 import { AccountStateType } from './types/account';
 import { BaseConfigType } from './types/config';
 import { ScheduleType } from './types/schedule';
+import { OrgData } from 'newAuth/signin/types';
 
 export enum Dashboard {
   partner = 'partner',
@@ -66,6 +67,7 @@ export interface ReportSectionProps {
   fetchReportsConfigsFailed: () => void;
   showNotification: (x: unknown) => void;
   fetchAccounts: () => Promise<void>;
+  org?: OrgData;
 }
 
 export interface ReportsPropType {

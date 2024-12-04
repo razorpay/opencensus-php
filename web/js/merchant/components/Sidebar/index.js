@@ -29,6 +29,7 @@ import ActivationProgress from './ActivationProgress';
 import MainNavLinkGroup from './MainNavLinkGroup';
 import MerchantNavLinks from './MerchantNavLinks';
 import PartnerNavLinks from './PartnerNavLinks';
+import { isJKOfflineMerchant } from './helpers';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds|success-rate)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(trustedbadge|profile|credits|addfunds|referrals)/;
@@ -266,6 +267,9 @@ class Sidebar extends Component {
       isChargeAtWillEnabled: user.isChargeAtWillEnabled,
       isSettlementEnabled: user.isOndemandSettlementEnabled || user.isAutomaticSettlementEnabled,
     };
+
+    // For omni merchants for j&k Org we need to hide certain UI elements
+    const isOmniJkFlow = isJKOfflineMerchant(org, user);
     return (
       <>
         <div className={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
@@ -287,7 +291,8 @@ class Sidebar extends Component {
                 <ShowWhen
                   additionalCondition={() =>
                     !isOrgFeatureExist('hide_activation_form') &&
-                    !isConfigTagEnabled('onboarding.onboarding')
+                    !isConfigTagEnabled('onboarding.onboarding') &&
+                    !isOmniJkFlow
                   }
                 >
                   <ActivationProgress
@@ -307,7 +312,8 @@ class Sidebar extends Component {
                   additionalCondition={(currentUser) =>
                     !currentUser.isPartnerAgentRole &&
                     !isOrgFeatureExist('hide_razorpay_text_link') &&
-                    !isConfigTagEnabled('app_store.app_store')
+                    !isConfigTagEnabled('app_store.app_store') &&
+                    !isOmniJkFlow
                   }
                 >
                   <div className="open">

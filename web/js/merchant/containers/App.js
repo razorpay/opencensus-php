@@ -55,7 +55,7 @@ import { FullPageLoader, FullPageLoaderCenterToMainContent } from 'common/compon
 import currencies from 'merchant/constants/currency';
 import { LOGOUT_ERROR, DEFAULT_TIMEOUT_IN_SECONDS } from 'merchant/constants/dates';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import User, { setFeatures } from 'merchant/models/User';
+import User, { ORG_CUSTOM_CODE_MAP, setFeatures } from 'merchant/models/User';
 import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reducers/app';
 import { fetchInstantSettlements, fetchPayments } from 'merchant/reducers/collection';
 import * as ConfigActions from 'merchant/reducers/config';
@@ -84,6 +84,7 @@ import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
 
 import { isRTUXHomepageEnabled } from './Home/RTUX/utils';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
@@ -260,6 +261,7 @@ class App extends Component {
   // nosemgrep
   UNSAFE_componentWillMount() {
     const user = window.rzp_user;
+    const org = window.rzp_org;
 
     // Init lumberjack
     initLumberjack();
@@ -353,6 +355,13 @@ class App extends Component {
           currentMode = 'live';
         } else if (!user.isActivated) {
           currentMode = 'test';
+        }
+        // if user is omni enabled and org is jkb then set mode to live by default
+        if (
+          user.features.includes('omni_enabled') &&
+          org.custom_code === ORG_CUSTOM_CODE_MAP.JAMMU_KASHMIR_BANK
+        ) {
+          currentMode = 'live';
         }
 
         this.props.updateSession({ mode: currentMode });
@@ -1296,6 +1305,14 @@ class App extends Component {
     };
     const isRTUXHomepage = isRTUXHomepageEnabled({ user, abExperiments });
 
+    const showHeaderInWebview = (isWebview) => {
+      if (isWebview && isJKOfflineMerchant(org, user)) {
+        return true;
+      }
+
+      return !isWebview;
+    };
+
     return (
       <Wrapper
         context={{
@@ -1329,7 +1346,7 @@ class App extends Component {
           )}
         >
           <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
-            {!this.renderFullPageView && !this.state.isWebView && (
+            {!this.renderFullPageView && showHeaderInWebview(this.state.isWebView) && (
               <React.Fragment>
                 <HeaderNav
                   user={user}

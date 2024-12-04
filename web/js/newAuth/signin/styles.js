@@ -130,3 +130,11 @@ export const CaptchaText = Styled(Text)`
     color: ${({ textColor, theme }) => getColor(theme, textColor.desktop)};
   }
 `;
+
+export const OrgInfo = Styled(Text)`
+  position: absolute;
+  bottom: 5%;
+  font-size: 12px;
+  font-style: italic;
+  padding: 0 16px;
+`;

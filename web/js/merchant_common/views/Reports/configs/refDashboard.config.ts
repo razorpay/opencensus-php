@@ -13,6 +13,8 @@ import { CONFIG_TYPE_BATCH_PAGES } from 'merchant_common/views/Reports/component
 import {
   MONTHLY_INVOICE_REPORT,
   OPTIMISER_SETTLEMENTS,
+  PAYMENTS,
+  PAYMENTS_REPORTS,
 } from 'merchant_common/views/Reports/constants';
 import {
   changeScheduleNumericsToString,
@@ -26,6 +28,7 @@ import {
 import { parseConfigsViaCommonExceptions } from './downloadModal.config';
 
 import { reportConfigType, getCustomConfigs } from '.';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 
 /**
  * @param {DashboardType} dashboardType Dashboard type where the core report component will be used.
@@ -65,6 +68,7 @@ export const getReportsDashboardConfig = (
              * effectively hiding it from view.
              */
             const isI18TagFound = REPORT_CONFIG_TYPE?.[name] || REPORT_CONFIG_TYPE?.[type];
+            const isJKORg = isJKOfflineMerchant(session.org, session.user);
 
             switch (true) {
               case isI18TagFound:
@@ -76,6 +80,8 @@ export const getReportsDashboardConfig = (
                 return false;
               case type === CONFIG_TYPE_BATCH_PAGES:
                 return isPaymentPageFileUploadEnabled;
+              case isJKORg:
+                return name === PAYMENTS_REPORTS || name === PAYMENTS;
               default:
                 return true;
             }

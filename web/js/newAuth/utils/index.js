@@ -65,6 +65,11 @@ export const headingDescriptionList = {
   },
 };
 
+export const loginHelpers = {
+  [BANK_NAMES.JKB]:
+    'J&K Bank POS merchants: Use your registered mobile number to log in and not your email address',
+};
+
 export const isBankingOrg = (orgData) =>
   Object.keys(BANK_NAMES).some((bank) => orgData?.orgName === bank);
 

@@ -20,3 +20,5 @@ export const overviewConfigFilterOptions = (showRecentsOption = false) => {
 
   return options;
 };
+
+export const JKBANK_REPORTS = ['Payments', 'Payments Report'];

@@ -1,6 +1,9 @@
 import { useSplitzService } from 'common/splitz';
+import { User } from 'common/typings';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { OrgData } from 'newAuth/signin/types';
 
-export const useReportsSplitzExperiments = () => {
+export const useReportsSplitzExperiments = (org?: OrgData, user?: User) => {
   const {
     abExperiments: {
       Reports_Revamp_Recents,
@@ -10,8 +13,11 @@ export const useReportsSplitzExperiments = () => {
     },
   } = useSplitzService();
 
+  // For JK org the schedules are disabled hence handling from hook
+  const isJKORg = Boolean(user && org) && isJKOfflineMerchant(org, user);
+
   return {
-    isSchedulesEnabled: Reports_Schedules?.variables?.result === 'on',
+    isSchedulesEnabled: isJKORg ? false : Reports_Schedules?.variables?.result === 'on',
     isRevampedLAReports: LA_Reports_Revamp?.variables?.result === 'on',
     isOverviewRecentsFilterEnabled: Reports_Revamp_Recents?.variables?.result === 'on',
     isDataSyncAdvertisementBannerEnabled:

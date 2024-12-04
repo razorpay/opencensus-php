@@ -10,3 +10,5 @@ export const FILE_UPLOAD_PAGE = 'file_upload_page';
 
 export const MONTHLY_INVOICE_REPORT = 'Monthly Invoice Report';
 export const OPTIMISER_SETTLEMENTS = 'Optimiser Settlements';
+export const PAYMENTS_REPORTS = 'Payments Report';
+export const PAYMENTS = 'Payments';

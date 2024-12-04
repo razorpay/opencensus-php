@@ -105,6 +105,7 @@ import {
   trackSettlementsClick,
 } from './ga';
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 
 const TerminalStatus = lazy(() =>
   import(
@@ -468,6 +469,7 @@ class AnalyticsDesktop extends Component {
       internationalSettingStatus,
       i18: { isConfigTagEnabled },
       splitz,
+      org,
     } = this.props;
     const {
       data: { items },
@@ -529,6 +531,8 @@ class AnalyticsDesktop extends Component {
       });
     };
 
+    const isJKOmniFlow = isJKOfflineMerchant(org, user);
+
     const goToNCOnEasy = () => {
       analyticsTrack({
         objectName: 'NC Resolve Now',
@@ -565,7 +569,11 @@ class AnalyticsDesktop extends Component {
             shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
           />
         ) : null}
-        <ShowWhen additionalCondition={() => !isConfigTagEnabled('onboarding.getting_started')}>
+        <ShowWhen
+          additionalCondition={() =>
+            !isConfigTagEnabled('onboarding.getting_started') && !isJKOmniFlow
+          }
+        >
           {/* Announcement Banner Start */}
           <div
             ref={(node) => onExtraContentMount(node)}
@@ -816,7 +824,11 @@ class AnalyticsDesktop extends Component {
             <DateRangeTooltip />
           </div>
 
-          <ShowWhen additionalCondition={() => !isConfigTagEnabled('announcements.announcements')}>
+          <ShowWhen
+            additionalCondition={() =>
+              !isConfigTagEnabled('announcements.announcements') && !isJKOmniFlow
+            }
+          >
             <div
               className={`pull-right ${
                 this.props.user.isOndemandSettlementEnabled ? 'ondemand-enabled' : ''
@@ -934,7 +946,7 @@ class AnalyticsDesktop extends Component {
                         </Popover>
                       )}
                     </div>
-                  ) : (
+                  ) : !isJKOmniFlow ? (
                     <Link className="pull-right btn-text" to="/settlements">
                       <span
                         className="text-no-wrap"
@@ -954,6 +966,8 @@ class AnalyticsDesktop extends Component {
                         View Settlements
                       </span>
                     </Link>
+                  ) : (
+                    ''
                   )}
                 </GroupItem>
               </Group>
@@ -1091,6 +1105,7 @@ const mapStateToProps = (state) => ({
   bannerCarouselData: state?.growthService?.banner_carousel_items,
   internationalSettingStatus: state.config.internationalSettingStatus,
   isNcEligibile: state.home.isNcEligibile,
+  org: state.session.org,
 });
 
 export default withRouter(

@@ -1,12 +1,18 @@
 import '@testing-library/jest-dom/extend-expect';
 import { generateDynamicComponent } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 import * as EditColumnsModal from 'merchant/views/Transactions/model';
 import {
   renderApp,
   defaultStore,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentsList';
 import { screen, fireEvent, waitFor, errorHandlers, server } from 'test-utils';
+
+jest.mock('merchant/components/Sidebar/helpers', () => ({
+  ...jest.requireActual('merchant/components/Sidebar/helpers'),
+  isJKOfflineMerchant: jest.fn(),
+}));
 
 describe('PaymentsList', () => {
   const fetchPaymentsList = async (params) => {
@@ -31,6 +37,32 @@ describe('PaymentsList', () => {
 
   test('should fetch payment list when isRoute is true', async () => {
     await fetchPaymentsList({ props: { isRoute: true } });
+  });
+
+  test('Should show new filters if JK Org and mobile view', async () => {
+    isJKOfflineMerchant.mockReturnValue(true);
+    await fetchPaymentsList({
+      initialState: {
+        ...defaultStore,
+        session: {
+          ...defaultStore.session,
+          user: {
+            isFAEnabled: true,
+            getMaxFAMtv: 200,
+            findTag: () => false,
+            isOrgAllowedFunctionality: () => true,
+          },
+        },
+        app: {
+          isMobileResolution: true,
+        },
+      },
+    });
+
+    const filterBtn = screen.getByRole('button', {
+      name: /Filters/i,
+    });
+    expect(filterBtn).toBeInTheDocument();
   });
 
   test('should not show payment failure analysis when show failure analysis condition is not met', async () => {

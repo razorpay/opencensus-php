@@ -1,4 +1,7 @@
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 import { reportConfigType } from 'merchant_common/views/Reports/configs/index';
+import { getReportsDashboardConfig } from 'merchant_common/views/Reports/configs/refDashboard.config';
+import { mockConfigs } from 'merchant_common/views/Reports/redux/__test__/fixtures/configs.fixtures';
 
 const CONFIG = [
   { path: 'reports.transactions', propName: 'transactions' },
@@ -17,6 +20,10 @@ const CONFIG = [
   { path: 'reports.payment_pages', propName: 'Payment page' },
 ];
 
+jest.mock('merchant/components/Sidebar/helpers', () => ({
+  isJKOfflineMerchant: jest.fn(),
+}));
+
 describe('test for reportConfigType function', () => {
   CONFIG.forEach(({ path, propName }) => {
     it(`should return true for ${path}`, () => {
@@ -28,5 +35,29 @@ describe('test for reportConfigType function', () => {
       const isTrue = reportConfig[propName];
       expect(isTrue).toBe(true);
     });
+  });
+});
+
+describe('Validate: getReportsDashboardConfig', () => {
+  it('Should only return supported configs for J&K', () => {
+    isJKOfflineMerchant.mockReturnValue(true);
+    const { parseConfigs } = getReportsDashboardConfig('merchant', {
+      user: {
+        findTag: jest.fn(),
+      },
+    });
+    const res = parseConfigs(mockConfigs);
+    expect(res).toHaveLength(1);
+  });
+
+  it('Should return all the reports for non J&k', () => {
+    isJKOfflineMerchant.mockReturnValue(false);
+    const { parseConfigs } = getReportsDashboardConfig('merchant', {
+      user: {
+        findTag: jest.fn(),
+      },
+    });
+    const res = parseConfigs(mockConfigs);
+    expect(res).toHaveLength(3);
   });
 });

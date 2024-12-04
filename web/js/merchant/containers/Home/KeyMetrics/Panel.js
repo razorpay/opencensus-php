@@ -37,6 +37,7 @@ import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 import customToolTip, { positioner } from './customTooltip';
 import { tabsMeta, breakdownVals, breakdownValsMap, PLATFORM, CUMULATIVE } from './data';
 import { trackGoToLinks } from './ga';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 
 Chart.Tooltip.positioners.custom = positioner;
 
@@ -96,7 +97,10 @@ const _getChartData = (data, selectedGrouping, canvas) => {
  */
 
 // eslint-disable-next-line react/no-unsafe
-@connect((state) => ({ user: state.session.user }))
+@connect((state) => ({
+  user: state.session.user,
+  org: state.session.org,
+}))
 class Panel extends Component {
   constructor(props) {
     super(props);
@@ -303,6 +307,8 @@ class Panel extends Component {
 
     const getChartData = _getChartData.bind(null, data, selectedGrouping);
 
+    const isJKOrgMerchant = isJKOfflineMerchant(this.props.org, this.props.user);
+
     return (
       <GenericPanel
         className={`key-metrics-container${!loading && noGrouping ? ' no-legends' : ''}`}
@@ -448,7 +454,7 @@ class Panel extends Component {
           </div>
           <div className="pull-right">
             <Link
-              target="_blank"
+              target={isJKOrgMerchant ? '_self' : '_blank'}
               rel="noreferrer noopener"
               to={`/${this.meta.index}?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
               onClick={() =>

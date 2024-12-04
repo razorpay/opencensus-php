@@ -92,7 +92,7 @@ const _paymentId = (initiatePage) => {
 };
 
 export default (props) => {
-  const { selfServeActionsPage } = props;
+  const { selfServeActionsPage, isJkOrg } = props;
   let paymentColumns = [
     _paymentId(selfServeActionsPage),
     amount,
@@ -125,7 +125,7 @@ export default (props) => {
   const rzpOrders = mapRzpOrders(props.items, selfServeActionsPage);
 
   // if there is at least one visible "order-id"
-  if (Object.keys(orders).length) {
+  if (Object.keys(orders).length && !isJkOrg) {
     paymentColumns.splice(1, 0, paymentOrder(orders));
   }
 

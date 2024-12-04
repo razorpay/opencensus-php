@@ -18,8 +18,11 @@ import {
   isMobileResolution,
 } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { RouteGuard } from 'merchant/components/ShowWhen';
-import { getIsPayrollWidgetEnabled } from 'merchant/components/Sidebar/helpers';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
+import {
+  getIsPayrollWidgetEnabled,
+  isJKOfflineMerchant,
+} from 'merchant/components/Sidebar/helpers';
 import Home from 'merchant/containers/Home/Index';
 import { setActiveEntity, setBaseLocation, setSecActiveEntity } from 'merchant/reducers/app';
 import { Spinner } from '@razorpay/blade/components';
@@ -640,12 +643,17 @@ const EditReport = lazy(() =>
   ),
 );
 
+const MyDevices = lazy(() =>
+  import(/* webpackChunkName: "MyDevices" */ 'merchant/views/MyDevices'),
+);
+
 @withI18Service
 @connect(
   (state) => ({
     user: state.session.user,
     mode: state.session.mode,
     isMobile: state.app.isMobileResolution,
+    org: state.session.org,
   }),
   {
     setBaseLocation,
@@ -872,6 +880,7 @@ class Content extends Component {
       mode,
       i18: { isConfigTagEnabled },
       splitz,
+      org,
     } = this.props;
     const { abExperiments } = splitz;
     const extraConfig = { isConfigTagEnabled, abExperiments };
@@ -891,6 +900,7 @@ class Content extends Component {
       : B2bPaymentsList;
     const isAssistedOnboardingUser = this.checkIfAssistedOnboardingUser();
     const isDisputesRevampV2Enabled = this.checkIsDisputesRevampV2Enabled();
+    const isJkOrg = isJKOfflineMerchant(org, user);
 
     return (
       <Suspense fallback={<Loader />}>
@@ -2578,6 +2588,14 @@ class Content extends Component {
               </RouteGuard>
             }
           />
+          <Route
+            path="my-devices/*"
+            element={
+              <RouteGuard additionalCondition={() => isJkOrg}>
+                <MyDevices />
+              </RouteGuard>
+            }
+          />
         </Routes>
       </Suspense>
     );
@@ -2633,7 +2651,7 @@ class Content extends Component {
   };
 
   render() {
-    const { mode, user, fullPageView, isWebView, isMobile } = this.props;
+    const { mode, user, fullPageView, isWebView, isMobile, org } = this.props;
 
     let DetailView = this.detailView;
     const BaseView = this.baseLocation ? this.getBaseView() : null;
@@ -2643,6 +2661,8 @@ class Content extends Component {
 
     const overlayCustomClass = this.getOverlayCustomClass();
     const isPosSalesAgent = this.checkIfPosSalesAgent();
+
+    const isJkOrg = isJKOfflineMerchant(org, user);
 
     if (DetailView) {
       DetailView = BaseView ? (
@@ -2688,7 +2708,7 @@ class Content extends Component {
       // to add a new class alognside main-content if we are in the test mode and in m-web
       <main
         class={classList(
-          !fullPageView && !isWebView && 'main-content',
+          !fullPageView && (!isWebView || (isWebView && isJkOrg)) && 'main-content',
           !fullPageView && !isWebView && this.props.isRTUXHomepage ? 'main-content--rtux' : '',
           isMobileSearchEnabled &&
             !fullPageView &&
@@ -2696,6 +2716,7 @@ class Content extends Component {
             !isPosSalesAgent &&
             'search-header',
           mode === 'test' && isMobileDevice() ? 'test-mode' : '',
+          isWebView && isJkOrg && 'main-content',
         )}
       >
         <ErrorBoundary resetOnProps>
@@ -2716,9 +2737,11 @@ class Content extends Component {
                 team={this.isRAYEnabled() ? Teams.RAY : Teams.CARE}
                 FallbackComponent={() => <></>}
               >
-                <Suspense fallback={null}>
-                  {this.isRAYEnabled() ? <RayWidget /> : <HelpSection user={user} />}
-                </Suspense>
+                <ShowWhen additionalCondition={() => !isJkOrg}>
+                  <Suspense fallback={null}>
+                    {this.isRAYEnabled() ? <RayWidget /> : <HelpSection user={user} />}
+                  </Suspense>
+                </ShowWhen>
               </ErrorBoundary>
             ) : null}
           </Suspense>

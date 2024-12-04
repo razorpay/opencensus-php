@@ -27,7 +27,7 @@ import { trackBreadcrumbClick } from './ga';
 import { getQuery, aggTypes } from './data';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import D3ScriptLoaderHoc from 'merchant/hoc/D3ScriptLoaderHoc';
-
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 const Treemap = lazy(() =>
   import(/* webpackChunkName: 'Treemap' */ 'merchant/containers/Home/PaymentMethods/Treemap'),
 );
@@ -49,7 +49,10 @@ const csvDateFormat = 'DD-MM-YYYY';
 const mobileAggKey = 'method';
 
 // eslint-disable-next-line react/no-unsafe
-@connect((state) => ({ user: state.session.user }), { ...ModalActions, showNotification })
+@connect((state) => ({ user: state.session.user, org: state.session.org }), {
+  ...ModalActions,
+  showNotification,
+})
 class PaymentMethods extends Component {
   constructor(props) {
     super(props);
@@ -245,6 +248,8 @@ class PaymentMethods extends Component {
     const levelsLength = levels.length;
     const hasNoData = !data || data.length === 0;
 
+    const isJKOrg = isJKOfflineMerchant(this.props.org, user);
+
     if (isMobile) {
       const mobileComponentProps = {
         isLoading,
@@ -330,7 +335,7 @@ class PaymentMethods extends Component {
           </div>
           <div className="pull-right">
             <Link
-              target="_blank"
+              target={isJKOrg ? '_self' : '_blank'}
               rel="noreferrer noopener"
               to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
               onClick={() => trackGoToLinks('Payments', sectionTitle)}

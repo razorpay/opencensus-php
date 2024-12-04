@@ -25,6 +25,7 @@ import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 import EasterEgg from 'merchant/components/EasterEgg';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
@@ -79,6 +80,7 @@ const TerminalStatus = lazy(() =>
     transactionAmount: state.transactionAmount.amount,
     ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
     bannerCarouselData: state?.growthService?.banner_carousel_items,
+    org: state.session.org,
   }),
   {
     openModal,
@@ -273,6 +275,7 @@ class AnalyticsMobile extends Component {
     );
     let carouselItem = [];
     if (banner_carousel_items.length) carouselItem = [...banner_carousel_items];
+    const isJkOrg = isJKOfflineMerchant(this.props.org, this.props.user);
 
     return (
       <div className="home-analytics-mobile">
@@ -298,7 +301,8 @@ class AnalyticsMobile extends Component {
           <DiwaliReportBanner isMobileView={true} />
           <ShowWhen
             additionalCondition={() =>
-              !isConfigTagEnabled('product_recommendations_kyc.product_recommendation_kyc')
+              !isConfigTagEnabled('product_recommendations_kyc.product_recommendation_kyc') &&
+              !isJkOrg
             }
           >
             {ticketsRaisedByAgents.length && user.isMobileSignupCareActive ? (
@@ -363,56 +367,61 @@ class AnalyticsMobile extends Component {
             )}
 
             {this.renderOnboardingWidgets()}
-            <Header className="clearfix" title="" showMode={false}>
-              <div className={`pull-left ${this.props.user.isOndemandSettlementEnabled && 'm-t'}`}>
-                Balance:{' '}
-                <b>
-                  {!current_balance.loading && (
-                    <Amount
-                      value={current_balance.data.balance}
-                      currency={user.merchant.currency}
-                    />
-                  )}
-                </b>
-              </div>
-              <div className="pull-right">
-                {this.props.user.isOndemandSettlementEnabled &&
-                this.props.user.isAllowedView('early_settlement') ? (
-                  <div className="settlenow-container">
-                    <SettleNowButton
-                      disabled={checkIfSettlementDisabled}
-                      merchantId={user.current}
-                      fromWhere="Home"
-                      settlementExists={settlementExists}
-                      esOndemandSettlementEnabled={esOndemandSettlementEnabled}
-                      showOndemandSettlementForm={this.showOndemandSettlementForm}
-                      checkIfFirstEverSettlement={this.checkIfFirstEverSettlement}
-                    />
-
-                    {settleNowRestrictionMsg && (
-                      <Popover
-                        align="top"
-                        parentQuerySelector=".settle-btn .settle-now--mobile"
-                        theme="dark"
-                      >
-                        <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
-                      </Popover>
+            <ShowWhen additionalCondition={() => !isJkOrg}>
+              <Header className="clearfix" title="" showMode={false}>
+                <div
+                  className={`pull-left ${this.props.user.isOndemandSettlementEnabled && 'm-t'}`}
+                >
+                  Balance:{' '}
+                  <b>
+                    {!current_balance.loading && (
+                      <Amount
+                        value={current_balance.data.balance}
+                        currency={user.merchant.currency}
+                      />
                     )}
-                  </div>
-                ) : (
-                  <Link className="pull-right btn-text" to="/settlements">
-                    <span className="text-no-wrap" onClick={trackSettlementsClick}>
-                      View Settlements <i className="i i-chevron-right" />
-                    </span>
-                  </Link>
-                )}
-              </div>
-            </Header>
+                  </b>
+                </div>
+                <div className="pull-right">
+                  {this.props.user.isOndemandSettlementEnabled &&
+                  this.props.user.isAllowedView('early_settlement') ? (
+                    <div className="settlenow-container">
+                      <SettleNowButton
+                        disabled={checkIfSettlementDisabled}
+                        merchantId={user.current}
+                        fromWhere="Home"
+                        settlementExists={settlementExists}
+                        esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+                        showOndemandSettlementForm={this.showOndemandSettlementForm}
+                        checkIfFirstEverSettlement={this.checkIfFirstEverSettlement}
+                      />
+
+                      {settleNowRestrictionMsg && (
+                        <Popover
+                          align="top"
+                          parentQuerySelector=".settle-btn .settle-now--mobile"
+                          theme="dark"
+                        >
+                          <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
+                        </Popover>
+                      )}
+                    </div>
+                  ) : (
+                    <Link className="pull-right btn-text" to="/settlements">
+                      <span className="text-no-wrap" onClick={trackSettlementsClick}>
+                        View Settlements <i className="i i-chevron-right" />
+                      </span>
+                    </Link>
+                  )}
+                </div>
+              </Header>
+            </ShowWhen>
           </ShowWhen>
           {!isAdmin && (
             <div className="content">
               <p className="section-title">{recentActivityTitle}</p>
-              <LazyLoad height={100} offset={50} once>
+              {/* For J&K Bank this is the first component that is shown hence lazy load is not needed */}
+              {isJkOrg ? (
                 <RecentActivity
                   sectionTitle={recentActivityTitle}
                   onFetchPayments={onFetchPayments}
@@ -421,7 +430,18 @@ class AnalyticsMobile extends Component {
                   currentBalance={current_balance}
                   onSelect={this.showOndemandSettlementForm}
                 />
-              </LazyLoad>
+              ) : (
+                <LazyLoad height={100} offset={50} once>
+                  <RecentActivity
+                    sectionTitle={recentActivityTitle}
+                    onFetchPayments={onFetchPayments}
+                    isTabletResolution={true}
+                    user={this.props.user}
+                    currentBalance={current_balance}
+                    onSelect={this.showOndemandSettlementForm}
+                  />
+                </LazyLoad>
+              )}
             </div>
           )}
         </div>

@@ -25,6 +25,7 @@ import {
   paymentMethodsOrder,
 } from 'merchant/components/Home/data';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 import { trackNoData, trackError } from 'merchant/containers/Home/ga';
 import { fetch } from 'merchant/reducers/pokedex';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -46,6 +47,7 @@ import {
   getQuery,
   breakdownValsMap,
   getTimelineData,
+  TABS_FOR_JK_ORG,
 } from './data';
 import { trackTabClick, trackBreakdownChange, trackSavedCardsHidden } from './ga';
 
@@ -1000,7 +1002,12 @@ class KeyMetricsContainer extends Component {
   render() {
     const { tabsState, loading, tabWidth, selectedTab } = this.state;
     const { startDate, endDate, showGroupingByPtfm, sectionTitle } = this.props;
-    const visibleTabs = this.getVisibleTabs();
+    let visibleTabs = this.getVisibleTabs();
+
+    // only need to keep transactions volume and number of payments for JK ORG
+    if (isJKOfflineMerchant(this.props.org, this.props.user)) {
+      visibleTabs = TABS_FOR_JK_ORG;
+    }
 
     if (this.props.isMobile) {
       return (

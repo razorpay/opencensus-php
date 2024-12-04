@@ -27,6 +27,7 @@ export type OrgData = Partial<{
   payment_btn_logo_url: string;
   features: string[];
   hostname: string;
+  isjkOrg?: boolean;
 }>;
 
 export type MerchantStyles = Partial<{

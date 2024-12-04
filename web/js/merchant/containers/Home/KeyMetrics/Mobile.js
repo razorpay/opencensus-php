@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import Change from 'common/ui/Change';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import { i18HumanReadableCurrency, i18HumanReadableNumerals } from 'common/utils/numerals';
 import {
   isDefined,
   getFormattedAmountNew,
@@ -12,12 +13,11 @@ import {
   i18CurrencyConversionFromMinorUnitToCommonUnit,
   titleCase,
 } from 'common/utils/rzp-utils';
-import { i18HumanReadableCurrency, i18HumanReadableNumerals } from 'common/utils/numerals';
-
 import Tooltip from 'merchant/components/Home/Tooltip';
 
+import { TABS_FOR_JK_ORG, tabsMeta } from './data';
 import { trackGoToLinks } from './ga';
-import { tabsMeta } from './data';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 
 const Tab = ({
   value,
@@ -31,6 +31,7 @@ const Tab = ({
   sectionTitle,
   index,
   user,
+  shouldHideTabs,
 }) => {
   let trendValue = 0;
   let trendText = '';
@@ -94,7 +95,7 @@ const Tab = ({
         )}
         <div>
           <Link
-            target="_blank"
+            target={shouldHideTabs ? '_self' : '_blank'}
             rel="noreferrer noopener"
             to={`/${index}?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
             onClick={() => trackGoToLinks(titleCase(index), `${sectionTitle} | ${title}`)}
@@ -110,7 +111,10 @@ const Tab = ({
   );
 };
 
-@connect((state) => ({ user: state.session.user }))
+@connect((state) => ({
+  user: state.session.user,
+  org: state.session.org,
+}))
 class MobileKeyMetrics extends Component {
   // eslint-disable-next-line no-useless-constructor
   constructor(props) {
@@ -118,8 +122,13 @@ class MobileKeyMetrics extends Component {
   }
 
   render() {
-    const { tabsState, loading, startDate, endDate, sectionTitle, user } = this.props;
-    const visibleTabs = this.props.getVisibleTabs();
+    const { tabsState, loading, startDate, endDate, sectionTitle, user, org } = this.props;
+    let visibleTabs = this.props.getVisibleTabs();
+
+    const shouldHideTabs = isJKOfflineMerchant(org, user);
+    if (shouldHideTabs) {
+      visibleTabs = TABS_FOR_JK_ORG;
+    }
 
     return (
       <div className="keymetrics keymetrics--mobile">
@@ -143,6 +152,7 @@ class MobileKeyMetrics extends Component {
               startDate={startDate}
               endDate={endDate}
               sectionTitle={sectionTitle}
+              shouldHideTabs={shouldHideTabs}
             />
           );
         })}

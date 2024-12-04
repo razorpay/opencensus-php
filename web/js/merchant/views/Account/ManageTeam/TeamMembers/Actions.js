@@ -1,10 +1,19 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import {
+  ActionList,
+  ActionListItem,
+  Dropdown,
+  DropdownButton,
+  DropdownOverlay,
+  MoreVerticalIcon,
+  Box,
+  Button,
+} from '@razorpay/blade/components';
+import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
 
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { showNotification as showNotificationReducer } from 'merchant_common/reducers/notifications';
 import { pickProps, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import ModalHeader from 'common/ui/ModalHeader';
@@ -16,7 +25,8 @@ import {
   updateMember as updateMemberReducer,
   updateOwner as updateOwnerReducer,
 } from 'merchant/reducers/team';
-import { Box, Button } from '@razorpay/blade/components';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification as showNotificationReducer } from 'merchant_common/reducers/notifications';
 
 class MembersActions extends Component {
   static contextTypes = {
@@ -244,11 +254,24 @@ class MembersActions extends Component {
   };
 
   render() {
-    const { member } = this.props;
-
+    const { member, isJkOrg } = this.props;
     // change action is no longer permitted/needed
     if (isOwner(member)) {
       return null;
+    }
+
+    if (isJkOrg) {
+      return (
+        <Dropdown>
+          <DropdownButton color="white" variant="primary" icon={MoreVerticalIcon} />
+          <DropdownOverlay>
+            <ActionList>
+              <ActionListItem onClick={this.update} title="Update" />
+              <ActionListItem onClick={this.remove} title="Remove" />
+            </ActionList>
+          </DropdownOverlay>
+        </Dropdown>
+      );
     }
 
     return (

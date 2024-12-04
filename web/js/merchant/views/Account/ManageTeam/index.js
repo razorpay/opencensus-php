@@ -20,6 +20,7 @@ import { getCommonAnalyticsProperties, is2FaExperimentEnabled } from 'common/uti
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import DocsLink from 'merchant/components/DocsLink';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { sendInvitation } from 'merchant/reducers/invitation';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
@@ -188,9 +189,12 @@ class ManageTeamContainer extends React.Component {
       user,
       i18: { isConfigTagEnabled },
       isRenderedFromPartnerRoute,
+      org,
+      isMobile,
       splitz,
     } = this.props;
 
+    const isjkOfflineOrg = isJKOfflineMerchant(org, user) && isMobile;
     /*----------  target element to tether contents; any change in parent DOM must be reflected here  ----------*/
     let target = 'tabbed-container > header';
     if (user.isAccountAndSettingsRevampEnabled) {
@@ -222,7 +226,11 @@ class ManageTeamContainer extends React.Component {
                 />
               </ShowWhen>
 
-              <ShowWhen additionalCondition={(userCurrent) => userCurrent.isAllowedEdit('team')}>
+              <ShowWhen
+                additionalCondition={(userCurrent) =>
+                  userCurrent.isAllowedEdit('team') && !isjkOfflineOrg
+                }
+              >
                 {/* To make the CTAs on header to be sticky in teh bottom need to add a wrapper to them added same */}
                 <span className="cta-container">
                   {is2FaExperimentEnabled(splitz.abExperiments) ? (
@@ -262,6 +270,13 @@ class ManageTeamContainer extends React.Component {
           </StyledDiv>
         </ShowWhen>
 
+        <ShowWhen additionalCondition={() => isjkOfflineOrg}>
+          <Box width="100%" marginBottom="spacing.5">
+            <Button isFullWidth onClick={this.inviteNewMember}>
+              Invite New Member
+            </Button>
+          </Box>
+        </ShowWhen>
         <div className="ManageTeam--list">
           <ShowWhen additionalCondition={(userCurrent) => userCurrent.isAllowedView('invitations')}>
             <PendingInvitationsList {...this.props} />
@@ -278,6 +293,8 @@ class ManageTeamContainer extends React.Component {
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
+  org: state.session.org,
+  isMobile: state.app.isMobileResolution,
 });
 
 export default connect(mapStateToProps, { sendInvitation, openModal, closeModal })(

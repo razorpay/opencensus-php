@@ -21,6 +21,7 @@ import { openModal } from 'merchant_common/reducers/modals';
 import { tabs, tabsMeta } from './data';
 import { trackTabClick, trackEntityClick, trackGoToLinks, selfServeTracking } from './ga';
 import { withI18Service } from 'common/i18';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 
 const shouldDisplayCompact = (windowWidth) => {
   return windowWidth < 480;
@@ -247,13 +248,14 @@ class RecentActivity extends Component {
       });
     }
 
+    const isJkOrg = isJKOfflineMerchant(this.props.org, this.props.user);
     const newTabs = tabs.filter((tabName) => {
       if (tabName === 'refunds') {
-        return !this.props.i18.isConfigTagEnabled('refunds.refund');
+        return !this.props.i18.isConfigTagEnabled('refunds.refund') && !isJkOrg;
       }
 
       if (tabName === 'settlements') {
-        return !this.props.i18.isConfigTagEnabled('settlements.settlement');
+        return !this.props.i18.isConfigTagEnabled('settlements.settlement') && !isJkOrg;
       }
 
       return true;
@@ -319,7 +321,7 @@ class RecentActivity extends Component {
             ) : null}
             <div className="pull-right">
               <Link
-                target="_blank"
+                target={isJkOrg ? '_self' : '_blank'}
                 rel="noreferrer noopener"
                 to={`/${selectedTab}`}
                 onClick={() => {
@@ -354,6 +356,8 @@ const mapStateToProps = (state) => {
     settlements: state.settlements,
     windowWidth: state.app.windowWidth,
     user: state.session.user,
+    org: state.session.org,
+    config: state.config.config,
   };
 };
 

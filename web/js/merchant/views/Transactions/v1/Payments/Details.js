@@ -482,6 +482,7 @@ class PaymentDetailsContainer extends Component {
             bankSettleStatus={bankSettleStatus}
             collectEzetapKeys={this.collectEzetapKeys}
             fetchEzetapKeys={this.props.fetchEzetapKeys}
+            isMobile={this.props.isMobile}
           />
         </PrimaryView>
         <SecondaryView entityName="disputes">
@@ -517,6 +518,7 @@ export default compose(
         config: state.config.config,
         settlement_amount: state.home.settlement_amount,
         terminalProviders: state.navigator.terminalProviders,
+        isMobile: state.app.isMobileResolution,
       };
     },
     (dispatch) => {

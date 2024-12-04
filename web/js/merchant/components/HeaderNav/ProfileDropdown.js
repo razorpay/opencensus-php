@@ -32,6 +32,8 @@ import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { withSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
+import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
+import { isJKOfflineMerchant } from '../Sidebar/helpers';
 
 const trustedBadgeTooltipInfo =
   'You are a trusted business and the Razorpay trusted business badge is now being displayed on checkout for customers to see';
@@ -45,6 +47,7 @@ const trustedBadgeTooltipInfo =
       user: state.session.user,
       isMobileResolution: state.app.isMobileResolution,
       trustedBadge: state.trustedBadge.status,
+      isWebView: state.app.isWebView,
     };
   },
   { logout, closeModal, openModal, updateSession },
@@ -82,6 +85,7 @@ class ProfileDropdown extends Component {
   };
 
   logout = () => {
+    const { isWebView, org, user } = this.props;
     analyticsTrack({
       objectName: 'logout',
       actionName: 'clicked',
@@ -120,6 +124,16 @@ class ProfileDropdown extends Component {
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
+
+        // if the dashboard is opened in webview for j&k dashboard app
+        // then dispatch an event back to app on logout
+        if (isWebView && isJKOfflineMerchant(org, user)) {
+          dispatchWebViewEvent({
+            eventType: 'LOGOUT',
+            data: {},
+          });
+        }
+
         return window.location.reload();
       });
   };

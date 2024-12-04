@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+
 import {
   fetchRecentlyUsedConfigsFailed,
   fetchRecentlyUsedConfigsSuccess,
@@ -21,6 +22,7 @@ const mapStateToProps = ({ reportsCore, session }, { dashboardType, i18 }) => {
     undefined,
     i18,
   );
+
   return {
     refDashboardConfig,
     allReportConfigs: allConfigs.data,

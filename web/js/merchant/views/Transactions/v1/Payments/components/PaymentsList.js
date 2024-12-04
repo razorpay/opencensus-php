@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Link, SettingsIcon } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 // eslint-disable-next-line no-restricted-imports
@@ -12,6 +13,8 @@ import {
   createdAt,
   status,
   paymentReceiverType,
+  rrn,
+  payerVPA,
 } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
 import {
@@ -22,6 +25,7 @@ import {
 import DocsLink from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 import ListContainer from 'merchant/containers/ListContainer';
 import {
   ERROR_MESSAGES,
@@ -42,8 +46,10 @@ import downloadSwiftCopy from 'merchant/views/Transactions/v1/Payments/component
 import PaymentsListFilter from 'merchant/views/Transactions/v1/Payments/components/PaymentsListFilter';
 import PaymentsTable from 'merchant/views/Transactions/v1/Payments/components/PaymentsTable';
 
+import MobileFilterContainer from './JKBankTransactions/MobileFilterContainer';
 import PaymentFailureAnalysis from './PaymentFailureAnalysis';
 import { PaymentsEditColumnsModal } from './PaymentsEditColumnsModal';
+import TransactionsMobile from './TransactionMobile';
 
 const EmptyRoutesComponent = () => (
   <EmptyList
@@ -72,6 +78,11 @@ const _paymentId = (initiatePage = 'Transactions.Payments') => {
   };
 };
 
+@connect((state) => ({
+  org: state.session.org,
+  isMobile: state.app.isMobileResolution,
+  config: state.config,
+}))
 class PaymentsListContainer extends ListContainer {
   state = {
     columnsList: [],
@@ -261,6 +272,10 @@ class PaymentsListContainer extends ListContainer {
     if (user.isCustomTransactionTabView)
       cols = createCustomColumnView(cols, this.state.selectedColumnsList, false);
 
+    if (this.isJKOrg()) {
+      cols = [_paymentId(initiatePage), rrn, amount, payerVPA, createdAt, status];
+    }
+
     return cols;
   };
 
@@ -268,6 +283,62 @@ class PaymentsListContainer extends ListContainer {
     this.setState((prevState) => ({
       isEditColumnsModalOpen: !prevState.isEditColumnsModalOpen,
     }));
+  };
+
+  isJKOrg = () => {
+    const { org, user } = this.props;
+    return isJKOfflineMerchant(org, user);
+  };
+
+  handleApplyFilter = (args) => {
+    const { isRoute, user } = this.props;
+    // Only Needed to show FA on Trasaction Tab not in Routes Tab
+    /* istanbul ignore else */
+    if (!isRoute && user?.isFAEnabled) {
+      this.fetchFailureAnalysisData(args);
+    }
+    selfServerTrack({ type: 'payment', actionType: 'search' });
+
+    this.search(args)
+      .then(() => {
+        if (args.status) {
+          selfServeTrackResult({ type: 'payment', actionType: 'filter' });
+        }
+        selfServeTrackResult({ type: 'payment', actionType: 'search' });
+        analyticsTrack({
+          objectName: 'payments search',
+          actionName: 'result',
+          screen: 'transactions',
+          properties: {
+            paymentId: args.id,
+            paymentStatus: args.status,
+            emailFilled: Boolean(args.email),
+            notesFilled: Boolean(args.notes),
+            count: args.count,
+            resultsReturned: true,
+            status: 'success',
+            location: 'payments',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      })
+      .catch(() => {
+        analyticsTrack({
+          objectName: 'payments search',
+          actionName: 'result',
+          screen: 'transactions',
+          properties: {
+            paymentId: args.id,
+            paymentStatus: args.status,
+            emailFilled: Boolean(args.email),
+            notesFilled: Boolean(args.notes),
+            resultsReturned: false,
+            status: 'failure',
+            location: 'payments',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      });
   };
 
   render() {
@@ -279,115 +350,100 @@ class PaymentsListContainer extends ListContainer {
       failureAnalysisData,
       terminalProviders,
       showNotification,
+      isMobile,
     } = this.props;
 
     const { columnsList, selectedColumnsList, isEditColumnsModalOpen } = this.state;
 
     return (
-      <div className="content-wrapper">
-        {!isRoute ? (
-          <HeaderAction>
-            <div className="btn-toolbar pull-right">
-              {quickTourFeature && <TakeATourButton feature={quickTourFeature} />}
+      <>
+        <div className="content-wrapper">
+          {!isRoute ? (
+            <HeaderAction>
+              <div className="btn-toolbar pull-right">
+                {quickTourFeature && <TakeATourButton feature={quickTourFeature} />}
 
-              {docUrl && <DocsLink url={docUrl} />}
-            </div>
-          </HeaderAction>
-        ) : null}
+                {docUrl && <DocsLink url={docUrl} />}
+              </div>
+            </HeaderAction>
+          ) : null}
 
-        <PaymentsListFilter
-          form="paymentListFilter"
-          count={this.state.count}
-          onSubmit={(args) => {
-            // Only Needed to show FA on Trasaction Tab not in Routes Tab
-            /* istanbul ignore else */
-            if (!isRoute && user?.isFAEnabled) {
-              this.fetchFailureAnalysisData(args);
-            }
-            selfServerTrack({ type: 'payment', actionType: 'search' });
-
-            this.search(args)
-              .then(() => {
-                if (args.status) {
-                  selfServeTrackResult({ type: 'payment', actionType: 'filter' });
-                }
-                selfServeTrackResult({ type: 'payment', actionType: 'search' });
-                analyticsTrack({
-                  objectName: 'payments search',
-                  actionName: 'result',
-                  screen: 'transactions',
-                  properties: {
-                    paymentId: args.id,
-                    paymentStatus: args.status,
-                    emailFilled: Boolean(args.email),
-                    notesFilled: Boolean(args.notes),
-                    count: args.count,
-                    resultsReturned: true,
-                    status: 'success',
-                    location: 'payments',
-                    ...getCommonAnalyticsProperties(window.rzp_user),
-                  },
-                });
-              })
-              .catch(() => {
-                analyticsTrack({
-                  objectName: 'payments search',
-                  actionName: 'result',
-                  screen: 'transactions',
-                  properties: {
-                    paymentId: args.id,
-                    paymentStatus: args.status,
-                    emailFilled: Boolean(args.email),
-                    notesFilled: Boolean(args.notes),
-                    resultsReturned: false,
-                    status: 'failure',
-                    location: 'payments',
-                    ...getCommonAnalyticsProperties(window.rzp_user),
-                  },
-                });
-              });
-          }}
-          onSearchAnalytics={this.onSearchAnalytics}
-          onClearAnalytics={this.onClearAnalytics}
-          terminalProviders={terminalProviders}
-          user={user}
-        />
-        {/* Only Needed to show FA on Trasaction Tab not in Routes Tab */}
-        {!isRoute && user?.isFAEnabled && this.doShowFA() && failureAnalysisData?.data && (
-          <PaymentFailureAnalysis data={failureAnalysisData?.data} user={user} />
-        )}
-        {user?.isCustomTransactionTabView && (
-          <Box display="grid" margin="10px">
-            <Link
-              variant="button"
-              size="medium"
-              justifySelf={{ l: 'flex-end', s: 'flex-start' }}
-              icon={SettingsIcon}
-              onClick={this.toggleEditColumnsModal}
-            >
-              Edit Columns
-            </Link>
-            <PaymentsEditColumnsModal
-              isOpen={isEditColumnsModalOpen}
-              onClose={this.toggleEditColumnsModal}
-              onSubmit={this.updateColumnView}
-              columnsList={columnsList}
-              selectedColumnsList={selectedColumnsList}
-              fixedColumns={FIXED_COLUMNS_TRANSACTIONS_V1}
-              optionalColumns={OPTIONAL_COLUMNS_TRANSACTIONS_V1}
-              showNotification={showNotification}
+          {this.isJKOrg() && this.props.isMobile ? (
+            <MobileFilterContainer
+              onSubmit={(args) => {
+                this.handleApplyFilter(args);
+              }}
             />
-          </Box>
+          ) : (
+            <PaymentsListFilter
+              form="paymentListFilter"
+              count={this.state.count}
+              onSubmit={(args) => {
+                this.handleApplyFilter(args);
+              }}
+              onSearchAnalytics={this.onSearchAnalytics}
+              onClearAnalytics={this.onClearAnalytics}
+              terminalProviders={terminalProviders}
+              user={user}
+              isJKOrg={this.isJKOrg()}
+            />
+          )}
+          {/* Only Needed to show FA on Trasaction Tab not in Routes Tab */}
+          {!isRoute && user?.isFAEnabled && this.doShowFA() && failureAnalysisData?.data && (
+            <PaymentFailureAnalysis data={failureAnalysisData?.data} user={user} />
+          )}
+          {user?.isCustomTransactionTabView && (
+            <Box display="grid" margin="10px">
+              <Link
+                variant="button"
+                size="medium"
+                justifySelf={{ l: 'flex-end', s: 'flex-start' }}
+                icon={SettingsIcon}
+                onClick={this.toggleEditColumnsModal}
+              >
+                Edit Columns
+              </Link>
+              <PaymentsEditColumnsModal
+                isOpen={isEditColumnsModalOpen}
+                onClose={this.toggleEditColumnsModal}
+                onSubmit={this.updateColumnView}
+                columnsList={columnsList}
+                selectedColumnsList={selectedColumnsList}
+                fixedColumns={FIXED_COLUMNS_TRANSACTIONS_V1}
+                optionalColumns={OPTIONAL_COLUMNS_TRANSACTIONS_V1}
+                showNotification={showNotification}
+              />
+            </Box>
+          )}
+          {isMobile && this.isJKOrg() ? null : (
+            <PaymentsTable
+              count={this.state.count}
+              skip={this.state.skip}
+              paginate={this.paginate}
+              EmptyComponent={isRoute ? EmptyRoutesComponent : EmptyComponent}
+              paymentColumns={this.getColumns()}
+              isJkOrg={this.isJKOrg()}
+              {...this.props}
+            />
+          )}
+        </div>
+        {isMobile && this.isJKOrg() ? (
+          <TransactionsMobile
+            count={this.state.count}
+            skip={this.state.skip}
+            paginate={this.paginate}
+            EmptyComponent={isRoute ? EmptyRoutesComponent : EmptyComponent}
+            paymentColumns={this.getColumns()}
+            isJkOrg={this.isJKOrg()}
+            handleNavigate={(url) => {
+              this.props.navigate(url);
+            }}
+            {...this.props}
+          />
+        ) : (
+          ''
         )}
-        <PaymentsTable
-          count={this.state.count}
-          skip={this.state.skip}
-          paginate={this.paginate}
-          EmptyComponent={isRoute ? EmptyRoutesComponent : EmptyComponent}
-          paymentColumns={this.getColumns()}
-          {...this.props}
-        />
-      </div>
+      </>
     );
   }
 }

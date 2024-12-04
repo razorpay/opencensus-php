@@ -44,6 +44,7 @@ export default ({
   bankTransfer = {},
   upiTransfer = {},
   onUPIClick = {},
+  shouldShowRRN = false,
 }) => {
   const paymentMethod = payment.method;
 
@@ -154,13 +155,34 @@ export default ({
             <div className="row">
               <div className="col-sm-12">
                 <div className="row">
-                  <div className="col-sm-5 col-xs-5">Payer UPI ID:</div>
-                  <div className="col-sm-7 col-xs-7">
+                  <div className={`${shouldShowRRN ? 'col-sm-7 col-xs-7' : 'col-sm-5'} col-xs-5`}>
+                    Payer UPI ID:
+                  </div>
+                  <div className={`${shouldShowRRN ? 'col-sm-5 col-xs-5' : 'col-sm-7'} col-xs-7`}>
                     {upiTransfer ? upiTransfer.payer_vpa : payment.vpa}
                   </div>
                 </div>
               </div>
             </div>
+            {payment?.acquirer_data?.rrn && shouldShowRRN ? (
+              <div className="row">
+                <div className="col-sm-12">
+                  <div className="row">
+                    <div
+                      className={`${shouldShowRRN ? 'col-sm-7 col-xs-7' : 'col-sm-5 col-xs-5'} `}
+                    >
+                      Payment Reference Number:
+                    </div>
+                    <div className={`${shouldShowRRN ? 'col-sm-5 col-xs-5' : 'col-sm-7 col-xs-7'}`}>
+                      {payment.acquirer_data.rrn}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              ''
+            )}
+            {/* acquirer_data */}
             {/* payment.upi?.payer_account_type only available if payment done via UPI */}
             {!!payment.upi?.payer_account_type && (
               <div className="row">

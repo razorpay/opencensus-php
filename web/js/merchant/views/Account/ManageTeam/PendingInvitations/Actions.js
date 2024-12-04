@@ -12,7 +12,16 @@ import ModalHeader from 'common/ui/ModalHeader';
 
 import NewInvitation from '../components/NewInvitation';
 import { analyticsTrack } from 'common/utils/analytics';
-import { Box, Button } from '@razorpay/blade/components';
+import {
+  ActionList,
+  ActionListItem,
+  Dropdown,
+  DropdownButton,
+  DropdownOverlay,
+  MoreVerticalIcon,
+  Box,
+  Button,
+} from '@razorpay/blade/components';
 
 class InvitationsActions extends Component {
   constructor(props) {
@@ -250,6 +259,22 @@ class InvitationsActions extends Component {
   };
 
   render() {
+    const { isJkOrg } = this.props;
+
+    if (isJkOrg) {
+      return (
+        <Dropdown>
+          <DropdownButton color="white" variant="primary" icon={MoreVerticalIcon} />
+          <DropdownOverlay>
+            <ActionList>
+              <ActionListItem onClick={this.resend} title="Resend" />
+              <ActionListItem onClick={this.update} title="Update" />
+              <ActionListItem onClick={this.cancel} title="Cancel" />
+            </ActionList>
+          </DropdownOverlay>
+        </Dropdown>
+      );
+    }
     return (
       <Box display="flex" gap="spacing.3">
         <Button onClick={this.resend} isLoading={this.state.resending}>

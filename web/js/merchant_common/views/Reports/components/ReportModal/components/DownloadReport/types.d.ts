@@ -41,6 +41,7 @@ export interface DownloadReportModalPropsType {
   dashboardType: DashboardType;
   resetLogsPollOnSubmit?: boolean;
   availableFormats: Format[];
+  isJKOrg?: boolean;
 }
 
 // Batch Payment Pages Section.

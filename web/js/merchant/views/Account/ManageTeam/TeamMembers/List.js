@@ -1,3 +1,4 @@
+import { Text } from '@razorpay/blade/components';
 import PropTypes from 'prop-types';
 import AsyncButton from 'react-async-button';
 import { connect } from 'react-redux';
@@ -7,6 +8,8 @@ import DataTable from 'common/ui/Table/DataTable';
 import { role } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 import ListContainer from 'merchant/containers/ListContainer';
 import {
   fetchTeam as fetchAll,
@@ -16,7 +19,7 @@ import {
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 
 import Actions from './Actions';
-import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
+import JKTeamMembers from '../components/JKTeamMembers';
 
 class MembersListContainer extends ListContainer {
   static contextTypes = {
@@ -26,10 +29,11 @@ class MembersListContainer extends ListContainer {
   actions = {
     title: '',
     columnClass: 'text-right',
-    value: (member) => (
+    value: (member, isJkOrg = false) => (
       <Actions
         member={member}
         items={this.props.items}
+        isJkOrg={isJkOrg}
         isEmailSelfServeEnabled={this.props.user.isEmailSelfServeEnabled}
       />
     ),
@@ -54,9 +58,15 @@ class MembersListContainer extends ListContainer {
 
   contactPhone = {
     title: 'Phone Number',
-    value: (member) => (
+    value: (member, isJkORg) => (
       <>
-        <p>{getI18FormattedPhoneNumber(member.contact_mobile) || '--'}</p>
+        {isJkORg ? (
+          <Text color="surface.text.gray.muted" weight="regular" size="small">
+            {getI18FormattedPhoneNumber(member.contact_mobile) || '--'}
+          </Text>
+        ) : (
+          <p>{getI18FormattedPhoneNumber(member.contact_mobile) || '--'}</p>
+        )}
         {!member.org_enforced_second_factor_auth &&
           member.id !== this.props.currentUser.id &&
           !!member.contact_mobile &&
@@ -74,7 +84,15 @@ class MembersListContainer extends ListContainer {
   };
 
   render() {
-    const { items, loading } = this.props;
+    const { items, loading, org, isMobile, user } = this.props;
+    const isJkORg = isJKOfflineMerchant(org, user);
+
+    if (isJkORg && isMobile) {
+      return (
+        <JKTeamMembers items={items} actions={this.actions} contactPhone={this.contactPhone} />
+      );
+    }
+
     return (
       <DataTable
         title="Members"
@@ -241,6 +259,8 @@ function RaiseContactMobileLost({
 const mapStateToProps = (state) => ({
   user: state.session.user,
   currentUser: state.session.user.user,
+  org: state.session.org,
+  isMobile: state.app.isMobileResolution,
   ...state.team,
 });
 

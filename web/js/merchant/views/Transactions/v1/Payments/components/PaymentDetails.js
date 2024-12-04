@@ -50,6 +50,7 @@ import './Payments.styl';
 import { DownloadIcon } from '@razorpay/blade/components';
 import { openModal } from 'merchant_common/reducers/modals';
 import BounceMemoPopup from '../BounceMemoPopup';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 import { PaymentFeeBreakdown } from './PaymentFee';
 import { getPaymentReferenceNumber } from 'merchant/views/Transactions/v1/utils';
 const INIT_POINT = 'payment-details';
@@ -80,6 +81,7 @@ function PaymentDetails(props) {
     showCustomSettlDetails,
     bankSettleStatus,
     fetchEzetapKeys,
+    isMobile,
   } = props;
 
   const isFromHomePage = location?.state?.fromHomePage;
@@ -245,6 +247,8 @@ function PaymentDetails(props) {
   //BounceMemosplitz experiment - only for enabled merchant bounce memo will be released based splitz experiment
   const isBounceModalMemoEnabled = isBounceMemoEnabled(splitz);
 
+  const isJKOrg = isJKOfflineMerchant(org, user);
+
   return (
     <div
       className="content-wrapper content-sm txn-details"
@@ -390,7 +394,9 @@ function PaymentDetails(props) {
                   </EntityDetailRow>
                 </ShowWhen>
 
-                <ShowWhen additionalCondition={() => !isConfigTagEnabled('refunds.refund')}>
+                <ShowWhen
+                  additionalCondition={() => !isConfigTagEnabled('refunds.refund') && !isJKOrg}
+                >
                   {payment.method !== 'cod' && (
                     <EntityDetailRow label="Refunds">
                       <PaymentRefund
@@ -406,12 +412,13 @@ function PaymentDetails(props) {
                   )}
                 </ShowWhen>
 
-                <EntityDetailRow label="Payment Method">
+                <EntityDetailRow isFullWidth={isJKOrg && isMobile} label="Payment Method">
                   <PaymentMethod
                     payment={payment}
                     card={card}
                     bankTransfer={bankTransfer}
                     upiTransfer={upiTransfer}
+                    shouldShowRRN={isJKOrg}
                     onUPIClick={() => {
                       setUPIVisible(!isUPIVisible);
                       if (!isUPIVisible) {
@@ -469,7 +476,8 @@ function PaymentDetails(props) {
                     payment.transaction &&
                     (!user.isSingleReconEnabled ||
                       !user.isOptimizerEnabled ||
-                      payment.optimizer_provider === 'Razorpay')
+                      payment.optimizer_provider === 'Razorpay') &&
+                    !isJKOrg
                   }
                 >
                   <EntityDetailRow label="Settlement Details">
@@ -494,7 +502,9 @@ function PaymentDetails(props) {
                 </ShowWhen>
                 <EntityDetailRow label="Description">{payment.description}</EntityDetailRow>
 
-                <ShowWhen additionalCondition={() => !isConfigTagEnabled('disputes.disputes')}>
+                <ShowWhen
+                  additionalCondition={() => !isConfigTagEnabled('disputes.disputes') && !isJKOrg}
+                >
                   <EntityDetailRow label="Disputes">
                     {payment.disputes && payment.disputes.count ? (
                       <PaymentDisputes
@@ -518,33 +528,39 @@ function PaymentDetails(props) {
                   <EntityDetailRow label="Payer Name">{payment.upi?.payer_name}</EntityDetailRow>
                 </ShowWhen>
 
-                <EntityDetailRow label="Total Fee">
-                  <PaymentFeeBreakdown transfers={transfers} payment={payment} />
-                </EntityDetailRow>
+                <ShowWhen additionalCondition={() => !isJKOrg}>
+                  <EntityDetailRow label="Total Fee">
+                    <PaymentFeeBreakdown transfers={transfers} payment={payment} />
+                  </EntityDetailRow>
+                </ShowWhen>
 
-                {isInteger(payment?.customer_fee) && isInteger(payment?.customer_fee_gst) && (
-                  <EntityDetailRow label="Total Convenience Fee">
+                <ShowWhen additionalCondition={() => !isJKOrg}>
+                  {isInteger(payment?.customer_fee) && isInteger(payment?.customer_fee_gst) && (
+                    <EntityDetailRow label="Total Convenience Fee">
+                      <Definition>
+                        <Amount value={payment.customer_fee + payment.customer_fee_gst} />
+                        <span>
+                          Convenience Fee -{' '}
+                          <Amount value={payment.customer_fee} currency={payment.currency} />
+                        </span>
+                        <span>
+                          GST -{' '}
+                          <Amount value={payment.customer_fee_gst} currency={payment.currency} />
+                        </span>
+                      </Definition>
+                    </EntityDetailRow>
+                  )}
+                </ShowWhen>
+
+                <ShowWhen additionalCondition={() => !isJKOrg}>
+                  <EntityDetailRow label="Fee Bearer">
                     <Definition>
-                      <Amount value={payment.customer_fee + payment.customer_fee_gst} />
-                      <span>
-                        Convenience Fee -{' '}
-                        <Amount value={payment.customer_fee} currency={payment.currency} />
-                      </span>
-                      <span>
-                        GST -{' '}
-                        <Amount value={payment.customer_fee_gst} currency={payment.currency} />
-                      </span>
+                      {payment.fee_bearer === 'platform'
+                        ? 'You are the fee bearer for this payment'
+                        : 'The customer has paid the fees for this payment'}
                     </Definition>
                   </EntityDetailRow>
-                )}
-
-                <EntityDetailRow label="Fee Bearer">
-                  <Definition>
-                    {payment.fee_bearer === 'platform'
-                      ? 'You are the fee bearer for this payment'
-                      : 'The customer has paid the fees for this payment'}
-                  </Definition>
-                </EntityDetailRow>
+                </ShowWhen>
 
                 <ShowWhen additionalCondition={() => isOrgFeatureExist('vas_merchant')}>
                   <EntityDetailRow label="Payment Reference Number">

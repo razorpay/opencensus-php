@@ -43,6 +43,20 @@ export const amount = {
   value: items.amount,
   columnClass: 'text-center',
 };
+
+export const rrn = {
+  title: 'Payment Reference Number',
+  value: items?.RRN,
+  columnClass: 'text-center',
+};
+
+export const payerVPA = {
+  title: 'Payer VPA',
+  value: (item) => {
+    return item.vpa || item?.upi?.vpa;
+  },
+};
+
 export const amountRefunded = {
   title: 'Amount Refunded',
   value: items.amountRefunded,

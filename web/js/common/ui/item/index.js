@@ -28,3 +28,8 @@ export const amountTransferred = getAmount('amount_transferred');
 export const status = (item) => StatusLabel(item);
 export const createdAt = getTime('created_at');
 export const createdAtShort = getTime('created_at', 'll');
+export const createdAtTime = getTime('created_at', 'hh:mm a');
+
+export const RRN = (item) => {
+  return item?.acquirer_data ? item?.acquirer_data?.rrn : '-';
+};

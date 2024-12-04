@@ -1,5 +1,5 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
-import User from 'merchant/models/User';
+import User, { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import { set, merge } from 'common/utils/immutable';
 import { titleCase } from 'common/utils/rzp-utils';
 
@@ -184,6 +184,7 @@ const updateOrg = (data) => {
       security_branding_logo is not available for all of the orgs, so we added the fall back.
       All of the orgs, expect the curlec org is belongs to india, so default security branding logo is applicable for everyone.
     */
+    isjkOrg: data.custom_code === ORG_CUSTOM_CODE_MAP.JAMMU_KASHMIR_BANK,
     security_branding_logo: data.security_branding_logo || initialState.org.security_branding_logo,
   };
 };

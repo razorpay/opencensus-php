@@ -94,33 +94,35 @@ export default ({ showBatchIdFilter, ...props }) => {
         </Field>
       </div>
 
-      <div className="form-group list-filter-item">
-        <label>Email</label>
-        <Field name="email" component="input" type="email" class="form-control input-sm" />
-      </div>
+      <ShowWhen additionalCondition={() => !props?.isJKOrg}>
+        <div className="form-group list-filter-item">
+          <label>Email</label>
+          <Field name="email" component="input" type="email" class="form-control input-sm" />
+        </div>
 
-      <div className="form-group list-filter-item">
-        <label>Phone number</label>
-        <Field
-          name="contact"
-          component={(props) => (
-            <CountryCodeInput
-              onChange={({ dialCode, value }) => {
-                changeFormValue('country_code', dialCode);
-                changeFormValue('contact', value);
-              }}
-              /**
-               * Setting default value based on merchant dial_code,
-               * as initially, country_code is set to null
-               */
-              dialCode={initalFormData.country_code || dialCodeCountry}
-              value={props.input.value}
-            />
-          )}
-          type="tel"
-          className="form-control input-sm"
-        />
-      </div>
+        <div className="form-group list-filter-item">
+          <label>Phone number</label>
+          <Field
+            name="contact"
+            component={(props) => (
+              <CountryCodeInput
+                onChange={({ dialCode, value }) => {
+                  changeFormValue('country_code', dialCode);
+                  changeFormValue('contact', value);
+                }}
+                /**
+                 * Setting default value based on merchant dial_code,
+                 * as initially, country_code is set to null
+                 */
+                dialCode={initalFormData.country_code || dialCodeCountry}
+                value={props.input.value}
+              />
+            )}
+            type="tel"
+            className="form-control input-sm"
+          />
+        </div>
+      </ShowWhen>
 
       {props.user?.isSingleReconEnabled &&
         props.user?.isOptimizerEnabled &&
@@ -137,15 +139,17 @@ export default ({ showBatchIdFilter, ...props }) => {
           </div>
         )}
 
-      <div className="form-group list-filter-item">
-        <label>Notes</label>
-        <Field
-          name="notes"
-          onChange={resetReceiverTypeValue}
-          component="input"
-          class="form-control input-sm"
-        />
-      </div>
+      <ShowWhen additionalCondition={() => !props?.isJKOrg}>
+        <div className="form-group list-filter-item">
+          <label>Notes</label>
+          <Field
+            name="notes"
+            onChange={resetReceiverTypeValue}
+            component="input"
+            class="form-control input-sm"
+          />
+        </div>
+      </ShowWhen>
 
       <ShowWhen additionalCondition={() => props?.user?.isOmniChannelMerchant}>
         <div className="form-group list-filter-item">
@@ -164,7 +168,7 @@ export default ({ showBatchIdFilter, ...props }) => {
         </div>
       </ShowWhen>
 
-      <ShowWhen additionalCondition={() => props?.user?.isRRNSearchEnabled}>
+      <ShowWhen additionalCondition={() => props?.user?.isRRNSearchEnabled || props.isJKOrg}>
         <div className="form-group list-filter-item">
           <label className="payment-reference-label">Payment Reference Number</label>
           <Field name="rrn" component="input" class="form-control input-sm" />

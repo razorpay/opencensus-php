@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen } from 'test-utils';
 import { OverviewBanner } from 'merchant_common/views/Reports/features/Overview/components/OverviewBanner';
 import 'merchant_common/views/Reports/mocks/hooks/useReportsSplitzExperimentsMock';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 
 const push = jest.fn();
 
@@ -9,6 +10,10 @@ jest.mock('common/splitz', () => ({
   useSplitzService: () => ({
     abExperiments: {},
   }),
+}));
+
+jest.mock('merchant/components/Sidebar/helpers', () => ({
+  isJKOfflineMerchant: jest.fn(),
 }));
 
 describe('OverviewCardSkeleton', () => {
@@ -32,5 +37,19 @@ describe('OverviewCardSkeleton', () => {
       ),
     ).toBeInTheDocument();
     expect(screen.getByText(`Download Report`)).toBeInTheDocument();
+  });
+
+  test('should not render schedule report tab for J&K bank', () => {
+    (isJKOfflineMerchant as jest.Mock).mockReturnValue(true);
+    render(
+      <OverviewBanner
+        loading={false}
+        history={{
+          push,
+        }}
+      />,
+    );
+
+    expect(screen.queryByText('Schedule Report')).not.toBeInTheDocument();
   });
 });
