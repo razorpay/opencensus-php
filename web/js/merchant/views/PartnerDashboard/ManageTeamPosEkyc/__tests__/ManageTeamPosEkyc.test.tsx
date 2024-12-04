@@ -36,6 +36,20 @@ const renderApp = () => {
 };
 
 const mockShowNotification = jest.fn();
+const mockCriticalFlow = jest.fn();
+
+jest.mock('web/js/merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    is2FaEnabled: false,
+  })),
+}));
+
+jest.mock('web/js/common/ui/TwoFactorVerification/TwoFactorVerificationContext', () => ({
+  useTwoFactorVerificationContext: jest.fn(() => ({
+    criticalFlow: mockCriticalFlow,
+  })),
+}));
 
 jest.mock('shell/commonStore', () => ({
   ...(jest.requireActual('shell/commonStore') as object),

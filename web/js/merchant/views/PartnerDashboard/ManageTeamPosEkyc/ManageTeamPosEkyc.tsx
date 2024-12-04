@@ -27,6 +27,9 @@ import InviteMember from './InviteMember';
 import { roleToDisplayMap, statusColorMap, statusToDisplayMap } from './constants';
 import { TableItemT } from './types';
 import useManageTeamPosEkyc from './useManageTeamPosEkyc';
+import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
+import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import { closeModal as close2faModal } from 'merchant_common/reducers/modals';
 
 const ManageTeamContainer = () => {
   const [isCtaActionPending, setIsCtaActionPending] = useState(false);
@@ -49,6 +52,30 @@ const ManageTeamContainer = () => {
     page: number;
     pageSize: number;
   }>({ page: 1, pageSize: 10 });
+  const { criticalFlow } = useTwoFactorVerificationContext();
+  const experiments = usePartnerDashboardExperiments();
+  const { is2FaEnabled } = experiments;
+  const [is2FaLoading, setIs2FaLoading] = useState(false);
+
+  const checkIf2FaIsEnabled = () => {
+    if (is2FaEnabled) {
+      setIs2FaLoading(true);
+      criticalFlow({
+        enforceVerifyOtp: true,
+        modes: ['live', 'test'],
+        onUserTwoFaVerified: () => {
+          setIs2FaLoading(false);
+          close2faModal();
+          openInviteModal();
+        },
+        onFlowTermination: () => {
+          setIs2FaLoading(false);
+        },
+      });
+    } else {
+      openInviteModal();
+    }
+  };
 
   const renderTableToolbar = () => {
     const startCount = (pagination.page - 1) * pagination.pageSize + 1;
@@ -65,8 +92,10 @@ const ManageTeamContainer = () => {
               icon={PlusIcon}
               marginRight="spacing.4"
               variant="primary"
-              onClick={openInviteModal}
+              onClick={checkIf2FaIsEnabled}
               isFullWidth
+              isLoading={is2FaLoading}
+              isDisabled={is2FaLoading}
             >
               Invite New Member
             </Button>
