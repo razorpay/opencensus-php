@@ -34,6 +34,11 @@ export function getWidgetResponse(components, widgetKey) {
 export async function assertAPICallForDataRefresh({ page, title }) {
   const container = await page.getByTestId(`widget-${title}`);
   await expect(container).toBeVisible();
+  await container.evaluate((div) => {
+    const offsetFromTop = div.getBoundingClientRect().top + window.scrollY - 52;
+    window.scrollTo(0, offsetFromTop);
+  });
+
   const dropDown = await container.getByTestId('date-picker-component');
   await expect(dropDown).toBeVisible();
 
