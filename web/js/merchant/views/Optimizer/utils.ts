@@ -1174,6 +1174,7 @@ export const gatewayLogos = {
   getsimpl_optimizer: getLogoPath('simpl', 'svg'),
   netbanking_icici: getLogoPath('icici'),
   netbanking_hdfc: getLogoPath('hdfc'),
+  zaakpay: getLogoPath('zaakpay', 'svg'),
 };
 
 export const getValue = (type, value) => {

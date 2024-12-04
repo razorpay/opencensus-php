@@ -1344,6 +1344,7 @@ export const gatewayLogos = {
   getsimpl_optimizer: getLogoPath('simpl', 'svg'),
   netbanking_icici: getLogoPath('icici'),
   netbanking_hdfc: getLogoPath('hdfc'),
+  zaakpay: getLogoPath('zaakpay', 'svg'),
 };
 
 export const mapRulesObjectToArray = (e) => {
@@ -1556,6 +1557,11 @@ export const gatewayDetailsMapping = {
     dashboardImg: null,
     dashboardUrl: null,
     dashboardUrlLabel: null,
+  },
+  zaakpay: {
+    dashboardImg: null,
+    dashboardUrl: 'https://zaakpay.com/payment-gateway',
+    dashboardUrlLabel: 'zaakpay.com',
   },
 };
 

@@ -17,6 +17,7 @@ import { UpiIciciPoints } from './UpiIciciPoints';
 import { GetSimplPoints } from './GetSimplPoints';
 import { IciciNetbankingPoints } from './IciciNetbankingPoints';
 import { HdfcNetbankingPoints } from './HdfcNetbankingPoints';
+import { ZaakpayPoints } from './ZaakpayPoints';
 
 export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
   switch (selectedProvider) {
@@ -58,6 +59,8 @@ export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
       return <IciciNetbankingPoints />;
     case 'netbanking_hdfc':
       return <HdfcNetbankingPoints />;
+    case 'zaakpay':
+      return <ZaakpayPoints />;
     default:
       return (
         <ol>

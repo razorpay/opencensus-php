@@ -126,6 +126,7 @@ export const HAS_UPI_FEATURES = [
   'pay10',
   'optimizer_razorpay',
   'easebuzz_optimizer',
+  'zaakpay',
 ];
 
 export const HAS_NETBANKING_FEATURES = [
@@ -137,6 +138,7 @@ export const HAS_NETBANKING_FEATURES = [
   'netbanking_hdfc',
   'optimizer_razorpay',
   'easebuzz_optimizer',
+  'zaakpay',
 ];
 
 export const ACCOUNT_TYPE_OPTIONS = [
