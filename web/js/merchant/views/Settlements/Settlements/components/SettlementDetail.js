@@ -318,7 +318,7 @@ class SettlementDetail extends Component {
                         <strong className="pr-5">
                           <Amount
                             value={this.props.settlementAmount.settlement_amount}
-                            currency="INR"
+                            currency={this.props.user?.merchant?.currency}
                           />
                         </strong>
                         <span className="pr-5">will be settled by</span>
