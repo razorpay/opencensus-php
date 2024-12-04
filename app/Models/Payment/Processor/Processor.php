@@ -5619,14 +5619,17 @@ class Processor
 
         $payment = $this->buildPaymentEntity($input);
 
-        if($payment->merchant->isLRSFlowEnabled() === true)
+        if (isset($input['order_id']) === true)
         {
-            $order = $this->repo->order->findByPublicId($input['order_id']);
-            $payment->order()->associate($order);
-        }
-        else if(isset($input['order_id']) === true)
-        {
-            $order = $this->associateOrderWithPaymentForConvenienceFee($input, $payment);
+            if($payment->merchant->isLRSFlowEnabled() || $payment->merchant->isNoCodeAppFeeFeatureFlagEnabled())
+            {
+                $order = $this->repo->order->findByPublicId($input['order_id']);
+                $payment->order()->associate($order);
+            }
+            else
+            {
+                $order = $this->associateOrderWithPaymentForConvenienceFee($input, $payment);
+            }
         }
 
         // Performing dummy set of processing for the same

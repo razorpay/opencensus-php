@@ -17398,6 +17398,7 @@ class Route
             'payment_links_sign_payload_internal',
             'payment_refund',
             'entity_origin_create',
+            'pricing_fetch_plan',
         ],
 
         'ezetap-api' => [
