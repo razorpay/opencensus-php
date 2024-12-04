@@ -245,6 +245,46 @@ trait ReverseShadowTrait
         return $amountCreditsAccounts;
     }
 
+    private function getDynamicMoneyParams($amountCreditsAccounts, $amount)
+    {
+        $dynamicMoneyParams[Constants::ACCOUNT_DISCOVERY_CONFIG] = [
+            Constants::ACCOUNT_CATEGORY  => Constants::LIABILITY,
+            Constants::ACCOUNT_TYPE      => Constants::PAYABLE,
+            Constants::FUND_ACCOUNT_TYPE => Constants::REWARD_CREDITS,
+        ];
+
+        $totalAmount = $amount; // The total amount credits to distribute
+
+        foreach ($amountCreditsAccounts as $account)
+        {
+            if ($totalAmount <= 0)
+            {
+                break; // If the total amount is exhausted, break the loop
+            }
+
+            $balance = $account['balance'];
+
+            if ($balance <= 0)
+            {
+                continue; // If the balance is zero, skip the account
+            }
+
+            $amountToDeduct = min($balance, $totalAmount);
+
+            $totalAmount -= $amountToDeduct;
+
+            $dynamicMoneyParams[Constants::DYNAMIC_IDENTIFIERS][] = [
+                Constants::IDENTIFIERS => [
+                    Constants::CREDIT_ID => $account[Constants::ENTITIES][Constants::CREDIT_ID][0],
+                ],
+                Constants::MONEY_PARAMS => [
+                    Constants::AMOUNT_CREDITS => strval($amountToDeduct),
+                ],
+            ];
+        }
+        return array($dynamicMoneyParams);
+    }
+
     protected function prepareOutboxPayload($payloadName, $payloadSerialized)
     {
         $entityId = null;

@@ -71,13 +71,13 @@ class Core extends Base\Core
         {
             [$moneyParams, $dynamicMoneyParams] = $this->generateMoneyParamsForDSPayment($payment, $merchantAccountBalances, $amountCreditsAccounts, $fee, $tax, $feesSplit, $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger);
 
-            $additionalParams = $this->fetchRulesForDSPaymentCredits($payment, $merchantAccountBalances, $fee, $enableFeeSplitInLedger);
+            $additionalParams = $this->fetchRulesForDSPaymentCredits($payment, $merchantAccountBalances, $fee, $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger);
         }
         else
         {
             [$moneyParams, $dynamicMoneyParams] = $this->generateMoneyParamsForNormalPayment($payment, $merchantAccountBalances, $amountCreditsAccounts, $fee, $tax, $discount, $feesSplit, $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger);
 
-            $additionalParams = $this->fetchRulesForPaymentCredits($payment, $merchantAccountBalances, $fee, intval($moneyParams[Constants::BASE_AMOUNT]), $enableFeeSplitInLedger);
+            $additionalParams = $this->fetchRulesForPaymentCredits($payment, $merchantAccountBalances, $fee, intval($moneyParams[Constants::BASE_AMOUNT]), $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger);
         }
 
         $transactorId = $payment->getPublicId();
@@ -371,7 +371,7 @@ class Core extends Base\Core
         return [$moneyParams, $dynamicMoneyParams];
     }
 
-    protected function fetchRulesForDSPaymentCredits(Payment\Entity $payment, $merchantAccountBalances, $fee, $enableFeeSplitInLedger): array
+    protected function fetchRulesForDSPaymentCredits(Payment\Entity $payment, $merchantAccountBalances, $fee, $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger = false): array
     {
         $feeCredits = $merchantAccountBalances[Constants::MERCHANT_FEE_CREDITS];
 
@@ -397,7 +397,7 @@ class Core extends Base\Core
         }
         else if(($this->isGratis($amountCredits, $payment->getAmount()) === true) and ($this->shouldDisableAmountCredits($payment) === false))
         {
-            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS_REDEMPTION;
+            $rule[Constants::CREDIT_ACCOUNTING] = ($enableAmountCreditsSplitInLedger === true) ? Constants::AMOUNT_CREDITS_REDEMPTION_V2 : Constants::AMOUNT_CREDITS_REDEMPTION;
             $isCommissionApplicable = false;
         }
         else if($this->isFeeCredits($feeCredits, $fee))
@@ -585,47 +585,7 @@ class Core extends Base\Core
         return [$moneyParams, $dynamicMoneyParams];
     }
 
-    private function getDynamicMoneyParams($amountCreditsAccounts, $amount)
-    {
-        $dynamicMoneyParams[Constants::ACCOUNT_DISCOVERY_CONFIG] = [
-            Constants::ACCOUNT_CATEGORY  => Constants::LIABILITY,
-            Constants::ACCOUNT_TYPE      => Constants::PAYABLE,
-            Constants::FUND_ACCOUNT_TYPE => Constants::REWARD_CREDITS,
-        ];
-
-        $totalAmount = $amount; // The total amount credits to distribute
-
-        foreach ($amountCreditsAccounts as $account)
-        {
-            if ($totalAmount <= 0)
-            {
-                break; // If the total amount is exhausted, break the loop
-            }
-
-            $balance = $account['balance'];
-
-            if ($balance <= 0)
-            {
-                continue; // If the balance is zero, skip the account
-            }
-
-            $amountToDeduct = min($balance, $totalAmount);
-
-            $totalAmount -= $amountToDeduct;
-
-            $dynamicMoneyParams[Constants::DYNAMIC_IDENTIFIERS][] = [
-                Constants::IDENTIFIERS => [
-                    Constants::CREDIT_ID => $account[Constants::ENTITIES][Constants::CREDIT_ID][0],
-                ],
-                Constants::MONEY_PARAMS => [
-                    Constants::AMOUNT_CREDITS => strval($amountToDeduct),
-                ],
-            ];
-        }
-        return array($dynamicMoneyParams);
-    }
-
-    protected function fetchRulesForPaymentCredits(Payment\Entity $payment, $merchantAccountBalances, $fee, $amount, $enableFeeSplitInLedger): array
+    protected function fetchRulesForPaymentCredits(Payment\Entity $payment, $merchantAccountBalances, $fee, $amount, $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger = false): array
     {
         $rule = [];
 
@@ -653,12 +613,12 @@ class Core extends Base\Core
         }
         else if($this->isPrepaidDynamicFeeBearerFlag($payment) && $this->isGratis($amountCredits, $amount) and ($this->shouldDisableAmountCredits($payment) === false))
         {
-            $rule[Constants::CREDIT_ACCOUNTING] = Constants::DFB_AMOUNT_CREDITS;
+            $rule[Constants::CREDIT_ACCOUNTING] = ($enableAmountCreditsSplitInLedger === true) ? Constants::DFB_AMOUNT_CREDITS_V2 : Constants::DFB_AMOUNT_CREDITS;
             $isCommissionApplicable = false;
         }
         else if ($this->isGratisWithoutCustomerFeeBearer($amountCredits, $amount, $payment) and ($this->shouldDisableAmountCredits($payment) === false))
         {
-            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS_REDEMPTION;
+            $rule[Constants::CREDIT_ACCOUNTING] = ($enableAmountCreditsSplitInLedger === true) ? Constants::AMOUNT_CREDITS_REDEMPTION_V2 : Constants::AMOUNT_CREDITS_REDEMPTION;
             $isCommissionApplicable = false;
         }
         else if($this->isFeeCreditsWithoutCustomerFeeBearer($feeCredits, $fee, $payment))

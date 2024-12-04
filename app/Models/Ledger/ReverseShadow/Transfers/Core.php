@@ -45,10 +45,10 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    public function createBulkTransactionMessageForTransfer($transfer, $transferPaymentMerchant, $merchantAccountBalances, $fee, $tax, $transferPayment = null): array
+    public function createBulkTransactionMessageForTransfer($transfer, $transferPaymentMerchant, $merchantAccounts, $fee, $tax, $transferPayment = null): array
     {
 
-        $transferDebitJournal = $this->createTransactionMessageForDebitJournal($transfer, $merchantAccountBalances, $fee, $tax);
+        $transferDebitJournal = $this->createTransactionMessageForDebitJournal($transfer, $merchantAccounts, $fee, $tax);
 
         if($transferPayment === null ) {
             $transferPayment = $this->generatePaymentEntity();
@@ -79,23 +79,59 @@ class Core extends Base\Core
     }
 
 
-    public function createTransactionMessageForDebitJournal($transfer, $merchantAccountBalances, $fee, $tax): array
+    public function createTransactionMessageForDebitJournal($transfer, $merchantAccounts, $fee, $tax): array
     {
-        $moneyParams = $this->generateMoneyParamsForTransferDebit($transfer, $merchantAccountBalances, $fee, $tax);
+        $merchantAccountBalances = $this->getMerchantAccountBalancesMap($merchantAccounts);
+
+        $amountCreditsAccounts = $this->getValidAmountCreditsAccounts($merchantAccounts);
+
+        try
+        {
+            $splitzAmountRevampResponse = $this->app['splitzService']->evaluateRequest([
+                'id' => $transfer->getMerchantId(),
+                'experiment_id' => $this->app['config']->get('app.amount_credits_split_in_ledger_experiment_id'),
+            ]);
+
+            $variant = $splitzAmountRevampResponse['response']['variant']['name'] ?? '';
+
+            $amountCreditsSplitEnabled = ($variant === 'enable');
+        }
+        catch (\Throwable $e)
+        {
+            $amountCreditsSplitEnabled = false;
+        }
+
+        $this->trace->info(TraceCode::TRANSFER_AMOUNT_CREDITS_V2_EXPERIMENT_EVALUTATION, [
+            'merchant_id' => $transfer->getMerchantId(),
+            'is_exp_enabled' => $amountCreditsSplitEnabled,
+            'balances' => $merchantAccountBalances,
+            'credit_accounts' => $amountCreditsAccounts,
+        ]);
+
+        $moneyParams = $this->generateMoneyParamsForTransferDebit($transfer, $merchantAccountBalances, $fee, $tax, $amountCreditsSplitEnabled);
 
         $additionalParams = $this->fetchRulesForTransferDebit($transfer, $merchantAccountBalances, $fee, $tax);
 
         $transactionMessage = $this->generateBaseForJournalEntry($transfer);
 
-        $transactionMessage[LedgerConstants::MONEY_PARAMS]           = $moneyParams;
-        $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS]      = array_merge(
+        $transactionMessage[LedgerConstants::MONEY_PARAMS] = $moneyParams;
+
+        if (($amountCreditsSplitEnabled === true) &&
+            ($merchantAccountBalances[LedgerConstants::MERCHANT_AMOUNT_CREDITS] >= $transfer->getAmount()))
+        {
+            $additionalParams[LedgerConstants::CREDIT_ACCOUNTING] = LedgerConstants::AMOUNT_CREDITS_REDEMPTION_V2;
+
+            $transactionMessage[Constants::DYNAMIC_MONEY_PARAMS] = $this->getDynamicMoneyParams($amountCreditsAccounts, $transfer->getAmount());
+        }
+
+        $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = array_merge(
             $additionalParams, [LedgerConstants::ENTRY_TYPE => LedgerConstants::ENTRY_TYPE_DEBIT]
         );
 
         return $transactionMessage;
     }
 
-    public function generateMoneyParamsForTransferDebit(Transfer\Entity $transfer, $merchantAccountBalances, $fee, $tax): array
+    public function generateMoneyParamsForTransferDebit(Transfer\Entity $transfer, $merchantAccountBalances, $fee, $tax, $amountCreditsSplitEnabled = false): array
     {
         $moneyParams = [];
 
@@ -114,9 +150,13 @@ class Core extends Base\Core
             $moneyParams[LedgerConstants::MERCHANT_PAYABLE_AMOUNT]    = strval($amount);
             $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
             $moneyParams[LedgerConstants::RAZORPAY_REWARDS]           = strval($amount);
-            $moneyParams[LedgerConstants::AMOUNT_CREDITS]             = strval($amount);
+
+            if ($amountCreditsSplitEnabled === false)
+            {
+                $moneyParams[LedgerConstants::AMOUNT_CREDITS]         = strval($amount);
+            }
         }
-        else if($this->isFeeCredits($feeCredits, $fee + $tax) === true)
+        else if ($this->isFeeCredits($feeCredits, $fee + $tax) === true)
         {
             $moneyParams[LedgerConstants::MERCHANT_PAYABLE_AMOUNT]    = strval($amount);
             $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
@@ -209,11 +249,11 @@ class Core extends Base\Core
     {
         $ledgerService = $this->app['ledger'];
 
-        $merchantAccountBalances = $this->getMerchantAccountBalances($ledgerService, $transfer->getMerchantId());
+        $merchantAccounts = $this->getMerchantAccounts($ledgerService, $transfer->getMerchantId());
 
         list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($transfer);
 
-        $transactionMessage = $this->createBulkTransactionMessageForTransfer($transfer, $transferPaymentMerchant, $merchantAccountBalances, $fee, $tax);
+        $transactionMessage = $this->createBulkTransactionMessageForTransfer($transfer, $transferPaymentMerchant, $merchantAccounts, $fee, $tax);
 
         $transactorId = $transactionMessage[LedgerConstants::TRANSACTOR_ID];
 
@@ -232,11 +272,11 @@ class Core extends Base\Core
     {
         $ledgerService = $this->app['ledger'];
 
-        $merchantAccountBalances = $this->getMerchantAccountBalances($ledgerService, $transfer->getMerchantId());
+        $merchantAccounts = $this->getMerchantAccounts($ledgerService, $transfer->getMerchantId());
 
         list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($transfer);
 
-        $journalPayload = $this->createBulkTransactionMessageForTransfer($transfer, $transferPayment->merchant, $merchantAccountBalances, $fee, $tax,$transferPayment);
+        $journalPayload = $this->createBulkTransactionMessageForTransfer($transfer, $transferPayment->merchant, $merchantAccounts, $fee, $tax,$transferPayment);
 
         $journalResponse = $this->createJournalInLedger($journalPayload, true);
 
@@ -367,11 +407,11 @@ class Core extends Base\Core
 
         if($expEnabled===true)
         {
-                $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
-                    'merchant_id' => $merchant->getId(),
-                    'balance_type' => $balanceType,
-                    'message'=> 'fetching merchant balance from harvester'
-                ]);
+            $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
+                'merchant_id' => $merchant->getId(),
+                'balance_type' => $balanceType,
+                'message'=> 'fetching merchant balance from harvester'
+            ]);
 
             return $this->repo->balance->getMerchantBalanceByTypeTiDBOrFail($merchant->getId(), $balanceType);
         }
@@ -786,7 +826,13 @@ class Core extends Base\Core
         // dual write re-arch enabled for both child+parent if enabled for parent
         $dualWriteRearchEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
 
-        if($dualWriteRearchEnabled===false){
+        $this->trace->info(TraceCode::TRANSFER_REVERSE_SHADOW_DUAL_EXPERIMENT_EVALUTATION,
+            [
+                'merchant_id' => $transfer->getMerchantId(),
+                'is_exp_enabled' => $dualWriteRearchEnabled,
+            ]);
+
+        if ($dualWriteRearchEnabled === false) {
 
             $transferTxn = $this->createTransferTransactionFromLedgerJournal($debitJournal, $transfer);
 
@@ -802,12 +848,14 @@ class Core extends Base\Core
             (new Transfer\Core())->dispatchForAsyncBalanceUpdate($transfer);
 
             $this->trace->info(TraceCode::TRANSFER_REVERSE_SHADOW_TXN_CREATION_SUCCESS,
-                   [
-                       'transfer_id'               => $transfer->getId(),
-                       'transfer_txn_id'           => $transferTxn->getId(),
-                       'transfer_payment_txn_id'   => $transferPaymentTxn->getId(),
-                   ]);
-        }else {
+                [
+                    'transfer_id'               => $transfer->getId(),
+                    'transfer_txn_id'           => $transferTxn->getId(),
+                    'transfer_payment_txn_id'   => $transferPaymentTxn->getId(),
+                ]);
+        }
+        else
+        {
             // merchant is on RS, child+parent both.
             // do early dispatch of settlement and dispatch transfers for dual write.
             // ensure that job does dual write+balance update on api.
@@ -1163,11 +1211,11 @@ class Core extends Base\Core
         }
 
         $this->trace->info(TraceCode::TRANSFER_TXN_CREATED_IN_REVERSE_SHADOW,
-                           [
-                               'txn_id'                => $txn->getId(),
-                               'payment_id'            => $transferPayment->getId(),
-                               'transfer_id'           => $transferPayment->getTransferId(),
-                           ]);
+            [
+                'txn_id'                => $txn->getId(),
+                'payment_id'            => $transferPayment->getId(),
+                'transfer_id'           => $transferPayment->getTransferId(),
+            ]);
 
         return $txn;
     }
@@ -1222,7 +1270,7 @@ class Core extends Base\Core
 
         if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
-           $txn->setReference3("disabled");
+            $txn->setReference3("disabled");
         }
 
         $this->trace->info(TraceCode::TIDB_STREAMING_MAKESHIFT_LOGIC, [
@@ -1237,12 +1285,12 @@ class Core extends Base\Core
         }
 
         $this->trace->info(TraceCode::TRANSFER_TXN_CREATED_IN_REVERSE_SHADOW,
-                           [
-                               'txn_id'                => $txn->getId(),
-                               'transfer_id'           => $transfer->getId(),
-                               'transfer_source_id'    => $transfer->getSourceId(),
-                               'transfer_source_type'  => $transfer->getSourceType(),
-                           ]);
+            [
+                'txn_id'                => $txn->getId(),
+                'transfer_id'           => $transfer->getId(),
+                'transfer_source_id'    => $transfer->getSourceId(),
+                'transfer_source_type'  => $transfer->getSourceType(),
+            ]);
 
         return $txn;
     }
@@ -1370,63 +1418,5 @@ class Core extends Base\Core
         }
 
         return false;
-    }
-
-    private function getDynamicMoneyParams($amountCreditsAccounts, $amount)
-    {
-        $dynamicMoneyParams[Constants::ACCOUNT_DISCOVERY_CONFIG] = [
-            Constants::ACCOUNT_CATEGORY => Constants::LIABILITY,
-            Constants::ACCOUNT_TYPE => Constants::PAYABLE,
-            Constants::FUND_ACCOUNT_TYPE => Constants::REWARD_CREDITS,
-        ];
-
-        $totalAmount = $amount; // The total amount credits to distribute
-
-        foreach ($amountCreditsAccounts as $account)
-        {
-            if ($totalAmount <= 0)
-            {
-                break; // If the total amount is exhausted, break the loop
-            }
-
-            $balance = $account['balance'];
-
-            if ($balance <= 0)
-            {
-                continue; // If the balance is zero, skip the account
-            }
-
-            if ($balance < $totalAmount)
-            {
-                $amountToDeduct = $balance;
-            }
-            else
-            {
-                $amountToDeduct = $totalAmount;
-            }
-
-            $totalAmount -= $amountToDeduct;
-
-            $dynamicMoneyParams[Constants::DYNAMIC_IDENTIFIERS][] = [
-                Constants::IDENTIFIERS => [
-                    Constants::CREDIT_ID => $account[Constants::ENTITIES][Constants::CREDIT_ID][0],
-                ],
-                Constants::MONEY_PARAMS => [
-                    Constants::AMOUNT_CREDITS => strval($amountToDeduct),
-                ],
-            ];
-        }
-
-        if ($totalAmount > 0)
-        {
-            throw new BadRequestException(ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
-                null,
-                [
-                    'amount' => $amount,
-                    'remaining_amount' => $totalAmount,
-                ]);
-        }
-
-        return array($dynamicMoneyParams);
     }
 }

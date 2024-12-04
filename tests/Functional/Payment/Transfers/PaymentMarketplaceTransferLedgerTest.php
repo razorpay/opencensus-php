@@ -133,6 +133,8 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
         $this->app->instance('ledger', $mockLedger);
 
+        $now = time();
+
         $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
             ->times($fetchAccountRequests)
             ->andReturn([
@@ -178,7 +180,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
                                 "updated_at"        => "1634027277",
                                 "entities"          => [
                                     "account_type"      => ["payable"],
-                                    "fund_account_type" => ["reward"]
+                                    "fund_account_type" => ["reward_credits"],
+                                    "credit_id"         => ["Of8rSFF0CJh6GY"],
+                                    "expired_at"        => [$now + 10000]
                                 ]
                             ]
                         ]
@@ -204,6 +208,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $oldMarketBalance = $this->getAccountBalance('10000000000000');
         $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
+
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         $transfers[0] = [
             'account' => 'acc_10000000000001',
@@ -328,6 +335,10 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $oldMarketBalance = $this->getAccountBalance('10000000000000');
         $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
 
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
+
         $transfers[0] = [
             'account' => 'acc_10000000000001',
             'amount'  => 10000,
@@ -435,6 +446,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $oldMarketBalance = $this->getAccountBalance('10000000000000');
         $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
 
+
         $transfers[0] = [
             'account' => 'acc_10000000000001',
             'amount'  => 10000,
@@ -521,6 +533,8 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $oldMarketBalance = $this->getAccountBalance('10000000000000');
         $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
+
+        $this->mockAmountCreditsV2Experiment('10000000000000');
 
         $transfers[0] = [
             'account' => 'acc_10000000000001',
@@ -615,6 +629,133 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
     }
 
+    public function testPaymentTransferReverseShadowOutboxPushWithAmountCreditsDeductionV2()
+    {
+        $this->assertNotNull($this->payment);
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+
+        $this->mockAmountCreditsV2Experiment('10000000000000', true);
+
+        $this->initialiseLedger(1000000, 0, 1000000);
+
+        $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
+        $this->fixtures->merchant->addFeatures([ 'pg_ledger_reverse_shadow'], '10000000000001');
+
+        $oldMarketBalance = $this->getAccountBalance('10000000000000');
+        $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
+
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 50000,
+            'currency'=> 'INR',
+        ];
+
+        $expected = [
+            'count' => 1,
+            'items' => [
+                [
+                    'source'          => $this->payment['id'],
+                    'recipient'       => 'acc_10000000000001',
+                    'amount'          => 50000,
+                    'amount_reversed' => 0,
+                    'status' => 'pending',
+                ],
+            ],
+        ];
+
+        $content = $this->transferPayment($this->payment['id'], $transfers);
+        $this->assertNotNull($content);
+        $this->assertArraySelectiveEquals($expected, $content);
+        $this->assertCount(1, $content['items']);
+
+        $transferResponse = $content['items'][0];
+        $transferId = $transferResponse['id'];
+
+        // payment txn exists
+        $paymentTxn = $this->getDbLastEntity('transaction');
+        $this->assertEquals('payment', $paymentTxn['type']);
+        $this->assertEquals($this->payment['id'], sprintf('pay_%s',$paymentTxn['entity_id']));
+
+        // transfer entity exists
+        $transfer = $this->getDbLastEntity('transfer');
+        $this->assertNotNull($transfer);
+        $this->assertEquals($transferId, sprintf('trf_%s',$transfer['id']));
+
+        // dummy payment entity exists
+        $transferPayment = $this->getDbEntity('payment', ['transfer_id' => $transferId]);
+        $this->assertNull($transferPayment);
+
+        // transfer txn and dummy payment txn not created
+        $this->assertNull($transfer['transaction_id']);
+        $this->assertNull($transferPayment['transaction_id']);
+        $transferTxn = $this->getDbEntity('transaction', ['type' => 'transfer', 'entity_id' => $transferId]);
+        $this->assertNull($transferTxn);
+
+        $expectedLedgerOutboxEntry = [
+            "currency" => "INR",
+            "transactor_event" =>  "transfer_processed",
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG",
+            "journals" =>[
+                [
+                    "merchant_id"=>"10000000000000",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "50000",
+                        "base_amount" => "50000",
+                        "merchant_payable_amount" => "50000",
+                        "merchant_balance_amount" => "50000",
+                    ],
+                    "additional_params"=>["entry_type"=>"debit", "credit_accounting" => "amount_credits_redemption_v2"],
+                    "dynamic_money_params"=>[
+                        [
+                            "account_discovery_config" => [
+                                "account_category" => "liability",
+                                "account_type" => "payable",
+                                "fund_account_type" => "reward_credits"
+                            ],
+                            "dynamic_identifiers" => [
+                                [
+                                    "identifiers" => [
+                                        "credit_id" => "Of8rSFF0CJh6GY",
+                                    ],
+                                    "money_params" => [
+                                        "amount_credits" => "50000"
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                [
+                    "merchant_id"=>"10000000000001",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "50000",
+                        "base_amount" => "50000",
+                        "merchant_payable_amount" => "50000",
+                        "merchant_balance_amount" => "50000",
+                    ],
+                    "additional_params"=>["entry_type"=>"credit"]
+                ]
+            ],
+        ];
+
+        // fetch transfer journal payload from ledger_outbox
+        $ledgerOutboxEntity = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull($ledgerOutboxEntity);
+        $this->assertEquals( sprintf('%s-transfer_processed', $transferId),$ledgerOutboxEntity['payload_name']);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($transferId, $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertNotNull($actualLedgerOutboxEntry['idempotency_key']);
+
+    }
+
+
     public function testPaymentTransferReverseShadowOutboxPushWithAmountCreditsPositiveButInsufficientForTransfer()
     {
         $this->assertNotNull($this->payment);
@@ -628,6 +769,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $oldMarketBalance = $this->getAccountBalance('10000000000000');
         $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
+
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         $transfers[0] = [
             'account' => 'acc_10000000000001',
@@ -734,6 +878,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $oldMarketBalance = $this->getAccountBalance('10000000000000');
         $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
 
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
+
         $transfers[0] = [
             'account' => 'acc_10000000000001',
             'amount'  => 8000,
@@ -821,6 +968,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $oldMarketBalance = $this->getAccountBalance('10000000000000');
         $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
+
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         $transfers[0] = [
             'account' => 'acc_10000000000001',
@@ -910,6 +1060,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $oldMarketBalance = $this->getAccountBalance('10000000000000');
         $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
+
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         $transfers[0] = [
             'account' => 'acc_10000000000001',
@@ -1019,6 +1172,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $oldMarketBalance = $this->getAccountBalance('10000000000000');
         $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
 
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
+
         $transfers[0] = [
             'account' => 'acc_10000000000001',
             'amount'  => 8000,
@@ -1118,6 +1274,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $oldMarketBalance = $this->getAccountBalance('10000000000000');
         $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
 
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
+
         $transfers[0] = [
             'account' => 'acc_10000000000001',
             'amount'  => 8000,
@@ -1204,6 +1363,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $oldMarketBalance = $this->getAccountBalance('10000000000000');
         $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
+
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         $transfers[0] = [
             'account' => 'acc_10000000000001',
@@ -1335,6 +1497,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $transfer = $this->getDbLastEntity('transfer');
         $this->assertNotNull($transfer);
         $this->assertEquals($transferId, $transfer['id']);
+
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         // process transfer, dummy payment already exists
         (new TransferProcess('test', $this->payment['id'], 'payment'))->handle();
@@ -1810,7 +1975,8 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $kafkaEventPayload = $this->getKafkaEventPayload($journal);
 
-        $this->mockAllSplitzResponseDisable();
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         // run test
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
@@ -1875,7 +2041,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         return $transferId;
     }
 
-    public function testFullPaymentTransferReverseShadowKafkaAckSuccessWithVariantOn()
+    public function testFullPaymentTransferReverseShadowKafkaAckSuccessWithDualWriteExpOn()
     {
         $sourceMID = '10000000000000';
         $destnMID = '10000000000001';
@@ -1885,8 +2051,6 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
         $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], $destnMID);
 
-        $this->mockAllSplitzTreatment();
-
         $oldDestnMarketBalance = $this->getAccountBalance($destnMID);
         $this->assertEquals(0, $oldDestnMarketBalance);
 
@@ -1894,6 +2058,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->assertGreaterThanOrEqual($this->payment['amount'],$oldSourceMarketBalance);
 
         $this->initialiseLedger(1000000, 0, 0);
+
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000', true);
 
         // create transfer
         $transfers[0] = [
@@ -1922,7 +2089,8 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $debitJID = 'LsqR14zUg9dbDB' ;
         $creditJID = 'LsqR157oYgCrCR';
 
-        $this->mockAllSplitzResponseDisable();
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000', true);
 
         $journal = $this->getPaymentTransferJournalResponsePayload($publicTransferId, $debitJID, $creditJID, $sourceMID, $destnMID, $transfers[0]['amount']);
 
@@ -2114,7 +2282,6 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
             'amount'  => 10000,
             'currency'=> 'INR',
         ];
-        $this->mockAllSplitzResponseDisable();
 
         $content = $this->transferPayment($this->payment['id'], $transfers);
 
@@ -2139,6 +2306,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $journal = $this->getPaymentTransferJournalResponsePayload($publicTransferId, $debitJID, $creditJID, $sourceMID, $destnMID, $transfers[0]['amount']);
 
         $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         // run test
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
@@ -2295,6 +2465,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->assertEquals('captured', $transferPayment['status'], 'transfer_payment not captured');
         $this->assertEquals($creditJID, $transferPayment['transaction_id'], 'transfer_payment txn_id not equal to credit journal_id');
 
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
+
         // run test
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
 
@@ -2353,6 +2526,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
             ],
             "validation_failure: validation_failure: BAD_REQUEST_VALIDATION_FAILURE",
         );
+
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         // run test
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
@@ -2423,6 +2599,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
             ],
             "ledger_builder_failure: No parameter 'commission' found." ,
         );
+
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         // run test
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
@@ -2503,6 +2682,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
                     "body" =>  $this->getPaymentTransferJournalResponsePayload($publicTransferId, $debitJID, $creditJID, $sourceMID, $destnMID, $transfers[0]['amount'])
                 ]
             );
+
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         // run test
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
@@ -2599,6 +2781,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
                 $errorMessage
             );
 
+            $this->mockAmountCreditsV2Experiment('10000000000000');
+            $this->mockTxnDualWriteForTransferExperiment('10000000000000');
+
             // run test
             (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
 
@@ -2677,6 +2862,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
                 ]
             );
 
+        $this->mockAmountCreditsV2Experiment('10000000000000');
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
+
         // run test
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
 
@@ -2740,7 +2928,6 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $publicTransferId = $content['items'][0]['id'];
 
         $transferId =  str_replace('trf_', '', $publicTransferId);
-        $this->mockAllSplitzResponseDisable();
         $transferPayment = $this->getDbEntity('payment',['transfer_id' => $transferId ] );
         $this->assertNull($transferPayment, 'dummy payment entity exist');
 
@@ -2765,16 +2952,17 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
                 ],
             ]);
 
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
+
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/ledger_outbox/retry?type=transfer';
+        $testData['request']['url'] = '/ledger_outbox/retry?type=transfer&start_offset_mins=2592600&end_offset_mins=10';
         $this->ba->cronAuth();
         $this->runRequestResponseFlow($testData);
 
         // fetch transfer again to check if txn id associated
         $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
 
-        $this->mockAllSplitzResponseDisable();
         $this->assertNotNull($transfer, 'transfer not found');
         $this->assertNotNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
         $this->assertEquals('processed', $transfer['status'], 'transfer status not marked processed');
@@ -2882,17 +3070,17 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
                 "insufficient_balance_failure: BAD_REQUEST_INSUFFICIENT_BALANCE"
             ));
 
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/ledger_outbox/retry?type=transfer';
+        $testData['request']['url'] = '/ledger_outbox/retry?type=transfer&start_offset_mins=2592600&end_offset_mins=10';
         $this->ba->cronAuth();
         $this->runRequestResponseFlow($testData);
 
         // fetch transfer again to check if txn id associated
         $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
 
-        $this->mockAllSplitzResponseDisable();
         $this->assertNotNull($transfer, 'transfer not found');
         $this->assertNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
         $this->assertNotEquals('processed', $transfer['status'], 'transfer status not marked processed');
@@ -2983,10 +3171,11 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
                 "insufficient_balance_failure: BAD_REQUEST_INSUFFICIENT_BALANCE"
             ));
 
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/ledger_outbox/retry?type=transfer';
+        $testData['request']['url'] = '/ledger_outbox/retry?type=transfer&start_offset_mins=2592600&end_offset_mins=10';
         $this->ba->cronAuth();
         $this->runRequestResponseFlow($testData);
 
@@ -3061,6 +3250,8 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
             'created_at' => Carbon::now()->subMinutes(10)->getTimestamp(),
             'updated_at' => Carbon::now()->subMinutes(10)->getTimestamp(),
         ]);
+
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
 
         // process transfer via pending transfer cron
         $this->ba->cronAuth();
@@ -3142,13 +3333,12 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/ledger_outbox/retry?type=transfer';
+        $testData['request']['url'] = '/ledger_outbox/retry?type=transfer&start_offset_mins=2592600&end_offset_mins=10';
         $this->ba->cronAuth();
         $this->runRequestResponseFlow($testData);
 
         // fetch transfer again to check if txn id associated
         $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
-        $this->mockAllSplitzResponseDisable();
         $this->assertNotNull($transfer, 'transfer not found');
         $this->assertNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
         $this->assertNotEquals('processed', $transfer['status'], 'transfer status not marked processed');
@@ -3632,13 +3822,14 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $kafkaEventPayload = $this->getKafkaEventPayload($journal);
 
+        $this->mockTxnDualWriteForTransferExperiment('10000000000000');
+
         // run test
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
 
         // fetch transfer again to check if txn id associated
         $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
 
-        $this->mockAllSplitzResponseDisable();
         $this->assertNotNull($transfer, 'transfer not found');
         $this->assertNotNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
         $this->assertEquals('processed', $transfer['status'], 'transfer status not marked processed');
@@ -3688,5 +3879,46 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         // check new destn balance
         $newDestnMarketBalance = $this->getAccountBalance($destnMID);
         $this->assertEquals($oldDestnMarketBalance + $transfer->getAmount(), $newDestnMarketBalance, 'destn balance not deeducted');
+    }
+
+    private function mockAmountCreditsV2Experiment($merchantId, $enable=false)
+    {
+        $input = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.amount_credits_split_in_ledger_experiment_id'),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $enable ? 'enable' : 'disable',
+                ]
+            ]
+        ];
+        return $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->with($input)
+            ->andReturn($output);
+    }
+
+    private function mockTxnDualWriteForTransferExperiment($merchantId, $enable=false)
+    {
+        $input = [
+            'request_data' => json_encode(["merchant_id" => $merchantId]),
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.api_ledger_dual_write_transfer_rearch'),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $enable ? 'enable' : 'disable',
+                ]
+            ]
+        ];
+        return $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->with($input)
+            ->andReturn($output);
     }
 }

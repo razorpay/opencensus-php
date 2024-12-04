@@ -21,6 +21,8 @@ class Constants
     const ACCOUNTING                                        = "accounting";
     const AMOUNT_CREDITS                                    = 'amount_credits';
     const AMOUNT_CREDITS_REDEMPTION                         = 'amount_credits_redemption';
+
+    const AMOUNT_CREDITS_REDEMPTION_V2                      = 'amount_credits_redemption_v2';
     const VERSION                                           = 'version';
     const FEE_CREDITS                                       = 'fee_credits';
     const POSTPAID                                          = 'postpaid';
@@ -37,6 +39,7 @@ class Constants
     const RAZORPAY_REWARD                                   = 'razorpay_reward';
     const RAZORPAY_REWARDS                                  = 'razorpay_rewards';
     const DFB_AMOUNT_CREDITS                                = 'dfb_amount_credits';
+    const DFB_AMOUNT_CREDITS_V2                             = 'dfb_amount_credits_v2';
     const VAS_MERCHANT_FLOW                                 = "vas_merchant_flow";
     const HDFC_VAS_DS_CFB_SURCHARGE_FLOW                    = "hdfc_vas_ds_cfb_surcharge_flow";
     const HDFC_NON_DS_SURCHARGE_FLOW                        = "hdfc_non_ds_surcharge_flow";
