@@ -30,6 +30,7 @@ class Repository extends Base\Repository
 
     protected $entity = 'feature';
 
+
     protected $appFetchParamRules = array(
         Entity::ENTITY_ID   => 'sometimes|string|max:14',
         Entity::ENTITY_TYPE => 'sometimes|string|max:255',
@@ -766,9 +767,12 @@ class Repository extends Base\Repository
     public function getDcsEditVariant($featureName, $mode)
     {
         $mode = $mode ?? 'live';
-        $flag = $this->app['razorx']->getTreatment($featureName,
-            RazorxTreatment::DCS_EDIT_ENABLED,
-            $mode);
+        $properties = [
+            'id'            => $featureName,
+            'experiment_id' => $this->app['config']->get('app.dcs_edit_enabled_splitz_exp_id'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+        $flag = $response['response']['variant']['name'] ?? 'control';
 
         $this->trace->info(TraceCode::DCS_RAZORX_EXPERIMENT, [
             'feature_name' => $featureName,
