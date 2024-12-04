@@ -94,6 +94,7 @@ class Validator extends Base\Validator
         Entity::SODEXO             => 'sometimes|boolean',
         Entity::ONLINE_CONVERSION_ENABLED => 'sometimes|boolean',
         Entity::DUITNOW_PAY        => 'sometimes|boolean',
+        Entity::GIFT_CARDS         => 'sometimes|boolean',
     ];
 
     protected static $setMethodsValidators = [

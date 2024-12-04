@@ -143,6 +143,8 @@ class BuyPricing
     const TRUSTLY                       = 'trustly';
     const POLI                          = 'poli';
 
+    const WALLET_RAZORPAYWALLET                      = 'wallet_razorpaywallet';
+
     const BPCL_TEST_MERCHANT_ID              = 'GfjiTEOfQJJBBX';
     const BPCL_MERCHANT_ID              = 'IB52daWxMCAW3Q';
     const BPCL_MERCHANT_ID2              = 'IF5xd1DuOFTPMS';
@@ -334,6 +336,10 @@ class BuyPricing
         self::POLI,
     ];
 
+    protected static $giftcardGateways = [
+        self::WALLET_RAZORPAYWALLET,
+    ];
+
     public static $upiNetworksNames = [
         'Upi'       => self::UPI,
         'GooglePay' => self::GOOGLEPAY,
@@ -368,6 +374,7 @@ class BuyPricing
             case $method === Method::CARDLESS_EMI: return self::$cardlessEmiGateways;
             case $method === Method::PAYLATER:     return self::$paylaterGateways;
             case $method === Method::APP:          return self::$appGateways;
+            case $method === Method::GIFT_CARDS:    return self::$giftcardGateways;
             default:                               return [];
         }
     }

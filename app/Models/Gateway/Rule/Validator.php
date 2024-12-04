@@ -250,6 +250,12 @@ class Validator extends Base\Validator
 
                 break;
 
+            case Method::GIFT_CARDS:
+
+                $this->validateGiftCardIssuer($input);
+
+                break;
+
             default:
 
                 // For certain methods like UPI there is no concept of issuer, so
@@ -344,6 +350,29 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'wallet issuer not valid for gateway');
+        }
+    }
+
+    protected function validateGiftCardIssuer(array $input)
+    {
+        if (self::isRejectFilter($input) === true)
+        {
+            return;
+        }
+
+        $issuer = $input[Entity::ISSUER] ?? null;
+        $gateway = $input[Entity::GATEWAY];
+
+        if ($issuer === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'issuer cannot be null for giftcard select filter rules');
+        }
+
+        if ($gateway !== Gateway::$giftCardToGatewayMap[$issuer])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'giftcard issuer not valid for gateway');
         }
     }
 

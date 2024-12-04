@@ -74,6 +74,8 @@ class Entity extends Base\PublicEntity
     const COD               = 'cod';
     const FPX               = 'fpx';
     const DUITNOW_PAY       = 'duitnow_pay';
+    const GIFT_CARDS        = 'gift_cards';
+    const RAZORPAY_GIFTCARD = 'razorpay_giftcard';
     const BAJAJPAY          = 'bajajpay';
     const GRABPAY           = 'grabpay';
     const TOUCHNGO          = 'touchngo';
@@ -172,6 +174,7 @@ class Entity extends Base\PublicEntity
         self::MCASH,
         self::GRABPAY,
         self::TOUCHNGO,
+        self::GIFT_CARDS,
     ];
 
     protected $visible = [
@@ -239,6 +242,7 @@ class Entity extends Base\PublicEntity
         self::SODEXO,
         self::ONLINE_CONVERSION_ENABLED,
         self::DUITNOW_PAY,
+        self::RAZORPAY_GIFTCARD,
     ];
 
     protected $public = [
@@ -307,6 +311,7 @@ class Entity extends Base\PublicEntity
         self::SODEXO,
         self::ONLINE_CONVERSION_ENABLED,
         self::DUITNOW_PAY,
+        self::RAZORPAY_GIFTCARD,
     ];
 
     protected $appends = [
@@ -335,11 +340,13 @@ class Entity extends Base\PublicEntity
         self::SODEXO,
         self::ONLINE_CONVERSION_ENABLED,
         self::DUITNOW_PAY,
+        self::RAZORPAY_GIFTCARD,
     ];
 
     protected static $shouldAcceptSubMethods = [
         self::UPI,
         self::DUITNOW_PAY,
+        self::GIFT_CARDS,
         self::CARD
     ];
 
@@ -588,7 +595,11 @@ class Entity extends Base\PublicEntity
         ],
 
         self::DUITNOW_PAY => [
-            self::DUITNOW_PAY
+            self::DUITNOW_PAY,
+        ],
+
+        self::GIFT_CARDS => [
+            self::RAZORPAY_GIFTCARD
         ]
     ];
 
@@ -711,6 +722,20 @@ class Entity extends Base\PublicEntity
         $addonMethods = $this->getAddonMethods();
 
         return !empty($addonMethods[self::DUITNOW_PAY][self::DUITNOW_PAY]);
+    }
+
+    public function isGiftCardsEnabled()
+    {
+        $addonMethods = $this->getAddonMethods();
+
+        return !empty($addonMethods[self::GIFT_CARDS][self::RAZORPAY_GIFTCARD]);
+    }
+
+    public function isRazorpayGiftCardEnabled()
+    {
+        $addonMethods = $this->getAddonMethods();
+
+        return !empty($addonMethods[self::GIFT_CARDS][self::RAZORPAY_GIFTCARD]);
     }
 
     public function isUpiEnabled()
@@ -1444,6 +1469,17 @@ class Entity extends Base\PublicEntity
     public function getDuitNowPayAttribute()
     {
         return $this->getDuitNowPay();
+    }
+
+    public function getGiftCard()
+    {
+        return $this->getPaymentAddOnMethod(self::GIFT_CARDS, self::RAZORPAY_GIFTCARD);
+    }
+
+
+    public function getRazorpayGiftCardAttribute()
+    {
+        return $this->getGiftCard();
     }
 
     public function getCcOnUpiAttribute()

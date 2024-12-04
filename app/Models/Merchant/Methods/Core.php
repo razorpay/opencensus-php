@@ -428,6 +428,7 @@ class Core extends Base\Core
             Payment\Method::INTL_BANK_TRANSFER  => [],
             Payment\Method::FPX                 => [],
             Payment\Method::DUITNOW_PAY         => false,
+            Payment\Method::GIFT_CARDS          => [],
         ];
 
         $methods = $this->getMethods($merchant);
@@ -450,6 +451,7 @@ class Core extends Base\Core
         $data[Entity::COD] = $methods->isCodEnabled();
         $data[Entity::OFFLINE] = $methods->isOfflineEnabled();
         $fpxEnabled = $methods->isFpxEnabled();
+        $data[Payment\Method::GIFT_CARDS] = $methods->isGiftCardsEnabled();
         $data[Entity::INTL_BANK_TRANSFER] = $this->getInternationalBankTransferMethods($methods);
         $data[Payment\Method::DUITNOW_PAY] = $methods->isDuitNowPayEnabled();
 
@@ -1247,6 +1249,10 @@ class Core extends Base\Core
                     $addonMethods[Entity::DUITNOW_PAY][Entity::DUITNOW_PAY] = $value;
                     $methods->setAttribute(Entity::ADDON_METHODS, $addonMethods);
 
+                 case $key === Entity::GIFT_CARDS:
+                     $addonMethods = $methods->getAttribute(Entity::ADDON_METHODS);
+                     $addonMethods[Entity::GIFT_CARDS][Entity::RAZORPAY_GIFTCARD] = $value;
+                     $methods->setAttribute(Entity::ADDON_METHODS, $addonMethods);
 
                 default:
                     $methods->setAttribute($key, $value);

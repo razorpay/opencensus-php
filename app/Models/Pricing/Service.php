@@ -1250,6 +1250,8 @@ class Service extends Base\Service
 
         $wallets = Processor\Wallet::getWalletNetworkNamesMap();
 
+        $giftcards = Processor\GiftCard::getGiftCardNetworkNames();
+
         $emandateBanks = Gateway::getAvailableEmandateBanks();
 
         $emandateBankNamesMap = Bank\Name::getNames($emandateBanks);
@@ -1264,6 +1266,7 @@ class Service extends Base\Service
             'nach'      => array_flip(BuyPricing::$nachNetworksNames),
             'paylater'  => array_flip(BuyPricing::$paylaterNetworksNames),
             'cardless_emi' => array_flip(BuyPricing::$cardlessEmiNetworksNames),
+            'gift_cards' => array_flip($giftcards),
         ];
 
         return $networks;

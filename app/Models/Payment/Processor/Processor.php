@@ -10,6 +10,7 @@ use Request;
 use RZP\Error as RzpError;
 use RZP\Base\ConnectionType;
 use RZP\Constants\HashAlgo;
+use RZP\Gateway\Wallet\Razorpaywallet;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
@@ -3767,6 +3768,8 @@ class Processor
 
             $this->validateAndDecryptEncryptedCardInput($input);
 
+            $gcReference = $this->validateGiftCardAndGetGCReference($input);
+
             $isSplitPaymentRequest = $this->validateSplitPayment($input);
 
             // adding this here instead of inside createPaymentEntity.
@@ -3847,6 +3850,12 @@ class Processor
 
                 if(isset($gateway)) {
                     $payment->setGateway($gateway);
+                }
+
+                // if method is gift_cards then we store gift_card details in reference17
+                if ( ($input['method'] === Method::GIFT_CARDS) && (empty($gcReference) !== true))
+                {
+                    $payment->setAttribute(Payment\Entity::REFERENCE17, $gcReference);
                 }
 
                 $this->preProcessForSubscriptionsIfApplicable($input, $payment);
@@ -4345,6 +4354,21 @@ class Processor
             $invoiceId = $order->getProductId();
 
             $payload[E::PAYMENT]['entity'][Payment\Entity::INVOICE_ID] = Invoice\Entity::getSignedId($invoiceId);
+        }
+
+        $method = $payment->method;
+
+        // we fetch gift_card details from reference17 and populate to the field 'gift_cards' in payments
+        if (($method === Method::GIFT_CARDS) && ($payment->getReference17() !== null))
+        {
+            $reference17 = json_decode($payment->getReference17(), true);
+            $giftCards = null;
+
+            if ((is_array($reference17) === true) && (isset($reference17['gift_cards']) === true)) {
+                $giftCards = $reference17['gift_cards'];
+            }
+
+            $payload[E::PAYMENT]['entity'][Payment\Entity::GIFT_CARDS] = $giftCards;
         }
 
         return $payload;
@@ -13614,5 +13638,139 @@ class Processor
         return false;
     }
 
+
+    /**
+     * validateGiftCardAndGetGCReference validates if the gift card can be redeemed and if the aggregated balances of multiple
+     * gift cards is greater than or equal to payment amount
+     * We save the references of giftcard in reference17
+     * @param array $input
+     * @throws BadRequestException
+     */
+    private function validateGiftCardAndGetGCReference(array & $input)
+    {
+        if ($input['method'] !== Method::GIFT_CARDS)
+        {
+            return null;
+        }
+
+        if (empty($input['gift_cards']) === true)
+        {
+            return null;
+        }
+
+        $this->validateAmount($input);
+
+        $merchantID =$this->merchant->getId();
+
+        $response = App::getFacadeRoot()['wallet_api']->validateGiftCard($input, $merchantID);
+
+        $gcReference = $this->compareGiftCardsAndGetGiftCardReferences($response, $input);
+
+        if ($this->checkGiftCardBalances($gcReference, $input['amount']) === true)
+        {
+            $giftCards = [];
+            $giftCards['gift_cards'] = $gcReference;
+            return json_encode($giftCards);
+        }
+        else
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_GIFT_CARDS_INSUFFICIENT_BALANCE, null, null, null);
+        }
+
+    }
+    /*
+     * validateAmount validates if sum of all the gift_card amount is matching with payment_amount
+     * */
+    private function validateAmount($input) {
+        // Extract the total amount from the input array
+        $inputAmount = (integer) $input['amount'];
+
+        // Initialize a variable to sum up the amounts from gift cards
+        $totalGiftCardAmount = 0;
+
+        // Loop through each gift card in the gift_cards array
+        foreach ($input['gift_cards'] as $giftCard) {
+            // Add the gift card's amount to the total
+            $totalGiftCardAmount += $giftCard['amount'];
+        }
+
+        // Check if the sum of gift card amounts is equal to the input amount
+        if ($totalGiftCardAmount !== $inputAmount) {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, 'amount', null, 'you have entered an invalid amount. Please try again');
+        }
+    }
+
+    function checkGiftCardBalances($outputArray, $inputAmount): bool
+    {
+        // Initialize total sum
+        $totalAmount = 0;
+
+        // Loop through each item in the output array and sum the amounts
+        foreach ($outputArray as $item) {
+            $totalAmount += $item['amount'];
+        }
+
+        // Check if the total amount is greater than or equal to the input amount
+        return $totalAmount >= $inputAmount;
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    private function compareGiftCardsAndGetGiftCardReferences($balanceResponse, $inputData): array
+    {
+        $outputArray = [];
+
+        // Create an associative array for quick lookup of gift cards from inputData by their number
+        $inputDataMap = [];
+        foreach ($inputData['gift_cards'] as $inputCard) {
+            $inputDataMap[$inputCard['number']] = $inputCard;
+        }
+
+        // Loop through balanceResponse gift cards
+        foreach ($balanceResponse['gift_cards'] as $balanceCard) {
+            $cardNumber = $balanceCard['number'];
+
+            // Check if the card number exists in inputData
+            if (isset($inputDataMap[$cardNumber])) {
+                $inputCard = $inputDataMap[$cardNumber];
+
+                // check status
+                if ($balanceCard['status'] !== 'active')
+                {
+                    $description = 'Your gift card has expired. Please try another card';
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR, [
+                        'gift_cards.number' => $inputCard['number']
+                    ], $description, $description);
+                }
+
+
+                // Check if balance is greater than or equal to the amount in inputData
+                if ($balanceCard['balance'] >= $inputCard['amount']) {
+                    // Redact the card number (keep only the last 4 digits visible)
+                    $redactedNumber = str_repeat('*', strlen($cardNumber) - 4) . substr($cardNumber, -4);
+
+                    // Prepare the output object
+                    $outputArray[] = [
+                        'id' => $balanceCard['id'],
+                        'number' => $redactedNumber,
+                        'amount' => $inputCard['amount']
+                    ];
+                } else {
+                    $description = 'Your gift card has insufficient balance. Please try another card.';
+                    $description = str_replace('$number', $inputCard['number'], $description);
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR, [
+                            'gift_cards.number' => $inputCard['number']
+                    ], $description, $description);
+                }
+            }
+        }
+
+        return $outputArray;
+    }
 
 }

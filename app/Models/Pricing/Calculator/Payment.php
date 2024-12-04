@@ -5,6 +5,7 @@ namespace RZP\Models\Pricing\Calculator;
 use App;
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Exception\LogicException;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card;
 use RZP\Models\Currency\Core;
@@ -297,6 +298,10 @@ class Payment extends Base
         // {
         //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
         // }
+        else if ($method === PaymentModel\Method::GIFT_CARDS)
+        {
+            $rule = $this->getRelevantPricingRuleForGiftCard($rules);
+        }
         else
         {
             $rule = $this->validateAndGetOnePricingRule($rules);
@@ -887,6 +892,37 @@ class Payment extends Base
         $rules = $this->applyFiltersOnRules($rules, $filter);
 
         return $this->validateAndGetOnePricingRule($rules);
+    }
+
+    /**
+     * @throws LogicException
+     */
+    protected function getRelevantPricingRuleForGiftCard($rules)
+    {
+        $payment = $this->entity;
+
+        $gateway = $payment->getGateway();
+
+        // Returns giftcard_razorpay in case of gateway wallet_razorpaywallet
+        $giftCard = $this->getGiftCardBasisGateway($gateway);
+
+        $filter = array(
+            [Pricing\Entity::PAYMENT_NETWORK, $giftCard, false, null]
+        );
+
+        $rules = $this->applyFiltersOnRules($rules, $filter);
+
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    protected function getGiftCardBasisGateway($gateway): string
+    {
+        switch ($gateway) {
+            case "wallet_razorpaywallet" :
+                return "razorpay_giftcard";
+        }
+
+        return $gateway;
     }
 
     protected function getRelevantPricingRuleForCardlessEmi($rules)

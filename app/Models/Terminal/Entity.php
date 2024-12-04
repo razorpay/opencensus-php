@@ -113,6 +113,7 @@ class Entity extends Base\PublicEntity
     const STATIC_QR                     = 'static_qr';
     const OFFLINE                       = 'offline';
     const FPX                           = 'fpx';
+    const GIFT_CARDS                    = 'gift_cards';
     const MERCHANT_MOBILE_CONTACT       = 'merchant_mobile_contact';
     const CC_ON_UPI                     = 'cc_on_upi';
     const WALLET_ON_UPI                 = 'wallet_on_upi';
@@ -760,9 +761,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UPI);
     }
 
+
     public function isFpxEnabled()
     {
         return $this->getAttribute(self::FPX);
+    }
+
+    public function isGiftCardsEnabled()
+    {
+        return $this->getAttribute(self::GIFT_CARDS);
     }
 
     public function isTokenizationSupported()

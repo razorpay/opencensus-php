@@ -2,6 +2,8 @@
 
 namespace RZP\Services\Wallet;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Http\Request\Requests;
 
 class Api extends Base
@@ -13,6 +15,7 @@ class Api extends Base
     const RECHARGE_URL = '/v1/recharge';
     const TRANSFER_URL = '/v1/transfer';
     const CAPTURE_URL  = '/v1/payment/:PAYMENT_ID/capture';
+    const VALIDATE_GIFT_CARD_URL = '/v1/giftcards/validate/bulk';
 
     public function __construct($app)
     {
@@ -58,6 +61,7 @@ class Api extends Base
             'customer_consent' => $data['customer_consent'],
             'contact'       => isset($data['contact']) ? $data['contact'] : null,
             'notes'         => isset($data['notes']) ? $data['notes'] : null,
+            'gift_cards' => isset($data['gift_cards']) ? $data['gift_cards'] : null,
         ];
 
         return $this->makeRequest(Requests::POST, self::PAYMENT_URL, $body, self::USER);
@@ -118,4 +122,17 @@ class Api extends Base
 
         return $this->makeRequest(Requests::POST, $captureUrl, $body, self::USER);
     }
-}
+
+    public function validateGiftCard(array $data, string $merchantID) : array
+    {
+
+        $body = [
+            'gift_cards' => $data['gift_cards'],
+            'merchant_id' => $merchantID
+        ];
+
+         (new Validator)->validateInput('validate_gift_card', $body);
+
+        return $this->makeRequest(Requests::POST, self::VALIDATE_GIFT_CARD_URL, $body, self::USER);
+    }
+ }

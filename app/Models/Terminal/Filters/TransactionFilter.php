@@ -140,6 +140,9 @@ class TransactionFilter extends Terminal\Filter
             case Method::FPX:
                 return $terminal->isFpxEnabled();
 
+            case Method::GIFT_CARDS:
+                return $terminal->isGiftCardsEnabled();
+
             default:
                 throw new Exception\LogicException(
                     'Unknown payment method passed.',

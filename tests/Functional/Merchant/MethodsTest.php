@@ -101,6 +101,18 @@ class MethodsTest extends TestCase
         $this->assertEquals(0, $count);
     }
 
+    public function testGetPaymentMethodsRouteWithGiftcardFalse()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->disableGiftcard('10000000000000');
+
+        $content = $this->startTest();
+
+        $count = count($content['gift_cards']);
+        $this->assertEquals(0, $count);
+    }
+
     public function testNumOfBanksInTestMode()
     {
         $this->ba->publicTestAuth();
@@ -121,6 +133,18 @@ class MethodsTest extends TestCase
         $content = $this->getPaymentMethods();
 
         $count = count($content['fpx']);
+
+        $this->assertEquals(41, $count);
+    }
+
+    public function testNumOfGiftcardBanksInTestMode()
+    {
+        $this->ba->publicTestAuth();
+        $this->fixtures->merchant->enableGiftcard('10000000000000');
+
+        $content = $this->getPaymentMethods();
+
+        $count = count($content['gift_cards']);
 
         $this->assertEquals(41, $count);
     }

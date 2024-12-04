@@ -22,6 +22,7 @@ class Validator extends Base\Validator
         'customer_consent'  => 'required|bool',
         'notes'             => 'sometimes|string',
         'contact'           => 'sometimes|contact_syntax',
+        'gift_cards'        => 'sometimes|array'
     ];
 
     protected static $refundRules = [
@@ -46,5 +47,10 @@ class Validator extends Base\Validator
     protected static $captureRules = [
         'payment_id'        => 'required|alpha_num|size:14',
         'amount'            => 'required|integer|min:0',
+    ];
+
+    protected static $validateGiftCardRules = [
+        'gift_cards'        => 'required|array',
+        'merchant_id'       => 'required|string'
     ];
 }

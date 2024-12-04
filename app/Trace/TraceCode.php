@@ -4684,6 +4684,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DUITNOW_PAY_EMAIL_SUPPRESS                            = 'DUITNOW_PAY_EMAIL_SUPPRESS';
     const WALLET_EMAIL_SUPPRESS                                 = 'WALLET_EMAIL_SUPPRESS';
+    const GIFTCARD_EMAIL_SUPPRESS                               = 'GIFTCARD_EMAIL_SUPPRESS';
     const PACB_SUB_MERCHANT_FLOW                                = 'PACB_SUB_MERCHANT_FLOW';
     const INTL_BANK_TRANSFER_CURRENCY_NOT_SUPPORTED             = 'INTL_BANK_TRANSFER_CURRENCY_NOT_SUPPORTED';
     const B2B_TRANSFER_NOT_APPLICABLE_FOR_THIS_PAYMENT          = 'B2B_TRANSFER_NOT_APPLICABLE_FOR_THIS_PAYMENT';
@@ -12349,6 +12350,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DOWNLOAD_S3_URL_FUNC                                =  "DOWNLOAD_S3_URL_FUNC";
     const DOWNLOAD_S3_URL_FUNC_COMPLETE                       = "DOWNLOAD_S3_URL_FUNC_COMPLETE";
     const BATCH_DOWNLOAD_REQUEST_AT_SERVICE_COMPLETE          = "BATCH_DOWNLOAD_REQUEST_AT_SERVICE_COMPLETE";
+
+    const GATEWAY_VALIDATE_GIFT_CARD_REQUEST                            = 'GATEWAY_VALIDATE_GIFT_CARD_REQUEST';
+    const VALIDATE_GIFT_CARD_SUCCESS                                    = 'VALIDATE_GIFT_CARD_SUCCESS';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

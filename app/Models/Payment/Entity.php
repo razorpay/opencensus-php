@@ -217,6 +217,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     // Used by merchant dashboard to fetch payments based on utr
     const BANK_REFERENCE        = 'bank_reference';
 
+    const GIFT_CARDS            = 'gift_cards';
+
     const DEFAULT_CURRENCY      = 'INR';
 
     const ACQUIRER_DATA         = 'acquirer_data';
@@ -2848,6 +2850,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::DUITNOW_PAY);
     }
 
+    public function isGiftcard()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::GIFT_CARDS);
+    }
+
     public function isEmandate()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
@@ -4203,6 +4210,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 return [$method, Processor\PayLater::getName($this->getWallet())];
             case Method::APP:
                 return [$method, Processor\App::getName($this->getWallet())];
+            case Method::GIFT_CARDS:
+                return [$method, Processor\GiftCard::getName($this->getGateway())];
         }
     }
 

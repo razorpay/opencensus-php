@@ -873,6 +873,11 @@ trait Authorize
                 }
             }
 
+            // we need gift_cards to pass it to wallets
+            if (($payment->getMethod() === Method::GIFT_CARDS)) {
+                $terminalGatewayInput['gift_cards'] = $input['gift_cards'];
+            }
+
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
             $return = $this->returnSpawnCoprotoIfContactRequired($payment, $input);
@@ -11603,6 +11608,17 @@ trait Authorize
         }
     }
 
+    protected function verifyGiftcardEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isGiftCardsEnabled() === false))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_ALLOWED_IN_CONFIG);
+        }
+    }
+
 
     protected function verifyCardEnabledInLive(Payment\Entity $payment)
     {
@@ -14517,6 +14533,9 @@ trait Authorize
                 break;
             case Payment\Method::FPX:
                 $this->verifyFpxEnabled($payment);
+                break;
+            case Payment\Method::GIFT_CARDS:
+                $this->verifyGiftcardEnabled();
                 break;
             default:
                 throw new Exception\LogicException(

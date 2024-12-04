@@ -3227,6 +3227,10 @@ class Gateway
             self::WALLET_PAYPAL
         ],
 
+        Method::GIFT_CARDS => [
+            self::WALLET_RAZORPAYWALLET,
+        ],
+
         Method::EMI => [
             self::HITACHI,
             self::AMEX,
@@ -3806,6 +3810,10 @@ class Gateway
         Wallet::PHONEPE            => Gateway::WALLET_PHONEPE,
         Wallet::PHONEPE_SWITCH     => Gateway::WALLET_PHONEPESWITCH,
         Wallet::PAYPAL             => Gateway::WALLET_PAYPAL,
+    ];
+
+    public static $giftCardToGatewayMap = [
+        Payment\Processor\GiftCard::RAZORPAYWALLET     => Gateway::WALLET_RAZORPAYWALLET,
     ];
 
     public static $upiToGatewayMap = [

@@ -772,6 +772,9 @@ class Repository extends Base\Repository
                     } else if ($method === Methods\Entity::DUITNOW_PAY)
                     {
                         $join->where(Methods\Entity::ADDON_METHODS . '->' . Methods\Entity::DUITNOW_PAY . '->' . Methods\Entity::DUITNOW_PAY,'=', $value);
+                    } else if ($method === Methods\Entity::GIFT_CARDS)
+                    {
+                        $join->where(Methods\Entity::ADDON_METHODS . '->' . Methods\Entity::GIFT_CARDS . '->' . Methods\Entity::RAZORPAY_GIFTCARD,'=', $value);
                     } else
                     {
                         $join->where($method, '=', $queryValue);
