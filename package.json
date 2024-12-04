@@ -27,6 +27,7 @@
     "serve-merchantLA": "REDIRECTOR=true pnpm start-merchantLA",
     "test": "pnpm nx run web:test",
     "test:jest": "pnpm nx run web:test:jest",
+    "test:jest-pos": "pnpm nx run pos:test:jest",
     "test:jest:ci": "pnpm nx run web:test:jest:ci",
     "test:jest-watch-changed": "pnpm nx run web:test:jest-watch-changed",
     "test:jest-watch": "pnpm nx run web:test:jest-watch",

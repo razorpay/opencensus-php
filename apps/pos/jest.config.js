@@ -29,6 +29,7 @@ module.exports = {
     '^common(/.*)?$': `${nodeModulesRootDir}/../web/js/common$1`,
   },
   collectCoverage: true,
+  coverageDirectory: 'coverage',
   collectCoverageFrom: [
     '**/*.{ts,tsx,js,jsx}',
     '!stories/**/*.{ts,tsx,js,jsx}',
