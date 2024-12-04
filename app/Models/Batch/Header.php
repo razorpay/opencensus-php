@@ -1682,6 +1682,10 @@ class Header
     const UPDATE_GIFT_CARDS_EXPIRY_REFERENCE_ID = "Reference ID (Optional)";
     const UPDATE_GIFT_CARDS_EXPIRY_NOTES = "Notes (Optional)";
 
+    //Wallet create gift card transfers headers
+    const CREATE_GIFT_CARD_TRANSFERS_SOURCE_USER_ID = "Source user_id";
+    const CREATE_GIFT_CARD_TRANSFERS_DESTINATION_USER_ID = "Destination user_id";
+
     // GCOMS: Provide EMAILS against orderID for gift-cards delivery
     const UPLOAD_BULK_EMAIL_ORDER_ID = "Order ID";
     const UPLOAD_BULK_EMAIL_PROGRAM_ID = "Program ID";
@@ -2009,6 +2013,12 @@ class Header
     const MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS = [
         Header::CREATE_BULK_GIFT_CARD_PROGRAM_ID,
         Header::CREATE_BULK_GIFT_CARD_AMOUNT
+    ];
+
+//     mandatory headers for create gift card transfers batch
+    const MANDATORY_HEADERS_FOR_CREATE_GIFT_CARD_TRANSFERS = [
+        Header::CREATE_GIFT_CARD_TRANSFERS_SOURCE_USER_ID,
+        Header::CREATE_GIFT_CARD_TRANSFERS_DESTINATION_USER_ID
     ];
 
     // mandatory headers for email upload
@@ -6106,6 +6116,14 @@ class Header
             self::OUTPUT => [],
         ],
 
+        TYPE::CREATE_GIFT_CARD_TRANSFERS => [
+            self::INPUT => [
+                self::CREATE_GIFT_CARD_TRANSFERS_SOURCE_USER_ID,
+                self::CREATE_GIFT_CARD_TRANSFERS_DESTINATION_USER_ID
+            ],
+            self::OUTPUT => []
+        ],
+
         TYPE::GCMS_UPLOAD_BULK_EMAILS => [
             self::INPUT => [
                 self::UPLOAD_BULK_EMAIL_ORDER_ID,
@@ -6803,6 +6821,11 @@ class Header
         if ($type === Type::CREATE_BULK_GIFT_CARDS )
         {
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS);
+        }
+
+        if ($type === Type::CREATE_GIFT_CARD_TRANSFERS )
+        {
+            self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_CREATE_GIFT_CARD_TRANSFERS);
         }
 
         if ($type === Type::UPDATE_GIFT_CARDS_EXPIRY )
