@@ -7,15 +7,20 @@ use Illuminate\Support\Facades\DB;
 use Mail;
 use Crypt;
 use Config;
+use RZP\Constants\Metric as Metrics;
 use RZP\Models\Admin;
 use RZP\Models\BharatQr;
 use RZP\Models\Emi\ProcessingFeePlan;
+use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\QrPayment\Constants as QrConstants;
 use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Http\Controllers\GatewayController;
+use RZP\Jobs\MerchantBalanceUpdateAfterCLSOnboarding;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 use RZP\Http\Request\Requests;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Services\NbPlus\CardlessEmi as CardlessEmiService;
 use Throwable;
@@ -5066,6 +5071,57 @@ class Service extends Base\Service
         return $updated;
     }
 
+    public function createCorrespondingCLSAdjustment(string $paymentId)
+    {
+        try
+        {
+            $payment = $this->repo->payment->findOrFail($paymentId);
+
+            $transaction = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
+
+            $amount = $transaction->getCredit() - $transaction->getDebit();
+
+            $transactorEvent = "";
+
+            if ($amount >= 0)
+            {
+                $transactorEvent = "positive_adjustment";
+            }
+            else
+            {
+                $transactorEvent = "negative_adjustment";
+            }
+
+            $transactorId = 'adj_' . $payment->getId();
+
+            $journalPayload = [
+                LedgerConstants::MERCHANT_ID           => $transaction->getMerchantId(),
+                LedgerConstants::CURRENCY              => LedgerConstants::INR_CURRENCY,
+                LedgerConstants::TRANSACTION_DATE      => $transaction->getUpdatedAt(),
+                LedgerConstants::TRANSACTOR_ID         => $transactorId,
+                LedgerConstants::TRANSACTOR_EVENT      => $transactorEvent,
+                LedgerConstants::MONEY_PARAMS          => [
+                        "merchant_balance_amount"       => strval($amount),
+                        "base_amount"                   => strval($amount),
+                        "adjustment_amount"             => strval($amount),
+                        "merchant_balance_limit"        => "0",
+                ],
+            ];
+
+            $ledgerOutboxCore = (new LedgerOutboxCore());
+
+            $ledgerOutboxCore->createJournalInLedger($journalPayload, false, false, true);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::CLS_ONBOARDING_FAILURE_ADJUSTMENT_CREATION,
+                [
+                    'payment_id'            => $paymentId,
+                ]
+            );
+        }
+    }
+
     public function updateMerchantBalance(string $paymentId, $asyncTxnEnabled = false)
     {
         $payment = null;
@@ -5075,6 +5131,20 @@ class Service extends Base\Service
             $payment = $this->repo->payment->findOrFail($paymentId);
 
             $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
+
+            if ($merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === true)
+            {
+                $input = [
+                    'payment_id'  => $payment->getId(),
+                    'mode'        => $this->app['rzp.mode'],
+                    'async_txn_fill_enabled' => $asyncTxnEnabled,
+                ];
+
+                $delaySecs = 5 * 60; // 5 minutes
+
+                MerchantBalanceUpdateAfterCLSOnboarding::dispatch($input, $this->mode, $asyncTxnEnabled)->delay($delaySecs);;
+                return;
+            }
 
             if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW))
             {

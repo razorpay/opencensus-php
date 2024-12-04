@@ -204,6 +204,7 @@ class Metric
     const PG_LEDGER_OUTBOX_UPDATE_RETRY_COUNT_FAILURE           = 'pg_ledger_outbox_update_retry_count_failure';
     const LEDGER_ACCOUNT_CREATION_FAILURE                       = 'ledger_account_creation_failure';
     const PG_LEDGER_API_TRANSACTION_JOURNAL_ID_MISMATCH         = 'pg_ledger_api_transaction_journal_id_mismatch';
+    const CLS_ONBOARDING_FAILURE_ADJUSTMENT_CREATION            = 'cls_onboarding_failure_adjustment_creation';
 
     const PG_LEDGER_AMOUNT_CREDIT_EXPIRY_REMINDER_CREATED       = 'pg_ledger_amount_credit_expiry_reminder_created';
     const PG_LEDGER_AMOUNT_CREDIT_EXPIRY_REMINDER_FAILURE       = 'pg_ledger_amount_credit_expiry_reminder_failure';

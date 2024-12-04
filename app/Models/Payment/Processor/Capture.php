@@ -56,6 +56,7 @@ use RZP\Jobs\MerchantBasedBalanceUpdateV1;
 use RZP\Jobs\MerchantBasedBalanceUpdateV2;
 use RZP\Jobs\MerchantBasedBalanceUpdateV3;
 use RZP\Jobs\MerchantBalanceUpdateReverseShadowQueue;
+use RZP\Jobs\MerchantBalanceUpdateAfterCLSOnboarding;
 
 trait Capture
 {
@@ -1125,7 +1126,8 @@ trait Capture
         {
             if ((($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false) and
                 ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false) and
-                ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)) or
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false) and
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === false)) or
                 ($txn->isBalanceUpdated() === true))
             {
                 return;
@@ -1153,6 +1155,13 @@ trait Capture
                 ]);
 
             $asyncBalancePushedAt = time();
+
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === true and
+                $payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            {
+                MerchantBalanceUpdateAfterCLSOnboarding::dispatch($input, $this->mode, $asyncBalancePushedAt);
+                return;
+            }
 
             if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
             {

@@ -3,15 +3,17 @@
 namespace RZP\Models\Transaction\Processor;
 
 use Carbon\Carbon;
-
+use RZP\Exception;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Settlement\Ondemand as OndemandModel;
+use RZP\Trace\TraceCode;
 
 /**
  *
@@ -107,6 +109,25 @@ class SettlementOndemand extends Base
      */
     public function shouldUpdateBalance()
     {
+        $merchant = $this->repo->merchant->findOrFailPublic($this->txn->getMerchantId());
+
+        if ($this->txn->isBalanceUpdated() === false && $merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === true)
+        {
+            $this->trace->info(TraceCode::TXN_FAILURE_DURING_CLS_ONBOARDING,
+                [
+                    'merchant_id'           => $merchant->getMerchantId(),
+                    'type'                  => 'settlement_ondemand',
+                ]
+            );
+
+            throw new Exception\RuntimeException(
+                'CLS on-boarding in progress, please try again after some time',
+                [
+                    'merchant_id' => $this->txn->getMerchantId(),
+                    'type'    => $this->txn->getType(),
+                ]);
+        }
+
         return $this->source->shouldValidateAndUpdateBalances();
     }
 

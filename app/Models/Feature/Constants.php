@@ -1423,6 +1423,8 @@ class Constants
 
     const PG_LEDGER_REVERSE_SHADOW = 'pg_ledger_reverse_shadow';
 
+    const CLS_ONBOARDING_INPROGRESS = 'cls_onboarding_inprogress';
+
     const PG_LEDGER_RAMP_ON_HOLD = "pg_ledger_ramp_on_hold";
 
     const TRANSFER_ON_HOLD = "transfer_on_hold";
@@ -2716,6 +2718,7 @@ class Constants
         self::VA_EDIT_BULK                                 => true,
         self::PAYOUT_WORKFLOWS                             => true,
         self::ASYNC_BALANCE_UPDATE                         => true,
+        self::CLS_ONBOARDING_INPROGRESS                    => true,
         self::ISSUE_MPANS                                  => true,
         self::CUST_CONTACT_EMAIL_NULL                      => true,
         self::PHONEPE_INTENT                               => true,

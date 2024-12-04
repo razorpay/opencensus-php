@@ -137,6 +137,15 @@ trait ReverseShadowTrait
         return sprintf("%s-%s", $transactorId, $transactorEvent);
     }
 
+    public function createAndSaveLedgerOutboxPayload($transactorId, $transactorEvent, $journalPayload)
+    {
+        $payloadName = $this->getPayloadName($transactorId, $transactorEvent);
+
+        $outboxPayload = $this->prepareOutboxPayload($payloadName, $journalPayload);
+
+        $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
+    }
+
     public function getMerchantAccountBalances($ledgerService, $merchantId): array
     {
         $merchantAccountBalancesList = $this->getMerchantAccounts($ledgerService, $merchantId);
@@ -449,7 +458,7 @@ trait ReverseShadowTrait
     }
 
 
-    private function createJournalInLedger(array $journalPayload, bool $isBulkJournalRequest = false, bool $isMultipleJournalRequest = false, $isAdjustmentLedgerEntryOnly = false) : array
+    protected function createJournalInLedger(array $journalPayload, bool $isBulkJournalRequest = false, bool $isMultipleJournalRequest = false, $isAdjustmentLedgerEntryOnly = false) : array
     {
         $app = App::getFacadeRoot();
 

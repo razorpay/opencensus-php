@@ -290,6 +290,35 @@ abstract class Base extends BaseCore
 
     protected function shouldUpdateBalance()
     {
+        $merchant = $this->repo->merchant->findOrFailPublic($this->txn->getMerchantId());
+
+        if ($this->txn->isBalanceUpdated() === false && $merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === true)
+        {
+            $txnBalanceId = $this->txn->getBalanceId();
+
+            $primaryBalance = $this->repo->balance->fetchBalanceByMerchantIdAndTypeFromWarehouse($this->txn->merchant, Balance\Type::PRIMARY);
+
+            if ($primaryBalance->getId() !== $txnBalanceId)
+            {
+                //No change in the behaviour
+                return true;
+            }
+
+            $this->trace->info(TraceCode::TXN_FAILURE_DURING_CLS_ONBOARDING,
+                [
+                    'merchant_id'           => $merchant->getMerchantId(),
+                    'type'                  => $this->txn->getType(),
+                ]
+            );
+
+            throw new Exception\RuntimeException(
+                'CLS on-boarding in progress, please try again after some time',
+                [
+                    'merchant_id' => $this->txn->getMerchantId(),
+                    'type'    => $this->txn->getType(),
+                ]);
+        }
+
         return true;
     }
 

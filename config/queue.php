@@ -394,6 +394,10 @@ return [
         'test'       => env('AWS_MERCHANT_BALANCE_UPDATE_TEST_QUEUE'),
         'live'       => env('AWS_MERCHANT_BALANCE_UPDATE_LIVE_QUEUE'),
      ],
+    'merchant_balance_update_after_cls_onboarding' => [
+        'test'       => env('AWS_MERCHANT_BALANCE_UPDATE_AFTER_CLS_ONBOARDING_TEST_QUEUE'),
+        'live'       => env('AWS_MERCHANT_BALANCE_UPDATE_AFTER_CLS_ONBOARDING_LIVE_QUEUE'),
+    ],
     'payment_reminder' => [
         'test'       => env('AWS_PAYMENT_REMINDER_TEST_QUEUE'),
         'live'       => env('AWS_PAYMENT_REMINDER_LIVE_QUEUE'),
