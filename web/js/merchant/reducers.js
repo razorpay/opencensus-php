@@ -72,6 +72,7 @@ import magicRTOAnalyticsReducer from 'merchant/reducers/magicCheckout/rtoAnalyti
 import { magicCODOrdersAutomationReducer } from 'merchant/reducers/magicCheckout/codOrderAutomation/reducer';
 import { magicPrepayCODConfigsReducer } from 'merchant/reducers/magicCheckout/prepayCOD/configDashboard/reducers';
 import { magicPartialCODReducer } from 'merchant/reducers/magicCheckout/partialCOD/reducers';
+import { magicxACODRulesReducer } from 'merchant/reducers/magicCheckout/magicxACODRules/reducer';
 import {
   magicPrepayCODOrdersReducer,
   magicPrepayCODOrderInfoReducer,
@@ -283,6 +284,7 @@ export default combineReducers({
   magicShippingEngine: shippingEngineReducer,
   magicBlocklist: blocklistReducer,
   magicAllowlist: allowlistReducer,
+  magicxACODRules: magicxACODRulesReducer,
   rtoHistoryUpload: rtoHistoryUploadReducer,
   codEngineAllowlistUpload: codEngineAllowlistUploadReducer,
   shippingService: shippingServiceReducer,
