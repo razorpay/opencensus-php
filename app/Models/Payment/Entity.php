@@ -5785,19 +5785,20 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
                 $offersEngineRepo = new Offer\Repository();
 
-                // fetches normal offers from OE and limited offers from API db
-                $offersArray = $offersEngineRepo->findManyFromOE($offerIds, $this->getMerchantId());
+                // fetches normal offers from OE and limited offers from API db.
+                // The assumption here is that payment is always associated with one offer_id
+                $offerEntity = $offersEngineRepo->findByIdAndMerchantId($offerIds[0], $this->getMerchantId());
 
                 $offersCollection = new Base\PublicCollection();
 
-                foreach ($offersArray as $offer)
-                {
-                    $offersCollection->push($offer);
-                }
+                $offersCollection->push($offerEntity);
 
                 $this->setRelation('offers', $offersCollection);
 
-                app('trace')->info(TraceCode::OFFER_FOR_PAYMENT_FOUND);
+                app('trace')->info(TraceCode::OFFER_FOR_PAYMENT_FOUND, [
+                    'offer_id'   => optional($offerEntity)->getId(),
+                    'payment_id' => $this->getId(),
+                ]);
 
                 return $offersCollection->first();
             }

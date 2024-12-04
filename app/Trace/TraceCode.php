@@ -3965,6 +3965,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_APPLIED_ON_PAYMENT                              = 'OFFER_APPLIED_ON_PAYMENT';
     const OFFER_NOT_APPLIED_ON_PAYMENT                          = 'OFFER_NOT_APPLIED_ON_PAYMENT';
     const OFFER_SELECTED_FOR_PAYMENT                            = 'OFFER_SELECTED_FOR_PAYMENT';
+    const PAYMENT_CREATION_SHOULD_BE_BLOCKED                    = 'PAYMENT_CREATION_SHOULD_BE_BLOCKED';
     const OFFER_SELECTED_FOR_PAYMENT_WITHOUT_ORDER              = 'OFFER_SELECTED_FOR_PAYMENT_WITHOUT_ORDER';
     const OFFER_APPLIED_ON_ORDER                                = 'OFFER_APPLIED_ON_ORDER';
     const OFFER_ORDER_AMOUNT_CHECK                              = 'OFFER_ORDER_AMOUNT_CHECK';

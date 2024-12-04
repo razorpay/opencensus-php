@@ -37,5 +37,7 @@ final class Metric
     const OFFERS_ENGINE_DISCOUNT_MISMATCH          = 'offers_engine_discount_mismatch';
     const OFFERS_ENGINE_TRANSACTION_FAILURE          = 'offers_engine_transaction_failure';
 
+    const OFFERS_PAYMENT_CREATION_INVALID          = 'offers_payment_creation_invalid';
+
     const OFFERS_ENGINE_ORDER_APPLICABILITY_DIFF          = 'offers_engine_order_applicability_diff';
 }

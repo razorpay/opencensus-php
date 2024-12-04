@@ -1140,8 +1140,12 @@ class Core extends Base\Core
 
     public function shouldRouteToOffersEngineForPayments(string $merchantId, $experiment, $throwError = false): bool
     {
-        if ((app()->runningUnitTests() === true) or
-            ($this->env === 'bvt' or $this->env === 'automation' or
+        if (app()->runningUnitTests() === true)
+        {
+            return true;
+        }
+
+        if (($this->env === 'bvt' or $this->env === 'automation' or
              $this->env === 'func' or $this->env === 'availability' or
              $this->env === 'perf' or $this->env === 'perf2'))
         {

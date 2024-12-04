@@ -6826,7 +6826,22 @@ class Processor
 
         if (!$this->validateOffersViaOffersEngine($payment, $offer, $experiments))
         {
-             return $valid;
+            // validateOffersViaOffersEngine should always throw an exception in the account these
+            // parameters checked below are true. If the code flow comes here, it's a P0 issue.
+            if (($order != null) and
+                ($order->hasOffers() === true) and
+                ($order->isOfferForced() === true) and
+                ($offer->getOfferType() === Offer\Constants::ALREADY_DISCOUNTED) and
+                ($offer->shouldBlockPayment() === true))
+            {
+                $this->trace->error(TraceCode::PAYMENT_CREATION_SHOULD_BE_BLOCKED, [
+                    'offer_id'   => $offer->getPublicId(),
+                ]);
+
+                app('trace')->count(Offer\Metric::OFFERS_PAYMENT_CREATION_INVALID);
+            }
+
+            return $valid;
         }
 
         $valid = true;
