@@ -1163,8 +1163,6 @@ final class RazorxTreatment
     const QR_PAYMENT_REFACTOR_GATEWAY     = 'qr_payment_refactor_gateway';
     const QR_PAYMENT_REFACTOR_EXISTING_GATEWAY     = 'qr_payment_refactor_existing_gateway';
 
-    const BAJAJ_FINSERV_REDIRECT_FLOW = 'bajaj_finserv_redirect_flow';
-
     const MANDATE_IDEMPOTENCY_KEY_EXPERIMENT  = 'mandate_idempotency_key_experiment';
     const MANDATE_IDEMPOTENCY_KEY_EXPERIMENT_NEW = "mandate_idempotency_key_experiment_new";
     const DCS_MERGE_FIX = 'dcs_merge_fix';

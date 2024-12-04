@@ -2098,8 +2098,7 @@ trait Authorize
             $redirectUrl = null;
 
             if ((in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === false) or
-                ($payment->getGateway() === Payment\Gateway::BAJAJ and
-                    strtolower($this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::BAJAJ_FINSERV_REDIRECT_FLOW, $this->mode)) === 'v3'))
+                ($payment->getGateway() === Payment\Gateway::BAJAJ))
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
             }
@@ -10585,8 +10584,7 @@ trait Authorize
                 if ((in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === true) and
                     ($payment->isEmi() === true))
                 {
-                    if ($payment->getGateway() !== Payment\Gateway::BAJAJ or
-                        strtolower($this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::BAJAJ_FINSERV_REDIRECT_FLOW, $this->mode)) === 'v2')
+                    if ($payment->getGateway() !== Payment\Gateway::BAJAJ)
                     {
                         return true;
                     }

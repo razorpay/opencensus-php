@@ -908,8 +908,7 @@ trait Callback
                  ($payment->getAuthType() === Payment\AuthType::_3DS)))
             {
                 if ((in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === false) or
-                    ($payment->getGateway() === Payment\Gateway::BAJAJ and
-                        strtolower($this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::BAJAJ_FINSERV_REDIRECT_FLOW, $this->mode)) === 'v3'))
+                    ($payment->getGateway() === Payment\Gateway::BAJAJ))
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_OTP_SUBMIT_FOR_3DS_AUTH,null,
@@ -933,8 +932,7 @@ trait Callback
 
             if(in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === true)
             {
-                if ($payment->getGateway() !== Payment\Gateway::BAJAJ or
-                    strtolower($this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::BAJAJ_FINSERV_REDIRECT_FLOW, $this->mode)) === 'v2')
+                if ($payment->getGateway() !== Payment\Gateway::BAJAJ)
                 {
                     $card = $this->repo->card->findOrFail($payment->getCardId());
 

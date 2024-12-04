@@ -5008,12 +5008,7 @@ class Processor
 
                 $input['payment'] = $payment->toArray();
 
-                $variantFlag = $this->app->razorx->getTreatment($this->merchant->getId(),RazorxTreatment::SEND_USER_DETAILS_TO_GETSIMPL,  $this->mode);
-
-                if($variantFlag === 'on')
-                {
-                    $this->addIpAndUserAgent($input,$payment);
-                }
+                $this->addIpAndUserAgent($input,$payment);
 
                 $input['contact'] = $payment['contact'];
                 break;
