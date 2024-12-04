@@ -61,7 +61,11 @@ interface FilterParams {
 }
 
 interface ListProps {
-  fetchAll: (params: FilterParams, isCreateGiftCardBatchEnabled: boolean) => void;
+  fetchAll: (
+    params: FilterParams,
+    isCreateGiftCardBatchEnabled: boolean,
+    isGiftCardsTransferBatchEnabled: boolean,
+  ) => void;
   batchDownload: (id: string) => Promise<AxiosResponse>;
   [x: string]: unknown;
 }
@@ -74,6 +78,10 @@ export const List = ({ fetchAll, batchDownload, ...rest }: ListProps): JSX.Eleme
     splitz?.abExperiments?.create_bulk_gift_cards,
   );
 
+  const isGiftCardsTransferBatchEnabled = isExperimentEnabled(
+    splitz?.abExperiments?.gift_cards_transfer,
+  );
+
   useEffect(() => {
     if (fetchAll) {
       fetchAll(
@@ -82,9 +90,10 @@ export const List = ({ fetchAll, batchDownload, ...rest }: ListProps): JSX.Eleme
           skip: 0,
         },
         isCreateGiftCardBatchEnabled,
+        isGiftCardsTransferBatchEnabled,
       );
     }
-  }, [fetchAll, isCreateGiftCardBatchEnabled]);
+  }, [fetchAll, isCreateGiftCardBatchEnabled, isGiftCardsTransferBatchEnabled]);
 
   return (
     <div className="content-wrapper">
@@ -113,7 +122,7 @@ const mapStateToProps = (state) => ({
 });
 
 export default connect(mapStateToProps, (dispatch) => ({
-  fetchAll: (params, isCreateGiftCardBatchEnabled) =>
-    dispatch(fetchAll(params, isCreateGiftCardBatchEnabled)),
+  fetchAll: (params, isCreateGiftCardBatchEnabled, isGiftCardsTransferBatchEnabled) =>
+    dispatch(fetchAll(params, isCreateGiftCardBatchEnabled, isGiftCardsTransferBatchEnabled)),
   batchDownload: (id) => dispatch(batchDownload(id)),
 }))(List);

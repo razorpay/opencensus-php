@@ -13,6 +13,10 @@ import { storeWithInitialState } from 'merchant/store';
 import { BladeProvider } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
 
+jest.mock('common/splitz/utils', () => ({
+  isExperimentEnabled: () => true,
+}));
+
 const storeState = {
   session: {
     user: {
@@ -41,7 +45,7 @@ describe('BatchOptions tests', () => {
       />,
     );
 
-    expect(getAllByTestId(container, 'batch-type-option')).toHaveLength(4);
+    expect(getAllByTestId(container, 'batch-type-option')).toHaveLength(5);
   });
 
   test('it should call openModal with expected properties', async () => {

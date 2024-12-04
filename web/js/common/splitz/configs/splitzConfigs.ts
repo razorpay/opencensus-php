@@ -759,6 +759,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'gift_cards_transfer',
+          experimentId: {
+            beta: 'PSE3n0XAOaelcR',
+            production: 'PSE20wn8enpU5w',
+          },
+          defaultVariant: {
+            name: 'variant',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

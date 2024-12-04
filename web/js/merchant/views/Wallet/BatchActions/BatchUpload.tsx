@@ -18,6 +18,8 @@ import {
   validateGiftCardsBatch,
   createGCExpiryBatch,
   validateGCExpiryBatch,
+  createGCTransferBatch,
+  validateGCTransferBatch,
 } from 'merchant/reducers/batches';
 import { BatchUploadWrapper } from 'merchant/views/Wallet/BatchActions/components/BatchUploadWrapper';
 import InputSelector from 'merchant/views/Wallet/BatchActions/components/InputSelector';
@@ -205,6 +207,27 @@ export const GCExpiryBatchUpload = connect(null, {
       points={[
         'Either the gift card ID or the gift card number must be present for a successful update.',
         'Contact (email/phone) of the customer making the extension request, link to the support ticket with customer request details, timestamp of the request and source of the request (email, social media, chat etc.) are mandatory parameters.',
+      ]}
+      createBatch={createBatch}
+      validateBatch={validateBatch}
+    />
+  );
+});
+
+export const GCTransferBatchUpload = connect(null, {
+  createBatch: createGCTransferBatch as () => void,
+  validateBatch: validateGCTransferBatch as () => void,
+})(({ createBatch, validateBatch }) => {
+  const sampleUrl = `/files/sample_gift_card_transfers.xlsx`;
+
+  return (
+    <BatchUploadWrapper
+      batchType={BATCH_TYPES.CREATE_GIFT_CARD_TRANSFERS}
+      docUrl={sampleUrl}
+      title="Create Batch Transfers"
+      points={[
+        'This feature can work only if the source user is blocked using Razorpay close user API',
+        'You can upload only 10000 combination of source and destination accounts',
       ]}
       createBatch={createBatch}
       validateBatch={validateBatch}

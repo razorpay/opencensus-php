@@ -3,6 +3,7 @@ import React from 'react';
 import {
   AccountsBatchUpload,
   GCExpiryBatchUpload,
+  GCTransferBatchUpload,
   LoadsBatchUpload,
   ReversalsBatchUpload,
 } from 'merchant/views/Wallet/BatchActions/BatchUpload';
@@ -10,6 +11,8 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { Box, Heading, Text } from '@razorpay/blade/components';
 import Button from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/components/Button';
 import ErrorIcon from 'assets/error_illustration.svg';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 interface OpenModalArgs {
   size: string;
@@ -25,6 +28,11 @@ interface CreateBatchOptionsProps {
 export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element => {
   const { openModal, batches } = props;
 
+  const splitz = useSplitzService();
+  const isGiftCardsTransferBatchEnabled = isExperimentEnabled(
+    splitz?.abExperiments?.gift_cards_transfer,
+  );
+
   const handleBatchUpload = (batchType) => {
     const unprocessedWalletBatches = batches.items.filter(
       (batch) =>
@@ -36,6 +44,7 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
           'create_wallet_container_reversals',
           'create_bulk_gift_cards',
           'update_gift_cards_expiry',
+          'create_gift_card_transfers',
         ].includes(batch.type) &&
         ['created', 'processing', 'partially_processed'].includes(batch.status),
     );
@@ -81,6 +90,12 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
     }
     if (batchType === 'gcExpiryBatchUpload') {
       openModal({ component: <GCExpiryBatchUpload />, size: 'large' });
+    }
+    if (batchType === 'gcTransferBatchUpload') {
+      openModal({
+        component: <GCTransferBatchUpload />,
+        size: 'large',
+      });
     }
   };
 
@@ -146,6 +161,26 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
           <i className="i-chevron-right pull-right text-primary" />
         </div>
       </div>
+      {isGiftCardsTransferBatchEnabled ? (
+        <div
+          data-testid="batch-type-option"
+          className="panel panel-default"
+          onClick={() => handleBatchUpload('gcTransferBatchUpload')}
+        >
+          <div className="panel-body">
+            <div className="description">
+              <div className="text-primary">
+                <strong>Transfers</strong>
+              </div>
+              <div>
+                Create gift card transfers for multiple combinations of source and destination
+                accounts.
+              </div>
+            </div>
+            <i className="i-chevron-right pull-right text-primary" />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
