@@ -616,7 +616,7 @@ class Service extends Base\Service
         return $this->app['repo']->terminal->findByGatewayAndTerminalData($gateway, $terminalData);
     }
 
-    public function getQrPaymentDataFromInput($qrCode, $inputFields, $gateway, $terminal)
+    public function getQrPaymentDataFromInput($qrCode, $inputFields, $gateway, $terminal, $isInternal = false)
     {
         $output = [
             BharatQr\GatewayResponseParams::AMOUNT                => $inputFields['payment'][Payment\Entity::AMOUNT_AUTHORIZED],
@@ -629,11 +629,13 @@ class Service extends Base\Service
             BharatQr\GatewayResponseParams::GATEWAY               => $gateway,
         ];
 
-        if (empty($inputFields['upi']['gateway_timestamp']) === false and $gateway !== 'upi_rzpapb')
+        if (empty($inputFields['upi']['gateway_timestamp']) === false and
+            !(($gateway === 'upi_rzpapb') and ($isInternal === true)))
         {
             $output[BharatQr\GatewayResponseParams::TRANSACTION_TIME] = $inputFields['upi']['gateway_timestamp'];
         }
-        else if (empty($inputFields['gateway_timestamp']) === false and $gateway !== 'upi_rzpapb')
+        else if (empty($inputFields['gateway_timestamp']) === false and
+            !(($gateway === 'upi_rzpapb') and ($isInternal === true)))
         {
             $output[BharatQr\GatewayResponseParams::TRANSACTION_TIME] = $inputFields['gateway_timestamp'];
         }

@@ -2606,91 +2606,18 @@ class QrCodeRefactorTest extends TestCase
             [
                 'merchant_id'        => 'LiveAccountMer',
                 'request_source'     => 'ezetap',
-                'vpa'                => 'rzp.qrTest@jkbank',
+                'vpa'                => 'rzp.qrTest@jkb',
                 'device_id'          => '12345Test',
-                'qrString'         => 'upi://pay?ver=01&pa=rzp.qrTest@jkbank&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
+                'qrString'         => 'upi://pay?ver=01&pa=rzp.qrTest@jkb&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
             ]);
 
         $this->assertNotNull($qrCode);
         $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
         $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
-        $this->assertEquals('rzp.qrTest@jkbank', $intentParam['pa']);
+        $this->assertEquals('rzp.qrTest@jkb', $intentParam['pa']);
         $this->assertEquals('bankTr', $intentParam['tr']);
         $this->assertEquals('bankTr', $qrCodeEntity['reference']);
         $this->assertEquals('12345Test', $qrCodeEntity['device_id']);
-    }
-
-    public function testJKBankSQRCreationViaMerchantQRCreateRouteWithoutExperiment()
-    {
-        $this->expectException(BadRequestException::class);
-
-        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_QR_REFACTOR_EXPERIMENT_NOT_ENABLED_FOR_GATEWAY);
-
-        $this->config['applications.ezetap-notification.mock'] = true;
-        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
-        $this->getDedicatedTerminalSplitzResponseForVariantON();
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_GATEWAY => 'off',
-            ]
-        );
-        $this->fixtures->create('terminal:dedicated_upi_jk_terminal');
-
-        $qrCode = $this->createMerchantQrCode(
-            [
-                'merchant_id'        => 'LiveAccountMer',
-                'request_source'     => 'ezetap',
-                'vpa'                => 'rzp.qrTest@jkbank',
-                'device_id'          => '12345Test',
-                'qrString'         => 'upi://pay?ver=01&pa=rzp.qrTest@jkbank&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
-            ]);
-
-    }
-
-    public function testJKBankDuplicateSQRCreationViaMerchantQRCreateRoute()
-    {
-        $this->expectException(BadRequestException::class);
-
-        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_DUPLICATE_REQUEST);
-
-        $this->config['applications.ezetap-notification.mock'] = true;
-        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
-        $this->getDedicatedTerminalSplitzResponseForVariantON();
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'on',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_GATEWAY => 'on',
-            ]
-        );
-        $this->fixtures->create('terminal:dedicated_upi_jk_terminal');
-
-        $qrCode = $this->createMerchantQrCode(
-            [
-                'merchant_id'        => 'LiveAccountMer',
-                'request_source'     => 'ezetap',
-                'vpa'                => 'rzp.qrTest@jkbank',
-                'device_id'          => '12345Test',
-                'qrString'         => 'upi://pay?ver=01&pa=rzp.qrTest@jkbank&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
-            ]);
-
-        $this->assertNotNull($qrCode);
-        $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
-        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
-        $this->assertEquals('rzp.qrTest@jkbank', $intentParam['pa']);
-        $this->assertEquals('bankTr', $intentParam['tr']);
-        $this->assertEquals('bankTr', $qrCodeEntity['reference']);
-        $this->assertEquals('12345Test', $qrCodeEntity['device_id']);
-
-        $qrCode = $this->createMerchantQrCode(
-            [
-                'merchant_id'        => 'LiveAccountMer',
-                'request_source'     => 'ezetap',
-                'vpa'                => 'rzp.qrTest@jkbank',
-                'device_id'          => '12345Test',
-                'qrString'         => 'upi://pay?ver=01&pa=rzp.qrTest@jkbank&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
-            ]);
-
     }
 
     public function testCreateQrPaymentViaRefactorFlowForJKBankStaticQr()
@@ -2717,9 +2644,9 @@ class QrCodeRefactorTest extends TestCase
             [
                 'merchant_id'        => 'LiveAccountMer',
                 'request_source'     => 'ezetap',
-                'vpa'                => 'rzp.qrTest@jkbank',
+                'vpa'                => 'rzp.qrTest@jkb',
                 'device_id'          => '12345Test',
-                'qrString'         => 'upi://pay?ver=01&pa=rzp.qrTest@jkbank&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
+                'qrString'         => 'upi://pay?ver=01&pa=rzp.qrTest@jkb&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
             ]);
 
 
@@ -2746,7 +2673,7 @@ class QrCodeRefactorTest extends TestCase
                            ],
                            'terminal' => [
                                'gateway'             => 'upi_jkbank',
-                               'vpa'                 => 'rzp.qrTest@jkbank',
+                               'vpa'                 => 'rzp.qrTest@jkb',
                            ],
                        ],
                    ]
@@ -2813,5 +2740,28 @@ class QrCodeRefactorTest extends TestCase
         $this->assertEquals('active', $qrCode->getStatus());
         $this->assertEquals(100, $qrCode->getAttribute('payments_amount_received'));
         $this->assertEquals(1, $qrCode->getAttribute('payments_received_count'));
+    }
+
+
+    public function testJKBankSQRCreationViaMerchantQRCreateRouteWithOutTr()
+    {
+        $this->config['applications.ezetap-notification.mock'] = true;
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+        $this->fixtures->create('terminal:dedicated_upi_jk_terminal');
+
+        $qrCode = $this->createMerchantQrCode(
+            [
+                'merchant_id'        => 'LiveAccountMer',
+                'request_source'     => 'ezetap',
+                'vpa'                => 'rzp.qrTest@jkb',
+                'qrString'         => 'upi://pay?ver=01&pa=rzp.qrTest@jkb&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
+            ]);
+
+        $this->assertNotNull($qrCode);
+        $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+        $this->assertEquals('rzp.qrTest@jkb', $intentParam['pa']);
+        $this->assertEquals($qrCodeEntity->getId().'qrv2', $qrCodeEntity['reference']);
+
     }
 }

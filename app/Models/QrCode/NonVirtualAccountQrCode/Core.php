@@ -155,8 +155,6 @@ class Core extends QrCode\Core
                 'qrString' => $qrString,
             ]);
 
-            $qrCode->setQrString($qrString);
-
             $tr = $this->getTransactionReferenceFromQrString($qrString);
 
             $this->trace->info(
@@ -166,11 +164,18 @@ class Core extends QrCode\Core
                 ]
             );
 
-            if (empty($tr) === true)
+            if ((empty($tr) === true) and
+                ($terminal?->getGateway() !== 'upi_jkbank') )
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_REFERENCE_REQUIRED);
             }
 
+            if(($terminal?->getGateway() === 'upi_jkbank') and (empty($tr) === true)) {
+                $tr ??= $qrCode->getId() . 'qrv2';
+                $qrString = $this->updateTrIdInQrString($tr, $additionalData['qrString']);
+            }
+
+            $qrCode->setQrString($qrString);
             $qrCode->setReference($tr);
 
             //register the qrcode in switch
@@ -191,6 +196,30 @@ class Core extends QrCode\Core
         $queryString = parse_url($qrString, PHP_URL_QUERY);
         parse_str($queryString, $params);
         return $params['tr'] ?? null;
+    }
+
+   /**
+     * Updates the 'tr' parameter in the given QR string with the provided transaction ID.
+     *
+     * This method parses the query part of the provided QR string, updates or adds the 'tr' parameter
+     * with the given transaction ID, and then rebuilds the URL with the updated query.
+     *
+     * @param string $trId The transaction ID to be set in the QR string.
+     * @param string $qrString The original QR string to be updated.
+     * @return string The updated QR string with the new 'tr' parameter.
+     */
+    protected function updateTrIdInQrString(string $trId, string $qrString) : string
+    {
+        // Parse the query part of the URL
+        $parts = parse_url($qrString);
+        parse_str($parts['query'] ?? '', $queryParams);
+
+        // Update or add the 'tr' parameter
+        $queryParams['tr'] ??= $trId;
+
+        // Rebuild the URL with updated query
+        $parts['query'] = http_build_query($queryParams);
+        return $parts['scheme'] . '://' . $parts['host'] . $parts['path'] . '?' . $parts['query'];
     }
 
     public function addStaticQRinQRCodeConfig($qrCode, $inputTerminal = null)
@@ -498,39 +527,21 @@ class Core extends QrCode\Core
 //        }
 
         $vpa = $input['vpa'];
-        $vpaSplit = (explode("@", $vpa));
-        $gateway  = null;
+        $gateway = $this->fetchGatewayFromVpa($vpa);
 
         $terminalDetails = [
             TerminalEntity::MERCHANT_ID => $this->merchant->getId(),
         ];
 
-        if (isset($vpaSplit[1]) === true && ($vpaSplit[1] === 'mairtel'))
+        if (in_array($gateway, ['upi_airtel', 'upi_icici', 'upi_mindgate']))
         {
-            $gateway = 'upi_airtel';
             $terminalDetails[TerminalEntity::GATEWAY_MERCHANT_ID2] = $vpa;
         }
-        elseif (isset($vpaSplit[1]) === true && ($vpaSplit[1] === 'icici'))
+        elseif (in_array($gateway, ['upi_jkbank', 'upi_rzpapb']))
         {
-            $gateway = 'upi_icici';
-            $terminalDetails[TerminalEntity::GATEWAY_MERCHANT_ID2] = $vpa;
-        }
-        elseif (isset($vpaSplit[1]) === true && ($vpaSplit[1] === 'hdfcbank'))
-        {
-            $gateway = 'upi_mindgate';
-            $terminalDetails[TerminalEntity::GATEWAY_MERCHANT_ID2] = $vpa;
-        }
-        elseif (isset($vpaSplit[1]) === true && ($vpaSplit[1] === 'jkbank'))
-        {
-            $gateway = 'upi_jkbank';
             $terminalDetails[TerminalEntity::VPA] = $vpa;
         }
-        elseif ((isset($vpaSplit[1]) === true) &&
-                (($vpaSplit[1] === 'rxairtel') or ($vpaSplit[1] === 'rairtel')))
-        {
-            $gateway = 'upi_rzpapb';
-            $terminalDetails[TerminalEntity::VPA] = $vpa;
-        }
+
         if ($gateway === null)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
@@ -548,5 +559,36 @@ class Core extends QrCode\Core
         ]);
 
         return $terminal;
+    }
+
+    public function fetchGatewayFromVpa(string $vpa): ?string
+    {
+        $vpaSplit = explode("@", $vpa);
+        $gateway = null;
+
+        if (isset($vpaSplit[1])) {
+            switch ($vpaSplit[1]) {
+                case 'mairtel':
+                    $gateway = 'upi_airtel';
+                    break;
+                case 'icici':
+                    $gateway = 'upi_icici';
+                    break;
+                case 'hdfcbank':
+                    $gateway = 'upi_mindgate';
+                    break;
+                case 'jkb':
+                    $gateway = 'upi_jkbank';
+                    break;
+                case 'rxairtel':
+                case 'rairtel':
+                    $gateway = 'upi_rzpapb';
+                    break;
+                default:
+                    $gateway = null;
+            }
+        }
+
+        return $gateway;
     }
 }

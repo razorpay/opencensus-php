@@ -1329,7 +1329,7 @@ class Terminal extends Base
             'merchant_id'               => 'LiveAccountMer',
             'gateway'                   => 'upi_jkbank',
             'gateway_merchant_id'       => '1357901',
-            'vpa'                       => 'rzp.qrTest@jkbank',
+            'vpa'                       => 'rzp.qrTest@jkb',
             'upi'                       => true,
             'type'                      => [
                 Type::PAY               => '1',

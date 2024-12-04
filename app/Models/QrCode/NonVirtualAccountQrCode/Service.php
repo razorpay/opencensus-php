@@ -193,33 +193,39 @@ class Service extends QrCode\Service
 
     public function validateQrStringCreateRequest($input)
     {
-        if (isset($input['qrString']) === true)
-        {
+        if (isset($input['qrString']) === true) {
             $tr = (new Core)->getTransactionReferenceFromQrString($input['qrString']);
             $this->trace->info(TraceCode::QR_CODE_EXTRACTED_TR, [
-                'message'           => 'QR_CODE_EXTRACTED_TR',
-                'tr for validation' => $tr,
-            ]);
+                                                                  'message'           => 'QR_CODE_EXTRACTED_TR',
+                                                                  'tr for validation' => $tr,
+                                                              ]
+            );
 
-            if (empty($tr) === true)
+            $gateway = (new Core)->fetchGatewayFromVpa($input['vpa']);
+            if ((empty($tr) === true) and
+                ($gateway !== "upi_jkbank"))
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_STRING_TR_EMPTY_ERROR);
             }
-
-            [$qrCode, $mode] = $this->app['repo']->qr_code->returnLiveOrTestModeQrCodeByMerchantReference($tr);
-
-            if (empty($mode) === false)
+            if ($gateway !== 'upi_jkbank')
             {
-                $this->trace->info(TraceCode::QR_CODE_ALREADY_EXIST, [
-                    'message' => 'QR_CODE_ALREADY_EXIST',
-                    'qrCode'  => $qrCode,
-                    'mode'    => $mode,
-                ]);
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST);
+                [$qrCode, $mode] = $this->app['repo']->qr_code->returnLiveOrTestModeQrCodeByMerchantReference($tr);
+
+                if (empty($mode) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::QR_CODE_ALREADY_EXIST,
+                        [
+                            'message' => 'QR_CODE_ALREADY_EXIST',
+                            'qrCode'  => $qrCode,
+                            'mode'    => $mode,
+                        ]
+                    );
+
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST);
+                }
             }
-
         }
-
     }
 
     public function addPosQrCodeFeaturesOnPosActivation($input)
