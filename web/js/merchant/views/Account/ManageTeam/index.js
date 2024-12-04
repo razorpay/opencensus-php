@@ -152,7 +152,7 @@ class ManageTeamContainer extends React.Component {
     if (!is2faEnabledAndMobileVerified && !isCurlec && !isPartnerDashboard) {
       return (
         <Tooltip
-          content={'2 step verification needs to be enabled to Invite team members'}
+          content="2 step verification needs to be enabled to Invite team members"
           placement="bottom"
         >
           <TooltipInteractiveWrapper>
@@ -191,21 +191,27 @@ class ManageTeamContainer extends React.Component {
       splitz,
     } = this.props;
 
+    /*----------  target element to tether contents; any change in parent DOM must be reflected here  ----------*/
+    let target = 'tabbed-container > header';
+    if (user.isAccountAndSettingsRevampEnabled) {
+      target = isRenderedFromPartnerRoute ? 'main > .content-wrapper > header' : 'main > .content';
+    }
+
     return (
       <div className="content-wrapper content-sm" id="settings-content">
+        {isRenderedFromPartnerRoute ? (
+          <header>
+            <Heading size="large">Add your POS Partner Agents Now!</Heading>
+          </header>
+        ) : null}
+
         {/* passing the new props to the HeaderAction component to support the m-web view */}
         <HeaderAction
           responsive
-          target={
-            user.isAccountAndSettingsRevampEnabled ? 'main > .content' : 'tabbed-container > header'
-          }
+          target={target}
+          offset={isRenderedFromPartnerRoute ? '0px 0px' : undefined}
         >
           <div className="btn-toolbar">
-            {isRenderedFromPartnerRoute ? (
-              <Box display="inline-block" marginLeft="5px" marginTop="5px">
-                <Heading size="large">Add your POS Partner Agents Now!</Heading>
-              </Box>
-            ) : null}
             <div className="pull-right">
               <ShowWhen
                 additionalCondition={() => !isConfigTagEnabled('documentation.documentation')}

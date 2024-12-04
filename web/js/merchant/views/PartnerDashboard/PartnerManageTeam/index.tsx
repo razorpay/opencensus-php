@@ -1,14 +1,14 @@
 import React from 'react';
-import { Card, CardBody, Box } from '@razorpay/blade/components';
+import { Card, CardBody } from '@razorpay/blade/components';
 
 import ManageTeam from 'merchant/views/Account/ManageTeam';
 const PartnerManageTeam = (): JSX.Element => {
   return (
     <Card padding="spacing.3" elevation="none">
       <CardBody>
-        <Box>
+        <main>
           <ManageTeam isRenderedFromPartnerRoute />
-        </Box>
+        </main>
       </CardBody>
     </Card>
   );

@@ -16,6 +16,7 @@ const HeaderAction = ({
   org,
   responsive,
   isMobile,
+  offset = '-10px 12px',
   target = 'tabbed-container > header, .tabbed-container > header',
 }) => {
   /*
@@ -36,7 +37,7 @@ const HeaderAction = ({
         target={target}
         attachment="top right"
         targetAttachment="top right"
-        offset="-10px 12px"
+        offset={offset}
         class={org.custom_code}
       >
         <div />
