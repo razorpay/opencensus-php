@@ -818,7 +818,7 @@ class Core extends Base\Core
                 $exceptionData = $e->getData();
             }
 
-            $customProperties['err']['internal_error_code']       = $exceptionData['data']['error']['internal_error_code'] ?? $e->getCode();
+            $customProperties['err']['internal_error_code']       = $exceptionData['data']['error']['internal_error_code'] ?? ErrorCode::GATEWAY_ERROR_ALT_ID_CREATE_ERROR;
             $customProperties['err']['network_error_code']        = $exceptionData['data']['error']['gateway_error_code'] ?? '';
             $customProperties['err']['network_error_description'] = $exceptionData['data']['error']['gateway_error_description'] ?? '';
 

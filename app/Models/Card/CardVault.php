@@ -5,7 +5,10 @@ namespace RZP\Models\Card;
 use App;
 use Carbon\Carbon;
 
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Exception;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\Fixtures\Entity\Token;
@@ -226,11 +229,17 @@ class CardVault extends Base\Core
                 TraceCode::CARD_VAULT_REQUEST,
                 [
                     'message'       => 'Failed to fetch alt id data',
-                    'error' => $e,
+                    'error' => ErrorCode::GATEWAY_ERROR_ALT_ID_CREATE_ERROR,
+                    'trace' => $e
                 ]
             );
 
-            throw $e;
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_ALT_ID_CREATE_ERROR,
+                null,
+                null,
+                [],
+                $e);
         }
     }
 
