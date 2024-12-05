@@ -1378,7 +1378,8 @@ trait Capture
                 (new Transaction\Core)->dispatchForSettlementBucketing($txn);
             }
 
-            if ($payment->isExternal() === true)
+            if (($payment->isExternal() === true) and
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
             {
                 (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $payment);
             }
