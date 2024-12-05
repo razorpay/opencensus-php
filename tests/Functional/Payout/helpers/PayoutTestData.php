@@ -25392,4 +25392,158 @@ return [
             ],
         ],
     ],
+    'testRedisGetValidationsPass' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Need it',
+                'action' => 'redis_get',
+                'bulk_input' => [[
+                    'key' => 'collectx_enabled'
+                ]]
+            ]
+        ]
+    ],
+    'testRedisGetValidationsFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Need it',
+                'action' => 'redis_get',
+                'bulk_input' => [[
+                    'keys' => 'collectx_enabled'
+                ]]
+            ]
+        ]
+    ],
+    'testRedisSetValidationsPass' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'redis_set',
+                'bulk_input' => [[
+                    'key' => 'collectx_enabled',
+                    'value' => ['ha', 'nahi']
+                ]]
+            ]
+        ]
+    ],
+    'testRedisSetValidationsKeyFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'redis_set',
+                'bulk_input' => [[
+                    'keys' => 'collectx_enabled',
+                    'value' => ['ha', 'nahi']
+                ]]
+            ]
+        ]
+    ],
+    'testRedisSetValidationsValueFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'redis_set',
+                'bulk_input' => [[
+                    'key' => 'collectx_enabled',
+                ]]
+            ]
+        ]
+    ],
+    'testRedisSetValidationsValueTypeFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'redis_set',
+                'bulk_input' => [[
+                    'key' => 'collectx_enabled',
+                    'value' => 'nahi'
+                ]]
+            ]
+        ]
+    ],
+    'testMerchantInvoiceGenerationPass' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'generate_merchant_invoice',
+                'bulk_input' => [[
+                    'month' => 12,
+                    'year' => 2024,
+                    'merchant_ids' => ['mid1', 'mid2']
+                ]]
+            ]
+        ]
+    ],
+    'testMerchantInvoiceGenerationMonthFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'generate_merchant_invoice',
+                'bulk_input' => [[
+                    'year' => 2024,
+                    'merchant_ids' => ['mid1'],
+                ]]
+            ]
+        ]
+    ],
+    'testMerchantInvoiceGenerationYearFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'generate_merchant_invoice',
+                'bulk_input' => [[
+                    'month' => 12,
+                    'merchant_ids' => ['mid1'],
+                ]]
+            ]
+        ]
+    ],
+    'testMerchantInvoiceGenerationMIDFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'generate_merchant_invoice',
+                'bulk_input' => [[
+                    'month' => 10,
+                    'year' => 2024,
+                    'merchant_id' => ['mid1'],
+                ]]
+            ]
+        ]
+    ],
+    'testMerchantInvoiceGenerationMIDTypeFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'generate_merchant_invoice',
+                'bulk_input' => [[
+                    'month' => 10,
+                    'year' => 2024,
+                    'merchant_ids' => 'mid1',
+                ]]
+            ]
+        ]
+    ],
 ];

@@ -3324,7 +3324,8 @@ class Constants
         self::ONE_CC_GSTIN_VALIDATION      => true,
         self::HIDE_RZPBRAND_ON_CHECKOUT    => true,
         self::OG_SMS_VENDOR_CONFIG_TRAI    => true,
-        self::ME_SMS_VENDOR_CONFIG_TRAI    => true
+        self::ME_SMS_VENDOR_CONFIG_TRAI    => true,
+        self::PAYOUTS_BLOCKED_ON_LITE      => true
     ];
 
     // Entity type constants

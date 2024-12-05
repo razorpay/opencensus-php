@@ -6790,6 +6790,7 @@ class Service extends Base\Service
         $successCount = 0;
         $failureCount = 0;
         $exceptions = [];
+        $successResponse = [];
 
         try {
 
@@ -6867,6 +6868,29 @@ class Service extends Base\Service
 
                     break;
 
+                case 'generate_merchant_invoice':
+                    $processFunction(function($input) {
+                        (new Merchant\Invoice\Core())->queueCreateInvoiceEntities($input);
+                    }, $bulk_input);
+
+                    break;
+
+                case 'redis_get':
+                    $processFunction(function($input) use (&$successResponse) {
+                        $res = (new Admin\Service)->getConfigKey(['key' => $input['key']]);
+                        if($res)
+                            array_push($successResponse, $res);
+                    }, $bulk_input);
+                    break;
+
+                case 'redis_set':
+                    $processFunction(function($input) use (&$successResponse) {
+                        $res = (new Admin\Service)->setConfigKeys([$input['key'] => $input['value']]);
+                        if($res)
+                            array_push($successResponse, $res);
+                    }, $bulk_input);
+                    break;
+
                 default:
                     return ['status' => 'error', 'message' => 'Invalid action provided'];
 
@@ -6888,7 +6912,8 @@ class Service extends Base\Service
                 'status' => $status,
                 'success_count' => $successCount,
                 'failure_count' => $failureCount,
-                'exceptions' => $exceptions
+                'exceptions' => $exceptions,
+                'success_response' => $successResponse,
             ];
 
             $this->trace->info(TraceCode::PAYOUT_MANUAL_ACTION_SUCCESS, [

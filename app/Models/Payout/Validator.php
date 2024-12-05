@@ -173,7 +173,10 @@ class Validator extends Base\Validator
         'processed_to_processing',
         'approve_workflow_payouts',
         'reject_workflow_payouts',
-        'process_bank_transfer'
+        'process_bank_transfer',
+        'redis_get',
+        'redis_set',
+        'generate_merchant_invoice'
     ];
 
     const PAYOUTS_MANUAL_ACTION_DEFAULT_INPUT = 'payouts_manual_action_default_input';
@@ -183,6 +186,12 @@ class Validator extends Base\Validator
     const PAYOUT_ATTACHMENT = 'payout_attachment';
 
     const MANUAL_BANK_TRANSFER = 'manual_bank_transfer';
+
+    const REDIS_GET = 'redis_get';
+
+    const REDIS_SET = 'redis_set';
+
+    const GENERATE_MERCHANT_INVOICE = 'generate_merchant_invoice';
 
     const MAX_COUNT_PAYOUTS_BULK_MANUAL_ACTION = 50;
 
@@ -729,6 +738,21 @@ class Validator extends Base\Validator
     ];
     protected static  $manualBankTransferRules =[
         'bank_transfer_id' => 'required|string'
+    ];
+
+    protected static $redisGetRules = [
+        'key' => 'required|string',
+    ];
+
+    protected static $redisSetRules = [
+        'key' => 'required|string',
+        'value' => 'required|array',
+    ];
+
+    protected static $generateMerchantInvoiceRules = [
+        'month' => 'required|integer',
+        'year' => 'required|integer',
+        'merchant_ids' => 'required|array',
     ];
 
     protected function validateSourceAndDestination($input)
@@ -2321,6 +2345,27 @@ class Validator extends Base\Validator
                 foreach ($bulkInput as $input) {
 
                     $this->setStrictFalse()->validateInput(self::MANUAL_BANK_TRANSFER,$input);
+                }
+                break;
+
+            case 'redis_get':
+
+                foreach ($bulkInput as $input) {
+                    $this->setStrictFalse()->validateInput(self::REDIS_GET,$input);
+                }
+                break;
+
+            case 'redis_set':
+
+                foreach ($bulkInput as $input) {
+                    $this->setStrictFalse()->validateInput(self::REDIS_SET,$input);
+                }
+                break;
+
+            case 'generate_merchant_invoice':
+
+                foreach ($bulkInput as $input) {
+                    $this->setStrictFalse()->validateInput(self::GENERATE_MERCHANT_INVOICE,$input);
                 }
                 break;
 

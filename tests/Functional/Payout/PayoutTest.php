@@ -44247,6 +44247,199 @@ class PayoutTest extends OAuthTestCase
         $this->testCreatePayout();
     }
 
+    public function testRedisGetValidationsPass()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testRedisGetValidationsFail()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('The key field is required.');
+
+        $response = $this->makeRequestAndGetContent($request);
+    }
+
+    public function testRedisSetValidationsPass()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testRedisSetValidationsKeyFail()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('The key field is required.');
+
+        $response = $this->makeRequestAndGetContent($request);
+    }
+
+    public function testRedisSetValidationsValueFail()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('The value field is required.');
+
+        $response = $this->makeRequestAndGetContent($request);
+    }
+
+    public function testRedisSetValidationsValueTypeFail()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('The value must be an array.');
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testMerchantInvoiceGenerationPass()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testMerchantInvoiceGenerationMonthFail()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('The month is not a valid month.');
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testMerchantInvoiceGenerationYearFail()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('The year field is required.');
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testMerchantInvoiceGenerationMIDFail()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('The merchant ids field is required.');
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testMerchantInvoiceGenerationMIDTypeFail()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage('The merchant ids must be an array.');
+
+        $this->makeRequestAndGetContent($request);
+    }
+
     /*
  * -------------------HELPER FUNCTIONS-------------------
  */
