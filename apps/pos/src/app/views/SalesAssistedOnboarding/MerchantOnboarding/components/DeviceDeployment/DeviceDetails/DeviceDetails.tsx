@@ -62,9 +62,9 @@ const DeviceDetails = ({
   const handleRedirection = (page: string) => {
     if (page === AvailableComponents.DEVICE_TESTING) {
       triggerTrackEvent('Start Now', 'Device Testing', 'Device Testing');
-    } else if (AvailableComponents.LANGUAGE_CONFIGURATION) {
+    } else if (page === AvailableComponents.LANGUAGE_CONFIGURATION) {
       triggerTrackEvent('Change', 'Language setting', 'Language setting');
-    } else {
+    } else if (page === AvailableComponents.WIFI_CONFIGURATION) {
       setIsWifiConfigModalOpen(true);
       triggerTrackEvent('Start Now', 'Wifi-Configuration', 'Wifi-Configuration');
       return;

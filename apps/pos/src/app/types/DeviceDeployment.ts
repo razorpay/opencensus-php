@@ -20,6 +20,7 @@ export enum DEVICE_DEPLOYMENT_FIELDS {
   DEVICE_WIFI_CONFIGURATION_STATUS_FIELD = 'device_wifi_configuration_status_field',
   DEVICE_MAPPING_STATUS_FIELD = 'device_mapping_status_field',
   DEVICE_VPA_FIELD = 'device_vpa_field',
+  DEVICE_QR_STRING_FIELD = 'device_qr_string_field',
   DEVICE_DEPLOYMENT_ACTION_FIELD = 'device_deployment_action_field',
 
   DEVICE_DEPLOYMENT_COMPONENT = 'device_deployment_component',

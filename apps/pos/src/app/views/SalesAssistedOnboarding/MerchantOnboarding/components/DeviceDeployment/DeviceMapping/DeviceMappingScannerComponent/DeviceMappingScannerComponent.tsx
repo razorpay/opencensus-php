@@ -48,7 +48,7 @@ const DeviceMappingScannerComponent = ({
       setActiveScanner(ScannerType.QR_CODE);
     }
   };
-  const handleScannerDataUpdate = (scannedInfo: string) => {
+  const handleScannerDataUpdate = (scannedInfo: string, qrString: string = '') => {
     let payload;
     if (isBarCodeActive) {
       payload = {
@@ -60,6 +60,7 @@ const DeviceMappingScannerComponent = ({
       payload = {
         [DEVICE_DEPLOYMENT_FIELDS.CURRENT_DEVICE_ID_FIELD]: deviceId,
         [DEVICE_DEPLOYMENT_FIELDS.DEVICE_VPA_FIELD]: scannedInfo,
+        [DEVICE_DEPLOYMENT_FIELDS.DEVICE_QR_STRING_FIELD]: qrString,
         [DEVICE_DEPLOYMENT_FIELDS.MODULAR_CALLBACK]: handleNextAction,
       };
     }
@@ -90,7 +91,7 @@ const DeviceMappingScannerComponent = ({
         return;
       }
       const qrValue = parsedData.get('pa') || '';
-      handleScannerDataUpdate(qrValue);
+      handleScannerDataUpdate(qrValue, scannedData);
     }
   };
 
