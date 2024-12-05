@@ -4,6 +4,7 @@ namespace RZP\Models\Order;
 
 use App;
 use Request;
+use RZP\Constants\Metric;
 use RZP\Constants\Mode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
@@ -774,6 +775,12 @@ class Service extends Base\Service
         $input[Payment\Entity::ORDER_ID] = $id;
 
         $isPrivateAuth = $this->app['basicauth']->isPrivateAuth();
+
+        $this->trace->count(Metric::API_DECOMP_AUTH_DISTRIBUTION, [
+            'route_auth'       => $this->app['basicauth']->getAuthType(),
+            'isPrivateAuth'   =>  $isPrivateAuth,
+            'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+        ]);
 
         if ($isPrivateAuth === true)
         {

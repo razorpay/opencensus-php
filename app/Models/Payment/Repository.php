@@ -746,6 +746,25 @@ EOT;
             {
                 try
                 {
+                    $this->trace->count(Metric::API_DECOMP_PARAMETERS, [
+                        'route_auth'       => $this->auth->getAuthType(),
+                        'es_params'        => true,
+                        'mysql_params'     => empty($mysqlParams) === false,
+                        'expands_param'    => empty($expands) === false,
+                        'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+                    ]);
+
+                    if ($this->printApiDecompLog())
+                    {
+                        $this->trace->info(TraceCode::API_DECOMP_ES_AND_MYSQL_PARAMETER, [
+                            'params'           => $params,
+                            'expands_params'   => $expands,
+                            'merchantId'       => $merchantId,
+                            'route_auth'       => $this->auth->getAuthType(),
+                            'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+                        ]);
+                    }
+
                     $expEnableForSearchOnCreatedAtFirst = $this->getExperimentForESearchOnCreatedAtFirst();
 
                     $paymentIds = (new EsRepository('payment'))->setExpForESearchSortOnCreatedAtFirst($expEnableForSearchOnCreatedAtFirst)
@@ -1189,6 +1208,25 @@ EOT;
             {
                 try
                 {
+                    $this->trace->count(Metric::API_DECOMP_PARAMETERS, [
+                        'route_auth'       => $this->auth->getAuthType(),
+                        'es_params'        => true,
+                        'mysql_params'     => empty($mysqlParams) === false,
+                        'expands_param'    => empty($expands) === false,
+                        'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+                    ]);
+
+                    if ($this->printApiDecompLog())
+                    {
+                        $this->trace->info(TraceCode::API_DECOMP_ES_AND_MYSQL_PARAMETER, [
+                            'params'           => $params,
+                            'expands_params'   => $expands,
+                            'merchantId'       => $merchantId,
+                            'route_auth'       => $this->auth->getAuthType(),
+                            'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+                        ]);
+                    }
+
                     $expEnableForSearchOnCreatedAtFirst = $this->getExperimentForESearchOnCreatedAtFirst();
 
                     $paymentIds = (new EsRepository('payment'))->setExpForESearchSortOnCreatedAtFirst($expEnableForSearchOnCreatedAtFirst)

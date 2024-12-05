@@ -421,15 +421,11 @@ trait RepositoryFetch
         return $entities;
     }
 
-    public function printApiDecompLog(){
-        if ($this->app['api.route']->getCurrentRouteName() === 'order_payments')
-            return true;
-        else if ($this->app['api.route']->getCurrentRouteName() === 'payment_fetch_by_id' || $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_multiple')
+    public function printApiDecompLog()
+    {
+        if ($this->app['api.route']->getCurrentRouteName() === 'order_payments' || $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_by_id' || $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_multiple')
         {
-            $rand = rand(1, 10000);
-            if ($rand < 10) {
-                return true;
-            }
+            return true;
         }
         return false;
     }

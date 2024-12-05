@@ -290,4 +290,5 @@ class Metric
     const OPGSP_IMPORT_NO_SETTLEMENTS_FOUND                     = 'opgsp_import_no_settlements_found';
     const API_DECOMP_ENTITY_FETCH                               = 'api_decomp_entity_fetch';
     const API_DECOMP_PARAMETERS                                 = 'api_decomp_parameters';
+    const API_DECOMP_AUTH_DISTRIBUTION                          = 'api_decomp_auth_distribution';
 }
