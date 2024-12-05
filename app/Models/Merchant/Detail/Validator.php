@@ -2089,7 +2089,7 @@ class Validator extends Base\Validator
             }
         }
 
-        if($merchant !== null and $merchant->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+        if($merchant !== null and $merchant->org->isFeatureEnabled(Feature\Constants::VAS_KYC_RBI) === true)
         {
             // Check if the Website is Razorpay URL
             if (preg_match(DetailUpload\Validator::RAZORPAY_URL, $value) === 1) {
@@ -2272,7 +2272,7 @@ class Validator extends Base\Validator
 
         $merchantDetail = $merchant->merchantDetail;
 
-        if($merchant->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+        if($merchant->org->isFeatureEnabled(Feature\Constants::VAS_KYC_RBI) === true)
         {
             if(isset($input[Entity::BUSINESS_TYPE]) === false)
             {

@@ -575,7 +575,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             $this->trace->traceException($ex);
         }
 
-        if($this->org === null or $this->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === false)
+        if($this->org === null or $this->org->isFeatureEnabled(Feature\Constants::VAS_KYC_RBI) === false)
         {
             if ($this->app['api.route']->getCurrentRouteName() === 'merchant_upload_miq_admin')
             {
@@ -630,7 +630,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             $this->trace->traceException($ex);
         }
 
-        if($this->org !== null and $this->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+        if($this->org !== null and $this->org->isFeatureEnabled(Feature\Constants::VAS_KYC_RBI) === true)
         {
             $validPersonalPan = preg_match(self::PERSONAL_PAN_NUMBER_REGEX, $value);
 

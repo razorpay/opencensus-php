@@ -607,7 +607,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
-        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
 
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
 
@@ -644,7 +644,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
-        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
 
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
 
@@ -680,7 +680,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
-        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
 
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
 
@@ -734,7 +734,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
-        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
 
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
 
@@ -957,7 +957,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
-        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
 
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
 
@@ -980,7 +980,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
-        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
 
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
 

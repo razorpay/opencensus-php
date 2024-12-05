@@ -275,8 +275,8 @@ class BankingCoreTest extends TestCase
         $queuedEmails =Mail::queued(MerchantOnboardingEmail::class);
 
         $this->assertCount(2,$queuedEmails);
-        $shouldSendEmailViaStork = $queuedEmails->get(0)->shouldSendEmailViaStork();
-        $getParamsForStork = $queuedEmails->get(0)->getParamsForStork();
+        $shouldSendEmailViaStork = $queuedEmails->get(1)->shouldSendEmailViaStork();
+        $getParamsForStork = $queuedEmails->get(1)->getParamsForStork();
 
         $this->assertArrayHasKey('template_name', $getParamsForStork);
         $this->assertArrayHasKey('template_namespace', $getParamsForStork);
@@ -345,10 +345,15 @@ class BankingCoreTest extends TestCase
         $queuedEmails =Mail::queued(MerchantOnboardingEmail::class);
 
         $this->assertCount(2,$queuedEmails);
-        $shouldSendEmailViaStork = $queuedEmails->get(0)->shouldSendEmailViaStork();
-        $getParamsForStork = $queuedEmails->get(0)->getParamsForStork();
+        $shouldSendEmailViaStork = $queuedEmails->get(1)->shouldSendEmailViaStork();
+        $getParamsForStork = $queuedEmails->get(1)->getParamsForStork();
+        $getParamsForStorkActionRequired = $queuedEmails->get(2)->getParamsForStork();
+        $activatedMCCSuccessTemplate = 'banking_mail_activated_mcc_pending_success';
+        $activatedMCCActionTemplate = 'banking_mail_activated_mcc_pending_action_required';
 
         $this->assertArrayHasKey('template_name', $getParamsForStork);
+        $this->assertEquals($getParamsForStork['template_name'], $activatedMCCSuccessTemplate);
+        $this->assertEquals($getParamsForStorkActionRequired['template_name'], $activatedMCCActionTemplate);
         $this->assertArrayHasKey('template_namespace', $getParamsForStork);
         $this->assertArrayHasKey('org_id', $getParamsForStork);
         $this->assertArrayHasKey('params', $getParamsForStork);
@@ -418,10 +423,10 @@ class BankingCoreTest extends TestCase
         $queuedEmails =Mail::queued(MerchantOnboardingEmail::class);
 
         $this->assertCount(2,$queuedEmails);
-        $activatedMccPendingSuccessData = $queuedEmails->get(0)->getData();
-        $activatedMccPendingActionRequiredData = $queuedEmails->get(1)->getData();
-        $this->assertContains($queuedEmails->get(0)->getTemplate(),$expectedEmails);
+        $activatedMccPendingSuccessData = $queuedEmails->get(1)->getData();
+        $activatedMccPendingActionRequiredData = $queuedEmails->get(2)->getData();
         $this->assertContains($queuedEmails->get(1)->getTemplate(),$expectedEmails);
+        $this->assertContains($queuedEmails->get(2)->getTemplate(),$expectedEmails);
         $this->assertArrayHasKey('isCustomOnboardingEmail', $activatedMccPendingSuccessData);
         $this->assertEquals($activatedMccPendingSuccessData['isCustomOnboardingEmail'], false);
         $this->assertArrayHasKey('isCustomOnboardingEmail', $activatedMccPendingActionRequiredData);
@@ -484,10 +489,10 @@ class BankingCoreTest extends TestCase
         $queuedEmails =Mail::queued(MerchantOnboardingEmail::class);
 
         $this->assertCount(2,$queuedEmails);
-        $activatedMccPendingSuccessData = $queuedEmails->get(0)->getData();
-        $activatedMccPendingActionRequiredData = $queuedEmails->get(1)->getData();
-        $this->assertContains($queuedEmails->get(0)->getTemplate(),$expectedEmails);
+        $activatedMccPendingSuccessData = $queuedEmails->get(1)->getData();
+        $activatedMccPendingActionRequiredData = $queuedEmails->get(2)->getData();
         $this->assertContains($queuedEmails->get(1)->getTemplate(),$expectedEmails);
+        $this->assertContains($queuedEmails->get(2)->getTemplate(),$expectedEmails);
         $this->assertArrayHasKey('isCustomOnboardingEmail', $activatedMccPendingSuccessData);
         $this->assertEquals($activatedMccPendingSuccessData['isCustomOnboardingEmail'], true);
         $this->assertArrayHasKey('isCustomOnboardingEmail', $activatedMccPendingActionRequiredData);
@@ -550,10 +555,10 @@ class BankingCoreTest extends TestCase
         $queuedEmails =Mail::queued(MerchantOnboardingEmail::class);
 
         $this->assertCount(2,$queuedEmails);
-        $activatedMccPendingSuccessData = $queuedEmails->get(0)->getData();
-        $activatedMccPendingActionRequiredData = $queuedEmails->get(1)->getData();
-        $this->assertContains($queuedEmails->get(0)->getTemplate(),$expectedEmails);
+        $activatedMccPendingSuccessData = $queuedEmails->get(1)->getData();
+        $activatedMccPendingActionRequiredData = $queuedEmails->get(2)->getData();
         $this->assertContains($queuedEmails->get(1)->getTemplate(),$expectedEmails);
+        $this->assertContains($queuedEmails->get(2)->getTemplate(),$expectedEmails);
         $this->assertArrayHasKey('isCustomOnboardingEmail', $activatedMccPendingSuccessData);
         $this->assertEquals($activatedMccPendingSuccessData['isCustomOnboardingEmail'], false);
         $this->assertArrayHasKey('org', $activatedMccPendingSuccessData);
@@ -625,10 +630,10 @@ class BankingCoreTest extends TestCase
         $queuedEmails =Mail::queued(MerchantOnboardingEmail::class);
 
         $this->assertCount(2,$queuedEmails);
-        $activatedMccPendingSuccessData = $queuedEmails->get(0)->getData();
-        $activatedMccPendingActionRequiredData = $queuedEmails->get(1)->getData();
-        $this->assertContains($queuedEmails->get(0)->getTemplate(),$expectedEmails);
+        $activatedMccPendingSuccessData = $queuedEmails->get(1)->getData();
+        $activatedMccPendingActionRequiredData = $queuedEmails->get(2)->getData();
         $this->assertContains($queuedEmails->get(1)->getTemplate(),$expectedEmails);
+        $this->assertContains($queuedEmails->get(2)->getTemplate(),$expectedEmails);
         $this->assertArrayHasKey('isCustomOnboardingEmail', $activatedMccPendingSuccessData);
         $this->assertEquals($activatedMccPendingSuccessData['isCustomOnboardingEmail'], actual: true);
         $this->assertArrayHasKey('payment_url', $activatedMccPendingSuccessData);

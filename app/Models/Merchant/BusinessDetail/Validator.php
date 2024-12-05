@@ -263,7 +263,7 @@ class Validator extends Base\Validator
 
                 $org = $this->repo->org->findOrFailPublic($this->orgId);
 
-                if($org !== null and $org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+                if($org !== null and $org->isFeatureEnabled(Feature\Constants::VAS_KYC_RBI) === true)
                 {
                     // Check if the Website is Razorpay URL for banking merchants
                     if (preg_match(DetailUpload\Validator::RAZORPAY_URL, $value) === 1)

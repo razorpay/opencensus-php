@@ -119,21 +119,24 @@ class MerchantOnboardingEmail extends Mailable
     }
 
     public function shouldSendEmailViaStork(): bool
-    {    
+    {
         return $this->data['isStorkSupported'] ?? false;
     }
 
     public function getParamsForStork(): array
     {
-        $storkParams = 
-        [
-            'template_name' => 'banking_mail_activated_mcc_pending_success',
-            'template_namespace' => 'payments_banking',
-            'org_id'             => $this->org['id'],
-            'params' => $this->data,
-        ];
-        $storkParams['params']['payment_url'] = 'https://' . $this->data['merchant']['org']['hostname'];
-
+        $storkParams = [];
+        if(empty($this->event) === false)
+        {
+            $storkParams =
+                [
+                    'template_name' => 'banking_mail_'.strtolower($this->event),
+                    'template_namespace' => 'payments_banking',
+                    'org_id'             => $this->org['id'],
+                    'params' => $this->data,
+                ];
+            $storkParams['params']['payment_url'] = 'https://' . $this->data['merchant']['org']['hostname'];
+        }
         return $storkParams;
     }
 }
