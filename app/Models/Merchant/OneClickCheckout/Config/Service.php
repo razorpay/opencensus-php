@@ -1850,7 +1850,7 @@ class Service extends Base\Service
             );
         }
 
-        $key = $this->repo->key->getKeysForMerchant($this->merchant->getId())->first();
+        $key = $this->repo->key->getKeysForMerchant($this->merchant->getId(), $this->mode)->first();
 
         $res = $this->app['integration_service_client']->makeMultipartRequest(
             self::WHITELIST_COUPONS_UPLOAD_PATH . $key->getPublicKey(),

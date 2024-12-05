@@ -929,6 +929,10 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerOptimizerCoreService();
 
         $this->registerOptimizerCoreServiceClient();
+
+        $this->registerCredcase();
+
+        $this->registerCredcaseService();
     }
 
     protected function registerCacheManager()
@@ -1025,7 +1029,9 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             AsvConstant::ASV_HTTP_CLIENT,
             'kafkaProducerClient',
             ASVV2Constant::ASV_SDK_CLIENT,
-            'offers_engine'
+            'offers_engine',
+            'credcase',
+            'credcaseService'
         ];
     }
 
@@ -2689,6 +2695,28 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             }
 
             return new SplitzService();
+        });
+    }
+
+    protected function registerCredcase()
+    {
+        $this->app->singleton('credcase', function ($app) {
+
+            $mock = $app['config']->get('applications.credcase.mock');
+
+            if ($mock === true)
+            {
+                return new RZP\Services\Mock\Credcase($app);
+            }
+
+            return new RZP\Models\Key\CredcaseApi($app);
+        });
+    }
+
+    protected function registerCredcaseService()
+    {
+        $this->app->singleton('credcaseService', function ($app) {
+            return new RZP\Models\Key\CredcaseService($app);
         });
     }
 

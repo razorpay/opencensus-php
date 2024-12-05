@@ -7296,6 +7296,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Api<>credcase integration.
     const CREDCASE_REQUEST_FAILED                               = 'CREDCASE_REQUEST_FAILED';
+    const CREDCASE_REQUEST_INITIATED                            = 'CREDCASE_REQUEST_INITIATED';
+    const CREDCASE_SPLITZ_FALLBACK_API                          = 'CREDCASE_SPLITZ_FALLBACK_API';
     const CREDCASE_OUTBOX_REQUEST_MIGRATE                       = 'CREDCASE_OUTBOX_REQUEST_MIGRATE';
     const CREDCASE_OUTBOX_REQUEST_ROTATE                        = 'CREDCASE_OUTBOX_REQUEST_ROTATE';
     const CREDCASE_OUTBOX_REQUEST_EXPIRE                        = 'CREDCASE_OUTBOX_REQUEST_EXPIRE';
@@ -7308,6 +7310,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREDCASE_SIGNER_REDIS_ERROR                           = 'CREDCASE_SIGNER_REDIS_ERROR';
     const CREDCASE_SIGNER_REDIS_NOT_FOUND                       = 'CREDCASE_SIGNER_REDIS_NOT_FOUND';
     const CREDCASE_SIGNER_INVOKED                               = 'CREDCASE_SIGNER_INVOKED';
+    const CREDCASE_READ_COUNT_MISMATCH                          = 'CREDCASE_READ_COUNT_MISMATCH';
+    const CREDCASE_READ_RESPONSE_MISMATCH                       = 'CREDCASE_READ_RESPONSE_MISMATCH';
+    const KEY_DUAL_WRITE_SPLITZ_FAILED                          = 'KEY_DUAL_WRITE_SPLITZ_FAILED';
 
     // See RZP/Modules/Migrate.
     const MIGRATE_ASYNC_REQUEST                                 = 'MIGRATE_ASYNC_REQUEST';

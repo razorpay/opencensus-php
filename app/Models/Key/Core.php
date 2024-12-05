@@ -18,7 +18,7 @@ class Core extends Base\Core
 {
     public function createFirstKey($merchant, $mode)
     {
-        $keys = $this->repo->key->getKeysForMerchant($merchant->getId());
+        $keys = $this->repo->key->getKeysForMerchant($merchant->getId(), $mode);
 
         if (count($keys) > 0)
         {

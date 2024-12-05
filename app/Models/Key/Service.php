@@ -92,7 +92,7 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
-        $keys = $this->repo->key->getKeysForMerchant($merchantId);
+        $keys = $this->repo->key->getKeysForMerchant($merchantId, $this->mode);
 
         return $keys->toArrayPublic();
     }
@@ -167,7 +167,7 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_NO_KEY_ACCESS);
         }
 
-        $keys = $this->repo->key->getKeysForMerchant($merchantId);
+        $keys = $this->repo->key->getKeysForMerchant($merchantId, $this->mode);
 
         if( count($keys) > 1 )
         {

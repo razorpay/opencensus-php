@@ -12,22 +12,21 @@ use RZP\Constants\Metric;
 use Twirp\Context;
 
 /**
- * A Protobuf client that implements the {@see ApiKeyAPI} interface.
- * It communicates using Protobuf and can be configured with a custom HTTP Client.
+ * A JSON client that implements the {@see ApiKeyAPI} interface.
+ * It communicates using JSON and can be configured with a custom HTTP Client.
  *
  * Generated from protobuf service <code>rzp.credcase.apikey.v1.ApiKeyAPI</code>
  */
-final class ApiKeyAPIClient extends ApiKeyAPIAbstractClient implements ApiKeyAPI
+final class ApiKeyAPIJsonClient extends ApiKeyAPIAbstractClient implements ApiKeyAPI
 {
     /**
      * @inheritDoc
      */
     protected function doRequest(array $ctx, string $url, Message $in, Message $out): void
     {
-        $body = $in->serializeToString();
+        $body = $in->serializeToJsonString();
 
-        $req = $this->newRequest($ctx, $url, $body, 'application/protobuf');
-
+        $req = $this->newRequest($ctx, $url, $body, 'application/json');
         $start = millitime();
         try {
             $resp = $this->httpClient->sendRequest($req);
@@ -45,9 +44,9 @@ final class ApiKeyAPIClient extends ApiKeyAPIAbstractClient implements ApiKeyAPI
         }
 
         try {
-            $out->mergeFromString((string)$resp->getBody());
+            $out->mergeFromJsonString((string)$resp->getBody());
         } catch (GPBDecodeException $e) {
-            throw $this->clientError('failed to unmarshal proto response', $e);
+            throw $this->clientError('failed to unmarshal json response', $e);
         }
     }
 }

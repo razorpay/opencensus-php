@@ -291,4 +291,12 @@ class Metric
     const API_DECOMP_ENTITY_FETCH                               = 'api_decomp_entity_fetch';
     const API_DECOMP_PARAMETERS                                 = 'api_decomp_parameters';
     const API_DECOMP_AUTH_DISTRIBUTION                          = 'api_decomp_auth_distribution';
+
+    const CREDCASE_READ_COUNT_MISMATCH = 'credcase_read_count_mismatch';
+
+    const CREDCASE_READ_RESPONSE_MISMATCH = 'credcase_read_response_mismatch';
+
+    const CREDCASE_REQUEST_FAILED = 'credcase_request_failed';
+    const CREDCASE_REQUEST_LATENCY_MS = 'credcase_request_latency_milliseconds.histogram';
+
 }

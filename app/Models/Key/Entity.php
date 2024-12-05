@@ -6,6 +6,7 @@ use App;
 use Crypt;
 
 use RZP\Exception;
+use RZP\Http\BasicAuth\AuthCreds;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\QueryCache\Cacheable;
@@ -135,7 +136,7 @@ class Entity extends Base\PublicEntity
 
         $mode = $app['basicauth']->getMode();
 
-        return 'rzp_' . $mode . '_' . $this->getKey();
+        return $this->getFormattedKey($mode);
     }
 
     public function getPublicKey($mode = null)
@@ -147,7 +148,7 @@ class Entity extends Base\PublicEntity
             $mode = $app['basicauth']->getMode();
         }
 
-        return 'rzp_' . $mode . '_' . $this->getKey();
+        return $this->getFormattedKey($mode);
     }
 
     public function setMerchantId($merchantId)
@@ -206,8 +207,7 @@ class Entity extends Base\PublicEntity
     {
         $delaySeconds = 0;
 
-        if ($delay === true)
-        {
+        if ($delay === true) {
             // Delay by pre-specified time
             $delaySeconds = self::DEFAULT_KEY_EXPIRY_TIME_ON_ROLL;
         }
@@ -219,6 +219,12 @@ class Entity extends Base\PublicEntity
     public function getExpiredAt()
     {
         return $this->getAttribute(self::EXPIRED_AT);
+    }
+
+    public function setExpiredAt($expiredAt)
+    {
+        $this->setAttribute(self::EXPIRED_AT, $expiredAt);
+        return $this;
     }
 
     /**
@@ -278,7 +284,7 @@ class Entity extends Base\PublicEntity
         return $id;
     }
 
-    public static function stripSign(& $id)
+    public static function stripSign(&$id)
     {
         $app = App::getFacadeRoot();
 
@@ -286,14 +292,18 @@ class Entity extends Base\PublicEntity
 
         $prefix = 'rzp_' . $mode . '_';
 
-        if (strpos($id, $prefix) === false)
-        {
+        if (strpos($id, $prefix) === false) {
             return false;
         }
 
-        $len = strlen($prefix);
-
-        $id = substr($id, $len);
+        // If the key has country code, strip it.
+        if (AuthCreds::isKeyWithCountryCode($id))
+        {
+            $id =  substr($id, -14);
+        }else{
+            $len = strlen($prefix);
+            $id = substr($id, $len);
+        }
 
         return true;
     }
@@ -310,5 +320,21 @@ class Entity extends Base\PublicEntity
     public function getDecryptedSecret()
     {
         return Crypt::decrypt($this->getSecret(), true, $this);
+    }
+
+    public function getFormattedKey($mode)
+    {
+        $app = App::getFacadeRoot();
+        $whitelistedCountryCodes = explode(',',$app['config']->get('key.keys_with_country_codes_whitelist'));
+
+        if (!empty($whitelistedCountryCodes) && is_array($whitelistedCountryCodes)) {
+
+            $merchantCountryCode = $this->merchant ? strtolower($this->merchant->getCountry()) : null;
+
+            if (in_array($merchantCountryCode, array_map('strtolower', $whitelistedCountryCodes))) {
+                return 'rzp_' . $mode . '_' . $merchantCountryCode . '_' . $this->getKey();
+            }
+        }
+        return 'rzp_' . $mode . '_' . $this->getKey();
     }
 }

@@ -658,7 +658,6 @@
             <exclude>./tests/Functional/Invoice/CheckoutInvoiceTest.php</exclude>
         </testsuite>
         <testsuite name="Platform Test Suite">
-            <directory>./tests/Functional/Key/</directory>
             <directory>./tests/Functional/Mailgun/</directory>
             <directory>./tests/Functional/Reminders/</directory>
             <directory>./tests/Functional/RazorX/</directory>
@@ -686,6 +685,8 @@
             <directory>./tests/Unit/Edge</directory>
             <directory>./tests/Unit/Http/Middleware</directory>
             <directory>./tests/Functional/Edge/</directory>
+            <directory>./tests/Functional/Key/</directory>
+            <directory>./tests/Unit/Models/Key</directory>
             <exclude>./tests/Functional/OAuth/OAuthAppMerchantMapTest.php</exclude>
             <exclude>./tests/Functional/OAuth/OAuthMailTest.php</exclude>
             <exclude>./tests/Functional/OAuth/OAuthMailTest.php</exclude>
