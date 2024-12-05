@@ -183,6 +183,8 @@ class OffersEngine
      */
     protected function sendOffersEngineRequest(array $request, string $endpoint, bool $throwExceptionOnFailure = true)
     {
+        $statusCode = null;
+
         $this->traceRequest($request);
 
         try
@@ -196,6 +198,8 @@ class OffersEngine
 
             $parsedResponse = $this->parseAndReturnResponse($response);
 
+            $statusCode = $response->status_code;
+
             $logResponse = $this->shouldLogResponse($endpoint, $request['method']);
 
             if($logResponse === true)
@@ -203,7 +207,7 @@ class OffersEngine
                 $this->trace->info(TraceCode::OFFERS_ENGINE_RESPONSE,
                     [
                         "response" => $parsedResponse ?? [],
-                        "statusCode" => $response->status_code,
+                        "statusCode" => $statusCode,
                     ]);
             }
 
@@ -212,10 +216,12 @@ class OffersEngine
         catch(\Throwable $e)
         {
             $this->trace->count(
-                Metric::OFFERS_ENGINE_REQUEST_FAILURE,[
-                'route' => app('api.route')->getCurrentRouteName(),
-                'endpoint' => $endpoint,
+                Metric::OFFERS_ENGINE_REQUEST_FAILURE, [
+                'route'       => app('api.route')->getCurrentRouteName(),
+                'endpoint'    => $endpoint,
+                'status_code' => $statusCode,
             ]);
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
