@@ -14,9 +14,9 @@ interface CheckoutStylesProps {
 }
 const CheckoutStyles: React.FC<CheckoutStylesProps> = ({ trustedBadge }: CheckoutStylesProps) => {
   const isRTBActive =
-    trustedBadge.status.original.merchant_status !== 'optout' &&
-    (trustedBadge.status.original.status === 'eligible' ||
-      trustedBadge.status.original.status === 'whitelist');
+    trustedBadge?.status?.original?.merchant_status !== 'optout' &&
+    (trustedBadge?.status?.original?.status === 'eligible' ||
+      trustedBadge?.status?.original?.status === 'whitelist');
   return (
     <>
       <BrandColor />
