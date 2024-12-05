@@ -211,7 +211,8 @@ class Core extends Base\Core
 
         $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
 
-        if( $this->pgosProxyController->isModularMerchant($merchant)){
+        if( $this->pgosProxyController->isCurlecModularMerchant($merchant) === true)
+        {
             $input['merchant_id'] = $merchant->getId();
             $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::MERCHANT_DOCUMENT_UPLOAD_V2, $this->pgosProxyController->getPayloadForFileUpload($input), $merchant);
             return $merchantDetailCore->createResponse($merchantDetails);
