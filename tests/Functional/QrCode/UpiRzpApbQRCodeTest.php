@@ -852,7 +852,7 @@ class UpiRzpApbQRCodeTest extends TestCase
                 'fixed_amount'   => '0',
                 'request_source' => 'ezetap',
                 'vpa'            => 'testvpa@rxairtel',
-                'qr_string'      => 'upi://pay?ver=01&pa=testvpa@rxairtel&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
+                'qrString'      => 'upi://pay?ver=01&pa=testvpa@rxairtel&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
             ],
             'live',
             'LiveAccountMer'
@@ -891,7 +891,7 @@ class UpiRzpApbQRCodeTest extends TestCase
                 'fixed_amount'   => '0',
                 'request_source' => 'ezetap',
                 'vpa'            => 'testvpa@rxairtel',
-                'qr_string'      => 'upi://pay?ver=01&pa=testvpa@rxairtel&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
+                'qrString'      => 'upi://pay?ver=01&pa=testvpa@rxairtel&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
             ],
             'live',
             'LiveAccountMer'

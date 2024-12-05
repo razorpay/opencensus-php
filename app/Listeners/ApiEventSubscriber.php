@@ -1041,6 +1041,15 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
 
         $this->dispatchEventToEzetapNotification($payload);
+
+        $gateway=$payment->getGateway();
+
+        if($this->checkIfGatewayEnabledToSendDeviceNotification($gateway) === true){
+            //need to add Spitz Experiment here for triggering specific to upi_jkbank gateway
+            $DevicePayload = $this->getQrCodePaymentPayloadForDevice($payment);
+            $this->dispatchEventToEzetapDevice($DevicePayload);
+        }
+
     }
 
     protected function onInvoicePartiallyPaid($payment)
@@ -1733,6 +1742,80 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
+
+    /**
+     * Get the payload for QR code payment for device
+     * @param Payment\Entity $payment
+     * @return array
+     */
+    protected function getQrCodePaymentPayloadForDevice(Payment\Entity $payment)
+    {
+        $receiver = $payment->getReceiver();
+        $paymentContext = $payment->getMetadata('payment_context') ?? null;
+
+        $partialPayload[Constants\Entity::PAYMENT] = [
+            'entity' => $payment->toArrayPublic()
+        ];
+
+        if (empty($paymentContext['offer']) === false)
+        {
+            $partialPayload[Constants\Entity::PAYMENT]['entity']['upi']['offer'] = $paymentContext['offer'];
+        }
+
+        if (empty($paymentContext['emi']) === false)
+        {
+            $partialPayload[Constants\Entity::PAYMENT]['entity']['upi']['emi'] = $paymentContext['emi'];
+        }
+
+        $qrCodeArray = $receiver->toArrayPublic();
+        $qrCodeArray['device_id'] = $receiver->getDeviceId();
+
+        $partialPayload[Constants\Entity::QR_CODE] = [
+            'entity' => $qrCodeArray,
+        ];
+
+        return $partialPayload;
+    }
+
+
+    public function checkIfGatewayEnabledToSendDeviceNotification(string $gateway) : bool
+    {
+       try{
+               $properties = [
+                   'id'            => $gateway,
+                   'experiment_id' => $this->app->config->get('app.ezetap_device_notification_gateway_enabled'),
+                   'request_data'  => json_encode(['gateway' => $gateway]),
+               ];
+               $response   = $this->app['splitzService']->evaluateRequest($properties);
+
+               $this->app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                   'experiment_id' => $properties['experiment_id'],
+                   'gateway'       => $gateway,
+                   '$response'     => $response
+               ]);
+
+               $experimentResult = false; // Default value
+               $variables = $response['response']['variant']['variables'] ?? [];
+               foreach ($variables as $variable) {
+                   $key = $variable['key'] ?? '';
+                   $value = $variable['value'] ?? '';
+                   if ($key === 'result' && $value === 'on') {
+                       $experimentResult = true;
+                       break;
+                   }
+               }
+               return $experimentResult;
+       }catch (\Exception $e){
+           $this->trace->traceException(
+               $e,
+               null,
+               TraceCode::SPLITZ_ERROR
+           );
+           return false;
+       }
+           return false;
+    }
+
     protected function getVirtualAccountPaymentPayload(Payment\Entity $payment)
     {
         $receiver = $payment->receiver;
@@ -2367,6 +2450,19 @@ class ApiEventSubscriber extends Base\Core
         $event = $this->createEventEntity($payload);
         $this->app['ezetapNotification']->sendEzetapRequest($event);
     }
+
+
+    /**
+     * Dispatches event to ezetap device for device notification
+     * @param array $payload
+     * @return void
+     */
+    protected function dispatchEventToEzetapDevice(array $payload)
+    {
+        $event = $this->createEventEntity($payload);
+        $this->app['ezetapNotification']->sendDeviceNotification($event);
+    }
+
 
     /**
      * Sets storkProduct attribute to banking if balanceType is such but temporarily

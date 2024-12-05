@@ -1134,6 +1134,8 @@ return array(
 
     'reversal_read_experiment' => env('REVERSAL_READ_EXPERIMENT_ID'),
 
+    'ezetap_device_notification_gateway_enabled' => env('EZETAP_DEVICE_NOTIFICATION_GATEWAY_ENABLED'),
+
     'fulcrum_recurring_initial_experiment' => env('FULCRUM_RECURRING_INITIAL_PAYMENT_EXP_ID'),
 
     'splitz_recurring_harvester_query_experiment_id' => env('SPLITZ_RECURRING_HARVESTER_QUERY_EXPERIMENT_ID'),
@@ -1171,6 +1173,7 @@ return array(
     'cms_create_override_live_experiment_id' => env('CMS_CREATE_OVERRIDE_LIVE_EXPERIMENT_ID'),
 
     'stop_async_capture_card_gateways' => env('STOP_ASYNC_CAPTURE_CARD_GATEWAYS'),
+
 
     'skip_optimizer_card_callback' => env('SKIP_OPTIMIZER_CARD_CALLBACK'),
     'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID')

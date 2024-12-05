@@ -81,4 +81,19 @@ class Repository extends QrCode\Repository
                     ->latest()
                     ->first();
     }
+
+
+    public function findByDeviceId(string $deviceId)
+    {
+        return $this->newQuery()
+            ->where(Entity::DEVICE_ID, $deviceId)
+            ?->get();
+    }
+
+    public function findByTrId(string $TrId)
+    {
+        return $this->newQuery()
+            ->where(Entity::REFERENCE, $TrId)
+            ?->first();
+    }
 }

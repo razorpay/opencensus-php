@@ -74,6 +74,37 @@ trait NonVirtualAccountQrCodeTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    private function updateDeviceIdForQrCode(array $input = [], array $headers = [])
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/payments/qr_codes/device/map',
+            'content' => $input,
+            'headers' => $headers,
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+
+    private function unMapDeviceIdforQrCode(array $input = [], array $headers = [])
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'method' => 'PUT',
+            'url' => '/payments/qr_codes/device/unmap',
+            'content' => $input,
+            'headers' => $headers,
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+
+
     private function downloadQrCode(string $id, $mode = 'test', $merchantId = '10000000000000')
     {
         if ($mode === 'live')

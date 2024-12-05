@@ -171,7 +171,7 @@ class Core extends QrCode\Core
             }
 
             if(($terminal?->getGateway() === 'upi_jkbank') and (empty($tr) === true)) {
-                $tr ??= $qrCode->getId() . 'qrv2';
+                $tr = $qrCode->getId() . 'qrv2';
                 $qrString = $this->updateTrIdInQrString($tr, $additionalData['qrString']);
             }
 
@@ -198,6 +198,13 @@ class Core extends QrCode\Core
         return $params['tr'] ?? null;
     }
 
+    public function getPayeeVpaFromQrString(string $qrString) : string | null
+    {
+        $queryString = parse_url($qrString, PHP_URL_QUERY);
+        parse_str($queryString, $params);
+        return strtolower($params['pa']) ?? null;
+    }
+
    /**
      * Updates the 'tr' parameter in the given QR string with the provided transaction ID.
      *
@@ -215,7 +222,7 @@ class Core extends QrCode\Core
         parse_str($parts['query'] ?? '', $queryParams);
 
         // Update or add the 'tr' parameter
-        $queryParams['tr'] ??= $trId;
+        $queryParams['tr'] = $trId;
 
         // Rebuild the URL with updated query
         $parts['query'] = http_build_query($queryParams);
@@ -369,6 +376,15 @@ class Core extends QrCode\Core
         $qrCode->setClosedAt($currentTime);
 
         $qrCode->setCloseReason($closeReason);
+
+        $this->repo->saveOrFail($qrCode);
+
+        return $qrCode;
+    }
+
+    public function setDeviceIdForQr($qrCode, $device_id)
+    {
+        $qrCode->updateDeviceId($device_id);
 
         $this->repo->saveOrFail($qrCode);
 

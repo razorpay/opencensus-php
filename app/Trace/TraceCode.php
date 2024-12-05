@@ -4910,6 +4910,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const QR_V2_PAYMENT_SYNC_FAILED                             = 'QR_V2_PAYMENT_SYNC_FAILED';
     const QR_CODE_CREATE_REQUEST_FAILED                         = 'QR_CODE_CREATE_REQUEST_FAILED';
+    const QR_CODE_SET_DEVICE_REQUEST_FAILED                     = 'QR_CODE_SET_DEVICE_REQUEST_FAILED';
     const QR_CODE_CLOSE_REQUEST_FAILED                          = 'QR_CODE_CLOSE_REQUEST_FAILED';
     const QR_CODE_EXPIRE_REQUEST_SKIPPED                        = 'QR_CODE_EXPIRE_REQUEST_SKIPPED';
     const QR_CODE_FETCH_MULTIPLE_KEYS_SUPPLIED_WITH_PAYMENT_ID  = 'QR_CODE_FETCH_MULTIPLE_KEYS_SUPPLIED_WITH_PAYMENT_ID';
@@ -4928,6 +4929,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_CODE_PAYMENT_LINKS_CREATE_REQUEST                  = 'QR_CODE_PAYMENT_LINKS_CREATE_REQUEST';
     const QR_CODE_CLOSE_REQUEST                                 = 'QR_CODE_CLOSE_REQUEST';
     const QR_CODES_CLOSE_BULK_REQUEST                           = 'QR_CODES_CLOSE_BULK_REQUEST';
+    const QR_CODES_SET_DEVICE_REQUEST                           = 'QR_CODES_SET_DEVICE_REQUEST';
+    const QR_CODE_UNMAP_DEVICE_REQUEST                          = 'QR_CODE_UNMAP_DEVICE_REQUEST';
+    const QR_CODES_UNMAP_DEVICE_PROCESSED                       ='QR_CODES_UNMAP_DEVICE_PROCESSED';
+    const QR_CODE_UNMAP_DEVICE_REQUEST_FAILED                   ='QR_CODE_UNMAP_DEVICE_REQUEST_FAILED';
+    const BAD_REQUEST_DEVICE_ID_NOT_FOUND                       ='BAD_REQUEST_DEVICE_ID_NOT_FOUND';
+    const MULTIPLE_QR_CODES_MAPPED_ERROR                        ='MULTIPLE_QR_CODES_MAPPED_ERROR';
+    const QR_CODES_SET_DEVICE_DETAILS                           = 'QR_CODES_SET_DEVICE_DETAILS';
+    const QR_CODES_SET_DEVICE_PROCESSED                         = 'QR_CODES_SET_DEVICE_PROCESSED';
     const QR_CODE_CREATED                                       = 'QR_CODE_CREATED';
     const QR_CODE_CHECKOUT_CREATED                              = 'QR_CODE_CHECKOUT_CREATED';
     const QR_CODE_PAYMENT_LINKS_CREATED                         = 'QR_CODE_PAYMENT_LINKS_CREATED';
@@ -12365,6 +12374,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const GATEWAY_VALIDATE_GIFT_CARD_REQUEST                            = 'GATEWAY_VALIDATE_GIFT_CARD_REQUEST';
     const VALIDATE_GIFT_CARD_SUCCESS                                    = 'VALIDATE_GIFT_CARD_SUCCESS';
+
+    const BAD_REQUEST_QR_ALREADY_MAPPED= 'BAD_REQUEST_QR_ALREADY_MAPPED';
+
+    const BAD_REQUEST_DEVICE_ID_ALREADY_MAPPED='BAD_REQUEST_DEVICE_ID_ALREADY_MAPPED';
+
+    const BAD_REQUEST_DUPLICATE_REQUEST='BAD_REQUEST_DUPLICATE_REQUEST';
+    const BAD_REQUEST_IDENTIFIER_NOT_FOUND = 'BAD_REQUEST_IDENTIFIER_NOT_FOUND';
+    const QR_PAYEE_VPA_VALIDATION_FAILED = 'QR_PAYEE_VPA_VALIDATION_FAILED';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

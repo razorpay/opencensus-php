@@ -155,6 +155,20 @@ class Entity extends QrCode\Entity
         self::REFERENCE,
     ];
 
+    protected static $modifiers = [
+        self::QR_STRING,
+    ];
+
+    protected function modifyQrString(& $input)
+    {
+        // Should respect the merchant payback field if sent from the create request
+        if (empty($input['qrString']) === false)
+        {
+            $input[self::QR_STRING] = $input['qrString'];
+            unset($input['qrString']);
+        }
+    }
+
     public function generateReference($input)
     {
         if (isset($input[self::REFERENCE]) === false)
@@ -196,6 +210,11 @@ class Entity extends QrCode\Entity
     }
 
     public function setDeviceId(string $deviceId)
+    {
+        $this->setAttribute(self::DEVICE_ID, $deviceId);
+    }
+
+    public function updateDeviceId($deviceId)
     {
         $this->setAttribute(self::DEVICE_ID, $deviceId);
     }
@@ -451,6 +470,10 @@ class Entity extends QrCode\Entity
                 if(isset($vpa[1]) === true && (($vpa[1] === 'rxairtel') || ($vpa[1] === 'rairtel')))
                 {
                     return 'upi_rzpapb';
+                }
+                if(isset($vpa[1]) === true && ($vpa[1] === 'jkb'))
+                {
+                    return 'upi_jkbank';
                 }
                 return 'upi_' . $vpa[1];
             }

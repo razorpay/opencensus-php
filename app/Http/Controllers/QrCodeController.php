@@ -69,6 +69,30 @@ class QrCodeController extends Controller
         return ApiResponse::json($entity);
     }
 
+    public function setDeviceIdForQr()
+    {
+        $input = Request::all();
+
+        $entity = Tracer::inspan(['name' => HyperTrace::QR_CODE_SET_DEVICE], function () use ($input) {
+            return (new NonVAQrCodeService())->setDeviceIdForQr($input);
+        });
+
+        return ApiResponse::json($entity);
+    }
+
+
+    public function unMapDeviceIdForQr()
+    {
+        $input = Request::all();
+
+        $entity = Tracer::inspan(['name' => HyperTrace::QR_CODE_UNMAP_DEVICE], function () use ($input) {
+            return (new NonVAQrCodeService())->unMapDeviceIdForQr($input);
+        });
+
+        return ApiResponse::json($entity);
+
+    }
+
     public function closeQrCode(string $id)
     {
         $response = (new NonVAQrCodeService())->closeQrCode($id);

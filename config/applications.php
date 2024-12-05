@@ -151,8 +151,9 @@ return [
     ],
 
     'ezetap-notification' => [
-        'mock'          => env('EZETAP_WEBHOOK_MOCK', false),
-        'url'           => env('EZETAP_WEBHOOK_URL'),
+        'mock'               => env('EZETAP_WEBHOOK_MOCK', false),
+        'url'                => env('EZETAP_WEBHOOK_URL'),
+        'device_webhook_url' => env('EZETAP_DEVICE_WEBHOOK_URL'),
         'secret'        => env('EZETAP_WEBHOOK_SECRET'),
     ],
 

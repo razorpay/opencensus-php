@@ -828,6 +828,8 @@ class Route
         'close_qr_codes_bulk'                      => ['post',     'payments/qr_codes/close/bulk',                   'QrCodeController@closeQrCodesBulk'                              ],
         'qr_code_create'                           => ['post',     'payments/qr_codes',                              'QrCodeController@create'                                           ],
         'qr_code_merchant_create'                  => ['post',     'payments/merchant/qr_codes',                     'QrCodeController@createQrForMerchant'                              ],
+        'set_qr_code_device'                       => ['put',      'payments/qr_codes/device/map',                    'QrCodeController@setDeviceIdForQr'                              ],
+        'qr_code_device_id_unmap'                       => ['put',      'payments/qr_codes/device/unmap',                    'QrCodeController@unMapDeviceIdForQr'                              ],
         'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
         //'qr_code_checkout_create'                  => ['post',     'checkout/qr_codes',                              'QrCodeController@createForCheckout'                                           ],
         'qr_code_fetch_payment_status'             => ['get',      'checkout/qr_code/{id}/payment/status',           'QrPaymentController@fetchCheckoutPaymentStatusByQrCodeId'          ],
@@ -6894,6 +6896,8 @@ class Route
 
         'expire_keys',
         'qr_code_merchant_create',
+        'set_qr_code_device',
+        'qr_code_device_id_unmap',
 
         'settlement_ondemand_create_internal',
         'user_create_merchant_internal',
@@ -17402,6 +17406,8 @@ class Route
         ],
 
         'ezetap-api' => [
+            'set_qr_code_device',
+            'qr_code_device_id_unmap',
             'payment_fetch_by_id',
             'qr_code_create',
             'qr_code_close',

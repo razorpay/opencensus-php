@@ -2139,7 +2139,7 @@ class QrCodeRefactorTest extends TestCase
         $this->assertEquals(100, $qrPayment->getAmount());
         $this->assertEquals($qrCode->getId() . 'qrv2', $qrPayment->getMerchantReference());
         $this->assertEquals('payervpa@upi', $qrPayment->getAttribute('payer_vpa'));
-
+        $this->assertNotNull($qrPayment->getTransactionTime());
 
         $this->assertEquals('RndmNpciRefId', $payment->getReference16());
         $this->assertEquals('qr_code', $payment->getReceiverType());
@@ -2764,4 +2764,154 @@ class QrCodeRefactorTest extends TestCase
         $this->assertEquals($qrCodeEntity->getId().'qrv2', $qrCodeEntity['reference']);
 
     }
+
+    public function testJKBankSQRDeviceIdAdd()
+    {
+        $this->config['applications.ezetap-notification.mock'] = true;
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'on',
+                RazorxTreatment::QR_PAYMENT_REFACTOR_GATEWAY => 'on',
+            ]
+        );
+        $this->fixtures->create('terminal:dedicated_upi_jk_terminal');
+
+        $qrCode = $this->createMerchantQrCode(
+            [
+                'merchant_id'        => 'LiveAccountMer',
+                'request_source'     => 'ezetap',
+                'vpa'                => 'rzp.qrTest@jkb',
+                'qrString'         => 'upi://pay?ver=01&pa=rzp.qrTest@jkb&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
+            ]);
+
+        $this->assertNotNull($qrCode);
+        $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+        $this->assertEquals('rzp.qrTest@jkb', $intentParam['pa']);
+        $this->assertEquals('bankTr', $intentParam['tr']);
+        $this->assertEquals('bankTr', $qrCodeEntity['reference']);
+        $this->assertNull($qrCodeEntity['device_id']);
+
+
+        $qrCode = $this->updateDeviceIdForQrCode(
+            [
+                'merchant_id' => 'LiveAccountMer',
+                "identifier"=>[
+                    "trId"=>null,
+                    'qr_code_id'  => $qrCode['id'],
+                ],
+                'device_id'   => '123456Test',
+            ]);
+
+        $qrCodeEntity1 = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertEquals('123456Test', $qrCodeEntity1['device_id']);
+    }
+
+    public function testJKBankSQRDeviceIdUpdate()
+    {
+        $this->config['applications.ezetap-notification.mock'] = true;
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'on',
+                RazorxTreatment::QR_PAYMENT_REFACTOR_GATEWAY => 'on',
+            ]
+        );
+        $this->fixtures->create('terminal:dedicated_upi_jk_terminal');
+
+        $qrCode = $this->createMerchantQrCode(
+            [
+                'merchant_id'        => 'LiveAccountMer',
+                'request_source'     => 'ezetap',
+                'device_id'          => '12345Test',
+                'vpa'                => 'rzp.qrTest@jkb',
+                'qrString'         => 'upi://pay?ver=01&pa=rzp.qrTest@jkb&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
+            ]);
+
+        $this->assertNotNull($qrCode);
+        $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+        $this->assertEquals('rzp.qrTest@jkb', $intentParam['pa']);
+        $this->assertEquals('bankTr', $intentParam['tr']);
+        $this->assertEquals('bankTr', $qrCodeEntity['reference']);
+        $this->assertEquals('12345Test', $qrCodeEntity['device_id']);
+
+
+        $qrCode = $this->unMapDeviceIdforQrCode(
+            [
+                'device_id'   => "12345Test",
+            ]);
+
+        $qrCode = $this->updateDeviceIdForQrCode(
+            [
+                'merchant_id' => 'LiveAccountMer',
+                'identifier'=>[
+                    'trId'=>null,
+                    'qr_code_id'  => $qrCode['id'],
+                ],
+                'device_id'   => 'testi12',
+            ]);
+
+        $qrCodeEntity1 = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertEquals('testi12', $qrCodeEntity1['device_id']);
+    }
+
+    public function testJKBankSQRDeviceIdDelete()
+    {
+        $this->config['applications.ezetap-notification.mock'] = true;
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'on',
+                RazorxTreatment::QR_PAYMENT_REFACTOR_GATEWAY => 'on',
+            ]
+        );
+        $this->fixtures->create('terminal:dedicated_upi_jk_terminal');
+
+        $qrCode = $this->createMerchantQrCode(
+            [
+                'merchant_id'        => 'LiveAccountMer',
+                'request_source'     => 'ezetap',
+                'vpa'                => 'rzp.qrTest@jkb',
+                'qrString'         => 'upi://pay?ver=01&pa=rzp.qrTest@jkb&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
+            ]);
+
+        $this->assertNotNull($qrCode);
+        $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+        $this->assertEquals('rzp.qrTest@jkb', $intentParam['pa']);
+        $this->assertEquals('bankTr', $intentParam['tr']);
+        $this->assertEquals('bankTr', $qrCodeEntity['reference']);
+
+        $this->updateDeviceIdForQrCode(
+            [
+                'merchant_id' => 'LiveAccountMer',
+                "identifier"=>[
+                    "trId"=>null,
+                    'qr_code_id'  => $qrCode['id'],
+                ],
+                'device_id'   => "12345Test",
+            ]);
+
+        $qrCodeEntity = $this->getDbLastEntity('qr_code', 'live');
+        $this->assertEquals('12345Test', $qrCodeEntity['device_id']);
+
+
+        $qrCode = $this->unMapDeviceIdforQrCode(
+            [
+                'device_id'   => "12345Test",
+            ]);
+
+
+        $qrCodeEntity1 = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertEquals(null, $qrCodeEntity1['device_id']);
+    }
+
 }
