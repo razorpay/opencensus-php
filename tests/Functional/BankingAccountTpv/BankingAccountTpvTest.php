@@ -23,11 +23,13 @@ use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
+use RZP\Tests\Traits\MocksSplitz;
 
 class BankingAccountTpvTest extends TestCase
 {
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+    use MocksSplitz;
 
     protected function setUp(): void
     {
@@ -997,6 +999,20 @@ class BankingAccountTpvTest extends TestCase
                 }));
     }
 
+    protected function mockSplitzDisableCAC()
+    {
+        $this->mockSplitzTreatment([
+            'id'            => '10000000000000',
+            'experiment_id' => env('CAC_BLACKLIST_EXP_ID'),
+        ], [
+            'response' => [
+                'variant' => [
+                    'name' => 'active'
+                ]
+            ]
+        ]);
+    }
+
     public function testMerchantTpvCreateRouteViaBankingProductForViewOnlyRole()
     {
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only');
@@ -1006,6 +1022,8 @@ class BankingAccountTpvTest extends TestCase
         $this->ba->addXOriginHeader();
 
         $this->mockRazorEnableXDenyUauthorisedAndDisableCAC();
+
+        $this->mockSplitzDisableCAC();
 
         $this->startTest();
     }
@@ -1019,6 +1037,8 @@ class BankingAccountTpvTest extends TestCase
         $this->ba->addXOriginHeader();
 
         $this->mockRazorEnableXDenyUauthorisedAndDisableCAC();
+
+        $this->mockSplitzDisableCAC();
 
         $this->startTest();
     }

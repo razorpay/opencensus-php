@@ -1573,29 +1573,19 @@ class Entity extends Base\PublicEntity
 
     public function isCACEnabled() :bool
     {
-        $isCACExperimentEnabledVariant = app('razorx')->getTreatment($this->getId(),
-            RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
-            MODE::LIVE);
+        // This experiment acts as a blacklist for CAC - merchants for whom CAC should not be enabled.
+        $isExperimentEnabled = (new Core())->isSplitzExperimentEnable([
+            'id'            => $this->getId(),
+            'experiment_id' => app('config')->get('app.cac_blacklist_exp_id')
+        ], 'active',
+            TraceCode::CAC_EXPERIMENT_CHECK_FAILED);
 
-        $isCACExperimentDisabledVariant = app('razorx')->getTreatment($this->getId(),
-            RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_DISABLED,
-            MODE::LIVE);
+        app('trace')->info(TraceCode::CAC_EXPERIMENT_VARIANTS_STATUS, [
+            'experiment_status' => $isExperimentEnabled,
+            'merchant_id'       => $this->getId(),
+        ]);
 
-        app('trace')->info(TraceCode::CAC_EXPERIMENT_VARIANTS_STATUS,
-            [
-                'isCACExperimentEnabledVariant' => $isCACExperimentEnabledVariant,
-                'isCACExperimentDisabledVariant' => $isCACExperimentDisabledVariant,
-                'merchant_id' => $this->getId()
-            ]);
-
-        if ($isCACExperimentEnabledVariant != RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return $isCACExperimentDisabledVariant != RazorxTreatment::RAZORX_VARIANT_ON;
-        }
-        else
-        {
-            return $isCACExperimentEnabledVariant === RazorxTreatment::RAZORX_VARIANT_ON;
-        }
+        return !$isExperimentEnabled;
     }
 
     public function liveEnable()

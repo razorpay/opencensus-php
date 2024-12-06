@@ -10764,6 +10764,8 @@ class PayoutTest extends OAuthTestCase
         // Sets up Fund Account and Merchant User mapping that may be needed to setup on live
         $this->setUpExperimentForNWFSAndCAC();
 
+        $this->mockSplitzEnableCAC();
+
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
@@ -10845,6 +10847,8 @@ class PayoutTest extends OAuthTestCase
         $this->mockRazorXTreatmentForCACDisabled('off', 'control');
         $this->mockRazorXTreatmentForCACEnabled('off', 'control');
 
+        $this->mockSplitzEnableCAC();
+
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
@@ -10924,6 +10928,8 @@ class PayoutTest extends OAuthTestCase
         $this->setUpExperimentForNWFSAndCAC();
         $this->mockRazorXTreatmentForCACDisabled('on', 'control');
         $this->mockRazorXTreatmentForCACEnabled('off', 'control');
+
+        $this->mockSplitzEnableCAC();
 
         $this->fixtures->on('live')->create(
             'workflow_config',
@@ -19810,6 +19816,8 @@ class PayoutTest extends OAuthTestCase
     public function testGetFreePayoutsAttributesOnProxyAuthViewOnlyUser()
     {
         $this->mockRazorxTreatment();
+
+        $this->mockSplitzDisableCAC();
 
         $viewOnlyRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only');
 
@@ -39968,6 +39976,8 @@ class PayoutTest extends OAuthTestCase
                     return 'control';
                 }));
 
+        $this->mockSplitzDisableCAC();
+
         $secondBankingAccountAttributes = [
             'id'             => 'DEcba4321DEcba',
             'account_number' => '2224440041626999',
@@ -44677,5 +44687,25 @@ class PayoutTest extends OAuthTestCase
         return substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'), 0, $length);
     }
 
+    private function mockSplitzEnableCAC()
+    {
+        $splitzMock = Mockery::mock(\RZP\Services\SplitzService::class, [$this->app])->makePartial();
+
+        $splitzMock->shouldReceive('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with([
+                'id'            => '10000000000000',
+                'experiment_id' => env('CAC_BLACKLIST_EXP_ID'),
+            ])
+            ->andReturn( [
+                'response' => [
+                    'variant' => [
+                        'name' => 'control'
+                    ]
+                ]
+            ]);
+
+        $this->app->instance('splitzService', $splitzMock);
+    }
 }
 

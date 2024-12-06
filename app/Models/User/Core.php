@@ -4315,7 +4315,10 @@ class Core extends Base\Core
 
     private function fetchUserPermissions($merchant)
     {
-        $isCACEnabled = $this->isCACEnabled($merchant[Entity::ID]);
+        /** @var Merchant\Entity $merchantEntity */
+        $merchantEntity = $this->repo->merchant->find($merchant[Entity::ID]);
+
+        $isCACEnabled = $merchantEntity->isCACEnabled();
 
         $this->trace->info(TraceCode::CAC_EXPERIMENT_STATUS,
             [
@@ -4392,33 +4395,6 @@ class Core extends Base\Core
         return array_values(
             array_diff($basePermissions, [Permission::VIEW_TRANSACTION_STATEMENT])
         );
-    }
-
-    public function isCACEnabled($merchantId) :bool
-    {
-        $isCACExperimentEnabledVariant = app('razorx')->getTreatment($merchantId,
-            RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
-            MODE::LIVE);
-
-        $isCACExperimentDisabledVariant = app('razorx')->getTreatment($merchantId,
-            RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_DISABLED,
-            MODE::LIVE);
-
-        app('trace')->info(TraceCode::CAC_EXPERIMENT_VARIANTS_STATUS,
-            [
-                'isCACExperimentEnabledVariant' => $isCACExperimentEnabledVariant,
-                'isCACExperimentDisabledVariant' => $isCACExperimentDisabledVariant,
-                'merchant_id' => $merchantId
-            ]);
-
-        if ($isCACExperimentEnabledVariant != RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return $isCACExperimentDisabledVariant != RazorxTreatment::RAZORX_VARIANT_ON;
-        }
-        else
-        {
-            return $isCACExperimentEnabledVariant === RazorxTreatment::RAZORX_VARIANT_ON;
-        }
     }
 
     /**

@@ -11339,6 +11339,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CAC_EXPERIMENT_VARIANTS_STATUS                        = 'CAC_EXPERIMENT_VARIANTS_STATUS';
     const CAC_EXPERIMENT_STATUS                                 = 'CAC_EXPERIMENT_STATUS';
+    const CAC_EXPERIMENT_CHECK_FAILED                           = 'CAC_EXPERIMENT_CHECK_FAILED';
 
     const CREATING_ACCESS_CONTROL_UPDATE_HISTORY                = 'CREATING_ACCESS_CONTROL_UPDATE_HISTORY';
     const DB_QUERY_EXCEPTION                                    = 'DB_QUERY_EXCEPTION';

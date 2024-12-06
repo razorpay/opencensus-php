@@ -7984,6 +7984,7 @@ class UserTest extends TestCase
     public function testUpdateUserRoleByNonOwner()
     {
         $this->enableRazorXTreatmentForRazorX();
+
         $user = $this->fixtures->create('user');
 
         $merchant = $this->fixtures->create('merchant');
@@ -8004,6 +8005,8 @@ class UserTest extends TestCase
         $this->createUserMerchantMapping($user['id'], $merchant['id'], 'finance_l1', 'banking');
 
         $this->createUserMerchantMapping($dummyUser['id'], $merchant['id'], 'view_only', 'banking');
+
+        $this->mockSplitzDisableCAC($merchant['id']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -16271,5 +16274,19 @@ class UserTest extends TestCase
 
         $this->assertEmpty($response['merchants']);
         $this->assertEquals($response['is_merchant_entities_empty'], $expectedResult);
+    }
+
+    protected function mockSplitzDisableCAC($merchantId)
+    {
+        $this->mockSplitzTreatment([
+            'id'            => $merchantId ?? '10000000000000',
+            'experiment_id' => env('CAC_BLACKLIST_EXP_ID'),
+        ], [
+            'response' => [
+                'variant' => [
+                    'name' => 'active'
+                ]
+            ]
+        ]);
     }
 }

@@ -21,9 +21,12 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
+use RZP\Tests\Traits\MocksSplitz;
 
 trait PayoutTrait
 {
+    use MocksSplitz;
+
     protected function makePayoutSummaryRequest()
     {
         $request = [
@@ -191,6 +194,8 @@ trait PayoutTrait
 
                     return 'control';
                 }));
+
+        $this->mockSplitzDisableCAC();
 
         $steps = $workflow->steps()->get()->toArrayPublic();
 
@@ -467,6 +472,8 @@ trait PayoutTrait
 
                     return 'control';
                 }));
+
+        $this->mockSplitzDisableCAC();
 
         // $permission = $this->fixtures->on('live')->create('permission',
         //     [
@@ -908,6 +915,8 @@ trait PayoutTrait
             'on',
             'on' // just sey this on, leave everything as default
         );
+
+        $this->mockSplitzDisableCAC();
     }
 
     public function expectStorkSendSmsRequest($storkMock, $templateName, $destination, $expectedParams = [])
@@ -941,5 +950,19 @@ trait PayoutTrait
                   );
 
         return $storkMock;
+    }
+
+    protected function mockSplitzDisableCAC()
+    {
+        $this->mockSplitzTreatmentZeroOrMoreTimes([
+            'id'            => '10000000000000',
+            'experiment_id' => env('CAC_BLACKLIST_EXP_ID'),
+        ], [
+            'response' => [
+                'variant' => [
+                    'name' => 'active'
+                ]
+            ]
+        ]);
     }
 }

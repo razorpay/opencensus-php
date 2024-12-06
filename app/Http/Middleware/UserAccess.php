@@ -241,15 +241,6 @@ class UserAccess
         }
     }
 
-    private function isCACDisabledForGithubTestSuites() :bool
-    {
-        $isCACExperimentEnabled = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
-            RazorxTreatment::DISABLE_CAC_FOR_GITHUB_TEST_SUITES,
-            MODE::LIVE);
-
-        return $isCACExperimentEnabled === RazorxTreatment::RAZORX_VARIANT_ON;
-    }
-
     private function validateBankLmsUserAccess(string $route)
     {
         try
@@ -278,10 +269,6 @@ class UserAccess
             // check if cac is enabled
             $isCACEnabled = $this->ba->getMerchant()->isCACEnabled();
 
-            // check if disable cac for gihub test suites is on. We are checking this in order to bypass the
-            // authorization from authz when the test cases are running via github actions.
-            $isCACDisabledForGithubTestSuites = $this->isCACDisabledForGithubTestSuites();
-
             $this->trace->info(TraceCode::CAC_EXPERIMENT_STATUS,
                 [
                     'route' => $route,
@@ -289,7 +276,7 @@ class UserAccess
                     'merchant_id' => $this->ba->getMerchant()->getId()
                 ]);
 
-            if ($isCACEnabled === true && $isCACDisabledForGithubTestSuites === false)
+            if ($isCACEnabled === true)
             {
                 $this->validateBankingUserRoutePolicyV2($route);
             }

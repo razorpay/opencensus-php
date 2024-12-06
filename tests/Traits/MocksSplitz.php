@@ -20,6 +20,15 @@ trait MocksSplitz
                     ->andReturn($output);
     }
 
+    protected function mockSplitzTreatmentZeroOrMoreTimes($input = [], $output = [])
+    {
+        return $this->getSplitzMock()
+                    ->shouldReceive('evaluateRequest')
+                    ->zeroOrMoreTimes()
+                    ->with($input)
+                    ->andReturn($output);
+    }
+
     protected function mockBulkEvalSplitzTreatment($input = [], $output = [])
     {
         return $this->getSplitzMock()

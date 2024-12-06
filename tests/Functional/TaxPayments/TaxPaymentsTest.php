@@ -20,12 +20,14 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Tests\Traits\MocksSplitz;
 
 class TaxPaymentsTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
+    use MocksSplitz;
 
     protected $config;
 
@@ -1083,6 +1085,8 @@ class TaxPaymentsTest extends TestCase
 
         $this->mockRazorxTreatment();
 
+        $this->mockSplitzDisableCAC();
+
         $this->app->instance('tax-payments', $tpMock);
 
         $this->startTest();
@@ -1112,5 +1116,19 @@ class TaxPaymentsTest extends TestCase
         $this->startTest();
 
         $tpMock->shouldHaveReceived('getTaxPayment');
+    }
+
+    protected function mockSplitzDisableCAC()
+    {
+        $this->mockSplitzTreatment([
+            'id'            => '10000000000000',
+            'experiment_id' => env('CAC_BLACKLIST_EXP_ID'),
+        ], [
+            'response' => [
+                'variant' => [
+                    'name' => 'active'
+                ]
+            ]
+        ]);
     }
 }
