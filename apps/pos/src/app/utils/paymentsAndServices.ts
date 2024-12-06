@@ -404,3 +404,16 @@ export const getSelectedStoreName = (storeTypeField?: ModularOnboardingField): s
   const storeType = isStringValue(storeTypeField) ? storeTypeField.stringValue : '';
   return options?.find((option) => option.value === storeType)?.label ?? '';
 };
+
+export const updateValuesForUncheckedRates = (formValues: Record<string, unknown>) => {
+  const formValuesCopy = { ...formValues };
+  for (const key in formValuesCopy) {
+    if (key.endsWith('_enabled_field')) {
+      const baseKey = key.replace('_enabled_field', '_field');
+      if (!formValuesCopy[key] && formValuesCopy.hasOwnProperty(baseKey)) {
+        formValuesCopy[baseKey] = null;
+      }
+    }
+  }
+  return formValuesCopy;
+};

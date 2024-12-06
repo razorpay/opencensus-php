@@ -70,6 +70,9 @@ export const getFieldRules = ({ field, omcValue }: FieldRulesProps): FieldRules 
   if (field.name === MODULAR_ADDITIONAL_DETAILS_FIELDS.PHONE_NUMBER_FIELD) {
     rules.pattern = /^\d{10}$/;
   }
+  if (field.name === MODULAR_ADDITIONAL_DETAILS_FIELDS.MANAGER_CASHIER_NAME_FIELD) {
+    rules.pattern = /^(?=.*[a-z0-9])[a-z0-9 ]+$/i; //space inside the regex is intentional to allow spaces in name
+  }
   return rules;
 };
 
@@ -86,6 +89,12 @@ export const getFieldErrorText = ({ item, errors, omcValue }: FieldErrorTextProp
     errors?.[MODULAR_ADDITIONAL_DETAILS_FIELDS.PHONE_NUMBER_FIELD]?.type === 'pattern'
   ) {
     error = 'Please enter a valid number';
+  }
+  if (
+    item.name === MODULAR_ADDITIONAL_DETAILS_FIELDS.MANAGER_CASHIER_NAME_FIELD &&
+    errors?.[MODULAR_ADDITIONAL_DETAILS_FIELDS.MANAGER_CASHIER_NAME_FIELD]?.type === 'pattern'
+  ) {
+    error = 'Please enter a valid name';
   }
   if (omcValue && item.name === MODULAR_ADDITIONAL_DETAILS_FIELDS.SAP_CODE_FIELD) {
     error = 'SAP code is required';
@@ -170,4 +179,13 @@ export const getAdditionalDetailFieldsPosEkyc = ({
   });
 
   return additionalDetailsComponent?.fields;
+};
+
+export const trimWhitespace = (obj: Record<string, unknown>) => {
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [
+      key,
+      typeof value === 'string' ? value.trim() : value,
+    ]),
+  );
 };

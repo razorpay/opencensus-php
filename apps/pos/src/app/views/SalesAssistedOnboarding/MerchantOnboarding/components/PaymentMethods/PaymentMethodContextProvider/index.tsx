@@ -53,6 +53,7 @@ import {
   handleNachSubmitAnalytics,
   hasEditedStandardRates,
   replaceEmptyValues,
+  updateValuesForUncheckedRates,
   validatePricingRates,
 } from 'apps/pos/src/app/utils/paymentsAndServices';
 import { isKycQualified } from 'apps/pos/src/app/utils/merchantActivation';
@@ -417,7 +418,8 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
       });
       return;
     }
-    updateModularConfig(updatedPayload);
+    const modifiedPayload = updateValuesForUncheckedRates(updatedPayload);
+    updateModularConfig(modifiedPayload);
   };
 
   const setMethodFormValue = (
@@ -471,6 +473,14 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
       newForm[PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD].checked = true;
       newForm[PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD].value = true;
     }
+    if (key === PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_FIELD) {
+      newForm[PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD].checked = true;
+      newForm[PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD].value = true;
+    }
+    if (key === PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_FIELD) {
+      newForm[PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD].checked = true;
+      newForm[PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD].value = true;
+    }
     return newForm;
   };
 
@@ -485,7 +495,9 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
     }
     if (
       key === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD ||
-      key === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD
+      key === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD ||
+      key === PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_FIELD ||
+      key === PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_FIELD
     ) {
       const updatedForm = autoCheckVasRateEnabledFields(key, newForm);
       setMethodFormValue('form', updatedForm);

@@ -17,6 +17,7 @@ import {
   getFieldRules,
   getInitialMerchantAdditionalDetails,
   getNecessityIndicator,
+  trimWhitespace,
 } from 'apps/pos/src/app/utils/merchantAdditionalDetails';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
@@ -103,7 +104,9 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
         subSection: 'Taxation and Compliance',
       },
     });
-    updateModularConfig(getValues());
+
+    const trimmedData = trimWhitespace(getValues());
+    updateModularConfig(trimmedData);
   };
 
   const onBottomSheetDismiss = () => {
