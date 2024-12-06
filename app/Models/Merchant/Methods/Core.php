@@ -1108,6 +1108,10 @@ class Core extends Base\Core
             $methods->setDebitCard(false);
             $methods->setPrepaidCard(false);
             $methods->setUpi(false);
+            if(OrgEntity::isOrgCurlec($merchant->getOrgId())){
+                $methods->setMobikwik(false);
+                $methods->setBankTransfer(false);
+            }
         }
 
         $this->trace->info(TraceCode::SAVE_MERCHANT_METHODS,
