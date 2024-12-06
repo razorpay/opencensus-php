@@ -101,12 +101,6 @@ test.describe.parallel('RTUX - Non Transacted Merchant @flow=rtux @project=payme
     storageState: getStorageStatePath(BASE_PATH).SETTLEMENTS_LOGIN_STATE,
   });
 
-  test.skip('should show merchant overview @priority=normal', async ({ page }) => {
-    await getRTUXResponse({ page });
-    await expect(page.getByTestId('merchant-overview')).toBeVisible();
-    await expect(page.getByRole('heading', { name: /first payment/, exact: false })).toBeVisible();
-  });
-
   test('should show key updates @priority=normal', async ({ page }) => {
     const components = await getRTUXResponse({ page });
 
@@ -155,9 +149,9 @@ test.describe.parallel('RTUX - Header Nav @flow=rtux @project=payments', () => {
       await expect(page.getByRole('heading', { name: 'Ecosystem Health' })).toBeVisible();
     });
 
-    test.skip('should show user profile nav item @priority=normal', async ({ page }) => {
+    test('should show user profile nav item @priority=normal', async ({ page }) => {
       await page.goto(routes.DASHBOARD);
-      const userProfileCTA = await page.getByTestId('header-profile-dropdown');
+      const userProfileCTA = await page.getByTestId('profile-dropdown');
       await expect(userProfileCTA).toBeVisible();
       await userProfileCTA.click();
       await expect(page.getByRole('menuitem', { name: 'Log out' })).toBeVisible();

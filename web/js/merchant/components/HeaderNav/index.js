@@ -359,7 +359,7 @@ class HeaderNav extends Component {
                         <AppSwitcher analytics={analytics} {...commonProps} />
                       </li>
                     </ShowWhen>
-                    <li id="profile-dropdown">
+                    <li id="profile-dropdown" data-testid="profile-dropdown">
                       <ProfileDropdown
                         analytics={analytics}
                         showMobileNav={showMobileNav}
