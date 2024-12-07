@@ -98,7 +98,12 @@ export function convertToHostedPagesProduct(
   });
 }
 
-export function getStorefrontHostedPagesFormat(merchantData, title, products) {
+export function getStorefrontHostedPagesFormat(
+  merchantData,
+  isStorefrontV1Enabled,
+  title,
+  products,
+) {
   const livePreviewResponse = {
     ..._livePreviewResponse,
     merchant: {
@@ -107,6 +112,7 @@ export function getStorefrontHostedPagesFormat(merchantData, title, products) {
     },
     store: {
       ..._livePreviewResponse.store,
+      storefront_v1_enabled: isStorefrontV1Enabled,
       title,
       products,
     },

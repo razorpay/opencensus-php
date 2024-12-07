@@ -71,8 +71,6 @@ import {
 } from './utils';
 import ConfirmModal from 'merchant/views/PaymentPages/common/ConfirmModal';
 import ContactDetails from './ContactDetails';
-import AddBuisnessDetails from './AddBuisnessDetails';
-import AddBannerDetails from './AddBannerDetails';
 import {
   generateStorefrontRequest,
   validateStorefront,
@@ -90,6 +88,16 @@ import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 import ChromeSearchBar from './ChromeSearchBar';
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+
+const AddBuisnessDetails = lazy(
+  () => import(/* webpackChunkName: 'StorefrontV1BusinessDetails' */ './AddBuisnessDetails'),
+);
+
+const AddBannerDetails = lazy(
+  () => import(/* webpackChunkName: 'StorefrontV1BannerDetails' */ './AddBannerDetails'),
+);
 
 const allowedIframeDomain: string = getAllowedStorefrontDomain();
 
@@ -185,6 +193,7 @@ const StoreFront = ({
         const merchantData = getMerchantDetails();
         const livePreviewResponse = getStorefrontHostedPagesFormat(
           merchantData,
+          isStorefrontV1Enabled,
           storefront.entity.title,
           isCreate
             ? convertToHostedPagesProduct(
@@ -282,11 +291,17 @@ const StoreFront = ({
           },
           store: {
             title: storefront.entity.title,
+            terms: storefront.entity?.terms,
           },
         }),
       );
     }
-  }, [storefront.entity.title, storefront.entity.contactEmail, storefront.entity.contactPhone]);
+  }, [
+    storefront.entity.title,
+    storefront.entity.contactEmail,
+    storefront.entity.contactPhone,
+    storefront.entity?.terms,
+  ]);
 
   function getSupportDetails(): Promise<{
     contactPhone: string;
@@ -763,13 +778,20 @@ const StoreFront = ({
                       </ProductSection>
                     )}
                     {isStorefrontV1Enabled ? (
-                      <Box display="flex" flexDirection="column" gap="spacing.8" marginTop="32px">
-                        <AddBuisnessDetails
-                          handleClick={handleBuisnessDetailsClick}
-                          openBuisnessDetailsDrawer={openBuisnessDetailsDrawer}
-                        />
-                        <AddBannerDetails />
-                      </Box>
+                      <SuspenseWithLoader>
+                        <Box
+                          display="flex"
+                          flexDirection="column"
+                          gap="spacing.8"
+                          marginTop="spacing.9"
+                        >
+                          <AddBuisnessDetails
+                            handleClick={handleBuisnessDetailsClick}
+                            openBuisnessDetailsDrawer={openBuisnessDetailsDrawer}
+                          />
+                          <AddBannerDetails />
+                        </Box>
+                      </SuspenseWithLoader>
                     ) : (
                       <ContactDetails isLoaded={isInitialLoaded !== -1} />
                     )}

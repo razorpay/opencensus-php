@@ -38,6 +38,7 @@ export const transformStorefront = (
     slug: response.slug || '',
     contactPhone: response.support_contact,
     contactEmail: response.support_email,
+    terms: response?.terms || '',
     products: response.line_items
       ? response.line_items.map((line_item) => transformLineItem(line_item))
       : [],

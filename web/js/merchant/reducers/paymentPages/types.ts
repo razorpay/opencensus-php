@@ -86,5 +86,6 @@ export interface IStorefrontResponse {
   line_items: Array<ILineItem> | null;
   support_contact: string;
   support_email: string;
+  terms?: string;
   configs;
 }

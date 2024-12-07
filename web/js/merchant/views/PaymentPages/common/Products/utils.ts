@@ -178,13 +178,14 @@ export const generateStorefrontRequest = (
   mode: ModeTypes,
 ) => {
   const {
-    entity: { title, products, contactEmail, contactPhone, expire_by, settings, slug },
+    entity: { title, products, contactEmail, contactPhone, expire_by, settings, slug, terms },
   } = storefront;
   //TODO: manual receipt is not enabled, hardcoding enbablement for now
   settings.enable_receipt = '1';
 
   return {
     title,
+    terms,
     // title: 'Cherry',
     // description: 'Description of the Chocolate',
     currency: 'INR',

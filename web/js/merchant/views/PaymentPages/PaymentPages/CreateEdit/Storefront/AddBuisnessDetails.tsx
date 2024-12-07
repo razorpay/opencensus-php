@@ -3,7 +3,7 @@ import React from 'react';
 import { Button, ChevronRightIcon } from '@razorpay/blade/components';
 
 import LineItems from './LineItems';
-import ContactDetailsDrawer from 'merchant/views/PaymentPages/common/Products/ContactDetailsDrawer';
+import BusinessDetailsDrawer from './BusinessDetailsDrawer';
 
 type AddBusinessDetailsProps = {
   handleClick: (val: boolean) => void;
@@ -29,7 +29,10 @@ const AddBuisnessDetails: React.FC<AddBusinessDetailsProps> = ({
   return (
     <>
       {openBuisnessDetailsDrawer ? (
-        <ContactDetailsDrawer handleClose={() => handleClick(false)} />
+        <BusinessDetailsDrawer
+          handleClose={() => handleClick(false)}
+          openBuisnessDetailsDrawer={openBuisnessDetailsDrawer}
+        />
       ) : (
         <LineItems
           title="Add business details"

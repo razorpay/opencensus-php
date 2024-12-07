@@ -53,6 +53,7 @@ export interface PaymentPagesStorefrontType {
     title: string;
     contactPhone: string;
     contactEmail: string;
+    terms?: string;
     // to be planned
     products: IPaymentPagesProduct[];
     shortUrl: string;
@@ -181,6 +182,7 @@ const initialState: PaymentPagesStorefrontType = {
     title: '',
     contactPhone: '',
     contactEmail: '',
+    terms: '',
     products: [],
     shortUrl: '',
     expire_by: null,

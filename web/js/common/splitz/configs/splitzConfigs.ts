@@ -555,6 +555,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'storefront_v1',
+        experimentId: {
+          beta: 'Oux2ojFCgYupHe',
+          production: 'Oux2bIMggWA9bP',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'assisted_financing',
         experimentId: {
           beta: 'NVwyOLc893cct0',
@@ -1775,22 +1791,6 @@ export const splitzConfig: SplitzInitConfig = {
           experimentId: {
             beta: 'NYeAdZxMitXwPO',
             production: 'NYe7P2aTFDwvZQ',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-            ],
-          },
-        },
-        {
-          uniqueHashKey: 'storefront_v1',
-          experimentId: {
-            beta: 'Oux2ojFCgYupHe',
-            production: 'Oux2bIMggWA9bP',
           },
           defaultVariant: {
             name: 'variables',
