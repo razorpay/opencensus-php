@@ -57,10 +57,7 @@ const mapStateToProps = ({ reportsCore, session }, { dashboardType, i18 }) => {
   const { allConfigs } = reportsCore[dashboardType].overview.reportConfigs;
   return {
     allReportConfigs: allConfigs.data,
-    user: {
-      ...pickProps(session.user, ['current', 'international']),
-      isFeatureEnabled: session.user.isFeatureEnabled,
-    },
+    user: session.user,
     org: pickProps(session.org, ['isjkOrg']),
     refDashboardConfig: getReportsDashboardConfig(
       dashboardType,
