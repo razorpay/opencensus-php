@@ -59,6 +59,9 @@ web/e2e/suites/partnerDashboard/pos/reseller/homepage.spec.js            @razorp
 web/e2e/suites/partnerDashboard/pos/reseller/partnerManageTeam.spec.js   @razorpay/deploy-leads-dashboard
 web/e2e/suites/partnerDashboard/reseller/clientAccounts.spec.js          @razorpay/deploy-leads-dashboard
 web/e2e/suites/partnerDashboard/reseller/partnerPlaybook.spec.js         @razorpay/deploy-leads-dashboard
+web/e2e/suites/partnerDashboard/aggregator/homepage.spec.js              @razorpay/deploy-leads-dashboard
+web/e2e/suites/partnerDashboard/platform/homepage.spec.js                @razorpay/deploy-leads-dashboard
+web/e2e/suites/partnerDashboard/reseller/homepage.spec.js                @razorpay/deploy-leads-dashboard
 web/e2e/suites/RizeMarketplace/app-store-banner.spec.js                  @razorpay/deploy-leads-dashboard
 web/e2e/suites/RizeMarketplace/marketplace.spec.js                       @razorpay/deploy-leads-dashboard
 web/e2e/suites/paymentsLinks/batch.spec.js                               @razorpay/deploy-leads-dashboard
