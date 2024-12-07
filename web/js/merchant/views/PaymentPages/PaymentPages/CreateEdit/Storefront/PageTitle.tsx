@@ -75,6 +75,7 @@ const StorefrontPageTitle = ({ title, editStorefront, user }: IStorefrontPageTit
               placeholder="Add Storefront name"
               validationState={isValid ? 'none' : 'error'}
               isRequired
+              autoFocus
               errorText="Please enter storefront name"
             />
           </EditPageInputWrapper>

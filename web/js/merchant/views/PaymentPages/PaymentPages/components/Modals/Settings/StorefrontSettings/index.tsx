@@ -63,7 +63,7 @@ const StorefrontSettings = ({
     !!paymentSuccessRedirectUrl,
   );
   const [expireBy, setExpireBy] = useState(
-    moment(Number(storefrontEntity.expire_by * 1000)) || null,
+    storefrontEntity.expire_by ? moment(Number(storefrontEntity.expire_by * 1000)) : null,
   );
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
 
@@ -118,7 +118,7 @@ const StorefrontSettings = ({
         return 'Please enter valid Url';
       }
 
-      if (val.length < 4) {
+      if (val.length > 0 && val.length < 4) {
         return 'Url must be at least 4 characters long';
       } else if (val.length > 30) {
         return 'Url must be maximum 30 characters long';
@@ -154,6 +154,7 @@ const StorefrontSettings = ({
                 disabled={isTestMode}
                 validator={validator}
                 maxLength={CUSTOM_URL_MAX_LENGTH}
+                style={{ paddingLeft: '245px' }}
               />
               {isTestMode && CUSTOM_URL_DISABLED_INFO}
             </CustomSlugSection>

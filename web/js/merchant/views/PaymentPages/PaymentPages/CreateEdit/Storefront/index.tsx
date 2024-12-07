@@ -499,7 +499,7 @@ const StoreFront = ({
       isNewStoreFront: Boolean(isCreate),
       customization_items: item,
     });
-    history.push('/checkout-settings/branding');
+    window.open('/app/checkout-settings/branding', '_blank');
   };
 
   const onProductAddSuccess = (savedProductData) => {
