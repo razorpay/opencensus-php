@@ -1685,6 +1685,11 @@ class Core extends Base\Core
 
             $paylaterProviders = $methods->getEnabledPaylaterProviders();
 
+            if (in_array(PaylaterProvider::GETSIMPLOPTIMIZER, $providers) and isset($paylaterProviders[PaylaterProvider::GETSIMPL]) === true and
+             $paylaterProviders[PaylaterProvider::GETSIMPL] === 1) {
+                $paylaterProviders[PaylaterProvider::GETSIMPLOPTIMIZER] =1;
+            }
+
             $whitelistedInstruments = (new MerchantCore())->getWhitelistedPaylaterInstruments($merchant);
 
             foreach ($providers as $index => $instrument) {
@@ -1761,6 +1766,12 @@ class Core extends Base\Core
             }
 
             $provider[$providerName] = true;
+        }
+
+        if (isset($provider[PaylaterProvider::GETSIMPLOPTIMIZER]) === true and
+        $provider[PaylaterProvider::GETSIMPLOPTIMIZER] === true) {
+            unset($provider[PaylaterProvider::GETSIMPLOPTIMIZER]);
+            $provider[PaylaterProvider::GETSIMPL]=true;
         }
 
         return $provider;
