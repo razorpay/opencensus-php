@@ -11,6 +11,10 @@ import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { useTrigger2Fa } from 'common/ui/TwoFactorVerification/hooks';
+import { useSplitzService } from 'common/splitz';
+import { shouldShowBusinessWebsiteV2 } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/utils';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 
 const KeysListItem = (props) => {
   const mode = props.mode;
@@ -93,9 +97,26 @@ export default connect(null, { openModal, closeModal })((props) => {
   } = props;
   const shouldTrigger2Fa = useTrigger2Fa();
   const { criticalFlow } = useTwoFactorVerificationContext();
+  const {
+    abExperiments: { business_website_v2_automation },
+  } = useSplitzService();
+  const navigate = useNavigate();
+
+  const shouldShowV2 = shouldShowBusinessWebsiteV2(business_website_v2_automation, user);
 
   const params = {
     merchantId,
+  };
+
+  const handleAddUpdateCTA = () => {
+    shouldShowV2
+      ? navigate(ROUTES_INFO.BUSINESS_WEBSITE_SETTINGS)
+      : props.openModal({
+          size: 'small',
+          component: (
+            <EditWebsiteDetailsModal onClose={props.closeModal} onWebsiteAdd={onWebsiteAdd} />
+          ),
+        });
   };
 
   function handleKeyGeneration() {
@@ -153,20 +174,7 @@ export default connect(null, { openModal, closeModal })((props) => {
                   ) : !businessWebsite && !isWebsiteInWorkflow ? (
                     <div>
                       <p>{`Please provide your Business Website/App details in order to generate API keys in Live Mode`}</p>
-                      <button
-                        class="btn btn-primary"
-                        onClick={() =>
-                          props.openModal({
-                            size: 'small',
-                            component: (
-                              <EditWebsiteDetailsModal
-                                onClose={props.closeModal}
-                                onWebsiteAdd={onWebsiteAdd}
-                              />
-                            ),
-                          })
-                        }
-                      >
+                      <button class="btn btn-primary" onClick={handleAddUpdateCTA}>
                         Add Website/App URL
                       </button>
                     </div>

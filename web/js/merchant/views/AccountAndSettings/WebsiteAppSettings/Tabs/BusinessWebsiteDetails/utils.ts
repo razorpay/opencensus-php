@@ -1,4 +1,5 @@
 import { useSplitzService } from 'common/splitz';
+import { isExperimentActive } from 'common/utils/rzp-utils';
 
 export const isWorkflowChangeAllowed = (workflow) => {
   return (
@@ -14,4 +15,10 @@ export const useBusinessWebsiteRevamp = (): boolean => {
   } = useSplitzService();
 
   return business_website_revamp?.variables?.result === 'on';
+};
+
+export const shouldShowBusinessWebsiteV2 = (experiment, user) => {
+  const isV2ExperimentOn = isExperimentActive(experiment);
+  const isUserEligibleForV2 = user.isOrgRZP && user.isCountryIndia;
+  return isV2ExperimentOn && isUserEligibleForV2;
 };

@@ -2,10 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { useSplitzService } from 'common/splitz';
-import { isExperimentActive } from 'common/utils/rzp-utils';
 
 import BusinessWebsiteDetails from './BusinessWebsiteDetails';
 import BusinessWebsiteDetailsV2 from './v2';
+import { shouldShowBusinessWebsiteV2 } from './utils';
 
 const BusinessWebsiteDetailsEntry = ({
   user,
@@ -15,13 +15,14 @@ const BusinessWebsiteDetailsEntry = ({
   const {
     abExperiments: { business_website_v2_automation },
   } = useSplitzService();
-  const isV2ExperimentOn = isExperimentActive(business_website_v2_automation);
-  const isUserEligibleForV2 =
-    isAccountAndSettingsRevampFlow && user.isOrgRZP && user.isCountryIndia;
 
-  const shouldShowV2 = isV2ExperimentOn && isUserEligibleForV2;
+  const shouldShowV2 = shouldShowBusinessWebsiteV2(business_website_v2_automation, user);
 
-  return shouldShowV2 ? <BusinessWebsiteDetailsV2 /> : <BusinessWebsiteDetails {...props} />;
+  return isAccountAndSettingsRevampFlow && shouldShowV2 ? (
+    <BusinessWebsiteDetailsV2 />
+  ) : (
+    <BusinessWebsiteDetails {...props} />
+  );
 };
 
 export default connect((state) => ({
