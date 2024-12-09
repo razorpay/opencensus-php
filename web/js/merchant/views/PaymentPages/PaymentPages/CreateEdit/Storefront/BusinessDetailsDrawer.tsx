@@ -195,7 +195,13 @@ const BusinessDetailsDrawer = ({
       errors={errors}
     />
   ) : (
-    <PaymentPagesDrawer maskClosable={false} onClose={handleClose} footerButtons={footerButtons}>
+    <PaymentPagesDrawer
+      top="0px"
+      isStorefront={true}
+      maskClosable={false}
+      onClose={handleClose}
+      footerButtons={footerButtons}
+    >
       <Heading size="medium" weight="semibold" color="surface.text.gray.normal">
         Add your business details
       </Heading>

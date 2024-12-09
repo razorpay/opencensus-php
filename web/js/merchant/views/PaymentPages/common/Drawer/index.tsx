@@ -57,7 +57,7 @@ const DrawerWrapper = styled(_Modal)(
   max-width: 500px;
   width: 100%;
   transform: none;
-  height: ${isMobileCropper ? '100vh' : 'calc(100vh - 45px)'};
+  height: ${isMobileCropper || isStorefront ? '100vh' : 'calc(100vh - 45px)'};
   padding: ${
     isMobileCropper
       ? `${theme.spacing[8]}px ${theme.spacing[0]}px`

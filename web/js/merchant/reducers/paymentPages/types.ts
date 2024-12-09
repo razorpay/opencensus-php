@@ -67,10 +67,12 @@ export interface StoreFrontMetaData {
 
 export interface IBannerImage {
   id?: string;
-  originalSrc: string;
-  croppedSrc: string;
+  original: string;
+  cropped: string;
   position: number;
   enabled: boolean;
+  title?: string;
+  description?: string;
 }
 
 export interface IStorefrontResponse {

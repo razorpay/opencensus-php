@@ -44,28 +44,30 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
   setShowBannerAlert,
   isMobile,
 }) => {
-  const handleBannerSwitchChange = (isChecked: boolean) => {
+  const handleBannerSetting = (val: boolean) => {
     editStorefront('settings', {
       ...storefront.entity.settings,
-      banner_enabled: isChecked,
+      base_config: {
+        ...(storefront.entity.settings.base_config || {}),
+        banner_feature_enabled: val,
+      },
     });
+  };
+
+  const handleBannerSwitchChange = (isChecked: boolean) => {
+    handleBannerSetting(isChecked);
+    handleClick(true);
   };
 
   const handleAlertPrimaryClick = () => {
     setShowBannerAlert(false);
-    editStorefront('settings', {
-      ...storefront.entity.settings,
-      banner_enabled: true,
-    });
+    handleBannerSetting(true);
     handleClick(true);
   };
 
   const handleAlertSecondaryClick = () => {
     setShowBannerAlert(false);
-    editStorefront('settings', {
-      ...storefront.entity.settings,
-      banner_enabled: false,
-    });
+    handleBannerSetting(false);
   };
 
   return (
@@ -78,9 +80,7 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
           rightChildren={<RightChildren handleClick={handleClick} />}
           extraItems={
             <>
-              {storefront.entity.settings.banner_enabled ? (
-                <></>
-              ) : (
+              {!storefront.entity.settings?.base_config?.banner_feature_enabled && (
                 <Box
                   display="flex"
                   justifyContent="space-between"
@@ -101,7 +101,7 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
 
                   <Switch
                     accessibilityLabel="storefront-banner-switch"
-                    isChecked={storefront.entity.settings.banner_enabled}
+                    isChecked={storefront.entity.settings?.base_config?.banner_feature_enabled}
                     onChange={({ isChecked }) => handleBannerSwitchChange(isChecked)}
                   />
                 </Box>

@@ -20,6 +20,7 @@ export const StorefrontLeftWrapper = styled.div`
   @media screen and (max-width: ${mobileView}) {
     width: 100%;
     padding-bottom: ${({ theme }: StyledProps) => theme.spacing[6]}px;
+    height: 100%;
   }
 `;
 export const StorefrontRightWrapper = styled.div(

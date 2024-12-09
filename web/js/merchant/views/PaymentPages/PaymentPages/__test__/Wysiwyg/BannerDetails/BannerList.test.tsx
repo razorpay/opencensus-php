@@ -8,6 +8,7 @@ describe('Upload Banner Drawer', () => {
   const handleToggle = jest.fn();
   const handleDeleteImage = jest.fn();
   const handleReplaceImage = jest.fn();
+  const handleEditImage = jest.fn();
 
   it('render banner list with banner data', () => {
     render(
@@ -18,6 +19,7 @@ describe('Upload Banner Drawer', () => {
         handleDeleteImage={handleDeleteImage}
         handleReplaceImage={handleReplaceImage}
         isMobile={false}
+        handleEditImage={handleEditImage}
       />,
     );
     expect(screen.getByText(/Your added banner images/i)).toBeInTheDocument();
@@ -42,6 +44,7 @@ describe('Upload Banner Drawer', () => {
         handleDeleteImage={handleDeleteImage}
         handleReplaceImage={handleReplaceImage}
         isMobile={false}
+        handleEditImage={handleEditImage}
       />,
     );
 
@@ -67,6 +70,7 @@ describe('Upload Banner Drawer', () => {
         handleDeleteImage={handleDeleteImage}
         handleReplaceImage={handleReplaceImage}
         isMobile={false}
+        handleEditImage={handleEditImage}
       />,
     );
 
@@ -87,6 +91,7 @@ describe('Upload Banner Drawer', () => {
         handleDeleteImage={handleDeleteImage}
         handleReplaceImage={handleReplaceImage}
         isMobile={false}
+        handleEditImage={handleEditImage}
       />,
     );
 

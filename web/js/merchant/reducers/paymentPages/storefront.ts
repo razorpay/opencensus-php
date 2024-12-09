@@ -62,7 +62,6 @@ export interface PaymentPagesStorefrontType {
     expire_by: number | null;
     slug: string | null;
     settings: {
-      banner_enabled: boolean;
       payment_success_message?: string;
       payment_success_redirect_url?: string;
       pp_fb_event_add_to_cart_enabled?: string;
@@ -72,6 +71,9 @@ export interface PaymentPagesStorefrontType {
       pp_ga_pixel_tracking_id?: string;
       enable_custom_serial_number?: string;
       enable_receipt?: string;
+      base_config?: {
+        banner_feature_enabled: boolean;
+      };
     };
   };
   allCategories: {
@@ -192,9 +194,7 @@ const initialState: PaymentPagesStorefrontType = {
     products: [],
     shortUrl: '',
     expire_by: null,
-    settings: {
-      banner_enabled: true,
-    },
+    settings: {},
     slug: '',
   },
   allCategories: {

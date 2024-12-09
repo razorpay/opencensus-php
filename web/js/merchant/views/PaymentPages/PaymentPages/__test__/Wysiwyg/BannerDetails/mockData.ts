@@ -13,7 +13,9 @@ export const storefrontData = {
     shortUrl: '',
     expire_by: null,
     settings: {
-      banner_enabled: true,
+      base_config: {
+        banner_feature_enabled: true,
+      },
     },
     slug: '',
   },
@@ -97,25 +99,25 @@ export const storefrontData = {
 
 export const bannerData = [
   {
-    originalSrc:
+    original:
       'https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/payment-link/description/poqjdwi1lzx84r.jpeg',
-    croppedSrc:
+    cropped:
       'https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/payment-link/description/poqjdwi1lzx84r.jpeg',
     position: 1,
     enabled: true,
   },
   {
-    originalSrc:
+    original:
       'https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/payment-link/description/poqjdwi1lzx84r.jpeg',
-    croppedSrc:
+    cropped:
       'https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/payment-link/description/poqjdwi1lzx84r.jpeg',
     position: 2,
     enabled: true,
   },
   {
-    originalSrc:
+    original:
       'https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/payment-link/description/poqjdwi1lzx84r.jpeg',
-    croppedSrc:
+    cropped:
       'https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/payment-link/description/poqjdwi1lzx84r.jpeg',
     position: 3,
     enabled: true,
@@ -125,27 +127,27 @@ export const bannerData = [
 export const toggledBannerData = [
   {
     id: '2',
-    originalSrc:
+    original:
       'https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/payment-link/description/poqjdwi1lzx84r.jpeg',
-    croppedSrc:
+    cropped:
       'https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/payment-link/description/poqjdwi1lzx84r.jpeg',
     position: 2,
     enabled: true,
   },
   {
     id: '3',
-    originalSrc:
+    original:
       'https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/payment-link/description/poqjdwi1lzx84r.jpeg',
-    croppedSrc:
+    cropped:
       'https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/payment-link/description/poqjdwi1lzx84r.jpeg',
     position: 3,
     enabled: true,
   },
   {
     id: '1',
-    originalSrc:
+    original:
       'https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/payment-link/description/poqjdwi1lzx84r.jpeg',
-    croppedSrc:
+    cropped:
       'https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/payment-link/description/poqjdwi1lzx84r.jpeg',
     position: 1,
     enabled: false,

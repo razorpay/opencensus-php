@@ -53,7 +53,10 @@ describe('AddBannerDetails Component', () => {
 
     expect(editStorefront).toHaveBeenCalledWith('settings', {
       ...storefrontData.entity.settings,
-      banner_enabled: true,
+      base_config: {
+        ...storefrontData.entity.settings.base_config,
+        banner_feature_enabled: true,
+      },
     });
     expect(mockHandleClick).toHaveBeenCalledWith(true);
   });
@@ -77,7 +80,10 @@ describe('AddBannerDetails Component', () => {
 
     expect(editStorefront).toHaveBeenCalledWith('settings', {
       ...storefrontData.entity.settings,
-      banner_enabled: false,
+      base_config: {
+        ...storefrontData.entity.settings.base_config,
+        banner_feature_enabled: false,
+      },
     });
   });
 });

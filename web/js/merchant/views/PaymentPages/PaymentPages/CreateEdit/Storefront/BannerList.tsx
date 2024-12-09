@@ -1,24 +1,64 @@
 import React, { useMemo } from 'react';
+import { SortableContainer } from 'react-sortable-hoc';
+
 import { Box, Text } from '@razorpay/blade/components';
 import SingleBanner from './SingleBanner';
+
 import { IBannerImage } from 'merchant/reducers/paymentPages/types';
 
 interface IBannersListProps {
   bannerData: IBannerImage[];
-  onReorder: (banner: IBannerImage) => void;
+  onReorder: (banner: IBannerImage[]) => void;
   onToggleEnabled: (val: boolean, banner: IBannerImage) => void;
   handleReplaceImage: (banner: IBannerImage) => void;
   handleDeleteImage: (banner: IBannerImage) => void;
+  handleEditImage: (banner: IBannerImage) => void;
   isMobile: boolean;
 }
+
+const SortableList = SortableContainer<{
+  items: IBannerImage[];
+  isMobile: boolean;
+  onToggleEnabled: IBannersListProps['onToggleEnabled'];
+  handleReplaceImage: IBannersListProps['handleReplaceImage'];
+  handleDeleteImage: IBannersListProps['handleDeleteImage'];
+  handleEditImage: IBannersListProps['handleEditImage'];
+}>(
+  ({
+    items,
+    isMobile,
+    onToggleEnabled,
+    handleReplaceImage,
+    handleDeleteImage,
+    handleEditImage,
+  }) => (
+    <Box marginTop="spacing.4">
+      {items.map((banner: IBannerImage, index: number) => (
+        <SingleBanner
+          key={banner?.position}
+          index={index}
+          id={banner?.position?.toString()}
+          src={banner?.cropped}
+          enabled={banner?.enabled}
+          isMobile={isMobile}
+          onToggleEnabled={(val) => onToggleEnabled(val, banner)}
+          handleReplaceImage={() => handleReplaceImage(banner)}
+          handleDeleteImage={() => handleDeleteImage(banner)}
+          handleEditImage={() => handleEditImage(banner)}
+        />
+      ))}
+    </Box>
+  ),
+);
 
 const BannersList: React.FC<IBannersListProps> = ({
   bannerData,
   onReorder,
   onToggleEnabled,
-  handleDeleteImage,
   handleReplaceImage,
+  handleDeleteImage,
   isMobile,
+  handleEditImage,
 }) => {
   if (!bannerData?.length) return null;
 
@@ -27,10 +67,13 @@ const BannersList: React.FC<IBannersListProps> = ({
     [bannerData],
   );
 
-  const handleReorder = (banner: IBannerImage) => onReorder(banner);
-  const handleToggle = (val: boolean, banner: IBannerImage) => onToggleEnabled(val, banner);
-  const handleReplace = (banner: IBannerImage) => handleReplaceImage(banner);
-  const handleDelete = (banner: IBannerImage) => handleDeleteImage(banner);
+  const handleSortEnd = ({ oldIndex, newIndex }: { oldIndex: number; newIndex: number }) => {
+    const updatedList = Array.from(sortedBannerData);
+    const [movedItem] = updatedList.splice(oldIndex, 1);
+    updatedList.splice(newIndex, 0, movedItem);
+    const newOrder = updatedList.map((item, idx) => ({ ...item, position: idx }));
+    onReorder(newOrder);
+  };
 
   return (
     <Box
@@ -43,21 +86,17 @@ const BannersList: React.FC<IBannersListProps> = ({
       <Text color="surface.text.gray.normal" size="large" variant="body" weight="semibold">
         Your added banner images
       </Text>
-      <Box marginTop="spacing.4">
-        {sortedBannerData.map((banner) => (
-          <SingleBanner
-            key={banner.croppedSrc}
-            src={banner.croppedSrc}
-            enabled={banner.enabled}
-            id={banner.position.toString()}
-            onReorder={() => handleReorder(banner)}
-            onToggleEnabled={(val) => handleToggle(val, banner)}
-            handleDeleteImage={() => handleDelete(banner)}
-            handleReplaceImage={() => handleReplace(banner)}
-            isMobile={isMobile}
-          />
-        ))}
-      </Box>
+      <SortableList
+        items={sortedBannerData}
+        onSortEnd={handleSortEnd}
+        useDragHandle
+        isMobile={isMobile}
+        onToggleEnabled={onToggleEnabled}
+        handleReplaceImage={handleReplaceImage}
+        handleDeleteImage={handleDeleteImage}
+        helperClass="sortableHelper"
+        handleEditImage={handleEditImage}
+      />
     </Box>
   );
 };

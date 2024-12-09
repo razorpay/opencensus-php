@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { connect } from 'react-redux';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { Link as ReactRouterLink, useNavigate } from 'react-router-dom';
+import lazy from 'merchant/routes/LazyLoader';
+import { IBannerImage } from 'merchant/reducers/paymentPages/types';
 import { withRouter } from 'common/deprecated/withRouter';
 import {
   AddProductBox,
@@ -21,8 +22,6 @@ import ProductDrawer from 'merchant/views/PaymentPages/common/Products/ProductDr
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, getURLQueryParams } from 'common/utils/rzp-utils';
 import {
-  // PaymentPagesStorefrontType,
-  // fetchPaymentPage,
   fetchCategories,
   editStorefront,
   editStorefrontDeepMerge,
@@ -87,7 +86,6 @@ import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 import ChromeSearchBar from './ChromeSearchBar';
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
-import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const AddBuisnessDetails = lazy(
@@ -277,8 +275,19 @@ const StoreFront = ({
     }
   }, [storefront.entity.products, isSampleProduct, storefront.allCategories.data]);
 
+  const getCroppedSrc = (bannerImages: IBannerImage[]) => {
+    return bannerImages
+      .sort((a, b) => a.position - b.position)
+      .filter((image) => image.enabled)
+      .map((image) => ({
+        id: image.id || image.position.toString(),
+        url: image.cropped,
+      }));
+  };
+
   useEffect(() => {
     if (isIframeLoadedRef) {
+      const banner_images = getCroppedSrc(storefront.entity.banner_images);
       emitIframeEvent(
         iframeRef,
         onStorefrontDetailsChange({
@@ -290,10 +299,13 @@ const StoreFront = ({
           },
           store: {
             title: storefront.entity.title,
-            banner_images: storefront.entity.banner_images,
+            banner_images,
             terms: storefront.entity?.terms,
             settings: {
-              banner_enabled: storefront.entity.settings.banner_enabled,
+              base_config: {
+                banner_feature_enabled:
+                  storefront.entity.settings?.base_config?.banner_feature_enabled,
+              },
             },
           },
         }),
@@ -304,7 +316,7 @@ const StoreFront = ({
     storefront.entity.contactEmail,
     storefront.entity.contactPhone,
     storefront.entity.banner_images,
-    storefront.entity.settings.banner_enabled,
+    storefront.entity.settings?.base_config?.banner_feature_enabled,
     storefront.entity?.terms,
   ]);
 
@@ -538,7 +550,7 @@ const StoreFront = ({
   };
 
   const checkForBannerAlert = () => {
-    let isBannerEnabled = storefront.entity.settings.banner_enabled;
+    let isBannerEnabled = storefront.entity.settings?.base_config?.banner_feature_enabled;
     if (isBannerEnabled) {
       return storefront?.entity?.banner_images?.length === 0;
     } else {
