@@ -74,7 +74,9 @@ class Processor extends VirtualAccount\Processor
 
                     $isCollectXUpiPayment = false;
 
-                    if ($this->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true)
+                    if ($this->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true &&
+                        $upiTransfer->getEntityName() === Constants::UPI_TRANSFER &&
+                        $upiTransfer->isCollectXUpiTransferRequest())
                     {
                         $isCollectXUpiPayment = true;
                     }

@@ -13,6 +13,7 @@ use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Razorpaywallet;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
+use RZP\Models\Payment\Constant;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Offer\OffersEngine;
 use RZP\Models\Payment\Analytics\Metadata;
@@ -3889,7 +3890,7 @@ class Processor
                     $payment->setRelation('entityOrigin', $entityOrigin);
                 }
 
-                if ($this->merchant->isFeatureEnabled(Feature::COLLECTX_ENABLED) === true)
+                if ($payment->isCollectXPayment() === true)
                 {
                     $gatewayInput["payment"] = $payment;
                 }

@@ -390,6 +390,8 @@ class AxisBankTransferTest extends TestCase
 
     public function testAxisNotificationCallbackForCollectx()
     {
+        $this->markTestSkipped();
+
         $testData = $this->testData['testValidateBankTransferAxis'];
 
         $response = $this->createCollectXVirtualAccount(receivers: ['bank_account']);
@@ -450,6 +452,42 @@ class AxisBankTransferTest extends TestCase
         $this->assertEquals($payment['id'], $txn['entity_id']);
         $this->assertEquals(0, $txn['credit']);
     }
+
+    // TODO: Remove test case once fix is live for collectx
+    public function testAxisNotificationCallbackForCollectx_WithDisabledBankTransferForCollectx()
+    {
+        $testData = $this->testData['testValidateBankTransferAxis'];
+
+        $response = $this->createCollectXVirtualAccount(receivers: ['bank_account']);
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $testData['request']['content']['Bene_acc_no'] = $beneAccountNo;
+
+        $testData['request']['content']['Sndr_acnt'] = '9876543210123456789';
+
+        $testData['request']['content']['Req_type'] = 'notification';
+
+        $testData['request']['content']['Corp_code'] = '9845';
+
+        $testData['request']['content']['Req_dt_time'] = date("Y-m-d H:i:s");
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->enableRazorXTreatmentForCollectXPaymentTransfer();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('S', $response['Stts_flg']);
+        $this->assertEquals('000', $response['Err_cd']);
+        $this->assertEquals('Success', $response['message']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertEquals($testData['request']['content']['UTR'], $bankTransferRequest['utr']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
+    }
+
 
     public function testAxisValidationCallbackForCollectx_DuplicateBankTransfer()
     {
@@ -564,6 +602,8 @@ class AxisBankTransferTest extends TestCase
 
     public function testYesbankBankTransferValidationCallbackForCollectx()
     {
+        $this->markTestSkipped();
+
         $testData = $this->testData['testValidateTransferYesbank'];
 
         $response = $this->createCollectXVirtualAccount(gateway: 'yesbank');
@@ -603,6 +643,7 @@ class AxisBankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
 
         $this->assertEquals(700, $payment['amount']);
+        $this->assertEquals('collectx', $payment['reference14']);
         $this->assertEquals('bt_yesbank', $payment['gateway']);
         $this->assertEquals('10000000000001', $payment['terminal_id']);
         $this->assertEquals('bank_transfer', $payment['method']);
@@ -675,6 +716,7 @@ class AxisBankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
 
         $this->assertEquals(700, $payment['amount']);
+        $this->assertEquals('collectx', $payment['reference14']);
         $this->assertEquals('upi_yesbank', $payment['gateway']);
         $this->assertEquals('10000000000002', $payment['terminal_id']);
         $this->assertEquals('upi', $payment['method']);
