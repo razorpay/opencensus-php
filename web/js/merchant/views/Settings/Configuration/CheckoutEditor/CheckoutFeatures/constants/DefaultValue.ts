@@ -41,6 +41,8 @@ export const SHOW_FINAL_PRICE_DEFAULT_VALUE = {
 
 export const TAB_INDEX = 0;
 
+export const CONTACT_SCREEN_NAME = 'contact';
+
 export const TRUSTED_BADGE_DEFAULT_VALUE = {
   title: 'Razorpay trusted badge',
   subTitle: 'Enable to boost customer’s trust in your brand',

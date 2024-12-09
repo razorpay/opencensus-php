@@ -1,14 +1,15 @@
 import React from 'react';
-
 import { Box } from '@razorpay/blade/components';
 
-import MessageTextInput from './MessageTextInput';
-import ChangeColorInput from './ChangeColorInput';
-import { ExtraItemsWrapper } from './styled';
-
+import {
+  CONTACT_SCREEN_NAME,
+  TAB_INDEX,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/constants/DefaultValue';
 import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/index';
 
-import { TAB_INDEX } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/constants/DefaultValue';
+import ChangeColorInput from './ChangeColorInput';
+import MessageTextInput from './MessageTextInput';
+import { ExtraItemsWrapper } from './styled';
 import track from './track';
 
 const ExtraItems = () => {
@@ -16,16 +17,19 @@ const ExtraItems = () => {
     useCheckoutEditor();
 
   const allConfigs = values.customMessage.configs;
-  const currentConfig = allConfigs[TAB_INDEX];
+
+  const contactsScreenIndex =
+    allConfigs.findIndex((config) => config.name === CONTACT_SCREEN_NAME) ?? TAB_INDEX;
+  const currentConfig = allConfigs[contactsScreenIndex];
 
   const handleTextChange = ({ value }: { value?: string | undefined }) => {
-    handleCustomMessageTextChange(TAB_INDEX, value ?? '');
+    handleCustomMessageTextChange(contactsScreenIndex, value ?? '');
     track.handleMessageBannerTextInput(value);
   };
 
   const handleBackgroundColorChange = (evt: React.ChangeEvent) => {
     const { value } = evt.target as HTMLInputElement;
-    handleCustomMessageBackgroundColorChange(TAB_INDEX, value);
+    handleCustomMessageBackgroundColorChange(contactsScreenIndex, value);
     track.handleMessageBannerThemeEdit();
   };
 
