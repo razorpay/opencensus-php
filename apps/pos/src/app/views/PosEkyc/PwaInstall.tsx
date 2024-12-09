@@ -61,12 +61,8 @@ const Instruction = ({
 const PwaInstall = () => {
   const pwaPrompt = useOnboardingStore((state) => state.pwaPrompt);
   const onInstallClick = () => {
-    console.log('PWA button clicked');
     if (pwaPrompt) {
-      console.log('PWA prompt available', pwaPrompt);
       pwaPrompt.prompt();
-    } else {
-      console.log('PWA prompt not available');
     }
   };
 

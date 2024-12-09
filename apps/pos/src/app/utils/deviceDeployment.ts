@@ -26,12 +26,14 @@ export interface LanguageOption {
 }
 
 interface LanguageDetailsType {
+  deviceId: string;
   deviceName: string;
   languageList: LanguageOption[];
   description: string;
 }
 
 interface AmountTestingType {
+  deviceId: string;
   deviceName: string;
   defaultTestingAmount: string;
   description: string;
@@ -43,6 +45,7 @@ export interface MappingStatusType {
   isWifiConfigured: boolean;
 }
 interface DeviceConfigType {
+  deviceId: string;
   mappingStatus: MappingStatusType;
   language: string;
   deviceName: string;
@@ -130,6 +133,7 @@ export const getLanguageDetailsFromModularConfig = ({
   });
   const deviceDetails = getDeviceMappingDetailsFromModularConfig({ modularConfig });
   return {
+    deviceId: deviceDetails?.id || '',
     deviceName: deviceDetails?.details_page_name || '',
     languageList: languageFieldData?.meta?.options || [],
     description: languageFieldData?.meta?.description || '',
@@ -150,6 +154,7 @@ export const getTestingAmountDetailsFromModularConfig = ({
   const deviceDetails = getDeviceMappingDetailsFromModularConfig({ modularConfig });
   if (!deviceDetails) return null;
   return {
+    deviceId: deviceDetails?.id || '',
     deviceName: deviceDetails.details_page_name || '',
     defaultTestingAmount: testingAmountData?.meta?.defaultValue || '',
     description: testingAmountData?.meta?.description || '',
@@ -197,6 +202,7 @@ export const getDeviceConfigurationDetailsFromModularConfig = ({
       isDeviceTested: isBooleanValue(deviceTestingField) ? deviceTestingField?.booleanValue : false,
       isWifiConfigured: isBooleanValue(wifiConfigField) ? wifiConfigField?.booleanValue : false,
     },
+    deviceId: currentDeviceDetails?.id || '',
     language: isStringValue(languageFieldData) ? languageFieldData?.stringValue : 'English',
     deviceName: currentDeviceDetails?.details_page_name || '',
     hideLanguageSettings: languageFieldData?.isHidden || false,

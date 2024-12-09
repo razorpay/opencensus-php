@@ -22,7 +22,7 @@ const MerchantOnboardingComponent = (): JSX.Element => {
     );
 
   if (isModularFetchError)
-    return <PageError description="Failed to fetch modular config." isFullWidth={true} />;
+    return <PageError description="Something went wrong. Please try again." isFullWidth={true} />;
 
   return (
     <React.Fragment>

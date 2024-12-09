@@ -43,7 +43,7 @@ describe('Test POS Device Mapping Manual screen', () => {
     server.use(getModularConfig({ type: 'failure' }));
     renderApp();
     await waitFor(() => {
-      expect(screen.getByText(/Failed to fetch modular config/i)).toBeInTheDocument();
+      expect(screen.getByText(/Something went wrong. Please try again./i)).toBeInTheDocument();
     });
   });
 

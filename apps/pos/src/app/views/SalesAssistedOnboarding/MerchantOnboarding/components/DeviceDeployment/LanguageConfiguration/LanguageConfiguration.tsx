@@ -12,6 +12,7 @@ interface LanguageConfigurationProps {
   description: string;
   isUpdateModularLoading: boolean;
   deviceName: string;
+  deviceId: string;
   handleUpdateModularConfig: (payload: ModularPayload) => void;
 }
 
@@ -20,6 +21,7 @@ const LanguageConfiguration = ({
   description,
   isUpdateModularLoading,
   deviceName,
+  deviceId,
   handleUpdateModularConfig,
 }: LanguageConfigurationProps): JSX.Element => {
   const [language, setLanguage] = useState<string>('english');
@@ -43,6 +45,7 @@ const LanguageConfiguration = ({
       },
     });
     const payload = {
+      [DEVICE_DEPLOYMENT_FIELDS.CURRENT_DEVICE_ID_FIELD]: deviceId,
       [DEVICE_DEPLOYMENT_FIELDS.DEVICE_LANGUAGE_FIELD]: language,
       [DEVICE_DEPLOYMENT_FIELDS.MODULAR_CALLBACK]: handleProceed,
     };

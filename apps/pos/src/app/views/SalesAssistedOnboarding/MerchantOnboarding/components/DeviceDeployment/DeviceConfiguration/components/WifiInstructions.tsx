@@ -10,10 +10,14 @@ import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface WifiInstructionsProps {
+  deviceId: string;
   onWifiConfigSuccess: () => void;
 }
 
-const WifiInstructions = ({ onWifiConfigSuccess }: WifiInstructionsProps): JSX.Element => {
+const WifiInstructions = ({
+  deviceId,
+  onWifiConfigSuccess,
+}: WifiInstructionsProps): JSX.Element => {
   const { states, handlers } = useOnboardingContext();
   const { isUpdateModularLoading } = states;
   const { updateModularConfig } = handlers;
@@ -36,6 +40,7 @@ const WifiInstructions = ({ onWifiConfigSuccess }: WifiInstructionsProps): JSX.E
 
   const handleWifiConfigurationSuccessful = () => {
     const payload = {
+      [DEVICE_DEPLOYMENT_FIELDS.CURRENT_DEVICE_ID_FIELD]: deviceId,
       [DEVICE_DEPLOYMENT_FIELDS.DEVICE_WIFI_CONFIGURATION_STATUS_FIELD]: true,
       [DEVICE_DEPLOYMENT_FIELDS.MODULAR_CALLBACK]: onWifiConfigSuccess,
     };

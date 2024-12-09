@@ -21,6 +21,7 @@ interface DeviceTestingProp {
   defaultTestingAmount: string;
   isUpdateModularLoading: boolean;
   deviceName: string;
+  deviceId: string;
   handleUpdateModularConfig: (payload: ModularPayload) => void;
   handleProceed: () => void;
 }
@@ -30,6 +31,7 @@ const DeviceTesting = ({
   defaultTestingAmount,
   isUpdateModularLoading,
   deviceName,
+  deviceId,
   handleUpdateModularConfig,
 }: DeviceTestingProp): JSX.Element | null => {
   const { isMobile } = useScreen();
@@ -76,6 +78,7 @@ const DeviceTesting = ({
     }
 
     const payload = {
+      [DEVICE_DEPLOYMENT_FIELDS.CURRENT_DEVICE_ID_FIELD]: deviceId,
       [DEVICE_DEPLOYMENT_FIELDS.DEVICE_TESTING_AMOUNT_FIELD]: Number(testAmount),
       [DEVICE_DEPLOYMENT_FIELDS.MODULAR_CALLBACK]: sendAmountCallback,
     };

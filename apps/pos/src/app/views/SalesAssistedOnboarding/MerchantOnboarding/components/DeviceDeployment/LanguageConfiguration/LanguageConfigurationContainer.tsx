@@ -18,7 +18,7 @@ const LanguageConfigurationContainer = (): JSX.Element | null => {
   const languageDetails = getLanguageDetailsFromModularConfig({ modularConfig });
   if (!languageDetails) return null;
 
-  const { deviceName, languageList, description = '' } = languageDetails;
+  const { deviceName, languageList, description = '', deviceId } = languageDetails;
 
   return (
     <ErrorBoundary
@@ -35,6 +35,7 @@ const LanguageConfigurationContainer = (): JSX.Element | null => {
       }
     >
       <LanguageConfiguration
+        deviceId={deviceId}
         languageList={languageList}
         deviceName={deviceName}
         description={description}

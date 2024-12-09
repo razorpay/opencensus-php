@@ -34,14 +34,14 @@ const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseM
   const { isPosEkycAgent, workflowProduct: product } = useOnboardingStore();
   const handleModularFetchError = () => {
     toast.show({
-      content: 'Failed to fetch modular config',
+      content: 'Something went wrong. Please try again.',
       color: 'negative',
     });
   };
 
   const handleModularUpdateError = () => {
     toast.show({
-      content: 'Failed to update modular config',
+      content: 'Something went wrong. Please try again.',
       color: 'negative',
     });
   };

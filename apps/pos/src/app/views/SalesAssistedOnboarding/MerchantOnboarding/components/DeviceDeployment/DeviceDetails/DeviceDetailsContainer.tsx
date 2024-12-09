@@ -26,6 +26,7 @@ const DeviceDetailsContainer = (): JSX.Element | null => {
     hideLanguageSettings,
     hideWifiConfiguration,
     currentDeviceDetails,
+    deviceId,
   } = deviceDetails;
 
   return (
@@ -43,6 +44,7 @@ const DeviceDetailsContainer = (): JSX.Element | null => {
       }
     >
       <DeviceDetails
+        deviceId={deviceId}
         mappingStatus={mappingStatus}
         isLoading={isUpdateModularLoading}
         updateModularConfig={updateModularConfig}

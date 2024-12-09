@@ -84,7 +84,7 @@ const SalesDashboard = (): JSX.Element => {
         <Box display="grid">
           <Heading color="surface.text.staticWhite.normal">Failed to fetch merchants</Heading>
           <Text truncateAfterLines={2} color="surface.text.staticWhite.normal">
-            {response?.message || 'Something went wrong'}
+            {response?.message || 'Something went wrong. Please try again.'}
           </Text>
         </Box>
       ),

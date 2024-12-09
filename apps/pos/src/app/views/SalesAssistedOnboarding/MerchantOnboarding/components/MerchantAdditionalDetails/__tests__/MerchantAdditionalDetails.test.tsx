@@ -39,7 +39,7 @@ describe('Test POS merchant additional details screen', () => {
     server.use(getModularConfig({ type: 'failure' }));
     renderApp();
     await waitFor(() => {
-      expect(screen.getByText(/Failed to fetch modular config/i)).toBeInTheDocument();
+      expect(screen.getByText(/Something went wrong. Please try again./i)).toBeInTheDocument();
     });
   });
 
@@ -97,7 +97,7 @@ describe('Test POS merchant additional details screen', () => {
       submitButton.click();
     });
     await waitFor(() => {
-      expect(screen.getByText('Failed to update modular config')).toBeInTheDocument();
+      expect(screen.getByText('Something went wrong. Please try again.')).toBeInTheDocument();
     });
   });
 

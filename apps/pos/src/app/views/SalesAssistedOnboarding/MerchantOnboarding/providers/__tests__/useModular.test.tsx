@@ -67,7 +67,7 @@ describe('useModular', () => {
     renderApp({ merchantId: 'testId2' });
     await waitForElementToBeRemoved(screen.getByText('Modular Loading'));
     await waitFor(() => {
-      expect(screen.getByText('Failed to fetch modular config')).toBeInTheDocument();
+      expect(screen.getByText('Something went wrong. Please try again.')).toBeInTheDocument();
     });
   });
 
@@ -89,7 +89,7 @@ describe('useModular', () => {
     await waitForElementToBeRemoved(screen.getByText('Modular Loading'));
     await userEvent.click(screen.getByText('Test Update Modular'));
     await waitFor(() => {
-      expect(screen.getByText('Failed to update modular config')).toBeInTheDocument();
+      expect(screen.getByText('Something went wrong. Please try again.')).toBeInTheDocument();
     });
   });
 });

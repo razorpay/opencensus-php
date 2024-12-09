@@ -1776,7 +1776,7 @@ export const ERROR_MODULAR_RESPONSE = {
     __typename: 'merchantModularOnboardingDetailsFailureResponse',
     code: 200,
     success: false,
-    message: 'Failed to fetch modular config',
+    message: 'Something went wrong. Please try again.',
   },
 };
 

@@ -25,6 +25,7 @@ interface DeviceDetailsProps {
   currentDeviceDetails: CurrentDeviceDetails;
   hideLanguageSettings: boolean;
   hideWifiConfiguration: boolean;
+  deviceId: string;
   updateModularConfig: (payload: ModularPayload) => void;
 }
 
@@ -34,6 +35,7 @@ const DeviceDetails = ({
   currentDeviceDetails,
   hideLanguageSettings,
   hideWifiConfiguration,
+  deviceId,
 }: DeviceDetailsProps): JSX.Element => {
   const [isWifiConfigModalOpen, setIsWifiConfigModalOpen] = useState<boolean>(false);
   const { id: merchantId, step } = useParams();
@@ -195,7 +197,9 @@ const DeviceDetails = ({
         ) : null}
       </Box>
       <ModalWithBottomSheet
-        content={<WifiInstructions onWifiConfigSuccess={wifiConfigSuccessCallback} />}
+        content={
+          <WifiInstructions deviceId={deviceId} onWifiConfigSuccess={wifiConfigSuccessCallback} />
+        }
         isOpen={isWifiConfigModalOpen}
         headerText={''}
         onDismiss={() => setIsWifiConfigModalOpen(false)}

@@ -213,8 +213,8 @@ const useOnboardingContext = ({
   };
 
   const getOnboardingProgress = (): OnboardingProgress => {
-    const totalSteps = ONBOARDING_STEPS.length;
-    const totalCompletedSteps = ONBOARDING_STEPS.filter(
+    const totalSteps = onboardingSteps.length;
+    const totalCompletedSteps = onboardingSteps.filter(
       ({ checkIfCompleted }) =>
         !!checkIfCompleted?.({ values: OnboardingValues, states: OnboardingStates }),
     );

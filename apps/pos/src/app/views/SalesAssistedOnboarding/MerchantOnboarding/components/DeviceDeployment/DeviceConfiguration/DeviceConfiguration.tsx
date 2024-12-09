@@ -34,6 +34,7 @@ interface DeviceConfigurationProps {
   mappingStatus: MappingStatusType;
   hideLanguageSettings: boolean;
   hideWifiConfiguration: boolean;
+  deviceId: string;
   handleUpdateModularConfig: (payload: ModularPayload) => void;
   handleProceed: () => void;
 }
@@ -44,6 +45,7 @@ const DeviceConfiguration = ({
   language,
   hideLanguageSettings,
   hideWifiConfiguration,
+  deviceId,
 }: DeviceConfigurationProps): JSX.Element => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false);
   const [isWifiConfigModalOpen, setIsWifiConfigModalOpen] = useState<boolean>(false);
@@ -185,7 +187,9 @@ const DeviceConfiguration = ({
       ) : null}
 
       <ModalWithBottomSheet
-        content={<WifiInstructions onWifiConfigSuccess={wifiConfigSuccessCallback} />}
+        content={
+          <WifiInstructions deviceId={deviceId} onWifiConfigSuccess={wifiConfigSuccessCallback} />
+        }
         isOpen={isWifiConfigModalOpen}
         headerText={''}
         onDismiss={() => setIsWifiConfigModalOpen(false)}

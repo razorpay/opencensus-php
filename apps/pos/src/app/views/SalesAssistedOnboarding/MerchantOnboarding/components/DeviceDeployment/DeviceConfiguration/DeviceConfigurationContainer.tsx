@@ -20,8 +20,14 @@ const DeviceConfigurationContainer = (): JSX.Element | null => {
   });
   if (!deviceConfigInfo) return null;
 
-  const { deviceName, mappingStatus, language, hideLanguageSettings, hideWifiConfiguration } =
-    deviceConfigInfo;
+  const {
+    deviceName,
+    mappingStatus,
+    language,
+    hideLanguageSettings,
+    hideWifiConfiguration,
+    deviceId,
+  } = deviceConfigInfo;
 
   return (
     <ErrorBoundary
@@ -38,6 +44,7 @@ const DeviceConfigurationContainer = (): JSX.Element | null => {
       }
     >
       <DeviceConfiguration
+        deviceId={deviceId}
         handleUpdateModularConfig={updateModularConfig}
         handleProceed={handleProceedToNextComponent}
         isUpdateModularLoading={isUpdateModularLoading}

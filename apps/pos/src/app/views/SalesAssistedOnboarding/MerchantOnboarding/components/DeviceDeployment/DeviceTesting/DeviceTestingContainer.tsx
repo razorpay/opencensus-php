@@ -21,7 +21,7 @@ const DeviceTestingContainer = (): JSX.Element | null => {
   });
   if (!deviceTestingInfo) return null;
 
-  const { deviceName, description = '', defaultTestingAmount } = deviceTestingInfo;
+  const { deviceName, description = '', defaultTestingAmount, deviceId } = deviceTestingInfo;
 
   return (
     <ErrorBoundary
@@ -38,6 +38,7 @@ const DeviceTestingContainer = (): JSX.Element | null => {
       }
     >
       <DeviceTesting
+        deviceId={deviceId}
         deviceName={deviceName}
         description={description}
         defaultTestingAmount={defaultTestingAmount}

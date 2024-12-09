@@ -31,7 +31,6 @@ const Wrapper: React.FC<WrapperProps> = ({ workflowProduct }) => {
 
   const installPromptCallback = (e) => {
     e.preventDefault();
-    console.log('PWA prompt fired!!');
     setPwaPrompt(e); // storing the PWA prompt to zustand store
   };
 

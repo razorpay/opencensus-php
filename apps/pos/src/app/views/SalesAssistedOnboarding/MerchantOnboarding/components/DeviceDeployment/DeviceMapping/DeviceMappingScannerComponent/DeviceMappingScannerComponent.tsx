@@ -48,7 +48,26 @@ const DeviceMappingScannerComponent = ({
       setActiveScanner(ScannerType.QR_CODE);
     }
   };
+
   const handleScannerDataUpdate = (scannedInfo: string, qrString: string = '') => {
+    const qrStringParts = qrString.split('?');
+    const queryParams = qrStringParts.length > 1 ? qrStringParts[1] : '';
+
+    if (!queryParams) {
+      toast.show({
+        content: 'Please scan a valid QR',
+        color: 'neutral',
+        autoDismiss: true,
+      });
+      return;
+    }
+
+    const qrStringParams = new URLSearchParams(queryParams);
+    if (!qrStringParams.get('tr')) {
+      const separator = qrString.includes('?') ? '&' : '?';
+      qrString = `${qrString}${separator}tr=${deviceId}`;
+    }
+
     let payload;
     if (isBarCodeActive) {
       payload = {
