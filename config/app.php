@@ -743,6 +743,14 @@ return array(
 
     'cross_border_mcc_parity_check_experiment_id' => env('CROSS_BORDER_MCC_PARITY_CHECK_EXPERIMENT_ID'),
 
+    'cross_border_razorpayjs_rearch_experiment_id' => env('CROSS_BORDER_RAZORPAYJS_REARCH_EXPERIMENT_ID'),
+
+    'cross_border_other_libraries_rearch_experiment_id' => env('CROSS_BORDER_OTHER_LIBRARIES_REARCH_EXPERIMENT_ID'),
+
+    'cross_border_skip_address_check_experiment_id' => env('CROSS_BORDER_SKIP_ADDRESS_CHECK_EXPERIMENT_ID'),
+
+    'cross_border_skip_fee_bearer_check_experiment_id' => env('CROSS_BORDER_SKIP_FEE_BEARER_CHECK_EXPERIMENT_ID'),
+
     'show_upi_autopay_method_on_dashboard' => env('SHOW_UPI_AUTOPAY_METHOD_ON_DASHBOARD'),
 
     'enable_force_auth_on_upi_autopay' => env('ENABLE_FORCE_AUTH_ON_UPI_AUTOPAY'),

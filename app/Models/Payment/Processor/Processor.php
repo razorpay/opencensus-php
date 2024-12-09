@@ -871,11 +871,13 @@ class Processor
     {
         $result = false;
 
-        if($merchant->isAddressRequiredEnabled() && !empty($input['billing_address'])){
+        $skipAddressCheck = $this->evaluateSplitzExperimentforSkipAddressCheck($merchant);
+        if (!$skipAddressCheck && ($merchant->isAddressRequiredEnabled() && !empty($input['billing_address']))){
             return false;
         }
 
-        if($merchant->isFeeBearerCustomerOrDynamic() === true){
+        $skipFeeBearerCheck = $this->evaluateSplitzExperimentforSkipFeeBearerCheck($merchant);
+        if (!$skipFeeBearerCheck && ($merchant->isFeeBearerCustomerOrDynamic() === true)){
             return false;
         }
 
@@ -888,6 +890,14 @@ class Processor
         $internationalSupportedLibraries = [
             Payment\Analytics\Metadata::CHECKOUTJS,
             Payment\Analytics\Metadata::HOSTED
+        ];
+
+        $otherSupportedLibraries = [
+            Payment\Analytics\Metadata::CUSTOM,
+            Payment\Analytics\Metadata::DIRECT,
+            Payment\Analytics\Metadata::PUSH,
+            Payment\Analytics\Metadata::LEGACYJS,
+            Payment\Analytics\Metadata::EMBEDDED,
         ];
 
         if($input['currency'] !== Currency\Currency::INR){
@@ -921,7 +931,159 @@ class Processor
             }
         }
 
+        if($library == Payment\Analytics\Metadata::RAZORPAYJS) {
+            $result = $this->evaluateSplitzExperimentforCrossBorderRearchRazorpayJS($merchant);
+        }
+
+        if(in_array($library,$otherSupportedLibraries,true)) {
+            $result = $this->evaluateSplitzExperimentforCrossBorderRearchOtherLibraries($merchant);
+        }
+
         return ($result == true);
+    }
+
+    private function evaluateSplitzExperimentforSkipAddressCheck ($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_skip_address_check_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforSkipFeeBearerCheck ($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_skip_fee_bearer_check_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderRearchRazorpayJS ($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_razorpayjs_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderRearchOtherLibraries($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_other_libraries_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
     }
 
     private function evaluateSplitzExperimentforCrossBorderRearchDCCMCCCheckoutJS($merchant){
