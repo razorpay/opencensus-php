@@ -65,6 +65,14 @@ export interface StoreFrontMetaData {
   user_id: string;
 }
 
+export interface IBannerImage {
+  id?: string;
+  originalSrc: string;
+  croppedSrc: string;
+  position: number;
+  enabled: boolean;
+}
+
 export interface IStorefrontResponse {
   id: string;
   merchant_id: string;
@@ -77,6 +85,7 @@ export interface IStorefrontResponse {
   status: 'active' | 'inactive';
   type: 'store';
   slug: string;
+  banner_images: Array<IBannerImage>;
   meta_data: StoreFrontMetaData;
   short_url: string;
   mode: Mode;

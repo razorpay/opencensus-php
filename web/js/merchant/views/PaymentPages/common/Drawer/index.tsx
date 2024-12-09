@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import { Theme } from '@razorpay/blade/components';
 export interface IDrawer {
   children: React.ReactNode;
   maskClosable?: boolean;
@@ -9,6 +10,8 @@ export interface IDrawer {
   position?: 'left' | 'right';
   footerButtons?: React.ReactNode;
   hasTransparentBackground?: boolean;
+  isMobileCropper?: boolean;
+  isStorefront?: boolean;
   top?: string;
 }
 
@@ -34,7 +37,19 @@ const StyledModalMask = styled(_ModalMask)(
 );
 
 const DrawerWrapper = styled(_Modal)(
-  ({ position, top }) => `
+  ({
+    position,
+    top,
+    isMobileCropper,
+    isStorefront,
+    theme,
+  }: {
+    position: string;
+    top: string;
+    isMobileCropper: boolean;
+    isStorefront: boolean;
+    theme: Theme;
+  }) => `
   left: ${position === 'left' ? '0%' : 'unset'};
   right: ${position === 'right' ? '0%' : 'unset'};
   top: ${top};
@@ -42,8 +57,19 @@ const DrawerWrapper = styled(_Modal)(
   max-width: 500px;
   width: 100%;
   transform: none;
-  height: calc(100vh - 45px);
-  padding: 32px 40px;
+  height: ${isMobileCropper ? '100vh' : 'calc(100vh - 45px)'};
+  padding: ${
+    isMobileCropper
+      ? `${theme.spacing[8]}px ${theme.spacing[0]}px`
+      : isStorefront
+      ? `${theme.spacing[8]}px ${theme.spacing[7]}px`
+      : `${theme.spacing[8]}px ${theme.spacing[9]}px`
+  };
+  background-color: ${
+    isMobileCropper
+      ? theme.colors.interactive.icon.staticBlack.normal
+      : theme.colors.interactive.icon.staticWhite.normal
+  };
   box-shadow: 0px 10px 10px 1px #aaaaaa;
   z-index: 10000;
   .Modal-content {
@@ -83,6 +109,8 @@ const PaymentPagesDrawer = ({
   footerButtons,
   hasTransparentBackground = false,
   top = '45px',
+  isMobileCropper = false,
+  isStorefront = false,
   ...restProps
 }: IDrawer): React.ReactElement => {
   return (
@@ -90,7 +118,13 @@ const PaymentPagesDrawer = ({
       maskClosable={maskClosable}
       hasTransparentBackground={hasTransparentBackground}
     >
-      <DrawerWrapper position={position} top={top} {...restProps}>
+      <DrawerWrapper
+        position={position}
+        top={top}
+        isMobileCropper={isMobileCropper}
+        isStorefront={isStorefront}
+        {...restProps}
+      >
         <ModalContent>{children}</ModalContent>
         {footerButtons && <ModalFooter>{footerButtons}</ModalFooter>}
       </DrawerWrapper>

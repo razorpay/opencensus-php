@@ -647,3 +647,58 @@ export const StickyFooter = styled.div(
   z-index: 10;
 `,
 );
+
+export const CropWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 984px;
+  height: auto;
+  max-height: 498px;
+
+  .ReactCrop {
+    width: 100%;
+    max-height: 498px;
+  }
+
+  .ReactCrop__image {
+    width: 100%;
+    height: auto;
+    max-height: 498px;
+    object-fit: cover;
+  }
+`;
+export const DragWrapper = styled.div<{
+  theme: Theme;
+}>(
+  ({ theme }) => `
+  border-radius: ${theme.border.radius.medium}px;
+  width: 174px;
+  padding: ${theme.spacing[3]}px ${theme.spacing[4]}px;
+  align-items: flex-start;
+  display: flex;
+  gap: ${theme.spacing[3]}px;
+  color: #fff;
+  margin-bottom: ${theme.spacing[11]}px;
+`,
+);
+
+export const DragWrapperDesktop = styled(DragWrapper)(
+  ({ theme }) => `
+  position: absolute;
+  top: 105px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: ${theme.colors.feedback.background.neutral.intense};
+  border: ${theme.border.width.thin}px solid ${theme.colors.feedback.border.neutral.intense};
+  z-index: 2;
+`,
+);
+
+export const DragWrapperMobile = styled(DragWrapper)(
+  ({ theme }) => `
+  background: ${theme.colors.feedback.background.information.intense};
+  border: ${theme.border.width.thin}px solid ${theme.colors.feedback.border.information.intense};
+`,
+);

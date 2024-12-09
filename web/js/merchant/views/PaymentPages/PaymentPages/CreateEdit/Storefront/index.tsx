@@ -46,7 +46,6 @@ import StorefrontPageTitle from './PageTitle';
 import PageSettings from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings/StorefrontSettings';
 import ReceiptSettings from 'merchant/views/PaymentPages/PaymentPages/components/Modals/StorefrontPaymentReceipt';
 import {
-  InfoIcon,
   Link,
   Text,
   Button as BladeButton,
@@ -105,7 +104,6 @@ const StoreFront = ({
   id,
   history,
   location,
-  // products,
   storefront,
   editStorefront,
   editStorefrontDeepMerge,
@@ -146,6 +144,7 @@ const StoreFront = ({
   const [isReceiptSettingsOpen, setIsReceiptSettingsOpen] = useState(false);
   const [openBuisnessDetailsDrawer, setOpenBuisnessDetailsDrawer] = useState(false);
   const [openAddBannerDrawer, setOpenAddBannerDrawer] = useState(false);
+  const [showBannerAlert, setShowBannerAlert] = useState(false);
   const navigate = useNavigate();
   const splitzConfig = useSplitzService();
   const { abExperiments } = splitzConfig;
@@ -291,7 +290,11 @@ const StoreFront = ({
           },
           store: {
             title: storefront.entity.title,
+            banner_images: storefront.entity.banner_images,
             terms: storefront.entity?.terms,
+            settings: {
+              banner_enabled: storefront.entity.settings.banner_enabled,
+            },
           },
         }),
       );
@@ -300,6 +303,8 @@ const StoreFront = ({
     storefront.entity.title,
     storefront.entity.contactEmail,
     storefront.entity.contactPhone,
+    storefront.entity.banner_images,
+    storefront.entity.settings.banner_enabled,
     storefront.entity?.terms,
   ]);
 
@@ -532,12 +537,27 @@ const StoreFront = ({
     });
   };
 
+  const checkForBannerAlert = () => {
+    let isBannerEnabled = storefront.entity.settings.banner_enabled;
+    if (isBannerEnabled) {
+      return storefront?.entity?.banner_images?.length === 0;
+    } else {
+      return false;
+    }
+  };
+
   const onSubmit = (): any => {
     // adding before validity check, so as to create proper funnel for events
     track.publishPageClicked({
       storefrontId: id ?? undefined,
       isNewStorefront: Boolean(isCreate),
     });
+
+    //Check for banner
+    if (isStorefrontV1Enabled && checkForBannerAlert()) {
+      setShowBannerAlert(true);
+      return;
+    }
 
     // validate
     const { isValid, error } = validateStorefront(storefront);
@@ -779,17 +799,17 @@ const StoreFront = ({
                     )}
                     {isStorefrontV1Enabled ? (
                       <SuspenseWithLoader>
-                        <Box
-                          display="flex"
-                          flexDirection="column"
-                          gap="spacing.8"
-                          marginTop="spacing.9"
-                        >
+                        <Box display="flex" flexDirection="column" gap="spacing.8" marginTop="32px">
                           <AddBuisnessDetails
                             handleClick={handleBuisnessDetailsClick}
                             openBuisnessDetailsDrawer={openBuisnessDetailsDrawer}
                           />
-                          <AddBannerDetails />
+                          <AddBannerDetails
+                            handleClick={handleAddBannerClick}
+                            openAddBannerDrawer={openAddBannerDrawer}
+                            showBannerAlert={showBannerAlert}
+                            setShowBannerAlert={setShowBannerAlert}
+                          />
                         </Box>
                       </SuspenseWithLoader>
                     ) : (
@@ -876,15 +896,17 @@ const StoreFront = ({
   );
 };
 
-const mapStateToProps = (state) => ({
-  storefront: state.paymentPageStorefront,
-  isMobile: state.app.isMobileResolution,
-  user: state.session.user,
-  mode: state.session.mode,
-  org: state.session.org,
-  config: state.config.config,
-  globalSupportDetails: state.supportdetails.merchantSupportDetail.data,
-});
+const mapStateToProps = (state) => {
+  return {
+    storefront: state.paymentPageStorefront,
+    isMobile: state.app.isMobileResolution,
+    user: state.session.user,
+    mode: state.session.mode,
+    org: state.session.org,
+    config: state.config.config,
+    globalSupportDetails: state.supportdetails.merchantSupportDetail.data,
+  };
+};
 
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators(

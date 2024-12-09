@@ -1,16 +1,13 @@
 import React from 'react';
-
-import { Button, ChevronRightIcon } from '@razorpay/blade/components';
-
 import LineItems from './LineItems';
+import { Button, ChevronRightIcon } from '@razorpay/blade/components';
 import BusinessDetailsDrawer from './BusinessDetailsDrawer';
-
-type AddBusinessDetailsProps = {
+interface IAddBusinessDetailsProps {
   handleClick: (val: boolean) => void;
   openBuisnessDetailsDrawer?: boolean;
-};
+}
 
-const RightChildren: React.FC<AddBusinessDetailsProps> = ({ handleClick }) => {
+const RightChildren: React.FC<IAddBusinessDetailsProps> = ({ handleClick }) => {
   return (
     <Button
       variant="tertiary"
@@ -22,7 +19,7 @@ const RightChildren: React.FC<AddBusinessDetailsProps> = ({ handleClick }) => {
   );
 };
 
-const AddBuisnessDetails: React.FC<AddBusinessDetailsProps> = ({
+const AddBuisnessDetails: React.FC<IAddBusinessDetailsProps> = ({
   handleClick,
   openBuisnessDetailsDrawer,
 }) => {

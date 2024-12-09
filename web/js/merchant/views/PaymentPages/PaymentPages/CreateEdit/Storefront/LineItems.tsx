@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Box, Text } from '@razorpay/blade/components';
+import { Box, Switch, Text } from '@razorpay/blade/components';
 
 type LineItemsProps = {
   title?: string | React.ReactNode;
@@ -38,6 +38,7 @@ const LineItems: React.FC<LineItemsProps> = ({ title, subTitle, rightChildren, e
         </Box>
         {rightChildren}
       </Box>
+      {extraItems}
     </Box>
   );
 };

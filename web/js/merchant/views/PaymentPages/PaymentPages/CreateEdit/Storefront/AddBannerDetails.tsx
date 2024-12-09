@@ -1,15 +1,144 @@
 import React from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
-import { Button, ChevronRightIcon } from '@razorpay/blade/components';
-
+import { Alert, Box, Button, ChevronRightIcon, Switch, Text } from '@razorpay/blade/components';
 import LineItems from './LineItems';
+import UploadBannerDrawer from './UploadBannerDrawer';
 
-const RightChildren = () => {
-  return <Button variant="tertiary" color="primary" size="xsmall" icon={ChevronRightIcon} />;
+import {
+  editStorefront,
+  PaymentPagesStorefrontType,
+} from 'merchant/reducers/paymentPages/storefront';
+
+interface IAddBannerDetailsProps {
+  handleClick: (val: boolean) => void;
+  openAddBannerDrawer?: boolean;
+  storefront: PaymentPagesStorefrontType;
+  editStorefront: (name: string, value: unknown) => void;
+  showBannerAlert: boolean;
+  setShowBannerAlert: React.Dispatch<React.SetStateAction<boolean>>;
+  isMobile: boolean;
+}
+
+interface IRightChildrenProps {
+  handleClick: (val: boolean) => void;
+}
+
+const RightChildren: React.FC<IRightChildrenProps> = ({ handleClick }) => (
+  <Button
+    variant="tertiary"
+    color="primary"
+    size="xsmall"
+    icon={ChevronRightIcon}
+    onClick={() => handleClick(true)}
+  />
+);
+
+const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
+  handleClick,
+  openAddBannerDrawer,
+  storefront,
+  editStorefront,
+  showBannerAlert,
+  setShowBannerAlert,
+  isMobile,
+}) => {
+  const handleBannerSwitchChange = (isChecked: boolean) => {
+    editStorefront('settings', {
+      ...storefront.entity.settings,
+      banner_enabled: isChecked,
+    });
+  };
+
+  const handleAlertPrimaryClick = () => {
+    setShowBannerAlert(false);
+    editStorefront('settings', {
+      ...storefront.entity.settings,
+      banner_enabled: true,
+    });
+    handleClick(true);
+  };
+
+  const handleAlertSecondaryClick = () => {
+    setShowBannerAlert(false);
+    editStorefront('settings', {
+      ...storefront.entity.settings,
+      banner_enabled: false,
+    });
+  };
+
+  return (
+    <>
+      {openAddBannerDrawer ? (
+        <UploadBannerDrawer handleClose={() => handleClick(false)} storefront={storefront} />
+      ) : (
+        <LineItems
+          title="Add store banner"
+          rightChildren={<RightChildren handleClick={handleClick} />}
+          extraItems={
+            <>
+              {storefront.entity.settings.banner_enabled ? (
+                <></>
+              ) : (
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  borderTopWidth="thin"
+                  borderTopColor="surface.border.gray.muted"
+                  borderTopStyle="solid"
+                  paddingTop="spacing.4"
+                >
+                  <Text
+                    weight="regular"
+                    color="surface.text.gray.subtle"
+                    variant="body"
+                    size="medium"
+                  >
+                    Turn on banner preview
+                  </Text>
+
+                  <Switch
+                    accessibilityLabel="storefront-banner-switch"
+                    isChecked={storefront.entity.settings.banner_enabled}
+                    onChange={({ isChecked }) => handleBannerSwitchChange(isChecked)}
+                  />
+                </Box>
+              )}
+            </>
+          }
+        />
+      )}
+      {showBannerAlert && (
+        <Alert
+          title="Missing Banner Image"
+          description="Your store is being published without a banner image. Please upload a banner image or disable the banner to proceed."
+          marginTop="spacing.4"
+          position="absolute"
+          top="62px"
+          right={isMobile ? 'spacing.5' : '60px'}
+          left={isMobile ? 'spacing.4' : 'none'}
+          actions={{
+            primary: { onClick: handleAlertPrimaryClick, text: 'Upload Banner' },
+            secondary: { onClick: handleAlertSecondaryClick, text: 'Disable Banner' },
+          }}
+          color="notice"
+          emphasis="intense"
+          onDismiss={() => setShowBannerAlert(false)}
+        />
+      )}
+    </>
+  );
 };
 
-const AddBannerDetails = () => {
-  return <LineItems title="Add store banner" rightChildren={<RightChildren />} />;
-};
+const mapStateToProps = (state: any) => ({
+  storefront: state.paymentPageStorefront,
+  isMobile: state.app.isMobileResolution,
+});
 
-export default AddBannerDetails;
+const mapDispatchToProps = (dispatch: any) => ({
+  editStorefront: bindActionCreators(editStorefront, dispatch),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(AddBannerDetails);

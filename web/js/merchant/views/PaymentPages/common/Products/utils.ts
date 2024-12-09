@@ -178,7 +178,17 @@ export const generateStorefrontRequest = (
   mode: ModeTypes,
 ) => {
   const {
-    entity: { title, products, contactEmail, contactPhone, expire_by, settings, slug, terms },
+    entity: {
+      title,
+      products,
+      contactEmail,
+      contactPhone,
+      expire_by,
+      settings,
+      slug,
+      terms,
+      banner_images,
+    },
   } = storefront;
   //TODO: manual receipt is not enabled, hardcoding enbablement for now
   settings.enable_receipt = '1';
@@ -197,6 +207,7 @@ export const generateStorefrontRequest = (
     // support_email: 'test@gmail.com',
     // support_contact: '12345565',
     mode,
+    banner_images,
     // notes: {
     //   key1: 'Select your favourite Chocolate',
     // },

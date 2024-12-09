@@ -7,6 +7,7 @@ import {
   fetchStorefrontEntity,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { transformStorefront, transformLineItem, transformCatalog } from './transformer';
+import { IBannerImage } from 'merchant/reducers/paymentPages/types';
 
 // TODO: Remove dependency from here
 
@@ -51,6 +52,7 @@ export interface PaymentPagesStorefrontType {
   isDesktopPreview: boolean;
   entity: {
     title: string;
+    banner_images: Array<IBannerImage>;
     contactPhone: string;
     contactEmail: string;
     terms?: string;
@@ -60,6 +62,7 @@ export interface PaymentPagesStorefrontType {
     expire_by: number | null;
     slug: string | null;
     settings: {
+      banner_enabled: boolean;
       payment_success_message?: string;
       payment_success_redirect_url?: string;
       pp_fb_event_add_to_cart_enabled?: string;
@@ -118,13 +121,15 @@ export const fetchCategories = () => {
   };
 };
 
-export const editStorefront = (key: string, value: string) => ({
-  type: EDIT_STOREFRONT,
-  payload: {
-    key,
-    value,
-  },
-});
+export const editStorefront = (key: string, value: string | boolean) => {
+  return {
+    type: EDIT_STOREFRONT,
+    payload: {
+      key,
+      value,
+    },
+  };
+};
 
 export const editStorefrontDeepMerge = (payload: any) => ({
   type: EDIT_STOREFRONT_DEEP_MERGE,
@@ -180,13 +185,16 @@ const initialState: PaymentPagesStorefrontType = {
   isDesktopPreview: true,
   entity: {
     title: '',
+    banner_images: [],
     contactPhone: '',
     contactEmail: '',
     terms: '',
     products: [],
     shortUrl: '',
     expire_by: null,
-    settings: {},
+    settings: {
+      banner_enabled: true,
+    },
     slug: '',
   },
   allCategories: {
