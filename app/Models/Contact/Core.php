@@ -697,109 +697,122 @@ class Core extends Base\Core
 
     private function saveVendorDetails(Entity $contact, array $input, Merchant\Entity $merchant): Entity
     {
-        if ($contact->getType() == Type::VENDOR)
+        // if request app is vendor experience then return, as the source it-self is VE - this is to avoid looping
+        if ($contact->getType() != Type::VENDOR OR $this->app['basicauth']->isVendorExperienceApp() === true)
         {
-            $createParams = [];
-            if (isset($input[Entity::PAYMENT_TERMS]))
-            {
-                $createParams[Entity::PAYMENT_TERMS] = $input[Entity::PAYMENT_TERMS];
-            }
-
-            if (isset($input[Entity::TDS_CATEGORY]))
-            {
-                $createParams[Entity::TDS_CATEGORY] = $input[Entity::TDS_CATEGORY];
-            }
-
-            if (isset($input[Entity::GST_IN]))
-            {
-                $createParams[Entity::GST_IN] = $input[Entity::GST_IN];
-            }
-
-            if (isset($input[Entity::PAN]))
-            {
-                $createParams[Entity::PAN] = $input[Entity::PAN];
-            }
-
-            if (isset($input[Entity::POC_EMAILS]))
-            {
-                $createParams[Entity::POC_EMAILS] = $input[Entity::POC_EMAILS];
-            }
-
-            if (empty($createParams))
-            {
-                return $contact;
-            }
-
-            $createParams['contact_id'] = $contact->getPublicId();
-
-            try {
-                $vendor = $this->vendorPaymentService->createVendor(
-                    $merchant,
-                    $createParams
-                );
-            } catch (BadRequestException $exception) {
-                $this->trace->traceException($exception);
-
-                return $contact;
-            }
-
-            $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
-            $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
-            $contact->setVendor($vendor);
+            return $contact;
         }
+
+        $createParams = [];
+        if (isset($input[Entity::PAYMENT_TERMS]))
+        {
+            $createParams[Entity::PAYMENT_TERMS] = $input[Entity::PAYMENT_TERMS];
+        }
+
+        if (isset($input[Entity::TDS_CATEGORY]))
+        {
+            $createParams[Entity::TDS_CATEGORY] = $input[Entity::TDS_CATEGORY];
+        }
+
+        if (isset($input[Entity::GST_IN]))
+        {
+            $createParams[Entity::GST_IN] = $input[Entity::GST_IN];
+        }
+
+        if (isset($input[Entity::PAN]))
+        {
+            $createParams[Entity::PAN] = $input[Entity::PAN];
+        }
+
+        if (isset($input[Entity::POC_EMAILS]))
+        {
+            $createParams[Entity::POC_EMAILS] = $input[Entity::POC_EMAILS];
+        }
+
+        // if vendor experience is enabled then don't return
+        if (empty($createParams) AND $this->isVendorExperienceEnabled($contact) === false)
+        {
+            return $contact;
+        }
+
+        $createParams['contact_id'] = $contact->getPublicId();
+        $createReq = array_merge($createParams, $contact->getAttributes());
+
+        try {
+            $vendor = $this->vendorPaymentService->createVendor(
+                $merchant,
+                $createReq
+            );
+        } catch (BadRequestException $exception)
+        {
+            $this->trace->traceException($exception);
+
+            return $contact;
+        }
+
+        $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
+        $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
+        $contact->setVendor($vendor);
+
 
         return $contact;
     }
 
     private function updateVendorDetails(Entity $contact, array $input): Entity
     {
-        if ($contact->getType() == Type::VENDOR)
+        // if request app is vendor experience then return, as the source it-self is VE - this is to avoid looping
+        if ($contact->getType() != Type::VENDOR OR $this->app['basicauth']->isVendorExperienceApp() === true)
         {
-            $updateParams = [];
-            if (isset($input[Entity::PAYMENT_TERMS]))
-            {
-                $updateParams[Entity::PAYMENT_TERMS] = $input[Entity::PAYMENT_TERMS];
-            }
-
-            if (isset($input[Entity::TDS_CATEGORY]))
-            {
-                $updateParams[Entity::TDS_CATEGORY] = $input[Entity::TDS_CATEGORY];
-            }
-
-            if (isset($input[Entity::GST_IN]))
-            {
-                $updateParams[Entity::GST_IN] = $input[Entity::GST_IN];
-            }
-
-            if (isset($input[Entity::PAN]))
-            {
-                $updateParams[Entity::PAN] = $input[Entity::PAN];
-            }
-
-            if (isset($input[Entity::POC_EMAILS]))
-            {
-                $updateParams[Entity::POC_EMAILS] = $input[Entity::POC_EMAILS];
-            }
-
-            if (empty($updateParams))
-            {
-                return $this->getAppSpecificInformation($contact);
-            }
-
-            $updateParams['contact_id'] = $contact->getPublicId();
-
-            try {
-                $vendor = $this->vendorPaymentService->updateVendor($this->merchant, $updateParams);
-            } catch (BadRequestException $exception) {
-                $this->trace->traceException($exception);
-
-                return $contact;
-            }
-
-            $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
-            $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
-            $contact->setVendor($vendor);
+            return $contact;
         }
+
+        $updateParams = [];
+        if (isset($input[Entity::PAYMENT_TERMS]))
+        {
+            $updateParams[Entity::PAYMENT_TERMS] = $input[Entity::PAYMENT_TERMS];
+        }
+
+        if (isset($input[Entity::TDS_CATEGORY]))
+        {
+            $updateParams[Entity::TDS_CATEGORY] = $input[Entity::TDS_CATEGORY];
+        }
+
+        if (isset($input[Entity::GST_IN]))
+        {
+            $updateParams[Entity::GST_IN] = $input[Entity::GST_IN];
+        }
+
+        if (isset($input[Entity::PAN]))
+        {
+            $updateParams[Entity::PAN] = $input[Entity::PAN];
+        }
+
+        if (isset($input[Entity::POC_EMAILS]))
+        {
+            $updateParams[Entity::POC_EMAILS] = $input[Entity::POC_EMAILS];
+        }
+
+        // if vendor experience is enabled then don't return
+        if (empty($updateParams) AND $this->isVendorExperienceEnabled($contact) === false)
+        {
+            return $this->getAppSpecificInformation($contact);
+        }
+
+        $updateParams['contact_id'] = $contact->getPublicId();
+        $updateReq = array_merge($updateParams, $contact->getAttributes());
+
+        try {
+            $vendor = $this->vendorPaymentService->updateVendor($this->merchant, $updateReq);
+        } catch (BadRequestException $exception)
+        {
+            $this->trace->traceException($exception);
+
+            return $contact;
+        }
+
+        $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
+        $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
+        $contact->setVendor($vendor);
 
         return $contact;
     }
@@ -899,6 +912,10 @@ class Core extends Base\Core
     {
         $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
 
+        // Push Vendor Event only when
+        // 1. Contact is of type Vendor
+        // 2. Vendor Experience is not enabled
+        // 3. Request Actor is not Vendor Experience Service itself
         if (($mode !== Mode::LIVE) or
             (empty($contact->getType()) === true) or
             ($contact->getType() !== Contact\Type::VENDOR))
@@ -954,8 +971,18 @@ class Core extends Base\Core
 
         // Block contact update for vendor type if merchant has `vendor_onboarding_enabled` feature enabled
         // This is to ensure that the vendor contact updation is done via vendor experience service only
-        if (($contact->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VENDOR_ONBOARDING_ENABLED) === true
-                and $this->app['basicauth']->isVendorExperienceApp() === false))
+        if ($contact->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VENDOR_ONBOARDING_ENABLED) === true
+                AND $this->app['basicauth']->isVendorExperienceApp() === false)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isVendorExperienceEnabled(Contact\Entity $contact): bool
+    {
+        if ($contact->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VENDOR_EXPERIENCE_ENABLED) === true)
         {
             return true;
         }

@@ -291,6 +291,8 @@ class Constants
 
     const BuyerProtectionSignedUp = 'buyer_protection_signed_up';
 
+    const VendorExperienceEnabled = 'vendor_experience_enabled';
+
     public static $validDcsKeys = [];
 
     /**
@@ -545,6 +547,7 @@ class Constants
         self::ShowIntlRiskAnalyticsDashboard              => "rzp/pg/merchant/cross_border/india/RiskAnalytics",
         self::OtherPaymentGatewayConfigured               => "rzp/pg/merchant/terminals/banking_program/Identifier",
         self::VendorOnboardingEnabled                     => "rzp/x/merchant/vendor_experience/VendorExperience",
+        self::VendorExperienceEnabled                     => "rzp/x/merchant/vendor_experience/VendorExperience",
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -812,6 +815,7 @@ class Constants
         APIFeaturesConstants::RBL_BANK_LMS_DASHBOARD                       => self::RblBankLmsDashboard,
         APIFeaturesConstants::EXTERNAL_PA_VAS                              => self::OtherPaymentGatewayConfigured,
         APIFeaturesConstants::VENDOR_ONBOARDING_ENABLED                    => self::VendorOnboardingEnabled,
+        APIFeaturesConstants::VENDOR_EXPERIENCE_ENABLED                    => self::VendorExperienceEnabled,
     ];
 
     /**
@@ -867,6 +871,7 @@ class Constants
         self::RblBankLmsDashboard                     => 'client',
         self::VendorOnboardingEnabled                 => 'client',
         self::BuyerProtectionSignedUp                 => 'direct',
+        self::VendorExperienceEnabled                 => 'client',
     ];
 
     /**
@@ -929,6 +934,7 @@ class Constants
             "show_custom_dcc_disclosures" => "direct",
             "rbl_bank_lms_dashboard"      => "client",
             "vendor_onboarding_enabled"   => "client",
+            "vendor_experience_enabled"   => "client",
         ]
     ];
 
