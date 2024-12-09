@@ -73,7 +73,7 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
   }, [modularConfig]);
 
   useEffect(() => {
-    if (!omcValue) {
+    if (!omcValue || omcValue === 'none') {
       reset({ ...getValues(), additional_details_sap_code_field: '' });
     }
   }, [omcValue]);

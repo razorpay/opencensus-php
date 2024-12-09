@@ -140,7 +140,7 @@ export const getAdditionalDetailFields = ({
 
   additionalDetailsFields = additionalDetailsComponent?.fields ?? [];
 
-  if (!omcValue) {
+  if (!omcValue || omcValue === 'none') {
     const filteredFields = additionalDetailsComponent?.fields.filter(
       (field) => field.name !== MODULAR_ADDITIONAL_DETAILS_FIELDS.SAP_CODE_FIELD,
     );
