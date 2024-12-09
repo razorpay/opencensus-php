@@ -33,4 +33,6 @@ class Constants
     const DELIVERY_CALLBACK_REQUESTED              = 'deliveryCallbackRequested';
 
     const NC_URL                                   = 'ncUrl';
+
+    const APPEND_SOURCE_TO_CONTEXT                 = 'append_source_to_context';
 }

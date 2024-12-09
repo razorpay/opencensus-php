@@ -8470,7 +8470,7 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    protected function expectStorkSendSmsRequest($storkMock, $templateName, $destination, $expectedParms = [])
+    protected function expectStorkSendSmsRequest($storkMock, $templateName, $destination, $expectedParms = [], $source = "default", $appendSourceToContext = false)
     {
         $storkMock->shouldReceive('sendSms')
             ->with(
@@ -8478,12 +8478,19 @@ class UserTest extends TestCase
                 {
                     return true;
                 }),
-                Mockery::on(function ($actualPayload) use ($templateName, $destination, $expectedParms)
+                Mockery::on(function ($actualPayload) use ($templateName, $destination, $expectedParms, $source, $appendSourceToContext)
                 {
 
                     if(isset($actualPayload['contentParams']) === true)
                     {
                         $this->assertArraySelectiveEquals($expectedParms, $actualPayload['contentParams']);
+                    }
+
+//                  the below check asserts source that is present in the payload if append_source_to_context is true
+                    if($appendSourceToContext === true)
+                    {
+                        $this->assertTrue($actualPayload['append_source_to_context']);
+                        $this->assertEquals($source, $actualPayload['source']);
                     }
 
                     if (($templateName !== $actualPayload['templateName']) or
@@ -13183,6 +13190,45 @@ class UserTest extends TestCase
         $this->app->instance('stork_service', $storkMock);
 
         $this->expectStorkSendSmsRequest($storkMock, 'sms.user.login_otp_v2', '8766776666', []);
+
+        $this->startTest();
+    }
+
+
+    public function testMobileLoginWithNewSmsTemplateAndSendsViaStorkSalesAssisted()
+    {
+
+        $merchantId = 'No72z8gsJTcHKu';
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'],['contact_mobile' =>'9891817371','contact_mobile_verified'=>true],"owner");
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser['id'],
+            'signup_campaign' => 'assisted_onboarding',
+            'metadata' => [
+                'service' => 'pgos',
+            ]
+        ]);
+
+        $this->ba->appAuth();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $source = 'api.user.login_otp_assisted';
+
+        $this->expectStorkSendSmsRequest($storkMock, 'sms.user.login_otp_v2', '9891817371', [], $source, true);
 
         $this->startTest();
     }
