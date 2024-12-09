@@ -432,26 +432,23 @@ class Processor extends Base\Core
                 // charge collections handles collection for multiple products
                 if (($type == Type::CHARGE_COLLECTIONS) or ($type == Type::X_CHARGE_COLLECTIONS))
                 {
-                    if ((($type == Type::CHARGE_COLLECTIONS) and ($this->isChargeCollectionsInvoicingExptEnabled() === true))
-                        or (($type == Type::X_CHARGE_COLLECTIONS) and ($this->isChargeCollectionsInvoicingExptEnabledForX() === true))) {
-                        foreach ($feeDetails as $feeDetail) {
-                            $params = [
-                                Entity::MONTH => $this->month,
-                                Entity::YEAR => $this->year,
-                                Entity::TYPE => $type,
-                                Entity::GSTIN => $this->gstin,
-                                Entity::AMOUNT => $feeDetail[Entity::AMOUNT] ?? 0,
-                                Entity::TAX => $feeDetail[Entity::TAX] ?? 0,
-                                Entity::DESCRIPTION => $feeDetail[Entity::DESCRIPTION],
-                            ];
+                    foreach ($feeDetails as $feeDetail) {
+                        $params = [
+                            Entity::MONTH => $this->month,
+                            Entity::YEAR => $this->year,
+                            Entity::TYPE => $type,
+                            Entity::GSTIN => $this->gstin,
+                            Entity::AMOUNT => $feeDetail[Entity::AMOUNT] ?? 0,
+                            Entity::TAX => $feeDetail[Entity::TAX] ?? 0,
+                            Entity::DESCRIPTION => $feeDetail[Entity::DESCRIPTION],
+                        ];
 
-                            $params = $this->filterGSTParams($balance, $feeBearer, $params);
+                        $params = $this->filterGSTParams($balance, $feeBearer, $params);
 
-                            $amount += $params[Entity::AMOUNT];
+                        $amount += $params[Entity::AMOUNT];
 
-                            $lineItem = (new Core)->create($params, $this->merchant, $balance);
-                            $invoiceBreakup->push($lineItem);
-                        }
+                        $lineItem = (new Core)->create($params, $this->merchant, $balance);
+                        $invoiceBreakup->push($lineItem);
                     }
                 }
                 else {
@@ -585,9 +582,7 @@ class Processor extends Base\Core
         {
             if ($type === Type::CHARGE_COLLECTIONS)
             {
-                if ($this->isChargeCollectionsInvoicingExptEnabled() === true) {
-                    $details[$type] = $this->calculateFeesForInvoiceFromChargeCollections($balanceId);
-                }
+                $details[$type] = $this->calculateFeesForInvoiceFromChargeCollections($balanceId);
             }
             else
             {
@@ -697,7 +692,7 @@ class Processor extends Base\Core
                 $bankingReversalsFeeAmount);
         }
 
-        if (($type === Type::X_CHARGE_COLLECTIONS) and ($this->isChargeCollectionsInvoicingExptEnabledForX() === true))
+        if (($type === Type::X_CHARGE_COLLECTIONS))
         {
             $chargeCollectionsFeeResponse = $this->app->charge_collections->getReceiptForInvoice([
                 self::REQUEST_MONTH         => $this->month,
@@ -1504,25 +1499,5 @@ class Processor extends Base\Core
 
             return false;
         }
-    }
-
-    private function isChargeCollectionsInvoicingExptEnabled(): bool
-    {
-        $properties = [
-            'id' => $this->merchantId,
-            'experiment_id' => $this->app['config']->get('app.charge_collections_invoicing_experiment_id'),
-            'request_data'  => json_encode(['mid' => $this->merchantId]),
-        ];
-        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
-    }
-
-    private function isChargeCollectionsInvoicingExptEnabledForX(): bool
-    {
-        $properties = [
-            'id' => $this->merchantId,
-            'experiment_id' => $this->app['config']->get('app.charge_collections_invoicing_x_experiment_id'),
-            'request_data'  => json_encode(['mid' => $this->merchantId]),
-        ];
-        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 }

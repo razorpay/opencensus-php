@@ -81,6 +81,7 @@ class CCRouter
         'RZP\\Models\\Pricing\\Repository\\getInstantRefundsDefaultPricingPlanForMethod' => true,
     );
 
+    // Function to Route map used for fetch plan/rules operations
     private const FUNCTION_TO_CC_ROUTE_MAP = array(
         'RZP\\Models\\Pricing\\Repository\\getPlan' => ChargeCollections::GetPricingPlanURL,
         'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdAndOrgId' => ChargeCollections::GetPricingPlanURL,
@@ -156,13 +157,13 @@ class CCRouter
 
             if ($rampPhase == CCRouter::SHADOW) {
                 $ccResponse = $this->sendChargeCollectionsRequest($fqcn, $ccRequest, $rampPhase);
-                $this->trace->info(TraceCode::CC_ROUTER_SERVICE_RESPONSE, [
-                    'method' => $methodName,
-                    'mode' => CCRouter::SHADOW,
-                    'response' => $ccResponse,
-                ]);
-            }
-            if($rampPhase == self::SHADOW) {
+                if (!isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn])) {
+                    $this->trace->info(TraceCode::CC_ROUTER_SERVICE_RESPONSE, [
+                        'method' => $methodName,
+                        'mode' => CCRouter::SHADOW,
+                        'response' => $ccResponse,
+                    ]);
+                }
                 $this->compareCCAndApiReponse($ccResponse, $legacyResponse, $fqcn);
             }
             $endTimeMs = round(microtime(true) * 1000);
@@ -206,7 +207,7 @@ class CCRouter
         }
 
         $this->trace->error(TraceCode::CC_ROUTER_ROUTE_ERROR, [
-            'error' => 'unknown rampPhase found',
+            'error' => 'unknown_rampPhase_found',
             'rampPhase' => $rampPhase,
         ]);
 
@@ -251,6 +252,15 @@ class CCRouter
 
             if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlanURL) {
                 $response = $this->app->charge_collections->getPricingPlan($input);
+                if(in_array($fqcn,["RZP\Models\Pricing\Repository\getPricingRuleByMultipleParams",
+                    "RZP\Models\Pricing\Repository\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId",
+                    "RZP\Models\Pricing\Repository\getZeroPricingPlanRuleForMethod"])) {
+                    $modifiedResponse = [];
+                    if(isset($response['rules']) && count($response['rules']) > 0) {
+                        $modifiedResponse = ['rule' => $response['rules'][0]];
+                    }
+                    return $this->transformToPricingModel($modifiedResponse);
+                }
                 return $this->transformToPlanModel($response);
             }
 
@@ -304,7 +314,7 @@ class CCRouter
             }else{
                 $this->trace->info(TraceCode::CC_ROUTER_EXCEPTION,
                     [
-                        'Endpoint not found for method' => $methodName,
+                        'endpoint_not_found_for_method' => $methodName,
                         'function' => $fqcn,
                     ]);
 
@@ -382,10 +392,6 @@ class CCRouter
 
             $response = $this->app['splitzService']->evaluateRequest($request);
 
-            $this->trace->info(TraceCode::CC_DEBUG_LOG, [
-                "splitz_response" => $response,
-            ]);
-
             if ($response['status_code'] !== 200) {
                 $this->trace->info(TraceCode::CC_ROUTER_SPLITZ_ERROR, ['response' => $response]);
                 return [
@@ -406,7 +412,7 @@ class CCRouter
                 ];
             }else{
                 $this->trace->info(TraceCode::CC_ROUTER_SPLITZ_ERROR, [
-                    'invalid variant response' => $response,
+                    'invalid_variant_response' => $response,
                     'variant' => $variantName,
                 ]);
                 return [

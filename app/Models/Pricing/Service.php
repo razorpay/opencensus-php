@@ -119,27 +119,31 @@ class Service extends Base\Service
         {
             $input['rules'] = json_decode($input['rules'], true);
 
+            // stringify each key value pair; to mimic how data arrives at php backend
+            for ($counter = 0; $counter < count($input['rules']); $counter++)
+            {
+                foreach ($input['rules'][$counter] as $key => $value)
+                {
+                    $input['rules'][$counter][$key] = strval($value);
+                }
+            }
+
+            $this->trace->info(
+                TraceCode::PRICING_PLAN_CREATE_ATTEMPT, ['rules_count' => count($input['rules'])]
+            );
+        }
+
+        if (isset($input['rules']) === true && $type !== Type::BUY_PRICING){
             // Assign planId and ruleIds if $planAndRuleIds is provided
             $planId = $planAndRuleIds['planId'] ?? null;
             $ruleIds = $planAndRuleIds['ruleIds'] ?? [];
-
-
-            // stringify each key value pair; to mimic how data arrives at php backend
             for ($counter = 0; $counter < count($input['rules']); $counter++)
             {
                 if (isset($ruleIds[$counter])) {
                     $input['rules'][$counter][Entity::ID] = $ruleIds[$counter];
                     $input['rules'][$counter][Entity::PLAN_ID] = $planId;
                 }
-
-                foreach ($input['rules'][$counter] as $key => $value)
-                {
-                    $input['rules'][$counter][$key] = strval($value);
-                }
             }
-            $this->trace->info(
-                TraceCode::PRICING_PLAN_CREATE_ATTEMPT, ['rules_count' => count($input['rules'])]
-            );
         }
 
         if ( !empty($orgID)){

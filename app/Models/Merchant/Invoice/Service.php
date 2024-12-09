@@ -119,11 +119,8 @@ class Service extends Base\Service
     {
         $this->merchant->getValidator()->validateBusinessBankingActivated();
 
-        $input[Entity::TYPE] = Type::RX_TRANSACTIONS;
-        if ($this->isChargeCollectionsInvoicingExptEnabledForX($this->merchant->getId()))
-        {
-            $input[Entity::TYPE] = [Type::RX_TRANSACTIONS, Type::X_CHARGE_COLLECTIONS];
-        }
+        $input[Entity::TYPE] = [Type::RX_TRANSACTIONS, Type::X_CHARGE_COLLECTIONS];
+
         $invoices = $this->repo->merchant_invoice->fetch($input, $this->merchant->getId());
 
         $invoices = $invoices->toArrayPublic();
@@ -757,14 +754,5 @@ class Service extends Base\Service
         $result = $this->performInvoiceControlActionForLinkedAccounts($input['merchant_ids'], $result, $values, $input, $redis);
 
         return $result;
-    }
-    private function isChargeCollectionsInvoicingExptEnabledForX($mid): bool
-    {
-        $properties = [
-            'id' => $mid,
-            'experiment_id' => $this->app['config']->get('app.charge_collections_invoicing_x_experiment_id'),
-            'request_data'  => json_encode(['mid' => $mid]),
-        ];
-        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 }
