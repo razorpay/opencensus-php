@@ -5658,23 +5658,13 @@ class Processor
             $input['mcc_request_id'] = $res['mcc_request_id'];
         }
 
-        if(isset($gateway) == true)
+        // set gateway field in payment if the gateway selected is not razorpay
+        if(isset($gateway) == true && $gateway != 'razorpay')
         {
             $payment->setGateway($gateway);
         }
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
-
-        // if it is gateway convenience flow skip dynamic convenience fee checks and return from here
-        if(isset($gatewayConvenienceFeeflow) == true) {
-            $data = [
-                'fee_split' => $feesSplit->toArray(),
-                'fees' => $fee,
-                'tax' => $tax,
-                'currency' => $input['currency'],
-            ];
-            return $data;
-        }
 
         if ($payment->merchant->isLRSFlowEnabled() === true)
         {
@@ -5714,6 +5704,20 @@ class Processor
             $tax = 0;
         }
 
+        // if it is gateway convenience flow skip dynamic convenience fee checks and return from here
+        if(isset($gatewayConvenienceFeeflow) == true) {
+            $feesSplit = $feesSplit->toArray();
+            if ($fee == 0){
+                $feesSplit = [];
+            }
+            $data = [
+                'fee_split' => $feesSplit,
+                'fees' => $fee,
+                'tax' => $tax,
+                'currency' => $input['currency'],
+            ];
+            return $data;
+        }
         //Verifying if value sent in Convenience Fee
         //is valid or not
         if(isset($convenienceFee) === true)
