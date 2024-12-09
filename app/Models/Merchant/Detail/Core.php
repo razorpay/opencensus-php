@@ -11286,6 +11286,7 @@ class Core extends Base\Core
         {
             $merchant             = $this->repo->merchant->findOrFailPublic($merchantId);
             $merchantBusinessType = $merchant->merchantDetail->getBusinessType();
+            $userDeviceDetails = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
         }
         foreach (BusinessType::$businessTypeBuckets as $bucketName => $businessTypes)
         {
@@ -11296,6 +11297,16 @@ class Core extends Base\Core
 
                 if (empty($merchantId) ===  false and $merchantBusinessType != BusinessType::NGO and $businessType === BusinessType::NGO and $this->isMerchantEligibleToRemoveNGO($merchant->merchantDetail) === true)
                 {
+                    continue;
+                }
+
+//              If the merchant is sales assisted skip adding individual or not_yet_registered as business type
+                if (empty($merchantId) ===  false and ($businessType === BusinessType::INDIVIDUAL or $businessType === BusinessType::NOT_YET_REGISTERED) and !empty($userDeviceDetails) and $userDeviceDetails->isAssistedOnboardedMerchant())
+                {
+                    $this->trace->info(TraceCode::REMOVE_INDIVIDUAL_BUSINESS_TYPE, [
+                        "signup_campaign"     => $userDeviceDetails->signup_campaign,
+                        "business_type"       => $businessType
+                    ]);
                     continue;
                 }
 
