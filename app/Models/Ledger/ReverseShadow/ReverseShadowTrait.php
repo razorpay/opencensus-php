@@ -11,6 +11,7 @@ use RZP\Constants\Timezone;
 use RZP\Error\Error;
 use Ramsey\Uuid\Uuid;
 use RZP\Constants\Metric;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Constant;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
@@ -66,12 +67,53 @@ trait ReverseShadowTrait
             ($payment->merchant->isOpgspImportEnabled() === true) or
             ($payment->merchant->isJpmcImportFlowEnabled() === true))
         {
+            // Post evaluation we checked that the fee calculation is happening correctly. The difference is causes due
+            // to currency conversion. We have to remove this check to reflect the same fee in transaction and payment.
+            // Putting it behind experiment for ramping up.
+            if ($this->splitzEvaluationForRampPaymentFeePopulationForCBPayments($payment))
+            {
+                return true;
+            }
+
             return false;
         }
 
         return true;
     }
 
+    public function splitzEvaluationForRampPaymentFeePopulationForCBPayments($payment): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $payment->merchant->getId(),
+                    ]),
+                'experiment_id' => $this->app['config']->get('app.cross_border_payment_fee_fix_experiment_id'),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::CROSS_BORDER_PAYMENT_FEE_FIX_EXPERIMENT_RESPONSE, [
+                'payment_id' => $payment->getId(),
+                'splitz_output' => $variant,
+            ]);
+
+            return $variant === 'variant_on';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $payment->merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_payment_fee_fix_experiment_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
 
     protected function isFeeCreditsWithoutCustomerFeeBearer($feeCredits ,$fee, PaymentEntity $payment)
     {
@@ -1123,7 +1165,13 @@ trait ReverseShadowTrait
 
         // currently, international cases are blocked on this flow, so we can cleanly just have the fee set for non CFB cases.
         // TODO on this will be to start flowing cross borded payments and have the fee set for them for CFB use cases too.
-        if ($payment->isFeeBearerCustomer() === false)
+        ;
+        if (($payment->isFeeBearerCustomer() === false) or (($payment->isFeeBearerCustomer() === true) and
+                (($payment->isInternational() === true) or
+                ($payment->merchant->isLRSFlowEnabled() === true) or
+                ($payment->merchant->isLRSTravelCitiFlowEnabled() === true) or
+                ($payment->merchant->isOpgspImportEnabled() === true) or
+                ($payment->merchant->isJpmcImportFlowEnabled() === true))))
         {
             //set and fee values from txn
             $payment->setFee($baseTransactionEntity->getFee());
