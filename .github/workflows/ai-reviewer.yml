@@ -27,7 +27,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Run review process
-        uses: razorpay/ai-pr-reviewer@ea6f64ee1acc6f20e82397f5fc980da0a21e079f   # Using custom branch commit, will set to master post the experimentation phase
+        uses: razorpay/ai-pr-reviewer@2b0c47dbfdfd83e2222aca111562e3c838490afc   # Using custom branch commit, will set to master post the experimentation phase
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_CODEREVIEW_SECRET }}
