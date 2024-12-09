@@ -6,6 +6,7 @@ namespace RZP\Services\Partnerships;
 use App;
 use Illuminate\Support\Facades\Cache;
 use Request;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Base\Core;
 use RZP\Models\Merchant\AccessMap\PartnershipsAccessMapDTO;
 use RZP\Models\Merchant\MerchantApplications\PartnershipsMerchantApplicationsDTO;
@@ -817,23 +818,33 @@ class PartnershipsService extends Base\Service
 
         $this->trace->count(Metric::SWITCH_OVER_PARTNERSHIPS_EXPERIMENT,[
             'function' => $functionName,
-            'id'       => $merchantId,
             'isSplitzExperimentEnabled' => $response,
         ]);
 
         return $response;
     }
 
+    public function pushMetricForPartnershipsSwitchOver($function=null){
+        if($this->app->runningUnitTests())
+        {
+            return;
+        }
+        $this->trace->count(Metric::SWITCH_OVER_PARTNERSHIPS_EXPERIMENT,[
+            'function' => $function,
+            'isSplitzExperimentEnabled' => false,
+        ]);
+
+    }
     public function getPartnershipsSwitchOverCacheKey($merchantId,$functionName)
     {
         return $functionName . "_".$merchantId."_PARTNERSHIPS_EXPERIMENT";
     }
 
-    public function fetchMerchantAccessMapsOnFilter(PartnershipsAccessMapDTO $input): array
+    public function fetchMerchantAccessMapsOnFilter(PartnershipsAccessMapDTO $input,$function=null,$mode=null): array
     {
         $request=$input->toArray();
         $request[self::ADD_BASIC_AUTH_CREDS]=true;
-        $response=$this->fetchPartnershipsResponse($request,self::GET_MERCHANT_ACCESS_MAP_LIST);
+        $response=$this->fetchPartnershipsResponse($request,self::GET_MERCHANT_ACCESS_MAP_LIST,$function,$mode);
         $merchantAccessMapResponses=$response['merchant_access_maps'] ?? [];
         if(!empty($input->getFields()))
         {
@@ -972,7 +983,6 @@ class PartnershipsService extends Base\Service
     public function sendRequest($parameters, $path, $method, $mode = null)
     {
         $requestParams = $this->getRequestParams($parameters, $path, $method, $mode);
-
         try {
             $response = Requests::request(
                 $requestParams['url'],
@@ -1138,10 +1148,33 @@ class PartnershipsService extends Base\Service
         return $partnershipsServiceResponse;
     }
 
-    private function fetchPartnershipsResponse(array $input, string $endpoint): array
+    /**
+     * @throws ServerErrorException
+     */
+    private function fetchPartnershipsResponse(
+        array $input,
+        string $endpoint,
+        $function=null,
+        $mode=null
+    ): array
     {
-        $response = $this->sendRequest($input, $endpoint, Requests::POST);
-        if (!isset($response['status_code']) || $response['status_code'] != '200'){
+        try {
+            $response = $this->sendRequest($input, $endpoint, Requests::POST, $mode);
+        } catch (\Exception $e) {
+            $this->trace->count(Metric::SWITCH_OVER_PARTNERSHIPS_EXPERIMENT_FAILURE,[
+                'function' => $function,
+                'data' => $e->getData()
+            ]);
+            throw $e;
+        }
+
+        if (!array_key_exists('status_code', $response) || $response['status_code'] !== '200')
+        {
+            $this->trace->count(Metric::SWITCH_OVER_PARTNERSHIPS_EXPERIMENT_FAILURE,[
+                'function' => $function,
+                'response' => $response['response'],
+                'statusCode' => $response['status_code']
+            ]);
             throw new Exception\ServerErrorException(
                 'Error completing the request: ' . ($response['response'] ?? 'No response'),
                 ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE,
@@ -1160,13 +1193,15 @@ class PartnershipsService extends Base\Service
         return $partnershipResponse;
     }
 
-    public function fetchMerchantApplicationsOnFilter(PartnershipsMerchantApplicationsDTO $input): array
+    public function fetchMerchantApplicationsOnFilter(PartnershipsMerchantApplicationsDTO $input,$function=null,$mode=null): array
     {
         $request=$input->toArray();
         $request[self::ADD_BASIC_AUTH_CREDS]=true;
         $partnershipsResponses = $this->fetchPartnershipsResponse(
             $request,
-            self::GET_MERCHANT_APPLICATION_LIST
+            self::GET_MERCHANT_APPLICATION_LIST,
+            $function,
+            $mode
         );
         $responses = $partnershipsResponses['merchant_application']??[];
         return $this->convertMerchantApplicationsPartnershipResponseToEntity($responses);
@@ -1193,13 +1228,14 @@ class PartnershipsService extends Base\Service
         return $merchantApplicationsEntity;
     }
 
-    public function fetchPartnerConfigOnFilter(PartnershipsConfigDTO $input): array
+    public function fetchPartnerConfigOnFilter(PartnershipsConfigDTO $input,$function = null): array
     {
         $request=$input->toArray();
         $request[self::ADD_BASIC_AUTH_CREDS]=true;
         $partnershipsResponses = $this->fetchPartnershipsResponse(
             $request,
-            self::GET_PARTNER_CONFIG_LIST
+            self::GET_PARTNER_CONFIG_LIST,
+            $function
         );
         $response = $partnershipsResponses['partner_config']??[];
         return $this->convertConfigPartnershipResponseToEntity($response);

@@ -42,7 +42,7 @@ class Repository extends Base\Repository
             $partnershipsRequest->setOriginId("NULL");
             $partnershipsRequest->setOriginType("NULL");
             $partnershipsRequest->setLimit(1);
-            [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,true);
+            [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,__FUNCTION__,true);
             if($redirectToApi===false)
             {
                 $this->trace->info(TraceCode::PARTNERSHIPS_RESPONSE,[
@@ -77,7 +77,7 @@ class Repository extends Base\Repository
             $partnershipsRequest->setOriginId($appId);
             $partnershipsRequest->setOriginType(Constants::APPLICATION);
             $partnershipsRequest->setLimit(1);
-            [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,true);
+            [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,__FUNCTION__,true);
             if($redirectToApi===false)
             {
                 return $response;
@@ -101,6 +101,7 @@ class Repository extends Base\Repository
      */
     public function fetchAllConfigForApps(array $appIds, string $mode = null)
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         if (empty($appIds) === true)
         {
             return new Base\PublicCollection;
@@ -138,6 +139,7 @@ class Repository extends Base\Repository
      */
     public function fetchAllConfigForPlatformPartner(string $partnerId, string $mode = null)
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $defaultConfig = function ($query) use ($partnerId)
         {
             $query->where(Entity::ENTITY_ID, $partnerId)
@@ -178,7 +180,7 @@ class Repository extends Base\Repository
             $partnershipsRequest->setOriginId($partnerId);
             $partnershipsRequest->setOriginType(Constants::MERCHANT);
             $partnershipsRequest->setLimit(1);
-            [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,true);
+            [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,__FUNCTION__,true);
             if($redirectToApi===false)
             {
                 return $response;
@@ -200,6 +202,7 @@ class Repository extends Base\Repository
      */
     public function getPlatformPartnerDefaultConfig(string $partnerId)
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
 //        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
 //        if(!$switchOverExperimentEnabled)
 //        {
@@ -235,6 +238,7 @@ class Repository extends Base\Repository
      */
     public function fetchAllConfigsInSyncOrFail(array $appIds) : Base\PublicCollection
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $liveEntities = $this->fetchAllConfigForApps($appIds, 'live');
         $testEntities = $this->fetchAllConfigForApps($appIds, 'test');
         $isSynced = $this->areEntitiesSyncOnLiveAndTest($liveEntities, $testEntities);
@@ -269,7 +273,7 @@ class Repository extends Base\Repository
 
     public function fetchOverriddenConfigsByMerchantId(array $appIds, string $subMerchantId)
     {
-
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
 //        $flag=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
 //        if($flag===true)
 //        {
@@ -296,6 +300,7 @@ class Repository extends Base\Repository
 
     public function fetchDefaultConfigForAppIds(array $appIds) {
 
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
 //        $flag=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
 //        if($flag===true)
 //        {
@@ -322,13 +327,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    private function fetchPartnerConfigOnFilter(PartnershipsConfigDTO $partnershipsRequest, $fetchSingleEntity = false): array
+    private function fetchPartnerConfigOnFilter(PartnershipsConfigDTO $partnershipsRequest,$function=null, $fetchSingleEntity = false): array
     {
         $redirectFlag = false; // Flag for redirection decision
         $response = null;
         try
         {
-            $partnershipResponse = $this->app['partnerships']->fetchPartnerConfigOnFilter($partnershipsRequest);
+            $partnershipResponse = $this->app['partnerships']->fetchPartnerConfigOnFilter($partnershipsRequest,$function);
 
             // Decide response based on conditions and `fetchSingleEntity` flag
             $response = empty($partnershipResponse)

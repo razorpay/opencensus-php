@@ -50,11 +50,11 @@ class Repository extends Base\Repository
         if($switchOverExperimentEnabled)
         {
             $partnershipsRequest= new PartnershipsAccessMapDTO();
-            $partnershipsRequest->setEntityId($entityId);
+            $partnershipsRequest->setEntityId([$entityId]);
             $partnershipsRequest->setEntityType($entityType);
-            $partnershipsRequest->setMerchantId($merchantId);
-            [$redirectToApi,$response]=$this->fetchMerchantAccessMapsOnFilter($partnershipsRequest,true);
-            if($redirectToApi===false)
+            $partnershipsRequest->setMerchantId([$merchantId]);
+            [$redirectToApi,$response]=$this->fetchMerchantAccessMapsOnFilter($partnershipsRequest,__FUNCTION__,true);
+            if(!$redirectToApi)
             {
                 return $response;
             }
@@ -72,12 +72,12 @@ class Repository extends Base\Repository
         if($switchOverExperimentEnabled)
         {
             $partnershipsRequest= new PartnershipsAccessMapDTO();
-            $partnershipsRequest->setMerchantId($merchantId);
+            $partnershipsRequest->setMerchantId([$merchantId]);
             $partnershipsRequest->setOrderBy([Entity::CREATED_AT]);
-            [$redirectToApi,$response]=$this->fetchMerchantAccessMapsOnFilter($partnershipsRequest);
-            if($redirectToApi===false)
+            [$redirectToApi,$response]=$this->fetchMerchantAccessMapsOnFilter($partnershipsRequest,__FUNCTION__);
+            if(!$redirectToApi)
             {
-                if($fetchLatest===true)
+                if($fetchLatest)
                 {
                     return empty($response) ? null : end($response);
                 }
@@ -95,6 +95,20 @@ class Repository extends Base\Repository
 
     public function fetchSubMerchants(array $merchantIdList)
     {
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsAccessMapDTO();
+            $partnershipsRequest->setMerchantId($merchantIdList);
+            $partnershipsRequest->setFields([Entity::MERCHANT_ID]);
+            $partnershipsRequest->setDistinct(true);
+            [$redirectToApi,$response]=$this->fetchMerchantAccessMapsOnFilter($partnershipsRequest,__FUNCTION__);
+            if(!$redirectToApi)
+            {
+                $collectionResponse=new PublicCollection($response);
+                return $collectionResponse->pluck(Entity::MERCHANT_ID)->toArray();
+            }
+        }
         return $this->newQuery()
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->distinct()
@@ -104,6 +118,7 @@ class Repository extends Base\Repository
 
     public function fetchSubMerchantReferredByPartner(string $submerchantId, string $partnerId)
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $accessMapsEntityId   = $this->dbColumn(Entity::ENTITY_ID);
         $accessMapsEntityType = Table::MERCHANT_ACCESS_MAP . '.' . Entity::ENTITY_TYPE;
         $applicationIds       = $this->repo->merchant_application->dbColumn(MerchantApp\Entity::APPLICATION_ID);
@@ -122,6 +137,20 @@ class Repository extends Base\Repository
 
     public function findMerchantAccessMapOnEntityIds(string $merchantId, array $entityIds, string $entityType): Base\PublicCollection
     {
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsAccessMapDTO();
+            $partnershipsRequest->setEntityId($entityIds);
+            $partnershipsRequest->setEntityType($entityType);
+            $partnershipsRequest->setMerchantId([$merchantId]);
+            [$redirectToApi,$response]=$this->fetchMerchantAccessMapsOnFilter($partnershipsRequest,__FUNCTION__);
+            if(!$redirectToApi)
+            {
+                return new PublicCollection($response);
+            }
+        }
+
         return $this->newQuery()
             ->merchantId($merchantId)
             ->whereIn(Entity::ENTITY_ID, $entityIds)
@@ -139,6 +168,7 @@ class Repository extends Base\Repository
      */
     public function getNonPurePlatformPartnerMapping(string $subMerchantId)
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $newflow = (new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__);
         if ($newflow == true)
         {
@@ -168,6 +198,7 @@ class Repository extends Base\Repository
 
     public function fetchAffiliatedPartnersForSubmerchant(string $subMerchantId)
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__))
         {
             // fetch entity owner ids
@@ -220,9 +251,9 @@ class Repository extends Base\Repository
         if($switchOverExperimentEnabled)
         {
             $partnershipRequest = new PartnershipsAccessMapDTO();
-            $partnershipRequest->setMerchantId($submerchantId);
+            $partnershipRequest->setMerchantId([$submerchantId]);
             $partnershipRequest->setFields([Entity::ENTITY_OWNER_ID]);
-            [$redirectToApi, $response] = $this->fetchMerchantAccessMapsOnFilter($partnershipRequest);
+            [$redirectToApi, $response] = $this->fetchMerchantAccessMapsOnFilter($partnershipRequest,__FUNCTION__);
             if ($redirectToApi===false)
             {
                 $responseCollection= new PublicCollection($response);
@@ -286,10 +317,10 @@ class Repository extends Base\Repository
         if($switchOverExperimentEnabled)
         {
             $partnershipRequest = new PartnershipsAccessMapDTO();
-            $partnershipRequest->setMerchantId($merchantId);
+            $partnershipRequest->setMerchantId([$merchantId]);
             $partnershipRequest->setEntityType($entityType);
-            [$redirectToApi, $response] = $this->fetchMerchantAccessMapsOnFilter($partnershipRequest);
-            if ($redirectToApi===false)
+            [$redirectToApi, $response] = $this->fetchMerchantAccessMapsOnFilter($partnershipRequest,__FUNCTION__);
+            if (!$redirectToApi)
             {
                 return new PublicCollection($response);
             }
@@ -314,9 +345,9 @@ class Repository extends Base\Repository
         {
             $partnershipRequest = new PartnershipsAccessMapDTO();
             $partnershipRequest->setEntityType($entityType);
-            $partnershipRequest->setEntityId($entityId);
-            [$redirectToApi, $response] = $this->fetchMerchantAccessMapsOnFilter($partnershipRequest);
-            if ($redirectToApi===false)
+            $partnershipRequest->setEntityId([$entityId]);
+            [$redirectToApi, $response] = $this->fetchMerchantAccessMapsOnFilter($partnershipRequest,__FUNCTION__);
+            if (!$redirectToApi)
             {
                 return new PublicCollection($response);
             }
@@ -338,6 +369,18 @@ class Repository extends Base\Repository
      */
     public function fetchAccessMapForMerchantIdAndOwnerId(string $subMerchantId, string $partnerId)
     {
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsAccessMapDTO();
+            $partnershipsRequest->setMerchantId([$subMerchantId]);
+            $partnershipsRequest->setEntityOwnerId($partnerId);
+            [$redirectToApi,$response]=$this->fetchMerchantAccessMapsOnFilter($partnershipsRequest,__FUNCTION__);
+            if(!$redirectToApi)
+            {
+                return $response;
+            }
+        }
         return $this->newQuery()
             ->where(Entity::MERCHANT_ID, $subMerchantId)
             ->where(Entity::ENTITY_OWNER_ID, $partnerId)
@@ -351,6 +394,7 @@ class Repository extends Base\Repository
      */
     public function fetchMerchantsMappedToPartner(array $merchantIds): array
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $subMerchantIds = [];
 
         if (empty($merchantIds) === true)
@@ -385,6 +429,7 @@ class Repository extends Base\Repository
      */
     public function fetchSubMerchantIDsLinkedOnlyToAPartner(string $merchantId): array
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $subMerchantIds = $this->newQuery()
             ->select(Entity::MERCHANT_ID)
             ->whereIn(Entity::MERCHANT_ID, function ($query) use ($merchantId) {
@@ -439,6 +484,7 @@ class Repository extends Base\Repository
 
     public function getAllMappingsByApplicationType(string $appType, string $afterId, int $chunk)
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $accessMapEntityId = $this->repo->merchant_access_map->dbColumn("entity_id");
         $accessMapId = $this->repo->merchant_access_map->dbColumn(Entity::ID);
         $merchantApplicationId = $this->repo->merchant_application->dbColumn(Entity::APPLICATION_ID);
@@ -456,6 +502,7 @@ class Repository extends Base\Repository
 
     public function getAllMappingsByApplicationTypeWithTrashed(string $appType, string $afterId, int $chunk)
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $accessMapEntityId = $this->repo->merchant_access_map->dbColumn("entity_id");
         $accessMapId = $this->repo->merchant_access_map->dbColumn(Entity::ID);
         $merchantApplicationId = $this->repo->merchant_application->dbColumn(Entity::APPLICATION_ID);
@@ -502,6 +549,20 @@ class Repository extends Base\Repository
         {
             return [];
         }
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsAccessMapDTO();
+            $partnershipsRequest->setMerchantId($merchantIds);
+            $partnershipsRequest->setEntityType(Entity::APPLICATION);
+            $partnershipsRequest->setEntityId($appIds);
+            [$redirectToApi,$response]=$this->fetchMerchantAccessMapsOnFilter($partnershipsRequest,__FUNCTION__);
+            if(!$redirectToApi)
+            {
+                $responseCollection=new PublicCollection($response);
+                return $responseCollection->pluck(Entity::MERCHANT_ID)->toArray();
+            }
+        }
 
         $query = $this->newQuery()
                       ->where(Entity::ENTITY_TYPE, Entity::APPLICATION)
@@ -534,6 +595,20 @@ class Repository extends Base\Repository
      */
     public function getSubMerchantsIdsMappedToAppId(array $appIds): array
     {
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsAccessMapDTO();
+            $partnershipsRequest->setEntityType(Entity::APPLICATION);
+            $partnershipsRequest->setEntityId($appIds);
+            $partnershipsRequest->setFields([Entity::MERCHANT_ID]);
+            [$redirectToApi,$response]=$this->fetchMerchantAccessMapsOnFilter($partnershipsRequest,__FUNCTION__);
+            if(!$redirectToApi)
+            {
+                $responseCollection=new PublicCollection($response);
+                return $responseCollection->pluck(Entity::MERCHANT_ID)->toArray();
+            }
+        }
         $query = $this->newQuery()
                       ->where(Entity::ENTITY_TYPE, Entity::APPLICATION)
                       ->whereIn(Entity::ENTITY_ID, $appIds)
@@ -553,6 +628,7 @@ class Repository extends Base\Repository
      */
     public function fetchSubmerchantsFromAppIds(array $applicationIds): Base\PublicCollection
     {
+       $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         if (empty($applicationIds) === true)
         {
             return new Base\PublicCollection;
@@ -592,6 +668,17 @@ class Repository extends Base\Repository
 
     public function isSubmerchantPresentForPartner(string $partnerId)
     {
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsAccessMapDTO();
+            $partnershipsRequest->setEntityOwnerId($partnerId);
+            [$redirectToApi,$response]=$this->fetchMerchantAccessMapsOnFilter($partnershipsRequest,__FUNCTION__);
+            if(!$redirectToApi)
+            {
+                return !empty($response);
+            }
+        }
         return $this->newQuery()
                     ->where(Entity::ENTITY_OWNER_ID, $partnerId)
                     ->exists();
@@ -599,6 +686,7 @@ class Repository extends Base\Repository
 
     public function isLiveSubmerchantPresentForPartner(string $partnerId)
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $accessMapsMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantsId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $merchantsLive = Table::MERCHANT . '.' . Merchant\Entity::LIVE;
@@ -612,6 +700,19 @@ class Repository extends Base\Repository
 
     public function fetchAllMappingsByEntityIdAndEntityOwnerId(array $entityIds, string $entityOwnerId, string $mode = null)
     {
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsAccessMapDTO();
+            $partnershipsRequest->setEntityOwnerId($entityOwnerId);
+            $partnershipsRequest->setEntityId($entityIds);
+            $partnershipsRequest->setOrderBy([Entity::ID]);
+            [$redirectToApi,$response]=$this->fetchMerchantAccessMapsOnFilter($partnershipsRequest,__FUNCTION__,false,$mode);
+            if(!$redirectToApi)
+            {
+                return new Base\PublicCollection($response);
+            }
+        }
         $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
         return $query->whereIn(Entity::ENTITY_ID, $entityIds)
                      ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId)
@@ -653,6 +754,18 @@ class Repository extends Base\Repository
 
     public function getMerchantIdForSubmerchantsOfAPartner(string $partnerId)
     {
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsAccessMapDTO();
+            $partnershipsRequest->setFields([Entity::MERCHANT_ID]);
+            $partnershipsRequest->setEntityOwnerId($partnerId);
+            [$redirectToApi,$response]=$this->fetchMerchantAccessMapsOnFilter($partnershipsRequest,__FUNCTION__);
+            if(!$redirectToApi)
+            {
+                return new PublicCollection($response);
+            }
+        }
         return $this->newQuery()
                     ->select(Entity::MERCHANT_ID)
                     ->where(Entity::ENTITY_OWNER_ID, $partnerId)
@@ -661,6 +774,7 @@ class Repository extends Base\Repository
 
     public function getSubmerchantIDsOfAPartner(string $partnerId, $params)
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->select(Entity::MERCHANT_ID)
             ->where(Entity::ENTITY_OWNER_ID, $partnerId);
@@ -689,6 +803,7 @@ class Repository extends Base\Repository
 
     public function getSubmIdsFromEntityOwnerIds(array $entityOwnerIds, $limit = null)
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
                       ->select(Base\PublicEntity::MERCHANT_ID)
                       ->whereIn(Entity::ENTITY_OWNER_ID, $entityOwnerIds)
@@ -706,6 +821,7 @@ class Repository extends Base\Repository
 
     public function getSubMerchantsFromEntityOwnerId(string $entityOwnerId, $limit = null, $lastProcessedId = null)
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
                     ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId)
                     ->orderBy(Entity::ID);
@@ -734,6 +850,7 @@ class Repository extends Base\Repository
      */
     public function getTransactedSubmerchants(string $afterId = null, int $chunk, int $from) : array
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $submerchantId       = $this->repo->merchant_access_map->dbColumn(Entity::MERCHANT_ID);
         $entityOwnerId       = $this->repo->merchant_access_map->dbColumn(Entity::ENTITY_OWNER_ID);
         $paymentMerchantId   = $this->repo->payment->dbColumn(Entity::MERCHANT_ID);
@@ -772,6 +889,7 @@ class Repository extends Base\Repository
         array $tags = []
     )
     {
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         if (empty($applicationIds) === true)
         {
             return new Base\PublicCollection;
@@ -817,7 +935,28 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    private function fetchMerchantCount($partnerId, $fetchSingleEntity = false): array
+    private function fetchMerchantAccessMapsOnFilter(PartnershipsAccessMapDTO $partnershipsDTO,$function=null, $fetchSingleEntity = false,$mode=null): array
+    {
+        $redirectFlag = false; // Flag for redirection decision
+        $response = null;
+        try {
+            $partnershipResponse = $this->app['partnerships']->fetchMerchantAccessMapsOnFilter($partnershipsDTO,$function,$mode);
+
+            // Decide response based on conditions and `fetchSingleEntity` flag
+            $response = empty($partnershipResponse)
+                ? ($fetchSingleEntity ? null : [])
+                : ($fetchSingleEntity ? $partnershipResponse[0] : $partnershipResponse);
+        }
+        catch (\Exception $e) {
+            // If an exception is caught, enable redirection and log the exception
+            $redirectFlag = true;
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PARTNERSHIPS_ACCESS_MAP_LIST_ERROR);
+        }
+
+        return [$redirectFlag, $response];
+    }
+
+     private function fetchMerchantCount($partnerId, $fetchSingleEntity = false): array
     {
         $redirectFlag = false;
         $response = null;
@@ -853,24 +992,6 @@ class Repository extends Base\Repository
         return [$redirectFlag, $response];
     }
 
-    private function fetchMerchantAccessMapsOnFilter(PartnershipsAccessMapDTO $partnershipsDTO, $fetchSingleEntity = false): array
-    {
-        $redirectFlag = false; // Flag for redirection decision
-        $response = null;
-        try {
-            $partnershipResponse = $this->app['partnerships']->fetchMerchantAccessMapsOnFilter($partnershipsDTO);
 
-            // Decide response based on conditions and `fetchSingleEntity` flag
-            $response = empty($partnershipResponse)
-                ? ($fetchSingleEntity ? null : [])
-                : ($fetchSingleEntity ? $partnershipResponse[0] : $partnershipResponse);
-        }
-        catch (\Exception $e) {
-            // If an exception is caught, enable redirection and log the exception
-            $redirectFlag = true;
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::PARTNERSHIPS_ACCESS_MAP_LIST_ERROR);
-        }
 
-        return [$redirectFlag, $response];
-    }
 }
