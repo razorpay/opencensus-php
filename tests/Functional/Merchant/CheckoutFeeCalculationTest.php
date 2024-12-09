@@ -787,6 +787,15 @@ class CheckoutFeeCalculationTest extends TestCase
         $this->startTest();
     }
 
+    public function testOptimizerConvenienceFeeWithGatewayFilterForCardWithPlatformRules()
+    {
+        $this->setUpForOptiConvenienceFeeWithGatewayFilterAndDynamicFee('card');
+
+        $this->ba->optimizerInternalAppAuth();
+
+        $this->startTest();
+    }
+
     public function testOptimizerConvenienceFeeWithGatewayFilterForCardWithProcurerPricing()
     {
         $this->setUpForOptiConvenienceFeeWithGatewayFilter('card', true);
@@ -981,6 +990,70 @@ class CheckoutFeeCalculationTest extends TestCase
         $merchantAttributes = [
             'fee_bearer'        => FeeBearer::CUSTOMER,
             'pricing_plan_id'   => 'optifee1234567',
+        ];
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+        $this->fixtures->edit('merchant', '10000000000000', $merchantAttributes);
+        $this->fixtures->merchant->addFeatures(['optimizer_cfb_standard', 'raas']);
+    }
+
+    private function setUpForOptiConvenienceFeeWithGatewayFilterAndDynamicFee(string $paymentMethod)
+    {
+        $plans = [
+            [
+                'plan_id'             => 'optifee1234587',
+                'plan_name'           => 'OptiConvenienceFeePlan',
+                'feature'             => 'payment',
+                'payment_method'      => $paymentMethod,
+                'percent_rate'        => 400,
+                'fixed_rate'          => 0,
+                'org_id'              => '100000razorpay',
+                'fee_bearer'          => FeeBearer::PLATFORM,
+            ],
+            [
+                'plan_id'             => 'optifee1234587',
+                'plan_name'           => 'OptiConvenienceFeePlan',
+                'feature'             => 'optimizer_convenience_fee',
+                'payment_method'      => $paymentMethod,
+                'percent_rate'        => 200,
+                'fixed_rate'          => 0,
+                'gateway'             => 'payu',
+                'org_id'              => '100000razorpay',
+                'international'       => 0,
+                'fee_bearer'          => FeeBearer::PLATFORM,
+            ],
+            [
+                'plan_id'             => 'optifee1234587',
+                'plan_name'           => 'OptiConvenienceFeePlan',
+                'feature'             => 'optimizer_convenience_fee',
+                'payment_method'      => $paymentMethod,
+                'percent_rate'        => 300,
+                'fixed_rate'          => 0,
+                'gateway'             => 'paytm',
+                'org_id'              => '100000razorpay',
+                'international'       => 0,
+                'fee_bearer'          => FeeBearer::CUSTOMER,
+            ],
+            [
+                'plan_id'             => 'optifee1234587',
+                'plan_name'           => 'OptiConvenienceFeePlan',
+                'feature'             => 'payment',
+                'payment_method'      => $paymentMethod,
+                'procurer'            => 'merchant',
+                'percent_rate'        => 400,
+                'fixed_rate'          => 0,
+                'org_id'              => '100000razorpay',
+                'fee_bearer'          => FeeBearer::CUSTOMER,
+            ],
+        ];
+        foreach ($plans as $plan)
+        {
+            $this->fixtures->create('pricing', $plan);
+        }
+
+        $merchantAttributes = [
+            'fee_bearer'        => FeeBearer::DYNAMIC,
+            'pricing_plan_id'   => 'optifee1234587',
         ];
 
         $this->fixtures->merchant->enableConvenienceFeeModel();

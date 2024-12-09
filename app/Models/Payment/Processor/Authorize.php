@@ -996,7 +996,7 @@ trait Authorize
                 {
                     $request = $this->processRecurringDebitForUpiOptimizer($this->payment,$terminalGatewayInput);
                 }
-                else if ($this->isCollectxPayment() === true)
+                else if ($payment->isCollectXPayment() === true)
                 {
                     // We do not need to authorize the payment via gateway for CollectX Use case
                     $request = [];
@@ -1169,9 +1169,10 @@ trait Authorize
         return false;
     }
 
-    protected function isCollectxPayment(): bool
+    protected function isCollectxPayment($payment): bool
     {
-        if ($this->merchant->isFeatureEnabled(Features::COLLECTX_ENABLED) === true)
+        if ($this->merchant->isFeatureEnabled(Features::COLLECTX_ENABLED) === true &&
+            $payment[Payment\Entity::REFERENCE14] === Constant::COLLECTX)
         {
             return true;
         }

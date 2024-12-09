@@ -566,7 +566,14 @@ class Service extends Base\Service
                 $routeName
             );
 
-            return $this->dispatchBankTransferToQueue($bankTransferRequest, true);
+            // Returning directly here to disable bank transfer for collectx payments. Bank transfer processing job won't be dispatched.
+            return [
+                'valid' => true,
+                'message' => null,
+                'transaction_id' => $bankTransferRequest->getUtr(),
+            ];
+
+//            return $this->dispatchBankTransferToQueue($bankTransferRequest, true);
         }
         catch (\Exception $ex)
         {

@@ -3165,7 +3165,26 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isCollectXPayment()
     {
-        return ($this->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true);
+        try {
+            // TODO: UPI check to be removed later once collectx fix is live
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true &&
+                $this->getAttribute(Entity::REFERENCE14) === Constant::COLLECTX &&
+                $this->getAttribute(Entity::METHOD) == self::UPI) {
+
+                return true;
+            }
+        }
+        catch(\Throwable $ex) {
+            $app = \App::getFacadeRoot();
+
+            $app['trace']->info(TraceCode::COLLECTX_PAYMENT_TRANSFER_CHECK_FAILED, [
+                'merchant_id' => $this->merchant->getId()
+            ]);
+
+            return false;
+        }
+
+        return false;
     }
 
     public function identifierForCollectxPayment()
