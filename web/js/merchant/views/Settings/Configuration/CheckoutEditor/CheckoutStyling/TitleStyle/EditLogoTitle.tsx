@@ -84,7 +84,7 @@ const EditLogoTitle: React.FC<EditLogoTitleProps> = ({
       wordmarkRaw ||
       (wordmark === EMPTY_WORDMARK && merchantCheckoutStyledConfig?.wordmark_url)
     ) {
-      handleWordmarkChange(null, merchantCheckoutStyledConfig.wordmark_url ?? EMPTY_WORDMARK);
+      handleWordmarkChange(null, merchantCheckoutStyledConfig?.wordmark_url ?? EMPTY_WORDMARK);
     }
     if (merchantCheckoutStyledConfig?.brand_name)
       handleBrandNameChange(merchantCheckoutStyledConfig?.brand_name);
@@ -101,7 +101,7 @@ const EditLogoTitle: React.FC<EditLogoTitleProps> = ({
       return true;
     } else if (
       values.wordmarkRaw ||
-      (values.wordmark === EMPTY_WORDMARK && merchantCheckoutStyledConfig.wordmark_url)
+      (values.wordmark === EMPTY_WORDMARK && merchantCheckoutStyledConfig?.wordmark_url)
     ) {
       return true;
     } else if (

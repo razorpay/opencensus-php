@@ -93,7 +93,7 @@ function getOptionsFromState(state) {
       hide_message_banner: !state.customMessage.isEnabled,
     };
   }
-  options.hide_rtb = !state.rtb_enabled;
+  options.hide_rtb = state.rtb_enabled === undefined ? true : !state.rtb_enabled;
   return {
     options,
   };

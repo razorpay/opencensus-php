@@ -7,16 +7,14 @@ import FontStyle from './CheckoutStyling/FontStyle/FontStyle';
 import SidebarGraphic from './CheckoutStyling/SidebarGraphic/SidebarGraphic';
 import TitleStyle from './CheckoutStyling/TitleStyle/TitleStyle';
 import RazorpayTrustesBadge from './CheckoutStyling/TrustedBadge/RazorpayTrustesBadge';
+import { isRazorpayTrustedBadgeActive } from './CheckoutStyling/TrustedBadge/utils';
 import { TrustedBadgeType } from './context/types';
 
 interface CheckoutStylesProps {
   trustedBadge: TrustedBadgeType;
 }
 const CheckoutStyles: React.FC<CheckoutStylesProps> = ({ trustedBadge }: CheckoutStylesProps) => {
-  const isRTBActive =
-    trustedBadge?.status?.original?.merchant_status !== 'optout' &&
-    (trustedBadge?.status?.original?.status === 'eligible' ||
-      trustedBadge?.status?.original?.status === 'whitelist');
+  const isRTBActive = isRazorpayTrustedBadgeActive(trustedBadge);
   return (
     <>
       <BrandColor />

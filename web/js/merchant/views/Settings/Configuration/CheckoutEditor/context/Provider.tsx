@@ -7,6 +7,7 @@ import {
   ConfigFeatures,
   MerchantCheckoutConfig,
   MerchantCheckoutStyledConfig,
+  TrustedBadgeType,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
 
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
@@ -20,6 +21,8 @@ import {
   trackMandateSummaryPageInitiate,
   trackMandateSummaryPageSuccess,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/utils/mandateSummaryPage';
+import track from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/TrustedBadge/track';
+import { isRazorpayTrustedBadgeActive } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/TrustedBadge/utils';
 import {
   ACTIONS,
   INITIAL_STATE,
@@ -27,18 +30,17 @@ import {
   CUSTOM_MESSAGE_BANNER_SCREEN_LABELS,
   EMPTY_LOGO,
   EMPTY_WORDMARK,
+  CHECKOUT_EDITOR_INITIAL_VALUES,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
 import { checkoutEditorContext } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/createContext';
 import {
   createPayloadToSaveConfig,
   hasValuesChanged,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers';
-
 import {
   checkForTitleStyleDefaultValue,
   createTitleModalPayloadToSaveConfig,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers/brandConfigHelper';
-
 import { checkoutFeatureReducer } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/reducer';
 import {
   flashCheckoutProps,
@@ -47,6 +49,7 @@ import {
 
 export type CheckoutEditorProviderProps = {
   children: React.ReactNode;
+  trustedBadge: TrustedBadgeType;
   accountConfig?: AccountConfig;
   accountLocale?: AccountLocale | null;
   merchantCheckoutStyledConfig?: MerchantCheckoutStyledConfig;
@@ -67,6 +70,7 @@ export type CheckoutEditorProviderProps = {
 const CheckoutEditorProvider = ({
   children,
   accountConfig,
+  trustedBadge,
   uploadLogo,
   uploadWordmark,
   removeLogo,
@@ -275,7 +279,10 @@ const CheckoutEditorProvider = ({
           [CHECKOUT_EDITOR_FIELDS.BRAND_NAME]: merchantCheckoutStyledConfig?.brand_name,
           [CHECKOUT_EDITOR_FIELDS.WORDMARK]:
             merchantCheckoutStyledConfig?.wordmark_url ?? EMPTY_WORDMARK,
-          [CHECKOUT_EDITOR_FIELDS.RTB_ENABLED]: merchantCheckoutStyledConfig?.rtb_enabled,
+          [CHECKOUT_EDITOR_FIELDS.RTB_ENABLED]:
+            merchantCheckoutStyledConfig?.rtb_enabled ?? isRazorpayTrustedBadgeActive(trustedBadge)
+              ? CHECKOUT_EDITOR_INITIAL_VALUES.rtb_enabled
+              : undefined,
         },
       });
 
@@ -285,8 +292,10 @@ const CheckoutEditorProvider = ({
           merchantCheckoutStyledConfig,
         },
       });
+
+      track.logRTBConfigAPIResponse(merchantCheckoutStyledConfig.rtb_enabled);
     }
-  }, [merchantCheckoutStyledConfig]);
+  }, [merchantCheckoutStyledConfig, trustedBadge]);
 
   const setAccountLocaleToState = useCallback(() => {
     if (accountLocale) {

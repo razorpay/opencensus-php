@@ -8,6 +8,9 @@ function _track() {
     toggleRTBVisibility: (visibility) => {
       sendToSegment('RTB visibility', 'toggle', { visibility }, section, subSection);
     },
+    logRTBConfigAPIResponse: (rtb_enabled) => {
+      sendToSegment('RTB Response', 'render', { rtb_enabled }, section, subSection);
+    },
   };
 }
 

@@ -160,6 +160,7 @@ const CheckoutFeatures = ({
       updateFeatures={handleUpdateFeatures}
       merchantCheckoutStyledConfig={merchantCheckoutStyledConfig}
       updateEmailConfig={updateEmailConfig}
+      trustedBadge={trustedBadge}
     >
       <Box
         display="flex"
