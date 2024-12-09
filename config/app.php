@@ -811,10 +811,6 @@ return array(
 
     'merchant_automation_activation_exp_id' => env('MERCHANT_AUTOMATION_ACTIVATION_EXP_ID'),
 
-    'nc_automation_activation_exp_id' => env('NC_AUTOMATION_ACTIVATION_EXP_ID'),
-
-    'bank_cancelled_check_exp_id' => env('BANK_CANCELLED_CHECK_EXP_ID'),
-
     'nocodeapp_pricing_exp_id' => env('NOCODEAPP_PRICING_EXP_ID'),
 
     'nocodeapp_pricing_plans_exp_id' => env('NOCODEAPP_PRICING_PLANS_EXP_ID'),
@@ -1167,7 +1163,7 @@ return array(
     'p2p' => [
         'encryption_key' => env('P2P_NACL_SESSION_TOKEN_ENCRYPTION_KEY')
     ],
-
+  
     'dcs_edit_enabled_splitz_exp_id' => env('DCS_EDIT_ENABLED_SPLITZ_EXP_ID'),
 
     'dcs_proxy_enabled_splitz_exp_id' => env('DCS_PROXY_ENABLED_SPLITZ_EXP_ID'),
@@ -1186,5 +1182,6 @@ return array(
 
 
     'skip_optimizer_card_callback' => env('SKIP_OPTIMIZER_CARD_CALLBACK'),
+
     'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID')
 );

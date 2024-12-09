@@ -5,7 +5,6 @@ namespace RZP\Models\Merchant\VerificationDetail;
 use Mail;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
@@ -137,11 +136,14 @@ class Core extends Base\Core
 
                 }
 
-                if ($this->isArtefactEligibleForSave($merchant->merchantDetail, $data, $verificationId)) {
+                if (in_array($data[Entity::ARTEFACT_TYPE],[Constant::NEGATIVE_KEYWORDS,Constant::WEBSITE_POLICY,Constant::MCC_CATEGORISATION_WEBSITE]) === true
+                    and in_array($data[Entity::STATUS],[BvsValidationConstants::VERIFIED,BvsValidationConstants::FAILED]) === true and empty($verificationId) === false
+                )
+                {
 
                     $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_REQUEST, [
-                        '$verificationId' => $verificationId,
-                        'data' => $data
+                        '$verificationId'     => $verificationId,
+                        'data'                  => $data
                     ]);
 
                     $merchantDetails = $this->repo->merchant_detail->getByMerchantId($data[Entity::MERCHANT_ID]);
@@ -152,48 +154,5 @@ class Core extends Base\Core
                 }
             }
         }
-    }
-
-    private function isArtefactEligibleForSave(Detail\Entity $merchantDetails, array $data, string $verificationId): bool
-    {
-        $this->trace->info(TraceCode::MISC_TRACE_CODE, [
-            'message' => 'checking_if_artefact_is_eligible_for_save',
-            'merchant_id' => $merchantDetails->getMerchantId(),
-            'data' => $data
-        ]);
-        $artefactType = $data[Entity::ARTEFACT_TYPE];
-        $artefactIdentifier = $data[Entity::ARTEFACT_IDENTIFIER];
-        $status = $data[Entity::STATUS];
-
-        $isNegativeKeywordsOrWebsitePolicyOrMccCategorisationWebsite = in_array($artefactType, [
-            Constant::NEGATIVE_KEYWORDS,
-            Constant::WEBSITE_POLICY,
-            Constant::MCC_CATEGORISATION_WEBSITE
-        ]);
-
-        $splitzResult = (new Detail\Core)->getSplitzResponse($merchantDetails->getMerchantId(), 'bank_cancelled_check_exp_id');
-        $this->trace->info(TraceCode::MISC_TRACE_CODE, [
-            'merchant_id' => $merchantDetails->getMerchantId(),
-            'splitz_result' => $splitzResult
-        ]);
-
-        $isBankAccountDoc = ($splitzResult === 'variables' && $artefactType == Constant::BANK_ACCOUNT && $artefactIdentifier == 'doc' && $merchantDetails->getActivationFormMilestone() === DetailConstants::L2_SUBMISSION);
-
-        $isVerifiedOrFailed = in_array($status, [
-            BvsValidationConstants::VERIFIED,
-            BvsValidationConstants::FAILED
-        ]);
-
-        $isEligible = ($isNegativeKeywordsOrWebsitePolicyOrMccCategorisationWebsite && $isVerifiedOrFailed && !empty($verificationId))
-            || ($isBankAccountDoc && $isVerifiedOrFailed);
-
-        $this->trace->info(TraceCode::IS_ARTEFACT_ELIGIBLE_FOR_SAVE, [
-            'artefactType' => $artefactType,
-            'artefactIdentifier' => $artefactIdentifier,
-            'status' => $status,
-            'verificationId' => $verificationId,
-            'isEligible' => $isEligible
-        ]);
-        return $isEligible;
     }
 }
