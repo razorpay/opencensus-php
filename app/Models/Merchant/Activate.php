@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Country;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\IdempotencyKey\Metric;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Models\User\Role;
@@ -293,7 +294,9 @@ class Activate extends Base\Core
 
             $merchantPosActivationStatus = (new Merchant\Detail\Core)->fetchMerchantPosActivationStatus($merchantDetail);
 
-            if ($merchantPosActivationStatus === Detail\Status::ACTIVATED) {
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
+
+            if ($merchantPosActivationStatus === Detail\Status::ACTIVATED && optional($userDeviceDetail)->getSignupCampaign() ===  DeviceDetailConstants::ASSISTED_ONBOARDING) {
 
                 $this->repo->merchant_user->deleteByMerchantIdAndRole($merchant->getId(), Role::RAZORPAY_SALES);
 
