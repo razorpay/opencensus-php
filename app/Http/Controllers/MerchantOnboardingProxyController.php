@@ -942,8 +942,76 @@ class MerchantOnboardingProxyController extends BaseProxyController
             case self::FETCH_ONBOARDING_PAYMENTS_DETAILS:
                 (new Merchant\Detail\Core())->preProcessWhiteGloveRequest($body, $id);
                 break;
+
+            case self::ONBOARDING_SAVE:
+                $this->preProcessOnboardingSaveRequest($body);
+                break;
         }
     }
+
+    public function updateUserDetailsFromOnboardingSavePayload($body, $merchant)
+    {
+        $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
+            'onboarding_save_payload' => $body,
+        ]);
+
+        $fieldData = $body['field_data'] ?? null;
+
+        $contactMobile = $fieldData['contact_mobile'] ?? null;
+
+        $contactEmail = $fieldData['contact_email'] ?? null;
+
+        $contactName = $fieldData['contact_name'] ?? null;
+
+        $modeOfBusiness = $fieldData['mode_of_business'] ?? null;
+
+        if (isset($contactEmail) === true ||
+            isset($contactMobile) === true ||
+            isset($contactName) === true ||
+            isset($modeOfBusiness) === true)
+        {
+            $originProduct = $this->app['basicauth']->getRequestOriginProduct();
+
+            $user = $merchant->primaryOwner($originProduct);
+
+            if (isset($contactEmail) === true)
+            {
+                $user->setEmail($contactEmail);
+            }
+
+            if (isset($contactMobile) === true)
+            {
+                $user->setContactMobile($contactMobile);
+            }
+
+            if (isset($contactName) === true)
+            {
+                $user->setName($contactName);
+            }
+
+            // todo: contact_mobile_verified should be set by PGOS after OTP verification
+            // and just before OTP modular component execution.
+            if (isset($modeOfBusiness) === true)
+            {
+                $user->setContactMobileVerified(true);
+            }
+
+            $this->repo->user->saveOrFail($user);
+        }
+    }
+
+    public function preProcessOnboardingSaveRequest(array &$body)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        if ($this->isIndiaPgModularMerchant($merchant) === false)
+        {
+            return;
+        }
+
+        $this->updateUserDetailsFromOnboardingSavePayload($body, $merchant);
+    }
+
 
     private function routeSpecificPreValidations(string $routeKey, array &$body) : array
     {
