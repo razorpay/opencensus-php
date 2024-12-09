@@ -62,7 +62,7 @@ class MerchantDetailsTestBanking extends OAuthTestCase
             'business_type' => '4'
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_KYC_RBI],'100000razorpay');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
@@ -79,7 +79,7 @@ class MerchantDetailsTestBanking extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_KYC_RBI],'100000razorpay');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
@@ -94,7 +94,7 @@ class MerchantDetailsTestBanking extends OAuthTestCase
             'business_type' => '11'
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_KYC_RBI],'100000razorpay');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
@@ -109,7 +109,7 @@ class MerchantDetailsTestBanking extends OAuthTestCase
             'business_type' => '11'
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_KYC_RBI],'100000razorpay');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
@@ -125,7 +125,7 @@ class MerchantDetailsTestBanking extends OAuthTestCase
             'business_name' => 'ABC LTD',
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_KYC_RBI],'100000razorpay');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
@@ -141,7 +141,7 @@ class MerchantDetailsTestBanking extends OAuthTestCase
             'business_name' => 'ABC LTD',
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_KYC_RBI],'100000razorpay');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
@@ -157,7 +157,7 @@ class MerchantDetailsTestBanking extends OAuthTestCase
             'business_name' => 'ABC LTD',
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_KYC_RBI],'100000razorpay');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
@@ -173,7 +173,7 @@ class MerchantDetailsTestBanking extends OAuthTestCase
             'business_name' => 'ABC LTD',
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_KYC_RBI],'100000razorpay');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
@@ -189,7 +189,7 @@ class MerchantDetailsTestBanking extends OAuthTestCase
             'business_name' => 'ABC LTD',
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_KYC_RBI],'100000razorpay');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
@@ -205,7 +205,7 @@ class MerchantDetailsTestBanking extends OAuthTestCase
             'business_name' => 'ABC LTD',
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_KYC_RBI],'100000razorpay');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
@@ -221,7 +221,7 @@ class MerchantDetailsTestBanking extends OAuthTestCase
             'business_name' => 'ABC LTD',
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_KYC_RBI],'100000razorpay');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
@@ -237,7 +237,7 @@ class MerchantDetailsTestBanking extends OAuthTestCase
             'business_name' => 'ABC LTD',
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_KYC_RBI],'100000razorpay');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
@@ -253,7 +253,7 @@ class MerchantDetailsTestBanking extends OAuthTestCase
             'business_name' => 'ABC LTD',
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_KYC_RBI],'100000razorpay');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 

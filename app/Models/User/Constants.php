@@ -564,6 +564,7 @@ class Constants
         "https://accounts.curlec.com",
         "https://accounts.razorpay.com"
     ];
+    const PARTNER_REFERRAL_CODE = 'partner_referral_code';
 
 
 }

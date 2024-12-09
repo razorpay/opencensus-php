@@ -69,6 +69,10 @@ class Validator extends Base\Validator
         Entity::CARDLESS_EMI_PROVIDERS.'.*' => 'sometimes|boolean',
         Entity::PAYLATER_PROVIDERS          => 'sometimes|array',
         Entity::PAYLATER_PROVIDERS.'.*'     => 'sometimes|boolean',
+        Entity::OFFLINE_CREDIT_EMI_PROVIDERS => 'sometimes|array',
+        Entity::OFFLINE_CREDIT_EMI_PROVIDERS.'.*' => 'sometimes|boolean',
+        Entity::OFFLINE_DEBIT_EMI_PROVIDERS => 'sometimes|array',
+        Entity::OFFLINE_DEBIT_EMI_PROVIDERS.'.*' => 'sometimes|boolean',
         Entity::ADDITIONAL_WALLETS => 'sometimes|array',
         Entity::ITZCASH            => 'sometimes|boolean',
         Entity::OXIGEN             => 'sometimes|boolean',
@@ -88,7 +92,9 @@ class Validator extends Base\Validator
         Entity::INTL_BANK_TRANSFER => 'sometimes|array',
         Entity::INTL_BANK_TRANSFER.'.*' => 'sometimes|boolean',
         Entity::SODEXO             => 'sometimes|boolean',
+        Entity::ONLINE_CONVERSION_ENABLED => 'sometimes|boolean',
         Entity::DUITNOW_PAY        => 'sometimes|boolean',
+        Entity::GIFT_CARDS         => 'sometimes|boolean',
     ];
 
     protected static $setMethodsValidators = [

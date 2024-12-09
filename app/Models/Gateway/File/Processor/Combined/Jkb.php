@@ -17,12 +17,16 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Models\FileStore\Storage\Base\Bucket;
+use Illuminate\Support\Facades\Config;
 
 class Jkb extends Base
 {
     const BANK_NAME       = 'Jkb';
     const BEAM_FILE_TYPE  = 'combined';
     const FILE_TYPE       = FileStore\Type::JKB_NETBANKING_REFUND;
+
+    protected $chotaBeam = true;
 
     protected function formatDataForMail(array $data)
     {
@@ -37,6 +41,8 @@ class Jkb extends Base
             'refunds' => 0,
         ];
 
+        $refundsFile = [];
+
         if (isset($data['refunds']) === true)
         {
             $amount['refunds'] = array_reduce($data['refunds'], function ($sum, $item)
@@ -47,6 +53,10 @@ class Jkb extends Base
             });
 
             $count['refunds'] = count($data['refunds']);
+
+            $refundsFile = $this->getFileData(FileStore\Type::JKB_NETBANKING_REFUND);
+            $refundsFilepath = $refundsFile['name'];
+            $refundsFile['name'] = basename($refundsFilepath);
         }
 
         if (isset($data['claims']) === true)
@@ -86,11 +96,12 @@ class Jkb extends Base
             'bankName'    => self::BANK_NAME,
             'amount'      => $amount,
             'count'       => $count,
+            'refundsFile' => $refundsFile,
             'date'        => $date,
             'from'        => $fromDate,
             'to'          => $toDate,
             'account'     => $account,
-            'esc_matrix'  => self::ESCALATION_MATRIX,
+            'esc_matrix' => self::ESCALATION_MATRIX,
             'emails'      => $this->gatewayFile->getRecipients(),
         ];
     }
@@ -111,13 +122,14 @@ class Jkb extends Base
 
                 $fileInfo = [$refundsFile['name']];
 
-                $bucketConfig = $this->getBucketConfig();
+                $bucketConfig = $this->getBucketConfigChotaBeam();
 
                 $beamData =  [
                     Service::BEAM_PUSH_FILES         => $fileInfo,
                     Service::BEAM_PUSH_JOBNAME       => BeamConstants::JKB_NB_REFUND_FILE_JOB_NAME,
                     Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
                     Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+                    Service::CHOTABEAM_FLAG          => $this->chotaBeam,
                 ];
 
                 $timelines = [];
@@ -132,8 +144,8 @@ class Jkb extends Base
 
                 $beamResponse = $this->app['beam']->beamPush($beamData, $timelines, $mailInfo, true);
 
-                if ((isset($beamResponse['success']) === false) or
-                    ($beamResponse['success'] === null))
+                if ((isset($beamResponse['error']) === true) and
+                (empty($beamResponse['error']) === false))
                 {
                     throw new GatewayErrorException(
                         ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
@@ -190,5 +202,18 @@ class Jkb extends Base
         ];
 
         return $fileData;
+    }
+
+    protected function getBucketConfigChotaBeam()
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName(static::FILE_TYPE, $this->env);
+
+        $bucketConfig = $config[$bucketType];
+
+        $bucketConfig['name'] = Config::get('applications.chota_beam.bucket_name');
+        
+        return $bucketConfig;
     }
 }

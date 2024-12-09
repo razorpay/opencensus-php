@@ -56,6 +56,7 @@ use RZP\Models\Merchant\InternationalIntegration;
 use RZP\Models\Pricing\Service as PricingService;
 use RZP\Models\Payment\Processor\IntlBankTransfer;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
+use RZP\Models\BankTransfer\Metric as BankTransferMetrics;
 use RZP\Models\Workflow\Service\Builder as WorkflowBuilder;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
 use RZP\Models\VirtualAccount\Entity as VirtualAccountEntity;
@@ -190,7 +191,7 @@ class Service extends Base\Service
 
         if ($provider !== null && $this->isCollectXCallback($input, $provider) === true)
         {
-            $this->trace->info(TraceCode::COLLECTX_BANK_TRANSFER_REQUEST, [
+            $this->trace->info(TraceCode::COLLECTX_PAYMENT_TRANSFER_REQUEST, [
                 "input"     => $input,
                 "provider"  => $provider
             ]);
@@ -224,11 +225,34 @@ class Service extends Base\Service
             return $response;
         }
 
+        //metric for difference in time b/w( bank transfer transaction time , bank transfer webhook callback)
+        if((array_key_exists('Req_dt_time' , $input)) && (empty($input['Req_dt_time']) === false))
+        {
+            try
+            {
+                $diffInMillSec = get_diff_in_millisecond(strtoepoch($input['Req_dt_time'],'d-m-Y H:i:s'));
+
+                $this->trace->histogram(BankTransferMetrics::BANKTRANSFER_WEBHOOK_DELAY, $diffInMillSec);
+            }
+
+            catch(\Throwable $ex)
+            {
+
+                $this->trace->error(TraceCode::BANK_TRANSFER_WEBHOOK_DELAY_METRIC_PUSH_FAILURE,[
+                    $ex->getMessage()
+                ]);
+            }
+        }
+
+
         $response = $this->validateDuplicateRequest($input, $routeName);
 
         if (empty($response) === false) {
             return $response;
         }
+
+        //metric for counting number of incoming notification callbacks from bank
+        $this->trace->count(BankTransferMetrics::BANKTRANSFER_CALLBACK_COUNT);
 
         $bankTransferRequest = null;
 
@@ -346,7 +370,7 @@ class Service extends Base\Service
             ->bank_account
             ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $ifsc, true);
 
-        if ($bankAccount === null) {
+        if ($bankAccount === null or $bankAccount->source === null) {
 
             $this->trace->info(
                 TraceCode::COLLECTX_BANK_ACCOUNT_NOT_FOUND, [
@@ -408,6 +432,12 @@ class Service extends Base\Service
         ]);
 
         $transferMethod = strtoupper($formattedInput[Entity::MODE]);
+
+        $this->trace->count(BankTransferMetrics::COLLECTX_BANK_CALLBACK_COUNT, [
+            'provider'          => $provider,
+            'transfer_method'   => $transferMethod === self::TRANSFER_TYPE_UPI ? Constants\Entity::UPI_TRANSFER : Constants\Entity::BANK_TRANSFER,
+            'request_type'      => $formattedInput[Entity::REQUEST_TYPE],
+        ]);
 
         switch ($transferMethod){
 
@@ -478,7 +508,6 @@ class Service extends Base\Service
 
     protected function routeForCollectXUPIRequest(array $input): array
     {
-        // MyComment: Check for unexpected payments
         return (new UpiTransfer\Service())->processUpiTransferPayment($input, Gateway::UPI_YESBANK, isCollectXPayment: true);
     }
 
@@ -1163,7 +1192,11 @@ class Service extends Base\Service
 
         }
 
-        (new Metric())->pushSqsPushMetrics(Constants\Entity::BANK_TRANSFER, $bankTransferRequest->getGateway(), $isPushedToSqs);
+        (new Metric())->pushSqsPushMetrics(
+            Constants\Entity::BANK_TRANSFER,
+            $bankTransferRequest->getGateway(),
+            $isPushedToSqs,
+            $isCollectXBankTransfer);
 
         return [
             'valid' => true,
@@ -1716,7 +1749,7 @@ class Service extends Base\Service
 
         $contact = [
             'first_name' => $name[0],
-            'last_name' => isset($name[1]) ? $name[1] : "_",
+            'last_name' => isset($name[1]) ? $name[1] : "LNU",
             'email' => $merchantDetail->getContactEmail(),
             'phone' => $merchantDetail->getContactMobile(),
             'login_id' => $merchantId . "_razorpay"

@@ -1049,7 +1049,7 @@ class AxisBankTransferTest extends TestCase
 
         // Create Input body and trigger Migration Job
         $input = $this->testData[__FUNCTION__];
-        $input['merchantIds'] = ['migrateMerchnt'];
+        $input['merchant_ids'] = ['migrateMerchnt'];
         $input['from_time'] = $virtualAccountCreatedAt;
         $input['to_time'] = $virtualAccountCreatedAt;
 
@@ -1065,9 +1065,9 @@ class AxisBankTransferTest extends TestCase
             $virtualAccount->getAttribute('id'),
             'live'
         );
+        
 
         $bankAccount2Id = $migratedVirtualAccount->getAttribute('bank_account_id_2');
-
         $this->assertNotNull($bankAccount2Id);
 
         $bankAccount2 = $this->getDbEntityById(
@@ -1078,7 +1078,8 @@ class AxisBankTransferTest extends TestCase
 
         // Assert Axis IFSC code to migrated account IFSC
         $this->assertEquals('UTIB000RAZP', $bankAccount2['ifsc_code']);
-
+        
+        
     }
 
     public function testRblToAxisMigrationWithInvalidAccountPrefix()

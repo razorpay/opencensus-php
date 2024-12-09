@@ -3,6 +3,7 @@
 namespace RZP\Models\Adjustment;
 
 use RZP\Exception;
+use RZP\Exception\AssertionException;
 use RZP\Models\Base;
 
 use RZP\Models\Dispute;
@@ -35,6 +36,8 @@ use RZP\Models\Ledger\MerchantReserveBalanceJournalEvents;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Ledger\ReverseShadow\Adjustments\Core as ReverseShadowAdjustmentsCore;
+use RZP\Models\Ledger\ReverseShadow\ReserveBalanceWithdrawal;
+
 
 class Core extends Base\Core
 {
@@ -43,6 +46,13 @@ class Core extends Base\Core
 
     const IS_DUPLICATE = "is_duplicate";
 
+    /**
+     * @throws AssertionException
+     * @throws BadRequestValidationFailureException
+     * @throws BadRequestException
+     * @throws DefaultException
+     * @throws \Throwable
+     */
     public function createAdjustment(array $input, Merchant\Entity $merchant, $payment=null): Entity
     {
         $this->trace->info(
@@ -108,7 +118,7 @@ class Core extends Base\Core
         {
             if ($balanceType === Balance\Type::PRIMARY)
             {
-                $balance = (new Balance\Repository())->getMerchantBalanceByTypeHarvesterOrFail($merchant->getId(), Balance\Type::PRIMARY);
+                $balance = (new Balance\Repository())->getMerchantBalanceByTypeTiDBOrFail($merchant->getId(), Balance\Type::PRIMARY);
             }else{
                 $balance = $merchant->getBalanceByTypeOrFail($balanceType);
             }
@@ -188,11 +198,17 @@ class Core extends Base\Core
             }
         }
 
-        if ($balanceType === Balance\Type::RESERVE_PRIMARY)
-        {
-            $this->createLedgerEntriesForMerchantReserveBalanceLoading($adj, $merchant, $payment);
-        }
+        if ($balanceType === Balance\Type::RESERVE_PRIMARY) {
 
+            if (isset($this->app['api.route']) && $this->app['api.route']->getCurrentRouteName() === 'pre_fund_withdraw') {
+                //For reserve balance withdrawal route only
+                //withdraw reserve balance creates negative adjustment
+                // create debit journal for reserve balance withdrawal and post txn to settlement
+                (new ReserveBalanceWithdrawal\Core())->createReserveBalanceWithdrawalLedgerAndPostToSettlement($adj, $merchant);
+            } else {
+                $this->createLedgerEntriesForMerchantReserveBalanceLoading($adj, $merchant, $payment);
+            }
+        }
         return $adjustment;
     }
 

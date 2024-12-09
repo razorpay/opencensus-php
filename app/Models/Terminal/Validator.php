@@ -2891,6 +2891,10 @@ class Validator extends Base\Validator
         'terminal_ids' => 'required|sequential_array',
         'attributes'   => 'sometimes|associative_array',
     ];
+    protected static $bulkTerminalsOnlineTagRules = [
+        Entity::TERMINAL_IDS        => 'required|array|max:200',
+        Entity::TERMINAL_IDS.'.*'   => 'string|size:14'
+    ];
 
     protected static $updateTerminalsBulkAttributesRules = [
         Entity::STATUS               => 'sometimes',

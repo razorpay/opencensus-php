@@ -12,7 +12,6 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 class CreditsTest extends TestCase
 {
     use PaymentTrait;
-
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/TransactionData.php';

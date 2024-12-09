@@ -21,6 +21,7 @@ use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\BankingAccountStatement as BAS;
 use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
+use RZP\Constants\Metric;
 
 class ChargeCollections
 {
@@ -56,6 +57,8 @@ class ChargeCollections
     const X_DASHBOARD_USER_ID = 'X-Dashboard-User-id';
     const X_PRICING_DECOMP_PHASE = 'X-Pricing-Decomp-Phase';
 
+    const X_PRICING_WORKFLOW_ACTION = 'X-Pricing-Workflow-Action';
+
     const DEFAULT_REQUEST_TIMEOUT   = 60;
 
     // Charge Collections APIs
@@ -68,6 +71,7 @@ class ChargeCollections
     const DeletePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}/force';
     const AddBulkPlanRulesURL = 'v1/mdr/pricing/rules/bulk';
     const AddPricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule';
+    const ReplicatePlanAndAssignURL = 'v1/mdr/pricing/replicate_plan';
     const OrgPricingURL = 'v1/org_pricing';
     const FetchOrgPricingURL = 'v1/org_pricing/fetch_multiple';
     const FetchOrgPricingAccessControl = 'v1/org_pricing_access_control/fetch_multiple';
@@ -127,11 +131,12 @@ class ChargeCollections
         string $endpoint,
         string $method,
         array $data = [],
-        array $headers = [])
+        array $headers = [],
+        string $action = "")
     {
         $request = $this->generateRequest($endpoint, $method, $data, $headers);
 
-        return $this->sendChargeCollectionsRequest($request, $endpoint);
+        return $this->sendChargeCollectionsRequest($request, $endpoint, $action);
     }
 
     public function shouldLogResponse(string $endpoint, string $method) :bool
@@ -173,7 +178,7 @@ class ChargeCollections
 
     public function sendStatusUpdate(array $input, string $mode) : array
     {
-        return $this->sendRequest(self::CHARGE_PAYOUT_STATUS, Requests::POST, $input);
+        return $this->sendRequest(self::CHARGE_PAYOUT_STATUS, Requests::POST, $input, action: __FUNCTION__);
     }
 
     public function getStatusDetailsFromPayout(PayoutEntity $payout)
@@ -244,6 +249,11 @@ class ChargeCollections
             $this->headers[self::X_PRICING_DECOMP_PHASE] = $headers[self::X_PRICING_DECOMP_PHASE];
         }
 
+        if (isset($headers[self::X_PRICING_WORKFLOW_ACTION]) === true)
+        {
+            $this->headers[self::X_PRICING_WORKFLOW_ACTION] = $headers[self::X_PRICING_WORKFLOW_ACTION];
+        }
+
         // Adds rzp-context-dev-serve header
         $this->headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
     }
@@ -256,8 +266,12 @@ class ChargeCollections
      * @throws ServerErrorException
      * @throws \Throwable
      */
-    protected function sendChargeCollectionsRequest(array $request, string $endpoint)
+    protected function sendChargeCollectionsRequest(array $request, string $endpoint, string $action)
     {
+        $startTimeMs = round(microtime(true) * 1000);
+        $metricDimensions = [
+            'action' => $action,
+        ];
         $this->traceRequest($request, $endpoint);
 
         try
@@ -311,8 +325,12 @@ class ChargeCollections
                     'data' => $e->getMessage()
                 ]);
 
+            $endTimeMs = round(microtime(true) * 1000);
+            $this->trace->histogram(Metric::CHARGE_COLLECTIONS_RESPONSE_TIME, $endTimeMs- $startTimeMs, $metricDimensions);
             throw $e;
         }
+        $endTimeMs = round(microtime(true) * 1000);
+        $this->trace->histogram(Metric::CHARGE_COLLECTIONS_RESPONSE_TIME, $endTimeMs- $startTimeMs, $metricDimensions);
 
         return $parsedResponse;
     }
@@ -452,7 +470,7 @@ class ChargeCollections
     public function getReceiptForInvoice(array $input, $requestHeaders = [])
     {
         $this->merchantId = $input['merchantId'];
-        return $this->sendRequest(self::GetReceiptForInvoiceURL, Requests::POST, $input, $requestHeaders);
+        return $this->sendRequest(self::GetReceiptForInvoiceURL, Requests::POST, $input, $requestHeaders, action:__FUNCTION__);
     }
 
     public function getPricingPlan(array $input, $requestHeaders = [])
@@ -461,7 +479,7 @@ class ChargeCollections
         if (isset($input["id"]) && strlen($input["id"]) > 0) {
             $url = $url .'/'. $input["id"];
         }
-        return $this->sendRequest($url, Requests::GET, $input, $requestHeaders);
+        return $this->sendRequest($url, Requests::GET, $input, $requestHeaders, action:__FUNCTION__);
     }
 
     public function getPricingRule(array $input, $requestHeaders = [])
@@ -470,18 +488,18 @@ class ChargeCollections
         if (isset($input["id"]) && strlen($input["id"]) > 0) {
             $url = $url .'/'. $input["id"];
         }
-        return $this->sendRequest($url, Requests::GET, $input, $requestHeaders);
+        return $this->sendRequest($url, Requests::GET, $input, $requestHeaders, action:__FUNCTION__);
     }
 
     public function getPricingPlansSummary(array $input, $requestHeaders = [])
     {
         $url = self::GetPricingPlansSummaryURL;
-        return $this->sendRequest($url, Requests::GET, $input, $requestHeaders);
+        return $this->sendRequest($url, Requests::GET, $input, $requestHeaders, action:__FUNCTION__);
     }
 
     public function createPricingPlan(array $input, $requestHeaders = [])
     {
-        return $this->sendRequest(self::CreatePricingPlanURL, Requests::POST, $input, $requestHeaders);
+        return $this->sendRequest(self::CreatePricingPlanURL, Requests::POST, $input, $requestHeaders, action:__FUNCTION__);
     }
 
     public function updatePricingPlanRule(array $input, $requestHeaders = [])
@@ -493,7 +511,7 @@ class ChargeCollections
 
         unset($input['plan_id'], $input['rule_id']);
 
-        return $this->sendRequest($endpoint, Requests::PATCH, $input, $requestHeaders);
+        return $this->sendRequest($endpoint, Requests::PATCH, $input, $requestHeaders, action:__FUNCTION__);
     }
 
     public function deletePricingPlanRule(array $input, $requestHeaders = [])
@@ -505,7 +523,7 @@ class ChargeCollections
 
         unset($input['plan_id'], $input['rule_id']);
 
-        return $this->sendRequest($endpoint, Requests::DELETE, $input, $requestHeaders);
+        return $this->sendRequest($endpoint, Requests::DELETE, $input, $requestHeaders, action:__FUNCTION__);
     }
 
     public function addPricingPlanRule(array $input, $requestHeaders = [])
@@ -516,12 +534,17 @@ class ChargeCollections
 
         unset($input['plan_id']);
 
-        return $this->sendRequest($endpoint, Requests::POST, $input, $requestHeaders);
+        return $this->sendRequest($endpoint, Requests::POST, $input, $requestHeaders, action:__FUNCTION__);
     }
 
     public function addBulkPricingPlanRule(array $input, $requestHeaders = [])
     {
-        return $this->sendRequest(self::AddBulkPlanRulesURL, Requests::POST, $input, $requestHeaders);
+        return $this->sendRequest(self::AddBulkPlanRulesURL, Requests::POST, $input, $requestHeaders, action:__FUNCTION__);
+    }
+
+    public function replicatePlanAndAssign(array $input, $requestHeaders = [])
+    {
+        return $this->sendRequest(self::ReplicatePlanAndAssignURL, Requests::POST, $input, $requestHeaders, action:__FUNCTION__);
     }
 
 }

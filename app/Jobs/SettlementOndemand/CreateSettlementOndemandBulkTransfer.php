@@ -27,6 +27,8 @@ class CreateSettlementOndemandBulkTransfer extends Job
 
     protected $mode;
 
+    protected $metricsEnabled = true;
+
     public function __construct(string $mode , $settlementOndemandAttemptId, $settlementOndemandTransfer)
     {
         parent::__construct($mode);

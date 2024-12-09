@@ -194,6 +194,7 @@ class Event
     const ISSUING_FASTAG_BLACKLISTED                    = 'issuing.fastag.blacklisted';
     const ISSUING_FASTAG_LOWBALANCE                     = 'issuing.fastag.lowbalance';
     const ISSUING_FASTAG_CLOSED                         = 'issuing.fastag.closed';
+    const ENGAGE_NOTIFICATION_GC_EXPIRY                 = 'engage.notification.gc_expiry';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -365,7 +366,8 @@ class Event
         self::ISSUING_FASTAG_HOTLISTED,
         self::ISSUING_FASTAG_BLACKLISTED,
         self::ISSUING_FASTAG_LOWBALANCE,
-        self::ISSUING_FASTAG_CLOSED
+        self::ISSUING_FASTAG_CLOSED,
+        self::ENGAGE_NOTIFICATION_GC_EXPIRY
     ];
 
     /**
@@ -544,7 +546,8 @@ class Event
         self::ISSUING_FASTAG_HOTLISTED,
         self::ISSUING_FASTAG_BLACKLISTED,
         self::ISSUING_FASTAG_LOWBALANCE,
-        self::ISSUING_FASTAG_CLOSED
+        self::ISSUING_FASTAG_CLOSED,
+        self::ENGAGE_NOTIFICATION_GC_EXPIRY
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -865,6 +868,7 @@ class Event
         self::ISSUING_FASTAG_BLACKLISTED                  => [Product::PRIMARY, Product::ISSUING],
         self::ISSUING_FASTAG_LOWBALANCE                   => [Product::PRIMARY, Product::ISSUING],
         self::ISSUING_FASTAG_CLOSED                       => [Product::PRIMARY, Product::ISSUING],
+        self::ENGAGE_NOTIFICATION_GC_EXPIRY               => [Product::PRIMARY, Product::ISSUING],
     ];
 
     /**
@@ -1131,7 +1135,8 @@ class Event
         self::ISSUING_FASTAG_HOTLISTED                    => Feature\Constants::RAZORPAY_WALLET,
         self::ISSUING_FASTAG_BLACKLISTED                  => Feature\Constants::RAZORPAY_WALLET,
         self::ISSUING_FASTAG_LOWBALANCE                   => Feature\Constants::RAZORPAY_WALLET,
-        self::ISSUING_FASTAG_CLOSED                       => Feature\Constants::RAZORPAY_WALLET
+        self::ISSUING_FASTAG_CLOSED                       => Feature\Constants::RAZORPAY_WALLET,
+        self::ENGAGE_NOTIFICATION_GC_EXPIRY               => Feature\Constants::RAZORPAY_WALLET
     ];
 
     public static array $eventsToPartnerTypeMap = [

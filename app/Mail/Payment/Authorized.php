@@ -2,6 +2,7 @@
 
 namespace RZP\Mail\Payment;
 
+use RZP\Trace\TraceCode;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Admin\Org\Entity as Org;
 
@@ -37,6 +38,11 @@ class Authorized extends Base
 
         $this->with($this->data);
 
+        $app = \App::getFacadeRoot();
+        $app->trace->info(TraceCode::AUTHORIZE_MAIL, [
+            'data' => $this->data
+        ]);
+
         return $this;
     }
 
@@ -70,6 +76,7 @@ class Authorized extends Base
 
     protected function shouldSendEmailViaStork(): bool
     {
+        $app = \App::getFacadeRoot();
         $data = $this->data;
 
         // @todo : Remove this logic, to not be extended further
@@ -77,8 +84,17 @@ class Authorized extends Base
             $data['merchant']['eligible_for_covid_relief'] === true) or
             isset($data['org']['id']) and in_array($data['org']['id'], $this->storkWhitelistedOrgs) === false)
         {
+            $app->trace->info(TraceCode::AUTHORIZE_MAIL, [
+                'data' => $this->data,
+                'shouldSendEmailViaStork' => false,
+            ]);
             return false;
         }
+
+        $app->trace->info(TraceCode::AUTHORIZE_MAIL, [
+            'data' => $this->data,
+            'shouldSendEmailViaStork' => true,
+        ]);
 
         return true;
     }

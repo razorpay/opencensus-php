@@ -864,30 +864,7 @@ trait ExternalTokensRepo
 
         $keyStatus = (bool) ConfigKey::get($keyName, false);
 
-        if ($keyStatus === true)
-        {
-            $mode = $this->app['rzp.mode'] ?? 'live';
-
-            $result = $this->app['razorx']->getTreatment(
-                UniqueIdEntity::generateUniqueId(),
-                RazorxTreatment::ENTITY_RELATIONAL_LOAD_FROM_TOKENS_SERVICE,
-                $mode);
-
-            $this->trace->info(
-                TraceCode::TOKENS_ENTITY_FETCH_RAZORX_EXPERIMENT_RESPONSE,
-                [
-                    'result'    => $result,
-                    'mode'      => $mode,
-                    'key_status'=> $keyStatus,
-                ]);
-
-            if ($result === 'on')
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return $keyStatus;
     }
 
     public function validateExternalUpdateEnabledForTokens() : bool
@@ -898,27 +875,40 @@ trait ExternalTokensRepo
 
         if ($keyStatus === true)
         {
-            $mode = $this->app['rzp.mode'] ?? 'live';
+            try
+            {
+                $experimentId = $this->app['config']->get('app.external_updates_enabled_for_tokens');
 
-            $result = $this->app['razorx']->getTreatment(
-                UniqueIdEntity::generateUniqueId(),
-                RazorxTreatment::ENTITY_UPDATE_IN_TOKENS_SERVICE,
-                $mode);
+                $properties = [
+                    "id" => $this->app['request']->getTaskId(),
+                    "experiment_id" => $experimentId,
+                ];
 
-            $this->trace->info(
-                TraceCode::TOKENS_ENTITY_UPDATE_RAZORX_EXPERIMENT_RESPONSE,
-                [
-                    'result'    => $result,
-                    'mode'      => $mode,
-                    'key_status'=> $keyStatus,
+                $response = $this->app['splitzService']->evaluateRequest($properties);
+
+                $variant = 'control';
+
+                if(!empty($response['response']['variant']) && isset($response['response']['variant']['name']))
+                {
+                    $variant = $response['response']['variant']['name'];
+                }
+
+                $this->trace->info(TraceCode::TOKENS_EXTERNAL_ENTITY_UPDATE_SPLITZ_EXPRIMENT_RESPONSE, [
+                    'variant' => $variant,
+                    'experiment_id' => $experimentId
                 ]);
 
-            if ($result === 'on')
+                return $variant === 'enable';
+            }
+            catch( \Throwable $ex)
             {
-                return true;
+                $this->trace->error(TraceCode::TOKENS_EXTERNAL_ENTITY_UPDATE_SPLITZ_EXPRIMENT_FAILURE, [
+                    'message' => $ex->getMessage(),
+                ]);
+
+                return false;
             }
         }
-
-        return false;
+        return $keyStatus;
     }
 }

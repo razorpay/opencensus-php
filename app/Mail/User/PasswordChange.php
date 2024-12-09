@@ -100,6 +100,7 @@ class PasswordChange extends Base\Mailable
         [
             'template_name' => 'banking_mail_password_change',
             'template_namespace' => 'payments_banking',
+            'org_id'             => $this->org['id'],
             'params' => $data,
         ];
         $storkParams['params']['resetPasswordUrl'] = 'https://' . $this->org['hostname'] .'/#/access/forgotpwd';

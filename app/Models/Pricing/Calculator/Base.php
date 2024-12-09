@@ -257,21 +257,20 @@ abstract class Base extends BaseModel\Core
 
         $merchantId = $this->entity->merchant->getId();
 
-        $variant =  $this->app->razorx->getTreatment($merchantId, Merchant\RazorxTreatment::FETCH_MERCHANT_CREDITS_NEW_FLOW, 'live');
-
-        $this->trace->info(
-            TraceCode::FETCH_MERCHANT_CREDITS_NEW_FLOW_RAXORX_VARIANT,
-            [
-                'merchant_id'           => $merchantId,
-                'feature_flag'          => Merchant\RazorxTreatment::FETCH_MERCHANT_CREDITS_NEW_FLOW,
-                'merchant_ramp_variant' => $variant,
-            ]);
-
-        if ((strtolower($variant) === 'on') === true)
+        if (app()->runningInQueue() === true)
         {
-            return $this->getMerchantCredits($merchantId);
+            $workerCtx = app('worker.ctx');
+            $isDualWriteFlow = $workerCtx->getLedgerDualWriteFlow();
         }
-
+        else
+        {
+            $requestCtx = app('request.ctx');
+            $isDualWriteFlow = $requestCtx->getLedgerDualWriteFlow();
+        }
+        if ((empty($isDualWriteFlow)==false) or $isDualWriteFlow === false)
+        {
+            return $this->getMerchantCredits($merchantId,$balanceType);
+        }
         $merchantBalance = $this->entity->merchant->getBalanceByType($balanceType);
 
         $amountCredits = $merchantBalance->getAmountCredits();
@@ -305,20 +304,19 @@ abstract class Base extends BaseModel\Core
      * @param $merchantId
      * @return array
      */
-    public function getMerchantCredits($merchantId): array
+    public function getMerchantCredits($merchantId,$balanceType): array
     {
         if ($this->entity->merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === true)
         {
-            $ledgerService = $this->app['ledger'];
+            $this->trace->info(
+                TraceCode::MERCHANT_BALANCE_FETCH_FROM_WAREHOUSE,
+                [   'merchantId' => $this->entity->getMerchantId(),
+                ]
+            );
 
-            $ledgerOutboxCore = new LedgerOutboxCore();
-
-            $merchantBalance = $ledgerOutboxCore->getMerchantAccountBalances($ledgerService, $merchantId);
-
-            $amountCredits = $merchantBalance[LedgerConstants::MERCHANT_AMOUNT_CREDITS] ?? 0;
-
-            $feeCredits = $merchantBalance[LedgerConstants::MERCHANT_FEE_CREDITS] ?? 0;
-
+            $merchantBalance = (new Balance\Repository)->fetchBalanceByMerchantIdAndTypeFromWarehouse($this->entity->merchant, $balanceType);
+            $amountCredits = $merchantBalance->getAmountCredits();
+            $feeCredits = $merchantBalance->getFeeCredits();
             return [$amountCredits, $feeCredits];
         }
 

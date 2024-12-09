@@ -10,10 +10,10 @@ use RZP\Models\Batch\Header;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Traits\MocksSplitz;
 
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForKycUsers;
@@ -22,6 +22,8 @@ class CreditLogsTest extends TestCase
 {
     use BatchTestTrait;
     use TestsBusinessBanking;
+    use MocksSplitz;
+    use DbEntityFetchTrait;
 
     protected function setUp(): void
     {
@@ -53,7 +55,91 @@ class CreditLogsTest extends TestCase
 
     public function testCreateCreditsBulk()
     {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
         $this->startTest();
+
+        $ledgerOutboxEntry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull($ledgerOutboxEntry);
+
+        $payload = base64_decode($ledgerOutboxEntry['payload_serialized']);
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "amount_credit_loading",
+            "money_params" => [
+                'razorpay_reward' => '250000',
+                'amount_credits' => '250000'
+            ],
+            "additional_params" => null,
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertEquals("credits_".$ledgerOutboxEntry["entity_id"]."-amount_credit_loading", $ledgerOutboxEntry["payload_name"]);
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($expectedLedgerOutboxEntry['additional_params'], $actualLedgerOutboxEntry['additional_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['identifiers'], $actualLedgerOutboxEntry['identifiers']);
+    }
+
+    public function testCreateCreditsBulkWithAccountsSplitInCLS()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(1)
+            ->andReturn([]);
+
+        $splitzInput = [
+            'experiment_id' => 'OfAzGZfcmRLgrT',
+            'id'            => '10000000000000',
+        ];
+
+        $splitzOutput = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+
+        $this->startTest();
+
+        $ledgerOutboxEntry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull($ledgerOutboxEntry);
+
+        $payload = base64_decode($ledgerOutboxEntry['payload_serialized']);
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+        $creditId = $ledgerOutboxEntry["entity_id"];
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "amount_credit_loading",
+            "money_params" => [
+                'razorpay_reward' => '250000',
+                'amount_credits' => '250000'
+            ],
+            "identifiers" => [
+                'credit_id' => $creditId,
+            ],
+            "additional_params" => null,
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertEquals("credits_".$creditId."-amount_credit_loading", $ledgerOutboxEntry["payload_name"]);
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($expectedLedgerOutboxEntry['additional_params'], $actualLedgerOutboxEntry['additional_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['identifiers'], $actualLedgerOutboxEntry['identifiers']);
     }
 
     public function testCreateCreditsBulkInternal()
@@ -629,4 +715,555 @@ class CreditLogsTest extends TestCase
                 return 'off';
             }));
     }
+    public function testFeeCreditWithdrawalSuccessCaseWithSingleCreditCompletelyUsed(): void
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->fixtures->create('credits',
+            [
+                'type'  => 'refund',
+                'value' => 100000
+            ]);
+
+        $withdrawAmount = 100000;
+
+        $this->fixtures->merchant->editRefundCredits('100000', '10000000000000');
+        $merchantId = '10000000000000';
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $expectedJournalPayload = $this->getCreditWithdrawalExpectedJournalPayload($withdrawAmount);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload) {
+
+                $this->assertArrayHasKey('transaction_date',$journalPayload);
+                $this->assertArrayHasKey('transactor_id',$journalPayload);
+                $this->assertEquals($expectedJournalPayload['currency'], $journalPayload['currency']);
+                $this->assertEquals($expectedJournalPayload['merchant_id'], $journalPayload['merchant_id']);
+                $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload['money_params'], $journalPayload['money_params']);
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn($this->getCreditWithdrawalJournalResponse($withdrawAmount));
+
+
+        $request = [
+            'url' => '/merchants/pre_fund/withdraw',
+            'method' => 'post',
+            'content' => [
+                'type' => 'refund',
+                'amount' => '100000'
+            ]
+        ];
+        $response = $this->makeRequestAndGetContent($request);
+        $credits = $this->getDbEntities('credits', ['merchant_id' => 10000000000000]);
+
+        //assert for refund credit added
+        $this->assertEquals('refund', $credits[0]['type']);
+        $this->assertEquals(100000, $credits[0]['value']);
+        $this->assertEquals(100000, $credits[0]['used']);
+
+        //assert for refund credit withdrawal
+        $this->assertEquals('refund_withdraw', $credits[1]['type']);
+        $this->assertEquals(100000, $credits[1]['value']);
+        $this->assertEquals(0, $credits[1]['used']);
+    }
+
+    public function testFeeCreditWithdrawalSuccessCaseWithSingleCreditPartiallyUsed(): void
+    {
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->fixtures->create('credits',
+            [
+                'type'  => 'refund',
+                'value' => 10000
+            ]);
+
+        $withdrawAmount = 8000;
+
+        $this->fixtures->merchant->editRefundCredits('10000', '10000000000000');
+        $merchantId = '10000000000000';
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $expectedJournalPayload = $this->getCreditWithdrawalExpectedJournalPayload($withdrawAmount);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload) {
+
+                $this->assertArrayHasKey('transaction_date',$journalPayload);
+                $this->assertArrayHasKey('transactor_id',$journalPayload);
+                $this->assertEquals($expectedJournalPayload['currency'], $journalPayload['currency']);
+                $this->assertEquals($expectedJournalPayload['merchant_id'], $journalPayload['merchant_id']);
+                $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload['money_params'], $journalPayload['money_params']);
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn($this->getCreditWithdrawalJournalResponse($withdrawAmount));
+
+
+        $request = [
+            'url' => '/merchants/pre_fund/withdraw',
+            'method' => 'post',
+            'content' => [
+                'type' => 'refund',
+                'amount' => '8000'
+            ]
+        ];
+        $response = $this->makeRequestAndGetContent($request);
+        $credits = $this->getDbEntities('credits', ['merchant_id' => 10000000000000]);
+
+        //assert for refund credit added
+        $this->assertEquals('refund', $credits[0]['type']);
+        $this->assertEquals(10000, $credits[0]['value']);
+        $this->assertEquals(8000, $credits[0]['used']);
+
+        //assert for refund credit withdrawal
+        $this->assertEquals('refund_withdraw', $credits[1]['type']);
+        $this->assertEquals(8000, $credits[1]['value']);
+        $this->assertEquals(0, $credits[1]['used']);
+    }
+
+    public function testFeeCreditWithdrawalSuccessCaseWithMultipleCredit(): void
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->fixtures->create('credits',
+            [
+                'type'  => 'refund',
+                'value' => 10000
+            ]);
+
+        $this->fixtures->create('credits',
+            [
+                'type'  => 'refund',
+                'value' => 5000
+            ]);
+
+        $this->fixtures->create('credits',
+            [
+                'type'  => 'refund',
+                'value' => 2000
+            ]);
+
+        $this->fixtures->merchant->editRefundCredits('17000', '10000000000000');
+        $merchantId = '10000000000000';
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $withdrawAmount = 16000;
+        $expectedJournalPayload = $this->getCreditWithdrawalExpectedJournalPayload($withdrawAmount);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload) {
+
+                $this->assertArrayHasKey('transaction_date',$journalPayload);
+                $this->assertArrayHasKey('transactor_id',$journalPayload);
+                $this->assertEquals($expectedJournalPayload['currency'], $journalPayload['currency']);
+                $this->assertEquals($expectedJournalPayload['merchant_id'], $journalPayload['merchant_id']);
+                $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload['money_params'], $journalPayload['money_params']);
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn($this->getCreditWithdrawalJournalResponse($withdrawAmount));
+
+        $request = [
+            'url' => '/merchants/pre_fund/withdraw',
+            'method' => 'post',
+            'content' => [
+                'type' => 'refund',
+                'amount' => '16000',
+            ]
+        ];
+        $response = $this->makeRequestAndGetContent($request);
+        $credits = $this->getDbEntities('credits', ['merchant_id' => 10000000000000]);
+
+        //assert for refund credits
+        $this->assertEquals('refund', $credits[0]['type']);
+        $this->assertEquals(10000, $credits[0]['value']);
+        $this->assertEquals(10000, $credits[0]['used']);
+
+        $this->assertEquals('refund', $credits[1]['type']);
+        $this->assertEquals(5000, $credits[1]['value']);
+        $this->assertEquals(5000, $credits[1]['used']);
+
+        $this->assertEquals('refund', $credits[2]['type']);
+        $this->assertEquals(2000, $credits[2]['value']);
+        $this->assertEquals(1000, $credits[2]['used']);
+
+        //assert for refund credit withdrawal
+        $this->assertEquals('refund_withdraw', $credits[3]['type']);
+        $this->assertEquals(16000, $credits[3]['value']);
+        $this->assertEquals(0, $credits[3]['used']);
+    }
+    public function testFeeCreditWithdrawalWithSingleCreditMultipleWithdrawal() {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->fixtures->create('credits',
+            [
+                'type'  => 'refund',
+                'value' => 10000
+            ]);
+
+        $withdrawAmount = 2000;
+
+        $this->fixtures->merchant->editRefundCredits('10000', '10000000000000');
+        $merchantId = '10000000000000';
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $expectedJournalPayload = $this->getCreditWithdrawalExpectedJournalPayload($withdrawAmount);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload) {
+
+                $this->assertArrayHasKey('transaction_date',$journalPayload);
+                $this->assertArrayHasKey('transactor_id',$journalPayload);
+                $this->assertEquals($expectedJournalPayload['currency'], $journalPayload['currency']);
+                $this->assertEquals($expectedJournalPayload['merchant_id'], $journalPayload['merchant_id']);
+                $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload['money_params'], $journalPayload['money_params']);
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn($this->getCreditWithdrawalJournalResponse($withdrawAmount));
+
+        $request = [
+            'url' => '/merchants/pre_fund/withdraw',
+            'method' => 'post',
+            'content' => [
+                'type' => 'refund',
+                'amount' => '2000'
+            ]
+        ];
+        $response = $this->makeRequestAndGetContent($request);
+        $credits = $this->getDbEntities('credits', ['merchant_id' => 10000000000000]);
+
+        //assert for refund credit added
+        $this->assertEquals('refund', $credits[0]['type']);
+        $this->assertEquals(10000, $credits[0]['value']);
+        $this->assertEquals(2000, $credits[0]['used']);
+
+        //assert for refund credit withdrawal
+        $this->assertEquals('refund_withdraw', $credits[1]['type']);
+        $this->assertEquals(2000, $credits[1]['value']);
+        $this->assertEquals(0, $credits[1]['used']);
+
+
+
+        //Second withdrawal
+        $withdrawAmount = 4000;
+        $expectedJournalPayload = $this->getCreditWithdrawalExpectedJournalPayload($withdrawAmount);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload) {
+
+                $this->assertArrayHasKey('transaction_date',$journalPayload);
+                $this->assertArrayHasKey('transactor_id',$journalPayload);
+                $this->assertEquals($expectedJournalPayload['currency'], $journalPayload['currency']);
+                $this->assertEquals($expectedJournalPayload['merchant_id'], $journalPayload['merchant_id']);
+                $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload['money_params'], $journalPayload['money_params']);
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn($this->getCreditWithdrawalJournalResponse($withdrawAmount, 2));
+
+        $request = [
+            'url' => '/merchants/pre_fund/withdraw',
+            'method' => 'post',
+            'content' => [
+                'type' => 'refund',
+                'amount' => '4000'
+            ]
+        ];
+        $response = $this->makeRequestAndGetContent($request);
+        $credits = $this->getDbEntities('credits', ['merchant_id' => 10000000000000]);
+
+        //assert for refund credit added
+        $this->assertEquals('refund', $credits[0]['type']);
+        $this->assertEquals(10000, $credits[0]['value']);
+        $this->assertEquals(6000, $credits[0]['used']);
+
+        //assert for refund credit withdrawal
+        $this->assertEquals('refund_withdraw', $credits[1]['type']);
+        $this->assertEquals(2000, $credits[1]['value']);
+        $this->assertEquals(0, $credits[1]['used']);
+        $this->assertEquals('refund_withdraw', $credits[2]['type']);
+        $this->assertEquals(4000, $credits[2]['value']);
+        $this->assertEquals(0, $credits[2]['used']);
+    }
+
+    public function testFeeCreditWithdrawalWithMultipleCreditMultipleWithdrawal() {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // Create multiple credit entries
+        $this->fixtures->create('credits', [
+            'type' => 'refund',
+            'value' => 10000
+        ]);
+        $this->fixtures->create('credits', [
+            'type' => 'refund',
+            'value' => 5000
+        ]);
+        $this->fixtures->create('credits', [
+            'type' => 'refund',
+            'value' => 2000
+        ]);
+
+        // Setup merchant details
+        $this->fixtures->merchant->editRefundCredits('17000', '10000000000000');
+        $merchantId = '10000000000000';
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        // First withdrawal
+        $withdrawAmount1 = 16000;
+        $expectedJournalPayload1 = $this->getCreditWithdrawalExpectedJournalPayload($withdrawAmount1);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload1) {
+                $this->assertArrayHasKey('transaction_date', $journalPayload);
+                $this->assertArrayHasKey('transactor_id', $journalPayload);
+                $this->assertEquals($expectedJournalPayload1['currency'], $journalPayload['currency']);
+                $this->assertEquals($expectedJournalPayload1['merchant_id'], $journalPayload['merchant_id']);
+                $this->assertEquals($expectedJournalPayload1['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload1['money_params'], $journalPayload['money_params']);
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn($this->getCreditWithdrawalJournalResponse($withdrawAmount1));
+
+        $request1 = [
+            'url' => '/merchants/pre_fund/withdraw',
+            'method' => 'post',
+            'content' => [
+                'type' => 'refund',
+                'amount' => '16000',
+            ]
+        ];
+        $response1 = $this->makeRequestAndGetContent($request1);
+        $creditsAfterFirstWithdrawal = $this->getDbEntities('credits', ['merchant_id' => $merchantId]);
+
+        // Assert after the first withdrawal
+        $this->assertEquals('refund', $creditsAfterFirstWithdrawal[0]['type']);
+        $this->assertEquals(10000, $creditsAfterFirstWithdrawal[0]['value']);
+        $this->assertEquals(10000, $creditsAfterFirstWithdrawal[0]['used']);
+        $this->assertEquals('refund', $creditsAfterFirstWithdrawal[1]['type']);
+        $this->assertEquals(5000, $creditsAfterFirstWithdrawal[1]['value']);
+        $this->assertEquals(5000, $creditsAfterFirstWithdrawal[1]['used']);
+        $this->assertEquals('refund', $creditsAfterFirstWithdrawal[2]['type']);
+        $this->assertEquals(2000, $creditsAfterFirstWithdrawal[2]['value']);
+        $this->assertEquals(1000, $creditsAfterFirstWithdrawal[2]['used']);
+        $this->assertEquals('refund_withdraw', $creditsAfterFirstWithdrawal[3]['type']);
+        $this->assertEquals(16000, $creditsAfterFirstWithdrawal[3]['value']);
+        $this->assertEquals(0, $creditsAfterFirstWithdrawal[3]['used']);
+
+        // Second withdrawal
+        $withdrawAmount2 = 1000;
+        $expectedJournalPayload2 = $this->getCreditWithdrawalExpectedJournalPayload($withdrawAmount2);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload2) {
+                $this->assertArrayHasKey('transaction_date', $journalPayload);
+                $this->assertArrayHasKey('transactor_id', $journalPayload);
+                $this->assertEquals($expectedJournalPayload2['currency'], $journalPayload['currency']);
+                $this->assertEquals($expectedJournalPayload2['merchant_id'], $journalPayload['merchant_id']);
+                $this->assertEquals($expectedJournalPayload2['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload2['money_params'], $journalPayload['money_params']);
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn($this->getCreditWithdrawalJournalResponse($withdrawAmount2, 1));
+
+        $request2 = [
+            'url' => '/merchants/pre_fund/withdraw',
+            'method' => 'post',
+            'content' => [
+                'type' => 'refund',
+                'amount' => '1000',
+            ]
+        ];
+        $response2 = $this->makeRequestAndGetContent($request2);
+        $creditsAfterSecondWithdrawal = $this->getDbEntities('credits', ['merchant_id' => $merchantId]);
+        // Assert after the second withdrawal
+        $this->assertEquals('refund', $creditsAfterSecondWithdrawal[0]['type']);
+        $this->assertEquals(10000, $creditsAfterSecondWithdrawal[0]['value']);
+        $this->assertEquals(10000, $creditsAfterSecondWithdrawal[0]['used']);
+        $this->assertEquals('refund', $creditsAfterSecondWithdrawal[1]['type']);
+        $this->assertEquals(5000, $creditsAfterSecondWithdrawal[1]['value']);
+        $this->assertEquals(5000, $creditsAfterSecondWithdrawal[1]['used']);
+        $this->assertEquals('refund', $creditsAfterSecondWithdrawal[2]['type']);
+        $this->assertEquals(2000, $creditsAfterSecondWithdrawal[2]['value']);
+        $this->assertEquals(2000, $creditsAfterSecondWithdrawal[2]['used']);
+        $this->assertEquals('refund_withdraw', $creditsAfterSecondWithdrawal[3]['type']);
+        $this->assertEquals(16000, $creditsAfterSecondWithdrawal[3]['value']);
+        $this->assertEquals(0, $creditsAfterSecondWithdrawal[3]['used']);
+        $this->assertEquals('refund_withdraw', $creditsAfterSecondWithdrawal[4]['type']);
+        $this->assertEquals(1000, $creditsAfterSecondWithdrawal[4]['value']);
+        $this->assertEquals(0, $creditsAfterSecondWithdrawal[4]['used']);
+    }
+
+    public function getCreditWithdrawalExpectedJournalPayload(int $withdrawAmount): array
+    {
+        return [
+            "merchant_id"           => "10000000000000",
+            "currency"              => "INR",
+            "transaction_date"      => "", // any
+            "transactor_id"         => "", // any
+            "transactor_event"      => "merchant_refund_credit_withdrawal",
+            "money_params"          => [
+                "amount"                    => strval($withdrawAmount),
+                "base_amount"               => strval($withdrawAmount),
+                "refund_credits_amount"     => strval($withdrawAmount),
+                "credit_control_amount"     => strval($withdrawAmount)
+            ],
+            "notes"                 => [
+                "credit_id"         => "" //any
+            ]
+        ];
+    }
+
+    public function getCreditWithdrawalJournalResponse(int $withdrawAmount, int $count = 0): array
+    {
+        $amount = strval($withdrawAmount);
+
+        $ledgerResp = [
+            'code' => 200,
+            'body' => [
+                "id"=> "LN5BWCGvLdPu7T",
+                "created_at"=> "1677853302",
+                "updated_at"=> "1677853302",
+                "amount"=> $amount,
+                "base_amount"=> $amount,
+                "currency"=> "INR",
+                "tenant"=> "PG",
+                "transactor_id"=> "credits_PCNYIZL7lE48oR",
+                "transactor_event"=> "merchant_refund_credit_withdrawal",
+                "transaction_date"=> "1677853302",
+                "ledger_entry"=> [
+                    [
+                        "id"=> "PCNYIhc2rAjgqM",
+                        "created_at"=> "1677853302",
+                        "updated_at"=> "1677853302",
+                        "merchant_id"=> "10000000000000",
+                        "journal_id"=> "PCNYIhLYo7UTBg",
+                        "account_id"=> "JjpZUD9PmJeNPk",
+                        "amount"=> $amount,
+                        "base_amount"=> $amount,
+                        "type"=> "credit",
+                        "currency"=> "INR",
+                        "balance"=> "531425.000000",
+                        "balance_updated"=> true,
+                        "account_entities"=> [
+                            "account_type"=> [
+                                "payable"
+                            ],
+                            "fund_account_type"=> [
+                                "pre_fund_withdrawal_control"
+                            ]
+                        ]
+                    ],
+                    [
+                        "id"=> "PCNYIhc48b8LIQ",
+                        "created_at"=> "1677853302",
+                        "updated_at"=> "1677853302",
+                        "merchant_id"=> "10000000000000",
+                        "journal_id"=> "PCNYIhLYo7UTBg",
+                        "account_id"=> "LN22CRUSOTIIBG",
+                        "amount"=> $amount,
+                        "base_amount"=> $amount,
+                        "type"=> "debit",
+                        "currency"=> "INR",
+                        "balance"=> "997350.000000",
+                        "balance_updated"=> true,
+                        "account_entities"=> [
+                            "account_type"=> [
+                                "payable"
+                            ],
+                            "fund_account_type"=> [
+                                "merchant_refund_credits"
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ];
+
+        if ($count == 1) {
+            $ledgerResp['body']['id'] = 'LN5BWCGvLdPu7U';
+        }
+        if ($count == 2) {
+            $ledgerResp['body']['id'] = 'LN5BWCGvLdPu7Q';
+        }
+        return $ledgerResp;
+    }
+
+
 }

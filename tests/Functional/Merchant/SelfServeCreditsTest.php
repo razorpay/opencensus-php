@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Merchant;
 use Mail;
 
 use RZP\Mail\Merchant\CreditsAdditionSuccess;
+use RZP\Models\Merchant\Balance\Entity as Balance;
+use RZP\Models\Merchant\Balance\Type as Type;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
@@ -941,4 +943,225 @@ class SelfServeCreditsTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testReserveBalanceWithdrawalSuccessCaseCompleteWithdrawal(): void
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->fixtures->create('balance', [
+            Balance::MERCHANT_ID => '10000000000000',
+            Balance::TYPE        => Type::RESERVE_PRIMARY,
+            Balance::BALANCE     => 10000,
+            Balance::CURRENCY    => 'INR'
+        ]);
+
+        $withdrawAmount = 10000;
+
+        $merchantId = '10000000000000';
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $expectedJournalPayload = $this->getReserveBalanceWithdrawalExpectedJournalPayload($withdrawAmount);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload) {
+
+                $this->assertArrayHasKey('transaction_date',$journalPayload);
+                $this->assertArrayHasKey('transactor_id',$journalPayload);
+                $this->assertEquals($expectedJournalPayload['currency'], $journalPayload['currency']);
+                $this->assertEquals($expectedJournalPayload['merchant_id'], $journalPayload['merchant_id']);
+                $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload['money_params'], $journalPayload['money_params']);
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn($this->getReserveBalanceWithdrawalJournalResponse($withdrawAmount));
+
+
+        $request = [
+            'url' => '/merchants/pre_fund/withdraw',
+            'method' => 'post',
+            'content' => [
+                'type' => 'reserve_balance',
+                'amount' => '10000'
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $reserveBalance = $this->getDbLastEntity('balance');
+
+        $adjustment = $this->getDbLastEntity('adjustment');
+
+        //assert for reserve balance
+        $this->assertEquals(0, $reserveBalance->getBalance());
+        $this->assertEquals(-10000,  $adjustment->getAmount());
+        $this->assertEquals('reserve_balance_withdrawal', $adjustment->getDescription());
+    }
+
+    public function testReserveBalanceWithdrawalSuccessCasePartialWithdrawal(): void
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->fixtures->create('balance', [
+            Balance::MERCHANT_ID => '10000000000000',
+            Balance::TYPE        => Type::RESERVE_PRIMARY,
+            Balance::BALANCE     => 10000,
+            Balance::CURRENCY    => 'INR'
+        ]);
+
+        $withdrawAmount = 5000;
+
+        $merchantId = '10000000000000';
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $expectedJournalPayload = $this->getReserveBalanceWithdrawalExpectedJournalPayload($withdrawAmount);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload) {
+
+                $this->assertArrayHasKey('transaction_date',$journalPayload);
+                $this->assertArrayHasKey('transactor_id',$journalPayload);
+                $this->assertEquals($expectedJournalPayload['currency'], $journalPayload['currency']);
+                $this->assertEquals($expectedJournalPayload['merchant_id'], $journalPayload['merchant_id']);
+                $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload['money_params'], $journalPayload['money_params']);
+
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn($this->getReserveBalanceWithdrawalJournalResponse($withdrawAmount));
+
+
+        $request = [
+            'url' => '/merchants/pre_fund/withdraw',
+            'method' => 'post',
+            'content' => [
+                'type' => 'reserve_balance',
+                'amount' => '5000'
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $reserveBalance = $this->getDbLastEntity('balance');
+
+        $adjustment = $this->getDbLastEntity('adjustment');
+
+        //assert for reserve balance
+        $this->assertEquals(5000, $reserveBalance->getBalance());
+        $this->assertEquals(-5000,  $adjustment->getAmount());
+        $this->assertEquals('reserve_balance_withdrawal', $adjustment->getDescription());
+    }
+
+    public function getReserveBalanceWithdrawalExpectedJournalPayload(int $withdrawAmount): array
+    {
+        return [
+            "merchant_id" => "10000000000000",
+            "currency" => "INR",
+            "transaction_date" => "", // any
+            "transactor_id" => "", // any
+            "transactor_event" => "merchant_reserve_balance_withdrawal",
+            "money_params" => [
+                "amount" => strval($withdrawAmount),
+                "base_amount" => strval($withdrawAmount),
+                "reserve_balance_amount" => strval($withdrawAmount),
+                "reserve_balance_control_amount" => strval($withdrawAmount)
+            ],
+            "notes" => [
+                "reserve_balance_id" => "" //any
+            ]
+        ];
+    }
+
+    public function getReserveBalanceWithdrawalJournalResponse(int $withdrawAmount, int $count = 0): array
+    {
+        $amount = strval($withdrawAmount);
+
+        $ledgerResp = [
+            'code' => 200,
+            'body' => [
+                "id"=> "LN5BWCGvLdPu7T",
+                "created_at"=> "1677853302",
+                "updated_at"=> "1677853302",
+                "amount"=> $amount,
+                "base_amount"=> $amount,
+                "currency"=> "INR",
+                "tenant"=> "PG",
+                "transactor_id"=> "adj_PCNYIZL7lE48oS",
+                "transactor_event"=> "merchant_reserve_balance_withdrawal",
+                "transaction_date"=> "1677853302",
+                "ledger_entry"=> [
+                    [
+                        "id"=> "PCNYIhc2rAjgqM",
+                        "created_at"=> "1677853302",
+                        "updated_at"=> "1677853302",
+                        "merchant_id"=> "10000000000000",
+                        "journal_id"=> "PCNYIhLYo7UTBg",
+                        "account_id"=> "JjpZUD9PmJeNPk",
+                        "amount"=> $amount,
+                        "base_amount"=> $amount,
+                        "type"=> "credit",
+                        "currency"=> "INR",
+                        "balance"=> "531425.000000",
+                        "balance_updated"=> true,
+                        "account_entities"=> [
+                            "account_type"=> [
+                                "payable"
+                            ],
+                            "fund_account_type"=> [
+                                "pre_fund_withdrawal_control"
+                            ]
+                        ]
+                    ],
+                    [
+                        "id"=> "PCNYIhc48b8LIQ",
+                        "created_at"=> "1677853302",
+                        "updated_at"=> "1677853302",
+                        "merchant_id"=> "10000000000000",
+                        "journal_id"=> "PCNYIhLYo7UTBg",
+                        "account_id"=> "LN22CRUSOTIIBG",
+                        "amount"=> $amount,
+                        "base_amount"=> $amount,
+                        "type"=> "debit",
+                        "currency"=> "INR",
+                        "balance"=> "997350.000000",
+                        "balance_updated"=> true,
+                        "account_entities"=> [
+                            "account_type"=> [
+                                "payable"
+                            ],
+                            "fund_account_type"=> [
+                                "merchant_reserve_balance"
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ];
+        return $ledgerResp;
+    }
+
 }

@@ -16,6 +16,7 @@ use RZP\Models\Currency;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Terminal;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use \RZP\Models\Terminal\Shared;
@@ -39,6 +40,8 @@ class TerminalTest extends TestCase
     use TerminalTrait;
 
     use DbEntityFetchTrait;
+
+    use WorkflowTrait;
 
     protected $razorxValue = RazorXClient::DEFAULT_CASE;
 
@@ -3405,7 +3408,6 @@ class TerminalTest extends TestCase
 
         $this->startTest();
     }
-
     public function testUpdateTerminalsBulk()
     {
         $this->ba->adminAuth();

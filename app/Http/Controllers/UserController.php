@@ -63,7 +63,6 @@ class UserController extends Controller
         /** @var Service $userService */
         $userService = $this->service();
         $data = $userService->verifySignupOtp($input);
-
         return ApiResponse::json($data);
     }
 
@@ -382,6 +381,15 @@ class UserController extends Controller
         $input = Request::all();
 
         $data = $this->service()->createMerchantForUser($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createMerchantInternal()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createMerchantForUser($input, true);
 
         return ApiResponse::json($data);
     }
@@ -805,5 +813,14 @@ class UserController extends Controller
         $response = $this->service()->createVendorEntities($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function addSalesUserToMerchant()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addSalesUserToMerchant($input);
+
+        return ApiResponse::json($data);
     }
 }

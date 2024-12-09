@@ -812,7 +812,16 @@ class Core extends Base\Core
         $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $input)
         {
             $this->upsertSettings($user, $input[Entity::SETTINGS] ?? []);
-            $this->repo->saveOrFail($user);
+            $isInternalAndContactVerified = (
+                ($this->app['basicauth']->isAppAuth() === true) &&
+                (isset($input[Entity::CONTACT_MOBILE_VERIFIED])) &&
+                ($input[Entity::CONTACT_MOBILE_VERIFIED] === 1)
+            );
+            $this->repo->saveOrFail(
+                $user,
+                ['is_internal_and_contact_verified' => $isInternalAndContactVerified]
+            );
+
         });
 
         return $user;
@@ -1549,7 +1558,11 @@ class Core extends Base\Core
             (empty($input[MerchantDetailEntity::REFERRAL_CODE]) === false)
         )
         {
-            $merchant = $user->merchants()->first();
+            if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+                $merchant = $user->getMerchantsFromAsvWithPivot(1)->first();
+            } else {
+                $merchant = $user->merchants()->first();
+            }
 
             if (empty($merchant) === false)
             {
@@ -2955,6 +2968,20 @@ class Core extends Base\Core
         return $receiver;
     }
 
+    public function setContactMobileOrEmail(array $input, Entity $user)
+    {
+        if (isset($input[Entity::CONTACT_MOBILE]) === true){
+            $user->setContactMobile($input[Entity::CONTACT_MOBILE]);
+            $this->repo->saveOrFail($user);
+        }
+        else if (isset($input[Entity::EMAIL]) === true){
+            $user->setEmail($input[Entity::EMAIL]);
+            $this->repo->saveOrFail($user);
+        }
+
+        $this->setContactMobileOrEmailVerify( $input, $user);
+    }
+
     public function setContactMobileOrEmailVerify(array $input, Entity $user)
     {
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
@@ -3196,24 +3223,24 @@ class Core extends Base\Core
 
         return $response;
     }
-    
+
     public function setContactNumberAsNullForUserIds(array $UserIds) {
         // Set contact number as null for Orphan user ids
         $this->repo->transactionOnLiveAndTest(function () use ($UserIds) {
             foreach ($UserIds as $userId){
-            
+
                 $user = $this->repo->user->findOrFail($userId);
-            
+
                 $user->contact_mobile = null;
-            
+
                 $this->repo->user->saveOrFail($user);
             }
         });
     }
-    
+
     public function getUserIdsToMakeFieldsNull(array $orphanUserIds, array $userIdsWithNoActivatedMerchant, array $existingUserIds): array{
         $userIdsToNullify = array();
-        
+
         if (count($orphanUserIds) === count($existingUserIds)) {
             $userIdsToNullify = $orphanUserIds;
         } elseif (count($userIdsWithNoActivatedMerchant) === count($existingUserIds)) {
@@ -3221,13 +3248,13 @@ class Core extends Base\Core
         }
         return $userIdsToNullify;
     }
-    
+
     public function getOrphanOrNonActivatedMerchantUserIds(array $existingUserIds): array{
         $orphanUserIds = array();
         $userIdsWithNoActivatedMerchant = array();
-        
+
         foreach ($existingUserIds as $userId) {
-        
+
             $mids = $this->repo->merchant_user->returnMerchantIdsForUserId($userId);
             if(count(value: $mids) === 0)
             {
@@ -3235,26 +3262,26 @@ class Core extends Base\Core
                 $userIdsWithNoActivatedMerchant[] = $userId;
                 continue;
             }
-        
+
             $activatedMids = $this->repo->merchant->fetchActivatedMids($mids);
-        
+
             $this->trace->info(TraceCode::EDIT_MOBILE_REQUEST_USER_NON_ORPHAN_USERS, [
                 "user_id"                 => $userId,
                 "count_activated_mids"    => count($activatedMids),
                 "total_mids"              => count($mids),
             ]);
-        
+
             if (count($activatedMids) === 0) {
                 // user_id is associated with merchant who is not activated.
                 $userIdsWithNoActivatedMerchant[] = $userId;
             }
         }
-    
+
         return $this->getUserIdsToMakeFieldsNull($orphanUserIds, $userIdsWithNoActivatedMerchant, $existingUserIds);
     }
-    
+
     //verify otp on the new added number
-    
+
     /**
      * @throws Throwable
      * @throws NumberParseException
@@ -3278,16 +3305,16 @@ class Core extends Base\Core
         $expResult = $this->splitzExperimentEvaluatorMobileUpdate($user->getId());
 
         if($expResult === true){
-            
+
             if ((empty($existingUserIds) === false) and
                 (count($existingUserIds) > 0))
             {
                 $userIdsToNullify = $this->getOrphanOrNonActivatedMerchantUserIds($existingUserIds);
-                
+
                 if (count($userIdsToNullify) === 0) {
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS);
                 }
-                
+
                 $this->setContactNumberAsNullForUserIds($userIdsToNullify);
             }
         }
@@ -4226,6 +4253,7 @@ class Core extends Base\Core
         if (empty($merchantIdsWithCrossOrgFeature) ===  true) {
             $merchantIdsWithCrossOrgFeature = (new Feature\Repository)->findMerchantIdsHavingFeatures([Features::CROSS_ORG_LOGIN]);
         }
+        $response[Entity::IS_MERCHANT_ENTITIES_EMPTY] = count($merchantEntities) === 0 ? true : false;
         $filteredMerchants = new Base\PublicCollection;
 
         if($this->app['basicauth']->isAppleWatchApp() === true or $orgId === Org\Entity::BAJAJ_ORG_ID)
@@ -4287,7 +4315,10 @@ class Core extends Base\Core
 
     private function fetchUserPermissions($merchant)
     {
-        $isCACEnabled = $this->isCACEnabled($merchant[Entity::ID]);
+        /** @var Merchant\Entity $merchantEntity */
+        $merchantEntity = $this->repo->merchant->find($merchant[Entity::ID]);
+
+        $isCACEnabled = $merchantEntity->isCACEnabled();
 
         $this->trace->info(TraceCode::CAC_EXPERIMENT_STATUS,
             [
@@ -4364,33 +4395,6 @@ class Core extends Base\Core
         return array_values(
             array_diff($basePermissions, [Permission::VIEW_TRANSACTION_STATEMENT])
         );
-    }
-
-    public function isCACEnabled($merchantId) :bool
-    {
-        $isCACExperimentEnabledVariant = app('razorx')->getTreatment($merchantId,
-            RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
-            MODE::LIVE);
-
-        $isCACExperimentDisabledVariant = app('razorx')->getTreatment($merchantId,
-            RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_DISABLED,
-            MODE::LIVE);
-
-        app('trace')->info(TraceCode::CAC_EXPERIMENT_VARIANTS_STATUS,
-            [
-                'isCACExperimentEnabledVariant' => $isCACExperimentEnabledVariant,
-                'isCACExperimentDisabledVariant' => $isCACExperimentDisabledVariant,
-                'merchant_id' => $merchantId
-            ]);
-
-        if ($isCACExperimentEnabledVariant != RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return $isCACExperimentDisabledVariant != RazorxTreatment::RAZORX_VARIANT_ON;
-        }
-        else
-        {
-            return $isCACExperimentEnabledVariant === RazorxTreatment::RAZORX_VARIANT_ON;
-        }
     }
 
     /**
@@ -5193,7 +5197,15 @@ class Core extends Base\Core
             $payload['debug'] = true;
         }
 
-        $mailable = new OtpMail($payload, $user, $otp);
+        // Add org id for stork
+        $orgID = '';
+
+        if ($merchant !== null)
+        {
+            $orgID = $merchant->getOrgId();
+        }
+
+        $mailable = new OtpMail($payload, $user, $otp, $orgID);
 
         if($directMailEnabled === true)
         {
@@ -6477,6 +6489,12 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetailsForPayroll($user);
 
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchants = $user->getMerchantsFromAsvWithPivot(1000);
+        } else {
+            $merchants = $user->merchants()->get();
+        }
+
         return [
             'user_id'                 => $user->getId(),
             'name'                    => $user->getName(),
@@ -6486,7 +6504,7 @@ class Core extends Base\Core
             'account_locked'          => $user->isAccountLocked(),
             'confirmed'               => $user->confirmed,
             'merchants'               => $merchantDetails,
-            'total_merchant_count'    => $user->merchants()->count()
+            'total_merchant_count'    => $merchants->count()
         ];
     }
 
@@ -6552,7 +6570,11 @@ class Core extends Base\Core
      */
     protected function getMerchantDetails(Entity $user): array
     {
-        $merchant = $user->merchants()->first();
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchant = $user->getMerchantsFromAsvWithPivot(1)->first();
+        } else {
+            $merchant = $user->merchants()->first();
+        }
 
         // if there is no merchant details then return empty result
         if ($merchant === NULL)
@@ -6875,9 +6897,14 @@ class Core extends Base\Core
         }
 
         if ($user) {
-            $merchantEntities = $user->merchants()->where(
-                Merchant\Entity::SUSPENDED_AT, null
-            )->take(1000)->get();
+
+            if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+                $merchantEntities = $user->getNonSuspendedMerchants(1000);
+            } else {
+                $merchantEntities = $user->merchants()->where(
+                    Merchant\Entity::SUSPENDED_AT, null
+                )->take(1000)->get();
+            }
 
             $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
             $merchantDetails = $this->getUnifiedMerchants($merchants);

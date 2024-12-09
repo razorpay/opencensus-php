@@ -64,6 +64,18 @@ class Service extends Base\Service
 
     use Base\RepositoryUpdateTestAndLive;
 
+    const ASV_ENTITIES = [
+        E::MERCHANT,
+        E::MERCHANT_DETAIL,
+        E::STAKEHOLDER,
+        E::MERCHANT_DOCUMENT,
+        E::MERCHANT_EMAIL,
+        E::MERCHANT_WEBSITE,
+        E::MERCHANT_BUSINESS_DETAIL,
+        E::BANKING_ACCOUNT,
+        E::ACCOUNT,
+    ];
+
     const FROM_MODE                  = 'from_mode';
     const TO_MODE                    = 'to_mode';
     const FIELDS_TO_SYNC             = 'fields_to_sync';
@@ -277,11 +289,7 @@ class Service extends Base\Service
         {
             $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::RX_WHATSAPP_LIVE);
         }
-        else if ( $entity === Entity::PAYMENT && isset($input['contact']))
-        {
-            $entity = $this->fetchEntityByNameAndId($entity, $id, $input, $this->repo->payment->getPaymentFetchReplicaConnection());
-        }
-        else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER OR $entity === Entity::TOKEN OR $entity === Entity::TRANSACTION OR $entity === Entity::TRANSFER)
+        else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER OR $entity === Entity::TOKEN OR $entity === Entity::TRANSACTION OR $entity === Entity::TRANSFER OR $entity === Entity::PRODUCT )
         {
             $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
@@ -295,6 +303,15 @@ class Service extends Base\Service
             }
             else
             {
+                $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::REPLICA);
+            }
+        } else if(in_array($entity, self::ASV_ENTITIES, true) === true) {
+
+            $rampFromTidb = (new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__);
+
+            if ($rampFromTidb === true) {
+                $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            } else {
                 $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::REPLICA);
             }
         }
@@ -622,10 +639,6 @@ class Service extends Base\Service
         {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::RX_WHATSAPP_LIVE);
         }
-        else if ($entity === Entity::PAYMENT && isset($input['contact']))
-        {
-            $entities = $this->repo->$entity->fetch($input, null, $this->repo->payment->getPaymentFetchReplicaConnection());
-        }
         else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER OR $entity === Entity::TRANSACTION )
         {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
@@ -642,7 +655,7 @@ class Service extends Base\Service
         {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::RX_ACCOUNT_STATEMENTS);
         }
-        else if (in_array($entity, E::ACS_SYNCED_ENTITIES) === true && (new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+        else if (in_array($entity, self::ASV_ENTITIES) === true && (new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
         else if($entity === Entity::BALANCE)

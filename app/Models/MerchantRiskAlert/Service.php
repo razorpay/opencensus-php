@@ -467,9 +467,7 @@ class Service extends Base\Service
         ];
 
         // Whatsapp Experiment is applicable only for FOH template.
-        $isWhatsappEnabled = $templateName != Constants::FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE_NAME ||
-            (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
-            Merchant\RazorxTreatment::FRAUD_WHATSAPP_NOTIFICATIONS_MIDS);
+        $isWhatsappEnabled = true;
 
         $this->trace->info(TraceCode::RAS_SEND_WHATSAPP_MESSAGE_FOH_RAZORX_RESULT, [
            "merchant_id" => $merchant->getId(),

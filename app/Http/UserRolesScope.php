@@ -32,9 +32,12 @@ class UserRolesScope
     public function setRouteUserRoleMap()
     {
         $this->routeUserRoleMap = [
+            'register_merchant_sales'                              => [Role::PARTNER_AGENT],
             'register_merchant_verify_otp'                         => [Role::PARTNER_AGENT],
+            'add_sales_user_mapping'                               => [Role::POS_SALES_ADMIN],
             'merchant_nc_revamp_eligibility'                       => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT, Role::ADMIN_READONLY,Role::RAZORPAY_SALES],
             'merchant_activation_details_sales'                    => [Role::PARTNER_AGENT,Role::POS_SALES_ADMIN],
+            'initiate_pos_onboarding'                              => [Role::OWNER],
             'onboarding_get_sales'                                 => [Role::PARTNER_AGENT,Role::POS_SALES_ADMIN],
             'onboarding_save_sales'                                => [Role::PARTNER_AGENT,Role::POS_SALES_ADMIN],
             'merchant_activation_clarifications_fetch'             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT, Role::ADMIN_READONLY,Role::RAZORPAY_SALES],
@@ -510,7 +513,7 @@ class UserRolesScope
             'merchant_activation_business_categories'       => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::SELLERAPP,Role::FINANCE, Role::PARTNER,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
             'merchant_activation_business_categories_v2'    => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::SELLERAPP,Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
             'merchant_activation_gst_details'               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
-            'merchant_activation_save'                      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
+            'merchant_activation_save'                      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES],
             'merchant_activation_otp_send'                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_coupons_apply'                        => [Role::OWNER, Role::ADMIN],
             'merchant_checkout_details'                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::ADMIN_READONLY],
@@ -1418,6 +1421,7 @@ class UserRolesScope
             '1cc_magic_konnect_get_sso_jwt'                       => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS, Role::ADMIN_READONLY],
 
             'fund_addition_tpv'                                   => [Role::OWNER, Role::ADMIN],
+            'pre_fund_withdraw'                                   => [Role::OWNER, Role::ADMIN],
             'shipping_provider_list'                              => [Role::OWNER, Role::ADMIN, Role::ADMIN_READONLY],
             'shipping_provider_post'                              => [Role::OWNER, Role::ADMIN],
             'shipping_provider_patch'                             => [Role::OWNER, Role::ADMIN],

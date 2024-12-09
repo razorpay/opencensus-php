@@ -113,6 +113,8 @@ class MerchantDocumentTest Extends TestCase
         $this->assertArrayNotHasKey('promoter_address_url',$content['verification']['required_fields']);
     }
 
+
+
     public function testDocumentUploadForPartnerKyc()
     {
         $merchantUser = $this->fixtures->user->createUserForMerchant('1cXSLlUU8V9sXl');

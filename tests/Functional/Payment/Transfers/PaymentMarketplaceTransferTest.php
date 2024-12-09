@@ -166,8 +166,8 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $this->assertEquals('transfer', $transfer['entity']);
         $this->assertEquals($this->payment['id'], $transfer['source']);
-        $this->assertEquals('processed', $transfer['status']);
-        $this->assertNotNull($transfer['processed_at']);
+        $this->assertEquals('pending', $transfer['status']);
+        $this->assertEquals('processed', $this->getDbLastEntity('transfer')['status']);
         $this->assertEquals('acc_10000000000001', $transfer['recipient']);
         $this->assertEquals('code-007', $transfer['account_code']);
         $this->assertEquals($this->payment['amount'], $transfer['amount']);
@@ -214,8 +214,7 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $this->assertEquals('transfer', $transfer['entity']);
         $this->assertEquals($this->payment['id'], $transfer['source']);
-        $this->assertEquals('processed', $transfer['status']);
-        $this->assertNotNull($transfer['processed_at']);
+        $this->assertEquals('processed', $this->getDbLastEntity('transfer')['status']);
         $this->assertEquals('acc_10000000000001', $transfer['recipient']);
         $this->assertEquals('code-007', $transfer['account_code']);
         $this->assertEquals($this->payment['amount'], $transfer['amount']);
@@ -240,8 +239,7 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $this->assertEquals('transfer', $transfer['entity']);
         $this->assertEquals($this->payment['id'], $transfer['source']);
-        $this->assertEquals('pending', $transfer['status']);
-        $this->assertNull($transfer['processed_at']);
+        $this->assertEquals('processed', $this->getDbLastEntity('transfer')['status']);
         $this->assertEquals('acc_10000000000001', $transfer['recipient']);
         $this->assertEquals('code-007', $transfer['account_code']);
         $this->assertEquals($this->payment['amount'], $transfer['amount']);
@@ -2283,8 +2281,7 @@ class PaymentMarketplaceTransferTest extends TestCase
         $transfer = $response['items'][0];
         $this->assertEquals('transfer', $transfer['entity']);
         $this->assertEquals($payment['id'], $transfer['source']);
-        $this->assertEquals('processed', $transfer['status']);
-        $this->assertNotNull($transfer['processed_at']);
+        $this->assertEquals('processed', $this->getDbLastEntity('transfer')['status']);
         $this->assertEquals('acc_10000000000001', $transfer['recipient']);
         $this->assertEquals('code-007', $transfer['account_code']);
         $this->assertEquals($payment['amount'], $transfer['amount']);

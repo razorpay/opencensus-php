@@ -13,6 +13,9 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Reconciliator\Base\InfoCode;
+use RZP\Models\Feature;
+use RZP\Models\Transaction;
+use RZP\Reconciliator\Base\Foundation\SubReconciliate;
 
 class Core extends Base\Core
 {
@@ -106,12 +109,23 @@ class Core extends Base\Core
             {
                 $refundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
             }
+            $merchantID=$refundData[E::PAYMENT][Payment\Entity::MERCHANT_ID];
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantID);
+            //pushing non financial column data to CLs to stream data in downstream
+            if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true){
+                $time = time();
+                $reconData = [
+                        Transaction\Entity::RECONCILED_AT   => $time,
+                        Transaction\Entity::RECONCILED_TYPE => 'na',
+                        ];
+                (new SubReconciliate())->sendRefundReconNFCDataToCLS($refundData[E::REFUND][Refund\Entity::ID], $reconData);
+            }
         }
 
         if (empty($refundIds) === false)
         {
             $this->repo->transaction->bulkReconciliationUpdate($refundIds);
-
+            
             try
             {
                 $this->RequestScroogeForReference1Update($refundIds);

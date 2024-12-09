@@ -32,6 +32,10 @@ class BankTransferCreateProcess extends Job
     {
         parent::handle();
 
+        $this->trace->count(ConstantMetric::BANK_TRANSFER_CREATE_PROCESS_JOB_INIT_COUNT, [
+            'is_collectx_bank_transfer' =>  $this->isCollectXBankTransfer
+        ]);
+
         $isDeleteFromQueue = true;
 
         $this->trace->info(
@@ -95,7 +99,8 @@ class BankTransferCreateProcess extends Job
             (new Metric())->pushQueueTimeMetrics($bankTransferCreatedAt,
                                                  Carbon::now()->getTimestamp(),
                                                  $bankTransferRequest->getGateway(),
-                                                 $errorMessage);
+                                                 $errorMessage,
+                                                 $this->isCollectXBankTransfer);
 
             if ($isDeleteFromQueue === true)
             {

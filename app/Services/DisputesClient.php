@@ -47,6 +47,7 @@ class DisputesClient
 
     const HEADER_ACCEPT = 'Accept';
     const HEADER_ACCEPT_MIME_TYPE = [
+        'application/json',
         'text/csv',
     ];
 

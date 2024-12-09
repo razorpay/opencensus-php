@@ -13,7 +13,7 @@ use RZP\Models\LedgerOutbox;
 use RZP\Models\Ledger\ReverseShadow;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use function RZP\Console\Commands\laravelPatternToEdgeRoute;
-
+use RZP\Models\Ledger\ReverseShadow\Adjustments;
 
 class Service extends Base\Service
 {
@@ -259,6 +259,20 @@ class Service extends Base\Service
 
             return $response;
         }
+    }
+
+    public function createClsAdjustment(array $input)
+    {
+        $this->increaseAllowedSystemLimits();
+
+        if (isset($input['journal_payload']) === true)
+        {
+            $journalPayload =$input['journal_payload'];
+
+            return (new Adjustments\Core())->createOnlyLedgerEntryInReverseShadow($journalPayload);
+        }
+
+        return ['error' => 'no input provided'];
     }
 }
 

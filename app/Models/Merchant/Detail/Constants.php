@@ -15,6 +15,7 @@ use RZP\Models\Merchant\Website\Entity as WebsiteEntity;
 
 class Constants
 {
+    const MERCHANT_DETAIL_CONTACT_MOBILE_VALIDATION = "MERCHANT_DETAIL_CONTACT_MOBILE_VALIDATION";
     const LIVE_PRIMARY_BALANCE          = 'Live Primary Balance';
     const REJECTION_CATEGORY_REASONS    ='Rejection Category - Rejection Reasons';
     const REJECTION_OPTION             ='Rejection Option';
@@ -144,6 +145,10 @@ class Constants
     const DUMMY_ACTIVATION_FILE = '100000000Dummy';
 
     const LOCK_COMMON_FIELDS = 'lock_common_fields';
+
+    const RISK_DETAILS                      = 'risk_details';
+    const ADDITIONAL_ONBOARDING_DETAILS     = 'additional_onboarding_details';
+    const PG_ONBOARDING                     = 'pg_onboarding';
 
     // For Route no doc KYC feature.
     const UNREGISTERED_AND_PROPRIETORSHIP   = 'unregistered_and_proprietorship';
@@ -458,6 +463,7 @@ class Constants
     const FEE_BASED_GATING_FLOW  = "fee_based_gating_flow";
     const MODULAR_MERCHANT_ACTIVATION  = "modular_merchant_activation";
     const SALES_ASSISTED_FORM_SUBMISSION  = "SALES_ASSISTED_FORM_SUBMISSION";
+    const SAVE_MERCHANT_DETAILS_FOR_ACTIVATION  = "SAVE_MERCHANT_DETAILS_FOR_ACTIVATION";
 
     const VIRTUAL_BANK_ACCOUNTS_PREFIX = [
         [
@@ -806,6 +812,7 @@ class Constants
 
     const WHITE_GLOVE_ATTRIBUTES       = 'white_glove_attributes';
     const ONBOARDING_PAYMENT_DETAILS   = 'onboarding_payment_details';
+    const AUTHORISED_SIGNATORY_NAME    = 'authorised_signatory_name';
 
     const POS_ACTIVATION_STATUS    = 'pos_activation_status';
     const IS_POS_DETAILS_SUBMITTED = 'is_pos_details_submitted';

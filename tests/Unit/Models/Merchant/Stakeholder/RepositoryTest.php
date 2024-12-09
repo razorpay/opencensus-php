@@ -161,6 +161,51 @@ class RepositoryTest extends RepositoryTestHelper
         ]
     ];
 
+    public function testMerchantStakeholderSaveOrFailReadMigration()
+    {
+        $attributes = [
+            "email" => "123@gfmail.com",
+            "name" => "test",
+            "phone_primary" => "123f4567890",
+            "phone_secondary" => "12f34567890",
+            "director" => 1,
+            "executive" => 1,
+        ];
+
+        $this->validateSaveOrFailReadMigration("stakeholder", $attributes, new Repository());
+    }
+
+    public function testMerchantStakeholderSaveOrFailMigration()
+    {
+        $entity = $this->fixtures->create("stakeholder");
+
+        $attributes = [
+            "email" => "123@gfmail.com",
+            "name" => "test",
+            "phone_primary" => "123f4567890",
+            "phone_secondary" => "12f34567890",
+            "director" => 1,
+            "executive" => 1,
+        ];
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_stakeholder', false);
+
+        $this->validateSaveOrFailMigration("stakeholder", $attributes, new Repository(), $entity, true);
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_stakeholder', true);
+
+        $attributes = [
+            "email" => "1234@gfmail.com",
+            "name" => "test1",
+            "phone_primary" => "123f4567891",
+            "phone_secondary" => "12f34567891",
+            "director" => 0,
+            "executive" => 0,
+        ];
+
+        $this->validateSaveOrFailMigration("stakeholder", $attributes, new Repository(), $entity, false);
+    }
+
 
     public function testGetStakeholderByMerchantId()
     {

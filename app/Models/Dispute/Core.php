@@ -1008,7 +1008,7 @@ class Core extends Base\Core
 
     protected function getAcceptedDisputeAmount(Entity $dispute, array $input)
     {
-        $disputeBaseAmount = $dispute->getBaseAmount() ?: $dispute->getAmount();
+        $disputeBaseAmount = $dispute->getAmount() ?: $dispute->getBaseAmount();
 
         if (isset($input[Entity::ACCEPTED_AMOUNT]) === false)
         {
@@ -2329,11 +2329,16 @@ class Core extends Base\Core
         );
 
         $response = $this->app['disputes']->forwardToDisputesService($input, [
-            'Accept' => 'text/csv'
+            'Accept' => 'application/json'
         ]);
+
+        $statusCode = $response->getStatusCode();
+        $contentType = $response->getHeaderLine('Content-Type');
 
         $this->trace->info(TraceCode::DISPUTE_DOWNLOAD_REPORT_RESPONSE, [
                 'response'    => $response,
+                'statusCode'  => $statusCode,
+                'contentType' => $contentType,
                 'merchant_id' => $this->merchant->getId(),
             ]
         );

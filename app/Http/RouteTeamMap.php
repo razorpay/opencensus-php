@@ -37,8 +37,12 @@ class RouteTeamMap
     }
 
     protected static $routeTeamMap = [
+
+        'register_merchant_sales'                  => [self::TEAM_OMNI_ACQUISITION],
         'register_merchant_verify_otp'             => [self::TEAM_OMNI_ACQUISITION],
+        'add_sales_user_mapping'                   => [self::TEAM_OMNI_ACQUISITION],
         'merchant_activation_details_sales'        => [self::TEAM_OMNI_ACQUISITION],
+        'initiate_pos_onboarding'                  => [self::TEAM_OMNI_ACQUISITION],
         'onboarding_get_sales'                     => [self::TEAM_OMNI_ACQUISITION],
         'onboarding_save_sales'                    => [self::TEAM_OMNI_ACQUISITION],
         'fetch_brand_dealer_details'               => [self::TEAM_OMNI_ACQUISITION],
@@ -492,6 +496,8 @@ class RouteTeamMap
         'setl_merchant_config_update'                     => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_merchant_config_bulk_update'                => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_bank_account_create'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_reason_code_mapping_internal'               => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_reason_code_mapping_admin'                  => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_bank_account_update'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_update_bene_name'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_bank_account_get'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],

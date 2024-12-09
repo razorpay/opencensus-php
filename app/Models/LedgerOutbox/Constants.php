@@ -41,6 +41,8 @@ class Constants
     const TRANSFER                                      = "transfer";
     const DEBIT                                         = "debit";
     const CREDIT                                        = "credit";
+    const BALANCE                                       = "balance";
+
     const CUSTOMER_TRANSFER                             = "customer_transfer";
 
     const PROCESSED                                     = "processed";

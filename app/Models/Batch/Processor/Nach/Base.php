@@ -40,6 +40,13 @@ abstract class Base extends BaseProcessor
 
     protected function shouldReconcileEntity($entity)
     {
+        $merchant = $entity->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            return true;
+        }
+
         if ($entity->getTransactionId() === null)
         {
             $this->trace->critical(TraceCode::EMANDATE_RECON_ROW_FAILED, [

@@ -154,7 +154,7 @@ class Service extends Base\Service
 
         $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
 
-       if (($this->mode !== MODE::TEST || ($this->app->runningUnitTests() === true)) && ($token->isCard() === true) && ($token->isRecurring() === false) && ($token->card->isTokenisationCompliant($token->merchant) === false) && ( ($token->getStatus() === 'failed') || ($token->getStatus() === null )))
+       if (($this->mode !== MODE::TEST || ($this->app->runningUnitTests() === true)) && ($token->isCard() === true) && ($token->isRecurring() === false) && ($token->card->isTokenisationCompliant($token->merchant) === false) && ($token->getStatus() === 'failed'))
        {
             $errorCode = $token->getInternalErrorCode() ?? ErrorCode::BAD_REQUEST_TOKEN_CREATION_FAILED;
 
@@ -1342,7 +1342,7 @@ class Service extends Base\Service
         }
         // for few customer we get token instead of token id this we ensure we override that
         $input['token_id'] = $token->getId();
-        
+
         return $input;
     }
 
@@ -2651,7 +2651,7 @@ class Service extends Base\Service
 
         return $card->toArray();
     }
-  
+
     //Splitz Experiment for save card
     public function isSaveTokenViaTokenService(): bool
     {
@@ -2661,9 +2661,11 @@ class Service extends Base\Service
         {
             try
             {
+                $experimentId = $this->app['config']->get('app.my_save_card_splitz_experiment_id');
+
                 $properties = [
                     'id' => $this->app['request']->getTaskId(),
-                    'experiment_id' => $this->app['config']->get('app.my_save_card_splitz_experiment_id'),
+                    'experiment_id' => $experimentId,
                     'request_data' => json_encode(['mid' => $this->merchant->getId(), 'mode' => $this->mode]),
                 ];
 
@@ -2672,8 +2674,9 @@ class Service extends Base\Service
                 $variant = $response['response']['variant']['name'] ?? 'control';
 
                 $this->trace->info(TraceCode::TOKENS_ENTITY_FETCH_SPLITZ_EXPERIMENT_RESPONSE, [
-                    'merchant_id' => $properties,
-                    'variant' => $response['response']['variant']['name'],
+                    'merchant_id' =>  $this->merchant->getId(),
+                    'variant' => $variant,
+                    'experiment_id' => $experimentId
                 ]);
 
                 return $variant === 'variant_on';

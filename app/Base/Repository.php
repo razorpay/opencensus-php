@@ -28,6 +28,7 @@ use RZP\Models\Base\PublicEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\Entity as BaseEntity;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Base\Database\ConnectionHeartbeatLagChecker;
 
 class Repository extends \Razorpay\Spine\Repository
@@ -78,7 +79,6 @@ class Repository extends \Razorpay\Spine\Repository
 
     const WDA_MIGRATION_ADMIN = 'wda_migration_admin';
     const WDA_PAYMENT_FETCH_MULTIPLE_MIGRATION = 'wda_payment_fetch_multiple_migration';
-    const TIDB_EXPERIMENT_FOR_TEST_MODE_ORDERS  = 'rearch_fetch_tidb_test_mode_orders'; // used as experiment for merchant tidb cluster for orders test mode
 
     protected $app;
 
@@ -1217,6 +1217,13 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->getTableName() . '.' . $col;
     }
 
+    protected function dbColumnDispute($col)
+    {
+        if ($col === 'international') {
+            return 'payments.' . $col;
+        }
+        return $this->getTableName() . '.' . $col;
+    }
     protected function validateInstanceIsOfCurrentEntity(Models\Base\Entity $entity)
     {
         if ($entity->getEntityName() !== $this->entity)
@@ -1266,28 +1273,15 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected function useDataWarehouseConnection(string $experiment): bool
     {
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
+        ];
 
-        $connection = Connection::DATA_WAREHOUSE_LIVE;
-
-        if ($mode !== Mode::LIVE)
-        {
-            $connection = Connection::DATA_WAREHOUSE_TEST;
-        }
-
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), $experiment, $mode);
-
-        if ($experimentResult === 'enable')
-        {
-            $isReplicationLag = (new ConnectionHeartbeatLagChecker($connection))->isConnectionLagging();
-
-            return $isReplicationLag === false;
-        }
-
-        return false;
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
     }
 
-    protected function getDataWarehouseConnection(string $cluster = null): string
+    public function getDataWarehouseConnection(string $cluster = null): string
     {
         // Removing Environment::BETA from the array list. Since we now have api db present on
         // stage mysql (stage-mysql.np.razorpay.vpc) which is acting like warehouse in beta/devserve environment.

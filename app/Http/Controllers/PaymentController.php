@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use Request;
 use RZP\Constants\HyperTrace;
+use RZP\Constants\Metric;
 use RZP\Trace\Tracer;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -32,6 +33,11 @@ class PaymentController extends Controller
     public function getPayment($id)
     {
         $input = Request::all();
+
+        $this->trace->count(Metric::API_DECOMP_AUTH_DISTRIBUTION, [
+            'route_auth'       => $this->app['basicauth']->getAuthType(),
+            'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+        ]);
 
         $payment = $this->service()->fetch($id, $input);
 
@@ -119,6 +125,11 @@ class PaymentController extends Controller
     public function getPayments()
     {
         $input = Request::all();
+
+        $this->trace->count(Metric::API_DECOMP_AUTH_DISTRIBUTION, [
+            'route_auth'       => $this->app['basicauth']->getAuthType(),
+            'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+        ]);
 
         $payments = $this->service()->fetchMultiple($input);
 

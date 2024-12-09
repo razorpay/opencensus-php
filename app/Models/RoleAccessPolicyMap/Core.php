@@ -136,4 +136,73 @@ class Core extends Base\Core
         ];
     }
 
+    public function updateRoleAccessPolicyMap(array $input)
+    {
+        $this->trace->info(TraceCode::UPDATE_ROLE_ACCESS_POLICY_MAP_REQUEST, ['input' => $input]);
+
+        $roleIds = $input[Constants::ROLE_IDS];
+
+        $accessPolicyIds = $input[Entity::ACCESS_POLICY_IDS];
+
+        $operation = $input[Constants::OPERATION];
+
+        $authzRoles = $this->repo->access_policy_authz_roles_map->getAllAuthzRolesForAccessPolicyIds($accessPolicyIds);
+
+        if (empty($authzRoles) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException("Invalid Access Policies" ,
+                $input);
+        }
+
+        $roles = $this->repo->role_access_policy_map->findByRoleIds($roleIds);
+
+        $failedRoleIds = [];
+
+        /** @var Entity $role */
+        foreach ($roles as $role)
+        {
+            try
+            {
+                $roleEdit = [
+                    Entity::ROLE_ID             => $role->getRoleId(),
+                    Entity::ACCESS_POLICY_IDS   => $this->resolveArrayForOperationType($role->getAccessPolicyIds(), $accessPolicyIds, $operation),
+                    Entity::AUTHZ_ROLES         => $this->resolveArrayForOperationType($role->getAuthzRoles(), $authzRoles, $operation),
+                ];
+
+                $role->edit($roleEdit);
+
+                $this->repo->saveOrFail($role);
+            }
+            catch (\Exception $e)
+            {
+                $failedRoleIds[] = $role->getId();
+
+                $this->trace->error(TraceCode::ROLE_ACCESS_POLICY_MAP_UPDATE_FAILED,
+                    [
+                        'role_id'   => $role->getId(),
+                        'error'     => $e->getMessage()
+                    ]);
+            }
+        }
+
+        return [
+            'success'           => true,
+            'failed_role_ids'   => $failedRoleIds,
+        ];
+    }
+
+    private function resolveArrayForOperationType(array $existing, array $input, string $operationType)
+    {
+        switch($operationType)
+        {
+            case Constants::APPEND:
+                return array_values(array_unique(array_merge($existing, $input)));
+            case Constants::REMOVE:
+                return array_values(array_unique(array_values(array_filter($existing, function($item) use ($input) {
+                    return !in_array($item, $input);
+                }))));
+            default:
+                throw new Exception\LogicException('Invalid role_access_policy_map update operation');
+        }
+    }
 }

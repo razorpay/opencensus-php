@@ -54,6 +54,7 @@ class Limit
         Type::RECURRING_CHARGE_AXIS                 => 500100,
         Type::SUB_MERCHANT                          => 5000,
         Type::MERCHANT_UPLOAD_MIQ                   => 1000,
+        Type::JAMMU_AND_KASHMIR_ONBOARDING          => 10000,
         Type::SUBMERCHANT_ASSIGN                    => 50000,
         TYPE::IIN_NPCI_RUPAY                        => 50000,
         TYPE::IIN_HITACHI_VISA                      => 500000,
@@ -109,8 +110,10 @@ class Limit
         Type::CREATE_WALLET_LOADS                   => 1000000,
         Type::CREATE_BULK_GIFT_CARDS                => 1000000,
         Type::UPDATE_GIFT_CARDS_EXPIRY              => 1000000,
-        Type::ALT_ID_TERMINAL_ONBOARD              => 1000000,
+        Type::ALT_ID_TERMINAL_ONBOARD               => 1000000,
         Type::BVS_BULK_KYC_VERIFICATION             => 50000,
+        Type::UPDATE_ODS_MERCHANT_LIMITS            => 50000,
+        Type::CREATE_GIFT_CARD_TRANSFERS            => 10000,
     ];
 
     /**

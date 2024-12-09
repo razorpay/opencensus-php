@@ -35,6 +35,7 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Terminal\Constants as TerminalConstants;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Gateway\Terminal\Constants as GatewayTerminalConstants;
+use RZP\Models\Terminal\Entity;
 
 
 class Service extends Base\Service
@@ -930,6 +931,171 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::TERMINAL_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
+    public function enableBulkTerminalsOnline($input)
+    {
+        $this->trace->info(TraceCode::TERMINAL_BULK_ENABLE_REQUEST, [
+            'count' => count($input[Entity::TERMINAL_IDS])
+        ]);
+
+        $this->increaseAllowedSystemLimits();
+
+        (new Validator())->validateInput('bulkTerminalsOnlineTag', $input);
+
+        $ids = $input[Entity::TERMINAL_IDS];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        $failure_details =[];
+
+        foreach ($ids as $terminalId)
+        {
+            try
+            {
+                $terminal = $this->repo->terminal->findOrFailPublic($terminalId);
+
+                $validatedTerminal = $this->core()->validateTerminalForOnlineType($terminal);
+
+                if ($validatedTerminal === true)
+                {
+                    if(in_array("online",$terminal['type']) === false)
+                    {
+                        array_push($terminal['type'], "online");
+                        $this->repo->saveOrFail($terminal);
+                    }
+                    else
+                    {
+                        $this->trace->info(TraceCode::TERMINAL_ALREADY_ENABLED_ONLINE_TYPE, ['terminal_id' => $terminalId]);
+                        $failedCount++;
+                        continue;
+                    }
+
+                }
+                else
+                {
+                    throw new Exception\BadRequestValidationFailureException("Terminal not applicable for enabling");
+                }
+
+                $successCount++;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e,
+                                             Trace::ERROR,
+                                             TraceCode::TERMINAL_BULK_ENABLE_FAILED,
+                                             [
+                                                 'terminal_id' => $terminal->getId()
+                                             ]);
+
+                $failedCount++;
+                $errorMessage = $e->getMessage();
+                $failure_details[$terminalId] = $errorMessage;
+
+                $failedIds[] = $terminalId;
+            }
+        }
+
+        $response = [
+            'total'     => count($ids),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+            'failureDetails' => $failure_details
+        ];
+
+        $this->trace->info(
+            TraceCode::TERMINAL_BULK_ENABLE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
+    public function disableBulkTerminalsOnline($input)
+    {
+        $this->trace->info(TraceCode::TERMINAL_BULK_DISABLE_REQUEST, [
+            'count' => count($input[Entity::TERMINAL_IDS])
+        ]);
+
+        $this->increaseAllowedSystemLimits();
+
+        (new Validator())->validateInput('BulkTerminalsOnlineTag', $input);
+
+        $ids = $input[Entity::TERMINAL_IDS];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($ids as $terminalId)
+        {
+            try
+            {
+                $terminal = $this->repo->terminal->findOrFailPublic($terminalId);
+
+                $validatedTerminal = $this->core()->validateTerminalForOnlineType($terminal);
+
+                if ($validatedTerminal === true)
+                {
+                    if(in_array("online",$terminal['type']) === true)
+                    {
+                        foreach($terminal['type'] as $key => $type)
+                        {
+                               if($type === 'online')
+                               {
+                                   unset($terminal['type'][$key]);
+                                   break;
+                               }
+                        }
+
+                        $this->repo->saveOrFail($terminal);
+                    }
+                    else
+                    {
+                        $this->trace->info(TraceCode::TERMINAL_ALREADY_DISABLED_ONLINE_TYPE, ['terminal_id' => $terminalId]);
+                        $failedCount++;
+                        continue;
+                    }
+
+                }
+                else
+                {
+                    throw new Exception\BadRequestValidationFailureException("Terminal not applicable for disabling");
+                }
+
+                $successCount++;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e,
+                                             Trace::ERROR,
+                                             TraceCode::TERMINAL_BULK_DISABLE_FAILED,
+                                             [
+                                                 'terminal_id' => $terminal->getId()
+                                             ]);
+
+                $failedCount++;
+
+                $failedIds[] = $terminalId;
+            }
+        }
+
+        $response = [
+            'total'     => count($ids),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::TERMINAL_BULK_DISABLE_RESPONSE,
             $response
         );
 

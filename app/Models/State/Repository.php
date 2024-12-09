@@ -2,11 +2,13 @@
 
 namespace RZP\Models\State;
 
+use RZP\Base\ConnectionType;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
@@ -89,7 +91,13 @@ class Repository extends Base\Repository
         $merchantDetailMerchantIdCol = $this->repo->merchant_detail->dbColumn
         (\RZP\Models\Merchant\Detail\Entity::MERCHANT_ID);
 
-        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+        if ((new AsvRouter())->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN));
+        } else {
+            $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
+        }
+
+        return $query
             ->leftjoin(Table::MERCHANT_DETAIL, Entity::ENTITY_ID, $merchantDetailMerchantIdCol)
             ->select(Entity::ENTITY_ID)
             ->where(Entity::ENTITY_TYPE, '=', 'merchant_detail')

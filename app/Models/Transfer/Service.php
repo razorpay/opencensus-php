@@ -5,6 +5,7 @@ namespace RZP\Models\Transfer;
 use App;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
+use RZP\Models\Pricing\Fee;
 use Throwable;
 use Carbon\Carbon;
 use Monolog\Logger;
@@ -124,13 +125,21 @@ class Service extends Base\Service
 
     public function getTransferReadSplitzResponse($merchantId)
     {
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.transfer_read_experiment'),
-        ];
-        $response = $this->app['splitzService']->evaluateRequest($properties);
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.transfer_read_experiment'),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
 
-        return $response['response']['variant']['name'] ?? '';
+            return $response['response']['variant']['name'] ?? '';
+        }
+        catch (\Throwable $e)
+        {
+            return '';
+        }
+
     }
 
     public function fetchMultiple(array $input)
@@ -1026,7 +1035,12 @@ class Service extends Base\Service
             ]
         );
 
-        return $this->core->createTransactionForTransferViaCron($transferIds);
+        foreach ($transferIds as $transferId)
+        {
+            $transfer = $this->repo->transfer->findOrFail($transferId);
+
+            $this->core->createTransactionsForFromLedgerJournal($transfer);
+        }
     }
 
     public function processOrderTransfersForRearch(array $input)
@@ -1845,13 +1859,11 @@ class Service extends Base\Service
 
                             (new Core())->updatePaymentAmountTransferred($sourcePayment, $totalTransferAmount);
 
-                            $transfer->setStatus(Status::PROCESSED);
+                            $transfer->setProcessed();
 
                             $transfer->saveOrFail();
 
                             (new Core())->eventTransferProcessed($transfer);
-
-                            $this->core->createTransactionForTransferViaCron([$transferId]);
                         }
                     });
                 }
@@ -1864,7 +1876,7 @@ class Service extends Base\Service
                 // To remove the on_hold from transfers
                 // Data should be array of transfer IDs
                 // Sample payload:
-                // {"option": "mark_processed", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+                // {"option": "remove_on_hold", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
 
                 $this->trace->info(
                     TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
@@ -1910,6 +1922,33 @@ class Service extends Base\Service
                 foreach ($transferIds as $transferId)
                 {
                     $this->core->createTransactionForTransferViaCron([$transferId]);
+                }
+
+                break;
+            }
+
+            case 'create_txns_from_journal':
+            {
+                // To create debit/credit transactions for transfers from CLS journal
+                // Data should be array of transfer IDs
+                // Sample payload:
+                // {"option": "create_txns", "data": ["NPBxWRRn778Om9", "X2xpdmU6d29hM1"]}
+
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'create_txns_from_journal',
+                        'input'  => $input,
+                    ]
+                );
+
+                $transferIds = $input['data'];
+
+                foreach ($transferIds as $transferId)
+                {
+                    $transfer = $this->repo->transfer->findOrFail($transferId);
+
+                    $this->core->createTransactionsForFromLedgerJournal($transfer);
                 }
 
                 break;
@@ -2264,6 +2303,7 @@ class Service extends Base\Service
 
                 break;
             }
+
             case 'update_dcs_features':
             {
                 $this->trace->info(
@@ -2286,6 +2326,42 @@ class Service extends Base\Service
                 );
 
                 return $resp;
+            }
+
+            case 'reverse_transfer':
+            {
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'reverse_transfer',
+                        'input'  => $input,
+                    ]
+                );
+
+                $reversalsData  = $input['data'];
+
+                foreach ($reversalsData as $reversalData)
+                {
+                    $transferId = $reversalData['transfer_id'];
+
+                    $reversalInput = $reversalData['input'];
+
+                    $transfer = $this->repo->transfer->findOrFail($transferId);
+
+                    $this->merchant = $this->repo->merchant->findOrFail($transfer->getMerchantId());
+
+                    $reversal = $this->reverse($transferId, $reversalInput);
+
+                    $this->trace->info(
+                        TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                        [
+                            'option'    => 'reverse_transfer',
+                            'reversal'  => $reversal,
+                        ]
+                    );
+                }
+
+                break;
             }
 
             default:
@@ -2751,5 +2827,34 @@ class Service extends Base\Service
 
             return false;
         }
+    }
+
+    public function internalPricingFetch($input): array
+    {
+        $transfer = $this->buildTransferEntityForPricing($input["transfer"]);
+
+        [$fee, $tax, $feeSplit] = (new Fee())->calculateMerchantFees($transfer);
+
+        return [
+            'original_amount'  => $transfer->getAmount(),
+            'fees'            => $fee,
+            'razorpay_fee'    => $fee - $tax,
+            'tax'             => $tax,
+            'amount'          => $transfer->getAmount(),
+            'currency'        => $transfer->getCurrency(),
+            'fee_bearer'      => $transfer->merchant->getFeeBearer(),
+            'fee_split'       => $feeSplit,
+        ];
+    }
+
+    protected function buildTransferEntityForPricing($input): Entity
+    {
+        $transfer = new Entity();
+
+        $transfer->forceFill($input);
+
+        $this->repo->loadRelations($transfer);
+
+        return $transfer;
     }
 }

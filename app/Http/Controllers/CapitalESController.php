@@ -2,6 +2,8 @@
 
 namespace RZP\Http\Controllers;
 
+use RZP\Constants\Environment;
+use RZP\Http\RequestHeader;
 use View;
 use Config;
 use Request;
@@ -65,6 +67,7 @@ class CapitalESController extends Controller
         $headers = [
             'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
             'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
+            'X-Admin-Permissions' => $this->getCapitalPermissionsStringForAdmin(),
             'X-Auth-Type'   => 'admin'
         ];
 
@@ -115,6 +118,12 @@ class CapitalESController extends Controller
         $headers['X-Task-Id'] = $this->app['request']->getTaskId();
         $headers['Authorization'] = 'Basic ' . base64_encode($username . ':' . $password);
 
+        $devstackLabel = $this->app['request']->header(RequestHeader::DEV_SERVE_USER);
+        if ($this->app['env'] !== Environment::PRODUCTION && empty($devstackLabel) === false)
+        {
+            $headers[RequestHeader::DEV_SERVE_USER] = $devstackLabel;
+        }
+
         return $this->sendRequest($headers, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
     }
 
@@ -144,6 +153,7 @@ class CapitalESController extends Controller
         $this->trace->debug(TraceCode::CAPITAL_ES_REQUEST, [
             'url' => $url,
             'method' => $method,
+            'headers' => $headers,
         ]);
 
         $span = Tracer::startSpan(Requests::getRequestSpanOptions($url));

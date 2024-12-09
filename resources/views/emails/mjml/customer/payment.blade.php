@@ -248,7 +248,7 @@
                                     style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%; margin-bottom: 20px;">
                                     <div class="label"
                                       style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
-                                      Payment Id</div>
+                                      Payment ID</div>
                                     <div class="value" style="color: #515978; display: inline-block; max-width: 50%;">
                                       {{$payment['public_id']}}</div>
                                   </div>

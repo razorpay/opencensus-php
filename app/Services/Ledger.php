@@ -1183,6 +1183,11 @@ class Ledger
             $request[LedgerConstants::NOTES]              = $journals[LedgerConstants::NOTES];
             $request[LedgerConstants::MONEY_PARAMS]       = $journals[LedgerConstants::MONEY_PARAMS];
 
+            if (isset($journals[LedgerConstants::DYNAMIC_MONEY_PARAMS]))
+            {
+                $request[LedgerConstants::DYNAMIC_MONEY_PARAMS]       = $journals[LedgerConstants::DYNAMIC_MONEY_PARAMS];
+            }
+
             array_push($bulkRequest, $request);
         }
         return [

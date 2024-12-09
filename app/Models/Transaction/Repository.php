@@ -30,6 +30,8 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Transfer\Constant;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Modules\Acs\QueryShadowModeEvent;
 use RZP\Constants\Entity as ConstantEntity;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
@@ -94,9 +96,16 @@ class Repository extends Base\Repository
 
     public function fetchBySourceAndAssociateMerchantForConnectionType($entity, $connectionType)
     {
-        $connection = $this->getConnectionFromType($connectionType);
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_upi_experiment_id'),
+        ];
 
-        $txn = $this->newQueryWithConnection($connection)
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        $txn = $this->newQueryWithConnection($connectionType)
             ->where(Transaction\Entity::ENTITY_ID, '=', $entity->getId())
             ->first();
 
@@ -517,22 +526,18 @@ class Repository extends Base\Repository
 
         return $txns2;
     }
-
-
-    public function fetchMerchantIdListWithGmvAboveThreshold(array $merchantIdList, int $gmvThreshold): array
-    {
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
-                    ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
-                    ->groupBy(Entity::MERCHANT_ID)
-                    ->selectRaw('SUM(' . Entity::CREDIT . ') as gmv,' . Entity::MERCHANT_ID)
-                    ->having('gmv', '>=' , $gmvThreshold)
-                    ->pluck(Entity::MERCHANT_ID)
-                    ->toArray();
-    }
-
     public function filterMerchantsWithFirstTransactionAboveTimestamp(array $merchantIdList, int $timestamp)
     {
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $properties = [
+            "id" => Base\UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
+        ];
+
+        $variant =  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        return $this->newQueryWithConnection($connectionType)
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->groupBy(Entity::MERCHANT_ID)
             ->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
@@ -547,7 +552,7 @@ class Repository extends Base\Repository
     {
         if($withConnection === true)
         {
-            $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection());
+            $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
         else
         {
@@ -611,25 +616,21 @@ class Repository extends Base\Repository
     public function fetchTotalAmountByTransactionTypeAboveThreshold(
         array $merchantIdList, string $type, int $threshold): array
     {
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $properties = [
+            "id" => Base\UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
+        ];
+
+        $variant =  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        return $this->newQueryWithConnection($connectionType)
             ->where($this->dbColumn(Entity::TYPE), '=', $type)
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->groupBy(Entity::MERCHANT_ID)
             ->selectRaw('SUM(' . Entity::AMOUNT . ') as total,' . Entity::MERCHANT_ID)
             ->having('total', '>=' , $threshold)
-            ->get()
-            ->toArray();
-    }
-
-    public function fetchTotalAmountByTransactionTypeBelowThreshold(
-        array $merchantIdList, string $type, int $threshold): array
-    {
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
-            ->where($this->dbColumn(Entity::TYPE), '=', $type)
-            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
-            ->groupBy(Entity::MERCHANT_ID)
-            ->selectRaw('SUM(' . Entity::AMOUNT . ') as total,' . Entity::MERCHANT_ID)
-            ->having('total', '<' , $threshold)
             ->get()
             ->toArray();
     }
@@ -963,20 +964,15 @@ class Repository extends Base\Repository
         return $txn;
     }
 
-    public function findByEntityIdWithoutMerchantPaymentFetchReplica($entityId)
+    public function txnReference3Update($txnId, $value)
     {
-        $txn = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::PAYMENT_FETCH_REPLICA))
-            ->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
-            ->first();
+        $attributes = [
+            'reference3'   => $value,
+        ];
 
-        if ($txn !== null){
-
-            $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
-
-            $txn->setConnection($mode);
-        }
-
-        return $txn;
+        return $this->newQuery()
+            ->where(Entity::ID, $txnId)
+            ->update($attributes);
     }
 
     public function fetchBySettlement($setl, $txnToRelationFetchMap)
@@ -2236,7 +2232,16 @@ class Repository extends Base\Repository
 
         $txnFetchStartTime      = microtime(true);
 
-        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_partnership_experiment_id'),
+        ];
+
+        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        $query = $this->newQueryWithConnection($connectionType)
                       ->where(Entity::MERCHANT_ID, $partner->getId())
                       ->where(Entity::BALANCE_ID, $commissionBalance->getId())
                       ->where(Entity::SETTLED_AT, '<=', $toTimestamp)
@@ -2805,12 +2810,12 @@ class Repository extends Base\Repository
     public function fetchFirstTransactionDetails(
         string $merchantId): array
     {
-        $transactionIdColumn       = $this->dbColumn(Entity::ID);
-        $merchantIdColumn          = $this->dbColumn(Entity::MERCHANT_ID);
-        $createdAtColumn           = $this->dbColumn(Entity::CREATED_AT);
-        $transactionAmountColumn   = $this->dbColumn(Entity::AMOUNT);
+        $transactionIdColumn = $this->dbColumn(Entity::ID);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $createdAtColumn = $this->dbColumn(Entity::CREATED_AT);
+        $transactionAmountColumn = $this->dbColumn(Entity::AMOUNT);
         $transactionCurrencyColumn = $this->dbColumn(Entity::CURRENCY);
-        $selectColumn              = [
+        $selectColumn = [
             $transactionIdColumn,
             $transactionAmountColumn,
             $transactionCurrencyColumn,
@@ -2818,20 +2823,22 @@ class Repository extends Base\Repository
             $createdAtColumn
         ];
 
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
-                    ->select($selectColumn)
-                    ->where($this->dbColumn(Entity::TYPE), '=', 'payment')
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                    ->first()
-                    ->toArray();
-    }
 
-    public function emptyTransactionsForMerchantId(string $merchantId): bool
-    {
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $properties = [
+            "id" => Base\UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
+        ];
+
+        $variant = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT) : $this->getPaymentFetchReplicaConnection();
+
+        return $this->newQueryWithConnection($connectionType)
+            ->select($selectColumn)
             ->where($this->dbColumn(Entity::TYPE), '=', 'payment')
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
-            ->count() === 0;
+            ->first()
+            ->toArray();
     }
 
     public function isMerchantPaymentCountAboveThreshold($merchantId,$paymentCountThreshold)
@@ -2839,7 +2846,16 @@ class Repository extends Base\Repository
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $type = $this->dbColumn(Entity::TYPE);
 
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $properties = [
+            "id" => Base\UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
+        ];
+
+        $variant =  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        return $this->newQueryWithConnection($connectionType)
                     ->select($merchantIdColumn)
                     ->where($type, '=', 'payment')
                     ->where($merchantIdColumn, '=', $merchantId)
@@ -3175,7 +3191,14 @@ class Repository extends Base\Repository
 
     public function fetchPaymentTransactionFromPaymentFetchReplica($payment)
     {
-        $connectionType = $this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA);
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
 
         return $this->newQueryWithConnection($connectionType)
             ->where(Entity::TYPE, ConstantEntity::PAYMENT)

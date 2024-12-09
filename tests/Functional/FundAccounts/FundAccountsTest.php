@@ -2870,6 +2870,8 @@ class FundAccountsTest extends TestCase
 
     public function testNullSourceFundAccountCreationAndVerifyHash()
     {
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
+
         $response = $this->createValidationWithFundAccountEntity();
 
         $bankAccount = $this->getLastEntity('bank_account', true);

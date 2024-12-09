@@ -42,6 +42,8 @@ class Constants
     const CITY_NOT_AVAILABLE            = 'not available';
     const ADDRESS_ONE_NOT_AVAILABLE     = 'address not available';
 
+    const HDFC_ECMS_FUND_TRANS_EXPERIMENT_ID = "hdfc_ecms_fund_trans_experiment_id";
+
     // List as per: https://razorpay.atlassian.net/browse/CB-1864
     const BLACKLISTED_MCC_FOR_CURRENCY_CLOUD = [
         self::ALCOHOL,
@@ -53,4 +55,8 @@ class Constants
         self::SEEDS_OR_PLANTS,
         self::TOBACCO,
     ];
+
+    const ENABLE = 'enable';
+
+    const TXN_CREATED_FIRE_WEBHOOK_SYNC = 'app.transaction_created_fire_webhook_sync';
 }

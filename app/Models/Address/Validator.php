@@ -103,7 +103,7 @@ class Validator extends Base\Validator
     protected static $createFor1ccOrderRules = [
         Entity::NAME             => 'sometimes|string|between:2,64',
         Entity::CONTACT          => 'sometimes|contact_syntax',
-        Entity::TYPE             => 'required|string',
+        Entity::TYPE             => 'sometimes|string',
         Entity::ZIPCODE          => 'sometimes|string|between:0,16',
         Entity::STATE            => 'required_with:country|string|between:2,64',
         Entity::COUNTRY          => 'required_with:state|string|between:2,64|custom',
@@ -114,6 +114,7 @@ class Validator extends Base\Validator
         Entity::LINE2            => 'sometimes|string|between:1,255',
         Entity::PRIMARY          => 'sometimes|in:0,1',
         Entity::ADDRESS_ID       => 'sometimes|string',
+        Entity::STATE_CODE => 'sometimes|string',
     ];
 
     protected static $addressCodScoreResponseRules = [

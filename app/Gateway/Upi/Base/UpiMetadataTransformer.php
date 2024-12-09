@@ -7,12 +7,14 @@ use Carbon\Carbon;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\UpiMandate\Frequency;
 use RZP\Models\UpiMandate\RecurringType;
 use RZP\Models\Payment\Processor\UpiRecurring;
@@ -323,20 +325,14 @@ class UpiMetadataTransformer extends UpiTransformer
                 return null;
             }
 
-            $variant = $app['razorx']->getTreatment($this->input[Entity::PAYMENT]['merchant_id'],
-                Merchant\RazorxTreatment::UPI_AUTOPAY_INCREASE_DEBIT_RETRIES_TIME_GAP,
-                $app['rzp.mode'],
-                3
-            );
-
-            $variant = strtolower($variant);
+            $variant = $this->evaluateSplitzExperimentForUpiAutopayIncreaseDebitRetriesTimeGap($this->input[Entity::PAYMENT]['merchant_id']);
 
             // Remind after 5 hours if experiment is on.
             if ($canRetry === true)
             {
                 $remindAfter = 300;
             }
-            else if ($variant === 'on')
+            else if ($variant === true)
             {
                 //Retry after 60 and 120 minutes.
                 $remindAfter = 60;
@@ -377,6 +373,49 @@ class UpiMetadataTransformer extends UpiTransformer
         }
 
         return Carbon::now()->addMinutes($remindAfter)->getTimestamp();
+    }
+
+    /**
+     * Evaluates the Splitz experiment for UPI Autopay increase debit retries time gap.
+     *
+     * @param string $merchantId
+     * @return bool True if the variant is 'variant_on', false otherwise.
+     */
+    protected function evaluateSplitzExperimentForUpiAutopayIncreaseDebitRetriesTimeGap($merchantId)
+    {
+        $app = \App::getFacadeRoot();
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $app['config']->get('app.upi_autopay_increase_debit_retries_time_gap'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $app['trace']->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_INCREASE_DEBIT_RETRIES_TIME_GAP
+            );
+        }
+
+        return false;
     }
 
     protected function isValidMandateExpiry($upiMandate, $remindAfter)

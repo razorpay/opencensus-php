@@ -79,11 +79,11 @@ trait RepositoryUpdateTestAndLiveAndAsv
 
                 $asvEntity->saveOrFail($options);
 
-                $liveEntity->saveOrFail($options);
+                if ($this->asvRouter->shouldStopWritesToApiLiveAndApiTestDb($entity) === false) {
+                    $liveEntity->saveOrFail($options);
 
-                $testEntity->saveOrFail($options);
-
-                $this->validateEntitiesMatch($liveEntity, $testEntity);
+                    $testEntity->saveOrFail($options);
+                }
 
                 return $liveEntity;
             });
@@ -177,11 +177,12 @@ trait RepositoryUpdateTestAndLiveAndAsv
             list($liveEntity, $testEntity) = $this->cloneEntity($entity);
             $asvEntity = $this->createAsvEntity($entity);
 
-            $res1 = $liveEntity->delete();
-            $res2 = $testEntity->delete();
-            $asvEntity->delete();
+            if ($this->asvRouter->shouldStopWritesToApiLiveAndApiTestDb($entity) === false) {
+                $res1 = $liveEntity->delete();
+                $res2 = $testEntity->delete();
+            }
 
-            $this->validateEntitiesMatch($liveEntity, $testEntity);
+            $asvEntity->delete();
 
             return $res1;
         });
@@ -216,15 +217,23 @@ trait RepositoryUpdateTestAndLiveAndAsv
         // fetch existing audit action
         $auditAction = $entity->getAuditAction();
 
-        $testEntity = $this->newQueryWithConnection(Mode::TEST)->lockForUpdate()->findOrFail($id);
-        $liveEntity = $this->newQueryWithConnection(Mode::LIVE)->lockForUpdate()->findOrFail($id);
-        $asvEntity = $this->newQueryWithConnection(Connection::ASV_WRITER)->lockForUpdate()->findOrFail($id);
+        if ($this->asvRouter->shouldRouteReadRequestDuringWriteToAccountService($entity))
+        {
+            $asvEntity = $this->newQueryWithConnection(Connection::ASV_WRITER)->lockForUpdate()->findOrFail($id);
+            $testEntity = clone $asvEntity;
+            $liveEntity = clone $asvEntity;
+
+        } else {
+            $testEntity = $this->newQueryWithConnection(Mode::TEST)->lockForUpdate()->findOrFail($id);
+            $liveEntity = $this->newQueryWithConnection(Mode::LIVE)->lockForUpdate()->findOrFail($id);
+            $asvEntity = $this->newQueryWithConnection(Connection::ASV_WRITER)->lockForUpdate()->findOrFail($id);
+            $this->validateEntitiesMatch($liveEntity, $testEntity);
+        }
+
 
         // reset the current entity's audit action with the older one
         $liveEntity->setAuditAction($auditAction);
         $testEntity->resetAuditAction();
-
-        $this->validateEntitiesMatch($liveEntity, $testEntity);
 
         // Update the test and live entities
         $attributes = $entity->getAttributes();

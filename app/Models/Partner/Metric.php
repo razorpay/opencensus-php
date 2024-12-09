@@ -119,4 +119,9 @@ final class Metric
 
     const SUBMERCHANT_PAYMENT_RELEASE_SUCCESS = 'submerchant_payment_release_success';
     const SUBMERCHANT_PAYMENT_RELEASE_FAILURE = 'submerchant_payment_release_failure';
+
+    const PARTNERSHIPS_DUAL_WRITE_REQUEST = 'partnerships_dual_write_request';
+
+    const SWITCH_OVER_PARTNERSHIPS_EXPERIMENT = 'switch_over_partnerships_experiment';
+
 }

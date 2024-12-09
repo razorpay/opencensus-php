@@ -24,6 +24,7 @@ use RZP\Models\Gateway\File\Constants as GatewayConstants;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Core extends Base\Core
 {
@@ -204,13 +205,20 @@ class Core extends Base\Core
         $size = $input[Constants::SIZE];
         unset($input[Constants::SIZE]);
 
-        (new Validator())->validateDocumentTypeAndFileType($rule, $input);
-
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $input]);
 
         $merchantDetailCore = new Detail\Core();
 
         $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
+
+        if( $this->pgosProxyController->isCurlecModularMerchant($merchant) === true)
+        {
+            $input['merchant_id'] = $merchant->getId();
+            $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::MERCHANT_DOCUMENT_UPLOAD_V2, $this->pgosProxyController->getPayloadForFileUpload($input), $merchant);
+            return $merchantDetailCore->createResponse($merchantDetails);
+        }
+
+        (new Validator())->validateDocumentTypeAndFileType($rule, $input);
 
         $validateLock = $this->shouldValidateLock($input, $validateLock);
 
@@ -232,7 +240,7 @@ class Core extends Base\Core
         $merchantId = $merchant->getMerchantId();
 
         $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_REQUEST, [
-            'request_body'       => $input,
+            'request_body'    => $input,
             "upload_only_set" => isset($input["upload_only"])
         ]);
         if (isset($input["upload_only"]) === true and $input["upload_only"])
@@ -240,7 +248,8 @@ class Core extends Base\Core
             return $fileAttributes;
         }
         // route request to PGOS
-        try {
+        try
+        {
 
             $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
 
@@ -251,7 +260,7 @@ class Core extends Base\Core
                     "file_store_id"      => $fileAttributes[$documentType]['file_id'],
                     "merchant_id"        => $merchantId,
                     "original_file_name" => $fileAttributes[$documentType]['original_file_name'],
-                    "size"               => $size ? (int)($size): 0,
+                    "size"               => $size ? (int) ($size) : 0,
                 ];
 
                 $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_REQUEST, [
@@ -259,7 +268,7 @@ class Core extends Base\Core
                 ]);
 
                 $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_document_upload',
-                    $payload, $merchant, true);
+                                                                                $payload, $merchant, true);
 
                 $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_RESPONSE, [
                     'merchant_id' => $merchantId,
@@ -274,10 +283,11 @@ class Core extends Base\Core
             }
 
         }
-        catch (\Throwable $exception) {
+        catch (\Throwable $exception)
+        {
             // this should not introduce error counts as it is running in shadow mode
             $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
-                'merchant_id' => $merchantId,
+                'merchant_id'   => $merchantId,
                 'error_message' => $exception->getMessage()
             ]);
 
@@ -285,7 +295,6 @@ class Core extends Base\Core
                 'error description' => 'submitted data could not be processed'
             ]);
         }
-
 
         $entity = $entity ?? $merchant;
 
@@ -523,6 +532,9 @@ class Core extends Base\Core
     public function shouldPerfomOcrOnDocumentUpload(
         Entity $document, Merchant\Entity $merchant, Merchant\Detail\Entity $merchantDetails): bool
     {
+        if($merchant->org->isFeatureEnabled(FeatureConstants::KYC_BLOCK_OCR_FOR_VAS) === true){
+            return false;
+        }
 
         if (Type::isDocumentTypeToPerformOcr($document->getDocumentType()) === false)
         {
@@ -821,6 +833,10 @@ class Core extends Base\Core
                 (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant))
             {
                 $document = $this->repo->merchant_document->findDocumentByFileStoreId($data[Entity::FILE_STORE_ID]);
+
+                if ($data[Entity::UPLOAD_BY_ADMIN_ID] == "") {
+                    unset($data[Entity::UPLOAD_BY_ADMIN_ID]);
+                }
 
                 if (empty($document) === false)
                 {

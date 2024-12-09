@@ -32,6 +32,7 @@ use Illuminate\Support\Str;
 use RZP\Models\VirtualAccount;
 use RZP\Jobs\Order\OrderUpdate;
 use RZP\Models\Partner\Commission;
+use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Models\Merchant\Preferences;
@@ -41,6 +42,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Offer;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Ledger\CaptureJournalEvents;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Base\Database\DetectsLostConnections;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Partner\Metric as PartnerMetric;
@@ -54,6 +56,7 @@ use RZP\Jobs\MerchantBasedBalanceUpdateV1;
 use RZP\Jobs\MerchantBasedBalanceUpdateV2;
 use RZP\Jobs\MerchantBasedBalanceUpdateV3;
 use RZP\Jobs\MerchantBalanceUpdateReverseShadowQueue;
+use RZP\Jobs\MerchantBalanceUpdateAfterCLSOnboarding;
 
 trait Capture
 {
@@ -756,9 +759,19 @@ trait Capture
                         ]);
 
 
+                    $reverseShadowCore = (new ReverseShadowPaymentsCore());
+
                     if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                     {
-                        (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($this->payment);
+
+                        $apiTxnId = null;
+
+                        if ($this->payment->hasBeenCaptured())
+                        {
+                            $apiTxnId = $reverseShadowCore->getAPITransactionId($this->payment->getPublicId(), $this->payment, \RZP\Models\Ledger\Constants::MERCHANT_CAPTURED);
+                        }
+
+                        $reverseShadowCore->createLedgerEntryForGatewayCaptureReverseShadow($this->payment, $apiTxnId);
                     }
 
                     $this->createLedgerEntriesForGatewayCapture($this->payment);
@@ -844,6 +857,21 @@ trait Capture
         // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
         // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
         //
+
+        if ($payment->getGateway() === Payment\Gateway::FULCRUM || $payment->getGateway() === Payment\Gateway::PAYSECURE)
+        {
+            if ($this->checkAsyncCaptureSplitzExperiment($payment) === true)
+            {
+                $this->trace->info(TraceCode::SKIPPING_GATEWAY_CAPTURE_RETRY_ON_FAILURE,
+                    [
+                        'id'   => $payment->getId(),
+                        'merchant_id' => $payment->getMerchantId()
+                    ]
+                );
+                return false;
+            }
+        }
+
         switch ($payment->getGateway())
         {
             case Payment\Gateway::HDFC:
@@ -1098,7 +1126,8 @@ trait Capture
         {
             if ((($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false) and
                 ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false) and
-                ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)) or
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false) and
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === false)) or
                 ($txn->isBalanceUpdated() === true))
             {
                 return;
@@ -1127,6 +1156,13 @@ trait Capture
 
             $asyncBalancePushedAt = time();
 
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === true and
+                $payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            {
+                MerchantBalanceUpdateAfterCLSOnboarding::dispatch($input, $this->mode, $asyncBalancePushedAt);
+                return;
+            }
+
             if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
             {
                 MerchantBalanceUpdateReverseShadowQueue::dispatch($input, $this->mode, $asyncBalancePushedAt);
@@ -1147,8 +1183,17 @@ trait Capture
             //This will only be enabled for live mode in production. Non-prod & prod test mode won't be broken down to multiple queues.
             if ($this->app['env'] === Environment::PRODUCTION && $this->mode === Mode::LIVE)
             {
-                $ascii = ord($payment->getMerchantId());
-                $queueNo = $ascii%5;
+                $merchantId = $payment->getMerchantId();
+                $ascii = ord($merchantId);
+                $queueNo = $ascii % 5;
+
+                if ($this->isHandleAsyncBalanceUpdateByRedisQueueEnabled($merchantId)) {
+
+                    $queueNoFromRedis = $this->getQueueNumberFromRedis($merchantId);
+                    if ($queueNoFromRedis != -1) {
+                        $queueNo = $queueNoFromRedis;
+                    }
+                }
 
                 if ($queueNo === 0)
                 {
@@ -1188,6 +1233,55 @@ trait Capture
         }
     }
 
+    /**
+     * @param $merchantId
+     * @return int
+     */
+    public function getQueueNumberFromRedis($merchantId): int
+    {
+        $queueNo = -1;
+        $redisData = $this->app['redis']->hGetAll('merchant_based_balance_update_common_queue');
+
+        if (isset($redisData[$merchantId]) === true)
+        {
+            $queueNo = $redisData[$merchantId];
+
+            // Map Redis queue name (e.g., Queue1, Queue2) to queue number
+            if (preg_match('/Queue(\d+)/', $queueNo, $matches)) {
+                $queueNo = (int)$matches[1] - 1;
+            }
+        }
+        return $queueNo;
+    }
+
+    public function isHandleAsyncBalanceUpdateByRedisQueueEnabled(string $merchantId)
+    {
+        $default_variant = 'enable';
+
+        try
+        {
+            $properties = [
+                'id' => $merchantId,
+                'experiment_id' => $this->app['config']->get(PaymentConstants::HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === $default_variant;
+        }
+        catch (\Throwable $e){
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get(PaymentConstants::HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID) ?? null
+            ]);
+
+            return false;
+        }
+
+    }
+
     public function updateMerchantBalance(Payment\Entity $payment, Transaction\Entity $txn, $asyncTxnEnabled = false)
     {
         $this->payment = $payment;
@@ -1206,9 +1300,42 @@ trait Capture
                     $payment->setFee($txn->getFee());
                 }
 
+                try
+                {
+                    // keeping it in try-catch block and behind experiment to avoid any unknown breaking issues
+                    if ($this->evaluateSplitzExperimentforCFBIntlPayments($payment->getMerchantId()))
+                    {
+                        if (($payment->isFeeBearerCustomer() === true) and
+                            (($payment->merchant->isCustomerFeeBearerAllowedOnInternational() and
+                                    $payment->isInternational() === true) or
+                                ($payment->merchant->isLRSFlowEnabled())))
+                        {
+                            // set and fee values from txn as it will have INR For Both DCC or MCC or LRS Payments
+                            $payment->setFee($txn->getFee());
+                            $this->trace->info(
+                                TraceCode::PAYMENT_FEE_UPDATED_FOR_INTL_CFB, [
+                                    'payment_id' => $payment->getId(),
+                                    'fee' => $txn->getFee(),
+                                    'merchant_id' => $payment->getMerchantId(),
+                                ]);
+                        }
+                    }
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        null,
+                        TraceCode::CROSS_BORDER_CFB_INTL_EXPERIMENT_SPILTZ_ERROR
+                    );
+                }
+
                 $this->calculateAndSetMdrFeeIfApplicable($payment, $txn);
 
-                $this->repo->saveOrFail($payment);
+                if ($this->isDualWriteFlowEnabled($payment) === false)
+                {
+                    $this->repo->saveOrFail($payment);
+                }
 
                 $this->repo->saveOrFail($txn);
 
@@ -1251,11 +1378,48 @@ trait Capture
                 (new Transaction\Core)->dispatchForSettlementBucketing($txn);
             }
 
-            if ($payment->isExternal() === true)
+            if (($payment->isExternal() === true) and
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
             {
                 (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $payment);
             }
         }
+    }
+
+    public function evaluateSplitzExperimentforCFBIntlPayments($merchantID)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_cfb_intl_cls_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantID,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_CFB_INTL_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
     }
 
     protected function handleLateBalanceUpdate(Transaction\Entity $txn, $merchantBalance)
@@ -1596,9 +1760,7 @@ trait Capture
     {
         $isDualWriteFlow = ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true);
 
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),Merchant\RazorxTreatment::PG_LEDGER_ASYNC_TRANSACTION_CREATION, $this->app['rzp.mode']);
-
-        $isDualWriteFlow = $isDualWriteFlow && $this->isEnabledForPaymentFeeTaxPopulation($variant, $payment);
+        $isDualWriteFlow = $isDualWriteFlow && $this->isEnabledForPaymentFeeTaxPopulation($payment);
 
         return $isDualWriteFlow;
     }
@@ -1684,17 +1846,13 @@ trait Capture
 
                 $isOrderOutboxEnabled = false;
 
-                $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
-                         Merchant\RazorxTreatment::ORDER_OUTBOX_ONBOARDING, $this->mode);
-
-                if (strtolower($variant) === 'on')
+                if ($this->mode === Mode::LIVE)
                 {
                     $isOrderOutboxEnabled = true;
                 }
 
                 $this->trace->info(TraceCode::ORDER_OUTBOX_ONBOARDING_RAZORX_VARIANT, [
                     'merchant_id'           => $payment->getMerchantId(),
-                    'variant'               => $variant,
                     'isOrderOutboxEnabled'  => $isOrderOutboxEnabled,
                 ]);
 
@@ -2278,5 +2436,16 @@ trait Capture
             );
         }
         return false;
+    }
+
+    public function checkAsyncCaptureSplitzExperiment(Payment\Entity $payment): bool
+    {
+        $properties = [
+            'id'            => $payment->getMerchantId(),
+            'experiment_id' => $this->app['config']->get('app.stop_async_capture_card_gateways'),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
     }
 }

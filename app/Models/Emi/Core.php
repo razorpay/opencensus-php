@@ -4,12 +4,18 @@ namespace RZP\Models\Emi;
 
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base;
-use RZP\Trace\TraceCode;
+use RZP\Services\AffordabilityService;
 
 class Core extends Base\Core
 {
     public function addEmiPlan($input)
     {
+        if (isset($input[Entity::SOURCE_CHANNEL]) && $input[Entity::SOURCE_CHANNEL] === Entity::SOURCE_CHANNEL_IN_PERSON)
+        {
+            $affordabilityService = $this->app->make(AffordabilityService::class);
+            return $affordabilityService->addOfflineEmiPlan($input);
+        }
+
         $emiPlan = (new Entity)->build($input);
 
         $this->repo->merchant->findOrFailPublic($emiPlan->getMerchantId());

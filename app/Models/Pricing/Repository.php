@@ -135,7 +135,7 @@ class Repository extends Base\Repository
             return $query;
         }
 
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
         $query = $query->where(Pricing\Entity::ORG_ID, '=', $orgId);
 
@@ -174,8 +174,8 @@ class Repository extends Base\Repository
             return $this->getPlanLegacy($id, $type, $fail, $public, $orgId, $skipOrgCheck);
         };
         $ccRequest = $this->transformGetPlanRequest($id, $type, $fail, $public, $orgId, $skipOrgCheck);
-        $ccResponseCollection = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
-        if (($ccResponseCollection->count() === 0) and ($fail)) {
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        if (($ccResponse->count() === 0) and ($fail)) {
             if ($public) {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_ID);
@@ -184,7 +184,7 @@ class Repository extends Base\Repository
                     'No pricing plan found for id: ' . $id);
             }
         }
-        return $ccResponseCollection;
+        return $ccResponse;
     }
 
     public function getPlanLegacy(string $id, string $type = null, bool $fail = false, bool $public = false, string $orgId = null, bool $skipOrgCheck = false)
@@ -277,12 +277,12 @@ class Repository extends Base\Repository
             'org_id' => $orgId,
             'type' => Pricing\Type::PRICING,
         ];
-        $ccResponseCollection = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
-        if($ccResponseCollection->count() == 0) {
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        if($ccResponse->count() == 0) {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID);
         }
-        return $ccResponseCollection;
+        return $ccResponse;
     }
 
     public function getPricingPlanByIdAndOrgIdLegacy($id, $orgId)
@@ -317,12 +317,12 @@ class Repository extends Base\Repository
             'product' => Product::PRIMARY,
             'feature' => $this->featureFilterParams[0].",".$this->featureFilterParams[1],
         ];
-        $ccResponseCollection = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
-        if($ccResponseCollection->count() == 0) {
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        if($ccResponse->count() == 0) {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID);
         }
-        return $ccResponseCollection;
+        return $ccResponse;
     }
 
     public function getPricingPlanByIdWithProductAndFeatureFilterLegacy($id)
@@ -357,8 +357,8 @@ class Repository extends Base\Repository
             'id' => $id,
             'type' => Pricing\Type::PRICING,
         ];
-        $ccResponseCollection = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
-        return $ccResponseCollection;
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $ccResponse;
 
     }
 
@@ -547,6 +547,11 @@ class Repository extends Base\Repository
     public function getPlanByIdOrFailPublic($id, $orgId = null, $skipOrgCheck = false)
     {
         return $this->getPlan($id, null, true, true, $orgId, $skipOrgCheck);
+    }
+
+    public function getPlanByIdOrFailPublicLegacy($id, $orgId = null, $skipOrgCheck = false)
+    {
+        return $this->getPlanLegacy($id, null, true, true, $orgId, $skipOrgCheck);
     }
 
     public function getZeroPricingPlanRuleForMethod($feature, $method, $merchant, $product = Product::PRIMARY)
@@ -1171,12 +1176,18 @@ class Repository extends Base\Repository
         $ccRequest = [];
         $ccRequest['count'] = $input['count'] ?? 20;
         $ccRequest['skip'] = $input['skip'] ?? 0;
+        foreach ([Entity::TYPE, Entity::PLAN_ID, Entity::PLAN_NAME] as $attribute)
+        {
+            if (empty($input[$attribute]) === false) {
+                $ccRequest[$attribute] = $input[$attribute];
+            }
+        }
         $orgId = $this->getOrgIdForQuery(null);
         if (strlen($orgId) > 0) {
             $ccRequest['org_id'] = $orgId;
         }
-        $ccResponseCollection = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
-        return $ccResponseCollection;
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $ccResponse;
     }
 
     public function getPricingPlansSummaryLegacy(array $input = [])
@@ -1187,8 +1198,19 @@ class Repository extends Base\Repository
         {
             if (empty($input[$attribute]) === false)
             {
-                $query->where($attribute, $input[$attribute]);
+                $query = $query->where($attribute, $input[$attribute]);
             }
+        }
+        //Only select last month's plan for the summary
+        try {
+            $orgId = $this->getOrgIdForQuery(null);
+            $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+        } catch (\Throwable $e) {
+            $orgId = "";
+        }
+        if(empty($input[Entity::PLAN_ID]) && empty($input[Entity::PLAN_NAME]) && (empty($orgId) || $orgId === Org\Entity::RAZORPAY_ORG_ID)) {
+            $createdAfter = $input['created_after'] ?? (time() - (86400 * 30));
+            $query = $query->where(Entity::CREATED_AT, '>', $createdAfter);
         }
 
         return $query->selectRaw(
@@ -1232,8 +1254,8 @@ class Repository extends Base\Repository
         if (strlen($orgId) > 0) {
             $ccRequest['org_id'] = $orgId;
         }
-        $ccResponseCollection = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
-        return $ccResponseCollection;
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $ccResponse;
     }
 
     public function getPlanByNameLegacy($name)
@@ -1383,14 +1405,14 @@ class Repository extends Base\Repository
         if (!empty($feeBearer)) {
             $ccRequest['fee_bearer'] = $feeBearer;
         }
-        $ccResponseCollection = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
-        if($ccResponseCollection == null) {
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        if($ccResponse == null) {
             return null;
         }
-        if ($ccResponseCollection instanceof \RZP\Models\Pricing\Entity) {
-            return $ccResponseCollection;
+        if ($ccResponse instanceof \RZP\Models\Pricing\Entity) {
+            return $ccResponse;
         } else {
-            return $ccResponseCollection->first();
+            return $ccResponse->first();
         }
     }
 
@@ -1450,14 +1472,14 @@ class Repository extends Base\Repository
             'feature' => $feature,
             'payment_method' => $method,
         ];
-        $ccResponseCollection = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
-        if($ccResponseCollection == null) {
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        if($ccResponse == null) {
             return null;
         }
-        if ($ccResponseCollection instanceof Entity) {
-            return $ccResponseCollection;
+        if ($ccResponse instanceof Entity) {
+            return $ccResponse;
         } else {
-            return $ccResponseCollection->first();
+            return $ccResponse->first();
         }
     }
 

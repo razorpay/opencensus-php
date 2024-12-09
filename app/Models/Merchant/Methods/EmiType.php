@@ -8,18 +8,25 @@ class EmiType
 
     // Credit card EMI
     const CREDIT    = 'credit';
-
     // Debit card emi
     const DEBIT     = 'debit';
+    // Offline Credit card EMI
+    const OFFLINE_CREDIT = 'offline_credit';
+    // Offline Debit card EMI
+    const OFFLINE_DEBIT = 'offline_debit';
 
     protected static $types = [
         self::CREDIT,
         self::DEBIT,
+        self::OFFLINE_CREDIT,
+        self::OFFLINE_DEBIT,
     ];
 
     protected static $bitPosition = [
         self::CREDIT => 1,
         self::DEBIT  => 2,
+        self::OFFLINE_CREDIT => 3,
+        self::OFFLINE_DEBIT => 4,
     ];
 
     public static function isTypeEnabled($types, $type)

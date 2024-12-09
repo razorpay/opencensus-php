@@ -6,6 +6,8 @@ namespace RZP\Models\Merchant;
 use ApiResponse;
 use App;
 use DB;
+use RZP\Exception\AssertionException;
+use RZP\Exception\LogicException;
 use Rzp\Models\Key;
 use EmailValidator\Validator as EmailValidator;
 use Lib\PhoneBook;
@@ -203,6 +205,8 @@ use RZP\Models\Merchant\Consent as Consent;
 use RZP\Models\Merchant\Analytics\DataProcessor;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AccountSDKWrapper;
+use RZP\Models\DeviceDetail\Entity as DeviceDetailEntity;
+use RZP\Models\DeviceDetail;
 
 class Service extends Base\Service
 {
@@ -260,6 +264,10 @@ class Service extends Base\Service
     const SEGMENT_DATA_PL_ONLY                          = 'pl_only';
     const SEGMENT_DATA_PP_ONLY                          = 'pp_only';
     const SEGMENT_FREE_CREDITS_AVAILABLE                = 'free_credits_available';
+
+    const RESERVE_BALANCE                               = 'reserve_balance';
+    const FEE                                           = 'fee';
+    const REFUND                                        = 'refund';
 
     const DEFAULT_MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION   =   24;
     // Should be decided by marketing team
@@ -2063,13 +2071,6 @@ class Service extends Base\Service
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
         $data['signup_campaign'] = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
 
-        if ( empty($userDeviceDetail) === false && $this->pgosProxyController->isIndiaPgModularMerchant($merchant) === true)
-        {
-            $res = $this->getModularFieldsFromASV($merchantId);
-
-            $data["additional_onboarding_details"] = $res ? $res["pg_onboarding"] : null; ;
-        }
-
         // Merchant confirmed details
         $data['confirmed'] = $this->getMerchantConfirmed($merchant);
 
@@ -2106,7 +2107,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getModularFieldsFromASV(string $merchantId)
+    public function getAdditionalDetailsFromASV(string $merchantId)
     {
         $data = null;
         $fieldList = [
@@ -2543,6 +2544,11 @@ class Service extends Base\Service
         $response['currency_code'] = $this->merchant->getCurrency();
 
         $response['policy_url'] = $this->getWebsitePublishedUrl($this->merchant->getId());;
+
+        if ($this->merchant->isOmniEnabled() == true)
+        {
+            $response['omni_enabled'] = true;
+        }
 
         return $response;
     }
@@ -6873,7 +6879,13 @@ class Service extends Base\Service
         $data[EntityConstants::MERCHANT_DETAIL][Constants::TOTAL_LEAD_SCORE] = optional($merchant->merchantBusinessDetail)->getTotalLeadScore() ?? 0;
 
         $data[EntityConstants::MERCHANT_DETAIL][BusinessDetailConstants::ACQUISITION_MODEL] = optional($businessDetails)->getAcquisitionModel();
-
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchant->getMerchantId());
+        if (empty($userDeviceDetail) === false)
+        {
+            $data[EntityConstants::MERCHANT_DETAIL][DeviceDetailConstants::WORKFLOW_TYPE] = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
+            $data[EntityConstants::MERCHANT_DETAIL][DeviceDetailConstants::WORKFLOW_DETAILS] = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS);
+        }
+       
         if($merchantDetail != null) {
 
             $merchantAov = $merchantDetail->avgOrderValue;
@@ -7084,7 +7096,8 @@ class Service extends Base\Service
             {
                 $newPricingRule['payment_network'] = $paymentNetwork;
 
-                (new Pricing\Core())->addPlanRule($plan, $newPricingRule, $orgId);
+                $planID = $plan->getId();
+                (new Pricing\Service())->addPlanRule($planID, $newPricingRule, $orgId);
 
                 if($paymentNetwork === null)
                 {
@@ -7096,7 +7109,9 @@ class Service extends Base\Service
         if($type === null && $addedRules === 0)
         {
             // atleast one card null business null rule is added
-            (new Pricing\Core())->addPlanRule($plan, $newPricingRule, $orgId);
+            $planID = $plan->getId();
+            (new Pricing\Service())->addPlanRule($planID, $newPricingRule, $orgId);
+
         }
     }
 
@@ -7687,7 +7702,7 @@ class Service extends Base\Service
         return [$subMerchantUser, $created];
     }
 
-    protected function createUserAndAttachMerchant(Entity $subMerchant, string $email, string $product = null): User\Entity
+    protected function createUser(Entity $subMerchant, string $email, string $product = null): User\Entity
     {
         $skipCaptcha = Request::all()[User\Entity::SKIP_CAPTCHA_VALIDATION] ?? false;
 
@@ -7705,9 +7720,13 @@ class Service extends Base\Service
         {
             $subMerchantUser = (new User\Core)->create($userData,'create', $isLinkedAccountUser);
         }
+        return $subMerchantUser;
+    }
 
+    protected function createUserAndAttachMerchant(Entity $subMerchant, string $email, string $product = null): User\Entity
+    {
+        $subMerchantUser = $this->createUser($subMerchant, $email, $product );
         $this->core()->attachSubMerchantUser($subMerchantUser->getId(), $subMerchant, $product);
-
         return $subMerchantUser;
     }
 
@@ -7922,7 +7941,42 @@ class Service extends Base\Service
                 throw $ex;
             }
         }
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get(MerchantOnboardingProxyController::LINKED_ACCOUNT_MODULAR_ONBOARDING_ACTIVATE_EXPERIMENT_ID),
+        ];
+        $linkedAccountModularOnboardingEnabled =  $this->core()->isSplitzExperimentEnable($properties, 'enable');
+        if(ORG_ENTITY::isOrgCurlec($merchant->getOrgId()) and $linkedAccountModularOnboardingEnabled){
 
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNT_MODULAR_ONBOARDING,
+                [
+                    'input'     => $input,
+                ]);
+
+            if (!$enableDashboardAccess){
+                $newUser = $this->createUser($subMerchant, $subMerchant->getEmail(), $product);
+            }
+            $signupCampaign = DeviceDetailConstants::COUNTRY_SIGNUP_CAMPAIGN_MAPPING[$subMerchant->getCountry()] ?? DeviceDetailConstants::I18N_MY_LINKED_ACCOUNT_SIGNUP;
+            $deviceDetailInput = [
+                DeviceDetailEntity::MERCHANT_ID => $subMerchant->getId(),
+                DeviceDetailEntity::USER_ID => $newUser->getId(),
+                DeviceDetailEntity::SIGNUP_CAMPAIGN => $signupCampaign,
+            ];
+
+            (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
+
+            $input['product'] =  DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::PRODUCT] ?? DeviceDetailConstants::CURLEC_LINKED_ACCOUNT_ONBOARDING;
+            $input['workflow_type'] = DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::WORKFLOW_TYPE] ?? DeviceDetailConstants::MODULAR_ONBOARDING;
+            (new User\Service())->handlePGOSOnboarding($subMerchant, $signupCampaign, $subMerchant->getCountry(), $input, $newUser);
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNT_MODULAR_ONBOARDING,
+                [
+                    'input'     => $input,
+                    'done'      => true
+                ]);
+
+        }
         if ($product === Product::BANKING)
         {
             $this->enableBusinessBankingIfApplicable($subMerchant, true);
@@ -11832,7 +11886,13 @@ class Service extends Base\Service
             array_push($newRules, $rule);
         }
 
-        $newPlan = (new Pricing\Core)->create([PricingEntity::PLAN_NAME => $planName, PricingEntity::RULES => $newRules], $ruleOrgId);
+        $newPlan = (new Pricing\Service())->createPlan([PricingEntity::PLAN_NAME => $planName, PricingEntity::RULES => $newRules],
+            null, $ruleOrgId, true);
+
+        // for Pricing reverse_shadow/enable cases, convert response to Plan Entity
+        if (!($newPlan instanceof Pricing\Plan) && is_array($newPlan)) {
+            $newPlan =  (new Pricing\ChargeCollections\CCRouter())->transformToPlanModel($newPlan);
+        }
 
         return $newPlan[0][PricingEntity::PLAN_ID];
     }
@@ -13767,7 +13827,7 @@ class Service extends Base\Service
         ]);
         foreach ($terminals as $terminal)
         {
-            $subMerchants = $terminal->merchants();
+            $subMerchants = $terminal->merchants;
             $subMerchantsIds = $subMerchants->pluck(Merchant\Entity::ID)->all();
             if (in_array($merchant->getId(), $subMerchantsIds))
             {
@@ -14064,6 +14124,45 @@ class Service extends Base\Service
         );
 
         return $response;
+    }
+
+    /**
+     * @param $mid
+     * @param $input
+     * @return array
+     * @throws LogicException
+     * @throws BadRequestValidationFailureException
+     * @throws \Exception|Throwable
+     */
+    public function withdrawPreFundsForMerchant($mid, $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($mid);
+
+        if (!$merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) {
+            throw new Exception\LogicException(
+                "PG LEDGER REVERSE SHADOW feature flag is not enabled.",
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+                [
+                    'merchant_id' => $mid
+                ]
+            );
+        }
+
+        $type = $input["type"];
+
+        switch ($type) {
+            case self::RESERVE_BALANCE :
+                (new Merchant\Core())->withdrawFundsFromReserveBalance($merchant, $input);
+                break;
+            case self::FEE:
+            case self::REFUND:
+                (new Credits\Core)->withdraw($merchant, $input);
+                break;
+            default:
+                throw new BadRequestValidationFailureException('Invalid type: ' . $type . ' for pre fund withdrawal', null, $input);
+        }
+
+        return ["status" => "success"];
     }
 
 }

@@ -134,6 +134,21 @@ return [
         ]
     ],
 
+    'testAmountCreditExpiryForAccountSplit' => [
+        'request' => [
+            'url' => '/reminders/send/test/credit/amount_credits_expiry/ODgIwwZ7dNLFvV',
+            'method' => 'post',
+            'content' => [
+                'reminder_count' => 1,
+            ]
+        ],
+
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
     'testSendNegativeBalanceReminderBalanceIsPositive' => [
         'request' => [
             'url' => '/reminders/send/test/merchant/negative_balance/100ghi000ghi00',

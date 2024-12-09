@@ -4,6 +4,9 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Exception\ServerErrorException;
+use RZP\Models\QrGatewayModule\QrGatewayModule;
 use RZP\Trace\Tracer;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
@@ -46,7 +49,6 @@ class Core extends QrCode\Core
      * @param array                    $input
      * @param Order|CheckoutOrder|null $order
      *
-     * @return mixed|QrCode\Entity
      *
      * @throws BadRequestException
      */
@@ -116,9 +118,10 @@ class Core extends QrCode\Core
     {
         Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_GENERATE_QR_STRING], function() use ($terminal, $qrCode, $additionalData)
         {
-            if (isset($additionalData['qrString']) === true)
+            if (empty($additionalData['qrString']) === false or
+                empty($qrCode->getQrString()) === false)
             {
-                $this->setQrStringFromRequest($qrCode, $additionalData);
+                $this->setQrStringFromRequest($qrCode, $additionalData,$terminal);
             }
             else
             {
@@ -141,47 +144,50 @@ class Core extends QrCode\Core
         return $qrCode;
     }
 
-    public function setQrStringFromRequest(Entity $qrCode, $additionalData = null)
+    public function setQrStringFromRequest(Entity $qrCode, $additionalData = null, $terminal=null)
     {
-        if (isset($additionalData['qrString']) === true)
+        $qrString = $additionalData['qrString'] ?? $qrCode->getQrString() ?? null;
+
+        if (empty($qrString) === false)
         {
             $this->trace->info(TraceCode::QR_CODE_REQUEST_VPA_QR_STRING_AVAILABLE, [
                 'message'  => 'QR_CODE_REQUEST_VPA_QR_STRING_AVAILABLE',
-                'qrString' => $additionalData['qrString'],
+                'qrString' => $qrString,
             ]);
-            $qrCode->setQrString($additionalData['qrString']);
 
-            $gateway  = $qrCode->getGatewayFromQrString();
+            $tr = $this->getTransactionReferenceFromQrString($qrString);
 
-            $variant = $this->app->razorx->getTreatment(
-                $gateway,
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
-                $this->mode);
+            $this->trace->info(
+                TraceCode::QR_CODE_EXTRACTED_TR,
+                [
+                    'transaction_reference' => $tr
+                ]
+            );
 
-            if ((empty($gateway) === true) or
-                (strtolower($variant) !== RazorxTreatment::RAZORX_VARIANT_ON))
+            if ((empty($tr) === true) and
+                ($terminal?->getGateway() !== 'upi_jkbank') )
             {
-                $this->trace->info(TraceCode::QR_CODE_BAD_REQUEST_VPA_EXPERIMENT_NOT_ENABLED, [
-                    'message' => 'QR_CODE_BAD_REQUEST_VPA_EXPERIMENT_NOT_ENABLED',
-                    'gateway' => $gateway ?? null,
-                    'experiment' => RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
-                    'variant' => $variant,
-                ]);
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_REFACTOR_EXPERIMENT_NOT_ENABLED_FOR_GATEWAY);
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_REFERENCE_REQUIRED);
             }
 
-            $tr = $this->getTransactionReferenceFromQrString($additionalData['qrString']);
+            if(($terminal?->getGateway() === 'upi_jkbank') and (empty($tr) === true)) {
+                $tr = $qrCode->getId() . 'qrv2';
+                $qrString = $this->updateTrIdInQrString($tr, $additionalData['qrString']);
+            }
 
+            $qrCode->setQrString($qrString);
             $qrCode->setReference($tr);
-            $qrCode->setQrString($additionalData['qrString']);
 
-            $this->trace->info(TraceCode::QR_CODE_EXTRACTED_TR, [
-                'message' => 'QR_CODE_EXTRACTED_TR',
-                '$tr'     => $tr,
-            ]);
+            //register the qrcode in switch
+            if ($terminal?->getGateway() === Gateway::UPI_RZPAPB)
+            {
+                $upiMode = (new Generator())->getQrCodeModeAccountingForOnlineAndOfflineRequestSource($qrCode, $terminal);
+                (new QrGatewayModule($this->app))->generateIntentQrForUpiRzpApb($qrCode, $terminal, $upiMode);
+            }
 
-            return $additionalData['qrString'];
+            return $qrString;
         }
+
         return null;
     }
 
@@ -190,6 +196,37 @@ class Core extends QrCode\Core
         $queryString = parse_url($qrString, PHP_URL_QUERY);
         parse_str($queryString, $params);
         return $params['tr'] ?? null;
+    }
+
+    public function getPayeeVpaFromQrString(string $qrString) : string | null
+    {
+        $queryString = parse_url($qrString, PHP_URL_QUERY);
+        parse_str($queryString, $params);
+        return strtolower($params['pa']) ?? null;
+    }
+
+   /**
+     * Updates the 'tr' parameter in the given QR string with the provided transaction ID.
+     *
+     * This method parses the query part of the provided QR string, updates or adds the 'tr' parameter
+     * with the given transaction ID, and then rebuilds the URL with the updated query.
+     *
+     * @param string $trId The transaction ID to be set in the QR string.
+     * @param string $qrString The original QR string to be updated.
+     * @return string The updated QR string with the new 'tr' parameter.
+     */
+    protected function updateTrIdInQrString(string $trId, string $qrString) : string
+    {
+        // Parse the query part of the URL
+        $parts = parse_url($qrString);
+        parse_str($parts['query'] ?? '', $queryParams);
+
+        // Update or add the 'tr' parameter
+        $queryParams['tr'] = $trId;
+
+        // Rebuild the URL with updated query
+        $parts['query'] = http_build_query($queryParams);
+        return $parts['scheme'] . '://' . $parts['host'] . $parts['path'] . '?' . $parts['query'];
     }
 
     public function addStaticQRinQRCodeConfig($qrCode, $inputTerminal = null)
@@ -345,6 +382,15 @@ class Core extends QrCode\Core
         return $qrCode;
     }
 
+    public function setDeviceIdForQr($qrCode, $device_id)
+    {
+        $qrCode->updateDeviceId($device_id);
+
+        $this->repo->saveOrFail($qrCode);
+
+        return $qrCode;
+    }
+
     public function createOrFetchSharedQrCode()
     {
         $fallbackQrCodeId = Entity::SHARED_ID;
@@ -486,56 +532,79 @@ class Core extends QrCode\Core
             return null;
         }
 
-        if (empty($additionalData['qrString']) === false)
-        {
-            $this->trace->info(TraceCode::QR_CODE_REQUEST_VPA_TERMINAL_NOT_FETCHED, [
-                'message'  => 'QR_CODE_REQUEST_VPA_TERMINAL_NOT_FETCHED',
-                'qrString' => $additionalData['qrString'],
-            ]);
-
-            return null;
-        }
+//        if (empty($additionalData['qrString']) === false)
+//        {
+//            $this->trace->info(TraceCode::QR_CODE_REQUEST_VPA_TERMINAL_NOT_FETCHED, [
+//                'message'  => 'QR_CODE_REQUEST_VPA_TERMINAL_NOT_FETCHED',
+//                'qrString' => $additionalData['qrString'],
+//            ]);
+//
+//            return null;
+//        }
 
         $vpa = $input['vpa'];
-        $vpaSplit = (explode("@", $vpa));
-        $gateway  = null;
+        $gateway = $this->fetchGatewayFromVpa($vpa);
 
-        if (isset($vpaSplit[1]) === true && ($vpaSplit[1] === 'mairtel'))
+        $terminalDetails = [
+            TerminalEntity::MERCHANT_ID => $this->merchant->getId(),
+        ];
+
+        if (in_array($gateway, ['upi_airtel', 'upi_icici', 'upi_mindgate']))
         {
-            $gateway = 'upi_airtel';
+            $terminalDetails[TerminalEntity::GATEWAY_MERCHANT_ID2] = $vpa;
         }
-        elseif (isset($vpaSplit[1]) === true && ($vpaSplit[1] === 'icici'))
+        elseif (in_array($gateway, ['upi_jkbank', 'upi_rzpapb']))
         {
-            $gateway = 'upi_icici';
+            $terminalDetails[TerminalEntity::VPA] = $vpa;
         }
-        elseif (isset($vpaSplit[1]) === true && ($vpaSplit[1] === 'hdfcbank'))
-        {
-            $gateway = 'upi_mindgate';
-        }
-        elseif (isset($vpaSplit[1]) === true && ($vpaSplit[1] === 'jkbank'))
-        {
-            $gateway = 'upi_jkbank';
-        }
+
         if ($gateway === null)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
-//Jkbank expected to fail terminal fetch as  gateway_merchant_id2 is empty.
-//QR string is expected in JKbank additional data and code execution should not reach here
-        $terminalDetails[TerminalEntity::GATEWAY_MERCHANT_ID2] = $vpa;
-        $terminalDetails[TerminalEntity::MERCHANT_ID]          = $this->merchant->getId();
 
         $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
+
         if (empty($terminal) === true || $terminal->isQrV2Terminal() === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
         }
 
-
         $this->trace->info(TraceCode::QR_CODE_REQUEST_VPA_TERMINAL, [
-            '$terminalId' => $terminal->getId(),
+            'terminal_id' => $terminal->getId(),
         ]);
 
         return $terminal;
+    }
+
+    public function fetchGatewayFromVpa(string $vpa): ?string
+    {
+        $vpaSplit = explode("@", $vpa);
+        $gateway = null;
+
+        if (isset($vpaSplit[1])) {
+            switch ($vpaSplit[1]) {
+                case 'mairtel':
+                    $gateway = 'upi_airtel';
+                    break;
+                case 'icici':
+                    $gateway = 'upi_icici';
+                    break;
+                case 'hdfcbank':
+                    $gateway = 'upi_mindgate';
+                    break;
+                case 'jkb':
+                    $gateway = 'upi_jkbank';
+                    break;
+                case 'rxairtel':
+                case 'rairtel':
+                    $gateway = 'upi_rzpapb';
+                    break;
+                default:
+                    $gateway = null;
+            }
+        }
+
+        return $gateway;
     }
 }

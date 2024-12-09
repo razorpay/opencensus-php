@@ -22,6 +22,8 @@ class CreateSettlementOndemandPayoutReversal extends Job
 
     const MAX_ATTEMPTS = 3;
 
+    protected $metricsEnabled = true;
+
     public function __construct($mode, $settlementOndemandPayoutId, $merchantId, $reversalReason)
     {
         parent::__construct($mode);

@@ -832,6 +832,11 @@ class Entity extends Base\PublicEntity
         return (in_array($this->getType(), Type::CAPITAL_TYPE, true) === true);
     }
 
+    public function isTypeCredit(): bool
+    {
+        return ($this->getType() === Type::CREDIT);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
@@ -1161,6 +1166,16 @@ class Entity extends Base\PublicEntity
         if(($this->isTypeAdjustment()) and
             (method_exists($this->source, 'isDispute') === true) and
             ($this->source->isDispute() === true))
+        {
+            return true;
+        }
+
+        // Re-arch Payment Transaction gets created in async , for a usecase
+        // where amount is less than fee charged and payment becomes a debit
+        // scenario, we are letting balance to go negative in order to not have
+        // recon issues.
+        if ($this->isTypePayment() === true and
+            in_array($this->source->getCpsRoute(), Payment\Entity::REARCH_PAYMENT_SERVICES, true) === true)
         {
             return true;
         }

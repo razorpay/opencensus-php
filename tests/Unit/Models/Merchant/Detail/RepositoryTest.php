@@ -11,8 +11,11 @@ use Rzp\Accounts\Merchant\V1\EntitySaveResponse;
 use Rzp\Accounts\Merchant\V1\MerchantDetailSaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveResponse;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\WriteEnabledOnAsv;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Merchant\Detail\Validator;
 use RZP\Tests\Functional;
 use Razorpay\Asv\Error\GrpcError;
 use RZP\Tests\Traits\MocksSplitz;
@@ -483,6 +486,57 @@ class RepositoryTest extends RepositoryTestHelper
         });
     }
 
+    public function testMerchantDetailUniqueContactValidation()
+    {
+        $id = PublicEntity::generateUniqueId();
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', $id);
+
+        $attributes = [
+            "contact_mobile" => "9999999991"
+        ];
+
+        $entity = $this->fixtures->create("merchant_detail", $attributes);
+
+        // while creating in db we appends +91 , hence added this
+        $attributes = [
+            "contact_mobile" => "+919999999991"
+        ];
+        // with spltiz off
+        $this->setSplitzWithOutput("false", 1);
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('The contact mobile has already been taken.');
+        (new Validator())->validateInput('unique_contact_mobile', $attributes);
+
+        // with spltiz on
+        $this->setSplitzWithOutput("true", 1);
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('The contact mobile has already been taken.');
+        (new Validator())->validateInput('unique_contact_mobile', $attributes);
+
+
+        // happy flow
+        $attributes = [
+            "contact_mobile" => "+919999999990"
+        ];
+        // with spltiz off
+        try {
+            $this->setSplitzWithOutput("false", 1);
+            (new Validator())->validateInput('unique_contact_mobile', $attributes);
+            $this->assertTrue(true);
+        } catch (\Exception $e) {
+            $this->fail("this flow should not throw validation failure");
+        }
+
+        // with spltiz on
+        try {
+            $this->setSplitzWithOutput("true", 1);
+            (new Validator())->validateInput('unique_contact_mobile', $attributes);
+            $this->assertTrue(true);
+        } catch (\Exception $e) {
+            $this->fail("this flow should not throw validation failure");
+        }
+    }
+
     public function testMerchantRepositoryFindOrFailErrors() {
         Config::set('applications.asv_v2.splitz_experiment_merchant_detail_read_by_id', 'K1ZaAHZ7Lnumc6');
         $repo = new Repository();
@@ -509,6 +563,125 @@ class RepositoryTest extends RepositoryTestHelper
             $this->getExceptionForFindAndFailPublicDatabase($repo, "K9UzmvitzJ"),
             $this->getExceptionForFindOrFailPublicAsv($repo, "getById", "K9UzmvitzJ", new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Invalid Argument"))
         );
+    }
+
+    public function testMerchantDetailSaveOrFailReadMigration()
+    {
+        $attributes = [
+            "activation_flow" => "whitelist",
+            "contact_name" => "saveorfailreadmigration",
+            "contact_email" => "saveorfailreadmigration@gmail.com",
+        ];
+
+        $this->validateSaveOrFailReadMigration("merchant_detail", $attributes, new Repository());
+    }
+
+    public function testMerchantDetailSaveOrFailMigration()
+    {
+        $entity = $this->fixtures->create("merchant_detail");
+
+        $attributes = [
+            "activation_flow" => "whitelist",
+            "contact_name" => "saveorfailreadmigration",
+            "contact_email" => "saveorfailreadmigration@gmail.com",
+        ];
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_detail', false);
+        $this->validateSaveOrFailMigration("merchant_detail", $attributes, new Repository(), $entity, true);
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_detail', true);
+
+        $attributes = [
+            "activation_flow" => "whitelistfalse",
+            "contact_name" => "saveorfailfalsereadmigration",
+            "contact_email" => "saveorfailfalsereadmigration@gmail.com",
+        ];
+
+        $this->validateSaveOrFailMigration("merchant_detail", $attributes, new Repository(),$entity, false);
+    }
+
+    public function testMerchantEmailSaveOrFailMigration()
+    {
+        $entity = $this->fixtures->create("merchant_email");
+
+        $attributes = [
+            "email" => "support@rtll.com",
+            "phone" => "9999999999",
+            "policy" => "24x7 support",
+        ];
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_email', false);
+
+        $this->validateSaveOrFailMigration("merchant_email", $attributes, new \RZP\Models\Merchant\Email\Repository(),$entity, true);
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_email', true);
+
+        $attributes = [
+            "email" => "supportwriteFalse@rtll.com",
+            "phone" => "9999999991",
+            "policy" => "24x7 support write false",
+        ];
+
+        $this->validateSaveOrFailMigration("merchant_email", $attributes, new \RZP\Models\Merchant\Email\Repository(), $entity, false);
+    }
+
+    public function testMerchantBusinessDetailSaveOrFailMigration()
+    {
+        $entity = $this->fixtures->create("merchant_business_detail");
+
+        $attributes = [
+            "blacklisted_products_category" => "3-5 dayfs",
+            'app_urls' => [
+                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.whatsapp',
+                'txn_playstore_urls' => [
+                    'https://play.google.com/store/apps/details?id=com.whatsapp',
+                ],
+            ]
+        ];
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_business_detail', false);
+        $this->validateSaveOrFailMigration("merchant_business_detail", $attributes, new \RZP\Models\Merchant\BusinessDetail\Repository(), $entity, true);
+
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_business_detail', true);
+
+        $attributes = [
+            "blacklisted_products_category" => "3-5 dayfs write false",
+            'app_urls' => [
+                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.whatsapp',
+                'txn_playstore_urls' => [
+                    'https://play.google.com/store/apps/details?id=com.whatsappwritefalse',
+                ],
+            ]
+        ];
+
+        $this->validateSaveOrFailMigration("merchant_business_detail", $attributes, new \RZP\Models\Merchant\BusinessDetail\Repository(), $entity, false);
+    }
+
+    public function testMerchantEmailSaveOrFailReadMigration()
+    {
+        $attributes = [
+            "email" => "support@rtll.com",
+            "phone" => "9999999999",
+            "policy" => "24x7 support",
+        ];
+
+        $this->validateSaveOrFailReadMigration("merchant_email", $attributes, new \RZP\Models\Merchant\Email\Repository());
+    }
+
+    public function testMerchantBusinessDetailSaveOrFailReadMigration()
+    {
+        $attributes = [
+            "blacklisted_products_category" => "3-5 dayfs",
+            'app_urls' => [
+                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.whatsapp',
+                'txn_playstore_urls' => [
+                    'https://play.google.com/store/apps/details?id=com.whatsapp',
+                ],
+            ]
+        ];
+
+        $this->validateSaveOrFailReadMigration("merchant_business_detail", $attributes, new \RZP\Models\Merchant\BusinessDetail\Repository());
     }
 
     public function testMerchantDetailRepositoryFind()

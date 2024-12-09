@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant\Methods;
 use RZP\Models\Base;
 use RZP\Models\Bank\Bank;
 use RZP\Models\Card\Network;
+use RZP\Models\Emi\OfflineDebitEmiProvider;
+use RZP\Models\Emi\OfflineCreditEmiProvider;
 use RZP\Models\Feature;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Card\SubType;
@@ -72,6 +74,8 @@ class Entity extends Base\PublicEntity
     const COD               = 'cod';
     const FPX               = 'fpx';
     const DUITNOW_PAY       = 'duitnow_pay';
+    const GIFT_CARDS        = 'gift_cards';
+    const RAZORPAY_GIFTCARD = 'razorpay_giftcard';
     const BAJAJPAY          = 'bajajpay';
     const GRABPAY           = 'grabpay';
     const TOUCHNGO          = 'touchngo';
@@ -91,6 +95,12 @@ class Entity extends Base\PublicEntity
     const CREDIT_EMI_PROVIDERS  = 'credit_emi_providers';
     const CARDLESS_EMI_PROVIDERS = 'cardless_emi_providers';
     const CREDIT_EMI = 'credit_emi';
+    const OFFLINE_DISABLED_CREDIT_EMI = 'offline_disabled_credit_emi';
+    const OFFLINE_DISABLED_DEBIT_EMI = 'offline_disabled_debit_emi';
+    const OFFLINE_CREDIT_EMI_PROVIDERS = 'offline_credit_emi_providers';
+    const OFFLINE_DEBIT_EMI_PROVIDERS = 'offline_debit_emi_providers';
+    const OFFLINE_DEBIT = 'offline_debit';
+    const OFFLINE_CREDIT = 'offline_credit';
     const PAYLATER_PROVIDERS = 'paylater_providers';
     const EMI_TYPES           = 'emi_types';
 
@@ -108,6 +118,7 @@ class Entity extends Base\PublicEntity
 
     const INTL_BANK_TRANSFER = 'intl_bank_transfer';
 
+    const ONLINE_CONVERSION_ENABLED = 'online_conversion_enabled';
     protected $primaryKey = self::MERCHANT_ID;
 
     // Table name has been renamed to 'merchant_banks'
@@ -163,6 +174,7 @@ class Entity extends Base\PublicEntity
         self::MCASH,
         self::GRABPAY,
         self::TOUCHNGO,
+        self::GIFT_CARDS,
     ];
 
     protected $visible = [
@@ -204,6 +216,8 @@ class Entity extends Base\PublicEntity
         self::APPS,
         self::DEBIT_EMI_PROVIDERS,
         self::CREDIT_EMI_PROVIDERS,
+        self::OFFLINE_DEBIT_EMI_PROVIDERS,
+        self::OFFLINE_CREDIT_EMI_PROVIDERS,
         self::CARDLESS_EMI_PROVIDERS,
         self::PAYLATER_PROVIDERS,
         self::ITZCASH,
@@ -226,7 +240,9 @@ class Entity extends Base\PublicEntity
         self::TOUCHNGO,
         self::INTL_BANK_TRANSFER,
         self::SODEXO,
+        self::ONLINE_CONVERSION_ENABLED,
         self::DUITNOW_PAY,
+        self::RAZORPAY_GIFTCARD,
     ];
 
     protected $public = [
@@ -269,6 +285,8 @@ class Entity extends Base\PublicEntity
         self::APPS,
         self::DEBIT_EMI_PROVIDERS,
         self::CREDIT_EMI_PROVIDERS,
+        self::OFFLINE_DEBIT_EMI_PROVIDERS,
+        self::OFFLINE_CREDIT_EMI_PROVIDERS,
         self::CARDLESS_EMI_PROVIDERS,
         self::PAYLATER_PROVIDERS,
         self::ITZCASH,
@@ -291,7 +309,9 @@ class Entity extends Base\PublicEntity
         self::TOUCHNGO,
         self::INTL_BANK_TRANSFER,
         self::SODEXO,
+        self::ONLINE_CONVERSION_ENABLED,
         self::DUITNOW_PAY,
+        self::RAZORPAY_GIFTCARD,
     ];
 
     protected $appends = [
@@ -307,6 +327,8 @@ class Entity extends Base\PublicEntity
         self::CREDITLINE_ON_UPI,
         self::CREDIT_EMI_PROVIDERS ,
         self::CARDLESS_EMI_PROVIDERS ,
+        self::OFFLINE_DEBIT_EMI_PROVIDERS,
+        self::OFFLINE_CREDIT_EMI_PROVIDERS,
         self::PAYLATER_PROVIDERS ,
         self::BAJAJPAY,
         self::INTL_BANK_TRANSFER,
@@ -316,12 +338,16 @@ class Entity extends Base\PublicEntity
         self::GRABPAY,
         self::TOUCHNGO,
         self::SODEXO,
+        self::ONLINE_CONVERSION_ENABLED,
         self::DUITNOW_PAY,
+        self::RAZORPAY_GIFTCARD,
     ];
 
     protected static $shouldAcceptSubMethods = [
         self::UPI,
         self::DUITNOW_PAY,
+        self::GIFT_CARDS,
+        self::CARD
     ];
 
 
@@ -467,6 +493,16 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI,
     ];
 
+    protected static $aff_offline_method_public_name_mapping = [
+        self::OFFLINE_DISABLED_CREDIT_EMI => self::OFFLINE_CREDIT_EMI_PROVIDERS,
+        self::OFFLINE_DISABLED_DEBIT_EMI => self::OFFLINE_DEBIT_EMI_PROVIDERS,
+    ];
+
+    protected static $addon_offline_affordability_methods = [
+        self::OFFLINE_DISABLED_CREDIT_EMI,
+        self::OFFLINE_DISABLED_DEBIT_EMI,
+    ];
+
     protected static $addon_methods_names = [
         self::UPI => [
             self::IN_APP,
@@ -500,6 +536,33 @@ class Entity extends Base\PublicEntity
             CreditEmiProvider::FDRL,
             CreditEmiProvider::IDFB
         ],
+        self::OFFLINE_CREDIT => [
+            OfflineCreditEmiProvider::AMEX,
+            OfflineCreditEmiProvider::AUBL,
+            OfflineCreditEmiProvider::BARB,
+            OfflineCreditEmiProvider::CITI,
+            OfflineCreditEmiProvider::CNRB,
+            OfflineCreditEmiProvider::FDRL,
+            OfflineCreditEmiProvider::HDFC,
+            OfflineCreditEmiProvider::HSBC,
+            OfflineCreditEmiProvider::ICIC,
+            OfflineCreditEmiProvider::IDFB,
+            OfflineCreditEmiProvider::INDB,
+            OfflineCreditEmiProvider::JAKA,
+            OfflineCreditEmiProvider::KKBK,
+            OfflineCreditEmiProvider::PUNB,
+            OfflineCreditEmiProvider::RATN,
+            OfflineCreditEmiProvider::SBIN,
+            OfflineCreditEmiProvider::SCBL,
+            OfflineCreditEmiProvider::UTIB,
+            OfflineCreditEmiProvider::YESB,
+            OfflineCreditEmiProvider::ONECARD,
+        ],
+        self::OFFLINE_DEBIT => [
+            OfflineDebitEmiProvider::HDFC,
+            OfflineDebitEmiProvider::ICIC,
+            OfflineDebitEmiProvider::KKBK,
+        ],
         self::CARDLESS_EMI => [
             CardlessEmiProvider::WALNUT369,
             CardlessEmiProvider::ZESTMONEY,
@@ -532,7 +595,11 @@ class Entity extends Base\PublicEntity
         ],
 
         self::DUITNOW_PAY => [
-            self::DUITNOW_PAY
+            self::DUITNOW_PAY,
+        ],
+
+        self::GIFT_CARDS => [
+            self::RAZORPAY_GIFTCARD
         ]
     ];
 
@@ -655,6 +722,20 @@ class Entity extends Base\PublicEntity
         $addonMethods = $this->getAddonMethods();
 
         return !empty($addonMethods[self::DUITNOW_PAY][self::DUITNOW_PAY]);
+    }
+
+    public function isGiftCardsEnabled()
+    {
+        $addonMethods = $this->getAddonMethods();
+
+        return !empty($addonMethods[self::GIFT_CARDS][self::RAZORPAY_GIFTCARD]);
+    }
+
+    public function isRazorpayGiftCardEnabled()
+    {
+        $addonMethods = $this->getAddonMethods();
+
+        return !empty($addonMethods[self::GIFT_CARDS][self::RAZORPAY_GIFTCARD]);
     }
 
     public function isUpiEnabled()
@@ -902,7 +983,7 @@ class Entity extends Base\PublicEntity
 
     public function isEmiEnabled()
     {
-        return ($this->isCreditEmiEnabled() || $this->isDebitEmiEnabled());
+        return ($this->isCreditEmiEnabled() || $this->isDebitEmiEnabled() || $this->isOfflineDebitEmiEnabled() || $this->isOfflineCreditEmiEnabled());
     }
 
     public function isCreditEmiEnabled()
@@ -917,6 +998,20 @@ class Entity extends Base\PublicEntity
         $enabledEmi = $this->getAttribute(self::EMI);
 
         return in_array(EmiType::DEBIT, $enabledEmi, true);
+    }
+
+    public function isOfflineDebitEmiEnabled()
+    {
+        $enabledEmi = $this->getAttribute(self::EMI);
+
+        return in_array(EmiType::OFFLINE_DEBIT, $enabledEmi, true);
+    }
+
+    public function isOfflineCreditEmiEnabled()
+    {
+        $enabledEmi = $this->getAttribute(self::EMI);
+
+        return in_array(EmiType::OFFLINE_CREDIT, $enabledEmi, true);
     }
 
     public function isEmandateEnabled()
@@ -1376,6 +1471,17 @@ class Entity extends Base\PublicEntity
         return $this->getDuitNowPay();
     }
 
+    public function getGiftCard()
+    {
+        return $this->getPaymentAddOnMethod(self::GIFT_CARDS, self::RAZORPAY_GIFTCARD);
+    }
+
+
+    public function getRazorpayGiftCardAttribute()
+    {
+        return $this->getGiftCard();
+    }
+
     public function getCcOnUpiAttribute()
     {
         return $this->getPaymentAddOnMethod(self::UPI, self::CC_ON_UPI);
@@ -1457,6 +1563,13 @@ class Entity extends Base\PublicEntity
      */
     protected function transformAddonMethods(array &$input)
     {
+        if(isset($input[self::EMI][self::OFFLINE_CREDIT]) === true && $input[self::EMI][self::OFFLINE_CREDIT] === '0') {
+            unset($input[self::OFFLINE_CREDIT_EMI_PROVIDERS]);
+        }
+        if(isset($input[self::EMI][self::OFFLINE_DEBIT]) === true && $input[self::EMI][self::OFFLINE_DEBIT] === '0') {
+            unset($input[self::OFFLINE_DEBIT_EMI_PROVIDERS]);
+        }
+
         $all_addon_methods = Entity::getAllAddonMethodsNames();
         $addon_methods = $this->getAttribute(self::ADDON_METHODS);
 
@@ -1500,6 +1613,17 @@ class Entity extends Base\PublicEntity
 
         $this->transformAffordabilityMethods($input, $addon_methods);
 
+        $this->transformOfflineAffordabilityMethods($input, $addon_methods);
+
+        if(isset($input[self::ONLINE_CONVERSION_ENABLED]))
+        {
+            $addon_methods[self::ONLINE_CONVERSION_ENABLED] = $input[self::ONLINE_CONVERSION_ENABLED];
+        }
+        else
+        {
+            $addon_methods[self::ONLINE_CONVERSION_ENABLED] = false;
+        }
+
         $input["addon_methods"] = $addon_methods;
     }
 
@@ -1508,6 +1632,14 @@ class Entity extends Base\PublicEntity
         foreach (self::$addon_affordability_methods as $affordabilityMethod)
         {
             $this->transformAffordabilityMethod($input, $affordabilityMethod, $addon_methods);
+        }
+    }
+
+    public function transformOfflineAffordabilityMethods(array &$input, array &$addon_methods)
+    {
+        foreach (self::$addon_offline_affordability_methods as $affordabilityMethod)
+        {
+            $this->transformOfflineAffordabilityMethod($input, $affordabilityMethod, $addon_methods);
         }
     }
 
@@ -1791,6 +1923,16 @@ class Entity extends Base\PublicEntity
         return $this->getEnabledDebitEmiProviders();
     }
 
+    protected function getOfflineDebitEmiProvidersAttribute()
+    {
+        return $this->getEnabledOfflineDebitEmiProviders();
+    }
+
+    protected function getOfflineCreditEmiProvidersAttribute()
+    {
+        return $this->getEnabledOfflineCreditEmiProviders();
+    }
+
     protected function getCreditEmiProvidersAttribute()
     {
         return $this->getEnabledCreditEmiProviders();
@@ -1865,6 +2007,56 @@ class Entity extends Base\PublicEntity
 
         }
         return $debitEmiProviders;
+    }
+
+    public function getEnabledOfflineDebitEmiProviders(): array
+    {
+        $addon_methods = $this->getAddonMethods();
+
+        $all_addon_methods = Entity::getAllAddonMethodsNames();
+
+        return OfflineDebitEmiProvider::getEnabledOfflineProviders($all_addon_methods, $addon_methods);
+    }
+
+    public function getConsolidatedOfflineDebitEmiProviders(): array
+    {
+        $offlineDebitEmi = $this->isOfflineDebitEmiEnabled();
+
+        $addon_methods = $this->getAddonMethods();
+
+        $all_addon_methods = Entity::getAllAddonMethodsNames();
+
+        return OfflineDebitEmiProvider::getConsolidatedEnabledOfflineProviders($offlineDebitEmi, $all_addon_methods, $addon_methods);
+    }
+
+    public function getOnlineConversionEnabledAttribute(): bool
+    {
+        $addonMethods = $this->getAddonMethods();
+
+        if (empty($addonMethods) or !isset($addonMethods[self::ONLINE_CONVERSION_ENABLED])) {
+            return false;
+        }
+        return $addonMethods[self::ONLINE_CONVERSION_ENABLED];
+    }
+
+    public function getEnabledOfflineCreditEmiProviders(): array
+    {
+        $addon_methods = $this->getAddonMethods();
+
+        $all_addon_methods = Entity::getAllAddonMethodsNames();
+
+        return OfflineCreditEmiProvider::getEnabledOfflineProviders($all_addon_methods, $addon_methods);
+    }
+
+    public function getConsolidatedOfflineCreditEmiProviders(): array
+    {
+        $offlineCreditEmi = $this->isOfflineCreditEmiEnabled();
+
+        $addon_methods = $this->getAddonMethods();
+
+        $all_addon_methods = Entity::getAllAddonMethodsNames();
+
+        return OfflineCreditEmiProvider::getConsolidatedEnabledOfflineProviders($offlineCreditEmi, $all_addon_methods, $addon_methods);
     }
 
     public function getEnabledCreditEmiProviders(): array
@@ -2057,6 +2249,25 @@ class Entity extends Base\PublicEntity
                 else
                 {
                     $addon_methods[$affordabilityProvider][$provider] = 0;
+                }
+            }
+            unset($input[$method]);
+        }
+    }
+
+    // transformAffordabilityMethod for offline but you will have to use lists
+    protected function transformOfflineAffordabilityMethod($input, $affordabilityProvider, array &$addon_methods)
+    {
+        $method = self::$aff_offline_method_public_name_mapping[$affordabilityProvider];
+
+        if(isset($input[$method]) === true)
+        {
+            $addon_methods[$affordabilityProvider] = [];
+            foreach ($input[$method] as $provider => $enabled)
+            {
+                if($enabled !== "1")
+                {
+                    array_push($addon_methods[$affordabilityProvider], $provider);
                 }
             }
             unset($input[$method]);

@@ -4,11 +4,11 @@ namespace RZP\Models\Ledger\ReverseShadow\Payments;
 
 use Ramsey\Uuid\Uuid;
 use Razorpay\Trace\Logger;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BaseException;
 use RZP\Models\Base;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\UniqueIdEntity;
@@ -16,6 +16,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payment;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Transaction\Entity;
 use RZP\Models\Transaction\Processor\Ledger;
@@ -45,36 +46,38 @@ class Core extends Base\Core
     {
         $ledgerService = $this->app['ledger'];
 
-        $merchantAccountBalances = $this->getMerchantAccountBalances($ledgerService, $payment->getMerchantId());
+        $merchantAccountsList = $this->getMerchantAccounts($ledgerService, $payment->getMerchantId());
+        $merchantAccountBalances = $this->getMerchantAccountBalancesMap($merchantAccountsList);
+        $amountCreditsAccounts = $this->getValidAmountCreditsAccounts($merchantAccountsList);
 
         list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($payment);
 
-        $properties = [
-            'id'            => $payment->getMerchantId(),
-            'experiment_id' => $this->app['config']->get('app.fee_breakup_in_ledger_experiment_id'),
-        ];
-        $enableFeeSplitInLedger = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+        $expResults = $this->runExperiments($payment->getMerchantId());
+
+        $enableFeeSplitInLedger = $expResults[$this->app['config']->get('app.fee_breakup_in_ledger_experiment_id')];
+        $enableAmountCreditsSplitInLedger = $expResults[$this->app['config']->get('app.amount_credits_split_in_ledger_experiment_id')];
 
         $this->trace->info(
             TraceCode::CREATING_FEES_BREAKUP_IN_REVERSE_SHADOW,
             [
-                'tax'                 => $tax,
-                'fee'                 => $fee,
-                'fee_split'           => $feesSplit->toArrayPublic(),
-                'experiment_response' => $enableFeeSplitInLedger,
+                'tax'                                   => $tax,
+                'fee'                                   => $fee,
+                'fee_split'                             => $feesSplit->toArrayPublic(),
+                'enable_fee_breakup_in_cls'             => $enableFeeSplitInLedger,
+                'enable_amount_credits_split_in_ledger' => $enableAmountCreditsSplitInLedger,
             ]);
 
         if ($payment->isDirectSettlement() === true)
         {
-            $moneyParams = $this->generateMoneyParamsForDSPayment($payment, $merchantAccountBalances, $fee, $tax, $feesSplit, $enableFeeSplitInLedger);
+            [$moneyParams, $dynamicMoneyParams] = $this->generateMoneyParamsForDSPayment($payment, $merchantAccountBalances, $amountCreditsAccounts, $fee, $tax, $feesSplit, $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger);
 
-            $additionalParams = $this->fetchRulesForDSPaymentCredits($payment, $merchantAccountBalances, $fee, $enableFeeSplitInLedger);
+            $additionalParams = $this->fetchRulesForDSPaymentCredits($payment, $merchantAccountBalances, $fee, $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger);
         }
         else
         {
-            $moneyParams = $this->generateMoneyParamsForNormalPayment($payment, $merchantAccountBalances, $fee, $tax, $discount, $feesSplit, $enableFeeSplitInLedger);
+            [$moneyParams, $dynamicMoneyParams] = $this->generateMoneyParamsForNormalPayment($payment, $merchantAccountBalances, $amountCreditsAccounts, $fee, $tax, $discount, $feesSplit, $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger);
 
-            $additionalParams = $this->fetchRulesForPaymentCredits($payment, $merchantAccountBalances, $fee, intval($moneyParams[Constants::BASE_AMOUNT]), $enableFeeSplitInLedger);
+            $additionalParams = $this->fetchRulesForPaymentCredits($payment, $merchantAccountBalances, $fee, intval($moneyParams[Constants::BASE_AMOUNT]), $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger);
         }
 
         $transactorId = $payment->getPublicId();
@@ -93,6 +96,22 @@ class Core extends Base\Core
                 Constants::TRANSACTOR_AMOUNT => $payment->getBaseAmount(),
             ]
         );
+
+        if (isset($feesSplit) === true)
+        {
+            foreach ($feesSplit as $feeSplit)
+            {
+                $merchantCaptureData[Constants::NOTES][$feeSplit->getName()] = $feeSplit->getPricingRule();
+            }
+        }
+
+        if (empty($dynamicMoneyParams) === false)
+        {
+            $merchantCaptureData[Constants::DYNAMIC_MONEY_PARAMS] = $dynamicMoneyParams;
+        }
+
+        $this->validateInsufficientBalance($payment, $moneyParams, $merchantAccountBalances, $additionalParams);
+
 
         if ($payment->getGateway() === Gateway::WALLET_OPENWALLET)
         {
@@ -117,6 +136,110 @@ class Core extends Base\Core
         $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
 
         return [($fee-$tax), $tax];
+    }
+
+    private function runExperiments($merchantId): array
+    {
+        $result     = [];
+        $properties = [];
+
+        try {
+            $properties = [
+                [
+                    'id' => $merchantId,
+                    'experiment_id' => $this->app['config']->get('app.fee_breakup_in_ledger_experiment_id')
+                ],
+                [
+                    'id' => $merchantId,
+                    'experiment_id' => $this->app['config']->get('app.amount_credits_split_in_ledger_experiment_id')
+                ]
+            ];
+
+            $experimentResponses = $this->app['splitzService']->bulkCallsToSplitz($properties);
+
+            foreach ($experimentResponses as $response) {
+                $experimentId = $response['experiment']['id'];
+                $variantName = $response['variant']['name']? : null;
+
+                $result[$experimentId] = ($variantName === 'enable');
+            }
+        }
+        catch (\Exception $e)
+        {
+            $result[$this->app['config']->get('app.fee_breakup_in_ledger_experiment_id')] = false;
+
+            $result[$this->app['config']->get('app.amount_credits_split_in_ledger_experiment_id')] = false;
+
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+
+            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['properties' => $properties]);
+        }
+        return $result;
+    }
+
+    /** validate insufficient balance for normal and DS payments
+     * @param $payment
+     * @param $moneyParams
+     * @param $merchantAccountBalances
+     * @param $additionalParams
+     * @return void
+     * @throws \RZP\Exception\AssertionException
+     */
+    protected function validateInsufficientBalance($payment, $moneyParams, $merchantAccountBalances, $additionalParams)
+    {
+        $properties = [
+            "id" => $payment->getMerchantId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_insufficient_balance_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        if ($variant === true)
+        {
+            if (isset($moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]) === true)
+            {
+                $merchantBalance = $merchantAccountBalances[Constants::MERCHANT_BALANCE];
+
+                if (isset($moneyParams[Constants::MERCHANT_BALANCE_LIMIT]) === true)
+                {
+                    $merchantBalance += intval($moneyParams[Constants::MERCHANT_BALANCE_LIMIT]);
+                }
+
+                $calculatedMerchantBalance = intval($moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]);
+
+                if (isset($additionalParams[Constants::MERCHANT_BALANCE_ACCOUNTING]) === true)
+                {
+                    $this->trace->info(
+                        TraceCode::BALANCE_VALIDATION_FOR_NORMAL_PAYMENTS,
+                        [
+                            'payment_id'                => $payment->getId(),
+                            'merchant_id'               => $payment->getMerchantId(),
+                            'money_params'              => $moneyParams,
+                            'additional_params'         => $additionalParams,
+                            'merchant_account_balance'  => $merchantAccountBalances
+                        ]);
+
+                    assertTrue($merchantBalance >= $calculatedMerchantBalance);
+                }
+
+                if (isset($additionalParams[Constants::DIRECT_SETTLEMENT_ACCOUNTING]) &&
+                    (!isset($additionalParams[Constants::ACCOUNTING]) ||
+                        $additionalParams[Constants::ACCOUNTING] !== Constants::HDFC_VAS_DS_CFB_SURCHARGE_FLOW))
+                {
+                    $this->trace->info(
+                        TraceCode::BALANCE_VALIDATION_FOR_DS_PAYMENTS,
+                        [
+                            'payment_id'                => $payment->getId(),
+                            'merchant_id'               => $payment->getMerchantId(),
+                            'money_params'              => $moneyParams,
+                            'additional_params'         => $additionalParams,
+                            'merchant_account_balance'  => $merchantAccountBalances
+                        ]);
+
+                    assertTrue($merchantBalance >= $calculatedMerchantBalance);
+                }
+            }
+        }
     }
 
     private function getMoneyParamsForFeeBreakupAndTax($feeSplit, $totalCommission, $totalTax, $enableFeeSplitInLedger)
@@ -172,9 +295,11 @@ class Core extends Base\Core
         return $moneyParams;
     }
 
-    protected function generateMoneyParamsForDSPayment(Payment\Entity $payment, $merchantAccountBalances, $fee, $tax, $feesSplit, $enableFeeSplitInLedger): array
+    protected function generateMoneyParamsForDSPayment(Payment\Entity $payment, $merchantAccountBalances, $amountCreditsAccounts, $fee, $tax, $feesSplit, $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger): array
     {
         $moneyParams = [];
+
+        $dynamicMoneyParams = [];
 
         $amount = 0;
 
@@ -201,7 +326,7 @@ class Core extends Base\Core
             $moneyParams[Constants::MERCHANT_VAS_AMOUNT]        = strval($fee);
             $moneyParams = array_merge($moneyParams, $this->getMoneyParamsForFeeBreakupAndTax($feesSplit, $commission, $tax, $enableFeeSplitInLedger));
 
-            return $moneyParams;
+            return [$moneyParams, $dynamicMoneyParams];
         }
 
         //Todo: Check with banking team , fee and tax is populated but do not get deducted from balance.
@@ -220,7 +345,14 @@ class Core extends Base\Core
         else if (($this->isGratis($amountCredits, $payment->getAmount()) === true) and ($this->shouldDisableAmountCredits($payment) === false))
         {
             $moneyParams[Constants::RAZORPAY_REWARDS]           = strval($payment->getAmount());
-            $moneyParams[Constants::AMOUNT_CREDITS]             = strval($payment->getAmount());
+            if($enableAmountCreditsSplitInLedger === true)
+            {
+                $dynamicMoneyParams = $this->getDynamicMoneyParams($amountCreditsAccounts, $payment->getAmount());
+            }
+            else
+            {
+                $moneyParams[Constants::AMOUNT_CREDITS]             = strval($payment->getAmount());
+            }
         }
         else if($this->isFeeCredits($feeCredits, $commission + $tax) === true)
         {
@@ -236,10 +368,10 @@ class Core extends Base\Core
 
         $moneyParams[Constants::BASE_AMOUNT] = strval($amount);
 
-        return $moneyParams;
+        return [$moneyParams, $dynamicMoneyParams];
     }
 
-    protected function fetchRulesForDSPaymentCredits(Payment\Entity $payment, $merchantAccountBalances, $fee, $enableFeeSplitInLedger): array
+    protected function fetchRulesForDSPaymentCredits(Payment\Entity $payment, $merchantAccountBalances, $fee, $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger = false): array
     {
         $feeCredits = $merchantAccountBalances[Constants::MERCHANT_FEE_CREDITS];
 
@@ -265,7 +397,7 @@ class Core extends Base\Core
         }
         else if(($this->isGratis($amountCredits, $payment->getAmount()) === true) and ($this->shouldDisableAmountCredits($payment) === false))
         {
-            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS_REDEMPTION;
+            $rule[Constants::CREDIT_ACCOUNTING] = ($enableAmountCreditsSplitInLedger === true) ? Constants::AMOUNT_CREDITS_REDEMPTION_V2 : Constants::AMOUNT_CREDITS_REDEMPTION;
             $isCommissionApplicable = false;
         }
         else if($this->isFeeCredits($feeCredits, $fee))
@@ -281,9 +413,11 @@ class Core extends Base\Core
         return $rule;
     }
 
-    protected  function generateMoneyParamsForNormalPayment(Payment\Entity $payment, $merchantAccountBalances, $fee, $tax, $discount, $feesSplit, $enableFeeSplitInLedger): array
+    protected  function generateMoneyParamsForNormalPayment(Payment\Entity $payment, $merchantAccountBalances, $amountCreditsAccounts, $fee, $tax, $discount, $feesSplit, $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger): array
     {
         $moneyParams = [];
+
+        $dynamicMoneyParams = [];
 
         $amount = abs($payment->getBaseAmount());
 
@@ -357,9 +491,17 @@ class Core extends Base\Core
 
                 $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($merchantAmount);
                 $moneyParams[Constants::RAZORPAY_REWARDS]           = strval($amount);
-                $moneyParams[Constants::AMOUNT_CREDITS]             = strval($amount);
                 $moneyParams[Constants::TAX] = strval(abs($customerTax));
                 $moneyParams[Constants::COMMISSION] = strval(abs($customerFee));
+
+                if($enableAmountCreditsSplitInLedger === true)
+                {
+                    $dynamicMoneyParams = $this->getDynamicMoneyParams($amountCreditsAccounts, $amount);
+                }
+                else
+                {
+                    $moneyParams[Constants::AMOUNT_CREDITS] = strval($amount);
+                }
             }
             else if ($this->isFeeCredits($feeCredits, $merchantFee) === true)
             {
@@ -395,7 +537,12 @@ class Core extends Base\Core
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
             $moneyParams[Constants::RAZORPAY_REWARDS]           = strval($amount);
-            $moneyParams[Constants::AMOUNT_CREDITS]             = strval($amount);
+
+            if($enableAmountCreditsSplitInLedger === true){
+                $dynamicMoneyParams = $this->getDynamicMoneyParams($amountCreditsAccounts, $amount);
+            } else{
+                $moneyParams[Constants::AMOUNT_CREDITS] = strval($amount);
+            }
         }
         else if($this->isFeeCreditsWithoutCustomerFeeBearer($feeCredits, $commission + $tax, $payment) === true)
         {
@@ -435,10 +582,10 @@ class Core extends Base\Core
             }
         }
 
-        return $moneyParams;
+        return [$moneyParams, $dynamicMoneyParams];
     }
 
-    protected function fetchRulesForPaymentCredits(Payment\Entity $payment, $merchantAccountBalances, $fee, $amount, $enableFeeSplitInLedger): array
+    protected function fetchRulesForPaymentCredits(Payment\Entity $payment, $merchantAccountBalances, $fee, $amount, $enableFeeSplitInLedger, $enableAmountCreditsSplitInLedger = false): array
     {
         $rule = [];
 
@@ -466,12 +613,12 @@ class Core extends Base\Core
         }
         else if($this->isPrepaidDynamicFeeBearerFlag($payment) && $this->isGratis($amountCredits, $amount) and ($this->shouldDisableAmountCredits($payment) === false))
         {
-            $rule[Constants::CREDIT_ACCOUNTING] = Constants::DFB_AMOUNT_CREDITS;
+            $rule[Constants::CREDIT_ACCOUNTING] = ($enableAmountCreditsSplitInLedger === true) ? Constants::DFB_AMOUNT_CREDITS_V2 : Constants::DFB_AMOUNT_CREDITS;
             $isCommissionApplicable = false;
         }
         else if ($this->isGratisWithoutCustomerFeeBearer($amountCredits, $amount, $payment) and ($this->shouldDisableAmountCredits($payment) === false))
         {
-            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS_REDEMPTION;
+            $rule[Constants::CREDIT_ACCOUNTING] = ($enableAmountCreditsSplitInLedger === true) ? Constants::AMOUNT_CREDITS_REDEMPTION_V2 : Constants::AMOUNT_CREDITS_REDEMPTION;
             $isCommissionApplicable = false;
         }
         else if($this->isFeeCreditsWithoutCustomerFeeBearer($feeCredits, $fee, $payment))

@@ -168,6 +168,24 @@ class Core extends Base\Core
             }
         }
 
+        try
+        {
+            $allowed = $this->isCreateOverrideToCmsEnabled($merchant->getId(),$this->mode,app('request.ctx')->getInternalAppName());
+        }
+        catch(\Exception $e)
+        {
+            $allowed = "unknown";
+            $this->trace->traceException($e, null, TraceCode::CUSTOMER_CREATE_REQUEST_CTX_SPLITZ_ERROR);
+        }
+
+        $traceData = [
+            'merchant_id' => $merchant->getId(),
+            'mode' => $this->mode,
+            'internal_app_name' => app('request.ctx')->getInternalAppName(),
+            'experiment_status' => $allowed
+        ];
+        $this->trace->info(TraceCode::CUSTOMER_CREATE_REQUEST_CTX, $traceData);
+
         $this->repo->transaction(function() use ($customer, $merchant, $input)
         {
             // This needs to happen here because address create associates itself with the customer.
@@ -177,8 +195,22 @@ class Core extends Base\Core
             $this->createCustomerAddressesIfValuesSetInInput($customer, $input);
 
         });
-
         return $customer;
+    }
+    protected function isCreateOverrideToCmsEnabled($merchantId, $mode, $internal_app_name): bool
+    {
+        $experimentId = $this->mode == "test" ? "app.cms_create_override_test_experiment_id" : "app.cms_create_override_live_experiment_id";
+        $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get($experimentId),
+                'request_data'  => json_encode(['merchantId' => $merchantId, 'internal_app_name' => $internal_app_name, 'mode' => $mode])
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return  $variant == "enabled";
     }
 
     /**
@@ -218,12 +250,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($customer);
 
-        $inputTrace = $input;
-
-        unset($inputTrace[Entity::NAME], $inputTrace[Entity::EMAIL], $inputTrace[Entity::CONTACT]);
-
-        $this->trace->info(TraceCode::CUSTOMER_EDIT, $inputTrace);
-
+        $traceData = [
+            'mode' => $this->mode,
+            'internal_app_name' => app('request.ctx')->getInternalAppName()
+        ];
+        $this-> trace->info(TraceCode::CUSTOMER_EDIT_REQUEST_CTX, $traceData);
         return $customer;
     }
 
@@ -1954,7 +1985,21 @@ class Core extends Base\Core
         {
             $formattedPaymentDetails['insurance']['claim_status'] = $payment['insurance_claim_status'];
         }
+        if (!empty($payment['insurance_claim_history']))
+        {
+            $claimHistory = json_decode($payment['insurance_claim_history'], true) ?? [];
+            if (is_array($claimHistory))
+            {
+                usort(
+                    $claimHistory,
+                    function($a, $b) {
+                        return $a['timestamp'] - $b['timestamp'];
+                    }
+                );
 
+                $formattedPaymentDetails['insurance']['claim_history'] = $claimHistory;
+            }
+        }
         if ($payment->merchant->isLRSFlowEnabled() === true)
         {
             $formattedPaymentDetails['payment']['is_lrs_transaction'] = true;

@@ -924,4 +924,17 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHZ_ROLES_NOT_FOUND ,
         ],
     ],
+
+    'testUpdateRoleAccessPolicyMap' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'   => '/cac/role_access_policy_map',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'success'   => true,
+            ]
+        ],
+    ],
 ];

@@ -41,6 +41,7 @@ use Illuminate\Http\RedirectResponse;
 use RZP\Services\Mozart as MozartBase;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Jobs\TurboPayeeCallbackExecutor;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Models\Payment\Processor\UpiTrait;
@@ -371,12 +372,9 @@ class GatewayController extends Controller
             (isset($input['requestInfo']['pspRefNo']) === true) and
             (str_contains($input['requestInfo']['pspRefNo'], 'recuQr') === true))
         {
-            $variant = $this->app['razorx']->getTreatment($input['requestInfo']['pgMerchantId'],
-                RazorxTreatment::UPI_AUTOPAY_PROMOTIONAL_QR,
-                Mode::LIVE,
-                3);
+            $variant = $this->evaluateSplitzExperimentForUpiAutopayPromotionalQr($input['requestInfo']['pgMerchantId']);
 
-            if($variant === 'on')
+            if($variant === true)
             {
                 try {
 
@@ -456,6 +454,18 @@ class GatewayController extends Controller
         $postInput = [
             'gateway' => $input,
         ];
+
+        if ($this->shouldSkipOptimizerCardsCallback($gatewayDriver, $payment) === true)
+        {
+            $this->trace->info(TraceCode::OPTIMIZER_CARD_STATIC_CALLBACK_SKIPPED, [
+                'gateway'   => $gatewayDriver,
+                'payment_id'   => $payment->getId(),
+            ]);
+
+            return [
+                'success' => true,
+            ];
+        }
 
         try
         {
@@ -635,6 +645,48 @@ class GatewayController extends Controller
         }
 
         return $response;
+    }
+
+    /**
+     * Evaluate the Splitz experiment for UPI Autopay promotional QR.
+     *
+     * @param int $merchantId The ID of the merchant.
+     * @return bool True if the variant is 'variant_on', false otherwise.
+     */
+    protected function evaluateSplitzExperimentForUpiAutopayPromotionalQr($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_promotional_qr'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_PROMOTIONAL_QR
+            );
+        }
+
+        return false;
     }
 
     /**
@@ -2158,6 +2210,39 @@ class GatewayController extends Controller
         return ((str_ends_with($payerVpa, '@' . ProviderCode::MAIRTEL) === true) and
             (str_ends_with($payeeVpa, '@' . ProviderCode::MAIRTEL) === false) and
             (strlen($inputArray['hdnOrderID'] ?? '') === 14));
+    }
+
+    /**
+     * For some optimizer gateways card payments we did not implement callback
+     * logic in static_callback so the payment is updated to failed status. If
+     * webhook is processed before redirect callback , payments are not captured in
+     * callback since payment is already updated to failed status. This function skips
+     * optimizer cards callback for such cases.
+     *
+     *
+     * @param $gateway
+     * @param $payment
+     * @return bool
+     */
+    protected function shouldSkipOptimizerCardsCallback($gateway, $payment): bool
+    {
+        $webhookNotSupportedGateways = [Gateway::PAYU, Gateway::CASHFREE];
+        $webhookNotSupportedMethods = [Payment\Method::CARD];
+        if ( in_array($gateway, $webhookNotSupportedGateways) === true && in_array($payment->getMethod(), $webhookNotSupportedMethods) && $payment->isRecurring() == false)
+        {
+            return $this->isOptimizerCardsCallbackSkipEnabled($payment->getMerchantId());
+        }
+        return false;
+    }
+
+    protected function isOptimizerCardsCallbackSkipEnabled(string $merchantId): bool
+    {
+        $properties = [
+            "id" => $merchantId,
+            "experiment_id" => $this->app['config']->get('app.skip_optimizer_card_callback'),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
     }
 
     protected function shouldProcessThroughPspxService($input): bool

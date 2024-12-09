@@ -8,6 +8,8 @@ namespace Rzp\Credcase\Apikey\V1;
 
 use Google\Protobuf\Internal\GPBDecodeException;
 use Google\Protobuf\Internal\Message;
+use RZP\Constants\Metric;
+use Twirp\Context;
 
 /**
  * A Protobuf client that implements the {@see ApiKeyAPI} interface.
@@ -26,8 +28,14 @@ final class ApiKeyAPIClient extends ApiKeyAPIAbstractClient implements ApiKeyAPI
 
         $req = $this->newRequest($ctx, $url, $body, 'application/protobuf');
 
+        $start = millitime();
         try {
             $resp = $this->httpClient->sendRequest($req);
+            $dimensions =  [
+                Metric::LABEL_ROUTE                 => Context::serviceName($ctx)."_".Context::methodName($ctx),
+                Metric::LABEL_STATUS                => $resp->getStatusCode(),
+            ];
+            $this->trace->histogram(Metric::CREDCASE_REQUEST_LATENCY_MS, millitime() - $start, $dimensions);
         } catch (\Throwable $e) {
             throw $this->clientError('failed to send request', $e);
         }

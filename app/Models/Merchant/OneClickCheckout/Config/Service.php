@@ -560,7 +560,7 @@ class Service extends Base\Service
             if ($prepayCod[Constants::ENABLED] === true) {
                 $partialCod = $this->get1ccPartialCodConfig();
                 if ($partialCod[Constants::ENABLED]) {
-                    throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, 'Prepay COD and Partial COD cannot be enabled together. Partial COD is already enabled.');
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'Prepay COD and Partial COD cannot be enabled together. Partial COD is already enabled.');
                 }
             }
 
@@ -615,7 +615,7 @@ class Service extends Base\Service
         if ($partialCod[Constants::ENABLED] === true) {
             $prepayCod = $this->get1ccPrepayCodConfig();
             if ($prepayCod[Constants::ENABLED]) {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, 'Prepay COD and Partial COD cannot be enabled together. Prepay COD is already enabled.');
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'Prepay COD and Partial COD cannot be enabled together. Prepay COD is already enabled.');
             }
         }
 
@@ -625,7 +625,7 @@ class Service extends Base\Service
             self::MUTEX_KEY . ':' . $this->merchant->getId() . ':' . Type::ONE_CC_PARTIAL_PAYMENTS_COD,
             function () use ($partialCod)
             {
-                (new Core())->associateMerchant1ccCODConfig(
+                (new Core())->associateMerchant1ccIntelligenceConfig(
                     Type::ONE_CC_PARTIAL_PAYMENTS_COD,
                     $partialCod[Constants::ENABLED],
                     $partialCod[Constants::CONFIGS] ?? []);
@@ -1850,7 +1850,7 @@ class Service extends Base\Service
             );
         }
 
-        $key = $this->repo->key->getKeysForMerchant($this->merchant->getId())->first();
+        $key = $this->repo->key->getKeysForMerchant($this->merchant->getId(), $this->mode)->first();
 
         $res = $this->app['integration_service_client']->makeMultipartRequest(
             self::WHITELIST_COUPONS_UPLOAD_PATH . $key->getPublicKey(),

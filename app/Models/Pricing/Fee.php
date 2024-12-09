@@ -99,24 +99,7 @@ class Fee extends Base\Core
 
         $method = $entity->getMethod();
 
-        $planId = Fee::DEFAULT_INSTANT_REFUNDS_PLAN_ID;
-
-        $merchantId = $entity->merchant->getId();
-
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::INSTANT_REFUNDS_DEFAULT_PRICING_V1,
-            $this->mode
-        );
-
-        //
-        // Instant Refunds v2 pricing is now default - not behind a razorx anymore
-        // Instant Refunds v1 Pricing is behind razorx for merchants in transition phase
-        //
-        if ($variant !== RefundConstants::RAZORX_VARIANT_ON)
-        {
-            $planId = Fee::DEFAULT_INSTANT_REFUNDS_PLAN_V2_ID;
-        }
+        $planId = Fee::DEFAULT_INSTANT_REFUNDS_PLAN_V2_ID;
 
         return $this->repo->getInstantRefundsDefaultPricingPlanForMethod(
             $feature,

@@ -26,6 +26,7 @@ class Method
     const FPX                   = 'fpx';
     const DUITNOW_PAY           = 'duitnow_pay';
     const RAZORPAY_ACCOUNT      = 'razorpay_account';
+    const GIFT_CARDS            = 'gift_cards';
 
     protected static $methods = [
         self::CARD                  => 'Card',
@@ -46,7 +47,8 @@ class Method
         self::INTL_BANK_TRANSFER    => 'Intl Bank Transfer',
         self::FPX                   => 'Financial Process Exchange',
         self::RAZORPAY_ACCOUNT      => 'Razorpay Account',
-        self::DUITNOW_PAY           => 'DuitNow Pay'
+        self::DUITNOW_PAY           => 'DuitNow Pay',
+        self::GIFT_CARDS            => 'Gift Card',
     ];
 
     protected static $nonEsAutomaticMethods = [

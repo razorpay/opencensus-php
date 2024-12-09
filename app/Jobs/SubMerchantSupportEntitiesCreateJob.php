@@ -36,6 +36,8 @@ class SubMerchantSupportEntitiesCreateJob extends Job
 
     protected $partnerId;
 
+    protected $oauthApplicationId;
+
     public $timeout = 120;
 
     /**
@@ -49,6 +51,7 @@ class SubMerchantSupportEntitiesCreateJob extends Job
         parent::__construct($mode);
         $this->merchantId = $input['merchant_id'];
         $this->partnerId  = $input['partner_id'];
+        $this->oauthApplicationId = $input['oauth_application_id'];
         $this->input = $input;
     }
 
@@ -71,6 +74,10 @@ class SubMerchantSupportEntitiesCreateJob extends Job
         {
             $merchant = $this->repoManager->merchant->findOrFailPublic($this->merchantId);
             $partner  = $this->repoManager->merchant->findOrFailPublic($this->partnerId);
+            if (!empty($this->oauthApplicationId)) {
+                $app = \App::getFacadeRoot();
+                $app['basicauth']->setOAuthApplicationId($this->oauthApplicationId);
+            }
 
             $merchantBalance = $this->repoManager->balance->getMerchantBalanceByType($merchant->getId(), Type::PRIMARY, $this->mode);
             // If merchant balance is already created, assuming that this job has already run once without any errors.

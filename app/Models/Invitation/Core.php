@@ -85,7 +85,11 @@ class Core extends Base\Core
 
         $invitedUser = empty($input[Entity::EMAIL]) === false ? $this->repo->user->getUserFromEmail(strtolower($input[Entity::EMAIL])) :  null;
 
-        $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+        if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $allMerchantsForInvitedUser = optional($invitedUser)->getMerchantsFromAsvWithPivot(1000);
+        } else {
+            $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+        }
 
         if (empty($invitedUser) === false)
         {
@@ -97,7 +101,11 @@ class Core extends Base\Core
 
             if (strtolower($variant) === 'on')
             {
-                $merchantCollections = $invitedUser->merchants()->get();
+                if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+                    $merchantCollections = $invitedUser->getMerchantsFromAsvWithPivot(1000);
+                } else {
+                    $merchantCollections = $invitedUser->merchants()->get();
+                }
 
                 //
                 // if the invitedUser is restricted or
@@ -343,7 +351,13 @@ class Core extends Base\Core
         $senderName = $this->getSenderName($input);
         $invitationEmail = $invitation->getEmail();
         $invitedUser = empty($invitationEmail) === false ? $this->repo->user->getUserFromEmail($invitationEmail) : null;
-        $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+
+        if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $allMerchantsForInvitedUser = optional($invitedUser)->getMerchantsFromAsvWithPivot(1000);
+        } else {
+            $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+        }
+
         $invitedUserExists = (empty($invitedUser) === false);
 
         $this->sendEmailIfApplicable($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser, false, $invitationDetails);
@@ -365,7 +379,11 @@ class Core extends Base\Core
 
             $invitedUser = $this->repo->user->getUserFromEmail($invitation->getEmail());
 
-            $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+            if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+                $allMerchantsForInvitedUser = optional($invitedUser)->getMerchantsFromAsvWithPivot(1000);
+            } else {
+                $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+            }
 
             $invitedUserExists = (empty($invitedUser) === false);
 
@@ -536,13 +554,14 @@ class Core extends Base\Core
         }
     }
 
-    private function sendSMSForPartnerAgentInvite(Entity     $invitation, bool $invitedUserExists)
+    private function sendSMSForPartnerAgentInvite(Entity $invitation, bool $invitedUserExists)
     {
         $invitationToken = $invitation->getToken();
         $partnerMerchant = $this->merchant;
 
         $metadata = $invitation->getMetadata();
         $trimmedName = trim_string_to_width($metadata["name"] ?? '', 13, "");
+        $trimmedPartnerName = $partnerMerchant->getTrimmedName(13, "");
 
         $appInstallUrl = InvitationConstants::PARTNER_AGENT_APP_INSTALL_URL_PREFIX.''.$invitationToken;
         $inviteLink = $this->elfin->shorten($appInstallUrl);
@@ -551,6 +570,7 @@ class Core extends Base\Core
             'name'             => $trimmedName,
             'inviteLink'       => $inviteLink,
             'partnerContact'   => optional($partnerMerchant->merchantDetail)->getContactMobile() ?? '',
+            'partnerName'      => $trimmedPartnerName
         ];
 
         $smsPayload = [

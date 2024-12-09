@@ -6,7 +6,10 @@ use App\User;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\User\Role;
+use RZP\Base\ConnectionType;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\MerchantUser;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 
@@ -61,7 +64,17 @@ class Repository extends Base\Repository
         $merchantUserIdColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::USER_ID);
         $merchantUserRoleColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::ROLE);
 
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
+        ];
+
+        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        return $this->newQueryWithConnection($connectionType)
             ->join(Table::MERCHANT_USER, $merchantUserIdColumn, '=', $userIdColumn)
             ->where($merchantIdColumn, '=', $merchantId)
             ->where($merchantUserRoleColumn, '=', $role)
@@ -89,7 +102,17 @@ class Repository extends Base\Repository
         $merchantUserIdColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::USER_ID);
         $merchantUserRoleColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::ROLE);
 
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
+        ];
+
+        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        return $this->newQueryWithConnection($connectionType)
             ->join(Table::MERCHANT_USER, $merchantUserIdColumn, '=', $this->dbColumn(Entity::USER_ID))
             ->where($merchantUserRoleColumn, '=', $role)
             ->whereIn($merchantIdColumn, $merchantIdList)
@@ -107,7 +130,17 @@ class Repository extends Base\Repository
         $merchantUserIdColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::USER_ID);
         $merchantUserRoleColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::ROLE);
 
-        $excludeMerchantIdList = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
+        ];
+
+        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+
+        $excludeMerchantIdList = $this->newQueryWithConnection($connectionType)
             ->join(Table::MERCHANT_USER, $merchantUserIdColumn, '=', $this->dbColumn(Entity::USER_ID))
             ->where($merchantUserRoleColumn, '=', $role)
             ->whereIn($merchantIdColumn, $merchantIdList)

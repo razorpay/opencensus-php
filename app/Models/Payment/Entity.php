@@ -217,6 +217,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     // Used by merchant dashboard to fetch payments based on utr
     const BANK_REFERENCE        = 'bank_reference';
 
+    const GIFT_CARDS            = 'gift_cards';
+
     const DEFAULT_CURRENCY      = 'INR';
 
     const ACQUIRER_DATA         = 'acquirer_data';
@@ -2848,6 +2850,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::DUITNOW_PAY);
     }
 
+    public function isGiftcard()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::GIFT_CARDS);
+    }
+
     public function isEmandate()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
@@ -4203,6 +4210,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 return [$method, Processor\PayLater::getName($this->getWallet())];
             case Method::APP:
                 return [$method, Processor\App::getName($this->getWallet())];
+            case Method::GIFT_CARDS:
+                return [$method, Processor\GiftCard::getName($this->getGateway())];
         }
     }
 
@@ -5709,6 +5718,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->morphOne(\RZP\Models\EntityOrigin\Entity::class, 'entity');
     }
 
+    /**
+     * Points to the pivot table entity `entityOffer` for the payment
+     */
+    private function entityOffer()
+    {
+        return $this->morphOne(Offer\EntityOffer\Entity::class, 'entity');
+    }
+
     public function offers()
     {
         return $this->morphToMany(
@@ -5722,6 +5739,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         // Creates row in entity_offers table
         $this->offers()->attach($offer);
+
+        $offerCollection = new Base\PublicCollection();
+        $offerCollection->push($offer);
+        $this->setRelation('offers', $offerCollection);
     }
 
     public function associateReward($rewardId)
@@ -5733,6 +5754,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function dissociateOffer(Offer\Entity $offer)
     {
         $this->offers()->detach($offer->getId());
+
+        $this->unsetRelation('offers');
     }
 
     /**
@@ -5741,6 +5764,59 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function getOffer()
     {
+        if ((new Offer\Core())->shouldRouteToOffersEngineForPayments(
+                $this->getMerchantId(), Offer\Constants::OFFERS_ENGINE_FETCH_EXP) === true)
+        {
+            if ($this->relationLoaded('offers') === true)
+            {
+                return $this->getRelation('offers')->first();
+            }
+
+            try
+            {
+                $offerIds = $this->entityOffer()
+                                 ->pluck(Offer\EntityOffer\Entity::OFFER_ID)
+                                 ->toArray();
+
+                if (empty($offerIds) === true)
+                {
+                    return null;
+                }
+
+                $offersEngineRepo = new Offer\Repository();
+
+                // fetches normal offers from OE and limited offers from API db.
+                // The assumption here is that payment is always associated with one offer_id
+                $offerEntity = $offersEngineRepo->findByIdAndMerchantId($offerIds[0], $this->getMerchantId());
+
+                $offersCollection = new Base\PublicCollection();
+
+                $offersCollection->push($offerEntity);
+
+                $this->setRelation('offers', $offersCollection);
+
+                app('trace')->info(TraceCode::OFFER_FOR_PAYMENT_FOUND, [
+                    'offer_id'   => optional($offerEntity)->getId(),
+                    'payment_id' => $this->getId(),
+                ]);
+
+                return $offersCollection->first();
+            }
+            catch (\Throwable $ex)
+            {
+                app('trace')->count(
+                    Offer\Metric::OFFERS_ENGINE_FETCH_OFFERS_FAIL_FOR_PAYMENTS, [
+                    'route' => app('api.route')->getCurrentRouteName(),
+                ]);
+
+                app('trace')->traceException($ex, Trace::ERROR, TraceCode::PAYMENT_OFFER_NOT_FOUND, [
+                    'data' => $ex->getMessage(),
+                    'id'   => $this->getId(),
+                ]);
+            }
+        }
+
+        // Keeping fallback on API DB for now.
         return $this->offers()->first();
     }
 
@@ -6047,7 +6123,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $mode = $app['rzp.mode'] ?? Mode::LIVE;
 
         if ($this->merchant->isFeatureEnabled(Feature\Constants::BUYER_PROTECT_SIGNED_UP) &&
-            $this->isBuyerProtectionEnabled($this->getId(), $this->merchant->getId(), $mode, $orderId) === true)
+            $this->isBuyerProtectionEnabled($this->getId(), $this->getAmount(), $this->getBaseAmount(), $this->merchant->getId(), $mode, $orderId) === true)
         {
             $features[] = Pricing\Feature::BUYER_PROTECTION;
         }
@@ -6075,13 +6151,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $isMonetizedOrder && $isFeatureEnabled;
     }
 
-    private function isBuyerProtectionEnabled(string $paymentId, string $merchantId, string $mode, ?string $orderId): bool
+    private function isBuyerProtectionEnabled(string $paymentId, int $amount, int $baseAmount, string $merchantId, string $mode, ?string $orderId): bool
     {
         $app = \App::getFacadeRoot();
 
         $requestData = [
             'payment' => [
                 'id' => $paymentId,
+                'amount' => $amount,
+                'base_amount' => $baseAmount,
             ],
             'merchant' => [
                 'id' => $merchantId,
@@ -6678,6 +6756,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[Refund\Constants::MERCHANT_ID] = $this->merchant->getPublicId();
 
             $data[Refund\Constants::MERCHANT_NAME] = $this->merchant->getBillingLabel();
+
+            $data[Payment\Entity::CAPTURED_AT] = $this->getCapturedAt();
+
+            if (isset($this->order))
+            {
+                $data[Payment\Entity::ORDER_ID] = $this->order->getPublicId();
+            }
 
             $data[Refund\Constants::PRIMARY_MESSAGE] =
                 $this->getMessageForTransactionTracker(

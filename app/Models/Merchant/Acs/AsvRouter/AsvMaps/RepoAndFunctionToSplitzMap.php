@@ -145,7 +145,7 @@ final class RepoAndFunctionToSplitzMap
         "isAnExistingUserOnVendorPortal",
         "Mailable_getUserOrgData",
         "revokeTokenOnPasswordChange",
-        "fetchMerchantsCountWithPricingPlanId",
+        "countUpToTwoMerchantsByPricingPlan",
         "checkAccessForMerchant",
         "fetchQueuedPayoutsForBalanceId",
         "filterOnHoldMerchants",
@@ -165,6 +165,24 @@ final class RepoAndFunctionToSplitzMap
         "stakeholderFindByIdAndMerchantId",
         "getFailedSettlementsForRetry",
         "fetchLinkedAccountsForParentMerchantId",
+        "restoreModel",
+        "getMerchantBankAccountsBetweenTimestamp",
+        "fetchEntityById",
+        "createMerchantForUser",
+        "getMerchantDetails",
+        "getDetailsForPayroll",
+        "create",
+        "applyReferralIfApplicable",
+        "getUserByVerifiedContact",
+        "fetchFromAsv",
+        "resend",
+        "acceptDraftInvitations",
+        "getMerchantsAttribute",
+        "MERCHANT_EMAIL_VALIDATION",
+        "MERCHANT_HANDLE_VALIDATION",
+        "MERCHANT_DETAIL_CONTACT_MOBILE_VALIDATION",
+        "deletePartnerDashboardAccessOnSubmerchants",
+        "getMerchantsAttributeForAdmin"
     );
 
     public const SPLITZ_REMOVED_TIDB_FILTER = array(
@@ -185,6 +203,13 @@ final class RepoAndFunctionToSplitzMap
         "getMerchantListForAppCheckerPeriodic",
         "buildQueryToFetchSubmerchantsByAppIds",
         "getAllPartnerBankAccountsForSubmerchants",
+        "findDocumentsForMerchantIdAndDocumentTypesAndDate",
+        "getSubmerchantIdsByActivationStatusFromDBQuery",
+        "fetchPendingPaymentTransfersCount",
+        "fetchPendingOrderTransfersCount",
+        "fetchAutoKycPassMerchants",
+        "fetchMerchantIdsByOrgId",
+        "getLiveMerchantCount"
     );
 
     public const ROUTE_WRITE_FLOW_TO_ASV = SplitzConstant::SPLITZ_SEND_WRITE_TO_ASV;

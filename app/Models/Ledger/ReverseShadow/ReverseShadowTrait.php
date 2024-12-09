@@ -58,13 +58,8 @@ trait ReverseShadowTrait
         );
     }
 
-    public function isEnabledForPaymentFeeTaxPopulation(string $variant, $payment): bool
+    public function isEnabledForPaymentFeeTaxPopulation($payment): bool
     {
-        if($variant != "on")
-        {
-            return false;
-        }
-
         if (($payment->isInternational() === true) or
             ($payment->merchant->isLRSFlowEnabled() === true) or
             ($payment->merchant->isLRSTravelCitiFlowEnabled() === true) or
@@ -142,7 +137,23 @@ trait ReverseShadowTrait
         return sprintf("%s-%s", $transactorId, $transactorEvent);
     }
 
+    public function createAndSaveLedgerOutboxPayload($transactorId, $transactorEvent, $journalPayload)
+    {
+        $payloadName = $this->getPayloadName($transactorId, $transactorEvent);
+
+        $outboxPayload = $this->prepareOutboxPayload($payloadName, $journalPayload);
+
+        $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
+    }
+
     public function getMerchantAccountBalances($ledgerService, $merchantId): array
+    {
+        $merchantAccountBalancesList = $this->getMerchantAccounts($ledgerService, $merchantId);
+
+        return $this->getMerchantAccountBalancesMap($merchantAccountBalancesList);
+    }
+
+    public function getMerchantAccounts($ledgerService, $merchantId): array
     {
         $accountPayload = $this->getAccountBalancePayload($merchantId);
 
@@ -153,14 +164,13 @@ trait ReverseShadowTrait
 
         $response = $ledgerService->fetchAccountsByEntitiesAndMerchantID($accountPayload, $requestHeaders, true);
 
-        $merchantAccountBalancesList = $response['body']['accounts'];
-
-        return $this->getMerchantAccountBalancesMap($merchantAccountBalancesList);
+        return $response['body']['accounts'];
     }
 
     private function getMerchantAccountBalancesMap($merchantAccountBalancesList): array
     {
         $accountBalances = [];
+        $now = time();
 
         foreach ($merchantAccountBalancesList as $account)
         {
@@ -174,10 +184,29 @@ trait ReverseShadowTrait
                     $accountBalances[Constants::MERCHANT_FEE_CREDITS] = $account[Constants::BALANCE];
                     break;
 
+                case Constants::REWARD_CREDITS:
                 case Constants::REWARD:
                     if ($accountType == Constants::PAYABLE)
                     {
-                        $accountBalances[Constants::MERCHANT_AMOUNT_CREDITS] = $account[Constants::BALANCE];
+                        $entities = $account[Constants::ENTITIES];
+
+                        if (($entities != null) && (empty($entities[Constants::EXPIRED_AT]) === false))
+                        {
+                            $expiredAt = $entities[Constants::EXPIRED_AT][0];
+
+                            if ($expiredAt < $now)
+                            {
+                                continue;
+                            }
+                        }
+                        if (isset($accountBalances[Constants::MERCHANT_AMOUNT_CREDITS]))
+                        {
+                            $accountBalances[Constants::MERCHANT_AMOUNT_CREDITS] += $account[Constants::BALANCE];
+                        }
+                        else
+                        {
+                            $accountBalances[Constants::MERCHANT_AMOUNT_CREDITS] = $account[Constants::BALANCE];
+                        }
                     }
                     break;
 
@@ -191,6 +220,78 @@ trait ReverseShadowTrait
             }
         }
         return $accountBalances;
+    }
+
+    private function getValidAmountCreditsAccounts($merchantAccountBalancesList): array
+    {
+        $amountCreditsAccounts = [];
+        $now = time();
+
+        foreach ($merchantAccountBalancesList as $account)
+        {
+            $fundAccountType = $account[Constants::ENTITIES][Constants::FUND_ACCOUNT_TYPE][0];
+
+            $accountType = $account[Constants::ENTITIES][Constants::ACCOUNT_TYPE][0];
+
+            if (($fundAccountType == Constants::REWARD_CREDITS) && ($accountType == Constants::PAYABLE))
+            {
+                $entities = $account[Constants::ENTITIES];
+                if (($entities != null) && (empty($entities[Constants::CREDIT_ID]) === false))
+                {
+                    $expiredAt = $entities[Constants::EXPIRED_AT][0];
+                    if ($expiredAt < $now)
+                    {
+                        continue;
+                    }
+                    $amountCreditsAccounts[] = $account;
+                }
+            }
+        }
+
+        usort($amountCreditsAccounts, function($a, $b) {
+            return $a[Constants::ENTITIES][Constants::EXPIRED_AT][0] <=> $b[Constants::ENTITIES][Constants::EXPIRED_AT][0];
+        });
+        return $amountCreditsAccounts;
+    }
+
+    private function getDynamicMoneyParams($amountCreditsAccounts, $amount)
+    {
+        $dynamicMoneyParams[Constants::ACCOUNT_DISCOVERY_CONFIG] = [
+            Constants::ACCOUNT_CATEGORY  => Constants::LIABILITY,
+            Constants::ACCOUNT_TYPE      => Constants::PAYABLE,
+            Constants::FUND_ACCOUNT_TYPE => Constants::REWARD_CREDITS,
+        ];
+
+        $totalAmount = $amount; // The total amount credits to distribute
+
+        foreach ($amountCreditsAccounts as $account)
+        {
+            if ($totalAmount <= 0)
+            {
+                break; // If the total amount is exhausted, break the loop
+            }
+
+            $balance = $account['balance'];
+
+            if ($balance <= 0)
+            {
+                continue; // If the balance is zero, skip the account
+            }
+
+            $amountToDeduct = min($balance, $totalAmount);
+
+            $totalAmount -= $amountToDeduct;
+
+            $dynamicMoneyParams[Constants::DYNAMIC_IDENTIFIERS][] = [
+                Constants::IDENTIFIERS => [
+                    Constants::CREDIT_ID => $account[Constants::ENTITIES][Constants::CREDIT_ID][0],
+                ],
+                Constants::MONEY_PARAMS => [
+                    Constants::AMOUNT_CREDITS => strval($amountToDeduct),
+                ],
+            ];
+        }
+        return array($dynamicMoneyParams);
     }
 
     protected function prepareOutboxPayload($payloadName, $payloadSerialized)
@@ -290,6 +391,11 @@ trait ReverseShadowTrait
                     Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
                     Constants::FUND_ACCOUNT_TYPE => [Constants::REWARD]
                 ],
+                // PG Merchant Split Account Amount Credit Account
+                [
+                    Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
+                    Constants::FUND_ACCOUNT_TYPE => [Constants::REWARD_CREDITS]
+                ],
                 // PG Merchant Refund Credit Account
                 [
                     Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
@@ -331,22 +437,28 @@ trait ReverseShadowTrait
         }
     }
 
-    private function getJournalRequestHeadersSync($idempotencyKey = null): array
+    private function getJournalRequestHeadersSync($idempotencyKey = null, $isAdjustmentLedgerEntryOnly = false): array
     {
         if($idempotencyKey === null)
         {
             $idempotencyKey = Uuid::uuid1();
         }
 
-        return [
+        $headers = [
             LedgerService::LEDGER_TENANT_HEADER         => Constants::TENANT_PG,
             LedgerService::IDEMPOTENCY_KEY_HEADER       => $idempotencyKey,
-            LedgerService::LEDGER_INTEGRATION_MODE_HEADER   => Constants::REVERSE_SHADOW,
         ];
+
+        if($isAdjustmentLedgerEntryOnly === false)
+        {
+            $headers[LedgerService::LEDGER_INTEGRATION_MODE_HEADER] = Constants::REVERSE_SHADOW;
+        }
+
+        return $headers;
     }
 
 
-    private function createJournalInLedger(array $journalPayload, bool $isBulkJournalRequest = false, bool $isMultipleJournalRequest = false) : array
+    protected function createJournalInLedger(array $journalPayload, bool $isBulkJournalRequest = false, bool $isMultipleJournalRequest = false, $isAdjustmentLedgerEntryOnly = false) : array
     {
         $app = App::getFacadeRoot();
 
@@ -356,7 +468,7 @@ trait ReverseShadowTrait
 
         $ledgerService = $app['ledger'];
 
-        $requestHeaders = $this->getJournalRequestHeadersSync();
+        $requestHeaders = $this->getJournalRequestHeadersSync(null, $isAdjustmentLedgerEntryOnly);
 
         $retryAttempts = 0;
 
@@ -581,9 +693,9 @@ trait ReverseShadowTrait
         return true;
     }
 
-    protected function getAPITransactionId($transactorId, $payment)
+    protected function getAPITransactionId($transactorId, $payment, $transactorEvent = Constants::GATEWAY_CAPTURED)
     {
-        $payloadName = $this->getPayloadName($transactorId, Constants::GATEWAY_CAPTURED);
+        $payloadName = $this->getPayloadName($transactorId, $transactorEvent);
 
         $gatewayCaptureOutboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadNameWithTrashed($payloadName);
 
@@ -756,6 +868,14 @@ trait ReverseShadowTrait
 
         $merchantReceivableLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::RECEIVABLE, Constants::MERCHANT_INVOICE);
 
+        // Here, for new split account feature of merchants amount credit accounts.
+        // Adding a check if the previous entry amount credit entry was nil, inferring, either amount credit was not used ot the new account was used.
+        if ($merchantAmountCreditsLedgerEntry === null) {
+            // Although ledger entry in journal can have multiple amount credit account, but we are fetching only the first one.
+            // As the only use case here is adding in entity if it is gratis or not.
+            $merchantAmountCreditsLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::PAYABLE, Constants::REWARD_CREDITS);
+	    }
+
         $merchantRefundCreditLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::MERCHANT_REFUND_CREDITS);
 
         $merchantGmvLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::MERCHANT_GMV);
@@ -917,6 +1037,9 @@ trait ReverseShadowTrait
             case "trf":
                 $res[Constants::TYPE] = LedgerOutboxConstants::TRANSFER;
                 return $res;
+            case "credits":
+                $res[Constants::TYPE] = LedgerOutboxConstants::CREDIT;
+                return $res;
             default:
                 $res[Constants::TYPE] = "";
                 return $res;
@@ -963,12 +1086,14 @@ trait ReverseShadowTrait
 
         $baseTransactionEntity->setSettledAt($settledAt);
 
-        if($baseTransactionEntity->isGratis() === true)
-        {
-            $pricingRuleId = (new Fee())->getZeroPricingPlanRule($payment)->getId();
-
-            $baseTransactionEntity->setPricingRule($pricingRuleId);
-        }
+        // We are not setting this currently, as usecase has been figured where, org other than RZP org also has
+        // Zero pricing rule, causing failures.
+//        if($baseTransactionEntity->isGratis() === true)
+//        {
+//            $pricingRuleId = (new Fee())->getZeroPricingPlanRule($payment)->getId();
+//
+//            $baseTransactionEntity->setPricingRule($pricingRuleId);
+//        }
 
         $merchant = $payment->merchant;
 
@@ -987,11 +1112,7 @@ trait ReverseShadowTrait
     {
         $payment = $this->repo->payment->findOrFail($baseTransactionEntity->getEntityId());
 
-        // First verify if its enabled if not enabled return
-        // we have a razorx exp for this, and currently we are blocking all cross border payments for this
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),Merchant\RazorxTreatment::PG_LEDGER_ASYNC_TRANSACTION_CREATION, $this->app['rzp.mode']);
-
-        if($this->isEnabledForPaymentFeeTaxPopulation($variant, $payment) === false)
+        if($this->isEnabledForPaymentFeeTaxPopulation($payment) === false)
         {
             return;
         }
@@ -1334,6 +1455,53 @@ trait ReverseShadowTrait
             ]);
 
         return $isExperimentEnabled;
+    }
+    public function createTransactionEntityForPreFundWithdrawFromJournal($journalResponse, $merchant): TransactionEntity
+    {
+        $transactorPublicId = $journalResponse[Constants::TRANSACTOR_ID];
+
+        $currency = $journalResponse[Constants::CURRENCY];
+
+        $transactorInfo = $this->determineTransactionTypeFromTransactorId($transactorPublicId);
+
+        $transactionType = $transactorInfo[Constants::TYPE];
+
+        $transactorId =  $transactorInfo[Constants::ID];
+
+        $transactionAmount = $journalResponse[Constants::BASE_AMOUNT];
+
+
+        $transaction = [
+            TransactionEntity::ID               => $journalResponse[Constants::ID],
+            TransactionEntity::ENTITY_ID        => $transactorId,
+            TransactionEntity::TYPE             => $transactionType,
+            TransactionEntity::MERCHANT_ID      => $merchant->getId(),
+            TransactionEntity::AMOUNT           => (int) $transactionAmount,
+            TransactionEntity::CURRENCY         => $currency,
+            TransactionEntity::CREDIT           => (int) $transactionAmount,
+            TransactionEntity::DEBIT            => 0,
+            TransactionEntity::BALANCE          => 0,
+            TransactionEntity::FEE              => 0,
+            TransactionEntity::TAX              => 0,
+            TransactionEntity::CHANNEL          => $merchant->getChannel(),
+            TransactionEntity::CREDITS          => 0,
+            TransactionEntity::CREDIT_TYPE      => 0,
+            TransactionEntity::BALANCE_ID       => null,
+            TransactionEntity::CREATED_AT       => $journalResponse[Constants::CREATED_AT],
+            TransactionEntity::UPDATED_AT       => $journalResponse[Constants::UPDATED_AT],
+            TransactionEntity::BALANCE_UPDATED  => null,
+            TransactionEntity::FEE_BEARER       => Merchant\FeeBearer::NA,
+            TransactionEntity::FEE_MODEL        => Merchant\FeeModel::PREPAID,
+            TransactionEntity::API_FEE          => 0,
+            TransactionEntity::MDR              => null,
+            TransactionEntity::GRATIS           => false,
+        ];
+
+        $txn = new TransactionEntity();
+
+        $txn->forceFill($transaction);
+
+        return $txn;
     }
 }
 

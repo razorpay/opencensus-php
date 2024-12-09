@@ -29,6 +29,7 @@ trait AsvReload
                     'routeOrWorkerName' => app()->runningInQueue() ? app('worker.ctx')->getJobName() : app('request.ctx')->getRoute(),
                     'reason' => 'GOT_EXCEPTION',
                 ]);
+                throw $e;
             }
         }
         return parent::reload();
@@ -55,6 +56,7 @@ trait AsvReload
                     'routeOrWorkerName' => app()->runningInQueue() ? app('worker.ctx')->getJobName() : app('request.ctx')->getRoute(),
                     'reason' => 'GOT_EXCEPTION',
                 ]);
+                throw $e;
             }
         }
         return parent::refresh();

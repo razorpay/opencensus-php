@@ -2,10 +2,12 @@
 
 namespace RZP\Models\OfflinePayment;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\OfflinePayment;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -146,9 +148,25 @@ class Validator extends Base\Validator
 
     public function validateModeForHdfc($mode)
     {
-        if (in_array($mode,self::$allowedModesForHdfc , true) === false)
+        $this->app = App::getFacadeRoot();
+
+        $this->trace = $this->app['trace'];
+
+        try
         {
-            throw new BadRequestValidationFailureException('Invalid Mode: ' . $mode, null);
+            if (in_array($mode,self::$allowedModesForHdfc , true) === false)
+            {
+                throw new BadRequestValidationFailureException('Invalid Mode: ' . $mode, null);
+            }
+        }
+        catch (BadRequestValidationFailureException $ex)
+        {
+            $this->trace->traceException($ex);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                null,$ex,$ex->getMessage()
+            );
         }
     }
 

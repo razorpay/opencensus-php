@@ -398,6 +398,11 @@ class Service extends Base\Service
     {
         if (isset($details[Constants::FIELD_DETAILS]) === true)
         {
+            if (isset($details[Constants::FIELD_DETAILS][DEConstants::AUTHORISED_SIGNATORY_NAME]) === true)
+            {
+                return;
+            }
+
             $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantId, $groupName, $details) {
 
                 //validate document is existing or not and remove document fields details

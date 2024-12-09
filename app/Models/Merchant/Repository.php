@@ -313,6 +313,7 @@ class Repository extends Base\Repository
                           $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
                                 ->orWhereNull(Entity::PARENT_ID);
                       })
+                      ->orderBy(Entity::ID, 'ASC')
                       ->take($limit)
                       ->skip($skip);
 
@@ -329,6 +330,47 @@ class Repository extends Base\Repository
         return $query->get()
                      ->pluck(Entity::ID)
                      ->toArray();
+    }
+
+    public function fetchLinkedMerchantsBeforeTimestamp(
+        int $limit,
+        int $skip,
+        int $end,
+        array $merchantIds = [],
+        array $parentMerchantIdsToBeIncluded = []
+    ):array
+    {
+        if ($this->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER));
+            }
+            else
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT)
+                );
+            }
+
+        // Build the query to select merchant IDs where parent_id is not null
+        $query = $query->select(Entity::ID)
+            ->where(Entity::ACTIVATED, '=', 1)
+            ->where(Entity::ACTIVATED_AT, '<=', $end)
+            ->whereNotNull(Entity::PARENT_ID)
+            ->whereIn(Entity::PARENT_ID, $parentMerchantIdsToBeIncluded)
+            ->orderBy(Entity::ID, 'ASC')
+            ->take($limit)
+            ->skip($skip);
+
+        // Filter by merchant IDs if provided
+        if (!empty($merchantIds)) {
+            $query = $query->whereIn(Entity::ID, $merchantIds);
+        }
+
+        // Execute the query and return the results as an array of IDs
+        return $query->get()
+            ->pluck(Entity::ID)
+            ->toArray();
     }
 
     /*
@@ -372,6 +414,7 @@ class Repository extends Base\Repository
                 $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
                     ->orWhereNull(Entity::PARENT_ID);
             })
+            ->orderBy($merchantIdCol, 'ASC')
             ->take($limit)
             ->skip($skip);
 
@@ -420,6 +463,7 @@ class Repository extends Base\Repository
                 $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
                     ->orWhereNull(Entity::PARENT_ID);
             })
+            ->orderBy($merchantIdCol, 'ASC')
             ->take($limit)
             ->skip($skip);
 
@@ -531,7 +575,7 @@ class Repository extends Base\Repository
      */
     public function checkMerchantsCountWithPricingPlanIdNotEqualOne($planId): bool
     {
-        $count = $this->fetchMerchantsCountWithPricingPlanId($planId);
+        $count = $this->countUpToTwoMerchantsByPricingPlan($planId);
 
         return $count !== 1;
     }
@@ -549,7 +593,7 @@ class Repository extends Base\Repository
      * @throws BadRequestException
      * @throws BaseException
      */
-    private function fetchMerchantsCountWithPricingPlanId($planId): int
+    private function countUpToTwoMerchantsByPricingPlan($planId): int
     {
         if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
@@ -571,9 +615,11 @@ class Repository extends Base\Repository
             $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
         }
 
-        return $query->where(Entity::PRICING_PLAN_ID, '=', $planId)
+        $merchants =  $query->where(Entity::PRICING_PLAN_ID, '=', $planId)
                     ->limit(2)
-                    ->count();
+                    ->get();
+
+        return $merchants instanceof Arrayable ? $merchants->count() : 0;
     }
 
     public function isMerchantIdRequiredForFetch()
@@ -726,6 +772,9 @@ class Repository extends Base\Repository
                     } else if ($method === Methods\Entity::DUITNOW_PAY)
                     {
                         $join->where(Methods\Entity::ADDON_METHODS . '->' . Methods\Entity::DUITNOW_PAY . '->' . Methods\Entity::DUITNOW_PAY,'=', $value);
+                    } else if ($method === Methods\Entity::GIFT_CARDS)
+                    {
+                        $join->where(Methods\Entity::ADDON_METHODS . '->' . Methods\Entity::GIFT_CARDS . '->' . Methods\Entity::RAZORPAY_GIFTCARD,'=', $value);
                     } else
                     {
                         $join->where($method, '=', $queryValue);
@@ -838,7 +887,13 @@ class Repository extends Base\Repository
 
     public function fetchMerchantIdsByOrgId($orgId)
     {
-        return $this->newQuery()
+        if ((new AsvRouter())->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQuery();
+        }
+
+        return $query
             ->where(Entity::ORG_ID, '=', $orgId)
             ->pluck(Entity::ID)
             ->toArray();
@@ -846,7 +901,12 @@ class Repository extends Base\Repository
 
     public function getLiveMerchantCount()
     {
-        return $this->newQuery()
+        if ((new AsvRouter())->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQuery();
+        }
+        return $query
                     ->where(Entity::LIVE, '=', 1)
                     ->whereNull(Entity::SUSPENDED_AT)
                     ->count();
@@ -1557,6 +1617,22 @@ class Repository extends Base\Repository
                 ->orgId($orgId)
                 ->findOrFailPublic($id);
         }
+    }
+
+    public function getMerchantCountByEmail($email) {
+        $query = $this->newQueryWithConnection(
+            $this->getConnectionFromType(Connection::ASV_WRITER)
+        );
+
+        return $query->where(Entity::EMAIL, $email)->count();
+    }
+
+    public function getMerchantCountByHandle($handle) {
+        $query = $this->newQueryWithConnection(
+            $this->getConnectionFromType(Connection::ASV_WRITER)
+        );
+
+        return $query->where(Entity::HANDLE, $handle)->count();
     }
 
     public function fetchByEmailAndOrgId(string $email, string $orgId = Org\Entity::RAZORPAY_ORG_ID)
@@ -2458,31 +2534,32 @@ class Repository extends Base\Repository
         ]);
         if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
-            if ($this->repo->isTransactionActive())
-            {
-                $query = $this->newQueryWithConnection(
-                    $this->getConnectionFromType(Connection::ASV_WRITER)
-                );
-            }
-            else
-            {
-                $results        = new PublicCollection();
-                $lastMerchantId = '';
-
-                do
-                {
-                    $subset = (new AsvSdkMerchantQuery())->fetchLinkedAccountIdsFromParentIdWithActivated(
-                        $parentMerchantId, $checkForActivated, $lastMerchantId
-                    );
-
-                    $lastMerchantId = $subset->pluck(Entity::ID)->last();
-
-                    $results->push(...$subset);
-
-                } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_LINKED_ACCOUNT_IDS_FOR_PARENT_MERCHANT_LIMIT);
-
-                return $results->pluck(MerchantEntity::ID)->toArray();
-            }
+//            if ($this->repo->isTransactionActive())
+//            {
+//                $query = $this->newQueryWithConnection(
+//                    $this->getConnectionFromType(Connection::ASV_WRITER)
+//                );
+//            }
+//            else
+//            {
+//                $results        = new PublicCollection();
+//                $lastMerchantId = '';
+//
+//                do
+//                {
+//                    $subset = (new AsvSdkMerchantQuery())->fetchLinkedAccountIdsFromParentIdWithActivated(
+//                        $parentMerchantId, $checkForActivated, $lastMerchantId
+//                    );
+//
+//                    $lastMerchantId = $subset->pluck(Entity::ID)->last();
+//
+//                    $results->push(...$subset);
+//
+//                } while(sizeof($subset) >= Acs\AsvSdkIntegration\Base::FETCH_LINKED_ACCOUNT_IDS_FOR_PARENT_MERCHANT_LIMIT);
+//
+//                return $results->pluck(MerchantEntity::ID)->toArray();
+//            }
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
         else
         {
@@ -3751,6 +3828,9 @@ class Repository extends Base\Repository
         }
 
         $connectionArray = [Mode::LIVE, Mode::TEST, Connection::ASV_WRITER];
+        if ($this->asvRouter->shouldStopWritesToApiLiveAndApiTestDb(new Entity())) {
+            $connectionArray = [Connection::ASV_WRITER];
+        }
 
         foreach ($connectionArray as $mode)
         {
@@ -3797,6 +3877,10 @@ class Repository extends Base\Repository
         }
 
         $connectionArray = [Mode::LIVE, Mode::TEST, Connection::ASV_WRITER];
+
+        if ($this->asvRouter->shouldStopWritesToApiLiveAndApiTestDb(new Entity())) {
+            $connectionArray = [Connection::ASV_WRITER];
+        }
 
         foreach ($connectionArray as $mode)
         {

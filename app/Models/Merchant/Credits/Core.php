@@ -5,16 +5,23 @@ namespace RZP\Models\Merchant\Credits;
 use App;
 use Mail;
 
+use Ramsey\Uuid\Uuid;
+use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception\LogicException;
 use RZP\Jobs\Ledger\AmountCreditsExpiryReverseShadow as AmountCreditsExpiryJob;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 use RZP\Models\Merchant;
 use RZP\Base\ConnectionType;
 use RZP\Models\Merchant\Constants;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Metric;
+use RZP\Services\Ledger as LedgerService;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Promotion;
@@ -24,6 +31,7 @@ use RZP\Models\Merchant\Credits;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\Ledger\ReverseShadow\Utility as ClsUtility;
 use RZP\Models\Ledger\ReverseShadow\CreditLoading as ReverseShadowCreditLoading;
+use RZP\Models\Ledger\ReverseShadow\CreditWithdrawal as ReverseShadowCreditWithdrawal;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForKycUsers;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForChurnedUsers;
 use RZP\Models\Ledger\MerchantCreditJournalEvents;
@@ -32,11 +40,22 @@ use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
+    use ReverseShadowTrait;
 
     const FUND_ADDITION_WEBHOOK_MUTEX_TTL = 60;
     const FUND_ADDITION_WEBHOOK_MUTEX_RETRIES = 40;
     const FUND_ADDITION_WEBHOOK_MUTEX_MIN_RETRY_DELAY = 500;
     const FUND_ADDITION_WEBHOOK_MUTEX_MAX_RETRY_DELAY = 1000;
+
+    const EVENT_NAME = 'name';
+    const ENTITIES = 'entities';
+    const TENANT = 'tenant';
+    const MODE = 'mode';
+    const MERCHANT_ID = 'merchant_id';
+    const EVENTS = 'events';
+    const CREDIT_ID = 'credit_id';
+    const EXPIRED_AT = 'expired_at';
+    const PG_MERCHANT_CREDIT_ONBOARDING_EVENT_NAME = 'pg_merchant_credit_onboarding';
 
     // This map indicates credit point to money ratio for a product.
     // example for banking, only payouts will be consuming credits and
@@ -437,7 +456,18 @@ class Core extends Base\Core
                 return;
             }
 
-            (new ReverseShadowCreditLoading\Core())->createReverseShadowLedgerEntries($creditsLog, $payment);
+            $amountCreditsSplitEnabled = false;
+            if ($creditsLog->getType() === Credits\Type::AMOUNT)
+            {
+                $amountCreditsSplitEnabled = $this->isAmountCreditsSplitEnabled($creditsLog->getMerchantId());
+
+                if ($amountCreditsSplitEnabled === true)
+                {
+                    $this->createAmountCreditsAccountInLedger($creditsLog->merchant, $creditsLog);
+                }
+            }
+
+            (new ReverseShadowCreditLoading\Core())->createReverseShadowLedgerEntries($creditsLog, $payment, $amountCreditsSplitEnabled);
         }
         catch(\Exception $e)
         {
@@ -451,6 +481,42 @@ class Core extends Base\Core
                 ]);
             throw $e;
         }
+    }
+
+    private function isAmountCreditsSplitEnabled($merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.amount_credits_split_in_ledger_experiment_id'),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    private function createAmountCreditsAccountInLedger($merchant, $creditsLog)
+    {
+        $eventObj = [
+            self::EVENT_NAME            => self::PG_MERCHANT_CREDIT_ONBOARDING_EVENT_NAME,
+            self::ENTITIES => [
+                self::CREDIT_ID =>  [$creditsLog->getId()],
+                self::EXPIRED_AT => [$creditsLog->getExpiredAt()]
+            ]
+        ];
+
+        $payload = [
+            LedgerConstants::TENANT      => LedgerConstants::TENANT_PG,
+            self::MODE                   => $this->mode,
+            Constants::MERCHANT_ID       => $merchant->getId(),
+            self::EVENTS      => [
+                $eventObj
+            ],
+        ];
+
+        $requestHeaders = [
+            LedgerService::LEDGER_TENANT_HEADER    => LedgerConstants::TENANT_PG,
+            LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()
+        ];
+        $this->app['ledger']->createAccountsOnEvent($payload, $requestHeaders, true);
     }
 
     private function createLedgerEntriesForMerchantCreditLoading(Entity $creditsLog, $payment)
@@ -543,4 +609,90 @@ class Core extends Base\Core
 
         return [];
     }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws LogicException
+     * @throws \Throwable
+     */
+    public function withdraw($merchant, $input): void
+    {
+        $withdrawType = $input["type"];
+        $input["type"] = Type::WITHDRAWAL_TYPE_MAPPING[$withdrawType];
+
+        $input = [
+            "type" => $input["type"],
+            "value" => $input["amount"],
+            "campaign" => "credits_withdraw"
+        ];
+
+        $withdrawalCredit = (new Credits\Entity)->build($input);
+
+        $resource = "credits_create" . $merchant->getId() . '_' . $withdrawType;
+
+        $mutex = App::getFacadeRoot()['api.mutex'];
+
+        $txn =  $mutex->acquireAndRelease(
+            $resource,
+            function () use ($withdrawalCredit, $merchant, $withdrawType)
+            {
+                return $this->repo->transaction(function () use ($merchant, $withdrawalCredit, $withdrawType)
+                {
+                    //have taken db lock here
+                    $credits = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchant->getId());
+
+                    $currentCredits = $credits[$withdrawType] ?? 0;
+
+                    $withdrawalCredit->getValidator()->validateWithdrawBalanceCredits(
+                        $withdrawalCredit->getValue(), $currentCredits, $withdrawType);
+
+                    $withdrawalCredit->merchant()->associate($merchant);
+
+                    $this->repo->saveOrFail($withdrawalCredit);
+
+                    $journal = $this->createLedgerEntriesForCreditWithdrawal($withdrawalCredit);
+
+                    $creditWithdrawalTxn =  (new ReverseShadowCreditWithdrawal\Core())->transformJournalResponseToTransactionEntityForCreditsWithdrawal($journal, $merchant);
+
+                    (new Credits\Transaction\Core)->createCreditTransaction($withdrawalCredit->getValue(), $creditWithdrawalTxn, $withdrawType);
+
+                    $this->updateCreditsInMerchantAccount($merchant, (-1 * $withdrawalCredit->getValue()), $withdrawType);
+
+                    return $creditWithdrawalTxn;
+                });
+
+            },
+            self::FUND_ADDITION_WEBHOOK_MUTEX_TTL,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            self::FUND_ADDITION_WEBHOOK_MUTEX_RETRIES,
+            self::FUND_ADDITION_WEBHOOK_MUTEX_MIN_RETRY_DELAY,
+            self::FUND_ADDITION_WEBHOOK_MUTEX_MAX_RETRY_DELAY
+        );
+        (new ReverseShadowCreditWithdrawal\Core())->dispatchToSettlementFromJournalForCreditsWithdrawal($txn, $merchant);
+    }
+
+    public function createLedgerEntriesForCreditWithdrawal($creditsLog): array
+    {
+        try
+        {
+            $journalPayload = (new ReverseShadowCreditWithdrawal\Core())->prepareJournalPayloadForCreditsWithdrawal($creditsLog);
+
+            $journal = $this->createJournalInLedger($journalPayload);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_ENTRY_FAILED,
+                [
+                    'credit_id' => $creditsLog->getId(),
+                    'type'      => Feature\Constants::PG_LEDGER_REVERSE_SHADOW,
+                    'error'     => $e->getMessage(),
+                ]);
+            throw $e;
+        }
+        return $journal;
+    }
+
 }

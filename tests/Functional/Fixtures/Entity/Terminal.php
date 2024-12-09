@@ -1329,7 +1329,7 @@ class Terminal extends Base
             'merchant_id'               => 'LiveAccountMer',
             'gateway'                   => 'upi_jkbank',
             'gateway_merchant_id'       => '1357901',
-            'vpa'                       => 'rzp.qrTest@jkbank',
+            'vpa'                       => 'rzp.qrTest@jkb',
             'upi'                       => true,
             'type'                      => [
                 Type::PAY               => '1',
@@ -4434,7 +4434,7 @@ class Terminal extends Base
             'gateway'                   => 'upi_airtel',
             'gateway_merchant_id'       => 'razorpayupiOffline',
             'gateway_terminal_password' => 'razorpay_password',
-            'gateway_merchant_id2'      => 'testvpaOffline@mairtel',
+            'gateway_merchant_id2'      => 'testvpaoffline@mairtel',
             'upi'                       => true,
             'tpv'                       => 2,
             'type'                      => [

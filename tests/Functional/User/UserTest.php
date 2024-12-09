@@ -552,6 +552,74 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateMerchantInternalWithoutUserID()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantInternalWithoutOrgID()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantInternal()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '+919000000002', 'email'  => null]);
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['user_id'] = $user['id'];
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // No merchant associated previously
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        $merchantDetails = DB::table('merchant_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
+
+        // If user doesn't have a merchant (considered fresh signup), we use the user's email to create the merchant
+        $this->assertEquals($user['contact_mobile'], $merchantDetails->contact_mobile);
+
+        $merchantData = DB::table('merchants')->where('id', '=', $merchantUserEntry->merchant_id)->first();
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
+        $this->assertEquals($response['name'], $testData['request']['content']['name']);
+        $this->assertEquals("org_" . $merchantData->org_id, $testData['request']['content']['org_id']);
+    }
+
+    public function testCreateUserInternal() {
+        DB::table('users')->where('contact_mobile', '=', '7598249212')->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $user = DB::table('users')->where('contact_mobile', '=', $testData['request']['content']['contact_mobile'])->first();
+        $this->assertEquals($user->id, $response['id']);
+        $this->assertEquals($user->name, $response['name']);
+        $this->assertEquals($user->contact_mobile, $response['contact_mobile']);
+        $this->assertEquals(false, $response['email_verified']);
+        $this->assertEquals(false, $response['second_factor_auth_enforced']);
+        $this->assertEquals("0", $response['signup_via_email']);
+    }
+
     public function testSignupSourceShowingUpInMerchantAfterRegistration()
     {
         //Given
@@ -7916,6 +7984,7 @@ class UserTest extends TestCase
     public function testUpdateUserRoleByNonOwner()
     {
         $this->enableRazorXTreatmentForRazorX();
+
         $user = $this->fixtures->create('user');
 
         $merchant = $this->fixtures->create('merchant');
@@ -7936,6 +8005,8 @@ class UserTest extends TestCase
         $this->createUserMerchantMapping($user['id'], $merchant['id'], 'finance_l1', 'banking');
 
         $this->createUserMerchantMapping($dummyUser['id'], $merchant['id'], 'view_only', 'banking');
+
+        $this->mockSplitzDisableCAC($merchant['id']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -9337,11 +9408,11 @@ class UserTest extends TestCase
     public function testVerifyOtpAndUpdateContactMobileAlreadyExistingForActivatedMerchantUsers()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
-    
+
         $userDb1 = $this->getDbEntityById('user',  UserFixture::MERCHANT_USER_ID);
-    
+
         $primaryMids = $userDb1->getPrimaryMerchantIds();
-    
+
         for ($i = 0; $i < sizeof($primaryMids); $i++)
         {
             $this->fixtures->merchant_detail->createAssociateMerchant([
@@ -9350,32 +9421,32 @@ class UserTest extends TestCase
                 'contact_email' => 'user'. $i. '@email.com',
             ]);
         }
-    
+
         $this->ba->proxyAuth('rzp_test_10000000000000', UserFixture::MERCHANT_USER_ID);
-    
+
         $user2Attributes = [
             'contact_mobile'            => '9123456789',
             'contact_mobile_verified'   => true,
         ];
-    
+
         $user2 = $this->fixtures->create('user', $user2Attributes);
-    
+
         $merchant2 = $this->fixtures->create('merchant', [
             'activated'  => 1
         ]);
-        
+
         $merchantId2 = $merchant2->getId();
-    
+
         $mappingData2 = [
             'user_id'     => $user2->getId(),
             'merchant_id' => $merchantId2,
             'role'        => 'owner',
         ];
         $this->fixtures->create('user:user_merchant_mapping', $mappingData2);
-    
+
         $this->startTest();
     }
-    
+
     public function testVerifyOtpAndUpdateContactMobileAlreadyExistingOrphan()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
@@ -14276,6 +14347,101 @@ class UserTest extends TestCase
 
     }
 
+    public function testMerchantEmailRegisterByEzetapPartnerAgent()
+    {
+        Config::set('applications.test_case.execution', false);
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+         $this->fixtures->create('merchant', [
+             'id' => $ezetapMerchantId,
+         ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $ezetapMerchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9891817372','contact_mobile_verified'=>true],'partner_agent');
+
+        $this->ba->proxyAuth('rzp_test_' . $ezetapMerchantId, $merchantUser['id']);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        Queue::fake();
+
+        $response = $this->startTest();
+
+        Queue::assertPushed(NotifyRas::class);
+
+        $userDeviceDetails = $this->getDbEntity('user_device_detail', ['merchant_id' => $response['id']]);;
+
+        $merchantUserMapping = DB::table('merchant_users')->where('merchant_id', '=', $response['id'])->get();
+
+        $this->assertEquals(count($merchantUserMapping), 2);
+
+        $this->assertEquals($merchantUserMapping[0]->role, 'razorpay_sales');
+
+        $this->assertEquals($merchantUserMapping[1]->role, 'owner');
+
+        $this->assertEquals("pgos", $userDeviceDetails["metadata"]["service"]);
+
+        $this->assertEquals($userDeviceDetails['signup_campaign'], 'assisted_onboarding');
+    }
+
+    public function testMerchantEmailRegisterByNonEzetapPartnerAgent()
+    {
+        Config::set('applications.test_case.execution', false);
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $nonEzetapmerchantId = '1X4hRFHFx4Uikl';
+        $this->fixtures->create('merchant', [
+            'id' => $nonEzetapmerchantId,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $nonEzetapmerchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($nonEzetapmerchantId,['contact_mobile' =>'9891817372','contact_mobile_verified'=>true],'partner_agent');
+
+        $this->ba->proxyAuth('rzp_test_' . $nonEzetapmerchantId, $merchantUser['id']);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        Queue::fake();
+
+        $response = $this->startTest();
+
+        Queue::assertPushed(NotifyRas::class);
+
+        $merchantUserMapping = DB::table('merchant_users')->where('merchant_id', '=', $response['id'])->get();
+
+        $userDeviceDetails = $this->getDbEntity('user_device_detail', ['merchant_id' => $response['id']]);;
+
+        $this->assertEquals(count($merchantUserMapping), 1);
+
+        $this->assertEquals($merchantUserMapping[0]->role, 'owner');
+
+        $this->assertEquals($userDeviceDetails['signup_campaign'], 'assisted_onboarding');
+
+        $this->assertEquals("pgos", $userDeviceDetails["metadata"]["service"]);
+    }
     public function testWorkFlowCreationFailedForAssistedMerchants()
     {
         Config::set('applications.test_case.execution', false);
@@ -14307,8 +14473,6 @@ class UserTest extends TestCase
 
         $this->startTest();
     }
-
-
 
     public function testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOff()
     {
@@ -14606,9 +14770,9 @@ class UserTest extends TestCase
                 ]
             ]
         ];
-        
+
         $this->mockAllSplitzTreatment($splitzOutput);
-        
+
         $user1Attributes = [
             'contact_mobile'            => '1234567890',
             'contact_mobile_verified'   => true,
@@ -14847,6 +15011,27 @@ class UserTest extends TestCase
             'source'           => 'x',
             'business_account' => 'razorpayx'
         ])->andReturn([
+            'optin_status'  => true
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testWhatsAppOptInInternalAuth()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345679', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->ba->setAppAuthHeaders(['X-Dashboard-User-Id' => $user['id']]);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app]);
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->app['stork_service']->shouldReceive('optInForWhatsapp')->once()->with('test', $user['contact_mobile'], $testData['request']['content'])->andReturn([
             'optin_status'  => true
         ]);
 
@@ -15848,5 +16033,260 @@ class UserTest extends TestCase
         $this->assertEquals($userDeviceDetails['signup_campaign'], 'partner_assisted_onboarding');
         $this->assertNotNull($merchantAccessMap);
 
+    }
+
+    public function testRegisterWithValidReferralCode()
+    {
+        $partnerMerchant = $this->createPartner('reseller');
+
+        $referralLink = $this->getDbEntity('referrals', ['product' => 'primary']);
+        $referralCode = $referralLink['ref_code'];
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['partner_referral_code']    = $referralCode;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest($testData);
+
+        $createdSubM = $this->getDbLastEntity('merchant');
+
+        $accessMap = $this->getDbEntity('merchant_access_map',
+            ['entity_owner_id' => $partnerMerchant['id'],
+                'merchant_id' => $createdSubM['id']
+            ]);
+        $this->assertNotNull($accessMap);
+        $this->assertContains('Ref-' . $partnerMerchant->getId(), $createdSubM->tagNames());
+    }
+
+    public function testRegisterWithNullReferralCode()
+    {
+        $partnerMerchant = $this->createPartner('reseller');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+
+        $createdSubM = $this->getDbLastEntity('merchant');
+        $accessMap = $this->getDbEntity('merchant_access_map',
+            ['entity_owner_id' => $partnerMerchant['id'],
+                'merchant_id' => $createdSubM['id']
+            ]);
+
+
+        $this->assertNull($accessMap);
+    }
+    public function testRegisterWithEmptyReferralCode()
+    {
+        $partnerMerchant = $this->createPartner('reseller');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+
+        $createdSubM = $this->getDbLastEntity('merchant');
+
+        $accessMap = $this->getDbEntity('merchant_access_map',
+            ['entity_owner_id' => $partnerMerchant['id'],
+                'merchant_id' => $createdSubM['id']
+            ]);
+
+
+        $this->assertNull($accessMap);
+    }
+
+
+
+    public function testAssignUserToMerchantFailsForNonexistentUserEmail()
+    {
+        $posSalesAdminMid = 'NBmMve28Nvwq43';
+        
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+        $merchantId = 'NBmMve28Nvwq44';
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $this->fixtures->create('merchant', [
+            'id' => $posSalesAdminMid,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $partnerAgentUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9892818372','contact_mobile_verified'=>true],'partner_agent');
+
+        $razorpaySalesUser = $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchantId,
+            'user_id'       => $partnerAgentUser->getId(),
+            'role'          => 'razorpay_sales',
+            'product'       =>'primary'
+        ]);
+
+        $posSalesAdminUser = $this->fixtures->user->createUserForMerchant($posSalesAdminMid,['contact_mobile' =>'9892818376','contact_mobile_verified'=>true],'pos_sales_admin');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId,['contact_mobile' =>'9891817377','contact_mobile_verified'=>true],'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $posSalesAdminMid, $posSalesAdminUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testDuplicateRoleAssignmentToMerchantUserFails()
+    {
+        $posSalesAdminMid = 'NBmMve28Nvwq43';
+
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+        $merchantId = 'NBmMve28Nvwq44';
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $this->fixtures->create('merchant', [
+            'id' => $posSalesAdminMid,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $partnerAgentUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9892818372','contact_mobile_verified'=>true],'partner_agent');
+
+        $razorpaySalesUser = $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchantId,
+            'user_id'       => $partnerAgentUser->getId(),
+            'role'          => 'razorpay_sales',
+            'product'       =>'primary'
+        ]);
+
+        $posSalesAdminUser = $this->fixtures->user->createUserForMerchant($posSalesAdminMid,['contact_mobile' =>'9892818376','contact_mobile_verified'=>true],'pos_sales_admin');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId,['contact_mobile' =>'9891817377','email'=>'udittest16@gmail.com','contact_mobile_verified'=>true],'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $posSalesAdminMid, $posSalesAdminUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testAssignRazorpaySalesUserToMerchantByPosSalesAdmin()
+    {
+        $posSalesAdminMid = 'NBmMve28Nvwq43';
+
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+
+        $merchantId = 'NBmMve28Nvwq44';
+
+        $newMerchantId = 'NBmMve28Nvwq66';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $this->fixtures->create('merchant', [
+            'id' => $newMerchantId,
+        ]);
+
+        $this->fixtures->create('merchant', [
+            'id' => $posSalesAdminMid,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $partnerAgentUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9892818372','contact_mobile_verified'=>true],'partner_agent');
+
+        $razorpaySalesUser = $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchantId,
+            'user_id'       => $partnerAgentUser->getId(),
+            'role'          => 'razorpay_sales',
+            'product'       =>'primary'
+        ]);
+
+        $posSalesAdminUser = $this->fixtures->user->createUserForMerchant($posSalesAdminMid,['contact_mobile' =>'9892818376','contact_mobile_verified'=>true],'pos_sales_admin');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId,['contact_mobile' =>'9891817377','email'=>'udittest16@gmail.com','contact_mobile_verified'=>true],'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $posSalesAdminMid, $posSalesAdminUser->getId());
+
+        $this->startTest();
+
+        $merchantUserMapping = DB::table('merchant_users')->where('merchant_id', '=', $newMerchantId)->get();
+
+        $this->assertEquals($merchantUserMapping[0]->role, 'razorpay_sales');
+
+        $this->assertEquals($merchantUserMapping[0]->user_id, $merchantUser->getId());
+
+        $this->assertEquals($merchantUserMapping[0]->merchant_id, $newMerchantId);
+
+    }
+
+
+    public function testMobileOtpLoginWithSuspendedMerchants()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9087654322', 'contact_mobile_verified' => true]);
+
+        $firstMerchantUser = DB::table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->first();
+        $this->fixtures->edit('merchant', $firstMerchantUser->merchant_id, ['suspended_at' => 1642901927]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'otp'            => '0007',
+            'token'          => 'Gvt61zZ3Iwzcqy',
+            'contact_mobile' => $user['contact_mobile'],
+            'captcha'        => 'faked'
+        ];
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $expectedResult = $testData['response']['content']['is_merchant_entities_empty'];
+
+        $this->assertEmpty($response['merchants']);
+        $this->assertEquals($response['is_merchant_entities_empty'], $expectedResult);
+    }
+
+    protected function mockSplitzDisableCAC($merchantId)
+    {
+        $this->mockSplitzTreatment([
+            'id'            => $merchantId ?? '10000000000000',
+            'experiment_id' => env('CAC_BLACKLIST_EXP_ID'),
+        ], [
+            'response' => [
+                'variant' => [
+                    'name' => 'active'
+                ]
+            ]
+        ]);
     }
 }

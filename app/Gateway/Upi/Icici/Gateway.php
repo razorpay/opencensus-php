@@ -324,12 +324,10 @@ class Gateway extends Base\Gateway
     // Check gateway status is revoke or pause then cancelled mandate and token
     public function checkGatewayStatusAndUpdateEntity($statusCode, $merchantId, $upiMandate=null)
     {
-        $variant = $this->app['razorx']->getTreatment($merchantId,
-            Merchant\RazorxTreatment::UPI_AUTOPAY_REVOKE_PAUSE_TOKEN,
-            $this->app['rzp.mode'], 3);
+        $variant = $this->evaluateSplitzExperimentForUpiAutopayRevokePauseToken($merchantId);
 
         $updateTokenStatus = false;
-        if(strtolower($variant) === 'on')
+        if($variant === true)
         {
 
             if(in_array($statusCode,Status::REVOKE_STATUS))
@@ -357,6 +355,48 @@ class Gateway extends Base\Gateway
         );
 
         return $updateTokenStatus;
+    }
+
+    /**
+     * Evaluates the Splitz experiment for UPI Autopay revoke/pause token for a given merchant.
+     *
+     * @param int $merchantId The ID of the merchant for whom the experiment is being evaluated.
+     * @return bool
+     */
+    protected function evaluateSplitzExperimentForUpiAutopayRevokePauseToken($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_revoke_pause_token'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_REVOKE_PAUSE_TOKEN
+            );
+        }
+
+        return false;
     }
 
     protected function getMandateCallbackResponseIfApplicable($response){
@@ -388,26 +428,6 @@ class Gateway extends Base\Gateway
             ];
         }
         return [];
-    }
-
-    protected function isUpiAutopayHybridEnabled()
-    {
-        $feature = 'upi_autopay_hybrid_encryption';
-
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, Mode::LIVE);
-
-        $this->trace->info(TraceCode::UPI_RECURRING_HYBRID_RAZORX_VARIANT, [
-            'message' => 'Hybrid encryption for upi autopay',
-            'feature' => $variant,
-        ]);
-
-        if ($variant !== 'on')
-        {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -1551,7 +1571,7 @@ class Gateway extends Base\Gateway
         {
             $response = $this->parseGatewayResponse($body, false, $isUpiTransfer);
         }
-        else if (($this->isUpiAutopayHybridEnabled()) and ($decoded !== null) and
+        else if (($decoded !== null) and
             (isset($decoded["encryptedData"]) === true) and (isset($decoded["encryptedKey"]) === true) and
             (isset($decoded["oaepHashingAlgorithm"]) === true))
         {

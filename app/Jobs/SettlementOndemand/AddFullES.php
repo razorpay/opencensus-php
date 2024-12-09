@@ -11,6 +11,8 @@ class AddFullES extends Job
 {
     const LIMIT = 400;
 
+    protected $metricsEnabled = true;
+
     public function __construct($mode)
     {
         parent::__construct($mode);

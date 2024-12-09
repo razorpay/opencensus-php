@@ -7,15 +7,20 @@ use Illuminate\Support\Facades\DB;
 use Mail;
 use Crypt;
 use Config;
+use RZP\Constants\Metric as Metrics;
 use RZP\Models\Admin;
 use RZP\Models\BharatQr;
 use RZP\Models\Emi\ProcessingFeePlan;
+use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\QrPayment\Constants as QrConstants;
 use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Http\Controllers\GatewayController;
+use RZP\Jobs\MerchantBalanceUpdateAfterCLSOnboarding;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 use RZP\Http\Request\Requests;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Services\NbPlus\CardlessEmi as CardlessEmiService;
 use Throwable;
@@ -129,6 +134,14 @@ class Service extends Base\Service
      * @var  integer
      */
     const RRN_TTL = 259200;
+
+    const MUTEX_LOCK_TTL = 60; // in seconds
+
+    const MUTEX_RETRY_COUNT = 10;
+
+    const MUTEX_MIN_RETRY_DELAY = 1000; // in miliseconds
+
+    const MUTEX_MAX_RETRY_DELAY = 2000;
 
     const GET_PAYMENTS_QUERY = "select p.id, a.rrn, p.created_at from hive.realtime_hudi_api.payments as p INNER JOIN hive.realtime_pgpayments_card_live.authorization AS a ON p.id = a.payment_id WHERE a.status in ('authorized', 'captured') AND p.method = 'card' and p.gateway = 'hdfc' and p.cps_route = 2 and p.created_at < %s and p.id > '%s' order by p.id asc limit %s";
 
@@ -1545,14 +1558,6 @@ class Service extends Base\Service
             {
                 $order = $payment->order;
 
-                if (isset($order) === true) {
-                    $variantForFeature = $this->app->razorx->getTreatment($order->getMerchantId(),
-                        RazorxTreatment::STOP_SENDING_ORDER_DATA_FROM_API, $this->mode);
-
-                    if (strtolower($variantForFeature) !== RazorxTreatment::RAZORX_VARIANT_ON) {
-                        $input[Payment\Entity::ORDER] = $order;
-                    }
-                }
                 # have to send conv_fee & gst to PG-router to validate order with payment amount
                 if($order->getFeeConfigId() !== null and
                     $payment->getConvenienceFee() !== null)
@@ -2630,6 +2635,12 @@ class Service extends Base\Service
                 $this->addAuthenticationObject($entity, $authenticationData);
             }
           }
+        if (isset($entity['card'])) {
+            if (isset($authenticationData['cavv']) && $payment->card->network === Card\Network::$fullName[Card\Network::AMEX]){
+                $authenticationData = (new Payment\Service)->getAuthenticationEntity3ds2($payment->getPublicId());
+                $entity['acquirer_data']['authentication_reference_number'] = $authenticationData['cavv'];
+            }
+        }
 
         if (isset($entity['card']) && ($payment->card->isInternational() === false))
         {
@@ -4854,7 +4865,25 @@ class Service extends Base\Service
         }
         else
         {
-            $txn = $this->createVirtualPaymentTxnFromLedger($payment);
+            try
+            {
+                $txn = $this->createVirtualPaymentTxnFromLedger($payment);
+            }
+            catch (\Throwable $e)
+            {
+                // Fallback to TiDB incase of failure
+                $this->trace->traceException(
+                    $e,
+                    Trace::WARNING,
+                    TraceCode::PAYMENT_TXN_CREATION_FROM_LEDGER_FAILED,
+                    [
+                        'payment_id'     => $payment->getId(),
+                        'transaction_id' => $payment->getTransactionId(),
+                    ]
+                );
+
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($payment->getId());
+            }
 
             $txn->setOnHold(false);
         }
@@ -5042,6 +5071,57 @@ class Service extends Base\Service
         return $updated;
     }
 
+    public function createCorrespondingCLSAdjustment(string $paymentId)
+    {
+        try
+        {
+            $payment = $this->repo->payment->findOrFail($paymentId);
+
+            $transaction = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
+
+            $amount = $transaction->getCredit() - $transaction->getDebit();
+
+            $transactorEvent = "";
+
+            if ($amount >= 0)
+            {
+                $transactorEvent = "positive_adjustment";
+            }
+            else
+            {
+                $transactorEvent = "negative_adjustment";
+            }
+
+            $transactorId = 'adj_' . $payment->getId();
+
+            $journalPayload = [
+                LedgerConstants::MERCHANT_ID           => $transaction->getMerchantId(),
+                LedgerConstants::CURRENCY              => LedgerConstants::INR_CURRENCY,
+                LedgerConstants::TRANSACTION_DATE      => $transaction->getUpdatedAt(),
+                LedgerConstants::TRANSACTOR_ID         => $transactorId,
+                LedgerConstants::TRANSACTOR_EVENT      => $transactorEvent,
+                LedgerConstants::MONEY_PARAMS          => [
+                        "merchant_balance_amount"       => strval($amount),
+                        "base_amount"                   => strval($amount),
+                        "adjustment_amount"             => strval($amount),
+                        "merchant_balance_limit"        => "0",
+                ],
+            ];
+
+            $ledgerOutboxCore = (new LedgerOutboxCore());
+
+            $ledgerOutboxCore->createJournalInLedger($journalPayload, false, false, true);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::CLS_ONBOARDING_FAILURE_ADJUSTMENT_CREATION,
+                [
+                    'payment_id'            => $paymentId,
+                ]
+            );
+        }
+    }
+
     public function updateMerchantBalance(string $paymentId, $asyncTxnEnabled = false)
     {
         $payment = null;
@@ -5051,6 +5131,20 @@ class Service extends Base\Service
             $payment = $this->repo->payment->findOrFail($paymentId);
 
             $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
+
+            if ($merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === true)
+            {
+                $input = [
+                    'payment_id'  => $payment->getId(),
+                    'mode'        => $this->app['rzp.mode'],
+                    'async_txn_fill_enabled' => $asyncTxnEnabled,
+                ];
+
+                $delaySecs = 5 * 60; // 5 minutes
+
+                MerchantBalanceUpdateAfterCLSOnboarding::dispatch($input, $this->mode, $asyncTxnEnabled)->delay($delaySecs);;
+                return;
+            }
 
             if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW))
             {
@@ -5792,6 +5886,16 @@ class Service extends Base\Service
                 return;
             }
 
+            if($payment->isGiftcard() && $payment->isFailed() &&
+                ($payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION ||
+                    $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING ||
+                    $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)){
+                $this->trace->info(TraceCode::GIFTCARD_EMAIL_SUPPRESS, [
+                    'payment_id' => $payment['id'],
+                ]);
+                return;
+            }
+
             (new Notify($payment))->trigger($event);
         }
     }
@@ -5915,6 +6019,16 @@ class Service extends Base\Service
                         $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING ||
                         $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)){
                     $this->trace->info(TraceCode::DUITNOW_PAY_EMAIL_SUPPRESS, [
+                        'payment_id' => $payment['id'],
+                    ]);
+                    return;
+                }
+
+                if($payment->isGiftcard() && $payment->isFailed() &&
+                    ($payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION ||
+                        $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING ||
+                        $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)){
+                    $this->trace->info(TraceCode::GIFTCARD_EMAIL_SUPPRESS, [
                         'payment_id' => $payment['id'],
                     ]);
                     return;
@@ -6276,8 +6390,9 @@ class Service extends Base\Service
                         function() use ($payment, $data, $extraProperties, $paymentProcessor)
                         {
                             return $this->timeoutPaymentProcess($payment, $data, $extraProperties, $paymentProcessor);
-                        });
-                });
+                        },  self:: MUTEX_LOCK_TTL,ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,self:: MUTEX_RETRY_COUNT, self:: MUTEX_MIN_RETRY_DELAY, self:: MUTEX_MAX_RETRY_DELAY);
+                },
+            );
         }
 
         return $data;
@@ -7717,7 +7832,7 @@ class Service extends Base\Service
 
                 }
                 $this->repo->saveOrFail($payment);
-                
+
                 return true;
             });
 
@@ -8041,7 +8156,31 @@ class Service extends Base\Service
 
         $document_id = $input["document_id"];
 
-        $merchant = $this->merchant;
+        //Added check for internal route for receiving request from pxb service
+
+        if ($this->app['api.route']->routeThroughPaymentCrossBorder() === true)
+        {
+            if(!isset($input["merchant_id"])){
+                $this->trace->info(
+                    TraceCode::MERCHANT_ID_NOT_FOUND_TO_UPDATE_B2B_INVOICE,
+                    [
+                        'payment_id' => $id
+                    ]);
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
+            }
+            $merchantId = $input["merchant_id"];
+            $merchant = $this->repo->merchant->find($merchantId);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_UPDATE_REQUEST_WITH_B2B_DASHBOARD,
+                [
+                    'payment_id' => $id
+                ]);
+            $merchant = $this->merchant;
+        }
 
         $isB2BInvoiceUpdated = $this->mutex->acquireAndRelease($id,
             function() use ($id,$document_id,$merchant)

@@ -183,6 +183,36 @@ class WorkflowActionTest extends TestCase
         $this->assertEquals('syncinstruments', $tags['0']);
     }
 
+    public function testWorkflowMaker() {
+
+        // when maker is merchant
+        $maker = $this->fixtures->create('merchant');
+        $workflow = $this->fixtures->create('workflow');
+        $action = $this->fixtures->create('workflow_action',[
+            "workflow_id" => $workflow->getId(),
+            "maker_type"  => "merchant",
+            "maker_id" => $maker->getId(),
+            ]);
+        $fetchedAction = $this->getDbEntityById('workflow_action', $action->getId());
+
+        $this->assertNotNull($fetchedAction->maker);
+        $this->assertTrue($fetchedAction->relationLoaded('maker'));
+
+        // when maker is non merchant
+        $maker = $this->fixtures->create('customer');
+        $workflow = $this->fixtures->create('workflow');
+        $action = $this->fixtures->create('workflow_action',[
+            "workflow_id" => $workflow->getId(),
+            "maker_type"  => "customer",
+            "maker_id" => $maker->getId(),
+        ]);
+        $fetchedAction = $this->getDbEntityById('workflow_action', $action->getId());
+
+        $this->assertNotNull($fetchedAction->maker);
+        $this->assertTrue($fetchedAction->relationLoaded('maker'));
+
+    }
+
     /**
      * Test edit admin workflow action diff.
      *

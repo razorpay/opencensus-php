@@ -83,6 +83,7 @@ class RecoveryMethod
         Gateway::HDFC,
         Gateway::FULCRUM,
         Gateway::MGPS,
+        Gateway::MPGS,
         Gateway::FIRST_DATA,
         Gateway::HDFC_DEBIT_EMI,
         Gateway::CYBERSOURCE,

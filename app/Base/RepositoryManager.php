@@ -12,6 +12,7 @@ use RZP\Gateway;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
@@ -399,56 +400,57 @@ class RepositoryManager extends Illuminate\Support\Manager
             return Mode::TEST;
         }
 
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ARCHIVED_REPLICA_QUERY_MOVEMENT, Mode::LIVE);
-
-        if ($experimentResult === 'on')
+        if ($entity === Entity::PAYMENT)
         {
-            if ($entity === Entity::PAYMENT)
+            if ($this->checkHarvsterQuerySplitzStatus() === true)
             {
-                // Check id in archived data replica as the entity might be archived
-                // Note : Add _record_source = 'api' filter if moving to aggregated warm storage (tidb)
-                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_LIVE)->findNonRearchPaymentsFromPaymentFetchReplica($id);
+                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)->findNonRearchPaymentsFromDataWarehouse($id);
             }
             else
             {
-                // Check id in archived data replica as the entity might be archived
-                // Note : Add _record_source = 'api' filter if moving to aggregated warm storage (tidb)
-                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_LIVE)->find($id);
+                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_LIVE)->findNonRearchPaymentsFromPaymentFetchReplica($id);
             }
+
         }
         else
         {
-            $obj = $repo->connection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->find($id);
+            if ($this->checkHarvsterQuerySplitzStatus() === true)
+            {
+                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)->find($id);
+            }
+            else
+            {
+                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_LIVE)->find($id);
+            }
         }
-
 
         if ($obj !== null)
         {
             return Mode::LIVE;
         }
 
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ARCHIVED_REPLICA_QUERY_MOVEMENT, Mode::TEST);
-
-        if ($experimentResult === 'on')
+        if ($entity === Entity::PAYMENT)
         {
-            if ($entity === Entity::PAYMENT)
+            if ($this->checkHarvsterQuerySplitzStatus() === true)
             {
-                // Check id in archived data replica as the entity might be archived
-                // Note : Add _record_source = 'api' filter if moving to aggregated warm storage (tidb)
-                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_TEST)->findNonRearchPaymentsFromPaymentFetchReplica($id);
+                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_TEST)->findNonRearchPaymentsFromDataWarehouse($id);
             }
             else
             {
-                // Check id in archived data replica as the entity might be archived
-                // Note : Add _record_source = 'api' filter if moving to aggregated warm storage (tidb)
-                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_TEST)->find($id);
+                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_TEST)->findNonRearchPaymentsFromPaymentFetchReplica($id);
             }
         }
         else
         {
-            $obj = $repo->connection(Connection::ARCHIVED_DATA_REPLICA_TEST)->find($id);
+            if ($this->checkHarvsterQuerySplitzStatus() === true)
+            {
+                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_TEST)->find($id);
+            }
+            else
+            {
+                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_TEST)->find($id);
+            }
         }
-
 
         if ($obj !== null)
         {
@@ -466,6 +468,16 @@ class RepositoryManager extends Illuminate\Support\Manager
         $repo->connection(null);
 
         return null;
+    }
+
+    protected function checkHarvsterQuerySplitzStatus()
+    {
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_upi_experiment_id'),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
     }
 
     protected function getRepositoryClassFromObject($entityObject)

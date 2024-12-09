@@ -205,6 +205,9 @@ class Payment extends Base
         // If it's captured, we decide whether to do lateBalanceUpdate or not based
         // on some conditions.
         //
+
+        $merchant = $this->repo->merchant->findOrFailPublic($this->txn->getMerchantId());
+
         if ($this->source->isAuthorized() === true)
         {
             // in authorize transaction we set to balance updated as true since there is no actual balance update.
@@ -212,7 +215,8 @@ class Payment extends Base
 
             return false;
         }
-        else if ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true)
+        else if ($merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true or
+            $merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === true)
         {
             return false;
         }

@@ -535,6 +535,7 @@ class Tracing
             'merchant_edit_email_la',
             'merchant_edit_email_create_user',
             'fund_addition_tpv',
+            'pre_fund_withdraw',
             'banking_account_service_routes',
             'merchant_razorx_bulk_evaluate',
             'merchant_update_key_access',

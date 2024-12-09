@@ -20,8 +20,13 @@ class Service extends Base\Service
         $this->core = new Core();
     }
 
-    public function createMap(array $input)
+    public function createMap(array $input) : array
     {
-        $this->core->create($input);
+        return $this->core->create($input);
+    }
+
+    public function findOrFail(string $id) :array
+    {
+        return $this->core->findOrFail($id);
     }
 }

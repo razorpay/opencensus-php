@@ -1,0 +1,91 @@
+name: CDT Approval Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - edited
+      - reopened
+
+  push:
+    branches:
+      - master
+
+jobs:
+  check_cdt_approval:
+    name: CDT Ticket Id
+    runs-on: [self-hosted]
+    continue-on-error: false
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: List Changed Files
+        run: |
+          PR_URL="${{ github.event.pull_request.url }}"
+          echo "Extracting files changed in PR $PR_URL"
+          FILES_CHANGED=$(curl -s -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github.v3.raw" "$PR_URL/files" | jq -r '[.[] | .filename]')
+          FILES_CHANGED_JSON=$(echo $FILES_CHANGED | jq -c .)
+          echo "changes_in_cases_folder=false" >> $GITHUB_ENV
+          echo "List of files changed:"
+          echo "$FILES_CHANGED_JSON"
+          for item in $FILES_CHANGED; do
+            echo "$item"
+            if [[ "$item" == *"app/Http/Controllers/FreshdeskTicketController.php"* ]] ||
+                echo "$item" | grep -q "app/Models/Workflow/" ||
+                echo "$item" | grep -q "app/Models/Merchant/FreshdeskTicket/" ||
+                [[ "$item" == *"app/Services/FreshdeskTicketClient.php"* ]] ||
+                [[ "$item" == *"app/Http/Middleware/Workflow.php"* ]] ||
+                [[ "$item" == *"app/Http/Controllers/WorkflowController.php"* ]] ||
+                [[ "$item" == *"app/Services/WorkflowService.php"* ]]; then
+              echo "Regex pattern matched for $item"
+              echo "changes_in_cases_folder=true" >> $GITHUB_ENV
+              break
+            fi
+            done
+          echo "$GITHUB_ENV"
+
+      - name: Extract Jira Ticket ID
+        if: env.changes_in_cases_folder == 'true'
+        id: extract_jira
+        continue-on-error: false
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          regex='CDT-[0-9]+'
+          extracted_id=$(echo "$PR_TITLE" | grep -ioE "$regex" | head -n 1)
+          if [[ -n "$extracted_id" ]]; then
+            echo "Jira ticket ID found in PR title: $extracted_id"
+            echo "jira_found=true" >> $GITHUB_ENV
+            echo "extracted_id=$extracted_id" >> $GITHUB_ENV
+            PR_COMMENT="Jira ticket ID found in PR title: $extracted_id"
+          else
+            echo "No CDT ticket ID found in the PR title."
+            echo "If you have recently updated the PR, please try re-running the workflow to extract the CDT ticket ID."
+            echo "jira_found=false" >> $GITHUB_ENV
+            PR_COMMENT="No CDT ticket ID found in the PR title. If you have recently updated the PR, please try re-running the workflow to extract the CDT ticket ID."
+          fi
+          echo "pr_comment=$PR_COMMENT" >> $GITHUB_ENV
+      - name: Comment on PR
+        if: env.changes_in_cases_folder == 'true'
+        uses: marocchino/sticky-pull-request-comment@v2
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          header: JIRA Ticket Check
+          number: ${{ steps.findPr.outputs.pr }}
+          message: ${{ env.pr_comment }}
+
+      - name: Fail if Jira not found
+        if: env.changes_in_cases_folder == 'true' && env.jira_found == 'false'
+        run: exit 1 # Fail the workflow if Jira ticket is not found
+
+      - name: Check Issue status
+        if: env.changes_in_cases_folder == 'true' && env.jira_found == 'true'
+        env:
+          JIRA_ISSUE_ID: ${{ env.extracted_id }}
+          BASE_URL: ${{secrets.JIRA_BASE_URL}}
+          USER_EMAIL: ${{secrets.JIRA_USER_EMAIL}}
+          API_TOKEN: ${{secrets.JIRA_API_TOKEN}}
+        run: |
+          bash ./.github/actions/cdtTicketStatusCheck.sh

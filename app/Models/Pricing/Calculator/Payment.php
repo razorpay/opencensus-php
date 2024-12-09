@@ -5,6 +5,7 @@ namespace RZP\Models\Pricing\Calculator;
 use App;
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Exception\LogicException;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card;
 use RZP\Models\Currency\Core;
@@ -20,6 +21,7 @@ use RZP\Models\Pricing\Fee;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Order\ProductType;
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Constants\Entity ;
 use RZP\Models\Merchant;
@@ -36,6 +38,7 @@ class Payment extends Base
     const KRBE_IFSC      = 'KRBE';
     const CSHE_IFSC      = 'CSHE';
     const TVSC_IFSC      = 'TVSC';
+    const MERCHANT_PROCURER_MIDS = ['GtFwVSbNTDTM9C', 'GtG3WLjGVjzx2n', 'CgtLpPjpmyg9ct', 'ELi8nocD30pFkb', 'G09v5FON5fsU9v', 'FlZgyQ2HD6eIET'];
 
     protected $fallbackStandardPlanExperimentId   = null;
 
@@ -73,13 +76,7 @@ class Payment extends Base
 
         if ($this->isMerchantProcuredPayment() === true){
 
-            $mode = $this->mode ?? Mode::LIVE;
-
-            $featureFlag = "apply_procurer_pricing";
-
-            $variant = $this->app->razorx->getTreatment($merchantId, $featureFlag, $mode);
-
-            if ($variant === "on")
+            if($this->isMerchantWhitelistedForProcurerPricing($merchantId))
             {
                 $procurer = $payment->terminal->getProcurer();
 
@@ -301,6 +298,10 @@ class Payment extends Base
         // {
         //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
         // }
+        else if ($method === PaymentModel\Method::GIFT_CARDS)
+        {
+            $rule = $this->getRelevantPricingRuleForGiftCard($rules);
+        }
         else
         {
             $rule = $this->validateAndGetOnePricingRule($rules);
@@ -721,14 +722,9 @@ class Payment extends Base
                 $recurringType = PaymentModel\RecurringType::INITIAL;
             }
 
-            $upiAutopayPricingVariant = $this->app->razorx->getTreatment(
-                $payment->getMerchantId(),
-                RazorxTreatment::UPI_AUTOPAY_PRICING_BLACKLIST,
-                $this->mode,
-                3
-            );
+            $upiAutopayPricingVariant = $this->evaluateSplitzExperimentForUpiAutopayPricingBlacklist($payment->getMerchantId());
 
-            if($upiAutopayPricingVariant === "on")
+            if($upiAutopayPricingVariant === true)
             {
                 $recurringType = null;
             }
@@ -739,6 +735,51 @@ class Payment extends Base
 
         $rules = $this->applyFiltersOnRules($rules, $filters);
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    /**
+     * Evaluates the Splitz experiment for UPI Autopay pricing blacklist.
+     *
+     * This method checks if the given merchant ID is part of the UPI Autopay pricing blacklist
+     * as part of the Splitz experiment.
+     *
+     * @param int $merchantId The ID of the merchant to evaluate.
+     * @return bool True if the variant is 'variant_on', false otherwise.
+     */
+    protected function evaluateSplitzExperimentForUpiAutopayPricingBlacklist($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_pricing_blacklist'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_PRICING_BLACKLIST
+            );
+        }
+
+        return false;
     }
 
     protected function getRelevantPricingRuleForAeps($rules)
@@ -851,6 +892,37 @@ class Payment extends Base
         $rules = $this->applyFiltersOnRules($rules, $filter);
 
         return $this->validateAndGetOnePricingRule($rules);
+    }
+
+    /**
+     * @throws LogicException
+     */
+    protected function getRelevantPricingRuleForGiftCard($rules)
+    {
+        $payment = $this->entity;
+
+        $gateway = $payment->getGateway();
+
+        // Returns giftcard_razorpay in case of gateway wallet_razorpaywallet
+        $giftCard = $this->getGiftCardBasisGateway($gateway);
+
+        $filter = array(
+            [Pricing\Entity::PAYMENT_NETWORK, $giftCard, false, null]
+        );
+
+        $rules = $this->applyFiltersOnRules($rules, $filter);
+
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    protected function getGiftCardBasisGateway($gateway): string
+    {
+        switch ($gateway) {
+            case "wallet_razorpaywallet" :
+                return "razorpay_giftcard";
+        }
+
+        return $gateway;
     }
 
     protected function getRelevantPricingRuleForCardlessEmi($rules)
@@ -1103,25 +1175,15 @@ class Payment extends Base
             if ($payment->isEligibleForFeeModelOverride())
             {
                 $feeModel = $this->validateAndGetFeeModel($this->pricingRules);
-
                 if (empty($feeModel) === false) {
-
-                    $mode = $this->app['rzp.mode'] ?? null;
-                    $feeModelOverride = $this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::FEE_MODEL_OVERRIDE, $mode);
-
-                    if ($feeModelOverride == RazorxTreatment::RAZORX_VARIANT_ON) {
-
-                        $this->trace->info(TraceCode::RULE_LEVEL_FEE_MODEL,
-                            [
-                                'fee_model' => $feeModel,
-                                'merchant_id' => $payment->getMerchantId(),
-                                'payment_id' => $payment->getId(),
-                                'transaction_id' => $payment->transaction->getId(),
-                            ]);
-
-                        $payment->transaction->setFeeModel($feeModel);
-
-                    }
+                    $this->trace->info(TraceCode::RULE_LEVEL_FEE_MODEL,
+                        [
+                            'fee_model' => $feeModel,
+                            'merchant_id' => $payment->getMerchantId(),
+                            'payment_id' => $payment->getId(),
+                            'transaction_id' => $payment->transaction->getId(),
+                        ]);
+                    $payment->transaction->setFeeModel($feeModel);
                 }
             }
         } catch (\Throwable $e){
@@ -1129,7 +1191,6 @@ class Payment extends Base
                 [
                    'error'=> $e->getMessage()
                 ]);
-
         }
 
         // this is an side effect that is unavoidable.
@@ -1162,46 +1223,76 @@ class Payment extends Base
     protected function setAmount()
     {
         $amount = $this->entity->getBaseAmount();
+        $fee = $this->entity->getFee();
+
+        // log payment entity and fee details
+        if ($this->entity->getEntity() === (Entity::PAYMENT)){
+            $merchantFeeBearer = $this->entity->merchant->getFeeBearer();
+            $paymentFeeBearer = $this->entity->getFeeBearer(true);
+
+            $currentRoute = '';
+            try
+            {
+                $currentRoute = app('request.ctx')->getRoute();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->error(TraceCode::GET_ROUTE_NAME_ERROR, [
+                    'error' => $e->getMessage()
+                ]);
+            }
+
+            $this->trace->info(TraceCode::PRICING_SET_AMOUNT_ATTEMPT,[
+                'amount' => $amount,
+                'fee' => $fee,
+                'payment_fee_bearer' => $paymentFeeBearer,
+                'merchant_fee_bearer' => $merchantFeeBearer,
+                'route' => $currentRoute,
+                'convenience_fee' => $this->entity->getConvenienceFee(),
+                'convenience_fee_gst' => $this->entity->getConvenienceFeeGst(),
+                'payment_id' => $this->entity->getId(),
+            ]);
+        }
+
+        /*
+            1. The first call will have the fee = 0, hence fees will be calculated on the original amount
+            2. On validation/capture call, the fee & convenience fee can be set
+            3. Remove convenience fee if it is set. Convenience fee is the amount added on payment amount if order config is set
+            4. For cases CFB abd DFB merchants when convenience fee is not set, remove mdr fee
+            5. MCC payments have initial fees stored in MCC currency, needs to be converted to INR
+        */
+
+        if ($this->entity->getEntity() === (Entity::PAYMENT) && $this->entity->getConvenienceFee() !== null){
+            $amount = $amount - $this->entity->getConvenienceFee() - $this->entity->getConvenienceFeeGst();
+        }
 
         if ($this->isFeeBearerCustomerOrDynamic() === true && $this->shouldAdjustPaymentFee() === true)
         {
-            // 1. The first call will have the fee = 0,
-            //    hence fees will be calculated on the original amount
-            // 2. On validation/capture call, the fee will be set
-            // 3. MCC payments have initial fees stored in MCC currency, needs to be converted to INR
-
-            $fee = $this->entity->getFee();
-            $currency = $this->entity->getCurrency();
-
-            $baseCurrency = Currency::INR;
-
-            if (isset($this->entity) === true && isset($this->entity->merchant) === true)
+            if ($this->isPartnershipFeeCalculationRoute() === false )
             {
-                $baseCurrency = $this->entity->merchant->getCurrency();
-            }
+                if ($this->entity->getConvenienceFee() == 0 && $fee != 0){
+                    $currency = $this->entity->getCurrency();
+                    $baseCurrency = Currency::INR;
+                    if (isset($this->entity) === true && isset($this->entity->merchant) === true)
+                    {
+                        $baseCurrency = $this->entity->merchant->getCurrency();
+                    }
 
-            $input = [];
-            if ($this->entity->merchant->isLRSFlowEnabled() === true)
-            {
-                $input['is_lrs_merchant'] = true;
-                $input['order_id'] = $this->entity->getOrderAttribute()['id'];
-            }
+                    $input = [];
+                    if ($this->entity->merchant->isLRSFlowEnabled() === true)
+                    {
+                        $input['is_lrs_merchant'] = true;
+                        $input['order_id'] = $this->entity->getOrderAttribute()['id'];
+                    }
 
-            // incase of partnership fee calculation route currency conversion is not required
-            // as the fee in payment entity is already in base currency
-            if ($this->isPartnershipFeeCalculationRoute() === true)
+                    $amount = $amount - (new Core)->getBaseAmount($fee, $currency, $baseCurrency, $input);
+                }
+            }else
             {
+                // incase of partnership fee calculation route currency conversion is not required
+                // as the fee in payment entity is already in base currency
                 $amount = $amount - $fee;
             }
-            else
-            {
-                $amount = $amount - (new Core)->getBaseAmount($fee, $currency, $baseCurrency, $input);
-            }
-        }
-
-        if ($this->entity->getEntity() === (Entity::PAYMENT))
-        {
-            $amount = $this->entity->getBaseAmountForFeeCalculation($amount);
         }
 
         $this->amount = $amount;
@@ -1367,5 +1458,10 @@ class Payment extends Base
         }
 
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    private function isMerchantWhitelistedForProcurerPricing($merchantId)
+    {
+        return in_array($merchantId, self::MERCHANT_PROCURER_MIDS);
     }
 }

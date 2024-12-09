@@ -11,6 +11,7 @@ if (env('APP_MODE') === "devserve")
 {
     // for anonymous client as devstack uses localstack
     $awsCredentialsCache = false;
+
 }
 
 return [
@@ -193,6 +194,9 @@ return [
     'refund_batch' => [
         'test'       => env('AWS_REFUND_QUEUE'),
         'live'       => env('AWS_REFUND_QUEUE'),
+    ],
+    'account_statements_source_event' => [
+        'live'       => env('AWS_ACCOUNT_STATEMENTS_SOURCE_EVENT_LIVE_QUEUE'),
     ],
     'terminal_batch' => [
         'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
@@ -390,6 +394,10 @@ return [
         'test'       => env('AWS_MERCHANT_BALANCE_UPDATE_TEST_QUEUE'),
         'live'       => env('AWS_MERCHANT_BALANCE_UPDATE_LIVE_QUEUE'),
      ],
+    'merchant_balance_update_after_cls_onboarding' => [
+        'test'       => env('AWS_MERCHANT_BALANCE_UPDATE_AFTER_CLS_ONBOARDING_TEST_QUEUE'),
+        'live'       => env('AWS_MERCHANT_BALANCE_UPDATE_AFTER_CLS_ONBOARDING_LIVE_QUEUE'),
+    ],
     'payment_reminder' => [
         'test'       => env('AWS_PAYMENT_REMINDER_TEST_QUEUE'),
         'live'       => env('AWS_PAYMENT_REMINDER_LIVE_QUEUE'),

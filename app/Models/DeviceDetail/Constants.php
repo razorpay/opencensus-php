@@ -35,6 +35,8 @@ class Constants
 
     const SINGAPORE_SIGNUP = 'sg_signup';
 
+    const I18N_MY_LINKED_ACCOUNT_SIGNUP = "i18_my_linked_account_signup";
+
     const WORKFLOW_TYPE = 'workflow_type';
 
     const WORKFLOW_DETAILS = 'workflow_details';
@@ -70,6 +72,8 @@ class Constants
 
     const PRODUCT_WORKFLOW_TYPE_TEMPLATE = '%s_workflow_type';
 
+    const CURLEC_LINKED_ACCOUNT_ONBOARDING = "curlec_linked_account_onboarding";
+
     const PGOS_ENABLED_SIGNUP_CAMPAIGNS = [self::ASSISTED_ONBOARDING, self::PARTNER_ASSISTED_ONBOARDING, self::I18N_MY_SIGNUP, self::RIZE_INCORPORATION, self::SINGAPORE_SIGNUP] ;
 
     const SIGNUP_CAMPAIGN_ONBOARDING_MAPPING = [
@@ -78,5 +82,15 @@ class Constants
             self::PRODUCT => self::RIZE_INCORPORATION,
             self::WORKFLOW_TYPE => self::MODULAR_ONBOARDING
         ],
+        self::I18N_MY_LINKED_ACCOUNT_SIGNUP => [
+            self::PLATFORM => self::PLATFORM_PG,
+            self::PRODUCT => self::CURLEC_LINKED_ACCOUNT_ONBOARDING,
+            self::WORKFLOW_TYPE => self::MODULAR_ONBOARDING
+        ],
+    ];
+
+
+    const COUNTRY_SIGNUP_CAMPAIGN_MAPPING = [
+        'MY' =>  self::I18N_MY_LINKED_ACCOUNT_SIGNUP
     ];
 }

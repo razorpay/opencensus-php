@@ -4,6 +4,7 @@
 namespace RZP\Gateway\Wallet\Razorpaywallet;
 
 use App;
+use RZP\Models\Payment\Method;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Wallet\Base;
@@ -50,6 +51,12 @@ class Gateway extends Base\Gateway
 
         if ((isset($input['payment']['contact']) === true)) {
             $data['contact']  = $input['payment']['contact'];
+        }
+
+        // add gift_cards to request if method is gift_cards
+        if ((isset($input['payment']['method']) === true) && ($input['payment']['method'] === Method::GIFT_CARDS))
+        {
+            $data['gift_cards'] = $input['gift_cards'];
         }
 
         $response = App::getFacadeRoot()['wallet_api']->payment($data);
@@ -165,4 +172,36 @@ class Gateway extends Base\Gateway
             ]
         );
     }
+
+    /*
+     * validateGiftCard sends a request to wallet for validating the GC number
+     * and PIN (if needed).
+     * */
+    public function validateGiftCard(array $input)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_VALIDATE_GIFT_CARD_REQUEST,
+            [
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+                'amount'            => $input['amount']
+            ]
+        );
+
+        $data = [
+            'gift_cards'    => $input['gift_cards'],
+        ];
+
+        $response = App::getFacadeRoot()['wallet_api']->validateGiftCard($data);
+
+
+        $this->trace->info(
+                TraceCode::VALIDATE_GIFT_CARD_SUCCESS,
+                [
+                    'gateway'           => $this->gateway,
+                    'payment_id'        => $input['payment']['id'],
+                    'amount'            => $input['amount']
+                ]
+            );
+        }
 }

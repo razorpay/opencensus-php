@@ -53,7 +53,7 @@ class Service extends Base\Service
         $this->ccRouter = new CCRouter(true);
     }
 
-    public function createPlan($input, $type = null)
+    public function createPlan($input, $type = null, $orgID = '', $internalCall = false)
     {
         $sourceInput = $input;
         $fqcn = get_class($this) . '\\' . __FUNCTION__;
@@ -61,8 +61,8 @@ class Service extends Base\Service
         $planAndRuleIds = Pricing\ChargeCollections\Utils::generatePlanAndRuleIds($ruleCount);
         $ccRequest = $this->transformCreatePlanRequest($input,$planAndRuleIds);
 
-        $legacyCallable = function () use ($sourceInput, $type, $planAndRuleIds) {
-            return $this->createPlanLegacy($sourceInput, $type, $planAndRuleIds);
+        $legacyCallable = function () use ($sourceInput, $type, $planAndRuleIds, $orgID, $internalCall) {
+            return $this->createPlanLegacy($sourceInput, $type, $planAndRuleIds, $orgID, $internalCall);
         };
 
         return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable, null, $type == Type::BUY_PRICING);
@@ -78,6 +78,13 @@ class Service extends Base\Service
             $input['rules'] = Utils::addPlanDetailsToRules($input['rules'], $planAndRuleIds);
         }
 
+        foreach ($input['rules'] as &$item) {
+            // Convert 'amount_range_active' to boolean if it exists and is not already a boolean
+            if (isset($item['amount_range_active']) && !is_bool($item['amount_range_active'])) {
+                $item['amount_range_active'] = (bool) $item['amount_range_active'];
+            }
+        }
+
         $input[Entity::ORG_ID] = $this->getRuleOrgId();
 
         $this->trace->info(TraceCode::CC_ROUTING_TRANSFORMED_REQUEST,
@@ -89,7 +96,23 @@ class Service extends Base\Service
         return $input;
     }
 
-    public function createPlanLegacy($input, $type = null, $planAndRuleIds = null): array
+    /**
+     * Creates a pricing plan based on input data, type, and optional IDs for plans and rules.
+     * Additional configuration options allow specifying an organization ID and a internalCall redirect identifier flag.
+     *
+     * @param array $input The data used to create the plan, containing pricing rules.
+     * @param string|null $type Optional. The type of plan to create, such as "pricing" or "buy_pricing" or null.
+     * @param array|null $planAndRuleIds Optional. An array of pre-generated plan and rule IDs to associate with the plan.
+     * @param string $orgID Optional. The organization ID for the plan, used for internal plan creation calls
+     *                       (e.g. merchant module). Defaults to an empty string, which triggers finding the
+     *                       organization from authentication details.
+     * @param bool $internalCall Optional. Determines if the call is from an internal module instead of the pricing
+     *                           controller, impacting the returned plan entity type.
+     * @return array The created plan in an array format with rules in an array. If $internalCall is true, returns
+     *               the `Plan` entity itself (without array conversion).
+     * @throws \Throwable
+     */
+    public function createPlanLegacy($input, $type = null, $planAndRuleIds = null, $orgID = '', $internalCall = false)
     {
         // if rules are sent in json encoded form, decode it
         if (isset($input['rules']) === true and is_string($input['rules']) === true)
@@ -118,7 +141,12 @@ class Service extends Base\Service
                 TraceCode::PRICING_PLAN_CREATE_ATTEMPT, ['rules_count' => count($input['rules'])]
             );
         }
-        $ruleOrgId = $this->getRuleOrgId();
+
+        if ( !empty($orgID)){
+            $ruleOrgId = $orgID;
+        }else{
+            $ruleOrgId = $this->getRuleOrgId();
+        }
 
         $this->repo->pricing->withBuyPricing();
 
@@ -133,9 +161,12 @@ class Service extends Base\Service
             $input[Entity::RULES] = (new Entity())->formattedBuyPricingRules($inputRules);
         }
 
-        (new Pricing\Core)->create($input, $ruleOrgId);
+        $plan = (new Pricing\Core)->create($input, $ruleOrgId);
+        if ($internalCall){
+            return $plan;
+        }
 
-        $plan = $this->repo->pricing->getPlanByName($input[Entity::PLAN_NAME]);
+        $plan = $this->repo->pricing->getPlanByNameLegacy($input[Entity::PLAN_NAME]);
 
         return $plan->toArrayPublic();
     }
@@ -219,8 +250,8 @@ class Service extends Base\Service
         $ccRequest = $this->transformAddPlanRule($input, $ruleId, $id);
         $sourceInput['id'] = $ruleId;
 
-        $legacyCallable = function () use ($id, $sourceInput, $orgId, $isBuyPricingRule) {
-            return $this->addPlanRuleLegacy($id, $sourceInput, $orgId, $isBuyPricingRule);
+        $legacyCallable = function ($rampPhase, $_) use ($id, $sourceInput, $orgId, $isBuyPricingRule) {
+            return $this->addPlanRuleLegacy($id, $sourceInput, $orgId, $isBuyPricingRule, $rampPhase);
         };
 
         return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable, null, $isBuyPricingRule);
@@ -235,6 +266,11 @@ class Service extends Base\Service
         $input['id'] = $ruleId;
         $input['plan_id']= $id;
 
+        // Convert 'amount_range_active' to boolean if it exists and is not already a boolean
+        if (isset($input['amount_range_active']) && !is_bool($input['amount_range_active'])) {
+            $input['amount_range_active'] = (bool) $input['amount_range_active'];
+        }
+
         $this->trace->info(TraceCode::CC_ROUTING_TRANSFORMED_REQUEST,
             [
                 'method' => 'addPlanRule',
@@ -244,14 +280,14 @@ class Service extends Base\Service
         return $input;
     }
 
-    public function addPlanRuleLegacy($id, $input, $orgId = null, $isBuyPricingRule = false)
+    public function addPlanRuleLegacy($id, $input, $orgId = null, $isBuyPricingRule = false, $rampPhase = '')
     {
         if ($isBuyPricingRule === true)
         {
             $this->repo->pricing->onlyBuyPricing();
         }
 
-        $plan = $this->repo->pricing->getPlanByIdOrFailPublic($id, $orgId);
+        $plan = $this->repo->pricing->getPlanByIdOrFailPublicLegacy($id, $orgId);
 
         $ruleOrgId = $plan->getOrgId();
 
@@ -278,7 +314,7 @@ class Service extends Base\Service
             return $rules;
         }
 
-        $rule = (new Pricing\Core)->addPlanRule($plan, $input, $ruleOrgId);
+        $rule = (new Pricing\Core)->addPlanRule($plan, $input, $ruleOrgId, $rampPhase);
 
         return $rule->toArray();
     }
@@ -297,7 +333,7 @@ class Service extends Base\Service
 
                 $planId = $merchant->getPricingPlanId();
 
-                $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId, $orgId);
+                $plan = $this->repo->pricing->getPlanByIdOrFailPublicLegacy($planId, $orgId);
 
                 $ruleCount = $plan->count();
 
@@ -357,9 +393,34 @@ class Service extends Base\Service
             $input = ['items' => $input];
         }
 
+        // Ensure 'update' field in each item is a string if it exists
+        if (isset($input['items']) && is_array($input['items'])) {
+            foreach ($input['items'] as &$item) {
+                if (isset($item['update']) && is_bool($item['update'])) {
+                    $item['update'] = $item['update'] ? "true" : "false";
+                }
+
+                if (isset($item['international']) && is_bool($item['international'])) {
+                    $item['international'] = $item['international'] ? "1" : "0";
+                }
+
+                if (isset($item['percent_rate']) && !is_string($item['percent_rate'])) {
+                    $item['percent_rate'] = (string) $item['percent_rate'];
+                }
+
+                if (isset($item['fixed_rate']) && !is_string($item['fixed_rate'])) {
+                    $item['fixed_rate'] = (string) $item['fixed_rate'];
+                }
+
+                if (isset($item['amount_range_active']) && is_bool($item['amount_range_active'])){
+                    $item['amount_range_active'] = $item['amount_range_active'] ? "1" : "0";
+                }
+            }
+        }
+
         $this->trace->info(TraceCode::CC_ROUTING_TRANSFORMED_REQUEST,
             [
-                'method' => 'createPlan',
+                'method' => 'postAddBulkPricingRules',
                 'request' => $input,
             ]);
 
@@ -381,7 +442,7 @@ class Service extends Base\Service
 
         if ($shouldReplicatePlan)
         {
-            $plan = $this->replicatePlanAndAssign($merchant, $plan, $generatedPlanAndRuleId, $rampPhase);
+            $plan = $this->replicatePlanAndAssignLegacy($merchant, $plan, $generatedPlanAndRuleId, $rampPhase);
             return [true, $plan];
         }else{
             return [false, $plan];
@@ -455,7 +516,7 @@ class Service extends Base\Service
                     }else{
                         $planId = $merchant->getPricingPlanId();
                     }
-                    $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId, $orgId);
+                    $plan = $this->repo->pricing->getPlanByIdOrFailPublicLegacy($planId, $orgId);
 
                     $ruleOrgId = $plan->getOrgId();
 
@@ -791,10 +852,49 @@ class Service extends Base\Service
         return $input;
     }
 
-    public function replicatePlanAndAssign($merchant, $plan, $generatedPlanAndRuleId = null, $rampPhase = '')
+    public function generatePlanAndRuleIdsForReplicatePlan($ruleCount){
+        $newPlanId = UniqueIdEntity::generateUniqueId();
+        $newPlanName = UniqueIdEntity::generateUniqueId();
+
+        // Generate rule IDs based on the rule count
+        $ruleIds = [];
+        for ($i = 0; $i < $ruleCount; $i++) {
+            $ruleIds[] = UniqueIdEntity::generateUniqueId();
+        }
+
+        return [
+            'plan_name' => $newPlanName,
+            'plan_id' => $newPlanId,
+            'ids' => $ruleIds,
+        ];
+    }
+
+    public function replicatePlanAndAssign($merchant, $plan)
     {
-        // Get merchants existig plan ID
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+
+        $generatedPlanAndRuleId = $this->generatePlanAndRuleIdsForReplicatePlan(count($plan));
+
+        $input['generated_ids'] = $generatedPlanAndRuleId;
+        $input['merchant_id'] = $merchant->getId();
+        $input['plan_id'] = $plan->getId();
+
+        $ccRequest = $input;
+
+        $legacyCallable = function ($rampPhase, $_) use ($merchant, $plan, $generatedPlanAndRuleId, $input) {
+            return $this->replicatePlanAndAssignLegacy($merchant, $plan, $generatedPlanAndRuleId, $rampPhase, $input);
+        };
+
+        return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable);
+    }
+
+    public function replicatePlanAndAssignLegacy($merchant, $plan, $generatedPlanAndRuleId, $rampPhase = '', $input = null)
+    {
+        // Get merchants existing plan ID, consider initial id sent in case of reverse_shadow
         $planId = $merchant->getPricingPlanId();
+        if ($rampPhase == CCRouter::REVERSE_SHADOW && $input != null){
+            $planId = $input['plan_id'];
+        }
 
         // Get intended pricing plans org id
         $ruleOrgId = $plan->getOrgId();
@@ -1026,22 +1126,22 @@ class Service extends Base\Service
         return $pricingPlans->toArrayMultiplePlansPublic();
     }
 
-    public function updatePlanRule($planId, $ruleId, $input, $isBuyPricingRule = false)
+    public function updatePlanRule($planId, $ruleId, $input, $isBuyPricingRule = false, $orgId = null)
     {
         $sourceInput = $input;
         $fqcn = get_class($this) . '\\' . __FUNCTION__;
         $planAndRuleIds = Pricing\ChargeCollections\Utils::generatePlanAndRuleIds(1);
         $ccRequest = $this->transformUpdatePlanRequest($input, $planId, $ruleId, $planAndRuleIds);
 
-        $legacyCallable = function () use ($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds) {
-            return $this->updatePlanRuleLegacy($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds);
+        $legacyCallable = function ($rampPhase, $_) use ($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds, $orgId) {
+            return $this->updatePlanRuleLegacy($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds, $orgId, $rampPhase);
         };
 
         return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable, null, $isBuyPricingRule);
     }
 
     public function transformUpdatePlanRequest($input, $planId, $ruleId, $planAndRuleIds) {
-        $input[Entity::ID] = $planAndRuleIds['ruleIds'][0] ?? '';
+        $input['new_rule_id'] = $planAndRuleIds['ruleIds'][0] ?? '';
         $input[Entity::PLAN_ID] = $planId;
         $input['rule_id'] = $ruleId;
 
@@ -1053,7 +1153,7 @@ class Service extends Base\Service
         return $input;
     }
 
-    public function updatePlanRuleLegacy($planId, $ruleId, $input, $isBuyPricingRule = false, $planAndRuleIds = null)
+    public function updatePlanRuleLegacy($planId, $ruleId, $input, $isBuyPricingRule = false, $planAndRuleIds = null, $orgId = null, $rampPhase = '')
     {
         $newRuleIds = $planAndRuleIds['ruleIds'] ?? [];
         if (!empty($newRuleIds[0])) {
@@ -1065,7 +1165,7 @@ class Service extends Base\Service
             $this->repo->pricing->onlyBuyPricing();
         }
 
-        $rule = (new Pricing\Core)->editPlanRule($planId, $ruleId, $input);
+        $rule = (new Pricing\Core)->editPlanRule($planId, $ruleId, $input, $orgId, $rampPhase);
 
         return $rule->toArray();
     }
@@ -1150,6 +1250,8 @@ class Service extends Base\Service
 
         $wallets = Processor\Wallet::getWalletNetworkNamesMap();
 
+        $giftcards = Processor\GiftCard::getGiftCardNetworkNames();
+
         $emandateBanks = Gateway::getAvailableEmandateBanks();
 
         $emandateBankNamesMap = Bank\Name::getNames($emandateBanks);
@@ -1164,6 +1266,7 @@ class Service extends Base\Service
             'nach'      => array_flip(BuyPricing::$nachNetworksNames),
             'paylater'  => array_flip(BuyPricing::$paylaterNetworksNames),
             'cardless_emi' => array_flip(BuyPricing::$cardlessEmiNetworksNames),
+            'gift_cards' => array_flip($giftcards),
         ];
 
         return $networks;

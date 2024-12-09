@@ -240,7 +240,20 @@ return [
         'status_code' => 200
     ],
 
-
+    'testCreateKeyWithCountry' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/keys',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'key',
+                'expired_at' => null,
+            ]
+        ]
+    ],
     'testExpireKeysWhenKeyDoesNotExist' => [
         'request' => [
             'url'    => '/keys/expire',

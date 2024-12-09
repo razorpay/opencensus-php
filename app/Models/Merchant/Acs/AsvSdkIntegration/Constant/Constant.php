@@ -9,6 +9,17 @@ class Constant
     const GRPC_HOST = 'grpc_host';
     const USERNAME = 'username';
     const PASSWORD = 'password';
+
+    const DISABLE_READ_IN_WRITE_FLOW = 'disable_read_in_write_flow';
+
+    const STOP_ASV_ENTITY_WRITES_MERCHANT_EMAIL = 'stop_asv_entity_writes_merchant_email';
+    const STOP_ASV_ENTITY_WRITES_STAKEHOLDER = 'stop_asv_entity_writes_stakeholder';
+    const STOP_ASV_ENTITY_WRITES_MERCHANT_BUSINESS_DETAIL = 'stop_asv_entity_writes_merchant_business_detail';
+    const STOP_ASV_ENTITY_WRITES_MERCHANT_DOCUMENT = 'stop_asv_entity_writes_merchant_document';
+    const STOP_ASV_ENTITY_WRITES_MERCHANT_WEBSITE = 'stop_asv_entity_writes_merchant_website';
+    const STOP_ASV_ENTITY_WRITES_MERCHANT_ACCOUNT = 'stop_asv_entity_writes_merchant_account'; // Shared constant for MERCHANT and ACCOUNT
+    const STOP_ASV_ENTITY_WRITES_MERCHANT_DETAIL = 'stop_asv_entity_writes_merchant_detail';
+
     const ASV_V2_GRPC_KEEP_ALIVE_TIME_IN_MS = 'grpc_keep_alive_time_in_ms';
     const ASV_V2_GRPC_KEEP_ALIVE_TIMEOUT_IN_MS = 'grpc_keep_alive_timeout_in_ms';
     const ASV_V2_GRPC_KEEP_ALIVE_PERMIT_WITHOUT_CALLS = 'grpc_keep_alive_permit_without_calls';

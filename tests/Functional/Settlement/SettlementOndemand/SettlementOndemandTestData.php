@@ -827,16 +827,16 @@ return [
                 'items' => [
                     [
                         'name'            => 'settlement_ondemand',
-                        'amount'          => 50075,
+                        'amount'          => 60090,
                         'percentage'      => null,
                         'pricing_rule' => [
-                            'percent_rate' => 25,
+                            'percent_rate' => 30,
                             'fixed_rate'   => 0,
                         ],
                     ],
                     [
                         'name'            => 'tax',
-                        'amount'          => 9014,
+                        'amount'          => 10816,
                         'percentage'      => 1800,
                         'pricing_rule_id' => null,
                     ],
@@ -2454,6 +2454,52 @@ return [
                     ],
                 ],
             ]
+        ]
+    ],
+
+    'testOndemandBlockedFetchConfigFromCapitalEs' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/merchant/config',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'blocked' => true
+            ],
+        ],
+    ],
+
+    'testEnableEsOnDemandFullAccessFromBatchRouteFeatureConfigMigrated' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/feature',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'yes',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                ],
+            ],
         ]
     ],
 ];

@@ -125,6 +125,9 @@ class Core extends Base\Core
 
         return (strtolower($result) === 'on');
     }
+    public function fetchLedgerEntryById($id){
+        return $this->fetchExternalEntity($id);
+    }
 
     /**
      * This method is used to fetch journal from ledger service for the journal id

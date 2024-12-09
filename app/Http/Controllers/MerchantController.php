@@ -1335,6 +1335,27 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function preFundWithdraw()
+    {
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::WITHDRAW_PRE_FUNDS_REQUEST, [
+            'input' => $input
+        ]);
+
+        $ba = $this->app['basicauth'];
+        $merchantId = $ba->getMerchantId();
+
+        if (empty($merchantId)) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
+        }
+
+        $data = $this->service()->withdrawPreFundsForMerchant($merchantId, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getCreditsLog(Credits\Service $service, $id)
     {
         $data = $service->fetchCreditsLog($id);

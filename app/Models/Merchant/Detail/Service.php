@@ -14,6 +14,7 @@ use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\VerificationDetail as MVD;
 use RZP\Models\Merchant\Balance\Type as ProductType;
@@ -93,7 +94,6 @@ use RZP\Notifications\Dashboard\Events as DashboardEvents;
 use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
 use \RZP\Models\DeviceDetail\Attribution\Core as AttributionCore;
@@ -239,8 +239,8 @@ class Service extends Base\Service
             case DetailConstants::ONBOARDING_META:
                 $activationStatus = $this->merchant->merchantDetail->getActivationStatus();
                 $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchantId);
-                $workflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
-                $workflowDetails = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS);
+                $workflowType = $userDeviceDetail ? $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE) : null;
+                $workflowDetails = $userDeviceDetail ? $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS) : null;
                 $isDedupeMatched = $this->dedupeCore->isMerchantImpersonated($this->merchant);
                 $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($this->merchant);
                 $dedupe = [
@@ -323,11 +323,13 @@ class Service extends Base\Service
             $response[DetailConstants::LOCK_COMMON_FIELDS] = $this->core->fetchCommonFieldsToBeLocked($partnerActivation);
         }
 
-        if ( $this->pgosProxyController->isIndiaPgModularMerchant($this->merchant) === true )
-        {
-            $data = (new Merchant\Service())->getModularFieldsFromASV($merchantId);
+        $additionalDetails = (new Merchant\Service())->getAdditionalDetailsFromASV($merchantId);
 
-            $response["additional_onboarding_details"] = $data ? $data["pg_onboarding"] : null; ;
+        $response[DetailConstants::RISK_DETAILS] = $additionalDetails[DetailConstants::RISK_DETAILS] ?? null;
+
+        if ($this->pgosProxyController->isIndiaPgModularMerchant($this->merchant) === true)
+        {
+            $response[DetailConstants::ADDITIONAL_ONBOARDING_DETAILS] = $additionalDetails[DetailConstants::PG_ONBOARDING] ?? null;
         }
 
 
@@ -692,6 +694,9 @@ class Service extends Base\Service
 
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
+        // check if merchant is to be onboarded via PGOS
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
+
         // Check if POS details have been submitted and merchant details are set.
         // Additionally, skip the process if the merchant's signup campaign is 'assisted_onboarding'.
         if ($this->isPosDetailsSubmitted($isPosDetailsSubmitted) === true and  isset($merchantDetails) === true and
@@ -710,14 +715,15 @@ class Service extends Base\Service
 
             if ($posActivationFlow !== DetailConstants::POS_BLACKLIST) {
 
-                $this->core->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
+                $this->core->updatePosActivationStatusOfMerchant($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
 
                 $this->core()->pushKafkaEventOnPOSActivationFormSubmit($merchant, DEConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA);
             }
-        }
 
-        // check if merchant is to be onboarded via PGOS
-        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
+            // Marking $shouldMerchantOnboardViaPGOS = true for cases where non-PGOS API merchants are allowed to submit POS details or during the L3 submission step.
+            // By setting this flag to true, we ensure that the PGOS onboarding process is triggered and the correct response is constructed based on the OBS workflow ID.
+            $shouldMerchantOnboardViaPGOS = true;
+        }
 
         if ($shouldMerchantOnboardViaPGOS === true and $activationFormMilestone != DEConstants::L2_SUBMISSION)
         {
@@ -5356,6 +5362,16 @@ class Service extends Base\Service
                             // move the merchant to eligible activation_status
                             $input[Entity::ACTIVATION_STATUS] = $newActivationStatus;
 
+                            if ($newActivationStatus === Status::ACTIVATED or $newActivationStatus === Status::ACTIVATED_MCC_PENDING)
+                            {
+                                $this->trace->info(TraceCode::PREFILLING_ADMIN_WEBSITE_DETAILS, [
+                                    'merchant_id' => $merchantId,
+                                    'new_activation_status' => $newActivationStatus,
+                                ]);
+
+                                $this->core->prefillSystemUrlsInAdminWebisteDetails($merchant->merchantDetail);
+                            }
+
                         }
 
                     }
@@ -5397,6 +5413,23 @@ class Service extends Base\Service
                 return $this->core->deleteMerchantStoreInternal($merchantId, $input);
             case DetailConstants::SALES_ASSISTED_FORM_SUBMISSION:
                 return $this->core->submitSalesAssistedActivationForm($merchantId);
+            case Constants::CONFIRM_USER_ACTION:
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+                if (empty($this->app['basicauth']->getMerchant()) === true)
+                {
+                    $this->app['basicauth']->setMerchant($merchant);
+                }
+                $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
+                $user = $this->repo->user->getUserFromId($userDeviceDetail->getUserId());
+                return (new User\Core)->setContactMobileOrEmail($input, $user);
+            case DetailConstants::SAVE_MERCHANT_DETAILS_FOR_ACTIVATION:
+                unset($input["action"]);
+                $subMerchant = $this->repo->merchant->findOrFail($merchantId);
+                if (empty($this->app['basicauth']->getMerchant()) === true)
+                {
+                    $this->app['basicauth']->setMerchant($subMerchant);
+                }
+                return $this->saveMerchantDetailsForActivation($input);
             default:
                 $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
                 return $this->core->submitMerchantInternal($input, $merchantDetails);

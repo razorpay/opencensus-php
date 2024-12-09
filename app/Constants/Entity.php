@@ -807,6 +807,8 @@ class Entity
 
     const LINKED_ACCOUNT_REFERENCE_DATA = 'linked_account_reference_data';
 
+    const CREDIT = 'credit';
+
     const CYBER_CRIME_HELP_DESK         = 'cyber_crime_help_desk';
 
     const CORP_CARD = 'corp_card';
@@ -1076,12 +1078,27 @@ class Entity
         Entity::REFUND,
         Entity::NOTIFICATION,
         Entity::METHODS,
+        Entity::PARTNER_CONFIG,
+        Entity::MERCHANT_ACCESS_MAP,
+        Entity::MERCHANT_APPLICATION,
     ];
 
     const ARCHIVED_ENTITIES = [
         self::CARD,
         self::PAYMENT,
         self::ORDER,
+    ];
+
+    /**
+     * entities that are dual written between API and PGOS and is not owned by ASV
+     */
+    const DUAL_WRITE_ENTITIES = [
+        self::ACTION_STATE,
+        self::MERCHANT_VERIFICATION_DETAIL,
+        self::BVS_VALIDATION,
+        self::CLARIFICATION_DETAIL,
+        self::MERCHANT_CONSENT_DETAILS,
+        self::MERCHANT_CONSENTS,
     ];
 
     public static $namespace = [
@@ -1253,6 +1270,8 @@ class Entity
         self::MERCHANT_NOTIFICATION_CONFIG      => \RZP\Models\Merchant\MerchantNotificationConfig::class,
 
         self::LINKED_ACCOUNT_REFERENCE_DATA     => \RZP\Models\Merchant\LinkedAccountReferenceData::class,
+
+        self::CREDIT            => \RZP\Models\Merchant\Credits::class,
 
 
         // gateways

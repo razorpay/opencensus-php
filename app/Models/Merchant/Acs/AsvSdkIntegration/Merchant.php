@@ -11,6 +11,7 @@ use Rzp\Accounts\Merchant\V1 as MerchantV1;
 use Rzp\Accounts\Merchant\V1\FilterRequest;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use \RZP\Models\Merchant\Account\Entity as AccountEntity;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\Merchant as MerchantProtoMapper;
 use RZP\Trace\TraceCode;
 
@@ -528,6 +529,28 @@ class Merchant extends Base
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
         return $this->getMerchantCollectionFromResponse($response, $this->entity);
+    }
+
+    public function fetchFromAccountService($queryString, $binding) : Collection|PublicCollection
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryString($queryString);
+        $filterRequest->setBindings(
+            json_encode($binding)
+        );
+        $merchantArray = new PublicCollection();
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        foreach ($response->getJoins() as $join)
+        {
+            $merchantJson = json_decode($join->serializeToJsonString(), true);
+            $merchantEntity = new AccountEntity();
+            $merchantEntity->setRawAttributes($merchantJson, true);
+            $merchantEntity->exists = true;
+            $merchantArray[] = $merchantEntity;
+        }
+        return $merchantArray;
     }
 
 }

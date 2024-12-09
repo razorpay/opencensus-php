@@ -143,6 +143,21 @@ return [
         ]
     ],
 
+    'testTerminalValidationWithUPIAndCardChecks' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/IUXvshap3Hbzos/send_gifu_file',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'status'  => 'mocked',
+                'bucket'  => 'test'
+            ]
+        ]
+    ],
+
     'testGefuFileCreationWithoutPoolAccount' => [
         'request' => [
             'method'  => 'POST',

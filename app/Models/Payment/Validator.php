@@ -183,6 +183,7 @@ class Validator extends Base\Validator
         'split_amount'                                               => 'sometimes|integer',
         'device_id'                                                  => 'sometimes',
         'gst_qr'                                                     => 'sometimes',
+        'gift_cards'                                                 => 'sometimes_if:method,gift_cards|array'
     ];
 
     protected static $editAcquirerRules = [
@@ -607,6 +608,7 @@ class Validator extends Base\Validator
 
     protected static $updateB2BInvoiceDetailsRules = [
         'document_id'                       => 'required',
+        'merchant_id'                       => 'sometimes',
     ];
 
     protected static $updateMerchantDocumentDetailsRules = [

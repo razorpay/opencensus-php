@@ -46,6 +46,7 @@ use RZP\Services\PayoutService\BulkPayout;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\Payout\PayoutTest;
 use RZP\Models\Merchant\Balance\Type as Type;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -87,6 +88,7 @@ use RZP\Services\PayoutService\DashboardScheduleTimeSlots as PayoutServiceDashbo
 class PayoutServiceTest extends TestCase
 {
     use PayoutTrait;
+    use MocksSplitz;
     use TestsMetrics;
     use WorkflowTrait;
     use DbEntityFetchTrait;
@@ -1202,7 +1204,7 @@ class PayoutServiceTest extends TestCase
         return $response;
     }
 
-    public function mockPayoutServiceCreateBulkPayout($numberOfPayouts = 1, $fail = false, $emptyErrorBody = false, $request = [], $emptyNotes = false)
+    public function mockPayoutServiceCreateBulkPayout($numberOfPayouts = 1, $fail = false, $emptyErrorBody = false, $request = [], $emptyNotes = false, $isLiteBlocked = false)
     {
         $createBulkPayoutMock = Mockery::mock('RZP\Services\PayoutService\BulkPayout',
                                            [$this->app])->makePartial();
@@ -1262,7 +1264,7 @@ class PayoutServiceTest extends TestCase
                           // We are returning this response only as we don't have a use case of supporting
                           // response based on $request, if needed, that can also be added here using
                           // andReturnUsing method instead of andReturn
-                              $this->createBulkPayoutResponseForPayoutServiceMock($numberOfPayouts, $fail, $emptyErrorBody)
+                              $this->createBulkPayoutResponseForPayoutServiceMock($numberOfPayouts, $fail, $emptyErrorBody, $isLiteBlocked)
                           );
 
         $this->app->instance(BulkPayout::PAYOUT_SERVICE_BULK_PAYOUTS, $createBulkPayoutMock);
@@ -1280,7 +1282,7 @@ class PayoutServiceTest extends TestCase
         return $createBulkPayoutMock;
     }
 
-    public function createBulkPayoutResponseForPayoutServiceMock($numberOfPayouts, $fail, $emptyErrorBody)
+    public function createBulkPayoutResponseForPayoutServiceMock($numberOfPayouts, $fail, $emptyErrorBody, $isLiteBlocked)
     {
         $response = new \WpOrg\Requests\Response();
 
@@ -1305,6 +1307,34 @@ class PayoutServiceTest extends TestCase
                 $response->status_code = 400;
                 $response->success     = true;
             }
+        }
+        else if ($isLiteBlocked === true)
+        {
+            $response->body = json_encode(
+                [
+                    'entity'                            => 'collection',
+                    'count'                             => 2,
+                    'items'                             => [
+                        [
+                            'batch_id'        => 'C0zv9I46W4wiOq',
+                            'idempotency_key' => 'batch_abc12345',
+                            'error'           => [
+                                'description' => 'API payouts are not available for this account',
+                                'code'        => 'BAD_REQUEST_ERROR',
+                            ],
+                        ],
+                        [
+                            'batch_id'        => 'C0zv9I46W4wiOq',
+                            'idempotency_key' => 'batch_abc123456',
+                            'error'           => [
+                                'description' => 'API payouts are not available for this account',
+                                'code'        => 'BAD_REQUEST_ERROR',
+                            ],
+                        ],
+                    ]
+                ]);
+            $response->status_code = 200;
+            $response->success = true;
         }
         else if ($numberOfPayouts == 1)
         {
@@ -8676,7 +8706,6 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_CurrentAccountPayoutViaPayoutService_InvalidAccountNumber()
     {
-
         $this->setMockRazorxTreatment(
             [
                 RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
@@ -8709,6 +8738,68 @@ class PayoutServiceTest extends TestCase
         $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
 
         $this->mockPayoutServiceCreateBulkPayout(2);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id'    => '10000000000000',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testBulkPayoutForLiteBlocked_CAViaPS_LiteViaAPI()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures([
+            Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS,
+            Feature\Constants::PAYOUTS_BLOCKED_ON_LITE
+        ]);
+
+        $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type'   => 'direct',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'channel'        => Channel::ICICI,
+                'account_number' => 2224440041626907,
+            ]
+        );
+
+        $this->setMockRazorxTreatment([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on']);
+
+        $this->mockPayoutServiceCreateBulkPayout(1);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id'    => '10000000000000',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testBulkPayoutForLiteBlocked_CAViaAPI_LiteViaPS()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+
+        $this->fixtures->on('live')->merchant->addFeatures([
+            Feature\Constants::PAYOUTS_BLOCKED_ON_LITE,
+        ]);
+
+        $this->mockPayoutServiceCreateBulkPayout(2, false, false, [], false, true);
 
         $this->ba->batchAuth('rzp_live_10000000000000');
 
@@ -11931,5 +12022,51 @@ class PayoutServiceTest extends TestCase
                              $payoutServiceBankingAccountStatementClient);
 
         $this->startTest();
+    }
+
+    public function testCreateInternalPayoutViaMicroServiceBeneficiaryHashGenerationSuccess()
+    {
+        $testData = $this->testData['testCreateInternalPayoutViaMicroService'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true, $assertionBody);
+
+        $splitzResp = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.generate_bene_hash_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.payout_properties_event_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $payout = $this->testCreatePayoutServiceFtaCreation();
+
+        $this->mockRazorxDefault();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = '10000000000000';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+
+        $this->assertFalse(isset($assertionBody['va_to_va_info']));
     }
 }

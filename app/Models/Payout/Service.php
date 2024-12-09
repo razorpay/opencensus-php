@@ -78,6 +78,7 @@ use RZP\Models\PayoutsStatusDetails\StatusReasonMap;
 use RZP\Models\PayoutSource\Core as PayoutSourceCore;
 use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Models\BankTransfer\Core as BankTransferCore;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
@@ -678,6 +679,8 @@ class Service extends Base\Service
             }
         }
 
+        $this->core->trackPayoutPropertiesEvent($payout);
+
         $responseTime = microtime(true);
 
         $this->trace->info(
@@ -818,6 +821,7 @@ class Service extends Base\Service
         {
             $payout = $this->postCreationProcessingForCompositePayout($payout);
         }
+        $this->core->trackPayoutPropertiesEvent($payout);
 
         $responseTime = microtime(true);
 
@@ -1673,6 +1677,8 @@ class Service extends Base\Service
 
             $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
 
+            $this->core->trackPayoutPropertiesEvent($payout);
+
             if ($payout->getIsPayoutService() === true)
             {
                 return $payout->payoutServiceResponse;
@@ -1707,6 +1713,8 @@ class Service extends Base\Service
         }
 
         $payout = $this->core->createPayoutAndTriggerIciciOtp($input, $this->merchant, $balance);
+
+        $this->core->trackPayoutPropertiesEvent($payout);
 
         return $payout->toArrayPublic();
     }
@@ -2481,7 +2489,6 @@ class Service extends Base\Service
         {
             $merchantID = $this->merchant->getId();
 
-
             // Bulk Payout Creation for Current Account Merchant onboarded on Payout Service
             $variant = $this->app->razorx->getTreatment(
                 $merchantID,
@@ -2491,7 +2498,6 @@ class Service extends Base\Service
             if (strtolower($variant) === 'on')
             {
                 return $this->handleBulkCreationForPayoutServiceEnabledCurrentAccountMerchant($input, $merchantID);
-
             }
 
             $variant = $this->app->razorx->getTreatment(
@@ -2973,6 +2979,8 @@ class Service extends Base\Service
         (new BulkIdempotencyKeyCore())->upsertBulkIdempotencyKeyIntoPayoutServiceDB($idempotencyKey, $this->merchant->getId(), $payout->getId(), Entity::PAYOUT);
 
         $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
+
+        $this->core->trackPayoutPropertiesEvent($payout);
 
         $payoutBatch->push($payoutArr);
     }
@@ -4890,6 +4898,8 @@ class Service extends Base\Service
             $payout = $this->handleExceptionAndFindEntity($exception, 'payout', $payoutMetadata);
         }
 
+        $this->core->trackPayoutPropertiesEvent($payout);
+
         $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
             'step'              => 'composite_payout_creation',
             'time_taken'        => (microtime(true) - $startTime) * 1000,
@@ -5028,6 +5038,25 @@ class Service extends Base\Service
         return $this->core->updatePayoutEntry($payoutId, $input);
     }
 
+    protected function checkIfPayoutsBlockedOnLite(Merchant\Balance\Entity $balance = null)
+    {
+        if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_BLOCKED_ON_LITE) === true)
+        {
+            $this->trace->error(TraceCode::PAYOUTS_BLOCKED_ON_LITE,
+                [
+                    'balance_id'  => $balance->getId(),
+                    'merchant_id' => $balance->getMerchantId()
+                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'API payouts are not available for this account'
+            );
+        }
+    }
+
     protected function checkIfPayoutIsAllowed(bool $isCompositePayout, array $input, bool $internal = false, Merchant\Balance\Entity $balance = null)
     {
         $payoutMode = $input[Payout\Entity::MODE] ?? null;
@@ -5036,6 +5065,8 @@ class Service extends Base\Service
         {
             $balance = $this->repo->balance->findByPublicIdAndMerchant($input[Payout\Entity::BALANCE_ID], $this->merchant);
         }
+
+        $this->checkIfPayoutsBlockedOnLite($balance);
 
         $this->checkIfDirectAccountIsActive($balance);
 
@@ -6735,5 +6766,218 @@ class Service extends Base\Service
         }
 
         return array($psInput, $apiInput);
+    }
+
+    /**
+     * @throws Throwable
+     * @throws BadRequestException
+     */
+    public function payoutManualActions($input): array
+    {
+        (new Validator)->validatePayoutsManualActionRequest($input);
+
+        $action = $input['action'];
+        $bulk_input = $input['bulk_input'];
+        $reason = $input['reason'];
+
+        // Log the incoming request
+        $this->trace->info(TraceCode::PAYOUT_MANUAL_ACTION_REQUEST, [
+            'action' => $action,
+            'bulk_input' => $bulk_input,
+            'reason' => $reason,
+        ]);
+
+        $successCount = 0;
+        $failureCount = 0;
+        $exceptions = [];
+        $successResponse = [];
+
+        try {
+
+            // Define the action handling logic
+            $processFunction = function($callback, $dataArray) use (&$successCount, &$failureCount, &$exceptions) {
+
+                foreach ($dataArray as $data) {
+
+                    try {
+                        $callback($data);
+
+                        $successCount++;
+
+                    } catch (\Throwable $ex) {
+
+                        $failureCount++;
+
+                        $exceptions[] = [
+                            'input' => $data,
+                            'exception' => $ex->getMessage()
+                        ];
+                    }
+                }
+            };
+
+            switch ($action) {
+
+                case 'dual_write':
+
+                    $payoutIds = $bulk_input['payout_ids'];
+
+                    $processFunction(function($payoutId) {
+                        $this->core->processDualWrite([
+                            'payout_id' => $payoutId,
+                            'timestamp' => Carbon::now()->getTimestamp()
+                        ]);
+
+                    }, $payoutIds);
+
+                    break;
+
+                case 'processed_to_processing':
+
+                    $processFunction(function($payoutData) {
+                        $this->core->manualProcessedToProcessing($payoutData);
+                    }, $bulk_input);
+
+                    break;
+
+                case 'approve_workflow_payouts':
+
+                    $payoutIds = $bulk_input['payout_ids'];
+
+                    $processFunction(function($payoutIds) {
+                        $this->approveRejectWorkflowPayouts($payoutIds, 'approve');
+                    }, $payoutIds);
+
+                    break;
+
+                case 'reject_workflow_payouts':
+
+                    $payoutIds = $bulk_input['payout_ids'];
+
+                    $processFunction(function($payoutIds) {
+                        $this->approveRejectWorkflowPayouts($payoutIds,'reject');
+                    },$payoutIds);
+
+                    break;
+
+                case 'process_bank_transfer':
+
+                    $processFunction(function($input){
+                        (new BankTransferCore())->manualProcessBankTransferEntity($input);
+                    },$bulk_input);
+
+                    break;
+
+                case 'generate_merchant_invoice':
+                    $processFunction(function($input) {
+                        (new Merchant\Invoice\Core())->queueCreateInvoiceEntities($input);
+                    }, $bulk_input);
+
+                    break;
+
+                case 'redis_get':
+                    $processFunction(function($input) use (&$successResponse) {
+                        $res = (new Admin\Service)->getConfigKey(['key' => $input['key']]);
+                        if($res)
+                            array_push($successResponse, $res);
+                    }, $bulk_input);
+                    break;
+
+                case 'redis_set':
+                    $processFunction(function($input) use (&$successResponse) {
+                        $res = (new Admin\Service)->setConfigKeys([$input['key'] => $input['value']]);
+                        if($res)
+                            array_push($successResponse, $res);
+                    }, $bulk_input);
+                    break;
+
+                default:
+                    return ['status' => 'error', 'message' => 'Invalid action provided'];
+
+            }
+
+            // Determine the status based on success and failure counts
+            $status = 'partially';
+            if ($successCount === 0) {
+
+                $status = 'failed';
+
+            } elseif ($failureCount === 0) {
+
+                $status = 'success';
+
+            }
+
+            $response = [
+                'status' => $status,
+                'success_count' => $successCount,
+                'failure_count' => $failureCount,
+                'exceptions' => $exceptions,
+                'success_response' => $successResponse,
+            ];
+
+            $this->trace->info(TraceCode::PAYOUT_MANUAL_ACTION_SUCCESS, [
+                'response' => $response,
+            ]);
+
+            return $response;
+
+        } catch (\Throwable $ex) {
+
+            $this->trace->error(TraceCode::PAYOUT_MANUAL_ACTION_FAILURE, [
+                'exception' => $ex->getMessage(),
+                'action' => $action,
+                'input' => $bulk_input
+            ]);
+            throw $ex;
+        }
+    }
+
+    public function approveRejectWorkflowPayouts($payoutIds, $action)
+    {
+        foreach ($payoutIds as $payoutId) {
+
+            $attributes = [];
+
+            $payoutDetails = $this->repo->payouts_details->find($payoutId);
+
+            $queueIfBalanceLow = $payoutDetails->getQueueIfLowBalanceFlag();
+
+            if (!empty($queueIfBalanceLow)) {
+
+                $attributes[Payout\Entity::QUEUE_IF_LOW_BALANCE] = $queueIfBalanceLow;
+            }
+
+            if ($action === 'approve') {
+
+                $this->processActionOnFundAccountPayoutInternal($payoutId, true, $attributes);
+
+            } elseif ($action === 'reject') {
+
+                $this->processActionOnFundAccountPayoutInternal($payoutId, false, $attributes);
+
+            } else {
+
+                $this->trace->warning(
+                    TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_FAILURE,
+                    [
+                        'payout_id' => $payoutId,
+                        'action' => $action,
+                        'message' => 'Invalid action provided'
+                    ]
+                );
+
+                return;
+            }
+
+            $this->trace->info(
+                TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_SUCCESS,
+                [
+                    'payoutId' => $payoutId,
+                    'action' => $action
+                ]
+            );
+
+        }
     }
 }

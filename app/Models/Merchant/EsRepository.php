@@ -299,6 +299,14 @@ class EsRepository extends Base\EsRepository
 
                 break;
 
+            case AccountStatus::PENDING_EDD_PENDING:
+
+                $this->addMust($query, $this->getTermQuery($activationStatusAttr, DetailStatus::EDD_PENDING));
+
+                $this->sortBySubmittedAtAsc = true;
+
+                break;
+
             case AccountStatus::PENDING_NEEDS_CLARIFICATION:
 
                 $this->addMust($query, $this->getNeedsClarificationAndUnarchivedQuery());

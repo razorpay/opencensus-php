@@ -105,6 +105,7 @@ class Constants
     public static $defaultPaymentMethodsPartnerTypes = [
         Merchant\Constants::AGGREGATOR,
         Merchant\Constants::FULLY_MANAGED,
+        Merchant\Constants::PURE_PLATFORM
     ];
 
 

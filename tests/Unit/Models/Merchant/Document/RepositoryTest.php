@@ -133,6 +133,44 @@ class RepositoryTest extends RepositoryTestHelper
         ]
     ];
 
+    public function testMerchantDocumentSaveOrFailReadMigration()
+    {
+        $attributes = [
+            "source" => "UFH",
+            "merchant_id" => "D2fahy3beSAu0S",
+            "document_type" => "memorandum_of_association",
+            "entity_type" => "merchant",
+        ];
+
+        $this->validateSaveOrFailReadMigration("merchant_document", $attributes, new Repository());
+    }
+
+    public function testMerchantDocumentSaveOrFailMigration()
+    {
+        $entity = $this->fixtures->create("merchant_document");
+
+        $attributes = [
+            "source" => "UFH",
+            "merchant_id" => "D2fahy3beSAu0S",
+            "document_type" => "memorandum_of_association",
+            "entity_type" => "merchant",
+        ];
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_document', false);
+
+        $this->validateSaveOrFailMigration("merchant_document", $attributes, new Repository(), $entity, true);
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_document', true);
+
+        $attributes = [
+            "merchant_id" => "D2fahy3beSAu01",
+            "document_type" => "memorandum_of_association1",
+            "entity_type" => "merchant1",
+        ];
+
+        $this->validateSaveOrFailMigration("merchant_document", $attributes, new Repository(), $entity, false);
+    }
+
     public function testFindDocumentByMerchantIdAndType()
     {
         // Set splitz experiment

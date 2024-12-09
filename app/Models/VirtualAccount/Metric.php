@@ -19,6 +19,7 @@ class Metric extends Base\Core
     const SMART_COLLECT_TERMINAL_CACHING_HIT       = 'smart_collect_terminal_caching_hit';
     const SMART_COLLECT_TERMINAL_CACHING_MISS      = 'smart_collect_terminal_caching_miss';
     const SMART_COLLECT_TERMINAL_CACHING_EXCEPTION = 'smart_collect_terminal_caching_exception';
+    const VIRTUAL_ACCOUNT_UPI_PAYMENT_PROCESSING_TIME  = 'virtual_account_upi_payment_processing_time';
 
     const LABEL_TRACE_CODE                  = 'code';
     const LABEL_HAS_BANK_ACCOUNT            = 'has_bank_account';
@@ -30,9 +31,13 @@ class Metric extends Base\Core
     const LABEL_GATEWAY_REQUEST_COMPLETED_AT    = 'callback_request_completed_at';
     const LABEL_GATEWAY                         = 'gateway';
     const LABEL_ERROR_MESSAGE                   = 'error_message';
+    const LABEL_COLLECTX_BANK_TRANSFER          = 'collectx_bank_transfer';
 
     const LABEL_MODE                            = 'mode';
     const LABEL_ROUTE_NAME                      = 'route_name';
+
+    const VIRTUAL_ACCOUNT_CREDITED_EVENT_DISPATCH_TIME = 'virtual_account_credited_event_dispatch_time';
+    const VIRTUAL_ACCOUNT_CREATED_EVENT_DISPATCH_TIME  = 'virtual_account_created_event_dispatch_time';
 
     protected function getDefaultDimensions(array $input): array
     {
@@ -117,14 +122,16 @@ class Metric extends Base\Core
     }
 
     public function pushPaymentMetrics(string $method, bool $isExpected = null, bool $success = false,
-                                       string $gateway = null, string $error = null, array $extraDimensions = [])
+                                       string $gateway = null, string $error = null, array $extraDimensions = [],
+                                       $isCollectXBankTransfer = false)
     {
         $dimensions = [
-            'method'            => $method,
-            'expected'          => $isExpected,
-            'successful'        => $success,
-            'gateway'           => $gateway,
-            'error'             => $error,
+            'method'                    => $method,
+            'expected'                  => $isExpected,
+            'successful'                => $success,
+            'gateway'                   => $gateway,
+            'error'                     => $error,
+            'isCollectXBankTransfer'    => $isCollectXBankTransfer,
         ];
 
         $dimensions = array_merge($dimensions, $extraDimensions);
@@ -145,12 +152,13 @@ class Metric extends Base\Core
         );
     }
 
-    public function pushSqsPushMetrics(string $method, string $gateway, bool $isPushedToQueue)
+    public function pushSqsPushMetrics(string $method, string $gateway, bool $isPushedToQueue, $isCollectXBankTransfer = false)
     {
         $dimensions = [
-            'method'          => $method,
-            'isPushedToQueue' => $isPushedToQueue,
-            'gateway'         => $gateway,
+            'method'                 => $method,
+            'isPushedToQueue'        => $isPushedToQueue,
+            'gateway'                => $gateway,
+            'isCollectXBankTransfer' => $isCollectXBankTransfer,
         ];
 
         $this->trace->count(
@@ -159,13 +167,14 @@ class Metric extends Base\Core
         );
     }
 
-    public function pushQueueTimeMetrics(int $created_at, int $completed_at, string $gateway, string $errorMessage = null)
+    public function pushQueueTimeMetrics(int $created_at, int $completed_at, string $gateway, string $errorMessage = null, $isCollectXBankTransfer = false)
     {
         $dimensions = [
             Metric::LABEL_GATEWAY_REQUEST_CREATED_AT      => $created_at,
             Metric::LABEL_GATEWAY_REQUEST_COMPLETED_AT    => $completed_at,
             Metric::LABEL_GATEWAY                         => $gateway,
             Metric::LABEL_ERROR_MESSAGE                   => $errorMessage,
+            Metric::LABEL_COLLECTX_BANK_TRANSFER          => $isCollectXBankTransfer
         ];
 
         $this->trace->histogram(

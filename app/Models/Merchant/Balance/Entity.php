@@ -316,6 +316,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function setType(string $type)
+    {
+        return $this->setAttribute(self::TYPE, $type);
+    }
     public function getErrorInfo()
     {
         return $this->getAttribute(self::ERROR_INFO);

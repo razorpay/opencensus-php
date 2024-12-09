@@ -10,6 +10,7 @@ class PaylaterProvider
     const DEFAULT_PAYLATER_PROVIDERS = 0;
 
     const GETSIMPL = 'getsimpl';
+    const GETSIMPLOPTIMIZER = 'getsimpl_optimizer';
     const LAZYPAY = 'lazypay';
     const ICIC = 'icic';
     const HDFC = 'hdfc';
@@ -27,6 +28,7 @@ class PaylaterProvider
         self::AMAZONPAY,
         self::RZPXPOSTPAID,
         self::ATOME,
+        self::GETSIMPLOPTIMIZER
     ];
 
     public static $disabledInstruments = [

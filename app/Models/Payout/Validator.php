@@ -54,10 +54,10 @@ class Validator extends Base\Validator
     public $merchant;
 
 
-    // We are increasing this from 100 to 200. Slack thread for reference:
-    // https://razorpay.slack.com/archives/C013868TRK4/p1615796447155300?thread_ts=1615544530.147100&cid=C013868TRK4
-    // TODO: Finalize on some final number that we wish to support in the long run
-    const MAX_PURPOSES_ALLOWED = 200;
+    // We are increasing this from 200 to 400. Slack thread for reference:
+    // https://razorpay.slack.com/archives/C013868TRK4/p1733080607565809?thread_ts=1732256137.940409&cid=C013868TRK4
+    // TODO: Functionality for merchants to edit / delete existing purposes
+    const MAX_PURPOSES_ALLOWED = 400;
 
     const MAX_PURPOSES_ALLOWED_TO_XPAYROLL = 100;
 
@@ -166,7 +166,34 @@ class Validator extends Base\Validator
 
     const UPDATE_BALANCE_MANAGEMENT_CONFIG = 'update_balance_management_config';
 
+    const PAYOUTS_MANUAL_ACTION = 'payouts_manual_action';
+
+    const PAYOUTS_MANUAL_ACTIONS = [
+        'dual_write',
+        'processed_to_processing',
+        'approve_workflow_payouts',
+        'reject_workflow_payouts',
+        'process_bank_transfer',
+        'redis_get',
+        'redis_set',
+        'generate_merchant_invoice'
+    ];
+
+    const PAYOUTS_MANUAL_ACTION_DEFAULT_INPUT = 'payouts_manual_action_default_input';
+
+    const PROCESSED_TO_PROCESSING_PAYOUT_ACTION = 'processed_to_processing_payout_action';
+
     const PAYOUT_ATTACHMENT = 'payout_attachment';
+
+    const MANUAL_BANK_TRANSFER = 'manual_bank_transfer';
+
+    const REDIS_GET = 'redis_get';
+
+    const REDIS_SET = 'redis_set';
+
+    const GENERATE_MERCHANT_INVOICE = 'generate_merchant_invoice';
+
+    const MAX_COUNT_PAYOUTS_BULK_MANUAL_ACTION = 50;
 
     const ALLOWED_PAYOUT_ATTACHMENT_FILE_EXTENSIONS = [
         'jpg',
@@ -692,6 +719,40 @@ class Validator extends Base\Validator
 
     protected static $updateBalanceManagementConfigValidators = [
         'source_and_destination',
+    ];
+
+    protected static $payoutsManualActionRules = [
+        'action' => 'required|filled|string',
+        'bulk_input'  => 'required|array|max:' . self::MAX_COUNT_PAYOUTS_BULK_MANUAL_ACTION,
+        'reason'=> 'required|filled|string'
+    ];
+
+    protected static $payoutsManualActionDefaultInputRules = [
+        Entity::PAYOUT_IDS        => 'required|array|max:' . self::MAX_COUNT_PAYOUTS_BULK_MANUAL_ACTION,
+        Entity::PAYOUT_IDS . '.*' => 'required|string|size:14',
+    ];
+
+    protected static $processedToProcessingPayoutActionRules = [
+        'payout_id' => 'required|alpha_num|size:14',
+        'is_payout_service'=> 'required|filled|boolean',
+    ];
+    protected static  $manualBankTransferRules =[
+        'bank_transfer_id' => 'required|string'
+    ];
+
+    protected static $redisGetRules = [
+        'key' => 'required|string',
+    ];
+
+    protected static $redisSetRules = [
+        'key' => 'required|string',
+        'value' => 'required|array',
+    ];
+
+    protected static $generateMerchantInvoiceRules = [
+        'month' => 'required|integer',
+        'year' => 'required|integer',
+        'merchant_ids' => 'required|array',
     ];
 
     protected function validateSourceAndDestination($input)
@@ -2253,5 +2314,64 @@ class Validator extends Base\Validator
                 }
             }
         }
+    }
+
+    public function validatePayoutsManualActionRequest($payload)
+    {
+        $this->setStrictFalse()->validateInput(self::PAYOUTS_MANUAL_ACTION,$payload);
+
+        $action = $payload['action'];
+        $bulkInput  = $payload['bulk_input'];
+
+        if (!in_array(strtolower($action), self::PAYOUTS_MANUAL_ACTIONS)) {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid action received.",
+                null,
+                [
+                    'action' => $action
+                ]
+            );
+        }
+
+        switch ($action) {
+            case 'processed_to_processing':
+                foreach ($bulkInput as $input) {
+                    $this->setStrictFalse()->validateInput(self::PROCESSED_TO_PROCESSING_PAYOUT_ACTION,$input);
+                }
+                break;
+
+            case 'process_bank_transfer':
+
+                foreach ($bulkInput as $input) {
+
+                    $this->setStrictFalse()->validateInput(self::MANUAL_BANK_TRANSFER,$input);
+                }
+                break;
+
+            case 'redis_get':
+
+                foreach ($bulkInput as $input) {
+                    $this->setStrictFalse()->validateInput(self::REDIS_GET,$input);
+                }
+                break;
+
+            case 'redis_set':
+
+                foreach ($bulkInput as $input) {
+                    $this->setStrictFalse()->validateInput(self::REDIS_SET,$input);
+                }
+                break;
+
+            case 'generate_merchant_invoice':
+
+                foreach ($bulkInput as $input) {
+                    $this->setStrictFalse()->validateInput(self::GENERATE_MERCHANT_INVOICE,$input);
+                }
+                break;
+
+            default:
+                $this->setStrictFalse()->validateInput(self::PAYOUTS_MANUAL_ACTION_DEFAULT_INPUT,$bulkInput);
+        }
+
     }
 }

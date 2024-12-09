@@ -7,6 +7,7 @@ use Illuminate\Cache\CacheManager;
 use RZP;
 use Cache;
 use RZP\Http\Controllers\NeedsClarificationProxyController;
+use RZP\Models\Base\DualWriteEntitiesUsageMetricObserver;
 use RZP\Trace\TraceCode;
 use Swift_Mailer;
 use Buzz\Client\MultiCurl;
@@ -103,6 +104,8 @@ use RZP\Services\VendorPortal\Service as VendorPortalService;
 use RZP\Services\GenericAccountingIntegration\Service as AccountingIntegrationService;
 Use RZP\Models\Merchant\Acs\AsvClient\Constant as AsvConstant;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
+use RZP\Services\OptimizerCore\Service as OptimizerCoreService;
+use RZP\Services\OptimizerCore\Client as OptimizerCoreServiceClient;
 use RZP\Models\Merchant\OneClickCheckout\ShippingProvider\Service as ShippingProviderService;
 use RZP\Models\Merchant\OneClickCheckout\FulfillmentOrder\Service as FulfillmentOrderService;
 use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\Service as ShippingMethodProviderService;
@@ -193,6 +196,12 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
                     'because they provide getMerchantId()');
             }
             $entityClass::observe(Acs\SyncEventObserver::class);
+        }
+
+        foreach (E::DUAL_WRITE_ENTITIES as $entity)
+        {
+            $entityClass = E::getEntityClass($entity);
+            $entityClass::observe(DualWriteEntitiesUsageMetricObserver::class);
         }
     }
 
@@ -610,6 +619,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new DbRequestsBeforeMigrationMetric($app);
         });
 
+        $this->app->singleton(DualWriteEntitiesUsageMetric::class, function($app)
+        {
+            return new DualWriteEntitiesUsageMetric($app);
+        });
+
 
         $this->registerShield();
 
@@ -911,6 +925,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerTokens();
 
         $this->registerRouteService();
+
+        $this->registerOptimizerCoreService();
+
+        $this->registerOptimizerCoreServiceClient();
+
+        $this->registerCredcase();
+
+        $this->registerCredcaseService();
     }
 
     protected function registerCacheManager()
@@ -1007,7 +1029,9 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             AsvConstant::ASV_HTTP_CLIENT,
             'kafkaProducerClient',
             ASVV2Constant::ASV_SDK_CLIENT,
-            'offers_engine'
+            'offers_engine',
+            'credcase',
+            'credcaseService'
         ];
     }
 
@@ -2428,6 +2452,23 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
+    protected function registerOptimizerCoreService()
+    {
+        $this->app->singleton('optimizer_core_service', function($app)
+        {
+            return new OptimizerCoreService($app);
+        });
+    }
+
+    protected function registerOptimizerCoreServiceClient()
+    {
+        $this->app->singleton('optimizer_core_service_client', function($app)
+        {
+            return new OptimizerCoreServiceClient($app);
+        });
+    }
+
+
     /**
      * register ASV SDK Client
      *
@@ -2654,6 +2695,28 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             }
 
             return new SplitzService();
+        });
+    }
+
+    protected function registerCredcase()
+    {
+        $this->app->singleton('credcase', function ($app) {
+
+            $mock = $app['config']->get('applications.credcase.mock');
+
+            if ($mock === true)
+            {
+                return new RZP\Services\Mock\Credcase($app);
+            }
+
+            return new RZP\Models\Key\CredcaseApi($app);
+        });
+    }
+
+    protected function registerCredcaseService()
+    {
+        $this->app->singleton('credcaseService', function ($app) {
+            return new RZP\Models\Key\CredcaseService($app);
         });
     }
 

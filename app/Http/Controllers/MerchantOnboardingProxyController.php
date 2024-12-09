@@ -68,6 +68,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_CATEGORIES_ADMIN_V3              = 'fetch_merchant_categories_admin';
     const ACTIVATION_DOCUMENT_TYPES                 = 'activation_document_types';
     const UPLOAD_MERCHANT_DOCUMENT_BY_AGENT         = 'upload_merchant_document_by_agent';
+    const MERCHANT_DOCUMENT_DELETE_V2               = 'merchant_document_delete_v2';
+    const MERCHANT_DOCUMENT_UPLOAD_V2              = 'merchant_document_upload_v2';
     const MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE   = 'merchant_categories_v3_eligibility_save';
 
     const GET_CLEARBIT_DOMAIN_INFO       = 'get_clearbit_domain_info';
@@ -104,6 +106,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const PGOS_LIVE_MODE_EXPERIMENT_ID                  = 'app.pgos_live_mode_experiment_id';
     const EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID = 'app.easy_submerchant_pgos_live_mode_experiment_id';
     const PHANTOM_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID = 'app.pgos_phantom_live_mode_experiment_id';
+    CONST LINKED_ACCOUNT_MODULAR_ONBOARDING_ACTIVATE_EXPERIMENT_ID = "app.linked_account_modular_onboarding_activate_experiment_id";
 
     const ENABLE                         = 'enable';
     const LIVE                           = 'live';
@@ -136,6 +139,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const GET_APPLICABLE_ACTIVATION_STATUS       = 'get_applicable_activation_status';
     const FETCH_BRAND_DEALER_DETAILS             = 'fetch_brand_dealer_details';
     const UPDATE_BRAND_DEALER_DETAILS            = 'update_brand_dealer_details';
+    const INITIATE_POS_ONBOARDING                = 'initiate_pos_onboarding';
 
     const ONBOARDING_ROUTES = [self::ONBOARDING_GET, self::ONBOARDING_SAVE, self::ONBOARDING_CREATE_OR_FETCH, self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2];
 
@@ -281,6 +285,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_CATEGORIES_ADMIN_V3                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesAdminV3Map',
         self::ACTIVATION_DOCUMENT_TYPES                    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchAllDocumentsTypesList',
         self::UPLOAD_MERCHANT_DOCUMENT_BY_AGENT            => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/UploadMerchantDocumentByAgent',
+        self::MERCHANT_DOCUMENT_UPLOAD_V2                  => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDocumentUploadV2',
+        self::MERCHANT_DOCUMENT_DELETE_V2                  => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDocumentDeleteV2',
         self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantCategoriesV3EligibilitySave',
         self::SEND_SMS_OTP                                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendSMSOTP',
         self::VERIFY_OTP                                    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/VerifyOTP',
@@ -312,6 +318,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::FETCH_PGOS_MERCHANT_CONSENTS                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantConsents',
         self::FETCH_BRAND_DEALER_DETAILS                    => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchBrandDealerDetails',
         self::UPDATE_BRAND_DEALER_DETAILS                   => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdateBrandDealerDetails',
+        self::INITIATE_POS_ONBOARDING                       => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/InitiatePosOnboarding',
     ];
 
     // timeout in seconds
@@ -321,7 +328,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::FETCH_MERCHANT_DOCUMENT_DETAILS  => 15,
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK => 15,
         self::MERCHANT_ACTIVATION_SAVE                  => 15,
-        self::ONBOARDING_SAVE                           => 15,
+        // todo: this is a temporary solution to increase the API timeout.
+        // context: OnboardingSave is being used in Master KYC onboarding flows and PGOS
+        // will throw context canceled error in case of timeout. This has to be reverted
+        // once the latencies of the API is optimised.
+        self::ONBOARDING_SAVE                           => 50,
         self::ONBOARDING_GET                            => 15,
         self::MERCHANT_SIGN_UP                          => 20,
         self::SALES_ASSISTED_MERCHANT_SIGN_UP           => 20,
@@ -404,7 +415,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         $this->registerMerchantRoutes(self::MERCHANT_ROUTES);
 
-        $this->setDefaultTimeout(10);
+        $this->setDefaultTimeout(20);
 
         $this->registerAdminRoutes(self::ADMIN_ROUTES, self::ADMIN_ROUTES_VS_PERMISSION);
 

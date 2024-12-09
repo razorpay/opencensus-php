@@ -10,6 +10,8 @@ If you do not already have an account, you may click the following link to get s
 
     @if ($product === 'banking')
         <a href="{{ 'https://x.razorpay.com/auth?invitation=' .$token }}">{{ 'https://x.razorpay.com/auth?invitation=' .$token }}</a>
+    @elseif ($hostname === 'dashboard.razorpay.com')
+        <a href="{{  'https://accounts.razorpay.com/auth?invitation=' .$token }}">{{ 'https://accounts.razorpay.com/auth?invitation=' .$token }}</a>
     @else
         <a href="{{  'https://' .$hostname . '/#/access/signup?invitation=' .$token }}">{{ 'https://' .$hostname . '/#/access/signup?invitation=' .$token }}</a>
     @endif

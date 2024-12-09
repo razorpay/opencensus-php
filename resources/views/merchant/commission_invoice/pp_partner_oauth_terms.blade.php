@@ -8,7 +8,7 @@
             <h1 class="center">Pricing Plan</h1>
             <h4>The following transaction fees will be levied for your transactions initiated via partner platform you are onboarding</h4>
             <h5>Last updated on Oct 3, 2024</h5>
-            <p> We acknowledge and agree that the Razorpay Fees applicable for transactions initiated through OAuth shall be as provided hereinbelow:
+            <p> We acknowledge and agree that the Razorpay Fees applicable for transactions initiated through OAuth shall be as provided hereinbelow: </p>
          </div>
          <table style="border: 1px solid grey;">
             <thead>

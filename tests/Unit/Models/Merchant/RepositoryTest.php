@@ -3,10 +3,16 @@
 namespace Unit\Models\Merchant;
 
 use Config;
+use Database\Connection;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Mailgun\Exception;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\DbQueryException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\Validator;
 use RZP\Models\Merchant\Request\Entity as MEREQEntity;
 use RZP\Tests\Functional;
 use Razorpay\Asv\Error\GrpcError;
@@ -18,8 +24,13 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Models\Adjustment\Entity as AdjustmentEntity;
 use RZP\Models\Transaction\Entity as TransactionEntity;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
 use function PHPUnit\Framework\assertNotEquals;
+use RZP\Models\Terminal\Repository as terminalRepository;
+use RZP\Models\Admin\Admin\Repository as adminRepository;
+
 use const Grpc\STATUS_DEADLINE_EXCEEDED;
 
 class RepositoryTest extends RepositoryTestHelper
@@ -584,6 +595,227 @@ class RepositoryTest extends RepositoryTestHelper
         $this->assertEquals(new PublicCollection(), $results);
     }
 
+    public function testFetchFromAsvOperation()
+    {
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
+        $id1 = PublicEntity::generateUniqueId();
+        $id2 = PublicEntity::generateUniqueId();
+        $id3 = PublicEntity::generateUniqueId();
+        $this->fixtures->create('merchant', ['id' => $id3, 'email' => 'test1@gmail.com', "account_code" => 123]);
+        $this->fixtures->create('merchant', ['id' => $id1, 'email' => 'test1@gmail.com', "parent_id" => $id1, "account_code" => "123"]);
+        $this->fixtures->create('merchant', ['id' => $id2, 'email' => 'test2@gmail.com', "parent_id" => $id1]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+        $this->fixtures->create('merchant', ['id' => PublicEntity::generateUniqueId(), ]);
+
+        // listLinkedAccounts usecase
+        $input1 = [
+            "count" => 10,
+            "skip" => 0,
+            "email" => "test1@gmail.com",
+            "parent_id" => $id1,
+            "id" => $id2,
+            "account_code" => "123",
+        ];
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();;
+        $resultWithoutSplitz1 = $repository->fetchFromAsv($input1);
+        $repository->resetConnectionOnModels($resultWithoutSplitz1);
+
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $input1, $repository) {
+            $resultWithSplitz1 = $repository->fetchFromAsv($input1);
+            $this->assertPublicCollectionsEqualIgnoringUpdatedAt($resultWithoutSplitz1, $resultWithSplitz1);
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+
+        // fetchMultiple usecase
+        $input2 = [
+            "count" => 10,
+            "skip" => 0,
+            "account_code" => "123",
+        ];
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();;
+        $resultWithoutSplitz1 = $repository->fetchFromAsv($input2, $id1);
+        $repository->resetConnectionOnModels($resultWithoutSplitz1);
+
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $input2, $id1, $repository) {
+            $resultWithSplitz1 = $repository->fetchFromAsv($input2, $id1);
+            $this->assertPublicCollectionsEqualIgnoringUpdatedAt($resultWithoutSplitz1, $resultWithSplitz1);
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+
+        // fetchLinkedAccountsForMerchant usecase
+        $input3 = [
+            "count" => 10,
+            "skip" => 0,
+            "parent_id" => $id1,
+        ];
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();;
+        $resultWithoutSplitz1 = $repository->fetchFromAsv($input3);
+        $repository->resetConnectionOnModels($resultWithoutSplitz1);
+
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $input3, $id1, $repository) {
+            $resultWithSplitz1 = $repository->fetchFromAsv($input3);
+            $this->assertPublicCollectionsEqualIgnoringUpdatedAt($resultWithoutSplitz1, $resultWithSplitz1);
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+
+        //with no count
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();;
+        $resultWithoutSplitz1 = $repository->fetchFromAsv([]);
+        $repository->resetConnectionOnModels($resultWithoutSplitz1);
+        $this->assertEquals(sizeof($resultWithoutSplitz1), 10);
+
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $repository) {
+            $resultWithSplitz1 = $repository->fetchFromAsv([]);
+            $this->assertEquals(sizeof($resultWithoutSplitz1), 10);
+            $this->assertPublicCollectionsEqualIgnoringUpdatedAt($resultWithoutSplitz1, $resultWithSplitz1);
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+
+        // fetch from ES
+        $input5 = [
+            "q" => $id1,
+            "search_hits" => 1,
+        ];
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();;
+        $resultWithoutSplitz1 = $repository->fetchFromAsv($input5);
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $input5, $id1, $repository) {
+            $resultWithSplitz1 = $repository->fetchFromAsv($input5);
+            $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1);
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+    }
+
+    public function testMerchantsRelation()
+    {
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
+        $id1 = PublicEntity::generateUniqueId();
+        $id2 = PublicEntity::generateUniqueId();
+        $id3 = PublicEntity::generateUniqueId();
+        $this->fixtures->create('merchant', ['id' => $id1, 'email' => 'test1@gmail.com', "parent_id" => $id1, "account_code" => "123"]);
+        $this->fixtures->create('merchant', ['id' => $id2, 'email' => 'test2@gmail.com', "parent_id" => $id1]);
+        $this->fixtures->create('terminal', ['id' => $id3, 'merchant_id' => $id1]);
+
+        $termainalRepository = new terminalRepository();
+        $terminal = $termainalRepository->find($id3);
+
+        $repository = new Repository();
+        $merchant1 = $repository->find($id1);
+        $merchant2 = $repository->find($id2);
+        $terminal->merchants()->attach($merchant1);
+        $terminal->merchants()->attach($merchant2);
+
+        //compare response
+        $resultWithoutSplitz1 = $terminal->merchants;
+        $this->setSplitzWithOutput("true", 1);
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $terminal) {
+            $resultWithSplitz1 = $terminal->merchants;
+            $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1);
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+
+        //compare functionality
+        $fetchWithAssociation = $terminal->merchants()->get();
+        $this->assertEquals($resultWithoutSplitz1, $fetchWithAssociation);
+
+        $adminToCreateToVerify = [
+            'id' => $id3,
+            'org_id'             => Org::RZP_ORG,
+            'email'              => 'test@email.com',
+            'oauth_access_token' => 'test oauth token',
+            'oauth_provider_id'  => 'test oauth provider id',
+        ];
+
+        $this->fixtures->create('admin', $adminToCreateToVerify);
+        $adminRepository = new adminRepository();
+        $admin = $adminRepository->find($id3);
+        $admin->merchants()->attach($merchant1);
+        $admin->merchants()->attach($merchant2);
+
+        $this->setSplitzWithOutput("false", 1);
+        $resultWithoutSplitz1 = $admin->merchants;
+        $this->setSplitzWithOutput("true", 1);
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $admin) {
+            $resultWithSplitz1 = $admin->merchants;
+            $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1);
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+
+        //compare functionality
+        $fetchAdminWithAssociation = $admin->merchants()->get();
+        $this->assertEquals($resultWithoutSplitz1, $fetchAdminWithAssociation);
+
+    }
+
+    public function assertPublicCollectionsEqualIgnoringUpdatedAt($expectedCollection, $actualCollection)
+    {
+        $expectedWithoutUpdatedAt = $expectedCollection->map(function ($item) {
+            return collect($item)->except(['created_at', 'updated_at'])->toArray();
+        });
+
+        $actualWithoutUpdatedAt = $actualCollection->map(function ($item) {
+            return collect($item)->except(['created_at', 'updated_at'])->toArray();
+        });
+
+        $this->assertEquals($expectedWithoutUpdatedAt->toArray(), $actualWithoutUpdatedAt->toArray(), "response with and without splitz are not same");
+    }
+
+    public function testCheckMerchantsCountWithPricingPlanIdNotEqualOne()
+    {
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
+        $id1 = PublicEntity::generateUniqueId();
+        $id2 = PublicEntity::generateUniqueId();
+        $id3 = PublicEntity::generateUniqueId();
+        $this->fixtures->create('merchant', ['id' => $id3, 'pricing_plan_id' => $id3]);
+        $this->fixtures->create('merchant', ['id' => $id1, 'pricing_plan_id' => $id1]);
+        $this->fixtures->create('merchant', ['id' => $id2, 'pricing_plan_id' => $id1]);
+
+        //merchant with 1 pricing plan
+        $repository = new Repository();
+        $resultWithoutSplitz1 = $repository->checkMerchantsCountWithPricingPlanIdNotEqualOne($id3);
+        $this->assertEquals(false, $resultWithoutSplitz1);
+
+        //merchant with more than one pricing plan
+        $repository = new Repository();
+        $resultWithoutSplitz1 = $repository->checkMerchantsCountWithPricingPlanIdNotEqualOne($id1);
+        $this->assertEquals(true, $resultWithoutSplitz1);
+
+        //merchant with 0 pricing plan
+        $repository = new Repository();
+        $resultWithoutSplitz1 = $repository->checkMerchantsCountWithPricingPlanIdNotEqualOne($id2);
+        $this->assertEquals(true, $resultWithoutSplitz1);
+    }
+
     public function testFindManyOnReadReplicaOperation()
     {
         Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
@@ -627,6 +859,160 @@ class RepositoryTest extends RepositoryTestHelper
         assertNotEquals(1234, $merchantEntity2->getUpdatedAt());
     }
 
+    public function testMerchantSaveOrFailReadMigration()
+    {
+        $attributes = [
+            "name" => "saveorfailreadmigration",
+            "email" => "saveorfailreadmigration@gmail.com",
+            "website" => "www.saveorfailreadmigration.com"
+        ];
+
+        $this->validateSaveOrFailReadMigration("merchant", $attributes, new Repository());
+    }
+
+    public function testMerchantSaveOrFailMigration()
+    {
+        $entity = $this->fixtures->create("merchant");
+
+        $attributes = [
+            "name" => "saveorfailreadmigration",
+            "email" => "saveorfailreadmigration@gmail.com",
+            "website" => "www.saveorfailreadmigration.com"
+        ];
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_account', false);
+        $this->validateSaveOrFailMigration("merchant", $attributes, new Repository(), $entity, true);
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_account', true);
+
+        $attributes = [
+            "name" => "saveorfailWriteFalsemigration",
+            "email" => "saveorfailfritefalsemigration@gmail.com",
+            "website" => "www.saveorfailWriteFalsemigration.com"
+        ];
+
+        $this->validateSaveOrFailMigration("merchant", $attributes, new Repository(), $entity, false);
+    }
+
+    public function testMerchantUniqueEmailValidation()
+    {
+        $id = PublicEntity::generateUniqueId();
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', $id);
+
+        $attributes = [
+            "email" => "saveorfailreadmigration@gmail.com",
+        ];
+
+        $entity = $this->fixtures->create("merchant", $attributes);
+
+        // with spltiz off
+        $this->setSplitzWithOutput("false", 1);
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('The email has already been taken.');
+        (new Validator())->validateInput('unique_email', $attributes);
+
+        // with spltiz on
+        $this->setSplitzWithOutput("true", 1);
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('The email has already been taken.');
+        (new Validator())->validateInput('unique_email', $attributes);
+
+
+        // should not cause failure
+        $attributes = [
+            "email" => "uniqueEmailForTestCase@gmail.com",
+        ];
+
+        // with spltiz off
+
+        try {
+            $this->setSplitzWithOutput("false", 1);
+            (new Validator())->validateInput('unique_email', $attributes);
+            $this->assertTrue(true);
+        } catch (\Exception $e){
+            $this->fail("this flow should not throw validation failure");
+        }
+
+        // with spltiz on
+        try {
+            $this->setSplitzWithOutput("true", 1);
+            (new Validator())->validateInput('unique_email', $attributes);
+            $this->assertTrue(true);
+        } catch (\Exception $e){
+            $this->fail("this flow should not throw validation failure");
+        }
+    }
+
+    public function testMerchantUniqueHandleValidation()
+    {
+        $id = PublicEntity::generateUniqueId();
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', $id);
+
+        $attributes = [
+            "handle" => "AFK"
+        ];
+
+        $this->fixtures->create("merchant", $attributes);
+
+        // with spltiz off
+        $this->setSplitzWithOutput("false", 1);
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('The handle has already been taken.');
+        (new Validator())->validateInput('edit_config', $attributes);
+
+        // with spltiz on
+        $this->setSplitzWithOutput("true", 1);
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage('The handle has already been taken.');
+        (new Validator())->validateInput('edit_config', $attributes);
+
+
+        // happy flow
+        $attributes = [
+            "handle" => "ZZZ"
+        ];
+        // with spltiz off
+        try {
+            $this->setSplitzWithOutput("false", 1);
+            (new Validator())->validateInput('edit_config', $attributes);
+            $this->assertTrue(true);
+        } catch (\Exception $e) {
+            $this->fail("this flow should not throw validation failure");
+        }
+
+        // with spltiz on
+        try {
+            $this->setSplitzWithOutput("true", 1);
+            (new Validator())->validateInput('edit_config', $attributes);
+            $this->assertTrue(true);
+        } catch (\Exception $e) {
+            $this->fail("this flow should not throw validation failure");
+        }
+
+    }
+
+    public function testMerchantUniqueIDValidation()
+    {
+        $id = PublicEntity::generateUniqueId();
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', $id);
+
+        $merchantId = PublicEntity::generateUniqueId();
+        $attributes = [
+            "id" => $merchantId,
+        ];
+
+        $this->fixtures->create("merchant", $attributes);
+
+
+        // we have removed the validation in create validation
+        (new Validator())->validateInput('create', $attributes);
+        $this->assertTrue(true);
+
+        // we have moved the validation at db level because id is primary key
+        $this->expectException(UniqueConstraintViolationException::class);
+        $this->fixtures->create("merchant", $attributes);
+    }
+
     public function testVerifyEagerLoadRelation()
     {
         $id = PublicEntity::generateUniqueId();
@@ -640,61 +1026,13 @@ class RepositoryTest extends RepositoryTestHelper
             'states',
             'states.rejectionReasons',
             'merchant',
-            'merchant.merchantDetail'
+            'merchant.merchantDetail',
+            'merchant.org',
+            'merchant.features'
         ];
 
 
-        $this->setSplitzWithOutput("false", 2);
-        $entityObj = new MEREQEntity();
-        $merchantRequestsWithSplitzOff = $entityObj->newQuery()
-            ->where(MEREQEntity::ID, $id)
-            ->with($relations)
-            ->get();
-
-        $this->setSplitzWithOutput("true", 2);
-        $entityObj = new MEREQEntity();
-        $merchantRequestsWithSplitzOn = $entityObj->newQuery()
-            ->where(MEREQEntity::ID, $id)
-            ->with($relations)
-            ->get();
-
-
-        $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
-
-        // relations with nesting level more than 2 should also not fail, in this case we will fallback to parent
-        // in this case merchant detail is null
-        $relations = [
-            'states',
-            'states.rejectionReasons',
-            'merchant',
-            'merchant.merchantDetail.merchant'
-        ];
-
-
-        $this->setSplitzWithOutput("false", 2);
-        $entityObj = new MEREQEntity();
-        $merchantRequestsWithSplitzOff = $entityObj->newQuery()
-            ->where(MEREQEntity::ID, $id)
-            ->with($relations)
-            ->get();
-
-        $this->setSplitzWithOutput("true", 3);
-        $entityObj = new MEREQEntity();
-        $merchantRequestsWithSplitzOn = $entityObj->newQuery()
-            ->where(MEREQEntity::ID, $id)
-            ->with($relations)
-            ->get();
-
-
-        $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
-
-
-        // relations with nesting level more than 2 should also not fail, in this case we will fallback to parent
-        // in this case merchant detail is not null
-        $this->fixtures->create('merchant_detail', ['merchant_id' => $id3]);
-
-
-        $this->setSplitzWithOutput("false", 3);
+        $this->setSplitzWithOutput("false", 4);
         $entityObj = new MEREQEntity();
         $merchantRequestsWithSplitzOff = $entityObj->newQuery()
             ->where(MEREQEntity::ID, $id)
@@ -710,6 +1048,83 @@ class RepositoryTest extends RepositoryTestHelper
 
 
         $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
+
+        // relations with nesting level more than 2 should also not fail, in this case we will fallback to parent
+        // in this case merchant detail is null
+        $relations = [
+            'states',
+            'states.rejectionReasons',
+            'merchant',
+            'merchant.org',
+            'merchant.features',
+            'merchant.merchantDetail.merchant',
+        ];
+
+
+        $this->setSplitzWithOutput("false", 4);
+        $entityObj = new MEREQEntity();
+        $merchantRequestsWithSplitzOff = $entityObj->newQuery()
+            ->where(MEREQEntity::ID, $id)
+            ->with($relations)
+            ->get();
+
+        $this->setSplitzWithOutput("true", 7);
+        $entityObj = new MEREQEntity();
+        $merchantRequestsWithSplitzOn = $entityObj->newQuery()
+            ->where(MEREQEntity::ID, $id)
+            ->with($relations)
+            ->get();
+
+
+        $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
+
+
+        // relations with nesting level more than 2 should also not fail, in this case we will fallback to parent
+        // in this case merchant detail is not null
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $id3]);
+
+
+        $this->setSplitzWithOutput("false", 5);
+        $entityObj = new MEREQEntity();
+        $merchantRequestsWithSplitzOff = $entityObj->newQuery()
+            ->where(MEREQEntity::ID, $id)
+            ->with($relations)
+            ->get();
+
+        $this->setSplitzWithOutput("true", 8);
+        $entityObj = new MEREQEntity();
+        $merchantRequestsWithSplitzOn = $entityObj->newQuery()
+            ->where(MEREQEntity::ID, $id)
+            ->with($relations)
+            ->get();
+
+
+        $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
+
+
+        $merchantRelations = [
+            'emails',
+        ];
+
+        $this->fixtures->create('merchant_email', ['merchant_id' => $id3]);
+        $this->fixtures->create('merchant_email', ['merchant_id' => $id3, 'type' => "support"]);
+
+        $this->setSplitzWithOutput("false");
+        $entityObj = new Entity();
+        $merchantRequestsWithSplitzOff = $entityObj->newQuery()
+            ->where(Entity::ID, $id3)
+            ->with($merchantRelations)
+            ->get();
+
+        $this->setSplitzWithOutput("true");
+        $entityObj = new Entity();
+        $merchantRequestsWithSplitzOn = $entityObj->newQuery()
+            ->where(Entity::ID, $id3)
+            ->with($merchantRelations)
+            ->get();
+
+        $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
+
     }
 
 

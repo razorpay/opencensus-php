@@ -171,7 +171,7 @@ trait Migrate
 
         $terminalSubmerchantsIds = array_map(function ($submerchant) {
             return $submerchant[Merchant\Entity::ID];
-        }, $terminal->merchants()->get([Terminal\Entity::ID])->toArray());
+        }, $terminal->merchants->toArray());
 
         sort($terminalSubmerchantsIds);
 

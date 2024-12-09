@@ -1128,6 +1128,17 @@ class CustomerTest extends TestCase
             'insured_entity_type' => 'payment',
             'status'              => 'insured',
             'claim_status'        => 'opened',
+            'claim_history'       => json_encode([
+                [
+                    "reason" => "invalid claim",
+                    "status" => "rejected",
+                    "timestamp" => 1730186085
+                ],
+                [
+                    "status" => "initiated",
+                    "timestamp" => 1730186080
+                ]
+            ])
         ]);
 
         $this->fixtures->create('insurance', [
@@ -1135,6 +1146,18 @@ class CustomerTest extends TestCase
             'insured_entity_type' => 'order',
             'status'              => 'created',
         ]);
+
+        $expectedClaimHistory = [
+            [
+                "status" => "initiated",
+                "timestamp" => 1730186080
+            ],
+            [
+                "reason" => "invalid claim",
+                "status" => "rejected",
+                "timestamp" => 1730186085
+            ]
+        ];
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -1157,6 +1180,10 @@ class CustomerTest extends TestCase
         $this->assertEquals('insured', $insuranceDetails[$payment1->getPublicId()]['status']);
 
         $this->assertEquals('opened', $insuranceDetails[$payment1->getPublicId()]['claim_status']);
+
+        $this->assertEquals($expectedClaimHistory[0], $insuranceDetails[$payment1->getPublicId()]['claim_history'][0]);
+
+        $this->assertEquals($expectedClaimHistory[1], $insuranceDetails[$payment1->getPublicId()]['claim_history'][1]);
 
         $this->assertEquals('created', $insuranceDetails[$payment2->getPublicId()]['status']);
 

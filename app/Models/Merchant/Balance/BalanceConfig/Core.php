@@ -22,8 +22,6 @@ class Core extends Base\Core
 
     const DEFAULT_PG_FLOWS                          = ['payment'];
 
-    const NEGATIVE_BALANCE_FEATURE                  = 'negative_balance';
-
     const NEGATIVE_BALANCE_FEATURE_DISPLAY_NAME     = 'Negative Balance Feature';
 
     const NEGATIVE_BALANCE_DOCUMENTATION             = [
@@ -221,14 +219,6 @@ class Core extends Base\Core
 
     private function sendNegativeBalanceFeatureEnabledMail(Merchant\Entity $merchant, Entity $balanceConfig)
     {
-        $response = $this->app->razorx->getTreatment($merchant->getId(), self::NEGATIVE_BALANCE_FEATURE,
-                                                      $this->mode);
-
-        if ($response !== 'on')
-        {
-            return;
-        }
-
         //If transaction flows does not contain 'refund' then show E-Mandate Negative Balance documentation.
         $flowDoc = array_key_exists('refund', $balanceConfig->getNegativeTransactionFlows()) === true ?
                     self::NEGATIVE_BALANCE_DOCUMENTATION['refund_route'] :

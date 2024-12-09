@@ -17,6 +17,9 @@ class Constants
     // Timeout related constants
     const TIMEOUTS           = 'timeouts';
     const OLIVE_SDK_TIMEOUT  = 'olive_sdk_timeout';
+    const SENTRY_CONFIG      = 'configs';
+    const UPI_TURBO_SENTRY_TXN_SAMPLING_RATE = 'sentry_txn_sampling_rate';
+
     const SUPPORTED_PAYER_ACCOUNT_TYPES = 'supported_payer_account_types';
 
     const ORDER_ID_NOT_BELONG_TO_CUSTOMER = 'order_id does not belong to the customer. Please check the order ID and try again.';
@@ -38,6 +41,10 @@ class Constants
 
     private static array $defaultTimeouts = [
         self::OLIVE_SDK_TIMEOUT => 30
+    ];
+
+    private static array $defaultSamplingRate = [
+        self::UPI_TURBO_SENTRY_TXN_SAMPLING_RATE => 0.005
     ];
 
     const METADATA     = 'metadata';
@@ -252,6 +259,11 @@ class Constants
     public static function getDefaultTimeoutsForSDK(): array
     {
         return self::$defaultTimeouts;
+    }
+
+    public static function getDefaultSamplingRate(): array
+    {
+        return self::$defaultSamplingRate;
     }
 
     public static function getSupportedPayerAccountTypes(): array

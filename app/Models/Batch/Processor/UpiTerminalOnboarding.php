@@ -52,6 +52,18 @@ class UpiTerminalOnboarding extends Base
             Terminal\Entity::DIRECT_PUSH_ON_UPI     => $directPush
         ];
 
+        if (empty($merchantType) === false and
+            strtolower($merchantType) === Terminal\Type::ONLINE)
+        {
+            $features[Terminal\Type::ONLINE] = '1';
+        }
+
+        if (empty($merchantType) === false and
+            strtolower($merchantType) === Terminal\Type::OFFLINE)
+        {
+            $features[Terminal\Type::OFFLINE] = '1';
+        }
+
         $otherInputs = [];
 
         if (($gateway === Payment\Gateway::UPI_ICICI) and

@@ -168,9 +168,17 @@ class Repository extends Base\Repository
      */
     public function saveOrFail($entity, array $options = [])
     {
-        // If contact has been modified mark verified as false
-        if ($entity->isDirty(Entity::CONTACT_MOBILE) === true)
+        // PGOS will be calling create user via internal auth for J&K bank customers whose phone are verified by the bank,
+        // hence we are accepting a parameter from request and setting it in db inorder to eliminate the isdirty check,
+        // we have used the below workaround of sending a flag in options param.
+        if (isset($options['is_internal_and_contact_verified']) && $options['is_internal_and_contact_verified'] === true)
         {
+            $entity->setContactMobileVerified(true);
+            unset($options['is_internal_and_contact_verified']);
+        }
+        else if ($entity->isDirty(Entity::CONTACT_MOBILE) === true)
+        {
+            // If contact has been modified mark verified as false
             $entity->setContactMobileVerified(false);
         }
 

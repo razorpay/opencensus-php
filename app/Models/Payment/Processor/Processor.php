@@ -3,12 +3,14 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Arr;
 use Request;
 
 use RZP\Error as RzpError;
 use RZP\Base\ConnectionType;
 use RZP\Constants\HashAlgo;
+use RZP\Gateway\Wallet\Razorpaywallet;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
@@ -375,16 +377,6 @@ class Processor
      * Razorx flag to indicate if open wallet Payment should go via PG Router and CPS or just via API service
      */
     const OPEN_WALLET_CARD_PAYMENTS_VIA_PGROUTER = 'open_wallet_card_payments_via_pg_router';
-
-    /**
-     * Razorx flag to indicate if  Payment links should go via PG Router and CPS or just via API service
-     */
-    const PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER = 'payment_links_card_payments_via_pg_router';
-
-    /**
-     * Razorx flag to indicate if PP/PB/PH card payment should go via PG Router and CPS or just via API service
-     */
-    const PL_CARD_PAYMENTS_VIA_PGROUTER = 'pl_card_payments_via_pg_router';
 
     /**
      * Razorx flag to indicate if a saved card token payment should go via PG Router and CPS or just via API service
@@ -909,6 +901,10 @@ class Processor
                     $input['currency'] == Currency\Currency::getCurrencyForCountry($iin->getCountry()))
             ){
                 $result = $this->evaluateSplitzExperimentforCrossBorderRearchMCCS2S($merchant);
+            } else if(in_array($library,$internationalSupportedLibraries,true)){
+                $result = $this->evaluateSplitzExperimentforCrossBorderRearchDCCMCCCheckoutJS($merchant);
+            } else if($library == Payment\Analytics\Metadata::S2S){
+                $result = $this->evaluateSplitzExperimentforCrossBorderRearchDCCMCCS2S($merchant);
             }
             $this->trace->info(TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_RESULT, [
                 'canRouteInternationalMCCPaymentsViaRearchFlow'      =>  $result,
@@ -925,6 +921,76 @@ class Processor
         }
 
         return ($result == true);
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderRearchDCCMCCCheckoutJS($merchant){
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_dcc_mcc_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderRearchDCCMCCS2S($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_s2s_dcc_mcc_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
     }
 
     private function evaluateSplitzExperimentforCrossBorderRearchMCCCheckoutJS($merchant){
@@ -1407,33 +1473,6 @@ class Processor
                     }
                 }
 
-                if (empty($order) === false and $order->getProductType() === ProductType::PAYMENT_LINK_V2)
-                {
-                    // Added the experiment back to stop PL traffic for MIDs on cards re-arch.
-                    // JIRA: https://razorpay.atlassian.net/browse/CARDREARCH-195
-                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-                    if ($result != 'on') {
-                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                            'reason' => "payment_link_v2",
-                            'merchant_id' => $merchant->getId(),
-                        ]);
-                        return false;
-                    }
-                }
-
-                if (empty($order) === false and ($order->getProductId() !== null
-                        and in_array($order->getProductType(), PaymentLink\Entity::paymentLinkEntityProductTypes())))
-                {
-
-                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::PL_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-                    if ($result != 'on') {
-                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                            'reason' => "pp_pb_ph",
-                            'merchant_id' => $merchant->getId(),
-                        ]);
-                        return false;
-                    }
-                }
                 //invoice rearch card payment
                 if (empty($order) === false and ($order->getProductId() !== null
                         and $order->getProductType() === ProductType::INVOICE))
@@ -3391,13 +3430,6 @@ class Processor
         if (empty($input[Payment\Entity::ORDER_ID]) === false)
         {
             $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($this->order->getId());
-
-            $variantForFeature = $this->app->razorx->getTreatment($this->order->getMerchantId(),
-                RazorxTreatment::STOP_SENDING_ORDER_DATA_FROM_API, $this->mode);
-
-            if (strtolower($variantForFeature) !== RazorxTreatment::RAZORX_VARIANT_ON) {
-                $input[Payment\Entity::ORDER] = $this->order;
-            }
         }
 
         if (empty($input[Payment\Entity::CUSTOMER_ID]) === true)
@@ -3559,7 +3591,8 @@ class Processor
         }
 
         $isPluginFlowPayment = isset($input['_']) === true &&
-            isset($input['_']['integration']) === true
+            isset($input['_']['integration']) === true &&
+            ($input['_']['integration'] !== 'shopify')
             && Payment\Analytics\Metadata::isValidIntegration($input['_']['integration']);
 
         $isInvoicePayment = isset($this->order) === true && $this->order->getProductType() === ProductType::INVOICE;
@@ -3735,6 +3768,8 @@ class Processor
 
             $this->validateAndDecryptEncryptedCardInput($input);
 
+            $gcReference = $this->validateGiftCardAndGetGCReference($input);
+
             $isSplitPaymentRequest = $this->validateSplitPayment($input);
 
             // adding this here instead of inside createPaymentEntity.
@@ -3815,6 +3850,12 @@ class Processor
 
                 if(isset($gateway)) {
                     $payment->setGateway($gateway);
+                }
+
+                // if method is gift_cards then we store gift_card details in reference17
+                if ( ($input['method'] === Method::GIFT_CARDS) && (empty($gcReference) !== true))
+                {
+                    $payment->setAttribute(Payment\Entity::REFERENCE17, $gcReference);
                 }
 
                 $this->preProcessForSubscriptionsIfApplicable($input, $payment);
@@ -4315,6 +4356,21 @@ class Processor
             $payload[E::PAYMENT]['entity'][Payment\Entity::INVOICE_ID] = Invoice\Entity::getSignedId($invoiceId);
         }
 
+        $method = $payment->method;
+
+        // we fetch gift_card details from reference17 and populate to the field 'gift_cards' in payments
+        if (($method === Method::GIFT_CARDS) && ($payment->getReference17() !== null))
+        {
+            $reference17 = json_decode($payment->getReference17(), true);
+            $giftCards = null;
+
+            if ((is_array($reference17) === true) && (isset($reference17['gift_cards']) === true)) {
+                $giftCards = $reference17['gift_cards'];
+            }
+
+            $payload[E::PAYMENT]['entity'][Payment\Entity::GIFT_CARDS] = $giftCards;
+        }
+
         return $payload;
     }
 
@@ -4617,10 +4673,10 @@ class Processor
      * @param Payment\Entity $payment
      * @param $calculated_benefits
      * @param Offer\Entity $offer
-     * @return void
+     * @return bool
      * @throws Exception\ServerErrorException
      */
-    public function setOfferBenefitAndAvailOnOE(Payment\Entity $payment, $calculated_benefits, Offer\Entity $offer): void
+    public function setOfferBenefitAndAvailOnOE(Payment\Entity $payment, $calculated_benefits, Offer\Entity $offer): bool
     {
         // Fetch discounted amount from api for nc emi offers
         if ($this->offer->isNoCostEmi()) {
@@ -4642,20 +4698,22 @@ class Processor
                     $this->trace->info(TraceCode::OFFERS_ENGINE_UPDATED_DISCOUNT, [
                         'Empty calculated benefit at Offers Engine' => $calculated_benefits,
                     ]);
-                    return ;
+                    return false;
                 }
 
             } else {
                 $this->trace->info(TraceCode::OFFERS_ENGINE_UPDATED_DISCOUNT, [
                     'Empty calculated benefit at Offers Engine' => $calculated_benefits,
                 ]);
-                return;
+                return false;
             }
         }
 
         $payment->setAttribute(Payment\Entity::OFFER_BENEFITS, $calculated_benefits);
 
         (new Offer\OffersEngine())->availOnOffersEngine($payment, $offer, $calculated_benefits);
+
+        return true;
     }
 
     protected function addCustomerIdToInputForExternalSubscription(array & $input)
@@ -4685,6 +4743,11 @@ class Processor
     protected function preProcessPaymentMeta(array $input, Payment\Entity $payment)
     {
         if (empty($input[Payment\Entity::META]) === true)
+        {
+            return;
+        }
+
+        if($payment->getMethod() === Payment\Method::OFFLINE and $payment->isCaptured() === false)
         {
             return;
         }
@@ -4969,12 +5032,7 @@ class Processor
 
                 $input['payment'] = $payment->toArray();
 
-                $variantFlag = $this->app->razorx->getTreatment($this->merchant->getId(),RazorxTreatment::SEND_USER_DETAILS_TO_GETSIMPL,  $this->mode);
-
-                if($variantFlag === 'on')
-                {
-                    $this->addIpAndUserAgent($input,$payment);
-                }
+                $this->addIpAndUserAgent($input,$payment);
 
                 $input['contact'] = $payment['contact'];
                 break;
@@ -5580,14 +5638,17 @@ class Processor
 
         $payment = $this->buildPaymentEntity($input);
 
-        if($payment->merchant->isLRSFlowEnabled() === true)
+        if (isset($input['order_id']) === true)
         {
-            $order = $this->repo->order->findByPublicId($input['order_id']);
-            $payment->order()->associate($order);
-        }
-        else if(isset($input['order_id']) === true)
-        {
-            $order = $this->associateOrderWithPaymentForConvenienceFee($input, $payment);
+            if($payment->merchant->isLRSFlowEnabled() || $payment->merchant->isNoCodeAppFeeFeatureFlagEnabled())
+            {
+                $order = $this->repo->order->findByPublicId($input['order_id']);
+                $payment->order()->associate($order);
+            }
+            else
+            {
+                $order = $this->associateOrderWithPaymentForConvenienceFee($input, $payment);
+            }
         }
 
         // Performing dummy set of processing for the same
@@ -6695,6 +6756,7 @@ class Processor
                     [
                         'offer_type' => $this->offer->getOfferType(),
                         'emi_subvention' => $this->offer->getEmiSubvention(),
+                        'route' => app('api.route')->getCurrentRouteName(),
                     ]);
 
                     $this->trace->info(
@@ -6764,7 +6826,22 @@ class Processor
 
         if (!$this->validateOffersViaOffersEngine($payment, $offer, $experiments))
         {
-             return $valid;
+            // validateOffersViaOffersEngine should always throw an exception in the account these
+            // parameters checked below are true. If the code flow comes here, it's a P0 issue.
+            if (($order != null) and
+                ($order->hasOffers() === true) and
+                ($order->isOfferForced() === true) and
+                ($offer->getOfferType() === Offer\Constants::ALREADY_DISCOUNTED) and
+                ($offer->shouldBlockPayment() === true))
+            {
+                $this->trace->error(TraceCode::PAYMENT_CREATION_SHOULD_BE_BLOCKED, [
+                    'offer_id'   => $offer->getPublicId(),
+                ]);
+
+                app('trace')->count(Offer\Metric::OFFERS_PAYMENT_CREATION_INVALID);
+            }
+
+            return $valid;
         }
 
         $valid = true;
@@ -6811,18 +6888,19 @@ class Processor
             isset($resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']) === true;
 
         $hasException = false;
+        $isOfferAvailed = false;
 
         if($isOfferValidAtOE)
         {
             try {
-                $this->setOfferBenefitAndAvailOnOE($payment,
+                $isOfferAvailed = $this->setOfferBenefitAndAvailOnOE($payment,
                     $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits'], $offer);
             } catch (\Exception $e) {
                 $hasException = true;
             }
         }
 
-        if (!$isOfferValidAtOE || $hasException) {
+        if (!$isOfferValidAtOE || $hasException || !$isOfferAvailed) {
             if($isReverseShadowEnabled && $this->offer->shouldBlockPayment() === true) {
                 $errorMessage = $this->offer->getErrorMessage();
                 $this->trace->info(
@@ -7355,7 +7433,12 @@ class Processor
                 {
                     try
                     {
-                        $transfers = $this->processPaymentTransfersInSync($payment);
+                        [$transfersProcessed, $failedTransfersToRetry] = $this->processPaymentTransfersInSync($payment);
+
+                        if (empty($failedTransfersToRetry) === false)
+                        {
+                            $processTransferInSync = false;
+                        }
                     }
                     catch (\Throwable $e)
                     {
@@ -7485,19 +7568,62 @@ class Processor
      */
     protected function processPaymentTransfersInSync(Payment\Entity $payment)
     {
-        $redis = $this->app['redis']->connection('secure');
-
-        $semaphore = null;
-
-        $semaphoreConfig = (new Admin\Service)->getConfigKey(['key' => ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_CONFIG]);
-
-        if (empty($semaphoreConfig) === true)
+        if ($this->merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === true)
         {
-            $semaphoreConfig = self::PAYMENT_TRANSFERS_SYNC_PROCESSING_DEFAULT_CONFIG;
+            return $this->processPaymentTransfersInSyncImpl($payment);
         }
 
+        [$transfersProcessed, $failedTransfersToRetry] = $this->acquireSemaphoreAndExecute(function () use ($payment)
+        {
+            if ($this->checkIfTransferSyncProcessingViaApiIsWithinLimit() === false)
+            {
+                throw new Exception\RuntimeException('Transfer sync processing limit via API exceeded');
+            }
+
+            return $this->processPaymentTransfersInSyncImpl($payment);
+        });
+
+        return [$transfersProcessed, $failedTransfersToRetry];
+    }
+
+    protected function processPaymentTransfersInSyncImpl(Payment\Entity $payment)
+    {
+        $this->trace->info(TraceCode::PAYMENT_TRANSFER_PROCESS_IN_SYNC,
+            [
+                'payment_id'     => $payment->getId(),
+            ]
+        );
+
+        $transfer = new PaymentTransfer($payment);
+
+        $transfersSyncProcessStartTime = microtime(true);
+
+        [$transfersProcessed, $failedTransfersToRetry] = $transfer->process();
+
+        $transfersSyncProcessTimeMs = (microtime(true) - $transfersSyncProcessStartTime) * 1000;
+
+        $category = $this->merchant->getCategory();
+
+        (new TransferMetric())->pushTransfersProcessingTimeInSyncMetrics($transfersSyncProcessTimeMs, $category);
+
+        return [$transfersProcessed, $failedTransfersToRetry];
+    }
+
+    public function acquireSemaphoreAndExecute(callable $func)
+    {
         try
         {
+            $redis = $this->app['redis']->connection('secure');
+
+            $semaphore = null;
+
+            $semaphoreConfig = (new Admin\Service)->getConfigKey(['key' => ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_CONFIG]);
+
+            if (empty($semaphoreConfig) === true)
+            {
+                $semaphoreConfig = self::PAYMENT_TRANSFERS_SYNC_PROCESSING_DEFAULT_CONFIG;
+            }
+
             $semaphoreAcquireStartTime = microtime(true);
 
             $semaphore = new Semaphore($redis->client(), $this->merchant->getId(), (int) $semaphoreConfig['limit']);
@@ -7510,38 +7636,13 @@ class Processor
 
                 (new TransferMetric())->pushSemaphoreAcquireSuccessMetrics($timeTakenToAcquireMs);
 
-                if ($this->checkIfTransferSyncProcessingViaApiIsWithinLimit() === false)
-                {
-                    throw new Exception\RuntimeException('Transfer sync processing limit via API exceeded');
-                }
-
-                $this->trace->info(TraceCode::PAYMENT_TRANSFER_PROCESS_IN_SYNC,
-                    [
-                        'payment_id'     => $payment->getId(),
-                        'sem_time_taken_ms' => $timeTakenToAcquireMs
-                    ]
-                );
-
-                $transfer = new PaymentTransfer($payment);
-
-                $transfersSyncProcessStartTime = microtime(true);
-
-                [$transfersProcessed, $failedTransfersToRetry] = $transfer->process();
-
-                $transfersSyncProcessTimeMs = (microtime(true) - $transfersSyncProcessStartTime) * 1000;
-
-                $category = $this->merchant->getCategory();
-
-                (new TransferMetric())->pushTransfersProcessingTimeInSyncMetrics($transfersSyncProcessTimeMs, $category);
-
-                return $transfersProcessed->merge($failedTransfersToRetry);
+                return call_user_func($func);
             }
-            else
-            {
-                (new TransferMetric())->pushSemaphoreAcquireFailureMetrics();
 
-                throw new Exception\RuntimeException('Failed to acquire semaphore');
-            }
+            (new TransferMetric())->pushSemaphoreAcquireFailureMetrics();
+
+            throw new Exception\RuntimeException('Failed to acquire semaphore');
+
         }
         finally
         {
@@ -7692,7 +7793,10 @@ class Processor
         }
         else
         {
-            $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
+            $gatewayVerifyResponseCode = $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
+            if ($gatewayVerifyResponseCode !== null) {
+                return $gatewayVerifyResponseCode;
+            }
         }
 
         return $errorCode;
@@ -8109,9 +8213,16 @@ class Processor
 
                 $this->repo->saveOrFail($this->payment);
 
+                $reverseShadowCore = (new ReverseShadowPaymentsCore());
+
                 if ($this->payment->merchant->isFeatureEnabled(Features::PG_LEDGER_REVERSE_SHADOW) === true)
                 {
-                    (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($this->payment);
+                    $apiTxnId = null;
+                    if ($this->payment->hasBeenCaptured())
+                    {
+                        $apiTxnId = $reverseShadowCore->getAPITransactionId($this->payment->getPublicId(), $this->payment, \RZP\Models\Ledger\Constants::MERCHANT_CAPTURED);
+                    }
+                    $reverseShadowCore->createLedgerEntryForGatewayCaptureReverseShadow($this->payment, $apiTxnId);
                 }
 
                 $this->createLedgerEntriesForGatewayCapture($this->payment);
@@ -8465,6 +8576,15 @@ class Processor
         return $returnData;
     }
 
+    public function failOfflinePaymentByChallanExpiry(Payment\Entity $payment, $exception)
+    {
+        $this->payment = $payment;
+
+        $traceCode = TraceCode::PAYMENT_CAPTURE_FAILURE;
+
+        $this->updatePaymentFailed($exception, $traceCode);
+    }
+
     public function failInvalidRecurringTokenCardAutoRecurringPayment(Payment\Entity $payment, $exception)
     {
         $this->payment = $payment;
@@ -8584,12 +8704,17 @@ class Processor
                 'merchant' => $this->merchant,
             ];
 
+            $internalCode = null;
+
             $data['gateway'] = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
+            $this->trace->info(TraceCode::CORPORATE_NETBANKING_PAYMENT_HDFC_PAYMENT_GATEWAY_RESPONSE, [
+                'gateway_response' => $data['gateway'],
+            ]);
             //only set error as Payment pending if we recieve   same response from gateway
             if ($data['gateway']['error']['internal_error_code'] === 'BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION'){
 
                 $internalCode=$data['gateway']['error']['internal_error_code'];
-                $shouldUpdateForNetbankigHdfcCorpPayments=true;     
+                $shouldUpdateForNetbankigHdfcCorpPayments=true;
             }
 
         }
@@ -8755,6 +8880,8 @@ class Processor
         {
             $this->disableUpiTerminalIfRequired($payment);
         }
+
+        return $internalCode;
     }
 
     protected function getEmandateErrorDesc($exception)
@@ -9225,6 +9352,7 @@ class Processor
                 $input[UpiEntity::NPCI_REFERENCE_ID]  = $input['data']['upi'][UpiEntity::NPCI_REFERENCE_ID] ?? '';
                 $input[UpiEntity::MERCHANT_REFERENCE] = $input['data']['upi'][UpiEntity::MERCHANT_REFERENCE] ?? '';
                 $input[UpiEntity::VPA]                = $input['data']['upi'][UpiEntity::VPA] ?? '';
+                $input[UpiEntity::GATEWAY_PAYMENT_ID] = $input['data']['upi'][UpiEntity::GATEWAY_PAYMENT_ID] ?? '';
                 $input[UpiEntity::TYPE]               = \RZP\Gateway\Upi\Base\Type::PAY;
 
                 return (new QrPayment\Service())->createUpiEntityForQrPayment($input, \RZP\Gateway\Mozart\Action::AUTHORIZE);
@@ -9594,26 +9722,24 @@ class Processor
             {
                 $frequencyUpiAutoPay = UPIMandateFrequency::AS_PRESENTED;
 
-                if ($this->app['razorx']->getTreatment($payment->merchant->getId(), Merchant\RazorxTreatment::UPI_AUTOPAY_CORRECT_FREQUENCY_FETCH, $this->app['rzp.mode']) === 'on')
+                try
                 {
-                    try
-                    {
-                        $subscriptionInput = [
-                            Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId())
-                        ];
+                    $subscriptionInput = [
+                        Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId())
+                    ];
 
-                        $subscriptionData = $this->app['module']->subscription->fetchSubscriptionInfoUpiAutoPay($subscriptionInput, $payment->merchant);
+                    $subscriptionData = $this->app['module']->subscription->fetchSubscriptionInfoUpiAutoPay($subscriptionInput, $payment->merchant);
 
-                        $frequencyUpiAutoPay = $subscriptionData['frequency'] ?? $frequencyUpiAutoPay;
-                    }
-                    catch (\Exception $ex)
-                    {
-                        $this->trace->traceException(
-                            $ex,
-                            Trace::CRITICAL,
-                            TraceCode::UPI_AUTOPAY_SUBSCRIPTIONS_FETCH_FAILURE);
-                    }
+                    $frequencyUpiAutoPay = $subscriptionData['frequency'] ?? $frequencyUpiAutoPay;
                 }
+                catch (\Exception $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::CRITICAL,
+                        TraceCode::UPI_AUTOPAY_SUBSCRIPTIONS_FETCH_FAILURE);
+                }
+
 
                 //upi token expires 1 week past the subscription's end_at
                 $upitoken = [
@@ -11147,17 +11273,18 @@ class Processor
 
         $captureValue = $lateAuthConfig['capture'];
 
-        $difference = $this->getTimeDifferenceInAuthorizeAndCreated($payment);
+        // get time difference in seconds between authorize and created
+        $difference = $this->getTimeDifferenceInAuthorizeAndCreated($payment, "seconds");
 
         $this->setPaymentRefundAtForConfig($payment,$manualTimeoutDuration);
 
         if ($captureValue === 'automatic')
         {
-            if ($difference < $autoTimeoutDuration)
+            if ($difference <= $autoTimeoutDuration * CarbonInterface::SECONDS_PER_MINUTE)
             {
                 return [true, $lateAuthConfig];
             }
-            elseif ($difference > $manualTimeoutDuration)
+            elseif ($difference > $manualTimeoutDuration * CarbonInterface::SECONDS_PER_MINUTE)
             {
                 return [false, $lateAuthConfig];
             }
@@ -11174,29 +11301,22 @@ class Processor
     {
             if ($payment->getMethod() === Constants::UPI)
             {
-                $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
-                    Merchant\RazorxTreatment::DEFAULT_CAPTURE_SETTING_CONFIG_UPI_AUTOPAY,
-                    $this->app['rzp.mode']);
+                $notificationCore = new Notifications\Core();
 
-                if (strtolower($variant) === 'on')
+                $notificationCount = $notificationCore->fetchNotificationCount($payment['order_id']);
+
+                if($notificationCount === 0)
                 {
-                    $notificationCore = new Notifications\Core();
+                    $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO;
 
-                    $notificationCount = $notificationCore->fetchNotificationCount($payment['order_id']);
+                    $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($payment->getId(), $payment->merchant->getId());
 
-                    if($notificationCount === 0)
-                    {
-                        $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO;
-
-                        $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($payment->getId(), $payment->merchant->getId());
-
-                        if ($canRetry === true) {
-                            $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_TIMEOUT_FOR_UPI_RECURRING_AUTO_DEBIT_RETRIES;
-                        }
-
-                        if ($autoTimeoutDuration < $defaultUpiAutoCaptureExpiry) $autoTimeoutDuration = $defaultUpiAutoCaptureExpiry;
-                        if ($manualTimeoutDuration < $defaultUpiAutoCaptureExpiry) $manualTimeoutDuration = $defaultUpiAutoCaptureExpiry;
+                    if ($canRetry === true) {
+                        $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_TIMEOUT_FOR_UPI_RECURRING_AUTO_DEBIT_RETRIES;
                     }
+
+                    if ($autoTimeoutDuration < $defaultUpiAutoCaptureExpiry) $autoTimeoutDuration = $defaultUpiAutoCaptureExpiry;
+                    if ($manualTimeoutDuration < $defaultUpiAutoCaptureExpiry) $manualTimeoutDuration = $defaultUpiAutoCaptureExpiry;
                 }
 
             } elseif ($payment->getMethod() === Constants::CARD)
@@ -11267,13 +11387,19 @@ class Processor
 
     }
 
-    public function getTimeDifferenceInAuthorizeAndCreated($payment)
+    public function getTimeDifferenceInAuthorizeAndCreated($payment, $timeDiffUnit = "minutes")
     {
         $authorizedTime = Carbon::createFromTimestamp($payment->getAuthorizeTimestamp(), Timezone::IST);
 
         $createdTime = Carbon::createFromTimestamp($payment->getCreatedAt(), Timezone::IST);
 
-        return $authorizedTime->diffInMinutes($createdTime);
+        switch ($timeDiffUnit)
+        {
+            case "seconds":
+                return $authorizedTime->diffInSeconds($createdTime);
+            default:
+                return $authorizedTime->diffInMinutes($createdTime);
+        }
     }
 
     public function getLateAuthPaymentConfig(Payment\Entity $payment)
@@ -13209,26 +13335,19 @@ class Processor
 
     /**
      * shouldRouteAppsViaUPS checks if Apps traffic should be routed to UPI Rearch flow
+     * Only auth_links, subscriptions are not ready for rearch flow
+     * If product_type is not auth_links, subscriptions route via upi rearch
+     * Other products such as pl, pp, pb, ph, invoices, payment store, magic checkout are 100% ramped up
      * @param $order
      * @return bool
      */
     public function shouldRouteAppsViaUPS($order): bool
     {
-        $productType = optional($order)->getProductType() ?? 'unknown';
+        if (!in_array($order->getProductType(), [ProductType::AUTH_LINK, ProductType::SUBSCRIPTION])) {
+            return true;
+        }
 
-        $feature = self::ALLOW_APPS_MERCHANTS_ON_REARCH_UPS . '_' . $productType;
-
-        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(), $feature, $this->mode);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_APPS_RAZORX_VARIANT, [
-            'merchant_id'  => $this->merchant->getMerchantId(),
-            'product_type' => $productType,
-            'variant'      => $variant,
-            'mode'         => $this->mode,
-            'feature'      => $feature,
-        ]);
-
-        return str_starts_with($variant, 'on') === true;
+        return false;
     }
 
     // calculateAndAddConvenienceFeeForUpiIfApplicable is temporary function to calculate convenience fee for UPIPayments until this is moved to API By-pass
@@ -13534,5 +13653,139 @@ class Processor
         return false;
     }
 
+
+    /**
+     * validateGiftCardAndGetGCReference validates if the gift card can be redeemed and if the aggregated balances of multiple
+     * gift cards is greater than or equal to payment amount
+     * We save the references of giftcard in reference17
+     * @param array $input
+     * @throws BadRequestException
+     */
+    private function validateGiftCardAndGetGCReference(array & $input)
+    {
+        if ($input['method'] !== Method::GIFT_CARDS)
+        {
+            return null;
+        }
+
+        if (empty($input['gift_cards']) === true)
+        {
+            return null;
+        }
+
+        $this->validateAmount($input);
+
+        $merchantID =$this->merchant->getId();
+
+        $response = App::getFacadeRoot()['wallet_api']->validateGiftCard($input, $merchantID);
+
+        $gcReference = $this->compareGiftCardsAndGetGiftCardReferences($response, $input);
+
+        if ($this->checkGiftCardBalances($gcReference, $input['amount']) === true)
+        {
+            $giftCards = [];
+            $giftCards['gift_cards'] = $gcReference;
+            return json_encode($giftCards);
+        }
+        else
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_GIFT_CARDS_INSUFFICIENT_BALANCE, null, null, null);
+        }
+
+    }
+    /*
+     * validateAmount validates if sum of all the gift_card amount is matching with payment_amount
+     * */
+    private function validateAmount($input) {
+        // Extract the total amount from the input array
+        $inputAmount = (integer) $input['amount'];
+
+        // Initialize a variable to sum up the amounts from gift cards
+        $totalGiftCardAmount = 0;
+
+        // Loop through each gift card in the gift_cards array
+        foreach ($input['gift_cards'] as $giftCard) {
+            // Add the gift card's amount to the total
+            $totalGiftCardAmount += $giftCard['amount'];
+        }
+
+        // Check if the sum of gift card amounts is equal to the input amount
+        if ($totalGiftCardAmount !== $inputAmount) {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, 'amount', null, 'you have entered an invalid amount. Please try again');
+        }
+    }
+
+    function checkGiftCardBalances($outputArray, $inputAmount): bool
+    {
+        // Initialize total sum
+        $totalAmount = 0;
+
+        // Loop through each item in the output array and sum the amounts
+        foreach ($outputArray as $item) {
+            $totalAmount += $item['amount'];
+        }
+
+        // Check if the total amount is greater than or equal to the input amount
+        return $totalAmount >= $inputAmount;
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    private function compareGiftCardsAndGetGiftCardReferences($balanceResponse, $inputData): array
+    {
+        $outputArray = [];
+
+        // Create an associative array for quick lookup of gift cards from inputData by their number
+        $inputDataMap = [];
+        foreach ($inputData['gift_cards'] as $inputCard) {
+            $inputDataMap[$inputCard['number']] = $inputCard;
+        }
+
+        // Loop through balanceResponse gift cards
+        foreach ($balanceResponse['gift_cards'] as $balanceCard) {
+            $cardNumber = $balanceCard['number'];
+
+            // Check if the card number exists in inputData
+            if (isset($inputDataMap[$cardNumber])) {
+                $inputCard = $inputDataMap[$cardNumber];
+
+                // check status
+                if ($balanceCard['status'] !== 'active')
+                {
+                    $description = 'Your gift card has expired. Please try another card';
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR, [
+                        'gift_cards.number' => $inputCard['number']
+                    ], $description, $description);
+                }
+
+
+                // Check if balance is greater than or equal to the amount in inputData
+                if ($balanceCard['balance'] >= $inputCard['amount']) {
+                    // Redact the card number (keep only the last 4 digits visible)
+                    $redactedNumber = str_repeat('*', strlen($cardNumber) - 4) . substr($cardNumber, -4);
+
+                    // Prepare the output object
+                    $outputArray[] = [
+                        'id' => $balanceCard['id'],
+                        'number' => $redactedNumber,
+                        'amount' => $inputCard['amount']
+                    ];
+                } else {
+                    $description = 'Your gift card has insufficient balance. Please try another card.';
+                    $description = str_replace('$number', $inputCard['number'], $description);
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR, [
+                            'gift_cards.number' => $inputCard['number']
+                    ], $description, $description);
+                }
+            }
+        }
+
+        return $outputArray;
+    }
 
 }

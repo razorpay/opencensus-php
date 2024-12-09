@@ -49,6 +49,10 @@ class HyperTrace
 
     /*QR code traces names*/
     const QR_CODE_CREATE                                        = 'qrv2_qr_code.create';
+
+    const QR_CODE_SET_DEVICE                                    = 'qrv2_qr_code.set_device';
+
+    const QR_CODE_UNMAP_DEVICE                                  = 'qrv2_qr_code.unmap_device';
     const QR_CODE_CREATE_FOR_CHECKOUT                           = 'qrv2_qr_code.create_for_checkout';
     const QR_CODE_CREATE_FOR_PAYMENT_LINKS                      = 'qrv2_qr_code.create_for_payment_links';
     const QR_CODE_CREATE_BUILD_QR_CODE                          = 'qrv2_qr_code.create.buildQrCode';

@@ -825,7 +825,16 @@ class Entity extends Base\PublicEntity
 
     public function getFormattedAmount()
     {
-        return number_format($this->getAmount() / 100, 2);
+        $amount = $this->getAmount();
+        $currency = $this->getCurrency();
+
+        $specialCurrencies = ['BHD', 'KWD', 'OMR', 'IQD', 'JOD', 'TND'];
+
+        if (in_array($currency, $specialCurrencies)) {
+            return number_format($amount / 1000, 3);
+        } else {
+            return number_format($amount / 100, 2);
+        }
     }
 
     public function getAmount()

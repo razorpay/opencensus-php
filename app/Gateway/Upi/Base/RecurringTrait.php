@@ -17,6 +17,7 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Payment\UpiMetadata;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -201,11 +202,10 @@ trait RecurringTrait
 
         if ($this->getAction() === Action::AUTHENTICATE)
         {
-            $variant = $this->app->razorx->getTreatment($input['payment']['merchant_id'],
-                RazorxTreatment::UPI_AUTOPAY_PAYMENT_REMARK, $this->mode, 3);
+            $variant = $this->evaluateSplitzExperimentForUpiAutopayPaymentRemark($input['payment']['merchant_id']);
 
             $description = "";
-            if(strtolower($variant) === 'on')
+            if($variant === true)
             {
                 $paymentDescription = $input['payment']['description'] ?? '';
                 $description = Payment\Entity::getFilteredDescription($paymentDescription);
@@ -218,6 +218,48 @@ trait RecurringTrait
 
             $input[Constants::UPI][Entity::REMARK] = $description;
         }
+    }
+
+    /**
+     * Evaluates the Splitz experiment for UPI Autopay Payment Remark.
+     *
+     * @param string $merchantId
+     * @return bool
+     */
+    protected function evaluateSplitzExperimentForUpiAutopayPaymentRemark($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_payment_remark'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_PAYMENT_REMARK
+            );
+        }
+
+        return false;
     }
 
     protected function isFirstRecurringPayment(array $input): bool
@@ -672,10 +714,9 @@ trait RecurringTrait
 
         if($action === Action::AUTHENTICATE)
         {
-            $variant = $this->app->razorx->getTreatment($input['payment']['merchant_id'],
-                RazorxTreatment::UPI_AUTOPAY_REVOKABLE_FEATURE, $this->mode, 3);
+            $variant = $this->evaluateSplitzExperimentForUpiAutopayRevokableFeature($input['payment']['merchant_id']);
 
-            if($variant === 'on')
+            if($variant === true)
             {
                 $attr[Entity::GATEWAY_DATA][Constants::REVOKABLE] = "N";
             }
@@ -692,6 +733,48 @@ trait RecurringTrait
         }
 
         return $this->createGatewayPaymentEntity($attr, $action, false);
+    }
+
+    /**
+     * Evaluates the Splitz experiment for the UPI Autopay revokable feature.
+     *
+     * @param int $merchantId The ID of the merchant to evaluate the experiment for.
+     * @return bool True if the variant is 'variant_on', false otherwise.
+     */
+    protected function evaluateSplitzExperimentForUpiAutopayRevokableFeature($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_revokable_feature'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_REVOKABLE_FEATURE
+            );
+        }
+
+        return false;
     }
 
     protected function shouldSkipNotityForAutoRecurring(array $input)

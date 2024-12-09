@@ -40,6 +40,13 @@ class Validator extends Base\Validator
         'merchant_ids_excluded.*'   => 'sometimes|string|size:14',
     ];
 
+    protected static $linkedCreateQueueRules = [
+        Entity::MONTH               => 'required|integer|between:1,12',
+        Entity::YEAR                => 'required|digits:4',
+        'merchant_ids'              => 'sometimes|array',
+        'merchant_ids.*'            => 'sometimes|string|size:14',
+    ];
+
     protected static $bulkCreateRules = [
         'invoice_entities'       => 'required|array',
         'invoice_entities.*'     => 'required|array',
@@ -83,6 +90,12 @@ class Validator extends Base\Validator
         'org_ids.*'       => 'required|string|size:14',
         'isOrgIdSelected' => 'sometimes|boolean',
         'exempted_mids'   => 'sometimes|array'
+    ];
+
+    protected static $linkedAccountGenerationControlRules = [
+        'action'          => 'required|string|in:add,remove,show',
+        'merchant_ids'    => 'sometimes|array',
+        'merchant_ids.*'  => 'required|string|size:14',
     ];
 
     protected function validateType($input)

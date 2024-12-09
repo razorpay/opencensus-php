@@ -26,6 +26,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Constants\MailTags;
 use RZP\Constants\HashAlgo;
+use RZP\Models\Payment;
 
 class Mailable extends BaseMailable
 {
@@ -741,6 +742,12 @@ class Mailable extends BaseMailable
     {
         $app = App::getFacadeRoot();
         $orgId = $app['basicauth']->getOrgId() ?? '';
+        if (empty($this->data['payment']) === false && empty($this->data['payment']['id']) === false) {
+            $payment_id = $this->data['payment']['id'];
+        } else {
+            $payment_id = "empty_payment_id"; // Handle the case when payment ID is not available
+        }
+
 
         return [
             'owner_id'           => $this->mid,
@@ -748,7 +755,7 @@ class Mailable extends BaseMailable
             'org_id'             => $orgId,
             'template_name'      => $this->view,
             'template_namespace' => '',
-            'context'            => json_decode ('{}'),
+            'context' => json_decode(json_encode(['entity_id' => $payment_id])),
             'from'               => $this->from[0] ?? [],
             'to'                 => $this->to ?? [],
             'cc'                 => $this->cc ?? [],

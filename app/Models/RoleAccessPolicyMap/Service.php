@@ -45,4 +45,11 @@ class Service extends Base\Service
 
         return $this->core->fixRoleAccessPolicyMap($input);
     }
+
+    public function updateRoleAccessPolicyMap(array $input)
+    {
+        (new Validator())->validateInput(Validator::UPDATE_POLICY_MAP, $input);
+
+        return $this->core->updateRoleAccessPolicyMap($input);
+    }
 }

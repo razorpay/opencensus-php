@@ -70,9 +70,11 @@ class QrGatewayModule
         $merchant = $qrCode->merchant;
         $notes = $qrCode->getNotes();
 
+        $qrReferenceId = empty($qrCode->getQrString()) === true ? $qrCode->getId().'qrv2' :  $qrCode->getReference();
+
         $input = [
             EntityConstants::PAYMENT  => [
-                'id'       => $qrCode->getId() . 'qrv2',
+                'id'       => $qrReferenceId,
                 'amount'   => $qrCode->getAmount(),
                 'currency' => 'INR',
             ],
@@ -83,12 +85,12 @@ class QrGatewayModule
                 'remark' => 'Payment To ' . $merchant->getFilteredDba(),
             ],
             EntityConstants::UPI      => [
-                'merchant_reference' => $qrCode->getId() . 'qrv2',
+                'merchant_reference' => $qrReferenceId,
                 'mode'               => $upiMode,
             ],
             EntityConstants::QR_CODE  => [
                 'id'          => $qrCode->getId(),
-                'reference'   => $qrCode->getId() . 'qrv2',
+                'reference'   => $qrReferenceId,
                 'close_by'    => $qrCode->getCloseBy(),
             ],
         ];

@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Payment\Method;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Settlement\Processor\Base;
 use RZP\Models\FileStore;
@@ -137,6 +138,12 @@ class GifuFile extends Base\BaseGifuFile
 
         $experimentResult = $this->app->razorx->getTreatment($orgId, Merchant\RazorxTreatment::GIFU_CUSTOM,$this->mode);
 
+         $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT, [
+             'org_id'    => $orgId,
+             'experiment_result' => $experimentResult,
+             'mode'       => $this->mode,
+         ]);
+
         $isGifuCustomEnabled = ( $experimentResult === 'on' ) ? true : false;
 
         $dataPayments = [];
@@ -244,11 +251,6 @@ class GifuFile extends Base\BaseGifuFile
                 $amount = $amount + $this->getAggregatedPaymentAmount($value['payments'] ?? []);
 
                 $narration = $this->getNarration($value['settlements'] ?? [],$mid);
-
-                if(empty($narration) === true)
-                {
-                    continue;
-                }
 
                 $brCode = $this->getBrCode($accountNumber);
             }
@@ -410,15 +412,9 @@ class GifuFile extends Base\BaseGifuFile
                 'Terminals Fetch Params' => $params,
                 'Terminals Count'        => $terminals->count(),
                 'Terminal picked'        => $terminals,
-                'Gateway Terminal Id'    => $tId,
                 'Merchant Id'            => $mid,
             ]
         );
-
-        if(str_starts_with($tId, "19"))
-        {
-            return '';
-        }
 
         $setlId = !empty($data) ? $data[0]->id : '';
 
@@ -432,9 +428,11 @@ class GifuFile extends Base\BaseGifuFile
 
         foreach ($terminals as $terminal)
         {
-            if($terminal->$method === true)
-            {
-               return $terminal;
+            if (
+                ($method === Method::UPI && $terminal->upi === true) ||
+                (($method === Method::CARD && $terminal->card === true) && ($terminal->emi === false))
+            ) {
+                return $terminal;
             }
         }
 

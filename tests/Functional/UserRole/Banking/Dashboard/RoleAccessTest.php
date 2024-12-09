@@ -11,11 +11,13 @@ use RZP\Http\Middleware\UserAccess;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\UserRole\Banking\Dashboard\BankingRoleTrait;
+use RZP\Tests\Traits\MocksSplitz;
 
 class RoleAccessTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use BankingRoleTrait;
+    use MocksSplitz;
 
     /**
      * @var array
@@ -93,6 +95,8 @@ class RoleAccessTest extends TestCase
 
                     return 'control';
                 }));
+
+        $this->mockSplitzDisableCAC();
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
 
@@ -202,5 +206,19 @@ class RoleAccessTest extends TestCase
                 UserRolePermissionsMap::isValidRolePermission(BankingRole::OWNER, $routePermission),
                 "Route $route permission missing for role $role");
         }
+    }
+
+    protected function mockSplitzDisableCAC()
+    {
+        $this->mockSplitzTreatment([
+            'id'            => '10000000000000',
+            'experiment_id' => env('CAC_BLACKLIST_EXP_ID'),
+        ], [
+            'response' => [
+                'variant' => [
+                    'name' => 'active'
+                ]
+            ]
+        ]);
     }
 }

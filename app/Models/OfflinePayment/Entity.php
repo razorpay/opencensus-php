@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
     const ADDITIONAL_INFO              = 'additional_info';
     const CLIENT_CODE                  = 'client_code';
     const VIRTUAL_ACCOUNT_ID           = 'virtual_account_id';
+    const VIRTUAL_ACCOUNT_STATUS       = 'virtual_account_status';
     const PAYMENT_INSTRUMENT_DETAILS   = 'payment_instrument_details';
     const PAYER_DETAILS                = 'payer_details';
 

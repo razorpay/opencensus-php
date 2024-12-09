@@ -147,6 +147,7 @@ class BankingUserTest extends TestCase
             $this->assertEquals($shouldSendEmailViaStork, true);
             $this->assertArrayHasKey('template_name', $getParamsForStork);
             $this->assertArrayHasKey('template_namespace', $getParamsForStork);
+            $this->assertArrayHasKey('org_id', $getParamsForStork);
             $this->assertArrayHasKey('params', $getParamsForStork);
             $this->assertArrayHasKey('changed_at', $getParamsForStork['params']);
             $this->assertArrayHasKey('resetPasswordUrl', $getParamsForStork['params']);
@@ -219,6 +220,7 @@ class BankingUserTest extends TestCase
             $this->assertEquals($shouldSendEmailViaStork, true);
             $this->assertArrayHasKey('template_name', $getParamsForStork);
             $this->assertArrayHasKey('template_namespace', $getParamsForStork);
+            $this->assertArrayHasKey('org_id', $getParamsForStork);
             $this->assertArrayHasKey('params', $getParamsForStork);
             $this->assertArrayHasKey('otp', $getParamsForStork['params']);
             $this->assertArrayHasKey('otp', $getParamsForStork['params']['otp']);

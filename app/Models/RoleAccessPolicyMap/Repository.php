@@ -2,19 +2,23 @@
 
 namespace RZP\Models\RoleAccessPolicyMap;
 
-
+use Illuminate\Support\Facades\DB;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryUpdateTestAndLive;
 
     protected $entity = Table::ROLE_ACCESS_POLICY_MAP;
 
     public function findByRoleId($roleId)
     {
         return $this->newQuery()->where('role_id', '=', $roleId)->first();
+    }
+
+    public function findByRoleIds(array $roleIds)
+    {
+        return $this->newQuery()->whereIn('role_id', $roleIds)->get();
     }
 
     public function deleteAll()

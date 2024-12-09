@@ -765,6 +765,23 @@ class Core extends Base\Core
         ];
 
         $this->app['events']->dispatch('api.virtual_account.credited', $eventPayload);
+
+        $paymentCreationTime = $payment->getCreatedAt();
+
+        $timeTaken = get_diff_in_millisecond($paymentCreationTime);
+
+        $isCollectxPayment = $payment[Payment::REFERENCE14] === 'collectx';
+
+        $dimensions = [
+            'gateway'           =>  $payment->getGateway(),
+            'method'            =>  $payment->getMethod(),
+            'isCollectxPayment' =>  $isCollectxPayment,
+        ];
+
+        $this->trace->histogram(
+            Metric::VIRTUAL_ACCOUNT_CREDITED_EVENT_DISPATCH_TIME,
+            $timeTaken,
+            $dimensions);
     }
 
     public function eventVirtualAccountCreated(Entity $virtualAccount)
@@ -774,6 +791,20 @@ class Core extends Base\Core
         ];
 
         $this->app['events']->dispatch('api.virtual_account.created', $eventPayload);
+
+        $virtualAccountCreationTime = $virtualAccount->getCreatedAt();
+
+        $timeTaken = get_diff_in_millisecond($virtualAccountCreationTime);
+
+        $dimensions = [
+            Metric::LABEL_HAS_BANK_ACCOUNT => $virtualAccount->hasBankAccount(),
+            Metric::LABEL_HAS_VPA => $virtualAccount->hasVpa()
+        ];
+
+        $this->trace->histogram(
+            Metric::VIRTUAL_ACCOUNT_CREATED_EVENT_DISPATCH_TIME,
+            $timeTaken,
+            $dimensions);
     }
 
     /**
@@ -1106,51 +1137,95 @@ class Core extends Base\Core
         }
 
         // Only accounts with  2223, 2224, VAJSWCA prefix can be migrated
-        $accountPrefix = substr($bankAccount->getAccountNumber(), 0, 4);
-
-        if (in_array($accountPrefix, $validPrefixes))
-        {
-            if ($virtualAccount->hasBankAccount2() === true)
+        if ($virtualAccount->hasBankAccount2() === true){
+            $accountPrefixForBankAccount2 = substr($bankAccount2->getAccountNumber(), 0, 4);
+            if (in_array($accountPrefixForBankAccount2, $validPrefixes))
             {
-                $newBankAccount = $bankAccount2->replicate();
-            }
-            else
-            {
-                $newBankAccount = $bankAccount->replicate();
-            }
-
-            $newBankAccount->setIfsc(Provider::IFSC[Provider::AXIS]);
-
-            $this->repo->transaction(function() use ($virtualAccount, $bankAccount, $bankAccount2, $newBankAccount)
-            {
-                // If virtual account was migrated to RBL
-                // Then we set RBL bank account to virtualAccount->bankAccount
                 if ($virtualAccount->hasBankAccount2() === true)
                 {
-                    $virtualAccount->bankAccount()->associate($bankAccount2);
+                    $newBankAccount = $bankAccount2->replicate();
                 }
-
-                // set Axis to bankAccount2
-                $this->repo->saveOrFail($newBankAccount);
-
-                $virtualAccount->bankAccount2()->associate($newBankAccount);
-
-                $this->repo->saveOrFail($virtualAccount);
-            });
-
-            $this->trace->info(TraceCode::VA_MIGRATE_SUCCESS,
-                [
-                    'va_id'             => $virtualAccount->getPublicId(),
-                    'merchant_id'       => $virtualAccount->getMerchantId(),
-                    'old_bank_account'  => $bankAccount->getAccountNumber(),
-                    'old_ifsc'          => $bankAccount->getIfscCode(),
-                    'new_bank_account2' => $newBankAccount->getAccountNumber(),
-                    'new_ifsc'          => $newBankAccount->getIfscCode(),
-
-                ]);
-            return 1;
+                else
+                {
+                    $newBankAccount = $bankAccount->replicate();
+                }
+    
+                $newBankAccount->setIfsc(Provider::IFSC[Provider::AXIS]);
+    
+                $this->repo->transaction(function() use ($virtualAccount, $bankAccount, $bankAccount2, $newBankAccount)
+                {
+                    // If virtual account was migrated to RBL
+                    // Then we set RBL bank account to virtualAccount->bankAccount
+                    if ($virtualAccount->hasBankAccount2() === true)
+                    {
+                        $virtualAccount->bankAccount()->associate($bankAccount2);
+                    }
+    
+                    // set Axis to bankAccount2
+                    $this->repo->saveOrFail($newBankAccount);
+    
+                    $virtualAccount->bankAccount2()->associate($newBankAccount);
+    
+                    $this->repo->saveOrFail($virtualAccount);
+                });
+    
+                $this->trace->info(TraceCode::VA_MIGRATE_SUCCESS,
+                    [
+                        'va_id'             => $virtualAccount->getPublicId(),
+                        'merchant_id'       => $virtualAccount->getMerchantId(),
+                        'old_bank_account'  => $bankAccount->getAccountNumber(),
+                        'old_ifsc'          => $bankAccount->getIfscCode(),
+                        'new_bank_account2' => $newBankAccount->getAccountNumber(),
+                        'new_ifsc'          => $newBankAccount->getIfscCode(),
+    
+                    ]);
+                return 1;
+            }
+        }else{
+            $accountPrefixForBankAccount = substr($bankAccount->getAccountNumber(), 0, 4);
+            if (in_array($accountPrefixForBankAccount, $validPrefixes))
+            {
+                if ($virtualAccount->hasBankAccount2() === true)
+                {
+                    $newBankAccount = $bankAccount2->replicate();
+                }
+                else
+                {
+                    $newBankAccount = $bankAccount->replicate();
+                }
+    
+                $newBankAccount->setIfsc(Provider::IFSC[Provider::AXIS]);
+    
+                $this->repo->transaction(function() use ($virtualAccount, $bankAccount, $bankAccount2, $newBankAccount)
+                {
+                    // If virtual account was migrated to RBL
+                    // Then we set RBL bank account to virtualAccount->bankAccount
+                    if ($virtualAccount->hasBankAccount2() === true)
+                    {
+                        $virtualAccount->bankAccount()->associate($bankAccount2);
+                    }
+    
+                    // set Axis to bankAccount2
+                    $this->repo->saveOrFail($newBankAccount);
+    
+                    $virtualAccount->bankAccount2()->associate($newBankAccount);
+    
+                    $this->repo->saveOrFail($virtualAccount);
+                });
+    
+                $this->trace->info(TraceCode::VA_MIGRATE_SUCCESS,
+                    [
+                        'va_id'             => $virtualAccount->getPublicId(),
+                        'merchant_id'       => $virtualAccount->getMerchantId(),
+                        'old_bank_account'  => $bankAccount->getAccountNumber(),
+                        'old_ifsc'          => $bankAccount->getIfscCode(),
+                        'new_bank_account2' => $newBankAccount->getAccountNumber(),
+                        'new_ifsc'          => $newBankAccount->getIfscCode(),
+    
+                    ]);
+                return 1;
+            }
         }
-
         return 0;
     }
 
@@ -1228,59 +1303,71 @@ class Core extends Base\Core
         }
 
         // default whitespace ' ' is on purpose
-        $afterId = $input['after_id'] ?? ' ';
-        $nextAfterId = ' ';
-
-        $fromTime     = $input['from_time'];
-        $toTime       = $input['to_time'];
-        $limit        = $input['limit'] ?? 1000;
-        $processTimes = $input['process_count'] ?? 1;  // Number of Batches
-        $merchantIds  = $input['merchant_ids'] ?? [];
-
-        for ($currentCount = 1; $currentCount <= $processTimes; $currentCount++)
-        {
-            $this->trace->debug(TraceCode::VA_MIGRATE_PROCESS_TRIGGERING,
-                [
+        $afterId       = $input['after_id'] ?? ' ';
+        $nextAfterId   = ' ';
+        $fromTime      = $input['from_time'];
+        $toTime        = $input['to_time'];
+        $limit         = $input['limit'] ?? 1000;
+        $processTimes  = $input['process_count'] ?? 1;
+        $merchantIds   = $input['merchant_ids'] ?? [];
+        $virtualAccountIds = $input['VirtualAccountIds'] ?? [];
+    
+        if (!empty($merchantIds)) {
+            for ($currentCount = 1; $currentCount <= $processTimes; $currentCount++) {
+                $this->trace->debug(TraceCode::VA_MIGRATE_PROCESS_TRIGGERING, [
                     'after_id'     => $afterId,
                     'job_mode'     => $jobMode,
                     'from_time'    => $fromTime,
                     'count'        => $currentCount,
                     'merchant_ids' => $merchantIds,
                 ]);
-
-            $subQuery = $this->repo->virtual_account->getMigrateQuery($afterId, $fromTime, $toTime, $limit, $merchantIds, $ifscCode);
-
-            // get the max(id) of the above dataset. This is used as the $afterId for the next run.
-            $nextAfterId = $this->getNextBatchIdForRblBankMigrate($subQuery);
-
-            if ($jobMode === 'sync')
-            {
-                $this->migrateRblBankVirtualAccounts($afterId, $nextAfterId, $fromTime, $toTime, $limit, $ifscCode, $merchantIds);
+    
+                $subQuery = $this->repo->virtual_account->getMigrateQuery($afterId, $fromTime, $toTime, $limit, $merchantIds, $ifscCode);
+                $nextAfterId = $this->getNextBatchIdForRblBankMigrate($subQuery);
+    
+                if ($jobMode === 'sync') {
+                    $this->migrateRblBankVirtualAccounts($afterId, $nextAfterId, $fromTime, $toTime, $limit, $ifscCode, $merchantIds);
+                } else {
+                    VirtualAccountMigrate::dispatch($this->mode, $afterId, $nextAfterId, $fromTime, $toTime, $limit, $ifscCode, $merchantIds);
+                }
+    
+                if ($currentCount === $processTimes || $afterId === $nextAfterId) {
+                    break;
+                }
+    
+                $afterId = $nextAfterId;
             }
-            elseif ($jobMode === 'async')
-            {
-                VirtualAccountMigrate::dispatch(
-                    $this->mode,
-                    $afterId,
-                    $nextAfterId,
-                    $fromTime,
-                    $toTime,
-                    $limit,
-                    $ifscCode,
-                    $merchantIds);
+        } else {
+            $startTime = millitime();
+            $virtualAccounts = $this->repo->virtual_account->fetchActiveVirtualAccountIds($virtualAccountIds);
+    
+            $this->trace->debug(TraceCode::VA_MIGRATE_PROCESS_TRIGGERING, [
+                'after_id'        => $afterId,
+                'job_mode'        => $jobMode,
+                'from_time'       => $fromTime,
+                'virtualAccounts' => $virtualAccounts,
+            ]);
+    
+            $count = 0;
+            foreach ($virtualAccounts as $virtualAccount) {
+                try {
+                    $whetherMigrated = $this->repo->transaction(function() use ($virtualAccount) {
+                        return $this->migrateRblBankToAxisIfsc($virtualAccount);
+                    });
+                    $count += $whetherMigrated;
+                } catch (\Throwable $e) {
+                    $this->trace->traceException($e);
+                }
             }
-
-            // Check if all done
-            if ($currentCount === $processTimes)
-            {
-                break;
-            }
-
-            $afterId = $nextAfterId;
+    
+            $this->trace->info(TraceCode::VA_MIGRATE_TIME, [
+                'time_taken' => millitime() - $startTime ?? 0,
+                'migrated'   => $count,
+            ]);
         }
-
+    
         return [
-            'Success' => true,
+            'Success'       => true,
             'next_after_id' => $nextAfterId
         ];
     }

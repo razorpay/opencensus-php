@@ -155,6 +155,11 @@ class Indusind extends Base
 
         foreach ($data['items'] as $emiPayment)
         {
+            if ($emiPayment->terminal->isOptimizer())
+            {
+                continue;
+            }
+
             $emiPlan = $emiPayment->emiPlan;
 
             $emiTenure = $emiPlan['duration'];

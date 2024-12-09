@@ -10,9 +10,12 @@ use ReflectionClass;
 use RZP\Constants\Entity;
 use RZP\Constants\Es;
 use RZP\Constants\Mode;
+use RZP\Constants\Table;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Constants\Metric;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Services\WDAService;
 use RZP\Trace\TraceCode;
 use Database\Connection;
@@ -28,6 +31,7 @@ use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Card\Repository;
 
 use Rzp\Wda_php\SortOrder;
 use Rzp\Wda_php\Symbol;
@@ -154,6 +158,15 @@ trait RepositoryFetch
         // Process params (sanitization, validation, modification, etc.)
         $startTimeMs = round(microtime(true) * 1000);
 
+        if ($this->printApiDecompLog())
+        {
+            $this->trace->info(TraceCode::API_DECOMP_ORDER_PAYMENTS_ROUTE_PARAM, [
+                'params'     => $params,
+                'merchantId' => $merchantId,
+                'route_auth'       => $this->auth->getAuthType(),
+            ]);
+        }
+
         $this->processFetchParams($params);
 
         $expands = $this->getExpandsForQueryFromInput($params);
@@ -192,6 +205,7 @@ trait RepositoryFetch
             $baseQueryPresent = true;
         }
 
+
         $connection = null;
 
         $endTimeMs = round(microtime(true) * 1000);
@@ -213,12 +227,12 @@ trait RepositoryFetch
 
             $query = $this->newQueryWithConnection($connection);
         }
-
         $query = $query->with($expands);
 
         $this->addCommonQueryParamMerchantId($query, $merchantId);
 
         $this->setEsRepoIfExist();
+
 
         $endTimeMs = round(microtime(true) * 1000);
 
@@ -234,6 +248,27 @@ trait RepositoryFetch
         // Splits the params into mysqlParams and esParams. Check methods doc on
         // how that happens.
         list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+
+        if ($this->printApiDecompLog())
+        {
+            $this->trace->info(TraceCode::API_DECOMP_ES_AND_MYSQL_PARAMETER, [
+                'params'           => $params,
+                'es_params'        => $esParams,
+                'mysql_params'     => $mysqlParams,
+                'expands_params'   => $expands,
+                'merchantId'       => $merchantId,
+                'route_auth'       => $this->auth->getAuthType(),
+                'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+        $this->trace->count(Metric::API_DECOMP_PARAMETERS, [
+            'route_auth'       => $this->auth->getAuthType(),
+            'es_params'        => empty($esParams) === false,
+            'mysql_params'     => empty($mysqlParams) === false,
+            'expands_param'    => empty($expands) === false,
+            'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+        ]);
 
         // If we find that there are es params then we do es search.
         // Currently (as commented in getMysqlAndEsParams method) we raise bad
@@ -256,7 +291,6 @@ trait RepositoryFetch
 
             return $esSearchResult;
         }
-
         $startTimeMs = round(microtime(true) * 1000);
 
         // If above doesn't happen we build query for mysql fetch and return the
@@ -290,7 +324,6 @@ trait RepositoryFetch
             ]);
         }
 
-        //
         // For now, we want to expose this only for proxy auth.
         // We would want to expose this to private auth as well
         // in the future, but need a little bit though around
@@ -386,6 +419,15 @@ trait RepositoryFetch
         }
 
         return $entities;
+    }
+
+    public function printApiDecompLog()
+    {
+        if ($this->app['api.route']->getCurrentRouteName() === 'order_payments' || $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_by_id' || $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_multiple')
+        {
+            return true;
+        }
+        return false;
     }
 
     public function checkWdaRoute($expands, $baseQueryPresent, $connectionType)
@@ -525,7 +567,7 @@ trait RepositoryFetch
                 return $this->getArchivedDataReplicaConnection();
 
             case ConnectionType::DATA_WAREHOUSE_ADMIN:
-                if ($this->isExperimentEnabled(self::ADMIN_TIDB_EXPERIMENT) === true)
+                if ($this->shouldRouteTrafficToTidb() === true)
                 {
                     return $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
                 }
@@ -533,7 +575,7 @@ trait RepositoryFetch
                 return $this->getPaymentFetchReplicaConnection();
 
             case ConnectionType::DATA_WAREHOUSE_MERCHANT:
-                if ($this->isExperimentEnabled(self::MERCHANT_TIDB_EXPERIMENT) === true)
+                if ($this->shouldRouteTrafficToTidb() === true)
                 {
                     return $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
                 }
@@ -556,6 +598,20 @@ trait RepositoryFetch
         return $connection;
     }
 
+    protected function shouldRouteTrafficToTidb()
+    {
+        if ($this->app->runningUnitTests() === true) {
+            return false;
+        }
+
+        if (in_array($this->app['env'], [Environment::BVT, Environment::AUTOMATION], true) === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     protected function isExperimentEnabled($experiment)
     {
         $app = $this->app;
@@ -564,7 +620,7 @@ trait RepositoryFetch
             $experiment, $app['basicauth']->getMode() ?? Mode::LIVE);
 
         if ($this->entity == Entity::ORDER && $app['basicauth']->getMode() == Mode::TEST) {
-            $variant = $this->isTestModeOrderExperimentEnabled();
+            $variant = 'on';
         }
 
 //        $this->trace->info(TraceCode::REARCH_TIDB_EXPERIMENT_VARIANT, [
@@ -957,19 +1013,50 @@ trait RepositoryFetch
 
     protected function buildQueryWithParams($query, $params)
     {
-        foreach ($params as $key => $value)
-        {
-            $func = 'addQueryParam' . studly_case($key);
 
-            if (method_exists($this, $func))
-            {
+        if (!empty($params['phase'])) {
+            $phases = explode(',', $params['phase']);
+            $query = $query->whereIn('phase', $phases);
+        }
+
+            if($this->entity == 'dispute') {
+                $disputePaymentIdColumn = $this->repo->dispute->dbColumn(\RZP\Models\Dispute\Entity::PAYMENT_ID);
+                $disputeEvidenceDisputeIdColumn = $this->repo->dispute_evidence_document->dbColumn('dispute_id');
+                $paymentIdColumn = $this->repo->payment->dbColumn(Payment::ID);
+                $paymentInternationalColumn = $this->repo->payment->dbColumn(Payment::INTERNATIONAL);
+                $query = $query->from('disputes')
+                    ->addSelect('disputes.*')
+                    ->addSelect($paymentInternationalColumn . ' as international')  // Add international field from payments
+                    ->leftJoin(Table::PAYMENT, $disputePaymentIdColumn, '=', $paymentIdColumn);
+                if (isset($params['international'])) {
+                    $query = $query->where($paymentInternationalColumn, '=', $params['international']);
+                }
+            }
+            else if ($this->entity == 'dispute_evidence_document')  {
+                $query = $query->addSelect('dispute_evidence_document.*');
+            }
+
+        foreach ($params as $key => $value) {
+            if (in_array($key, ['phase'])) {
+                continue;
+            }
+            if (in_array($key, ['international'])) {
+                $func = 'addqueryparam'.studly_case('international');
                 $this->$func($query, $params);
             }
-            else
-            {
+            // Dynamically call specific addQueryParam methods if they exist
+            $func = 'addQueryParam' . studly_case($key);
+
+            if (method_exists($this, $func)) {
+
+                $this->$func($query, $params);
+            }
+            else {
+                // Default handling of query params
                 $this->addQueryParamDefault($query, $params, $key);
             }
         }
+
     }
 
     protected function buildWDAQueryWithParams($wdaQueryBuilder, $params)
@@ -1119,6 +1206,11 @@ trait RepositoryFetch
     {
         if ($this->hasEntityFetch() === true)
         {
+            $this->trace->count(Metric::API_DECOMP_ENTITY_FETCH, [
+                'route_auth'       => $this->auth->getAuthType(),
+                'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+
             return $this->entityFetch->processFetchParams($params);
         }
 
@@ -1726,6 +1818,7 @@ trait RepositoryFetch
      * @param BuilderEx $query
      * @param string    $merchantId
      */
+
     protected function addCommonQueryParamMerchantId($query, $merchantId)
     {
         // For admins, merchant ID may not be required.
@@ -1820,6 +1913,12 @@ trait RepositoryFetch
     {
         $createdAt = $this->dbColumn(Common::CREATED_AT);
         $query = $query->where($createdAt, '<=', $params['to']);
+    }
+    protected function addQueryParamInternational($query, $params)
+    {
+        $international = $this->dbColumnDispute(\RZP\Models\Card\Entity::INTERNATIONAL);
+
+        $query->where($international, '=', $params[Payment::INTERNATIONAL]);
     }
 
     protected function addWDAQueryParamTo($wdaQueryBuilder, $params)
@@ -2006,6 +2105,7 @@ trait RepositoryFetch
             $count  = 1000;
         }
 
+
         // In case multiple assertions are checked with different auths in same testcase, the max value for count
         // needs to always replaced. Hence preg_replace is being used to achieve that.
         $this->fetchParamRules[self::COUNT] = preg_replace(
@@ -2027,22 +2127,5 @@ trait RepositoryFetch
         $id = $entity::verifyIdAndStripSign($id);
 
         return $id;
-    }
-
-    public function isTestModeOrderExperimentEnabled(): string
-    {
-        $app = $this->app;
-        $variant = 'control';
-        try {
-            $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
-                self::TIDB_EXPERIMENT_FOR_TEST_MODE_ORDERS, Mode::TEST);
-        } catch (\Throwable $e) {
-        }
-
-        $this->trace->info(TraceCode::REARCH_TIDB_EXPERIMENT_VARIANT, [
-            'variant' => $variant,
-        ]);
-
-        return $variant;
     }
 }

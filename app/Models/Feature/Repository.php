@@ -21,6 +21,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Trace\TraceCode;
+use Neves\Events\TransactionalClosureEvent;
 use function PHPUnit\Framework\isEmpty;
 
 class Repository extends Base\Repository
@@ -28,6 +29,7 @@ class Repository extends Base\Repository
     use CacheQueries;
 
     protected $entity = 'feature';
+
 
     protected $appFetchParamRules = array(
         Entity::ENTITY_ID   => 'sometimes|string|max:14',
@@ -434,17 +436,28 @@ class Repository extends Base\Repository
         else
         {
             $feature->getValidator()->validateFeatureIsNotAlreadyAssigned($assignedFeatureNames);
-            try
-            {
-                $this->assignOnDCS($feature, $this->getAppMode());
+            $this->repo->transaction(function () use($feature) {
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($feature) {
+                    try
+                    {
+                        $this->assignOnDCS($feature, $this->getAppMode());
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->error(TraceCode::DCS_FEATURE_SYNC_FAIL,[
+                            "entity" => $feature,
+                            "action" => "assign",
+                            "error" => $e->getTraceAsString(),
+                            "error_message" => $e->getMessage(),
+                        ]);
+                        $this->trace->count(Metric::DCS_FEATURE_SYNC_FAIL, [
+                            "action" => "assign",
+                            "mode" => $this->getAppMode(),
+                        ]);
+                    }
+                }));
                 $this->repo->saveOrFail($feature);
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
-                $this->removeOnDCS($feature, $this->getAppMode());
-                throw $e;
-            }
+            });
         }
     }
 
@@ -481,16 +494,28 @@ class Repository extends Base\Repository
         }
         else
         {
-            try
-            {
-                $this->removeOnDCS($feature, $this->getAppMode());
+            $this->repo->transaction(function () use($feature) {
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($feature) {
+                    try
+                    {
+                        $this->removeOnDCS($feature, $this->getAppMode());
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->error(TraceCode::DCS_FEATURE_SYNC_FAIL,[
+                            "entity" => $feature,
+                            "action" => "remove",
+                            "error" => $e->getTraceAsString(),
+                            "error_message" => $e->getMessage(),
+                        ]);
+                        $this->trace->count(Metric::DCS_FEATURE_SYNC_FAIL, [
+                            "action" => "remove",
+                            "mode" => $this->getAppMode(),
+                        ]);
+                    }
+                }));
                 $this->deleteOrFail($feature);
-            }
-            catch (\Throwable $e)
-            {
-                $this->assignOnDCS($feature, $this->getAppMode());
-                throw $e;
-            }
+            });
         }
     }
 
@@ -529,11 +554,29 @@ class Repository extends Base\Repository
             $featureName = $entity->getName();
             $entityId    = $entity->getEntityId();
 
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($entity) {
+                try
+                {
+                    $this->assignOnDCS($entity, Mode::TEST, true);
+                    $this->assignOnDCS($entity, Mode::LIVE, true);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->error(TraceCode::DCS_FEATURE_SYNC_FAIL,[
+                        "entity" => $entity,
+                        "action" => "assign",
+                        "error" => $e->getTraceAsString(),
+                        "error_message" => $e->getMessage(),
+                    ]);
+                    $this->trace->count(Metric::DCS_FEATURE_SYNC_FAIL, [
+                        "action" => "assign",
+                        "mode" => "both",
+                    ]);
+                }
+            }));
+
             try
             {
-                $this->assignOnDCS($entity, Mode::TEST, true);
-                $this->assignOnDCS($entity, Mode::LIVE, true);
-
                 $testEntity = $this->newQueryWithConnection(Mode::TEST)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->where(Entity::NAME, $featureName)
@@ -561,9 +604,6 @@ class Repository extends Base\Repository
             catch (\Throwable $e)
             {
                 $this->trace->traceException($e);
-
-                $this->removeOnDCS($entity, Mode::TEST, true);
-                $this->removeOnDCS($entity, Mode::LIVE, true);
                 throw $e;
             }
         });
@@ -580,11 +620,30 @@ class Repository extends Base\Repository
         $this->repo->transactionOnLiveAndTestAndAsv(function () use ($entity) {
             $featureName = $entity->getName();
             $entityId = $entity->getEntityId();
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($entity) {
+                try
+                {
+                    $this->removeOnDCS($entity, Mode::TEST, true);
+                    $this->removeOnDCS($entity, Mode::LIVE, true);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->error(TraceCode::DCS_FEATURE_SYNC_FAIL,[
+                        "entity" => $entity,
+                        "action" => "remove",
+                        "error" => $e->getTraceAsString(),
+                        "error_message" => $e->getMessage(),
+                    ]);
+                    $this->trace->count(Metric::DCS_FEATURE_SYNC_FAIL, [
+                        "action" => "remove",
+                        "mode" => "both",
+                    ]);
+                }
+            }));
+
             try
             {
-                $this->removeOnDCS($entity, Mode::TEST, true);
-                $this->removeOnDCS($entity, Mode::LIVE, true);
-
                 $testEntity = $this->newQueryWithConnection(Mode::TEST)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->where(Entity::NAME, $featureName)
@@ -608,8 +667,6 @@ class Repository extends Base\Repository
             }
             catch (\Throwable $e)
             {
-                $this->assignOnDCS($entity, Mode::TEST, true);
-                $this->assignOnDCS($entity, Mode::LIVE, true);
                 throw $e;
             }
         });
@@ -710,9 +767,12 @@ class Repository extends Base\Repository
     public function getDcsEditVariant($featureName, $mode)
     {
         $mode = $mode ?? 'live';
-        $flag = $this->app['razorx']->getTreatment($featureName,
-            RazorxTreatment::DCS_EDIT_ENABLED,
-            $mode);
+        $properties = [
+            'id'            => $featureName,
+            'experiment_id' => $this->app['config']->get('app.dcs_edit_enabled_splitz_exp_id'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+        $flag = $response['response']['variant']['name'] ?? 'control';
 
         $this->trace->info(TraceCode::DCS_RAZORX_EXPERIMENT, [
             'feature_name' => $featureName,

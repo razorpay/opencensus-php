@@ -1210,11 +1210,19 @@ class Core extends Base\Core
 
                                 $this->repo->saveOrFail($transfer);
 
+                                $transferPayment->setFee(0);
+
+                                $transferPayment->setTax(0);
+
+                                $transferPayment->setMdr(0);
+
+                                $this->repo->saveOrFail($transferPayment);
+
                                 // create txns without balance update and dispatch for settlement
                                 // balance update is done asynchronously via AsyncBalanceUpdateForTransfer job
                                 $reverseShadowTransfersCore = new ReverseShadow\Transfers\Core();
 
-                                $reverseShadowTransfersCore->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal);
+                                $reverseShadowTransfersCore->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal,$transferPayment);
 
                                 $this->trace->info(
                                     TraceCode::TRANSFER_PROCCESSED_SUCCESSFULLY_IN_REVERSE_SHADOW,
@@ -2153,7 +2161,7 @@ class Core extends Base\Core
 
         $payloadName = $this->getPayloadName($transfer->getPublicId(),LedgerConstants::TRANSFER);
 
-        $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadNameWithTrashed($payloadName);
+        $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadNameWithTrashedOrderByNewest($payloadName);
 
         if (count($outboxEntries) == 0)
         {

@@ -18,6 +18,8 @@ use RZP\Reconciliator\FileProcessor;
 
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
 
+
+
 abstract class Base extends BaseProcessor
 {
     protected function reconcileEntity($entity)
@@ -43,6 +45,13 @@ abstract class Base extends BaseProcessor
 
     protected function shouldReconcileEntity($entity)
     {
+        $merchant = $entity->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            return true;
+        }
+
         if ($entity->getTransactionId() === null)
         {
             $this->trace->critical(TraceCode::EMANDATE_RECON_ROW_FAILED, [
@@ -58,13 +67,6 @@ abstract class Base extends BaseProcessor
 
     protected function markEntityReconciled($entity)
     {
-        $transaction = $entity->transaction;
-
-        if ($transaction->isReconciled() === true)
-        {
-            return;
-        }
-
         $this->trace->info(TraceCode::EMANDATE_DEBIT_RECONCILE_AT,
             [
                 "payment_id" => $entity->getId(),
@@ -76,12 +78,19 @@ abstract class Base extends BaseProcessor
             BaseReconciliate::RECONCILED_AT => $time,
         ];
 
-        $merchant = $transaction->merchant;
+        $merchant = $entity->merchant;
 
         if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
             (new SubReconciliate())->sendPaymentReconNFCDataToCLS($entity, $data);
 
+            return;
+        }
+
+        $transaction = $entity->transaction;
+
+        if ($transaction->isReconciled() === true)
+        {
             return;
         }
 

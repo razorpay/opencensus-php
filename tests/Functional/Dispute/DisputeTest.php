@@ -809,6 +809,57 @@ class DisputeTest extends TestCase
         $this->assertEquals('lost_merchant_debited', $dispute['internal_status']);
     }
 
+    public function testDisputeEditDeductOnLostInternational()
+    {
+        $data = $this->updateEditTestData([
+            "amount"                => 50,
+            "currency"              => "USD",
+            "base_amount"           => 505,
+            "base_currency"         => "INR",
+            "gateway_amount"        => 50,
+            "gateway_currency"      => "USD",
+            'deduct_at_onset'       => 0,
+            'deduction_source_type' => 'refund',
+        ]);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('payment', $txn['type']);
+
+        $this->ba->adminProxyAuth();
+
+        $eventTestDataKey = 'testDisputeLostEventData';
+
+        $this->expectWebhookEventWithContents('payment.dispute.lost', $eventTestDataKey);
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertArraySelectiveEquals([
+            'disputed' => false,
+            'status'   => 'refunded',
+        ], $payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('adjustment', $txn['type']);
+
+        $this->assertEquals(1000000, $txn['amount']);
+
+        $this->assertEquals(1000000, $txn['debit']);
+
+        $this->assertEquals(0, $txn['credit']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertNotNull($dispute['deduction_source_type']);
+
+        $this->assertNotNull($dispute['deduction_source_id']);
+
+        $this->assertEquals('lost_merchant_debited', $dispute['internal_status']);
+    }
+
     public function testDisputeEditDeductForNoBalance()
     {
         $data = $this->updateEditTestData();

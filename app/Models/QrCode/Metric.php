@@ -17,6 +17,10 @@ class Metric extends Base\Core
     const QR_CODE_CREATE_LATENCY_WIHTOUT_GW         = 'qr_code_create_latency_without_gw';
     const QR_CODE_CLOSE_SUCCESS                     = 'qr_code_close_success';
     const QR_CODE_CLOSE_FAILED                      = 'qr_code_close_failed';
+
+    const QR_CODE_SET_DEVICE_FAILED                 = 'qr_code_set_device_failed';
+
+    const QR_CODE_SET_DEVICE_SUCCESS                 = 'qr_code_set_device_success';
     const QR_STATUS_CHECK_REMINDER_CALLBACK_LATENCY = 'qr_status_check_reminder_callback_latency';
     const QR_STATUS_CHECK_GATEWAY_LATENCY           = 'qr_status_check_gateway_latency';
     const QR_STATUS_CHECK_PAYMENT_CREATION_FAILURE  = 'qr_status_check_payment_creation_failure';
@@ -109,6 +113,28 @@ class Metric extends Base\Core
         if ($errorMessage != null)
         {
             $metric = Metric::QR_CODE_CLOSE_FAILED;
+        }
+
+        $this->trace->count(
+            $metric,
+            array_merge($customDimensions, $dimensions)
+        );
+    }
+
+    public function pushDeviceIdUpdateMetrics($errorMessage, $requestSource)
+    {
+        $dimensions = $this->getDefaultDimensions($requestSource);
+
+        $customDimensions = [
+            Metric::LABEL_ERROR_MESSAGE => $errorMessage,
+            self::LABEL_REQUEST_SOURCE  => $requestSource,
+        ];
+
+        $metric = Metric::QR_CODE_SET_DEVICE_SUCCESS;
+
+        if ($errorMessage != null)
+        {
+            $metric = Metric::QR_CODE_SET_DEVICE_FAILED;
         }
 
         $this->trace->count(

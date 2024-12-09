@@ -7,6 +7,7 @@ namespace Unit\Models\Merchant\Detail;
 use Config;
 use Mail;
 use RZP\Constants\Mode;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Store\ConfigKey;
@@ -212,6 +213,28 @@ class BvsVerificationTest extends TestCase
 
     }
 
+    public function testGstInVerificationViaBvsIfFeatureFlagisEnabled()
+    {
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        [$detailCore] = $this->createAndFetchMocks(true);
+        [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::PROPRIETORSHIP);
+
+        $this->app->instance("rzp.mode", Mode::TEST);
+        // Submit L2 form
+        $this->fixtures->org->addFeatures([FeatureConstants::KYC_BLOCK_GST_FOR_VAS],'100000razorpay');
+        $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
+
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantDetail->getMerchantId(), 'merchant', Bvs\Constant::GSTIN);
+        $this->assertNotEmpty($bvsValidation);
+        $merchant_details = (new Detail\Repository())->findOrFailPublic($merchantDetail->getMerchantId());
+        $this->assertEquals(null, $merchant_details->getGstinVerificationStatus());
+
+    }
+
     public function testPOIVerificationViaBvsIfExpIsEnabledOnL2HUF()
     {
         Config::set('applications.kyc.mock', true);
@@ -235,6 +258,30 @@ class BvsVerificationTest extends TestCase
         $this->assertEquals('initiated', $merchant_details->getPoiVerificationStatus());
 
     }
+
+    public function testPOIVerificationViaBvsIfFeatureFlagisEnabled()
+    {
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        [$detailCore] = $this->createAndFetchMocks(false);
+        [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::HUF);
+
+        $this->app->instance("rzp.mode", Mode::TEST);
+        // Submit L2 form
+        $this->fixtures->org->addFeatures([FeatureConstants::KYC_BLOCK_PPAN_FOR_VAS],'100000razorpay');
+        $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
+
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantDetail->getMerchantId(), 'merchant', Bvs\Constant::PERSONAL_PAN);
+        $this->assertNotEmpty($bvsValidation);
+
+        $this->assertEquals(Bvs\Constant::PERSONAL_PAN, $bvsValidation->getArtefactType());
+        $merchant_details = (new Detail\Repository())->findOrFailPublic($merchantDetail->getMerchantId());
+        $this->assertEquals(null, $merchant_details->getPoiVerificationStatus());
+
+    }
     public function testCompanyPanVerificationViaBvsIfExpIsEnabledOnL2HUF()
     {
         Config::set('applications.kyc.mock', true);
@@ -256,6 +303,30 @@ class BvsVerificationTest extends TestCase
         $this->assertEquals("captured", $bvsValidation->getValidationStatus());
         $merchant_details = (new Detail\Repository())->findOrFailPublic($merchantDetail->getMerchantId());
         $this->assertEquals('initiated', $merchant_details->getCompanyPanVerificationStatus());
+
+    }
+
+    public function testCompanyPanVerificationViaBvsIfFeatureFlagisEnabled()
+    {
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        [$detailCore] = $this->createAndFetchMocks(false);
+        [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::HUF);
+
+        $this->app->instance("rzp.mode", Mode::TEST);
+        // Submit L2 form
+        $this->fixtures->org->addFeatures([FeatureConstants::KYC_BLOCK_CPAN_FOR_VAS],'100000razorpay');
+        $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
+
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantDetail->getMerchantId(), 'merchant', Bvs\Constant::BUSINESS_PAN);
+        $this->assertNotEmpty($bvsValidation);
+
+        $this->assertEquals(Bvs\Constant::BUSINESS_PAN, $bvsValidation->getArtefactType());
+        $merchant_details = (new Detail\Repository())->findOrFailPublic($merchantDetail->getMerchantId());
+        $this->assertEquals(null, $merchant_details->getCompanyPanVerificationStatus());
 
     }
 
@@ -492,6 +563,28 @@ class BvsVerificationTest extends TestCase
         $this->assertEquals("success", $bvsValidation->getValidationStatus());
         $merchant_details = (new Detail\Repository())->findOrFailPublic($merchantDetail->getMerchantId());
         $this->assertEquals('verified', $merchant_details->getCinVerificationStatus());
+
+    }
+    public function testCInVerificationViaBvsIfFeatureFlagIsEnabled()
+    {
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        [$detailCore] = $this->createAndFetchMocks(true);
+        [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::PRIVATE_LIMITED);
+
+        $this->app->instance("rzp.mode", Mode::TEST);
+        // Submit L2 form
+        $this->fixtures->org->addFeatures([FeatureConstants::KYC_BLOCK_CIN_FOR_VAS],'100000razorpay');
+        $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
+
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantDetail->getMerchantId(), 'merchant', Bvs\Constant::CIN);
+        $this->assertNotEmpty($bvsValidation);
+
+        $merchant_details = (new Detail\Repository())->findOrFailPublic($merchantDetail->getMerchantId());
+        $this->assertEquals(null, $merchant_details->getCinVerificationStatus());
 
     }
 
@@ -1276,6 +1369,28 @@ class BvsVerificationTest extends TestCase
 
     }
 
+    public function testBankAccountVerificationViaBvsIfFeatureFlagEnabled()
+    {
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        [$detailCore] = $this->createAndFetchMocks(true);
+        [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::PRIVATE_LIMITED);
+
+        $this->app->instance("rzp.mode", Mode::TEST);
+        // Submit L2 form
+        $this->fixtures->org->addFeatures([FeatureConstants::KYC_BLOCK_BAN_FOR_VAS],'100000razorpay');
+        $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
+
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantDetail->getMerchantId(),
+            'merchant',
+            Bvs\Constant::BANK_ACCOUNT);
+        $this->assertNotEmpty($bvsValidation);
+        $merchant_details = (new Detail\Repository())->findOrFailPublic($merchantDetail->getMerchantId());
+        $this->assertEquals(null, $merchant_details->getBankDetailsVerificationStatus());
+    }
     public function testBankAccountVerificationViaBvsIfExpIsDisabledOnL2()
     {
         Config::set('applications.kyc.mock', true);

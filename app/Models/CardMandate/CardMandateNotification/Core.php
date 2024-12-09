@@ -828,11 +828,8 @@ class Core extends Base\Core
 
         if ($payment->getMethod() === Method::CARD and $payment->isRecurring() === true and
             $payment->getRecurringType() === RecurringType::AUTO) {
-            $variant = $this->app['splitzService']->getTreatment($payment->getMerchantId(),
-                RazorxTreatment::ALLOW_FULCRUM_RECURRING_SUBSEQUENT,
-                Mode::LIVE);
-
-            if ($variant === 'on'){
+            $experimentName = $this->app['config']->get('app.fulcrum_recurring_subsequent_experiment');
+            if ($this->getSplitzResponse($payment->getMerchantId(), $experimentName) === 'enable') {
                 $chargeAccountMerchant = $gatewayInput[Payment\Entity::CHARGE_ACCOUNT_MERCHANT] ?? null;
 
                 $selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, $chargeAccountMerchant,
@@ -1020,4 +1017,22 @@ class Core extends Base\Core
 
         $this->app['events']->dispatch('api.order.notification.delivered', $eventPayload);
     }
+
+    public function getSplitzResponse(string $id, string $experimentId)
+    {
+        $properties = [
+            'id'            => $id,
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        return $response['response']['variant']['name'] ?? '';
+    }
+
 }

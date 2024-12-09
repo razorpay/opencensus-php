@@ -11,6 +11,8 @@ class Requests
     const P2P_CUSTOMER_DEREGISTER                           = 'p2p_customer_deregister';
     const P2P_TURBO_PREFERENCES                             = 'p2p_turbo_preferences';
     const P2P_TURBO_GATEWAY_CONFIG                          = 'p2p_turbo_gateway_config';
+    const P2P_TURBO_PREFERENCES_V2                          = 'p2p_turbo_preferences_v2';
+    const P2P_TURBO_GATEWAY_CONFIG_V2                       = 'p2p_turbo_gateway_config_v2';
 
     const P2P_BANKS_FETCH_ALL                               = 'p2p_banks_fetch_all';
     const P2P_CUSTOMER_BA_INITIATE_RETRIEVE                 = 'p2p_customer_ba_initiate_retrieve';
@@ -73,6 +75,7 @@ class Requests
     const P2P_CUSTOMER_MANDATE_PAUSE                       = 'p2p_customer_mandate_pause';
     const P2P_CUSTOMER_MANDATE_UNPAUSE                     = 'p2p_customer_mandate_unpause';
     const P2P_CUSTOMER_MANDATE_REVOKE                      = 'p2p_customer_mandate_revoke';
+    const P2P_CUSTOMER_CREATE_SESSION                      = 'p2p_customer_create_session';
 
     const P2P_MERCHANT_BLACKLIST_ADD_BATCH                = 'p2p_merchant_blacklist_add_batch';
     const P2P_MERCHANT_BLACKLIST_FETCH_ALL                = 'p2p_merchant_blacklist_fetch_all';

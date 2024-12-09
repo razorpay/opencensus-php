@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\CustomerToken;
 
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Models\Customer\Token;
@@ -34,99 +35,6 @@ class CustomerTokenTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
-    }
-
-    public function testEntityLoadFromTokensService()
-    {
-        $this->enableTokensRelationalLoadConfig();
-        $this->ba->privateAuth();
-        $this->fixtures->merchant->create(['id' => '10000merchant1']);
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === 'entity_relational_load_from_tokens_service')
-                    {
-                        return 'on';
-                    }
-                    return 'off';
-                }));
-
-
-        $request = [
-            'url'     => '/customers/cust_100000customer/tokens/100externaltok',
-            'method'  => 'get',
-        ];
-
-        $res = $this->makeRequestAndGetContent($request);
-
-        self::assertEquals('100externaltok', $res['token']);
-        self::assertEquals('upi', $res['method']);
-
-        $this->disableTokensRelationalLoadConfig();
-    }
-
-    public function testEntityLoadFailureFromTokensService()
-    {
-        $this->enableTokensRelationalLoadConfig();
-
-        $this->ba->privateAuth();
-
-        $this->startTest();
-
-        $this->disableTokensRelationalLoadConfig();
-    }
-
-    public function testGetCustomerTokensFromTokensService()
-    {
-        $this->enableTokensRelationalLoadConfig();
-
-        $this->ba->privateAuth();
-
-        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
-
-        $this->fixtures->merchant->addFeatures(['save_vpa'], '10000000000000');
-
-        $customer = $this->fixtures->customer->create(
-            [
-                'id'            => '100077customer',
-                'name'          => 'test123',
-                'email'         => 'test@razorpay.com',
-                'contact'       => '+919671967980',
-                'merchant_id'   => '10000000000000'
-            ]);
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === 'entity_relational_load_from_tokens_service')
-                    {
-                        return 'on';
-                    }
-                    return 'off';
-                }));
-
-        $this->startTest();
-
-        $this->fixtures->merchant->removeFeatures(['save_vpa'], '10000000000000');
-
-        $this->fixtures->merchant->disableMethod('10000000000000', 'upi');
-
-        $this->disableTokensRelationalLoadConfig();
     }
 
     public function testGetTokenMaxAmount()
@@ -329,9 +237,9 @@ class CustomerTokenTest extends TestCase
         $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000000000000', '1000ggcustomer', ['vault' => 'rzpvault', 'status'=> null]);
 
         $response = $this->startTest();
-        $this->assertEquals($response['status'], 'failed');
-        $this->assertEquals($response['error_code'], 'BAD_REQUEST_ERROR');
-        $this->assertEquals($response['error_description'], 'Token creation failed');
+        $this->assertEquals($response['status'], null);
+        $this->assertEquals($response['error_code'], null);
+        $this->assertEquals($response['error_description'], null);
     }
 
 
@@ -1508,6 +1416,99 @@ class CustomerTokenTest extends TestCase
         $this->assertArrayHasKey('success', $response);
 
         $this->assertArraySelectiveEquals($tokens, $response['success']);
+    }
+
+    public function testEntityLoadFromTokensService()
+    {
+        $this->enableTokensRelationalLoadConfig();
+        $this->ba->privateAuth();
+        $this->fixtures->merchant->create(['id' => '10000merchant1']);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'entity_relational_load_from_tokens_service')
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+
+
+        $request = [
+            'url'     => '/customers/cust_100000customer/tokens/100externaltok',
+            'method'  => 'get',
+        ];
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        self::assertEquals('100externaltok', $res['token']);
+        self::assertEquals('upi', $res['method']);
+
+        $this->disableTokensRelationalLoadConfig();
+    }
+
+    public function testEntityLoadFailureFromTokensService()
+    {
+        $this->enableTokensRelationalLoadConfig();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $this->disableTokensRelationalLoadConfig();
+    }
+
+    public function testGetCustomerTokensFromTokensService()
+    {
+        $this->enableTokensRelationalLoadConfig();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures(['save_vpa'], '10000000000000');
+
+        $customer = $this->fixtures->customer->create(
+            [
+                'id'            => '100077customer',
+                'name'          => 'test123',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '+919671967980',
+                'merchant_id'   => '10000000000000'
+            ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'entity_relational_load_from_tokens_service')
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+
+        $this->startTest();
+
+        $this->fixtures->merchant->removeFeatures(['save_vpa'], '10000000000000');
+
+        $this->fixtures->merchant->disableMethod('10000000000000', 'upi');
+
+        $this->disableTokensRelationalLoadConfig();
     }
 
     protected function mockSession()

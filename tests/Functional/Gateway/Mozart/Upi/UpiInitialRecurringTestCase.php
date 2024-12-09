@@ -1885,45 +1885,6 @@ class UpiInitialRecurringTestCase extends TestCase
         }
     }
 
-
-    /**
-     * returns a mock response of the razorx request
-     *
-     * @param string $inputFeature
-     * @param string $expectedFeature
-     * @param string $variant
-     * @return string
-     */
-    protected function getRazoxVariant(string $inputFeature, string $expectedFeature, string $variant): string
-    {
-        if ($expectedFeature === $inputFeature)
-        {
-            return $variant;
-        }
-
-        return 'control';
-    }
-
-    /**
-     * sets the razox mock
-     *
-     * @param [type] $closure
-     * @return void
-     */
-    protected function setRazorxMock($closure)
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->onlyMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx
-            ->method('getTreatment')
-            ->will($this->returnCallback($closure));
-    }
-
     public function setAutopayPricing()
     {
         $this->ba->adminAuth();
@@ -2033,5 +1994,43 @@ class UpiInitialRecurringTestCase extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    /**
+     * returns a mock response of the razorx request
+     *
+     * @param string $inputFeature
+     * @param string $expectedFeature
+     * @param string $variant
+     * @return string
+     */
+    protected function getRazoxVariant(string $inputFeature, string $expectedFeature, string $variant): string
+    {
+        if ($expectedFeature === $inputFeature)
+        {
+            return $variant;
+        }
+
+        return 'control';
+    }
+
+    /**
+     * sets the razox mock
+     *
+     * @param [type] $closure
+     * @return void
+     */
+    protected function setRazorxMock($closure)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback($closure));
     }
 }

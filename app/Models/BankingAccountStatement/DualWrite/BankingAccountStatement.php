@@ -63,6 +63,39 @@ class BankingAccountStatement extends Base
         return $bas;
     }
 
+    public function dualWriteAccountStatementBas($input)
+    {
+        $this->trace->info(
+            TraceCode::BAS_DUAL_WRITE_INIT,
+            ['bas_id' => $input['id']]
+        );
+
+        /** @var Entity $bas */
+        $bas = $this->getAPIBASFromAccountStatementInput($input);
+
+        /** @var Entity $apiBAS */
+        $apiBAS = $this->repo->banking_account_statement->find($bas->getId());
+
+        if (empty($apiBAS) === false)
+        {
+            $bas = $apiBAS->setRawAttributes($bas->getAttributes());
+        }
+
+        $this->updateLinkingForAccountStatement($bas, $apiBAS);
+
+        // This is needed otherwise it check whether the associated entities are created or not.
+        $bas->setIgnoreRelationsForServiceEntities();
+
+        $this->repo->banking_account_statement->saveOrFail($bas);
+
+        $this->trace->info(
+            TraceCode::BAS_DUAL_WRITE_COMPLETED,
+            ['bas_id' => $bas->getId()]
+        );
+
+        return $bas;
+    }
+
     public function getAPIBASFromPayoutService(string $id, bool $sync = false)
     {
         $payoutServiceBASs = $this->repo->banking_account_statement->getPayoutServiceBAS($id);
@@ -101,6 +134,26 @@ class BankingAccountStatement extends Base
         return $bas;
     }
 
+    public function getAPIBASFromAccountStatementInput($input, bool $sync = false)
+    {
+        // converts the stdClass object into associative array.
+        $this->attributes = $input;
+
+        $this->processModifications();
+
+        $bas = new Entity;
+
+        $bas->setRawAttributes($this->attributes, $sync);
+
+        // Explicitly setting the connection.
+        $bas->setConnection($this->mode);
+
+        // This will ensure that updated_at columns are not overridden by saveOrFail.
+        $bas->timestamps = false;
+
+        return $bas;
+    }
+
     public function updateLinking(Entity $bas)
     {
         $bas->setTransactionId($bas->getId());
@@ -119,6 +172,28 @@ class BankingAccountStatement extends Base
 
             case self::EXTERNAL:
                 $this->updateBasAndTxnWithExternalData($bas, $txn);
+                break;
+        }
+    }
+
+    public function updateLinkingForAccountStatement(Entity $accountStatementBAS, $apiBAS)
+    {
+        $accountStatementBAS->setTransactionId($accountStatementBAS->getId());
+
+        $txn = $this->getTransactionForAccountStatement($accountStatementBAS, $apiBAS);
+
+        switch ($accountStatementBAS->getEntityType())
+        {
+            case self::PAYOUT:
+                $this->updateBasAndTxnWithPayoutData($accountStatementBAS, $txn);
+                break;
+
+            case self::PAYOUT_REVERSAL:
+                $this->updateBasAndTxnWithReversalData($accountStatementBAS, $txn);
+                break;
+
+            case self::EXTERNAL:
+                $this->updateBasAndTxnWithExternalData($accountStatementBAS, $txn);
                 break;
         }
     }
@@ -171,6 +246,62 @@ class BankingAccountStatement extends Base
             "balance_id"          => $balance->getId(),
             "posted_at"           => $bas->getPostedDate(),
             "created_at"          => $bas->getCreatedAt(),
+            "updated_at"          => $currentTimestamp
+        ];
+
+        $txn->setRawAttributes($attributes);
+
+        return $txn;
+    }
+
+    public function getTransactionForAccountStatement(Entity $accountStatementBAS, $apiBAS)
+    {
+        if ($apiBAS != null && !empty($apiBAS->transaction))
+        {
+            $this->trace->info(
+                TraceCode::BAS_DUAL_WRITE_USING_EXISTING_TRANSACTION,
+                [
+                    Entity::BAS_ID => $apiBAS->getId(),
+                    Entity::TRANSACTION_ID => $apiBAS->transaction->getId(),
+                ]
+            );
+
+            return $apiBAS->transaction;
+        }
+
+        $balance = $this->repo->balance->getBalanceByMerchantIdAccountNumberAndChannelOrFail($accountStatementBAS->getMerchantId(),
+                                                                                             $accountStatementBAS->getAccountNumber(),
+                                                                                             $accountStatementBAS->getChannel());
+
+        $txn = new TxnEntity;
+        $txn->setId($accountStatementBAS->getId());
+
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $attributes = [
+            "id"                  => $accountStatementBAS->getId(),
+            "merchant_id"         => $accountStatementBAS->getMerchantId(),
+            "amount"              => $accountStatementBAS->getAmount(),
+            "fee"                 => 0,
+            "mdr"                 => 0,
+            "tax"                 => 0,
+            "pricing_rule_id"     => null,
+            "debit"               => $accountStatementBAS->isTypeDebit() ?: 0,
+            "credit"              => $accountStatementBAS->isTypeCredit() ?: 0,
+            "currency"            => $accountStatementBAS->getCurrency(),
+            "balance"             => $accountStatementBAS->getBalance(),
+            "gateway_fee"         => 0,
+            "gateway_service_tax" => 0,
+            "api_fee"             => 0,
+            "fee_credits"         => 0,
+            "escrow_balance"      => 0,
+            "channel"             => $accountStatementBAS->getChannel(),
+            "settled_at"          => $currentTimestamp,
+            "reconciled_at"       => $currentTimestamp,
+            "reconciled_type"     => 'na',
+            "balance_id"          => $balance->getId(),
+            "posted_at"           => $accountStatementBAS->getPostedDate(),
+            "created_at"          => $accountStatementBAS->getCreatedAt(),
             "updated_at"          => $currentTimestamp
         ];
 

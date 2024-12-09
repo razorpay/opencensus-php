@@ -6,16 +6,23 @@ namespace Unit\Models\Merchant\Methods;
 
 use RZP\Constants\Mode;
 use RZP\Constants\Product;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Payment\Gateway;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Attribute\Type;
 use RZP\Models\Merchant\Attribute\Group;
 use RZP\Models\Merchant\Attribute\Service;
 use RZP\Models\Merchant\Methods\Core as MethodsCore;
+use RZP\Models\Merchant\Methods\Entity;
 use RZP\Models\Merchant\InternationalIntegration as InternationalIntegration;
 
 class CoreTest extends TestCase
 {
+
+    use PartnerTrait;
+    use DbEntityFetchTrait;
     public function getMerchantMethodsFixture($upiEnabled, $inAppUPIEnabled, $merchantId, $intlbankTransferModes = [])
     {
         $methods = [
@@ -127,7 +134,6 @@ class CoreTest extends TestCase
         $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
         $this->assertEquals($data['in_app'], 1);
     }
-
     public function testIntlBankTransferACHIsEnabled()
     {
         $intlBankTransferModes = [
@@ -238,5 +244,79 @@ class CoreTest extends TestCase
         $this->assertTrue($data['duitnow_pay']);
     }
 
+    public function testSetDefaultMethodsWithDefaultPaymentMethodsForPurePlatform()
+    {
+        $partner = $this->createPartner("pure_platform");
 
+        $merchant = $this->fixtures->create('merchant', ['id' => '8vUslVi0uFOSoy']);
+
+        $partnerApp = $this->getDbEntity('merchant_application', ['merchant_id' => $partner->getId()]);
+
+        $accessMapData = [
+            'merchant_id'     => $merchant->getId(),
+            'entity_id'       => $partnerApp->getApplicationId(),
+            'entity_type'     => 'application',
+            'entity_owner_id' => $partner->getId(),
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $defaultPaymentMethods = [
+            Entity::UPI => true
+        ];
+
+        $this->createConfigForPartnerApp($partnerApp->getApplicationId(), null, [
+                'default_payment_methods' => $defaultPaymentMethods
+            ]
+        );
+
+        $ba = $this->mockBasicAuth();
+        $ba->expects($this->atLeastOnce())->method('getOAuthApplicationId')->willReturn($partnerApp->getApplicationId());
+
+        $methods = (new MethodsCore())->setDefaultMethods($merchant, $partner);
+        $this->assertNotEmpty($methods);
+        $this->assertTrue($methods->isUpiEnabled());
+        $this->assertFalse($methods->isCreditCardEnabled());
+        $this->assertFalse($methods->isDebitCardEnabled());
+        $this->assertFalse($methods->isPrepaidCardEnabled());
+    }
+
+    public function testSetDefaultMethodsForPurePlatform()
+    {
+        $partner = $this->createPartner("pure_platform");
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '8vUslVi0uFOSoy']);
+
+        $partnerApp = $this->getDbEntity('merchant_application', ['merchant_id' => $partner->getId()]);
+
+        $accessMapData = [
+            'merchant_id'     => $merchant->getId(),
+            'entity_id'       => $partnerApp->getApplicationId(),
+            'entity_type'     => 'application',
+            'entity_owner_id' => $partner->getId(),
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $ba = $this->mockBasicAuth();
+        $ba->expects($this->atLeastOnce())->method('getOAuthApplicationId')->willReturn($partnerApp->getApplicationId());
+
+        $methods = (new MethodsCore())->setDefaultMethods($merchant, $partner);
+        $this->assertNotEmpty($methods);
+        $this->assertTrue($methods->isUpiEnabled());
+        $this->assertTrue($methods->isCreditCardEnabled());
+        $this->assertTrue($methods->isDebitCardEnabled());
+        $this->assertTrue($methods->isPrepaidCardEnabled());
+    }
+
+    protected function mockBasicAuth()
+    {
+        $mock = $this->getMockBuilder(BasicAuth::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getOAuthApplicationId'])
+            ->getMock();
+        $this->app->instance('basicauth', $mock);
+
+        return $mock;
+    }
 }

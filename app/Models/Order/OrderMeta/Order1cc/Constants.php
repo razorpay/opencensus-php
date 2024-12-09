@@ -32,6 +32,8 @@ final class Constants
     const ENTITY    = 'entity';
     const HAS_MORE  = 'has_more';
 
+    const COUPON_TYPE_AUTOMATIC = 'automatic';
+    const COUPON_SOURCE_SHOPIFY = 'shopify';
 
     const ACTION_INTERMEDIATE_REVIEW_STATUS_MAPPING = [
         self::APPROVE     => self::APPROVAL_INITIATED,

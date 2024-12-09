@@ -740,7 +740,7 @@ class Entity extends Base\PublicEntity
     // Increase txn limit for B2B intl_bank_transfer payments
     // Higher limit is now Rs 8.2L base amount
     // https://razorpay.slack.com/archives/C01LK94TC69/p1708595682462969?thread_ts=1708496760.889379&cid=C01LK94TC69
-    const MAX_PAYMENT_AMOUNT_DEFAULT_INTL_BANK_TRANSFER = 82000000;
+    const MAX_PAYMENT_AMOUNT_DEFAULT_INTL_BANK_TRANSFER = 247500000;
 
     public function isCustomOrgUpiQrEnabled(): bool
     {
@@ -1274,6 +1274,11 @@ class Entity extends Base\PublicEntity
         return $this->isLRSEducationFlowEnabled() || $this->isLRSTravelFlowEnabled();
     }
 
+    public function isNoCodeAppFeeFeatureFlagEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::NOCODEAPP_FEE_APPLICABLE) === true);
+    }
+
     public function isLRSImportFeeBreakupEnabled(): bool
     {
         return ($this->isFeatureEnabled(Dcs\Features\Constants::LRSImportFeeBreakup) === true);
@@ -1568,29 +1573,19 @@ class Entity extends Base\PublicEntity
 
     public function isCACEnabled() :bool
     {
-        $isCACExperimentEnabledVariant = app('razorx')->getTreatment($this->getId(),
-            RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
-            MODE::LIVE);
+        // This experiment acts as a blacklist for CAC - merchants for whom CAC should not be enabled.
+        $isExperimentEnabled = (new Core())->isSplitzExperimentEnable([
+            'id'            => $this->getId(),
+            'experiment_id' => app('config')->get('app.cac_blacklist_exp_id')
+        ], 'active',
+            TraceCode::CAC_EXPERIMENT_CHECK_FAILED);
 
-        $isCACExperimentDisabledVariant = app('razorx')->getTreatment($this->getId(),
-            RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_DISABLED,
-            MODE::LIVE);
+        app('trace')->info(TraceCode::CAC_EXPERIMENT_VARIANTS_STATUS, [
+            'experiment_status' => $isExperimentEnabled,
+            'merchant_id'       => $this->getId(),
+        ]);
 
-        app('trace')->info(TraceCode::CAC_EXPERIMENT_VARIANTS_STATUS,
-            [
-                'isCACExperimentEnabledVariant' => $isCACExperimentEnabledVariant,
-                'isCACExperimentDisabledVariant' => $isCACExperimentDisabledVariant,
-                'merchant_id' => $this->getId()
-            ]);
-
-        if ($isCACExperimentEnabledVariant != RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return $isCACExperimentDisabledVariant != RazorxTreatment::RAZORX_VARIANT_ON;
-        }
-        else
-        {
-            return $isCACExperimentEnabledVariant === RazorxTreatment::RAZORX_VARIANT_ON;
-        }
+        return !$isExperimentEnabled;
     }
 
     public function liveEnable()
@@ -4302,6 +4297,11 @@ class Entity extends Base\PublicEntity
         return $country ?? 'IN';
     }
 
+    public function setCountry(string $country)
+    {
+        $this->setAttribute(self::COUNTRY_CODE ,  $country);
+    }
+
     public function getCurrency()
     {
         return Currency::getCurrencyForCountry($this->getCountry()) ?? "INR";
@@ -4410,5 +4410,13 @@ class Entity extends Base\PublicEntity
         $this->setRelation('terminal',$terminals);
 
         return $terminals;
+    }
+
+    public function getOrgAttribute() {
+        return parent::getRelationValue('org');
+    }
+
+    public function getFeaturesAttribute() {
+        return parent::getRelationValue('features');
     }
 }

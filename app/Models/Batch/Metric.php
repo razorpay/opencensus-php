@@ -17,4 +17,5 @@ final class Metric
     const BATCH_REQUEST_PROCESS_TIME_MS      = "batch_request_process_time_ms";
     const BATCH_CREATE_TOTAL_PROCESS_TIME_MS = "batch_create_total_process_time_ms";
     const BATCH_ROW_PROCESS_TIME_MS          = "batch_row_process_time_ms";
+    const BATCH_FILE_DOWNLOAD_TIME_MS      = "batch_file_down_time_ms";
 }

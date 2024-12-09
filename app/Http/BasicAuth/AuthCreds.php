@@ -96,7 +96,7 @@ abstract class AuthCreds
      * Contains valid lengths of key.
      * rzp_mode                                = 3 + 1 + 4
      * rzp_mode_admin                          = 3 + 1 + 4 + 1 + 5
-     * rzp_mode_keyId                          = 3 + 1 + 4 + 1 + 24
+     * rzp_mode_keyId                          = 3 + 1 + 4 + 1 + 14
      * rzp_mode_merchantId                     = 3 + 1 + 4 + 1 + 14
      * rzp_mode_partner_clientID               = 3 + 1 + 4 + 1 + 7 + 1 + 14
      * rzp_mode_partner_clientID-acc_accountId = 3 + 1 + 4 + 1 + 7 + 1 + 14 + 1 + 3 + 1 + 14
@@ -114,6 +114,17 @@ abstract class AuthCreds
      */
     public static $validKeyLengths = [
         8, 14, 23, 31, 33, 50
+    ];
+
+    /**
+     * Contains valid lengths of key containing country code
+     * sg -  is a country code here.
+     * rzp_mode_sg_keyId                          = 3 + 1 + 4 + 1 + 2 + 1 + 14
+     * rzp_mode_sg_oauth_keyId                    = 3 + 1 + 4 + 1 + 2 + 1 + 5 + 1 + 14
+     * rzp_mode_sg_partner_clientId               = 3 + 1 + 4 + 1 + 2 + 1 + 7 + 1 + 14
+     * */
+    public static $validKeyLengthsWithCountryCode = [
+        26, 32, 34
     ];
 
     public function __construct($app, string $key = '')
@@ -345,5 +356,11 @@ abstract class AuthCreds
     public function isPayoutLinksPublicRoutes(string $route): bool
     {
         return in_array($route, Route::PAYOUT_LINKS_SPECIFIC_PUBLIC_ROUTES, true);
+    }
+
+    public static function isKeyWithCountryCode($key): bool
+    {
+        $keyLen = strlen($key);
+        return in_array($keyLen, static::$validKeyLengthsWithCountryCode);
     }
 }

@@ -2,24 +2,33 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Crypt;
 use Mail;
 use Mockery;
+use RZP\Exception;
+use Rzp\Credcase\Apikey\V1\ApiKeyListResponse;
+use Rzp\Credcase\Apikey\V1\ApiKeyResponse;
+use RZP\Error\ErrorCode;
+use RZP\Models\Key\CredcaseApi;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Merchant as MerchantMail;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Traits\MocksSplitz;
 
 class KeyTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
+    use MocksSplitz;
+
+    protected $credcaseMock;
 
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/KeyData.php';
-
         parent::setUp();
     }
 
@@ -107,28 +116,6 @@ class KeyTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $id, $user->getId());
 
         $this->startTest();
-    }
-
-    public function testGetKeys()
-    {
-        $merchant = $this->fixtures->create('merchant:with_keys');
-        $id = $merchant['id'];
-
-        $user = $this->fixtures->user->createUserForMerchant($id);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = '/keys';
-
-        $this->ba->proxyAuth('rzp_test_' . $id, $user->getId());
-
-        $content = $this->startTest();
-
-        $this->assertEquals(1, count($content['items']));
-
-        $this->assertEquals('rzp_test_AltTestAuthKey', $content['items'][0]['id']);
-
-        $this->assertEquals('key', $content['items'][0]['entity']);
     }
 
     public function testGetKeysByNonOwnerUser()
@@ -530,5 +517,206 @@ class KeyTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * @dataProvider getKeysDataProvider
+     */
+    public function testGetKeys($expectedResponse, $mockException, $expectedItemCount, $expectedFirstId, $expectedEntity, $testFunction)
+    {
+
+        $merchant = $this->fixtures->create('merchant:with_keys');
+        $id = $merchant['id'];
+
+        if ($mockException) {
+            $this->mockCredcaseApi(null, new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND));
+        } else {
+            foreach ($expectedResponse->getItems() as $keyResponse) {
+                $keyResponse->setOwnerId($id);
+            }
+            $this->mockCredcaseApi($expectedResponse, null);
+        }
+
+        $user = $this->fixtures->user->createUserForMerchant($id);
+
+        $this->mockAllSplitzTreatment();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/keys';
+        $testData['request']['method'] = 'GET';
+
+        $this->ba->proxyAuth('rzp_test_' . $id, $user->getId());
+
+        $content = $this->startTest();
+
+        $this->assertEquals($expectedItemCount, count($content['items']));
+        if ($expectedItemCount > 0) {
+            $this->assertEquals($expectedFirstId, $content['items'][0]['id']);
+            $this->assertEquals($expectedEntity, $content['items'][0]['entity']);
+        }
+    }
+
+    /**
+     * Data provider for testGetKeys
+     */
+    public function getKeysDataProvider()
+    {
+        $apiKeyResponse1 = new ApiKeyResponse();
+        $apiKeyResponse1->setId('rzp_test_AltTestAuthKey');
+        $apiKeyResponse1->setEntity('key');
+
+        $apiKeyResponse2 = new ApiKeyResponse();
+        $apiKeyResponse2->setId('rzp_test_AltTestAuthKe1');
+        $apiKeyResponse2->setEntity('key');
+
+        $singleKeyResponse = new ApiKeyListResponse();
+        $singleKeyResponse->setCount(1);
+        $singleKeyResponse->setEntity('key');
+        $singleKeyResponse->setItems([$apiKeyResponse1]);
+
+        $multipleKeyResponse = new ApiKeyListResponse();
+        $multipleKeyResponse->setCount(2);
+        $multipleKeyResponse->setEntity('key');
+        $multipleKeyResponse->setItems([$apiKeyResponse1, $apiKeyResponse2]);
+
+        $singleKeyMismatch = new ApiKeyListResponse();
+        $singleKeyMismatch->setCount(1);
+        $singleKeyMismatch->setEntity('key');
+        $singleKeyMismatch->setItems([$apiKeyResponse2]);
+
+
+        return [
+            'valid single key' => [
+                'expectedResponse' => $singleKeyResponse,
+                'mockException' => null,
+                'expectedItemCount' => 1,
+                'expectedFirstId' => 'rzp_test_AltTestAuthKey',
+                'expectedEntity' => 'key',
+                'testFunction' => 'testGetKeys'
+            ],
+            'valid multiple keys with mismatch' => [
+                'expectedResponse' => $multipleKeyResponse,
+                'mockException' => null,
+                'expectedItemCount' => 1,
+                'expectedFirstId' => 'rzp_test_AltTestAuthKey',
+                'expectedEntity' => 'key',
+                'testFunction' => 'testGetKeysCredcaseMismatchMultiple'
+            ],
+            'valid single key with credcase mismatch' => [
+                'expectedResponse' => $singleKeyMismatch,
+                'mockException' => null,
+                'expectedItemCount' => 1,
+                'expectedFirstId' => 'rzp_test_AltTestAuthKey',
+                'expectedEntity' => 'key',
+                'testFunction' => 'testGetKeysCredcaseMismatch'
+            ],
+            'credcase exception' => [
+                'expectedResponse' => null,
+                'mockException' => true,
+                'expectedItemCount' => 1,
+                'expectedFirstId' => 'rzp_test_AltTestAuthKey',
+                'expectedEntity' => 'key',
+                'testFunction' => 'testGetKeyswithCredcaseException'
+            ]
+        ];
+    }
+
+    protected function mockCredcaseApi($output = null, $exception = null)
+    {
+        $this->credcaseMock = Mockery::mock(CredcaseApi::class, [$this->app])->makePartial();
+        $this->app->instance('credcase', $this->credcaseMock);
+
+        $shouldReceive = $this->credcaseMock->shouldReceive('list')->byDefault();
+
+        if ($exception) {
+            $shouldReceive->andThrow($exception);
+        } else {
+            $shouldReceive->andReturn($output);
+        }
+    }
+
+
+    public function testCreateKeyWithCountry()
+    {
+        $merchant = $this->fixtures->create('merchant',['country_code'=>'SG']);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->ba->proxyAuth('rzp_test_'.$merchant->getId(), $user->getId());
+
+        $res = $this->startTest();
+        $this->assertMatchesRegularExpression('/rzp_test_sg_\w{14}/', $res['id']);
+        $this->assertMatchesRegularExpression('/\w{24}/', $res['secret']);
+
+        // Assert insertion of api key
+        $this->assertCount(2, $this->getDbEntities('key'), 'key present in database');
+
+        // assert that key got encrypted using rzp key
+        $keyFromDb = $this->getDbEntityById('key', $res['id']);
+        $decryptedSecret = Crypt::decrypt($keyFromDb['secret']);
+        $this->assertEquals($decryptedSecret, $res['secret']);
+        $this->assertEquals($decryptedSecret, $keyFromDb->getDecryptedSecret());
+    }
+
+    public function testGetKeysWithCountryCode()
+    {
+        $merchant = $this->fixtures->create('merchant',['country_code'=>'SG']);
+        $key = $this->fixtures->create('key', ['merchant_id' => $merchant->getId()]);
+
+        $id = $merchant['id'];
+
+        $user = $this->fixtures->user->createUserForMerchant($id);
+
+        $this->mockAllSplitzResponseDisable();
+
+        $testData = $this->testData['testGetKeys'];
+
+        $testData['request']['url'] = '/keys';
+
+        $this->ba->proxyAuth('rzp_test_' . $id, $user->getId());
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals(1, count($content['items']));
+
+        $this->assertEquals('rzp_test_sg_'.$key->getId(), $content['items'][0]['id']);
+
+        $this->assertEquals('key', $content['items'][0]['entity']);
+    }
+
+    public function testGetKeysWithCountryCodeCredcaseFlow()
+    {
+        $merchant = $this->fixtures->create('merchant',['id' => 'PNWiRsflEJCLtj','country_code'=>'SG']);
+        $key = $this->fixtures->create('key', ['merchant_id' => $merchant->getId()]);
+
+        $id = $merchant['id'];
+
+        $user = $this->fixtures->user->createUserForMerchant($id);
+
+        $testData = $this->testData['testGetKeys'];
+
+        $testData['request']['url'] = '/keys';
+
+        $apiKeyResponse1 = new ApiKeyResponse();
+        $apiKeyResponse1->setId('rzp_test_sg_'.$key->getId());
+        $apiKeyResponse1->setOwnerId($id);
+        $apiKeyResponse1->setEntity('key');
+        $singleKeyResponse = new ApiKeyListResponse();
+        $singleKeyResponse->setCount(1);
+        $singleKeyResponse->setEntity('key');
+        $singleKeyResponse->setItems([$apiKeyResponse1]);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockCredcaseApi($singleKeyResponse);
+
+        $this->ba->proxyAuth('rzp_test_' . $id, $user->getId());
+
+        $content = $this->startTest($testData);
+
+        $this->assertEquals(1, count($content['items']));
+
+        $this->assertEquals('rzp_test_sg_'.$key->getId(), $content['items'][0]['id']);
+
+        $this->assertEquals('key', $content['items'][0]['entity']);
+    }
 
 }

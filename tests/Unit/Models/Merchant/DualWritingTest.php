@@ -4,8 +4,10 @@
 namespace Unit\Models\Merchant;
 
 use DB;
+use Illuminate\Support\Facades\Redis;
 use Mockery;
 use Carbon\Carbon;
+use ReflectionClass;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\UniqueIdEntity;
@@ -29,6 +31,9 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Cron\Core as CronJobHandler;
 use RZP\Models\Merchant\Cron\Constants as CronConstants;
 use function PHPUnit\Framework\assertNotNull;
+use RZP\Jobs\Kafka as KafkaJobs;
+use Mockery as m;
+
 
 class DualWritingTest extends TestCase
 {
@@ -1683,6 +1688,76 @@ class DualWritingTest extends TestCase
         $merchantDetail1 = (new \RZP\Models\Merchant\Detail\Repository)->find($mid);
 
         $this->assertNotNull($merchantDetail1->getKycClarificationReasons());
+    }
+
+    public function testIncrementKafkaMessageProcessingAttempt()
+    {
+
+        $mid='LDWO4rOnPQTjan';
+
+        $this->createAndFetchMocks($mid,true,'api');
+
+        //insert success verification
+        $data = [
+            "database"            => "stage-pg_onboarding_service",
+            "table"               => "verification_details",
+            "type"                => "insert",
+            "ts"                  => 1673248693,
+            "xid"                 => 1389385481,
+            "commit"              => true,
+            "position"            => "mysql-bin-changelog.008996=>7826736",
+            "primary_key_columns" => [
+                "id"
+            ],
+            "data"                => [
+                "id"                  => "LDXmdN7bVNs9Qo",
+                "metadata"            => [
+                    "platform"       => "bvs",
+                    "bvs_probe_id"   => "LDWTUJHJBsTMXS",
+                    "aadhaar_linked" => "1"
+                ],
+                "created_at"          => 1675770614,
+                "updated_at"          => 1675770614,
+                "merchant_id"         => "LDWO4rOnPQTjan",
+                "artefact_type"       => "aadhaar_esign",
+                "verification_id"     => "LDWTUJHJBsTMXS",
+                "verification_unit"   => "auth",
+                "verification_status" => "verified"
+            ],
+            "old"                 => []
+        ];
+
+        $dualWriting = (new KafkaJobs\PgosCdcEventsJob($data, null));
+
+        $cacheMock = $this->getMockBuilder(Cache::class)->setMethods(['put', 'get'])
+            ->getMock();
+
+        $cacheMockery = \Mockery::mock(Cache::class);
+
+        $cacheMockery->shouldReceive('connection')
+            ->andReturn($cacheMock);
+
+        $reflectionClass = new ReflectionClass($dualWriting);
+        $cacheProperty = $reflectionClass->getProperty('cache');
+        $cacheProperty->setAccessible(true);
+        $cacheProperty->setValue($dualWriting, $cacheMock);
+
+        $redisKey = 'testRedisKey';
+        $attribute = 'testAttribute';
+        $expectedCacheKey = $attribute . $redisKey;
+        $attemptCount = 2;
+
+        $cacheMock->method('put')
+            ->will($this->returnValue(true));
+
+        $cacheMock->method('get')
+            ->will($this->returnValue($attemptCount));
+
+        // Call the method
+        $result = $dualWriting->incrementKafkaMessageProcessingAttempt($redisKey, $attribute);
+
+        // Assert the incremented result
+        $this->assertEquals($attemptCount + 1, $result);
     }
 }
 

@@ -502,43 +502,50 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayload($payment);
 
-        $experimentResult = $this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::POST_PAYMENT_TO_BILL_ME, $this->getMode());
-
-        if (($experimentResult === 'on') and  ($this->app->runningUnitTests() === false))
+        try
         {
-            $this->app['bill_me']->postPaymentDataToBillMe($payment->toArrayPublic(), false);
-        }
+            $variant = $this->app->razorx->getTreatment(
+                $payment->getMerchantId(),
+                RazorxTreatment::CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER,
+                $this->getMode()
+            );
 
-        $variant = $this->app->razorx->getTreatment(
-            $payment->getMerchantId(),
-            RazorxTreatment::CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER,
-            $this->getMode()
-        );
-
-        if(strtolower($variant) === 'on')
-        {
-            $country = $this->merchant->getCountry();
-            $isInternationalRecurringAuto = ((($payment->isInternational() === true) or ($country == 'MY'))
-            and ($payment->isRecurringTypeAuto() === true));
-
-            if (($payment->hasSubscription() === true) and
-                ($payment->isApiBasedEmandateAsyncPayment() === false) and
-                (($isInternationalRecurringAuto === false) or ($payment->getOffer() !== null)))
+            if(strtolower($variant) === 'on')
             {
-                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+                $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
+                $country = $merchant->getCountry();
+                $isInternationalRecurringAuto = ((($payment->isInternational() === true) or ($country == 'MY'))
+                    and ($payment->isRecurringTypeAuto() === true));
 
-                $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+                if (($payment->hasSubscription() === true) and
+                    ($payment->isApiBasedEmandateAsyncPayment() === false) and
+                    (($isInternationalRecurringAuto === false) or ($payment->getOffer() !== null)))
+                {
+                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+
+                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+                }
+            }
+            else
+            {
+                if (($payment->hasSubscription() === true) and
+                    ($payment->isApiBasedEmandateAsyncPayment() === false))
+                {
+                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+
+                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+                }
             }
         }
-        else
+        catch (\Throwable $ex)
         {
-            if (($payment->hasSubscription() === true) and
-                ($payment->isApiBasedEmandateAsyncPayment() === false))
-            {
-                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-
-                $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
-            }
+            $this->trace->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::SUBSCRIPTION_HANDLER_ERROR,
+                [
+                    'payment_id' => $payment->getId(),
+                ]);
         }
 
         // Removed reportInitialPayment from here,
@@ -1034,6 +1041,15 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
 
         $this->dispatchEventToEzetapNotification($payload);
+
+        $gateway=$payment->getGateway();
+
+        if($this->checkIfGatewayEnabledToSendDeviceNotification($gateway) === true){
+            //need to add Spitz Experiment here for triggering specific to upi_jkbank gateway
+            $DevicePayload = $this->getQrCodePaymentPayloadForDevice($payment);
+            $this->dispatchEventToEzetapDevice($DevicePayload);
+        }
+
     }
 
     protected function onInvoicePartiallyPaid($payment)
@@ -1726,6 +1742,80 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
+
+    /**
+     * Get the payload for QR code payment for device
+     * @param Payment\Entity $payment
+     * @return array
+     */
+    protected function getQrCodePaymentPayloadForDevice(Payment\Entity $payment)
+    {
+        $receiver = $payment->getReceiver();
+        $paymentContext = $payment->getMetadata('payment_context') ?? null;
+
+        $partialPayload[Constants\Entity::PAYMENT] = [
+            'entity' => $payment->toArrayPublic()
+        ];
+
+        if (empty($paymentContext['offer']) === false)
+        {
+            $partialPayload[Constants\Entity::PAYMENT]['entity']['upi']['offer'] = $paymentContext['offer'];
+        }
+
+        if (empty($paymentContext['emi']) === false)
+        {
+            $partialPayload[Constants\Entity::PAYMENT]['entity']['upi']['emi'] = $paymentContext['emi'];
+        }
+
+        $qrCodeArray = $receiver->toArrayPublic();
+        $qrCodeArray['device_id'] = $receiver->getDeviceId();
+
+        $partialPayload[Constants\Entity::QR_CODE] = [
+            'entity' => $qrCodeArray,
+        ];
+
+        return $partialPayload;
+    }
+
+
+    public function checkIfGatewayEnabledToSendDeviceNotification(string $gateway) : bool
+    {
+       try{
+               $properties = [
+                   'id'            => $gateway,
+                   'experiment_id' => $this->app->config->get('app.ezetap_device_notification_gateway_enabled'),
+                   'request_data'  => json_encode(['gateway' => $gateway]),
+               ];
+               $response   = $this->app['splitzService']->evaluateRequest($properties);
+
+               $this->app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                   'experiment_id' => $properties['experiment_id'],
+                   'gateway'       => $gateway,
+                   '$response'     => $response
+               ]);
+
+               $experimentResult = false; // Default value
+               $variables = $response['response']['variant']['variables'] ?? [];
+               foreach ($variables as $variable) {
+                   $key = $variable['key'] ?? '';
+                   $value = $variable['value'] ?? '';
+                   if ($key === 'result' && $value === 'on') {
+                       $experimentResult = true;
+                       break;
+                   }
+               }
+               return $experimentResult;
+       }catch (\Exception $e){
+           $this->trace->traceException(
+               $e,
+               null,
+               TraceCode::SPLITZ_ERROR
+           );
+           return false;
+       }
+           return false;
+    }
+
     protected function getVirtualAccountPaymentPayload(Payment\Entity $payment)
     {
         $receiver = $payment->receiver;
@@ -2361,6 +2451,19 @@ class ApiEventSubscriber extends Base\Core
         $this->app['ezetapNotification']->sendEzetapRequest($event);
     }
 
+
+    /**
+     * Dispatches event to ezetap device for device notification
+     * @param array $payload
+     * @return void
+     */
+    protected function dispatchEventToEzetapDevice(array $payload)
+    {
+        $event = $this->createEventEntity($payload);
+        $this->app['ezetapNotification']->sendDeviceNotification($event);
+    }
+
+
     /**
      * Sets storkProduct attribute to banking if balanceType is such but temporarily
      * controlled via a feature. This should be removed later.
@@ -2567,7 +2670,7 @@ class ApiEventSubscriber extends Base\Core
                         'id' => $payment->getMerchantId(),
                         'email' => $payment->merchant->merchantDetail?->getContactEmail(),
                         'name' => $payment->merchant->getName(),
-                        'brand_name' => $payment->merchant->getFilteredDba(),
+                        'billing_label' => $payment->merchant->getBillingLabel(),
                         'category2' => $payment->merchant->getCategory2(),
                         'details' => [
                             'contact_mobile' => $payment->merchant->merchantDetail?->getContactMobile(),

@@ -240,4 +240,13 @@ class Constants
         'product_config_create_v2',
         'product_config_fetch_v2',
     ];
+
+    const VALID_PARAMS_FOR_FETCH = [
+        'id',
+        'email',
+        'parent_id',
+        'account_code',
+        'skip',
+        'count',
+    ];
 }

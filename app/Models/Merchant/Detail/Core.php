@@ -329,7 +329,10 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateBusinessTypeForBankingMerchants($input, $merchant);
 
-        $merchantDetails->getValidator()->validateMerchantFieldsForBankingCompliance($input, $merchant);
+        if ((new Detail\Core)->isIndianMerchant($merchant) === true)
+        {
+            $merchantDetails->getValidator()->validateMerchantFieldsForBankingCompliance($input, $merchant);
+        }
 
         if ($merchant->isLinkedAccount() === true)
         {
@@ -366,22 +369,49 @@ class Core extends Base\Core
         $saveBusinessWebsite = true;
 
         Tracer::inspan(['name' => HyperTrace::PERFORM_KYC_VERIFICATION], function() use ($merchantDetails, $oldMerchantDetails, $merchant, $input, &$saveBusinessWebsite) {
+            $kycBlockFeatureFlags = [
+                FeatureConstants::KYC_BLOCK_PPAN_FOR_VAS => true,
+                FeatureConstants::KYC_BLOCK_CPAN_FOR_VAS => true,
+                FeatureConstants::KYC_BLOCK_GST_FOR_VAS => true,
+                FeatureConstants::KYC_BLOCK_CIN_FOR_VAS => true,
+                FeatureConstants::KYC_BLOCK_BAN_FOR_VAS => true,
+            ];
+
+            foreach ($kycBlockFeatureFlags as $key => $constant)
+            {
+                $kycBlockFeatureFlags[$key] = $merchant->org->isFeatureEnabled($key);
+            }
 
             $verificationStartTime = microtime(true);
             // do pan validation
-            $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
+            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_PPAN_FOR_VAS] === false)
+            {
+                $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
+            }
 
             $saveBusinessWebsite = $this->handleWebsiteInput($oldMerchantDetails, $merchantDetails, $input);
 
-            $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
+            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_CPAN_FOR_VAS] === false)
+            {
+                $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
+            }
 
-            $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
+            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_GST_FOR_VAS] === false)
+            {
+                $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
+            }
 
             $this->verifyShopEstbNumberIfApplicable($merchantDetails, $merchant, $input);
 
-            $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
+            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_CIN_FOR_VAS] === false)
+            {
+                $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
+            }
 
-            $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
+            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_BAN_FOR_VAS] === false)
+            {
+                $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
+            }
 
             $this->triggerSyncValidationRequests($merchant, $merchantDetails);
 
@@ -451,7 +481,7 @@ class Core extends Base\Core
 
                     $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
-                    // If the signup campaign is 'assisted_onboarding' or `partner_assisted_onboarding, 
+                    // If the signup campaign is 'assisted_onboarding' or `partner_assisted_onboarding,
                     // mark the milestone as L2 and submitted as true.
                     // In such cases, do not submit the activation form and do not create a CMMA case.
                     if(!empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant() and
@@ -649,7 +679,7 @@ class Core extends Base\Core
 
         if ($this->isNcResponded($merchantPosActivationStatus, Status::UNDER_REVIEW ) === true)
         {
-            $this->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
+            $this->updatePosActivationStatusOfMerchant($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
 
             $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
@@ -767,6 +797,8 @@ class Core extends Base\Core
                 $this->repo->merchant->saveOrFail($merchant);
 
                 $succeededIds[$merchantId] = true;
+                $this->trace->count(Metric::ACTIVATED_NOT_LIVE, ['status' => 'success']);
+
             }
             catch(\Throwable $ex)
             {
@@ -779,30 +811,21 @@ class Core extends Base\Core
                 );
 
                 $failedIds[$merchantId] = false;
+                $this->trace->count(Metric::ACTIVATED_NOT_LIVE, ['status' => 'failed']);
             }
 
         }
 
-        $traceData = [];
-
-        if (sizeof($failedIds) > 0) {
-            $traceData["activated_not_live_failed_count"] = sizeof($failedIds);
-        }
-
-        if (sizeof($succeededIds) > 0) {
-            $traceData["activated_not_live_success_count"] = sizeof($succeededIds);
-        }
-
-        if (!empty($traceData)) {
-            $this->trace->count(Metric::ACTIVATED_NOT_LIVE, $traceData);
-        }
-
-        return [
+        $summaryData = [
             "succeeded_ids" => $succeededIds,
             "failed_ids" => $failedIds,
             "success_count" => sizeof($succeededIds),
             "failed_count" => sizeof($failedIds),
         ];
+
+        $this->trace->info(Tracecode::ACTIVATION_DATA_FIX_CRON_SUMMARY_RESULT, $summaryData);
+
+        return $summaryData;
     }
 
     public function updateActivationProgressPGOSInternal($merchantId, $input)
@@ -4305,6 +4328,7 @@ class Core extends Base\Core
             {
                 case Status::ACTIVATED:
                 case Status::KYC_QUALIFIED_UNACTIVATED:
+                case Status::EDD_PENDING:
 
                     if ($merchant->isLinkedAccount() === false)
                     {
@@ -4965,7 +4989,6 @@ class Core extends Base\Core
                             }
 
                         }
-
                         break;
 
                     case Status::REJECTED:
@@ -5082,6 +5105,10 @@ class Core extends Base\Core
 
                 $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS], $rejectionReasons, $rejectionOption);
 
+                if($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
+                {
+                    (new Merchant\Activate)->processActivatePosAndMarkKycVerifiedEvent($merchant->getId());
+                }
                 //send mail
                 try
                 {
@@ -5101,7 +5128,7 @@ class Core extends Base\Core
                 catch (\Throwable $e)
                 {
                     $this->trace->error(TraceCode::MERCHANT_IN_PERSON_NOTIFICATION_FAILED, [
-                        'MerchantId'   => $merchantId,
+                        'MerchantId'   => $merchant->getId(),
                         'ErrorMessage' => $e->getMessage()
                     ]);
                     return $merchantDetails;;
@@ -5205,7 +5232,6 @@ class Core extends Base\Core
                         }
 
                     }
-
                     break;
 
                 case Status::REJECTED:
@@ -5293,6 +5319,10 @@ class Core extends Base\Core
 
             $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS], $rejectionReasons, $rejectionOption);
 
+            if($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
+            {
+                (new Merchant\Activate)->processActivatePosAndMarkKycVerifiedEvent($merchant->getId());
+            }
             //send mail
             try
             {
@@ -5378,7 +5408,7 @@ class Core extends Base\Core
             $this->setMerchantForInternalApi($merchant);
 
             //pos submission
-            $this->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW], $merchant);
+            $this->updatePosActivationStatusOfMerchant($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW], $merchant);
 
             unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
 
@@ -5397,7 +5427,7 @@ class Core extends Base\Core
                 'ErrorMessage' => $e->getMessage()
             ]);
 
-            return ['success' => false];
+            throw $e;
         }
 
         return ['success' => true];
@@ -6635,6 +6665,16 @@ class Core extends Base\Core
         return false;
     }
 
+    public function isIndianMerchant($merchant)
+    {
+        if (Country::matches($merchant->getCountry(), Country::IN))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     private function getStatusChangeLogs(Merchant\Entity $merchant)
     {
         $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
@@ -7298,14 +7338,6 @@ class Core extends Base\Core
             return Status::ACTIVATED;
         }
 
-        $excludeActivationStatusList = [
-            Status::NEEDS_CLARIFICATION,
-            Status::ACTIVATED,
-            Status::REJECTED
-        ];
-
-        $currentActivationStatus = $merchantDetails->getActivationStatus();
-
         //For scenarios where we don't have category/sub-cat of a merchant, setting activation flow as blacklist by default.
         $currentActivationFlow = ActivationFlow::BLACKLIST;
 
@@ -7324,14 +7356,7 @@ class Core extends Base\Core
 
         $isImpersonated = $this->dedupeCore->isMerchantImpersonated($merchantDetails->merchant);
 
-        $eligibleForAMP = (
-            $isActivationFlowEligible === true and
-            $isImpersonated === false and
-            $this->hasRiskTags($merchantDetails->merchant) === false and
-            in_array($currentActivationStatus, $excludeActivationStatusList) === false and
-            (new ClarificationDetailCore)->getNcCount($merchantDetails->merchant) === 0
-            // Merchant should not go in AMP from NC or UR if already been in NC
-        );
+        $eligibleForAMP = $this->isEligibleForActivation($merchantDetails, $isActivationFlowEligible, $isImpersonated);
 
         $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
             'merchant_id'               => $merchantDetails->getId(),
@@ -7415,7 +7440,6 @@ class Core extends Base\Core
             {
                 $this->trace->traceException($ex, Logger::ERROR, TraceCode::MERCHANT_EDIT_BUSINESS_DETAILS_FAILED);
             }
-
             if (in_array($splitzVariant, [Constants::SPLITZ_LIVE, Constants::SPLITZ_KQU]) === true)
             {
                 if (($activationStatusAutomation === Status::ACTIVATED_MCC_PENDING) and
@@ -7433,7 +7457,7 @@ class Core extends Base\Core
 
             if ($this->blockMerchantActivations($merchantDetails->merchant) === false)
             {
-                return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                return Status::ACTIVATED_MCC_PENDING;
             }
 
             return Status::UNDER_REVIEW;
@@ -7455,18 +7479,18 @@ class Core extends Base\Core
             $merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false
         )
         {
-            return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+            return  Status::ACTIVATED_MCC_PENDING;
         }
 
         if ($this->isAdditionalDocRequired($merchantDetails->getBusinessCategory(), $merchantDetails->getBusinessSubcategory()) === true)
         {
-            return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+            return Status::ACTIVATED_MCC_PENDING;
         }
 
         //This checks automation activation exclusion logic in PGOS
         if ($this->isEligibleForAutomationActivation() === false)
         {
-            return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+            return Status::ACTIVATED_MCC_PENDING;
         }
 
         $signatory = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
@@ -7479,7 +7503,7 @@ class Core extends Base\Core
         {
             if ($this->hasAppUrls($merchantDetails) === true)
             {
-                return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                return  Status::ACTIVATED_MCC_PENDING;
             }
             else
             {
@@ -7502,7 +7526,7 @@ class Core extends Base\Core
 
                     if (empty($mccResult[MVD\Constants::CATEGORY]) === true)
                     {
-                        return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                        return  Status::ACTIVATED_MCC_PENDING;
                     }
 
                     $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($mccResult[MVD\Constants::CATEGORY], $mccResult[MVD\Constants::SUBCATEGORY]);
@@ -7515,14 +7539,8 @@ class Core extends Base\Core
                     }
 
                     if ($this->isActivationFlowEligible($merchantDetails, $activationFlow) === false) {
-                        return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                        return  Status::ACTIVATED_MCC_PENDING;
                     }
-
-                    if ($this->isSubCategoryExcluded($merchant, $mccResult[MVD\Constants::SUBCATEGORY], $businessType) === true)
-                    {
-                        return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
-                    }
-
                 }
 
                 try {
@@ -7533,20 +7551,16 @@ class Core extends Base\Core
                         optional($signatory)->getStatus() === BvsValidationConstants::VERIFIED) {
                         return Status::ACTIVATED;
                     } else {
-                        return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                        return Status::ACTIVATED_MCC_PENDING;
                     }
                 } catch (BadRequestException $e) {
                     $this->trace->traceException($e, Logger::ERROR, TraceCode::FETCH_MERCHANT_POLICY_VERIFICATION_RESULT_FAILED);
-                    return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+                    return Status::ACTIVATED_MCC_PENDING;
                 }
             }
         }
         else
         {
-            if ($this->isSubCategoryExcluded($merchant, $merchantDetails->getBusinessSubcategory(), $businessType) === true)
-            {
-                return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
-            }
 
             if ($this->hasAppUrls($merchantDetails) === false)
             {
@@ -7556,7 +7570,7 @@ class Core extends Base\Core
                 }
             }
 
-            return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
+            return Status::ACTIVATED_MCC_PENDING;
         }
     }
 
@@ -13380,6 +13394,10 @@ class Core extends Base\Core
         return null;
     }
 
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws \Throwable
+     */
     public function updateMerchantPosActivationStatus(Entity $merchantDetails, string $posActivationStatus, mixed $rejectionReasons, string $rejectionOption)
     {
 
@@ -13394,14 +13412,15 @@ class Core extends Base\Core
             ];
 
             $payload[Entity::REJECTION_REASONS] = [];
-            foreach ($rejectionReasons as $rejectionReason) {
+            foreach ($rejectionReasons as $rejectionReason)
+            {
                 $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? '';
 
                 $payloadRecord = [
-                    Reason\Entity::REASON_CODE => $rejectionReasonCode,
-                    Reason\Entity::REASON_CATEGORY => $rejectionReason[Reason\Entity::REASON_CATEGORY],
+                    Reason\Entity::REASON_CODE        => $rejectionReasonCode,
+                    Reason\Entity::REASON_CATEGORY    => $rejectionReason[Reason\Entity::REASON_CATEGORY],
                     Reason\Entity::REASON_DESCRIPTION => RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode),
-                    Reason\Entity::REASON_TYPE => $rejectionReason[Reason\Entity::REASON_TYPE]
+                    Reason\Entity::REASON_TYPE        => $rejectionReason[Reason\Entity::REASON_TYPE]
                 ];
                 array_push($payload [Entity::REJECTION_REASONS], $payloadRecord);
 
@@ -13420,6 +13439,13 @@ class Core extends Base\Core
                 'response'    => $response,
             ]);
 
+            if ($response['downstream_status_code'] != 200)
+            {
+                throw new Exception\ServerErrorException(
+                    'Update Pos Activation Status failed',
+                    ErrorCode::SERVER_ERROR);
+            }
+
             return $response[DEConstants::POS_ACTIVATION_STATUS];
         }
 
@@ -13430,6 +13456,8 @@ class Core extends Base\Core
                 'merchant_id'   => $merchantId,
                 'error_message' => $exception->getMessage()
             ]);
+
+            throw $exception;
         }
 
         return null;
@@ -13664,13 +13692,7 @@ class Core extends Base\Core
         if ($activationFlow === ActivationFlow::GREYLIST) {
           if ($subcategoryInclusionExpEnabled === false) return false;
 
-            switch ($businessType) {
-                case BusinessType::NOT_YET_REGISTERED:
-                case BusinessType::INDIVIDUAL:
-                    return in_array($subCategory, SubcategoryV2::UNREGISTERED_GREYLISTED_MERCHANTS_ALLOWED_FOR_AUTOMATION);
-                default:
-                    return in_array($subCategory, SubcategoryV2::REGISTERED_GREYLISTED_MERCHANTS_ALLOWED_FOR_AUTOMATION);
-            }
+          return true;
         }
 
         return false;
@@ -13884,5 +13906,30 @@ class Core extends Base\Core
 
         return [$type, $format];
     }
+
+    private function isEligibleForActivation(Entity $merchantDetails, bool $isActivationFlowEligible, bool $isImpersonated): bool
+    {
+        $currentActivationStatus = $merchantDetails->getActivationStatus();
+        $splitzResult = $this->getSplitzResponse($merchantDetails->getMerchantId(), 'nc_automation_activation_exp_id');
+
+        if ($splitzResult === 'variables' && $currentActivationStatus === Status::NEEDS_CLARIFICATION
+            && (new Merchant\Core())->isRegularMerchant($merchantDetails->merchant)) {
+            return $isActivationFlowEligible && $isImpersonated === false;
+        }
+        $excludeActivationStatusList = [
+            Status::NEEDS_CLARIFICATION,
+            Status::ACTIVATED,
+            Status::REJECTED
+        ];
+        $ncCount = (new ClarificationDetailCore)->getNcCount($merchantDetails->merchant);
+        return (
+            $isActivationFlowEligible === true &&
+            $isImpersonated === false &&
+            $this->hasRiskTags($merchantDetails->merchant) === false &&
+            in_array($currentActivationStatus, $excludeActivationStatusList) === false &&
+            $ncCount === 0
+        );
+    }
+
 }
 

@@ -151,8 +151,9 @@ return [
     ],
 
     'ezetap-notification' => [
-        'mock'          => env('EZETAP_WEBHOOK_MOCK', false),
-        'url'           => env('EZETAP_WEBHOOK_URL'),
+        'mock'               => env('EZETAP_WEBHOOK_MOCK', false),
+        'url'                => env('EZETAP_WEBHOOK_URL'),
+        'device_webhook_url' => env('EZETAP_DEVICE_WEBHOOK_URL'),
         'secret'        => env('EZETAP_WEBHOOK_SECRET'),
     ],
 
@@ -1762,6 +1763,17 @@ return [
         'grpc_keep_alive_timeout_in_ms' => env('ASV_V2_GRPC_KEEP_ALIVE_TIMEOUT_IN_MS', 1000),
         'grpc_keep_alive_permit_without_calls' => env('ASV_V2_GRPC_KEEP_ALIVE_PERMIT_WITHOUT_CALLS', 0),
 
+        //
+        'disable_read_in_write_flow' => env('ASV_V2_DISABLE_READ_IN_WRITE_FLOW', false),
+        'stop_asv_entity_writes_merchant_email' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_MERCHANT_EMAIL', false),
+        'stop_asv_entity_writes_stakeholder' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_STAKEHOLDER', false),
+        'stop_asv_entity_writes_merchant_business_detail' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_MERCHANT_BUSINESS_DETAIL', false),
+        'stop_asv_entity_writes_merchant_document' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_MERCHANT_DOCUMENT', false),
+        'stop_asv_entity_writes_merchant_website' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_MERCHANT_WEBSITE', false),
+        'stop_asv_entity_writes_merchant_account' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_MERCHANT_ACCOUNT', false), // Shared for MERCHANT and ACCOUNT
+        'stop_asv_entity_writes_merchant_detail' => env('ASV_V2_STOP_ASV_ENTITY_WRITES_MERCHANT_DETAIL', false),
+
+
         // splitz experiment ids
         'splitz_experiment_website_read_merchantid' => env('ASV_SPLITZ_EXPERIMENT_WEBSITE_READ_MERCHANTID', ''),
         'splitz_experiment_website_read_find' => env('ASV_SPLITZ_EXPERIMENT_WEBSITE_READ_FIND', ''),
@@ -1954,7 +1966,12 @@ return [
         'url'      => env('AUTHZ_XPLATFORM_ADMIN_BASE_URL')
     ],
 
-
+    'optimizer_core_service' => [
+        'url'           => env('APP_OPTIMIZER_CORE_SERVICE_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_OPTIMIZER_CORE_SERVICE_SECRET', 'api'),
+        'timeout'       => env('APP_OPTIMIZER_CORE_SERVICE_TIMEOUT', 10),
+    ],
 
     'downtime_manager' => [
         'url' => env('DOWNTIME_MANAGER_URL'),

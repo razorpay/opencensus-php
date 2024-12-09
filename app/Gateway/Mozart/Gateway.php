@@ -2080,14 +2080,7 @@ class Gateway extends Base\Gateway
 
         if($isBajajFinserv === true)
         {
-            $variant = $this->app->razorx->getTreatment($input['merchant']['id'], RazorxTreatment::BAJAJ_FINSERV_REDIRECT_FLOW, $this->mode);
-            if(strtolower($variant) === 'v2')
-            {
-                $url =  $baseUrl . $prefix . '/' .  $gateway . '/v2/' . $this->action;
-            }
-            else {
-                $url =  $baseUrl . $prefix . '/' .  $gateway . '/v3/' . $this->action;
-            }
+            $url =  $baseUrl . $prefix . '/' .  $gateway . '/v3/' . $this->action;
         }
 
         $isGooglePay = $this->isGooglePayGateway($input);
@@ -3812,6 +3805,9 @@ class Gateway extends Base\Gateway
                 throw $exception;
             }
 
+            //changed this cuz receiving VPA in uppercase for pre-printed SQRs
+            $inputArray['payeeVPA'] = strtolower($inputArray['payeeVPA']);
+
             if (isset($inputArray['payeeVPA']) === true)
             {
                 $terminalData['gateway_merchant_id2'] = $inputArray['payeeVPA'];
@@ -3847,7 +3843,11 @@ class Gateway extends Base\Gateway
                 'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
             ];
 
-            return $this->upiPreProcess($data);
+//            return $this->upiPreProcess($data);    changed this cuz receiving VPA in uppercase for pre-printed SQRs
+
+            $mozartResp = $this->upiPreProcess($data);
+            $mozartResp['data']['terminal']['gateway_merchant_id2'] = strtolower($mozartResp['data']['terminal']['gateway_merchant_id2']);
+            return $mozartResp;
         }
 
         return json_decode($input, true);
@@ -3876,13 +3876,7 @@ class Gateway extends Base\Gateway
         if (($this->isUpiRecurringPayment($input['payment']) === true) and
             ($input['payment']['recurring_type'] === 'initial'))
         {
-            $variant = $this->app->razorx->getTreatment($input['payment']['merchant_id'],
-                RazorxTreatment::UPI_AUTOPAY_SHOW_INITIAL_AMOUNT, $this->mode);
-
-            if(strtolower($variant) === 'on')
-            {
-                $content['entities']['fam'] = true;
-            }
+            $content['entities']['fam'] = true;
         }
     }
 

@@ -69,6 +69,12 @@ class BusinessAuth
         'merchant_website_section_page_load',
         'payment_handle_get',
         'merchant_activation_business_categories_v2',
+
+    ];
+
+    public array $whitelistRoutesForSubmerchantOnboarding = [
+        'onboarding_create_or_fetch',
+        'onboarding_save',
     ];
 
     /**
@@ -256,6 +262,10 @@ class BusinessAuth
         // or validated by checkAndSetAccountScope if basic auth flow
         $account = $this->repo->merchant->find($accountId);
 
+        if ($this->canSkipWorkflowForSubmerchantOnboarding($route, $account)) {
+            return null;
+        }
+
         // this check is required for merchant_auth_with_impersonation on private_auth, proxy_auth and app_auth currently
         if (! $this->canSkipWorkflowToAccessSubmerchantKyc($route, $account)) {
             return $this->ba->invalidAccountId($accountId);
@@ -292,6 +302,23 @@ class BusinessAuth
             return true;
         }
 
+        return false;
+    }
+
+    private function canSkipWorkflowForSubmerchantOnboarding(string $route, Merchant\Entity $account): bool
+    {
+        if ((in_array($route, $this->whitelistRoutesForSubmerchantOnboarding, true) === true) and
+            ($account->getParentId() === $this->ba->authCreds->getMerchant()->getId()))
+        {
+            $this->trace->info(TraceCode::LINKED_ACCOUNT_USAGE,
+                [
+                    'route'          => $route,
+                    'submerchant_id' => $account->getId(),
+                    'partner_id'     => $this->authCreds->getMerchant()->getId()
+                ]);
+
+            return true;
+        }
         return false;
     }
 

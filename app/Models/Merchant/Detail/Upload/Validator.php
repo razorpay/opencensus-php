@@ -332,7 +332,7 @@ class Validator extends Base\Validator
             }
             else
             {
-                if($this->org !== null and $this->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+                if($this->org !== null and $this->org->isFeatureEnabled(Feature\Constants::VAS_KYC_RBI) === true)
                 {
                     if(preg_match(self::NEW_COMPANY_LLPIN_REGEX, $entry[Header::MIQ_CIN]) === 0)
                     {
@@ -365,7 +365,7 @@ class Validator extends Base\Validator
                 Merchant\Detail\BusinessType::NOT_YET_REGISTERED, Merchant\Detail\BusinessType::PROPRIETORSHIP,
             ];
 
-        if($this->org === null or $this->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === false)
+        if($this->org === null or $this->org->isFeatureEnabled(Feature\Constants::VAS_KYC_RBI) === false)
         {
             if(in_array($businessType, $businessTypesRequiringPersonalPan) === true)
             {
@@ -711,7 +711,7 @@ class Validator extends Base\Validator
 
                 $org = $this->repo->org->findOrFailPublic($this->orgId);
 
-                if($org !== null and $org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+                if($org !== null and $org->isFeatureEnabled(Feature\Constants::VAS_KYC_RBI) === true)
                 {
                     // Check if the Website is Razorpay URL
                     if (preg_match(self::RAZORPAY_URL, $value) === 1)

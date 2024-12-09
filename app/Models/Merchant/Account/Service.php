@@ -41,7 +41,7 @@ class Service extends Merchant\Service
     {
         $this->setAccountCodeIfApplicable($input);
 
-        $accounts = $this->repo->account->fetch($input, $this->merchant->getId());
+        $accounts = $this->repo->account->fetchFromAsv($input, $this->merchant->getId());
 
         return $accounts->toArrayPublic();
     }
@@ -112,7 +112,7 @@ class Service extends Merchant\Service
 
         $input[Entity::PARENT_ID] = $this->merchant->getId();
 
-        $accounts = $this->repo->account->fetch($input);
+        $accounts = $this->repo->account->fetchFromAsv($input);
 
         return $accounts->toArrayPublic();
     }
@@ -229,7 +229,7 @@ class Service extends Merchant\Service
     {
         $input[Entity::PARENT_ID] = $merchantId;
 
-        $linkedAccounts = $this->repo->account->fetch($input);
+        $linkedAccounts = $this->repo->account->fetchFromAsv($input);
 
         return [
             'linked_account_ids' => $linkedAccounts->getIds()

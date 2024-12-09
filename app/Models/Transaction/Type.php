@@ -30,6 +30,7 @@ class Type
     const CREDIT_TRANSFER         = 'credit_transfer';
     const BUNDLE_FEE              = 'bundle_fee';
     const PRODUCT_CHARGE          = 'product_charge';
+    const CREDIT                  = 'credit';
 
     //
     // These entities from transaction will not be considered for merchant invoice as we wont charge on these entities

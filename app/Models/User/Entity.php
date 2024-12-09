@@ -138,6 +138,7 @@ class Entity extends Base\PublicEntity
     // Constant for segregating user and merchant login / signup
     const USER_ONLY = 'user_only';
     const DEFAULT_MERCHANT_ID = 'default_merchant_id';
+    const IS_MERCHANT_ENTITIES_EMPTY = 'is_merchant_entities_empty';
 
     protected $fillable = [
         self::ID,
@@ -291,7 +292,7 @@ class Entity extends Base\PublicEntity
                     ->orderByRaw($sql, [$this->getEmail()]);
     }
 
-    public function getNonSuspendedMerchants($limit, $defaultMerchantId = null)
+    public function getNonSuspendedMerchants($limit = 100, $defaultMerchantId = null)
     {
         $merchantUsers = [];
 

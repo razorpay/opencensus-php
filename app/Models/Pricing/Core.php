@@ -7,6 +7,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\PaymentsUpi\PayerAccountType;
+use RZP\Models\Pricing\ChargeCollections\CCRouter;
+
 
 class Core extends Base\Core
 {
@@ -19,7 +21,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function addPlanRule(Plan $plan, array $input, string $ruleOrgId = null): Entity
+    public function addPlanRule(Plan $plan, array $input, string $ruleOrgId = null, $rampPhase = ''): Entity
     {
         $this->trace->info(TraceCode::PRICING_PLAN_RULE_ADD_ATTEMPT,
             $this->redactSensitiveInfoFromLogs($input));
@@ -46,9 +48,11 @@ class Core extends Base\Core
 
         $rule->setAuditAction(Action::CREATE_PRICING_PLAN_RULE);
 
-        $this->app['workflow']
-            ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
-            ->handle((new \stdClass), $rule);
+        if ($rampPhase != CCRouter::REVERSE_SHADOW && $rampPhase != CCRouter::ENABLE){
+            $this->app['workflow']
+                ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
+                ->handle((new \stdClass), $rule);
+        }
 
         $this->repo->saveOrFail($rule);
 
@@ -97,7 +101,7 @@ class Core extends Base\Core
      * Duplicate the existing rule, update its properties from input and create it as a new rule.
      * Soft delete the previous rule.
      */
-    public function editPlanRule(String $planId, String $ruleId, array $input, String $orgId = null): Entity
+    public function editPlanRule(String $planId, String $ruleId, array $input, String $orgId = null, $rampPhase = ''): Entity
     {
         $this->trace->info(
             TraceCode::PRICING_PLAN_RULE_UPDATE_ATTEMPT,
@@ -106,11 +110,11 @@ class Core extends Base\Core
                 'plan id' => $planId,
             ]);
 
-        $rule = $this->repo->pricing->getPlanRule($planId, $ruleId, $orgId);
+        $rule = $this->repo->pricing->getPlanRuleLegacy($planId, $ruleId, $orgId);
 
         $newRule = $rule->replicate();
 
-        $plan = $this->repo->pricing->getPlan($planId);
+        $plan = $this->repo->pricing->getPlanLegacy($planId);
 
         $planWithoutOldRule = $plan->reject(function($existingRule) use ($rule) {
             return $existingRule->getId() === $rule->getId();
@@ -130,9 +134,11 @@ class Core extends Base\Core
 
         $newRule->setAuditAction(Action::CREATE_UPDATE_PRICING_PLAN_RULE);
 
-        $this->app['workflow']
-             ->setEntityAndId($rule->getEntity(), $planId)
-             ->handle($rule, $newRule);
+        if ($rampPhase != CCRouter::REVERSE_SHADOW && $rampPhase != CCRouter::ENABLE){
+            $this->app['workflow']
+                ->setEntityAndId($rule->getEntity(), $planId)
+                ->handle($rule, $newRule);
+        }
 
         $newRule = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($rule, $newRule, $orgId)
         {
@@ -166,7 +172,7 @@ class Core extends Base\Core
         $inputRules = $input[Entity::RULES];
 
         // Validate plan name is unique
-        $plan = $this->repo->pricing->withBuyPricing()->getPlanByName($planName);
+        $plan = $this->repo->pricing->withBuyPricing()->getPlanByNameLegacy($planName);
 
         $validator->validatePlanCountZero($plan);
 

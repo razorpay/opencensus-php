@@ -127,6 +127,34 @@ class Core extends Base\Core
         }
     }
 
+    public function queueCreateInvoiceEntitiesForLinkedAccount(array $input)
+    {
+        RuntimeManager::setMaxExecTime(900);
+
+        (new Validator)->validateInput('linked_create_queue', $input);
+
+        $previousMonth = Carbon::now(Timezone::IST)->subMonth();
+
+        $year  = $previousMonth->year;
+
+        $month = $previousMonth->month;
+
+        $merchantIds = [];
+
+        if ((isset($input['month']) === true) and (isset($input['year']) === true))
+        {
+            $year  = $input['year'];
+
+            $month =  $input['month'];
+        }
+
+        if (isset($input['merchant_ids']) === true)
+        {
+            $merchantIds = $input['merchant_ids'];
+        }
+
+        $this->processLinkedMerchantInvoice($this->mode, $year, $month, $merchantIds);
+    }
     public function createAdjustmentInvoiceEntity(Adjustment\Entity $adjustment, array $input): Entity
     {
         $currentDate = Carbon::now(Timezone::IST);
@@ -682,15 +710,117 @@ class Core extends Base\Core
 
         $allEligibleUniqueMerchantIds = array_unique($allEligibleMerchantIds);
 
-        foreach($allEligibleUniqueMerchantIds as $index => $merchantId){
-            if(is_string($merchantId)) {
-                MerchantInvoiceJob::dispatch(
-                    $merchantId,
-                    $month,
-                    $year,
-                    $mode)
-                    // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
-                    ->delay($index % 901);
+        foreach ($allEligibleUniqueMerchantIds as $index => $merchantId) {
+            if (is_string($merchantId)) {
+                $this->trace->info(
+                    TraceCode::MERCHANT_INVOICE_DISPATCH,
+                    [
+                        'merchant_id' => $merchantId,
+                        'month' => $month,
+                        'year' => $year,
+                    ]);
+
+                try {
+                    MerchantInvoiceJob::dispatch(
+                        $merchantId,
+                        $month,
+                        $year,
+                        $mode)
+                        // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
+                        ->delay($index % 901);
+                } catch (\Throwable $e) {
+                    // Log the error and continue with the next merchant ID
+                    $this->trace->traceException(
+                        $e,
+                        TraceCode::MERCHANT_INVOICE_DISPATCH_FAILED,
+                        [
+                            'merchant_id' => $merchantId,
+                            'month' => $month,
+                            'year' => $year,
+                        ]);
+                }
+            }
+        }
+
+    }
+
+    public function processLinkedMerchantInvoice($mode, $year, $month, $merchantIds = [])
+    {
+        $redis = $this->app->redis->Connection('mutex_redis');
+
+        $parentMerchantIdsToBeIncluded = $redis->LRANGE(Constants::WHITELISTED_PARENT_IDS_FOR_LINKED_INVOICE_KEY, 0, -1);
+
+        $this->trace->info(
+            TraceCode::LINKED_MERCHANT_INVOICE_CREATE_REQUEST,
+            [
+                'month'                 => $month,
+                'year'                  => $year,
+                'merchant_ids'          => $merchantIds,
+                'parent_merchant_ids_to_be_included' => $parentMerchantIdsToBeIncluded,
+                'mode'                  => $mode
+            ]);
+
+        $endTimestamp =  $this->getPatchedLastDay($month, $year)
+            ->getTimestamp();
+
+        $batch = 10000;
+
+        $skip = 0;
+
+        $allEligibleLinkedMerchantIds = [];
+
+        do
+        {
+            $linkedMerchantIdsToEnqueue = $this->repo
+                ->merchant
+                ->fetchLinkedMerchantsBeforeTimestamp(
+                    $batch,
+                    $skip,
+                    $endTimestamp,
+                    $merchantIds,
+                    $parentMerchantIdsToBeIncluded);
+
+            $allEligibleLinkedMerchantIds = array_merge($allEligibleLinkedMerchantIds,$linkedMerchantIdsToEnqueue);
+
+            $count = count($linkedMerchantIdsToEnqueue);
+
+            $skip += $count;
+
+        } while($batch === $count);
+
+        $allEligibleUniqueMerchantIds = array_unique($linkedMerchantIdsToEnqueue);
+
+        foreach ($allEligibleUniqueMerchantIds as $index => $merchantId) {
+            if (is_string($merchantId)) {
+                $this->trace->info(
+                    TraceCode::MERCHANT_INVOICE_DISPATCH,
+                    [
+                        'merchant_id' => $merchantId,
+                        'month' => $month,
+                        'year' => $year,
+                    ]);
+
+                try {
+                    MerchantInvoiceJob::dispatch(
+                        $merchantId,
+                        $month,
+                        $year,
+                        $mode,
+                        true, //passing linked_merchant as true
+                        )
+                        // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
+                        ->delay($index % 901);
+                } catch (\Throwable $e) {
+                    // Log the error and continue with the next merchant ID
+                    $this->trace->traceException(
+                        $e,
+                        TraceCode::MERCHANT_INVOICE_DISPATCH_FAILED,
+                        [
+                            'merchant_id' => $merchantId,
+                            'month' => $month,
+                            'year' => $year,
+                        ]);
+                }
             }
         }
     }

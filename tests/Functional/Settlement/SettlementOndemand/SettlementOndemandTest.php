@@ -40,6 +40,7 @@ use RZP\Jobs\SettlementOndemand\PartialScheduledSettlementJob;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutReversal;
+use RZP\Services\Mock\KafkaProducerClient as KafkaProducerClientMock;
 
 class SettlementOndemandTest extends TestCase
 {
@@ -599,6 +600,8 @@ class SettlementOndemandTest extends TestCase
 
         Carbon::setTestNow($bankingHour);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
 
         $txns = $this->getEntities(
@@ -827,6 +830,8 @@ class SettlementOndemandTest extends TestCase
             'es_pricing_percent'          => 25,
         ]);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
 
         $settlementOndemand = $this->getLastEntity('settlement.ondemand', true);
@@ -865,6 +870,8 @@ class SettlementOndemandTest extends TestCase
             'pricing_percent'             => 50,
             'es_pricing_percent'          => 25,
         ]);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -1167,6 +1174,8 @@ class SettlementOndemandTest extends TestCase
 
         Carbon::setTestNow($nonBankingHour);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
 
         $txns = $this->getEntities(
@@ -1336,6 +1345,8 @@ class SettlementOndemandTest extends TestCase
         $nonBankingHour = Carbon::create(2020, 12, 13, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($nonBankingHour);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -1758,6 +1769,8 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000]);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
     }
 
@@ -1788,6 +1801,8 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000]);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
     }
 
@@ -1817,6 +1832,8 @@ class SettlementOndemandTest extends TestCase
         ]);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000]);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
     }
@@ -3514,6 +3531,8 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000]);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
     }
 
@@ -3547,6 +3566,8 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000]);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
     }
 
@@ -3573,6 +3594,8 @@ class SettlementOndemandTest extends TestCase
         ]);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000]);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
     }
@@ -3602,6 +3625,8 @@ class SettlementOndemandTest extends TestCase
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -3687,6 +3712,8 @@ class SettlementOndemandTest extends TestCase
 
         $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', false);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->makeRequestAndGetContent($this->testData['testNonBankingHourOndemandCreationWithMockWebhook']['request']);
 
         $this->makeRequestAndGetContent($this->testData['testNonBankingHourOndemandCreationWithPartialReversal']['request']);
@@ -3717,6 +3744,8 @@ class SettlementOndemandTest extends TestCase
         $this->app['config']->set('applications.razorpayx_client.test.mock_webhook', false);
 
         $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', false);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->makeRequestAndGetContent($this->testData['testNonBankingHourOndemandCreationWithMockWebhook']['request']);
 
@@ -3759,6 +3788,8 @@ class SettlementOndemandTest extends TestCase
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -3846,6 +3877,8 @@ class SettlementOndemandTest extends TestCase
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -3968,6 +4001,8 @@ class SettlementOndemandTest extends TestCase
 
         Carbon::setTestNow($bankingHour);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
 
         $ondemandpayout = $this->getLastEntity('settlement.ondemand_payout',true);
@@ -3997,6 +4032,8 @@ class SettlementOndemandTest extends TestCase
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -4034,6 +4071,8 @@ class SettlementOndemandTest extends TestCase
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -4123,6 +4162,8 @@ class SettlementOndemandTest extends TestCase
         $nonBankingHour = Carbon::create(2020, 2, 18, 20, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($nonBankingHour);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -4216,6 +4257,8 @@ class SettlementOndemandTest extends TestCase
         $nonBankingHour = Carbon::create(2020, 2, 18, 20, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($nonBankingHour);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -4365,6 +4408,8 @@ class SettlementOndemandTest extends TestCase
 
         Carbon::setTestNow($bankingHour);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
     }
 
@@ -4393,6 +4438,8 @@ class SettlementOndemandTest extends TestCase
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
     }
@@ -4423,6 +4470,8 @@ class SettlementOndemandTest extends TestCase
 
         Carbon::setTestNow($bankingHour);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
     }
 
@@ -4452,6 +4501,8 @@ class SettlementOndemandTest extends TestCase
 
         Carbon::setTestNow($bankingHour);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
     }
 
@@ -4468,6 +4519,8 @@ class SettlementOndemandTest extends TestCase
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 100]);
 
         $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
     }
@@ -4516,6 +4569,8 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
     }
 
@@ -4544,6 +4599,8 @@ class SettlementOndemandTest extends TestCase
         $nonBankingHour = Carbon::create(2020, 2, 18, 20, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($nonBankingHour);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -4724,7 +4781,7 @@ class SettlementOndemandTest extends TestCase
             ],
             'test');
 
-        $this->assertEquals($pricingRule['percent_rate'], 25);
+        $this->assertEquals($pricingRule['percent_rate'], 30);
 
     }
 
@@ -4795,6 +4852,8 @@ class SettlementOndemandTest extends TestCase
 
         Carbon::setTestNow($bankingHour);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
 
         $adjustment = $this->getLastEntity('adjustment', false, 'live');
@@ -4857,7 +4916,7 @@ class SettlementOndemandTest extends TestCase
         $newSettlementOndemandPricingRule = $this->getDbEntities('pricing', ['product'        =>  'primary',
                                                                              'feature'        => 'settlement_ondemand',
                                                                              'payment_method' => 'fund_transfer',
-                                                                             'percent_rate'   => 25,])->toArray();
+                                                                             'percent_rate'   => 30,])->toArray();
 
         $newOndemandPayoutPricingRule = $this->getDbEntities('pricing', ['product'        =>  'primary',
                                                                          'feature'        => 'payout',
@@ -4889,6 +4948,8 @@ class SettlementOndemandTest extends TestCase
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -4948,11 +5009,17 @@ class SettlementOndemandTest extends TestCase
 
         Carbon::setTestNow($bankingHour);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
     }
 
     public function testOndemandBlocked()
     {
+        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
         $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
 
         $this->fixtures->create('merchant', [
@@ -4966,6 +5033,8 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => $this->merchantDetail['merchant_id'], 'name' => 'es_on_demand']);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
     }
@@ -4983,11 +5052,17 @@ class SettlementOndemandTest extends TestCase
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => $this->merchantDetail['merchant_id'], 'name' => 'es_on_demand']);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
     }
 
     public function testCreateOndemandBlockedError()
     {
+        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->feature->create([
@@ -5021,6 +5096,7 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -5091,6 +5167,8 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
 
         $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
@@ -5148,6 +5226,8 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
 
         $txn = $this->getLastEntity('transaction',true);
@@ -5202,6 +5282,8 @@ class SettlementOndemandTest extends TestCase
         $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
 
         $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -5263,6 +5345,8 @@ class SettlementOndemandTest extends TestCase
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -5552,6 +5636,8 @@ class SettlementOndemandTest extends TestCase
 
         $this->createOndemandSettlement(false);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $payload = $this->makeRequestAndGetContent($this->testData['testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess']['request']);
 
         $ondemandSettlementId = $payload["id"];
@@ -5582,6 +5668,8 @@ class SettlementOndemandTest extends TestCase
 
         Queue::fake();
         $this->createOndemandSettlement(true);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $payload = $this->makeRequestAndGetContent($this->testData['testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess']['request']);
 
@@ -5622,6 +5710,8 @@ class SettlementOndemandTest extends TestCase
     public function testKafkaRetryableFailureForAccountDiscoveryNotFound()
     {
         $this->createOndemandSettlement(false);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $payload = $this->makeRequestAndGetContent($this->testData['testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess']['request']);
 
@@ -5689,6 +5779,8 @@ class SettlementOndemandTest extends TestCase
     {
         $this->createOndemandSettlement(false);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $payload = $this->makeRequestAndGetContent($this->testData['testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess']['request']);
 
         $ondemandSettlementId = $payload["id"];
@@ -5708,6 +5800,8 @@ class SettlementOndemandTest extends TestCase
     public function testOndemandLedgerKafkaOutboxJobFailureWithNonRetryableError(){
 
         $this->createOndemandSettlement(false);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $payload = $this->makeRequestAndGetContent($this->testData['testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess']['request']);
 
@@ -5739,6 +5833,8 @@ class SettlementOndemandTest extends TestCase
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'new_settlement_service']);
 
         $this->createOndemandSettlement(false);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $payload = $this->makeRequestAndGetContent($this->testData['testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess']['request']);
 
@@ -5889,6 +5985,8 @@ class SettlementOndemandTest extends TestCase
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
         Carbon::setTestNow($bankingHour);
 
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
         $this->startTest();
     }
 
@@ -5901,6 +5999,8 @@ class SettlementOndemandTest extends TestCase
 
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
         Carbon::setTestNow($bankingHour);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
 
@@ -5928,6 +6028,8 @@ class SettlementOndemandTest extends TestCase
             'class' => BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST,
         ];
+
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
 
         $this->startTest();
     }
@@ -5974,7 +6076,9 @@ class SettlementOndemandTest extends TestCase
                                ]
                    );
 
-        $response = $this->startTest();
+        $this->mockSplitzExperimentForFeatureConfigMigration(false);
+
+        $this->startTest();
     }
 
     public function testOndemandFeesPgLedgerReverseShadow()
@@ -5982,16 +6086,16 @@ class SettlementOndemandTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+            'entity_type' => 'merchant', 'entity_id' => '10000000000000', 'name' => 'es_on_demand']);
 
         $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'pg_ledger_reverse_shadow']);
+            'entity_type' => 'merchant', 'entity_id' => '10000000000000', 'name' => 'pg_ledger_reverse_shadow']);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20030000]);
 
         $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
 
-        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt',  'international' => 0]);
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt', 'international' => 0]);
 
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
         Carbon::setTestNow($bankingHour);
@@ -6023,6 +6127,158 @@ class SettlementOndemandTest extends TestCase
                    );
 
         $this->startTest();
+    }
+
+    public function testOndemandBlockedFetchConfigFromCapitalEs()
+    {
+        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
+        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant', [
+            'id' => '10000000000001'
+        ]);
+
+        $this->app['config']->set('applications.razorpayx_client.live.ondemand_x_merchant.id', '10000000000001');
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant',
+            'entity_id' => '10000000000001',
+            'name' => 'block_es_on_demand'
+        ]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant',
+            'entity_id' => $this->merchantDetail['merchant_id'],
+            'name' => 'es_on_demand'
+        ]);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration();
+
+        $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
+        $this->app->instance('capital_early_settlements', $capitalEsMock);
+
+        // Set up the mocked method to return different responses on consecutive calls
+        $capitalEsMock->allows('getFeatureConfig')
+            ->twice()
+            ->andReturns(
+                [
+                    'global_feature_config' => [
+                        "global_limit_check_required" => true,
+                        "global_limit" => 10000,
+                        "global_limit_capping_scale_factor" => 80,
+                        "global_limit_capped_merchant_ids" => "HFQ3S14NsDs3Ti",
+                    ]
+                ],
+                [
+                    'merchant_feature_config' => [
+                        "merchant_id" => $this->merchantDetail['merchant_id'],
+                        "pricing_percent" => 30,
+                        "es_pricing_percent" => 20,
+                        "max_limit_per_working_day" => "10000000",
+                        "max_amount_limit" => "10000000",
+                        "percentage_of_balance_limit" => 50,
+                        "settlements_count_limit" => "100"
+                    ]
+                ]
+            );
+
+        $this->startTest();
+    }
+
+    public function testEnableEsOnDemandFullAccessFromBatchRouteFeatureConfigMigrated()
+    {
+        $this->ba->batchAppAuth('rzp_live');
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international' => 0]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'new_settlement_service']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_automatic_restricted']);
+
+        $splitzResp = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "is_enabled",
+                            "value" => "true",
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.scheduled_es_enablement_migration_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
+
+        $this->mockSplitzExperimentForFeatureConfigMigration();
+
+        $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
+        $this->app->instance('capital_early_settlements', $capitalEsMock);
+
+        $capitalEsMock->allows('enableScheduledEs')
+            ->once()
+            ->andReturn(['success'=>true]);
+
+        $capitalEsMock->allows('getFeatureConfig')
+            ->once()
+            ->andThrow(new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null, null, null));
+
+        $capitalEsMock->allows('createMerchantFeatureConfig')
+            ->once()
+            ->with(Mockery::hasKey('merchant_id'))->with(Mockery::hasValue('10000000000000'))
+            ->with(Mockery::hasKey('max_amount_limit'))->with(Mockery::hasValue(2000000))
+            ->andReturn([]);
+
+        $this->startTest();
+    }
+
+    private function mockSplitzExperimentForFeatureConfigMigration($enabled = true)
+    {
+        $splitzResp = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "read_global_config",
+                            "value" => $enabled ? 'on' : 'off',
+                        ],
+                        [
+                            "key" => "read_merchant_config",
+                            "value" => $enabled ? 'on' : 'off',
+                        ],
+                        [
+                            "key" => "create_merchant_config",
+                            "value" => $enabled ? 'on' : 'off',
+                            ],
+                        [
+                            "key" => "update_merchant_config",
+                            "value" => $enabled ? 'on' : 'off',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.feature_config_from_capital_es_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
     }
 
     private function createOndemandSettlement(bool $mockWebhhok)

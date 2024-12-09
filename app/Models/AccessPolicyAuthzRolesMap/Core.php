@@ -9,6 +9,11 @@ use RZP\Exception;
 
 class Core extends Base\Core
 {
+    public function findOrFailById(string $id)
+    {
+        return $this->repo->findOrFail($id);
+    }
+
     public function create(array $input)
     {
         $this->trace->info(TraceCode::ACCESS_POLICY_AUTHZ_ROLES_CREATE_REQUEST,
@@ -51,6 +56,8 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::ACCESS_POLICY_AUTHZ_ROLES_CREATE_RESPONSE,
             ['access_policy_id' => $entity->getId()]);
+
+        return $entity->toArrayPublic();
     }
 
     public function checkIfPrivilegeAndActionAlreadyExists($privilegeId, $action) :bool
@@ -72,5 +79,10 @@ class Core extends Base\Core
 
         return $idsCount === $accessPolicyEntitiesCount;
 
+    }
+
+    public function findOrFail(string $id): array
+    {
+        return $this->repo->findOrFail($id);
     }
 }

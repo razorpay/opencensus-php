@@ -1682,6 +1682,10 @@ class Header
     const UPDATE_GIFT_CARDS_EXPIRY_REFERENCE_ID = "Reference ID (Optional)";
     const UPDATE_GIFT_CARDS_EXPIRY_NOTES = "Notes (Optional)";
 
+    //Wallet create gift card transfers headers
+    const CREATE_GIFT_CARD_TRANSFERS_SOURCE_USER_ID = "Source user_id";
+    const CREATE_GIFT_CARD_TRANSFERS_DESTINATION_USER_ID = "Destination user_id";
+
     // GCOMS: Provide EMAILS against orderID for gift-cards delivery
     const UPLOAD_BULK_EMAIL_ORDER_ID = "Order ID";
     const UPLOAD_BULK_EMAIL_PROGRAM_ID = "Program ID";
@@ -1916,6 +1920,58 @@ class Header
     const VENDOR_ONBOARDING_CUSTOM_FIELDS = "Custom Fields (Optional) Please enter any custom fields you want to add as part of this vendor. Enter in format Title:Value with multiple fields in new line in the SAME cell. For example: date of incorporation:10/09/2000";
 
 
+    // jammu and kashmir onboarding headers
+
+    const JK_REQUEST_ID = "RequestID";
+
+    const JK_MERCHANT_NAME = "MerchantName";
+
+    const JK_VPA = "VPA";
+
+    const JK_QR_STRING = "QRString";
+
+    const JK_LANGUAGE = "Language";
+
+    const JK_BRANCH_ADDRESS_FOR_DELIVERY = "Branch Address for delivery";
+
+    const JK_CITY = "City";
+
+    const JK_STATE = "State";
+
+    const JK_PINCODE = "Pincode";
+
+    const JK_BRANCH_MOBILE_NO = "Branch MobileNo";
+
+    const JK_MERCHANT_PHONE_SUPPORT = "Merchant Phone Support";
+
+    const JK_ONBOARDING_DATE = "Onboarding Date";
+
+    const JK_ONBOARDING_TIME = "OnBoarding Time";
+
+    const JK_REQUEST_STATUS = "Request Status";
+    const JK_MERCHANT_EMAIL_ID = "Merchant EmailId (Optional)";
+
+    const JK_AIRWAY_BILLNO = "AIRWAY BILLNO";
+
+    const JK_INSTALLATION_STATUS = "INSTALLATIONSTATUS";
+
+    const JK_INSTALLATION_COMMENTS = "INSTALLATIONCOMMENTS";
+
+    const JK_DATE_OF_INSTALLATION = "DATEOFINSTALLATION";
+
+    const JK_REJECTION_REASON  = "REJECTIONREASON";
+
+    const JK_MERCHANT_RECIEVED_STATE = "Merchant Recieved Date";
+
+    const JK_DELIVERY_STATUS = "Delivery Status";
+
+    const JK_REMARKS = "Remarks (Any)";
+
+    const JK_RAZORPAY_MID = "Razorpay MID";
+
+    const JK_MODIFIED_QR_STRING = "Modified QR string";
+
+
     // mandatory headers for wallet account batch
     const MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS = [
         Header::WALLET_ACCOUNTS_NAME,
@@ -1957,6 +2013,12 @@ class Header
     const MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS = [
         Header::CREATE_BULK_GIFT_CARD_PROGRAM_ID,
         Header::CREATE_BULK_GIFT_CARD_AMOUNT
+    ];
+
+//     mandatory headers for create gift card transfers batch
+    const MANDATORY_HEADERS_FOR_CREATE_GIFT_CARD_TRANSFERS = [
+        Header::CREATE_GIFT_CARD_TRANSFERS_SOURCE_USER_ID,
+        Header::CREATE_GIFT_CARD_TRANSFERS_DESTINATION_USER_ID
     ];
 
     // mandatory headers for email upload
@@ -6046,13 +6108,21 @@ class Header
                 self::UPDATE_GIFT_CARDS_EXPIRY_EXPIRE_AT,
                 self::UPDATE_GIFT_CARDS_EXPIRY_REFERENCE_ID,
                 self::UPDATE_GIFT_CARDS_EXPIRY_NOTES,
-                self::UPDATE_GIFT_CARDS_EXPIRY_CONTACT,      
+                self::UPDATE_GIFT_CARDS_EXPIRY_CONTACT,
                 self::UPDATE_GIFT_CARDS_EXPIRY_TICKET_LINK,
-                self::UPDATE_GIFT_CARDS_EXPIRY_TIMESTAMP,     
-                self::UPDATE_GIFT_CARDS_EXPIRY_SOURCE    
+                self::UPDATE_GIFT_CARDS_EXPIRY_TIMESTAMP,
+                self::UPDATE_GIFT_CARDS_EXPIRY_SOURCE
             ],
             self::OUTPUT => [],
-        ],        
+        ],
+
+        TYPE::CREATE_GIFT_CARD_TRANSFERS => [
+            self::INPUT => [
+                self::CREATE_GIFT_CARD_TRANSFERS_SOURCE_USER_ID,
+                self::CREATE_GIFT_CARD_TRANSFERS_DESTINATION_USER_ID
+            ],
+            self::OUTPUT => []
+        ],
 
         TYPE::GCMS_UPLOAD_BULK_EMAILS => [
             self::INPUT => [
@@ -6409,7 +6479,81 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION
             ]
-        ]
+        ],
+
+        Type::JAMMU_AND_KASHMIR_ONBOARDING => [
+            self::INPUT => [
+                self::JK_REQUEST_ID,
+                self::JK_MERCHANT_NAME,
+                self::JK_VPA,
+                self::JK_QR_STRING,
+                self::JK_LANGUAGE,
+                self::JK_BRANCH_ADDRESS_FOR_DELIVERY,
+                self::JK_CITY,
+                self::JK_STATE,
+                self::JK_PINCODE,
+                self::JK_BRANCH_MOBILE_NO,
+                self::JK_MERCHANT_PHONE_SUPPORT,
+                self::JK_ONBOARDING_DATE,
+                self::JK_ONBOARDING_TIME,
+                self::JK_REQUEST_STATUS,
+                self::JK_MERCHANT_EMAIL_ID,
+                self::JK_AIRWAY_BILLNO,
+                self::JK_INSTALLATION_STATUS,
+                self::JK_INSTALLATION_COMMENTS,
+                self::JK_DATE_OF_INSTALLATION,
+                self::JK_REJECTION_REASON,
+                self::JK_MERCHANT_RECIEVED_STATE,
+                self::JK_DELIVERY_STATUS,
+                self::JK_REMARKS
+            ],
+            self::OUTPUT => [
+                self::JK_REQUEST_ID,
+                self::JK_MERCHANT_NAME,
+                self::JK_VPA,
+                self::JK_QR_STRING,
+                self::JK_LANGUAGE,
+                self::JK_BRANCH_ADDRESS_FOR_DELIVERY,
+                self::JK_CITY,
+                self::JK_STATE,
+                self::JK_PINCODE,
+                self::JK_BRANCH_MOBILE_NO,
+                self::JK_MERCHANT_PHONE_SUPPORT,
+                self::JK_ONBOARDING_DATE,
+                self::JK_ONBOARDING_TIME,
+                self::JK_REQUEST_STATUS,
+                self::JK_MERCHANT_EMAIL_ID,
+                self::JK_AIRWAY_BILLNO,
+                self::JK_INSTALLATION_STATUS,
+                self::JK_INSTALLATION_COMMENTS,
+                self::JK_DATE_OF_INSTALLATION,
+                self::JK_REJECTION_REASON,
+                self::JK_MERCHANT_RECIEVED_STATE,
+                self::JK_DELIVERY_STATUS,
+                self::JK_REMARKS,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+                self::JK_RAZORPAY_MID,
+                self::JK_MODIFIED_QR_STRING
+            ]
+        ],
+
+        Type::UPDATE_ODS_MERCHANT_LIMITS => [
+            self::INPUT => [
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MERCHANT_ID,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_PER_WORKING_DAY,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_AMOUNT_LIMIT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PERCENTAGE_OF_BALANCE_LIMIT,
+            ],
+            self::OUTPUT => [
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MERCHANT_ID,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_PER_WORKING_DAY,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_AMOUNT_LIMIT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PERCENTAGE_OF_BALANCE_LIMIT,
+            ],
+        ],
+
     ];
 
     /**
@@ -6677,6 +6821,11 @@ class Header
         if ($type === Type::CREATE_BULK_GIFT_CARDS )
         {
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS);
+        }
+
+        if ($type === Type::CREATE_GIFT_CARD_TRANSFERS )
+        {
+            self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_CREATE_GIFT_CARD_TRANSFERS);
         }
 
         if ($type === Type::UPDATE_GIFT_CARDS_EXPIRY )

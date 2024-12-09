@@ -161,10 +161,13 @@ class Service extends Base\Service
 
             if((isset($token_iin)) && (strlen($token_iin['low_range']) != strlen($id))){
 
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_IIN,
-                    null,[],'The requested IIN is a token IIN & should be 9 digits long.');
-
+                // adding bellow MID level check as temporary solution for nykaa and with bin service it will be automatically handled
+                // https://razorpay.slack.com/archives/C7WEGELHJ/p1732601001804189?thread_ts=1732275937.700689&cid=C7WEGELHJ
+                if($this->merchant->getId() != "4uObL8AHBqFNnP") {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INVALID_IIN,
+                        null,[],'The requested IIN is a token IIN & should be 9 digits long.');
+                }
             }
 
             if ($token_iin != null)

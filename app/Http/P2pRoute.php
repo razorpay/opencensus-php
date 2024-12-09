@@ -57,6 +57,18 @@ final class P2pRoute
                 '/turbo/{gateway_name}/config',
                 'ClientController@getGatewayConfig'
             ],
+        Requests::P2P_TURBO_PREFERENCES_V2 =>
+            [
+                'post',
+                'turbo/preferences',
+                'PreferencesController@getPreferences'
+            ],
+        Requests::P2P_TURBO_GATEWAY_CONFIG_V2 =>
+            [
+                'post',
+                'turbo/{gateway_name}/config',
+                'ClientController@getGatewayConfig'
+            ],
 
         /*************** Bank Account **************/
         Requests::P2P_BANKS_FETCH_ALL =>
@@ -404,6 +416,12 @@ final class P2pRoute
                 'customer/mandates/{mandate_id}/revoke',
                 'MandateController@revokeMandate'
             ],
+        Requests::P2P_CUSTOMER_CREATE_SESSION =>
+        [
+            'post',
+            'turbo/customer/session',
+            'SessionController@create'
+        ]
     ];
 
     public static $public = [
@@ -413,6 +431,8 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_VERIFICATION,
         Requests::P2P_TURBO_PREFERENCES,
         Requests::P2P_TURBO_GATEWAY_CONFIG,
+        Requests::P2P_TURBO_PREFERENCES_V2,
+        Requests::P2P_TURBO_GATEWAY_CONFIG_V2,
     ];
 
     public static $device = [
@@ -482,6 +502,12 @@ final class P2pRoute
         Requests::P2P_MERCHANT_BLACKLIST_ADD_BATCH,
         Requests::P2P_MERCHANT_BLACKLIST_REMOVE_BATCH,
         Requests::P2P_MERCHANT_BLACKLIST_FETCH_ALL,
+        Requests::P2P_CUSTOMER_CREATE_SESSION,
+    ];
+
+    public static $routesWithV2Prefix = [
+        Requests::P2P_TURBO_PREFERENCES_V2,
+        Requests::P2P_TURBO_GATEWAY_CONFIG_V2,
     ];
 
     public static $routePermission = [];
@@ -553,13 +579,31 @@ final class P2pRoute
         return in_array($route, self::CRITICAL_ROUTES, true);
     }
 
-    public function addRouteGroups($groups)
+    public function addRouteGroups($groups): void
     {
         foreach ($groups as $group)
         {
             foreach (self::$$group as $routeName)
             {
-                $this->addRoute($routeName);
+                if (in_array($routeName, self::$routesWithV2Prefix, true) === false)
+                {
+                    $this->addRoute($routeName);
+                }
+            }
+        }
+    }
+
+    public function addV2RouteGroups($groups): void
+    {
+        foreach ($groups as $group)
+        {
+            foreach (self::$$group as $routeName)
+            {
+                //only adds the routes which are explicitly specified to have v2 prefix.
+                if (in_array($routeName, self::$routesWithV2Prefix, true) === true)
+                {
+                    $this->addRoute($routeName);
+                }
             }
         }
     }

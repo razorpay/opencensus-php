@@ -111,4 +111,13 @@ class RolesController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updateRoleAccessPolicyMap()
+    {
+        $input = Request::all();
+
+        $response = (new RoleAccessPolicyMapService())->updateRoleAccessPolicyMap($input);
+
+        return ApiResponse::json($response);
+    }
 }

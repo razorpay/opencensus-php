@@ -27,12 +27,17 @@ final class Metric
     const OFFERS_ENGINE_FETCH_SUBSCRIPTION_OFFERS_FAIL         = 'offers_engine_fetch_subscription_offers_fail';
 
     const OFFERS_ENGINE_FETCH_OFFERS_FAIL          = 'offers_engine_fetch_offers_fail';
+    const OFFERS_ENGINE_API_FALLBACK_COUNTER          = 'offers_engine_api_fallback_counter';
+
+    const OFFERS_ENGINE_FETCH_OFFERS_FAIL_FOR_PAYMENTS          = 'offers_engine_fetch_offers_fail_for_payments';
 
     const OFFERS_ENGINE_FETCH_DEFAULT_OFFERS_FAIL          = 'offers_engine_fetch_default_offers_fail';
 
     const OFFERS_ENGINE_VALIDATE_OFFER_FAIL          = 'offers_engine_validate_offer_fail';
     const OFFERS_ENGINE_DISCOUNT_MISMATCH          = 'offers_engine_discount_mismatch';
     const OFFERS_ENGINE_TRANSACTION_FAILURE          = 'offers_engine_transaction_failure';
+
+    const OFFERS_PAYMENT_CREATION_INVALID          = 'offers_payment_creation_invalid';
 
     const OFFERS_ENGINE_ORDER_APPLICABILITY_DIFF          = 'offers_engine_order_applicability_diff';
 }

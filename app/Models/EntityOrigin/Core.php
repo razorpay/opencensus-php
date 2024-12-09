@@ -780,34 +780,23 @@ class Core extends Base\Core
 
     private function getEntityOriginFromPublicKey(string $entityType, string $entityId, string $partnerId)
     {
-        $app = App::getFacadeRoot();
+        $this->trace->info(TraceCode::FETCH_ENTITY_ORIGIN_V1_REQUEST,
+            [
+                'entity_type' =>$entityType,
+                'entity_id' => $entityId,
+                'partner_id' => $partnerId
+            ]);
 
-        $result = $app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::FETCH_ENTITY_ORIGIN_VIA_FALLBACK,
-            'live');
+        $entityOriginCore = new \RZP\Models\EntityOrigin\Core();
+        $entity = $entityOriginCore->fetchEntityByType($entityType, $entityId);
 
-        if($result === 'on')
-        {
-            $this->trace->info(TraceCode::FETCH_ENTITY_ORIGIN_V1_REQUEST,
-                [
-                    'entity_type' =>$entityType,
-                    'entity_id' => $entityId,
-                    'partner_id' => $partnerId
-                ]);
+        $entityOrigin = $entityOriginCore->fetchEntityOrigin($entity);
+        $this->trace->info(TraceCode::FETCH_ENTITY_ORIGIN_V1_RESPONSE,
+            [
+                'entity' =>$entity,
+                'entityOrigin' => $entityOrigin,
+            ]);
 
-            $entityOriginCore = new \RZP\Models\EntityOrigin\Core();
-            $entity = $entityOriginCore->fetchEntityByType($entityType, $entityId);
-
-            $entityOrigin = $entityOriginCore->fetchEntityOrigin($entity);
-            $this->trace->info(TraceCode::FETCH_ENTITY_ORIGIN_V1_RESPONSE,
-                [
-                    'entity' =>$entity,
-                    'entityOrigin' => $entityOrigin,
-                ]);
-
-            return $entityOrigin;
-        }
-        return null;
+        return $entityOrigin;
     }
 }

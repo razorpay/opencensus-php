@@ -27,6 +27,11 @@ class Kotak extends Base
 
         foreach ($data['items'] as $emiPayment)
         {
+            if ($emiPayment->terminal->isOptimizer())
+            {
+                continue;
+            }
+
             $date = $this->getFormattedDate($emiPayment->getCaptureTimestamp());
 
             $emiPlan = $emiPayment->emiPlan;

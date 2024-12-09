@@ -17,4 +17,14 @@ class Constants
     const FAILED_MIDS  = 'failed_mids';
 
     const REASON       = 'reason';
+
+    const MERCHANT_ID = "merchantId";
+
+    const SPLITZ_EXPERIMENT= "experiment";
+
+    const SPLITZ_VARIANT = "variant";
+
+    const CREDCASE_API = 'credcase';
+
+    const CREDCASE_SERVICE = 'credcaseService';
 }

@@ -419,6 +419,7 @@ class ConfigKey
 
     const UPI_TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE    = self::PREFIX . 'upi_turbo_payment_look_up_created_at_range';
     const UPI_TURBO_PRE_FETCH_BANK_ACCOUNT              = self::PREFIX . 'upi_turbo_pre_fetch_bank_account';
+    const UPI_TURBO_PRE_FETCH_BANK_ACCOUNT_TEST         = self::PREFIX . 'upi_turbo_pre_fetch_bank_account_test';
 
     const RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA = self::PREFIX . 'rx_block_non_2fa_non_baas_for_ca';
 
@@ -460,6 +461,8 @@ class ConfigKey
     const CURRENCY_METHOD_LEVEL_DCC_MARKUP          = self::PREFIX . 'default_currency_method_level_dcc_markup';
 
     const UPI_TURBO_SDK_TIMEOUTS                    = self::PREFIX . 'upi_turbo_sdk_timeouts';
+
+    const UPI_TURBO_SENTRY_TXN_SAMPLING_RATE        = self::PREFIX . 'upi_turbo_sentry_txn_sampling_rate';
 
     const TURBO_SDK_ERROR_MAPPINGS_HASH             = self::PREFIX . 'turbo_sdk_error_mappings_hash';
 
@@ -661,6 +664,7 @@ class ConfigKey
         self::CURRENCY_METHOD_LEVEL_DCC_MARKUP,
         self::UPI_TURBO_PAYEE_EXECUTION_HOLD_TIME,
         self::UPI_TURBO_PAYMENT_ID_BY_GATEWAY_TXN_TTL,
+        self::UPI_TURBO_SENTRY_TXN_SAMPLING_RATE,
         self::UPI_TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE,
         self::UPI_TURBO_PRE_FETCH_BANK_ACCOUNT,
         self::TOKENS_SERVICE_ENABLED,

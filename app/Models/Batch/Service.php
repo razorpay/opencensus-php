@@ -201,7 +201,11 @@ class Service extends Base\Service
     {
         try
         {
+            $this->trace->info(TraceCode::BATCH_DOWNLOAD_REQUEST_AT_SERVICE);
+
             $signedUrl = $this->app->batchService->downloadS3UrlForBatchOrFileStore($id, 'batch', $this->merchant->getId());
+
+            $this->trace->info(TraceCode::BATCH_DOWNLOAD_REQUEST_AT_SERVICE_COMPLETE);
 
             return [Entity::URL => $signedUrl];
         }
@@ -209,6 +213,8 @@ class Service extends Base\Service
         {
             // Either Batch Microservice is down or not found
             // check in DB.
+
+            $this->trace->error(TraceCode::BATCH_DOWNLOAD_REQUEST_AT_SERVICE_EXCEPTION);
 
             $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 

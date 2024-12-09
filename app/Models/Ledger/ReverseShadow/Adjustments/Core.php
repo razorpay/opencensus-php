@@ -321,4 +321,19 @@ class Core extends Base\Core
             $bucketCore->publishForSettlement($virtualAdjustmentTransaction);
         }
     }
+
+    public function createOnlyLedgerEntryInReverseShadow($journalPayload)
+    {
+        $this->trace->info(TraceCode::REVERSE_SHADOW_CREATE_JOURNAL_IN_SYNC, [
+            "request"    => $journalPayload
+        ]);
+
+        $journal = $this->createJournalInLedger($journalPayload, false, false, true);
+
+        $this->trace->info(TraceCode::REVERSE_SHADOW_CREATE_JOURNAL_IN_SYNC, [
+            Constants::RESPONSE      => $journal
+        ]);
+
+        return $journal;
+    }
 }

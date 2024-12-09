@@ -256,4 +256,13 @@ class TransferController extends Controller
 
         return ApiResponse::json($transferIds);
     }
+
+    public function internalPricingFetch()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->internalPricingFetch($input);
+
+        return ApiResponse::json($response);
+    }
 }

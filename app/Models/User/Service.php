@@ -45,6 +45,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\BusinessDetail as MBD;
 use RZP\Jobs\PartnerSubmerchantLinkingOauthJob;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\MerchantApplications\Repository as MerchantAppRepo;
 use RZP\Jobs\PartnerSubmerchantLinkingReferralJob;
@@ -285,8 +286,7 @@ class Service extends Base\Service
 
             $easyOnboardingExperiment = (new Merchant\Core)->isRazorxExperimentEnable($merchantId,Merchant\RazorxTreatment::EMAIL_EASY_ONBOARDING_SIGNUP);
 
-            if ((empty($signupCampaign) === false) and
-                ($easyOnboardingExperiment === true or $signupCampaign === DeviceDetail\Constants::UNBOUNCE))
+            if (empty($signupCampaign) === false)
             {
                 $ddInput = [
                     DeviceDetail\Entity::MERCHANT_ID        => $merchantId,
@@ -295,6 +295,24 @@ class Service extends Base\Service
                 ];
 
                 (new DeviceDetail\Core)->createDeviceDetail($ddInput);
+            }
+            // Decomposition Plan: Once the merchant and user creation processes are decoupled,
+            // the creation of a sales user associated with a newly created merchant will be handled as part of the merchant creation flow.
+            if ($this->shouldUpdateUserMerchantMapping($signupCampaign))
+            {
+                $userMerchantMappingInputData = [
+                    'action' => 'attach',
+                    'role' => Role::RAZORPAY_SALES,
+                    'merchant_id' => $merchantId,
+                ];
+                $loggedInUser = $this->app['basicauth']->getUser();
+                $this->updateUserMerchantMapping($loggedInUser['id'], $userMerchantMappingInputData);
+
+                if ($signupCampaign === DeviceDetailConstants::PARTNER_ASSISTED_ONBOARDING)
+                {
+                    $loggedInMerchant = $this->app['basicauth']->getMerchant();
+                    (new Merchant\Service())->mapSubmerchant($loggedInMerchant, $merchantId);
+                }
             }
 
             try {
@@ -320,6 +338,13 @@ class Service extends Base\Service
 
         $this->signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput);
 
+        $referralCode = $input[Constants::PARTNER_REFERRAL_CODE];
+
+        if ($referralCode !== null)
+        {
+            $this->processReferralCode($data['id'], $referralCode);
+
+        }
         return $data;
     }
 
@@ -611,15 +636,23 @@ class Service extends Base\Service
         $this->core->subscribeToMailingList($user);
     }
 
-    protected function createMerchant(array $user, string $referrer, string $businessName, String $countryCode, bool $partnerIntent, array $input, $heimdallTokenData, bool $sendConfirmation): array
+    protected function createMerchant(array $user, string $referrer, string $businessName, String $countryCode, bool $partnerIntent, array $input, $heimdallTokenData, bool $sendConfirmation, $isInternal=false): array
     {
+        // set orgID from auth if it is not internal request
+        // set orgID from payload if it is internal request
+        $orgID = $this->auth->getOrgId();
+        if ($isInternal)
+        {
+            $orgID = $input[Merchant\Entity::ORG_ID];
+        }
+
         $merchantInputData = [
             Merchant\Entity::NAME          => $businessName,
             Merchant\Entity::SIGNUP_SOURCE => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
                                               $this->auth->getRequestOriginProduct(),
             Merchant\Entity::COUNTRY_CODE  => $countryCode ?? 'IN',
             //Set by default OrgId to the OrgId from whether request is originated, Ex: Razorpay/Curlec,
-            Merchant\Entity::ORG_ID        => $this->auth->getOrgId(),
+            Merchant\Entity::ORG_ID        => $orgID,
         ];
 
         $merchantDetailInputData = [];
@@ -883,6 +916,8 @@ class Service extends Base\Service
                         (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
                     }
 
+                    // Decomposition Plan: Once the merchant and user creation processes are decoupled,
+                    // the creation of a sales user associated with a newly created merchant will be handled as part of the merchant creation flow.
                     if ($this->shouldUpdateUserMerchantMapping($signupCampaign))
                     {
                         $userMerchantMappingInputData = [
@@ -893,11 +928,11 @@ class Service extends Base\Service
                         $loggedInUser = $this->app['basicauth']->getUser();
 
                         $this->updateUserMerchantMapping($loggedInUser['id'], $userMerchantMappingInputData);
-                        
+
                         if ($signupCampaign === DeviceDetailConstants::PARTNER_ASSISTED_ONBOARDING)
                         {
                             $loggedInMerchant=  $this->app['basicauth']->getMerchant();
-                            $detailService = (new Merchant\Service())->mapSubmerchant($loggedInMerchant, $merchantData['id']);
+                            (new Merchant\Service())->mapSubmerchant($loggedInMerchant, $merchantData['id']);
                         }
                     }
 
@@ -945,7 +980,7 @@ class Service extends Base\Service
         return ($product === DeviceDetailConstants::PRODUCT_PG_ONBOARDING);
     }
 
-    private function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
+    public function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
     {
         $shouldOnboardViaPGOS = false;
 
@@ -2308,14 +2343,22 @@ class Service extends Base\Service
      * @param array $input
      * @return array
      */
-    function createMerchantWithPrefillData(array $user, array $input)
+    function createMerchantWithPrefillData(array $user, array $input, bool $isInternal=false)
     {
+        // set orgID from auth if it is not internal request
+        // set orgID from payload if it is internal request
+        $orgID = $this->auth->getOrgId();
+        if ($isInternal)
+        {
+            $orgID = $input[Merchant\Entity::ORG_ID];
+        }
+
         $merchantInputData = [
             Merchant\Entity::NAME          => $input[Merchant\Entity::NAME] ?? '',
             Merchant\Entity::SIGNUP_SOURCE => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
                 $this->auth->getRequestOriginProduct(),
             Merchant\Entity::COUNTRY_CODE  => $input[Merchant\Entity::COUNTRY_CODE] ?? 'IN',
-            Merchant\Entity::ORG_ID        => $this->auth->getOrgId(),
+            Merchant\Entity::ORG_ID        => $orgID,
         ];
 
         $merchantDetailInputData = [];
@@ -2358,10 +2401,18 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function createMerchantForUser(array $input): array
+    public function createMerchantForUser(array $input, bool $isInternal=false): array
     {
-        $this->validator->validateInput('createMerchant', $input);
-
+        if ($isInternal)
+        {
+            $this->validator->validateInput('createMerchantInternal', $input);
+            $userId = $input[Constants::USER_ID];
+            $this->ba->setUserById($userId);
+        }
+        else
+        {
+            $this->validator->validateInput('createMerchant', $input);
+        }
         $countryCode = $input[Merchant\Entity::COUNTRY_CODE] ?? 'IN';
         $signupCampaign = $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN] ?? null;
         $businessName = $input[Merchant\Entity::NAME] ?? '';
@@ -2369,18 +2420,26 @@ class Service extends Base\Service
             $this->auth->getRequestOriginProduct();
 
         $user = $this->auth->getUser();
-        $merchants = $user->merchants()->take(1)->get();
+
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchants = $user->getMerchantsFromAsvWithPivot(1);
+        } else {
+            $merchants = $user->merchants()->take(1)->get();
+        }
 
         if ($merchants->count() > 0) {
             // User already has a merchant so we need to prefill any data the user has
-            $data = $this->createMerchantWithPrefillData($user->toArray(), $input);
+            $data = $this->createMerchantWithPrefillData($user->toArray(), $input, $isInternal);
         } else {
             // User doesn't have a merchant and is signing up so we do the usual signup
             $merchantInputData = [
                 Merchant\Entity::SIGNUP_SOURCE  => $signupSource,
             ];
-
-            $data = $this->createMerchant($user->toArray(), '', $businessName, $countryCode, false, $merchantInputData, null, false);
+            if ($isInternal)
+            {
+                $merchantInputData[Merchant\Entity::ORG_ID] = $input[Merchant\Entity::ORG_ID];
+            }
+            $data = $this->createMerchant($user->toArray(), '', $businessName, $countryCode, false, $merchantInputData, null, false, $isInternal);
         }
 
         $this->trace->info(TraceCode::USER_CREATED_MERCHANT,
@@ -4418,4 +4477,60 @@ class Service extends Base\Service
     {
         return in_array($signupCampaign, [DeviceDetailConstants::ASSISTED_ONBOARDING, DeviceDetailConstants::PARTNER_ASSISTED_ONBOARDING]);
     }
+
+    public function addSalesUserToMerchant(array $input): array
+    {
+        $this->validator->validateInput('addSalesUserToMerchant', $input);
+
+        try {
+            // Fetch the user using the provided email
+            $user = $this->repo->user->getUserFromEmail(strtolower($input['email']));
+
+            // Check if the user was found, if not, throw an exception
+            if (empty($user))
+            {
+                throw new Exception\BadRequestValidationFailureException(ErrorCode::ERROR_USER_NOT_FOUND_BY_EMAIL);
+            }
+
+            $merchant = $this->repo->merchant->findOrFailPublic($input['merchant_id']);
+            
+            if (empty($merchant))
+            {
+                throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND);
+            }
+
+            // Check if the user is already assigned to the merchant with the specified role and product
+            $userMapping = $this->repo->merchant_user->getUserRoleMapping(
+                $user->getId(),
+                $input['merchant_id'],
+                Role::RAZORPAY_SALES,
+                Product::PRIMARY
+            );
+
+            // If a mapping exists, throw an exception indicating the merchant user mapping already exists
+            if (!empty($userMapping))
+            {
+                throw new Exception\BadRequestValidationFailureException(ErrorCode::ERROR_MERCHANT_USER_ALREADY_EXISTS);
+            }
+
+            $response = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $input)
+            {
+                // Attach a new merchant user mapping for the specified user, merchant, role, and product
+                $userMerchantMappingInputData = [
+                    'action' => 'attach',
+                    'role' => Role::RAZORPAY_SALES,
+                    'merchant_id' =>$input['merchant_id'],
+                ];
+
+                return $this->updateUserMerchantMapping($user->getId(), $userMerchantMappingInputData);
+            });
+
+            return $response->toArrayPublic();
+        }
+        catch (\Throwable $exception)
+        {
+            throw new Exception\BadRequestValidationFailureException($exception->getMessage());
+        }
+    }
+
 }

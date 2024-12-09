@@ -23,6 +23,7 @@ use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
 use RZP\Models\Ledger\SettlementJournalEvents;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Transaction\Metric as TxnMetric;
 use RZP\Trace\Tracer;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Dispute;
@@ -63,6 +64,7 @@ class Core extends Base\Core
 {
     // July 1st, 2016 00:00:00 IST
     const JULY_FIRST_EPOCH = '1467311400';
+    const ATOME = 'atome';
 
     protected $merchantBalance = null;
 
@@ -70,7 +72,16 @@ class Core extends Base\Core
 
     protected $merchant;
 
+    protected static $providersOnRearch = [
+        self::ATOME,
+    ];
+
     use Payment\Processor\Capture;
+
+    public static function paylaterProvidersOnRearch(string $provider): bool
+    {
+        return in_array($provider, self::$providersOnRearch, true);
+    }
 
     public function __construct()
     {
@@ -372,7 +383,7 @@ class Core extends Base\Core
             {
                 CardsPaymentTransaction::dispatch($data);
             }
-            else if ($payment->isNetbanking() === true || $payment->isFpx() === true || $payment->isWallet() === true || $payment->isRazorpayAccountPayment() === true || $payment->isDuitNowPay() === true)
+            else if ($payment->isNetbanking() === true || $payment->isFpx() === true || $payment->isWallet() === true || $payment->isRazorpayAccountPayment() === true || $payment->isDuitNowPay() === true || ($payment->isPayLater() === true and $this->paylaterProvidersOnRearch($payment->getWallet()) === true))
             {
                 $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
 
@@ -2102,6 +2113,50 @@ class Core extends Base\Core
         (new Notifier($txn))->notify();
 
         $this->app->events->dispatch('api.transaction.created', $txn);
+
+        $txnCreatedTime = $txn->getCreatedAt();
+
+        $timeTaken = get_diff_in_millisecond($txnCreatedTime);
+
+        $dimensions = [
+            'channel' =>  $txn->getChannel(),
+            'type'   =>  $txn->getType()
+        ];
+
+        $this->trace->histogram(
+            TxnMetric::TRANSACTION_CREATED_EVENT_DISPATCH_TIME,
+            $timeTaken,
+            $dimensions);
+        if($txn->getType() === E::BANK_TRANSFER)
+        {
+            $this->trace->count(TxnMetric::TRANSACTION_CREATED_EVENT_TOTAL, [
+                "type" => $txn->getType()
+            ]);
+        }
+    }
+    public function dispatchEventForLedgerEntryCreated(string $id): void
+    {
+        $txn = (new TransactionLedgerCore())->fetchLedgerEntryById($id);
+        if($txn!=null || (empty($txn) === false)){
+            (new Notifier($txn))->notify();
+
+            $this->app->events->dispatch('api.transaction.created', $txn);
+
+            if($txn->getType() === E::BANK_TRANSFER)
+            {
+                $this->trace->count(TxnMetric::TRANSACTION_CREATED_EVENT_TOTAL, [
+                    "type" => $txn->getType()
+                ]);
+            }
+        }
+        else
+        {
+            $this->trace->info(TraceCode::LEDGER_JOURNAL_TRANSACTION_DISPATCH_SKIPPED,
+                [
+                    'id'    => $id
+                ]
+            );
+        }
     }
 
     /**

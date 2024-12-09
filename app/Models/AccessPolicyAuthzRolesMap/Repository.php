@@ -7,7 +7,6 @@ use RZP\Constants;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryUpdateTestAndLive;
 
     protected $entity = Constants\Table::ACCESS_POLICY_AUTHZ_ROLES_MAP;
 

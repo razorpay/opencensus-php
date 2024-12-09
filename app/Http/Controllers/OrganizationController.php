@@ -652,4 +652,15 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
     // --------------------- END CRUD for Org Admins ---------------------------------------
+
+    // --------------------- Admin Org Replications  ---------------------------------------
+    public function adminOrgReplications()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::ADMIN)->adminOrgReplications($input);
+
+        return ApiResponse::json($data);
+    }
+    // --------------------- END Admin Org Replications ------------------------------------
 }

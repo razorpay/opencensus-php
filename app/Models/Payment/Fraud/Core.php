@@ -101,28 +101,59 @@ class Core extends Base\Core
 
         $viewTemplate = CyberHelpdeskConstants::CYBER_HELPDESK_WHATSAPP_TEMPLATE;
 
-        $html = View::make($viewTemplate, $fraudEntity)->with('paymentsDataTable', $this->createPaymentsDataTable($fraudEntity))->render();
+        $table = $this->createPaymentsDataTable($fraudEntity);
 
-        (new CyberHelpDeskService())->createdPDFAndSendWhatsApp($options, $html, $merchant, $contact);
+        $this->app['trace']->info(
+            TraceCode::DEBUG_LOGGING,
+            [
+                'table'         => $table,
+                'count'         => count($table)
+            ]);
+        if (count($table)>0){
+            $html = View::make($viewTemplate, $fraudEntity)->with('paymentsDataTable', $table)->render();
+
+            (new CyberHelpDeskService())->createdPDFAndSendWhatsApp($options, $html, $merchant, $contact);
+        }
+        else{
+            $this->app['trace']->info(
+                TraceCode::WHATSAPP_FRAUD_MESSAGE_NOT_REAL_TIME_FOR_MERCHANT,
+                [
+                    MerchantConstants::MERCHANT_ID          => $merchant,
+                ]);
+        }
     }
 
     public function createPaymentsDataTable($fraudEntity){
         $tableData = [];
 
         foreach ($fraudEntity as $payment){
-            $createdDate = date('Y-m-d H:i:s', $payment[CyberHelpdeskConstants::CREATED_DATE]);
+
+            $transactionDate = $payment[CyberHelpdeskConstants::TRANSACTION_DATE];
+            $timestamp = \DateTime::createFromFormat('d/m/y', $transactionDate)->getTimestamp();
+
+            $createdDate = date("Y-m-d H:i:s", $timestamp);
             $createdTimestamp = strtotime($createdDate);
             $currentTimestamp = time();
 
-            if (($currentTimestamp - $createdTimestamp) < 86400) {
+            if (($currentTimestamp - $createdTimestamp) <= 86400) {
                 $tableRow = array();
                 $tableRow[CyberHelpdeskConstants::PAYMENT_ID] = $payment[CyberHelpdeskConstants::PAYMENT_ID];
                 $tableRow[CyberHelpdeskConstants::AMOUNT] = $payment[CyberHelpdeskConstants::AMOUNT];
                 $tableRow[CyberHelpdeskConstants::SOURCE] = $payment[CyberHelpdeskConstants::SOURCE_OF_NOTIFICATION];
-                $tableRow[CyberHelpdeskConstants::CREATED_DATE] = date('Y-m-d H:i:s', $payment[CyberHelpdeskConstants::CREATED_DATE]);
+                $tableRow[CyberHelpdeskConstants::CREATED_DATE] = $transactionDate;
                 $tableRow[CyberHelpdeskConstants::RESPOND_BY] = $payment[CyberHelpdeskConstants::RESPOND_BY];
                 $tableData[] = $tableRow;
             }
+            $this->app['trace']->info(
+                TraceCode::WHATSAPP_FRAUD_MESSAGE_FOR_SINGLE_MERCHANT_TIMESTAMP,
+                [
+                    'created_timestamp' => $createdTimestamp,
+                    'current_timestamp' => $currentTimestamp,
+                    'timestamp_diff'    => $currentTimestamp - $createdTimestamp,
+                    'created_date'      => $createdDate,
+                    'transaction_date'  => $transactionDate,
+                    'timestamp'         => $timestamp
+                ]);
         }
         return $tableData;
     }

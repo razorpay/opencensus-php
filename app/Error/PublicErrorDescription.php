@@ -1202,6 +1202,7 @@ class PublicErrorDescription
     const BAD_REQUEST_OFFLINE_CHALLAN_DUPLICATE_REQUEST                      = 'Duplicate challan identified against an already created Challan';
     const BAD_REQUEST_CHALLAN_NOT_FOUND                                      = 'Challan not found in system';
     const BAD_REQUEST_CHALLAN_EXPIRED                                        = 'Challan was expired on receipt of API push from the bank';
+    const BAD_REQUEST_CHALLAN_FAILED_BY_BANK                                 = 'Challan marked as failed from the bank';
     const BAD_REQUEST_CLIENT_CODE_NOT_FOUND                                  = 'Client Code not found in system';
     //const BAD_REQUEST_AMOUNT_MISMATCH                                      = 'Discrepancy between expected challan amount and paid Amount';
     const BAD_REQUEST_IDENTIFICATION_ID_NOT_FOUND                            = 'Identification id not found in system';

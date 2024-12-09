@@ -52,6 +52,7 @@ class Core extends Base\Core
     ];
 
     const IS_DUPLICATE = "is_duplicate";
+    const BANK_TRANSFER_ID ='bank_transfer_id';
 
     const MAX_INTL_BANK_TRANSFER_AMOUNT_BY_CURRENCIES = [
         Currency\Currency::USD => 29000,
@@ -249,12 +250,15 @@ class Core extends Base\Core
         $paymentSuccess = false;
         $bankTransfer = null;
         $errorMessage = null;
+        $isCollectXBankTransfer = false;
 
         try
         {
             if ($bankTransferRequest->isCollectXBankTransfer())
             {
                 $bankTransferInput[Entity::IS_COLLECTX_BANK_TRANSFER] = true;
+
+                $isCollectXBankTransfer = true;
 
                 // Removing the attribute from bank transfer request entity as we don't need it anymore
                 $bankTransferRequest->removeCollectXAttributes();
@@ -286,10 +290,59 @@ class Core extends Base\Core
         finally
         {
             // Todo: below function pushes $paymentSuccess = true, check if in case of ledger async retries (txn will be eventually done from jobs) its ok to do so
-            $this->postProcessBankTransferUpdation($bankTransfer, $bankTransferInput, $bankTransferRequest, $errorMessage, $paymentSuccess);
+            $this->postProcessBankTransferUpdation($bankTransfer, $bankTransferInput, $bankTransferRequest, $errorMessage, $paymentSuccess, $isCollectXBankTransfer);
         }
 
         return true;
+    }
+    public function manualProcessBankTransferEntity($input)
+    {
+
+        $id = $input[self::BANK_TRANSFER_ID];
+
+        $bankTransfer = $this->repo->bank_transfer->findOrFail($id);
+
+        if ($bankTransfer == null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BANK_TRANSFER_NOT_FOUND,null,[
+                "bank_transfer_id" => $id,
+            ]);
+        }
+
+        $this->trace->info(
+            TraceCode::MANUAL_ACTION_PROCESS_BANK_TRANSFER_REQUEST, [
+            "id" => $bankTransfer->getId()
+        ]);
+
+        if ($bankTransfer['status'] !== Status::CREATED)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null,[
+                "bank_transfer_id" => $id,
+            ]);
+        }
+
+        $processor = new Processor();
+
+        $bankTransfer->setAttribute(Entity::SKIP_DUPLICATE_CHECK,true);
+
+       $resp = $processor->process($bankTransfer);
+
+        if($resp=== null || $resp['status']!== Status::PROCESSED){
+
+            $this->trace->error(
+                TraceCode::MANUAL_ACTION_PROCESS_BANK_TRANSFER_FAILURE, [
+                "id" => $bankTransfer->getId()
+            ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BANK_TRANSFER_PROCESSING_FAILED,null,[
+                "bank_transfer_id" => $id,
+            ]);
+        }
+
+        $this->trace->info(
+            TraceCode::MANUAL_ACTION_PROCESS_BANK_TRANSFER_SUCCESS, [
+            "id" => $bankTransfer->getId()
+        ]);
     }
 
     public function processBankTransferRequest(
@@ -336,7 +389,8 @@ class Core extends Base\Core
         $bankTransferInput,
         $bankTransferRequest,
         $errorMessage = null,
-        $paymentSuccess = false
+        $paymentSuccess = false,
+        $isCollectXBankTransfer = false
     )
     {
         $provider = $bankTransferRequest->getGateway();
@@ -359,7 +413,7 @@ class Core extends Base\Core
             ->updateBankTransferRequest($bankTransferInput[Entity::REQ_UTR], $paymentSuccess, $errorMessage, $bankTransferRequest);
 
         $this->virtualAccountMetrics
-            ->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider, $errorMessage);
+            ->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider, $errorMessage, isCollectXBankTransfer: $isCollectXBankTransfer);
     }
 
     public function getAccountForRefund(Entity $bankTransfer)
@@ -1343,7 +1397,10 @@ class Core extends Base\Core
                 });
 
                 // dispatch event for txn created
-                (new Processor())->dispatchEventForTransactionCreated($bankTransfer, $txn);
+                // if merchant is in experiment, it goes in to new flow, else old flow.
+
+                (new Processor())->dispatchEventForTransactionCreatedForTxnDependentMerchants($bankTransfer, $txn);
+
                 return [
                     $bankTransfer->getPublicId(),
                     $txn->getPublicId(),
@@ -1514,5 +1571,37 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+    public function isWebhookSyncFiringEnabled($merchantId,$experimentName,string $checkVariant)
+    {
+        try
+        {
+            $experimentId = $this->app['config']->get($experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id' => $merchantId,
+                'experiment_id' => $experimentId,
+            ]);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'experiment_id' => $experimentId,
+                'result' => $response
+            ]);
+        }
+
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id' => $merchantId,
+                'experiment_id' => $this->app['config']->get($experimentName) ?? null
+            ]);
+
+            return false;
+
+        }
+
+        return $response['response']['variant']['name'] == $checkVariant;
+
     }
 }

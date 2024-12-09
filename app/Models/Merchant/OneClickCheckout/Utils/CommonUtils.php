@@ -151,7 +151,8 @@ class CommonUtils extends Base\Core
                     $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== OrderOneCCFields::GIFT_CARD &&
                     $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== Constants::NECTOR_COINS &&
                     $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== Constants::TYPE_COD_FEE_COUPON &&
-                    $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== Constants::TERRA_WALLET ) {
+                    $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== Constants::TERRA_WALLET &&
+                    $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== Constants::COUPON_TYPE_AUTOMATIC ) {
                     $discount = $coupon[OrderOneCCFields::PROMOTIONS_VALUE] ?? 0;
                     return $discount;
             }

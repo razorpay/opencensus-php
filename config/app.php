@@ -413,6 +413,8 @@ return array(
 
     'ledger_makeshift_dual_write_enabled' => env('LEDGER_MAKESHIFT_DUAL_WRITE_ENABLED'),
 
+    'api_ledger_dual_write_transfer_rearch' => env('API_LEDGER_DUAL_WRITE_TRANSFER_REARCH'),
+
     'partner_regenerate_referrals_links_exp_id' => env('PARTNER_REGENERATE_REFERRAL_LINKS_EXP_ID'),
 
     'partner_config_auditing_experiment_id' => env('PARTNER_CONFIG_AUDITING_EXPERIMENT_ID'),
@@ -465,6 +467,8 @@ return array(
 
     'easy_submerchant_pgos_live_mode_experiment_id' => env('EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID'),
 
+    'linked_account_modular_onboarding_activate_experiment_id' => env('LINKED_ACCOUNT_MODULAR_ONBOARDING_ACTIVATE_EXPERIMENT_ID', false),
+
     'pgos_phantom_live_mode_experiment_id' => env('PGOS_PHANTOM_LIVE_MODE_EXPERIMENT_ID'),
 
     'others_m3_experiment_id' => env('OTHERS_M3_EXPERIMENT_ID'),
@@ -504,6 +508,12 @@ return array(
     'cmma_metro_migrate_out_experiment_id' => env('CMMA_METRO_MIGRATE_OUT_EXPERIMENT_ID'),
 
     'payment_handle_order_creation_experiment_id' => env('PAYMENT_HANDLE_ORDER_CREATION_EXPERIMENT_ID'),
+
+    'under_review_communications_from_api_exp_id' => env('SEND_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
+
+    'rejected_communications_from_api_exp_id' => env('SEND_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
+
+    'cac_blacklist_exp_id' => env('CAC_BLACKLIST_EXP_ID'),
 
     'nocode' => [
         'cache' => [
@@ -679,6 +689,8 @@ return array(
 
     'prts_commission_dual_write_exp_id' => env('PRTS_COMMISSION_DUAL_WRITE_EXP_ID'),
 
+    'prts_switch_over_partnerships_exp_id' => env('PRTS_SWITCH_OVER_PARTNERSHIPS_EXP_ID'),
+
     'prts_commission_invoice_exp_id' => env('PRTS_COMMISSION_INVOICE_SHADOW_PHASE_EXP_ID'),
 
     'prts_read_api_exp_id' => env('PRTS_READ_API_EXP_ID'),
@@ -719,13 +731,43 @@ return array(
 
     'cross_border_mcc_rearch_experiment_id' => env('CROSS_BORDER_MCC_REARCH_EXPERIMENT_ID'),
 
+    'cross_border_flows_experiment_id' => env('CROSS_BORDER_FLOWS_EXPERIMENT_ID'),
+
     'cross_border_s2s_mcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_MCC_REARCH_EXPERIMENT_ID'),
+
+    'cross_border_cfb_intl_cls_experiment_id' => env('CROSS_BORDER_CFB_INTL_CLS_EXPERIMENT_ID'),
+
+    'cross_border_dcc_mcc_rearch_experiment_id' => env('CROSS_BORDER_DCC_MCC_REARCH_EXPERIMENT_ID'),
+
+    'cross_border_s2s_dcc_mcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_DCC_MCC_REARCH_EXPERIMENT_ID'),
 
     'cross_border_mcc_parity_check_experiment_id' => env('CROSS_BORDER_MCC_PARITY_CHECK_EXPERIMENT_ID'),
 
     'show_upi_autopay_method_on_dashboard' => env('SHOW_UPI_AUTOPAY_METHOD_ON_DASHBOARD'),
 
     'enable_force_auth_on_upi_autopay' => env('ENABLE_FORCE_AUTH_ON_UPI_AUTOPAY'),
+
+    'upi_autopay_one_time_mandate_reattempt_interval' => env('UPI_AUTOPAY_ONE_TIME_MANDATE_REATTEMPT_INTERVAL'),
+
+    'upi_autopay_payment_remark' => env('UPI_AUTOPAY_PAYMENT_REMARK'),
+
+    'upi_autopay_revoke_pause_token' => env('UPI_AUTOPAY_REVOKE_PAUSE_TOKEN'),
+
+    'upi_autopay_revokable_feature' => env('UPI_AUTOPAY_REVOKABLE_FEATURE'),
+
+    'upi_autopay_increase_debit_retries' => env('UPI_AUTOPAY_INCREASE_DEBIT_RETRIES'),
+
+    'upi_autopay_increase_debit_retries_time_gap' => env('UPI_AUTOPAY_INCREASE_DEBIT_RETRIES_TIME_GAP'),
+
+    'upi_autopay_gateway_refund' => env('UPI_AUTOPAY_GATEWAY_REFUND'),
+
+    'upi_autopay_promotional_qr' => env('UPI_AUTOPAY_PROMOTIONAL_QR'),
+
+    'upi_autopay_promotional_intent' => env('UPI_AUTOPAY_PROMOTIONAL_INTENT'),
+
+    'upi_autopay_pricing_blacklist' => env('UPI_AUTOPAY_PRICING_BLACKLIST'),
+
+    'upi_autopay_disable_max_amount_blacklist' => env('UPI_AUTOPAY_DISABLE_MAX_AMOUNT_BLACKLIST'),
 
     'fetch_flows_api_forex_rates_from_rearch_experiment_id' => env('FETCH_FLOWS_API_FOREX_RATES_FROM_REARCH_EXPERIMENT_ID'),
 
@@ -753,11 +795,17 @@ return array(
 
     'double_fta_fix_experiment_id' => env('DOUBLE_FTA_FIX_EXPERIMENT_ID'),
 
+    'account_statements_source_event_experiment_id' => env('ACCOUNT_STATEMENTS_SOURCE_EVENT_EXPERIMENT_ID'),
+
     '1cc_shipping_info_migration_splitz_experiment_id' => env('MAGIC_CHECKOUT_SHIPPING_INFO_MIGRATION_EXP_ID'),
 
     'magic_show_coupon_callout_experiment_id'  => env('MAGIC_SHOW_COUPON_CALLOUT_EXP_ID'),
 
     'merchant_automation_activation_exp_id' => env('MERCHANT_AUTOMATION_ACTIVATION_EXP_ID'),
+
+    'nc_automation_activation_exp_id' => env('NC_AUTOMATION_ACTIVATION_EXP_ID'),
+
+    'bank_cancelled_check_exp_id' => env('BANK_CANCELLED_CHECK_EXP_ID'),
 
     'nocodeapp_pricing_exp_id' => env('NOCODEAPP_PRICING_EXP_ID'),
 
@@ -964,6 +1012,8 @@ return array(
 
     'fee_breakup_in_ledger_experiment_id' => env('FEE_BREAKUP_IN_LEDGER_EXP_ID'),
 
+    'amount_credits_split_in_ledger_experiment_id' => env('AMOUNT_CREDITS_SPLIT_IN_LEDGER_EXPERIMENT_ID'),
+
     'get_merchant_activation_response_from_pgos' => env('GET_MERCHANT_ACTIVATION_FROM_PGOS'),
 
     'onboarding_api_bmc_experiment_id'  => env('ONBOARDING_API_BMC_EXPERIMENT_ID'),
@@ -1018,6 +1068,8 @@ return array(
 
     'scheduled_es_enablement_migration_experiment_id' => env('SCHEDULED_ES_ENABLEMENT_MIGRATION_EXP_ID'),
 
+    'feature_config_from_capital_es_experiment_id' => env('FEATURE_CONFIG_FROM_CAPITAL_ES_EXP_ID'),
+
     'banking_mail_invite_merchant_exp_id' => env('BANKING_MAIL_INVITE_MERCHANT_EXP_ID'),
 
     'banking_mail_rejection_notification_exp_id' => env('BANKING_MAIL_REJECTION_NOTIFICATION_EXP_ID'),
@@ -1036,9 +1088,13 @@ return array(
 
     'route_tidb_fetch_exp_id' => env('ROUTE_TIDB_FETCH_EXP_ID'),
 
+    'order_transfer_idempotency_exp_id' => env('ORDER_TRANSFER_IDEMPOTENCY_EXP_ID'),
+
     'recurring_populate_error_metadata' => env('RECURRING_POPULATE_ERROR_METADATA'),
 
     'visa_cvv_less_experiment' => env('VISA_CVV_LESS_EXPERIMENT'),
+
+    'transaction_created_fire_webhook_sync'=>env('TXN_CREATED_FIRE_WEBHOOK_SYNC'),
 
     'refund_creation_data_cls_balance_experiment' => env('REFUND_CREATION_DATA_CLS_BALANCE_EXP_ID'),
 
@@ -1056,7 +1112,21 @@ return array(
 
     'merchant_activation_pos_activation_check_for_transfers_splitz_exp_id' => env('MERCHANT_ACTIVATION_POS_ACTIVATION_CHECK_FOR_TRANSFERS_SPLITZ_EXP_ID'),
 
-    'splitz_merchant_cls_balance_read_experiment_id' => env('SPLITZ_MERCHANT_CLS_BALANCE_READ_EXPERIMENT_ID'),
+    'splitz_merchant_cls_balance_read_experiment_id'    => env('SPLITZ_MERCHANT_CLS_BALANCE_READ_EXPERIMENT_ID'),
+
+    'splitz_harvester_query_upi_experiment_id'          => env('SPLITZ_HARVESTER_QUERY_UPI_EXPERIMENT_ID'),
+
+    'splitz_harvester_query_core_experiment_id'         => env('SPLITZ_HARVESTER_QUERY_CORE_EXPERIMENT_ID'),
+
+    'splitz_harvester_query_partnership_experiment_id'  => env('SPLITZ_HARVESTER_QUERY_PARTNERSHIP_EXPERIMENT_ID'),
+
+    'splitz_merchant_acq_harvester_query_experiment_id' => env('SPLITZ_MERCHANT_ACQ_HARVESTER_QUERY_EXPERIMENT_ID'),
+
+    'splitz_post_payment_harvester_query_experiment_id' => env('SPLITZ_POST_PAYMENT_HARVESTER_QUERY_EXPERIMENT_ID'),
+
+    'splitz_payout_harvester_query_experiment_id'       => env('SPLITZ_PAYOUT_HARVESTER_QUERY_EXPERIMENT_ID'),
+
+    'splitz_insufficient_balance_experiment_id'          => env('SPLITZ_INSUFFICIENT_BALANCE_EXPERIMENT_ID'),
 
     'qr_code_v1_failed_payment_experiment' => env('QRCODEV1_FAILED_PAYMENT_EXPERIMENT'),
 
@@ -1064,5 +1134,49 @@ return array(
 
     'transfer_read_experiment' => env('TRANSFER_READ_EXPERIMENT_ID'),
 
-    'reversal_read_experiment' => env('REVERSAL_READ_EXPERIMENT_ID')
+    'reversal_read_experiment' => env('REVERSAL_READ_EXPERIMENT_ID'),
+
+    'ezetap_device_notification_gateway_enabled' => env('EZETAP_DEVICE_NOTIFICATION_GATEWAY_ENABLED'),
+
+    'fulcrum_recurring_initial_experiment' => env('FULCRUM_RECURRING_INITIAL_PAYMENT_EXP_ID'),
+
+    'splitz_recurring_harvester_query_experiment_id' => env('SPLITZ_RECURRING_HARVESTER_QUERY_EXPERIMENT_ID'),
+
+    'fulcrum_recurring_subsequent_experiment' => env('FULCRUM_RECURRING_SUBSEQUENT_PAYMENT_EXP_ID'),
+
+    'bank_data_via_npci_api_experiment' => env('BANK_DATA_VIA_NPCI_API_EXP_ID'),
+
+    'hdfc_ecms_fund_trans_experiment_id' => env('HDFC_ECMS_FUND_TRANS_EXPERIMENT_ID'),
+
+    'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
+
+    'emit_pgos_consumer_metric_experiment' => env('EMIT_PGOS_CONSUMER_METRIC_EXPERIMENT_ID'),
+
+    'payout_properties_event_experiment_id' => env('PAYOUT_PROPERTIES_EVENT_EXPERIMENT_ID'),
+
+    'my_save_card_splitz_experiment_id' => env('MY_SAVE_CARD_SPLITZ_EXPERIMENT_ID'),
+
+    'p2p' => [
+        'encryption_key' => env('P2P_NACL_SESSION_TOKEN_ENCRYPTION_KEY')
+    ],
+
+    'dcs_edit_enabled_splitz_exp_id' => env('DCS_EDIT_ENABLED_SPLITZ_EXP_ID'),
+
+    'dcs_proxy_enabled_splitz_exp_id' => env('DCS_PROXY_ENABLED_SPLITZ_EXP_ID'),
+
+    'external_updates_enabled_for_tokens' => env('EXTERNAL_UPDATES_ENABLED_FOR_TOKENS'),
+
+    'insufficient_fund_tng' => env('INSUFFICIENT_FUND_TNG'),
+
+    'generate_bene_hash_experiment_id' => env('GENERATE_BENE_HASH_EXPERIMENT_ID'),
+
+    'cms_create_override_test_experiment_id' => env('CMS_CREATE_OVERRIDE_TEST_EXPERIMENT_ID'),
+
+    'cms_create_override_live_experiment_id' => env('CMS_CREATE_OVERRIDE_LIVE_EXPERIMENT_ID'),
+
+    'stop_async_capture_card_gateways' => env('STOP_ASYNC_CAPTURE_CARD_GATEWAYS'),
+
+
+    'skip_optimizer_card_callback' => env('SKIP_OPTIMIZER_CARD_CALLBACK'),
+    'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID')
 );

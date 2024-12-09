@@ -748,6 +748,19 @@ class Service extends Base\Service
 
     }
 
+    public function txnReference3Update(array $input)
+    {
+        $txnIds = $input['txn_ids'];
+        $value = $input['value'];
+        for ($i = 0; $i < count($txnIds); $i++)
+        {
+            $txnId = $txnIds[$i];
+            $this->repo->transaction->txnReference3Update($txnId, $value);
+        }
+
+        return ['success' => true];
+    }
+
     public function fetchMultiple(array $input)
     {
 

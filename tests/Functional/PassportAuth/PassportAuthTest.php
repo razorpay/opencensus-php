@@ -1249,6 +1249,47 @@ class PassportAuthTest extends TestCase
         $this->assertKeylessValues('', '10000000000000', '', KeyAuthCreds::class);
     }
 
+    public function testKeylessMerchantAuthWithXEntityID()
+    {
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => null, 'public_key' => null];
+
+        $testData = $this->testData['paymentsCreateAjax'];
+
+        $passportJWT = $this->sampleKeylessPassportJwtBuilder($consumer, $credential);
+
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+        $pwd = $pgRouterConfig['secret'];
+
+        [$route, $currentAppConfig, $currentInternalAuthWithPassportRoutes] = $this->getCurrentInternalAuthConfigs(
+            'pg_router', 'payment_create_ajax', 'rzp_test', $pwd
+        );
+
+        // create payment_create_ajax route related fixtures
+        $order = $this->createFixturesPaymentCreateAjax();
+
+        // set request content
+        $testData['request']['content'] = $this->getPaymentCreateAjaxRequestContentWithXEntityID($order->getId(), $order->getAmount());
+
+        $response = $this->makeRequestParent($testData['request']);
+
+        //Phpstorm might show `Static property cannot be unset` but it's possible in php
+        $route::$internalApps['pg_router'] = $currentAppConfig;
+        $route::$internalAuthWithPassportRoutes = $currentInternalAuthWithPassportRoutes;
+
+        $this->processAndAssertStatusCode($testData, $response);
+        $this->processAndAssertResponseData($testData, $response);
+        $this->assertArrayHasKey('payment_id', $response);
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+        self::assertEmpty($this->app['request']->input('account_id'));
+
+        $this->assertKeylessValues('', '10000000000000', '', KeyAuthCreds::class);
+    }
+
     /**
      * testMerchantAuthWithInternalAuthNoAccess
      * rejects the request if passport is passed in header and request has valid internal auth credentials but app is not listed
@@ -1348,6 +1389,15 @@ class PassportAuthTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment["order_id"] = 'order_'.$orderId;
         $payment["amount"] = $amount;
+        return $payment;
+    }
+
+    protected function getPaymentCreateAjaxRequestContentWithXEntityID(string $orderId, int $amount)
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment["order_id"] = 'order_'.$orderId;
+        $payment["amount"] = $amount;
+        $payment["x_entity_id"] = 'invalid_id';
         return $payment;
     }
 

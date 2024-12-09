@@ -16,6 +16,14 @@ class MerchantInvoiceController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postCreateInvoiceEntitiesForLinkedAccount()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createInvoiceEntitiesForLinkedAccount($input);
+
+        return ApiResponse::json($data);
+    }
     public function updateGstin($id)
     {
         $input = Request::all();
@@ -66,6 +74,15 @@ class MerchantInvoiceController extends Controller
         $input = Request::all();
 
         $result = $this->service()->generationControl($input);
+
+        return ApiResponse::json($result);
+    }
+
+    public function linkedAccountGenerationControl()
+    {
+        $input = Request::all();
+
+        $result = $this->service()->linkedAccountGenerationControl($input);
 
         return ApiResponse::json($result);
     }

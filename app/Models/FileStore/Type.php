@@ -764,6 +764,7 @@ class Type
 
         self::CHOTABEAM_BUCKET_CONFIG => [
             self::IDFC_EMI_FILE,
+            self::YES_EMI_FILE_SFTP
         ],
 
         self::BEAM_BUCKET_CONFIG => [
@@ -774,7 +775,6 @@ class Type
             self::ICICI_EMI_FILE_SFTP,
             self::ICICI_EMI_REFUND_FILE,
             self::KOTAK_EMI_FILE,
-            self::YES_EMI_FILE_SFTP,
             self::RBL_EMI_FILE,
             self::INDUSIND_EMI_FILE,
             self::AXIS_EMI_FILE,

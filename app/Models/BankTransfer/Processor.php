@@ -41,6 +41,7 @@ use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
 use RZP\Models\FundLoadingDowntime\Notifications;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankTransfer\Constants as BankTransferConstants;
 use RZP\Mail\Merchant\RazorpayX\FundLoadingFailed as FundLoadingFailedMail;
 use RZP\Models\Transaction\Processor\Ledger\FundLoading as LedgerFundLoading;
 
@@ -97,6 +98,14 @@ class Processor extends VirtualAccount\Processor
      */
     protected function isDuplicate(Base\PublicEntity $bankTransfer): bool
     {
+
+        if($bankTransfer->isSkipDuplicateEnabled() === true)
+        {
+
+            $bankTransfer->removeSkipDuplicateCheckAttribute();
+
+            return false;
+        }
 
         $utr = $bankTransfer->getUtr();
 
@@ -260,7 +269,20 @@ class Processor extends VirtualAccount\Processor
         // feature flag based call to Ledger service
         if ($this->virtualAccount->isBalanceTypeBanking() === true and $isCollectXBankTransferPayment === false) {
             if ($bankTransfer->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) {
-                $this->processLedgerForReverseShadow($bankTransfer);
+
+                $ledgerJournalResponse = $this->processLedgerForReverseShadow($bankTransfer);
+
+                if (($ledgerJournalResponse != null)  and (!$this->isRazorxExperimentEnabled($bankTransfer->getMerchantId(),RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE))) {
+
+                    $this->trace->info(TraceCode::TRANSACTION_CREATED_WEBHOOK_SYNC_FIRE,
+                        ["merchantId" =>
+                            $this->merchant->getMerchantId(),
+                            "Transaction" => $ledgerJournalResponse['body'][Entity::ID]
+                        ]);
+
+                    (new Transaction\Core)->dispatchEventForLedgerEntryCreated($ledgerJournalResponse['body'][Entity::ID]);
+                }
+
             } else {
                 $this->processLedgerForShadow($bankTransfer);
             }
@@ -331,7 +353,7 @@ class Processor extends VirtualAccount\Processor
 
         // Fetching terminal to get the terminal_id which will be the identifier to uniquely
         // identify accounts in case of fund loading.
-        $ledgerResponse = [];
+        $ledgerResponse = null;
         $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
 
         $ledgerPayload = (new LedgerFundLoading)->createPayloadForJournalEntry($bankTransfer, $terminal->getPublicId(), $terminal->getAccountType());
@@ -351,6 +373,7 @@ class Processor extends VirtualAccount\Processor
                 ]
             );
         }
+        return $ledgerResponse;
     }
 
     protected function sendEventForTransactionCreated(Entity $bankTransfer, $isCollectXPayment = false)
@@ -365,6 +388,22 @@ class Processor extends VirtualAccount\Processor
                 $this->dispatchEventForTransactionCreated($bankTransfer, $bankTransfer->transaction);
             }
         }
+    }
+
+    public function dispatchEventForTransactionCreatedForTxnDependentMerchants(Base\PublicEntity $bankTransfer, Transaction\Entity $transaction): void
+    {
+        if ($this->isRazorxExperimentEnabled($bankTransfer->getMerchantId(),RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE))
+        {
+
+            $this->trace->info(TraceCode::TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE,
+                [
+                    'transactionId' => $transaction->getId(),
+                    'merchantId' => $bankTransfer->getMerchantId()
+                ]);
+
+            $this->dispatchEventForTransactionCreated($bankTransfer, $transaction);
+        }
+
     }
 
     public function dispatchEventForTransactionCreated(Base\PublicEntity $bankTransfer, Transaction\Entity $transaction)
@@ -440,6 +479,13 @@ class Processor extends VirtualAccount\Processor
 
             $this->repo->saveOrFail($this->virtualAccount);
 
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_AMOUNT_FIELDS_UPDATED, [
+                    'amount'             => $bankTransfer->getAmount(),
+                    'virtual_account_id' => $this->virtualAccount->getId(),
+                ]
+            );
+
         } catch (Exception $ex) {
             $this->app['diag']->trackBankTransferEvent(
                 EventCode::BANK_TRANSFER_UNEXPECTED_PAYMENT,
@@ -508,6 +554,13 @@ class Processor extends VirtualAccount\Processor
         $this->virtualAccount->updateWithBankTransferForBanking($bankTransfer);
 
         $this->repo->saveOrFail($this->virtualAccount);
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_AMOUNT_FIELDS_UPDATED, [
+                'amount'             => $bankTransfer->getAmount(),
+                'virtual_account_id' => $this->virtualAccount->getId(),
+            ]
+        );
 
         if ($bankTransfer->getAmount() >= self::AMOUNT_THRESHOLD_FOR_BANKING) {
             $time = Carbon::now(Timezone::IST)->getTimestamp();
@@ -1265,5 +1318,43 @@ class Processor extends VirtualAccount\Processor
         }
 
         return $terminal;
+    }
+    protected function isRazorxExperimentEnabled($merchantId,$experiment): bool
+    {
+        $ledgerReverseShadowLatTxnBalance = $this->app->razorx->getTreatment(
+            $merchantId,
+            $experiment,
+            $this->mode);
+
+        return strtolower($ledgerReverseShadowLatTxnBalance) === 'on';
+
+    }
+
+    public function isWebhookSyncFiringEnabled($merchantId,$experimentName,string $checkVariant)
+    {
+        try {
+            $experimentId = $this->app['config']->get($experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id' => $merchantId,
+                'experiment_id' => $experimentId,
+            ]);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'experiment_id' => $experimentId,
+                'result' => $response
+            ]);
+        } catch (\Throwable $e) {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id' => $merchantId,
+                'experiment_id' => $this->app['config']->get($experimentName) ?? null
+            ]);
+            return false;
+
+        }
+        return $response['response']['variant']['name'] == $checkVariant;
+
+
     }
 }

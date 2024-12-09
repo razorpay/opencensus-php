@@ -17,6 +17,7 @@ use RZP\Constants\Metric;
 use RZP\Base\ConnectionType;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 trait ArchivedCore
 {
@@ -393,18 +394,20 @@ trait ArchivedCore
 
     private function getArchivedEntityConnection()
     {
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ARCHIVED_REPLICA_QUERY_MOVEMENT, Mode::LIVE);
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_core_experiment_id'),
+        ];
 
-        if ($experimentResult !== 'on')
+        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        if ($variant === true)
         {
-            return ConnectionType::ARCHIVED_DATA_REPLICA;
+            $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::DATA_WAREHOUSE_MERCHANT;
         }
-
-        $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::PAYMENT_FETCH_REPLICA;
-
-        if ($this->entity !== Entity::PAYMENT)
+        else
         {
-            $connection = ConnectionType::ARCHIVED_DATA_REPLICA;
+            $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::PAYMENT_FETCH_REPLICA;
         }
 
         return $connection;

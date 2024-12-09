@@ -3,6 +3,7 @@
 namespace RZP\Models\CyberCrimeHelpDesk;
 
 use RZP\Constants\Timezone;
+use RZP\Models\CyberCrimeHelpDesk\Service as CyberHelpDeskService;
 use RZP\Models\Dispute\Core as DisputeCore;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Notifications\Dashboard\Constants as DashboardConstants;
@@ -533,12 +534,9 @@ class Service extends Base\Service
 
         $contact = (new DisputeCore())->getChargebackPOCMobile($merchant);
 
-        $isWhatsappEnabled = (new MecrchantRZP\Core())->isRazorxExperimentEnable($merchantId,
-            MecrchantRZP\RazorxTreatment::FRAUD_WHATSAPP_NOTIFICATIONS_MIDS);
 
-        if ($isWhatsappEnabled){
-            $this->notifyEnabledMerchant($merchant, $ticketDetails, $contact);
-        }
+        $this->notifyEnabledMerchant($merchant, $ticketDetails, $contact);
+
     }
 
     public function notifyEnabledMerchant($merchant, $ticketDetails, $contact)
@@ -597,9 +595,27 @@ class Service extends Base\Service
 
         $viewTemplate = Constants::CYBER_HELPDESK_WHATSAPP_TEMPLATE;
 
-        $html = View::make($viewTemplate, $ticketDetails)->with('paymentsDataTable', $this->createPaymentsDataTable($data))->render();
+        $table = $this->createPaymentsDataTable($data);
 
-        $this->createdPDFAndSendWhatsApp($options, $html, $merchant, $receiver);
+        $this->app['trace']->info(
+            TraceCode::DEBUG_LOGGING,
+            [
+                'table' => $table,
+                'count' => count($table)
+            ]);
+
+        if (count($table)>0){
+            $html = View::make($viewTemplate, $ticketDetails)->with('paymentsDataTable', $table)->render();
+
+            (new CyberHelpDeskService())->createdPDFAndSendWhatsApp($options, $html, $merchant, $receiver);
+        }
+        else{
+            $this->app['trace']->info(
+                TraceCode::WHATSAPP_FRAUD_MESSAGE_NOT_REAL_TIME_FOR_MERCHANT,
+                [
+                    MerchantConstants::MERCHANT_ID          => $merchant,
+                ]);
+        }
     }
 
     public function createdPDFAndSendWhatsApp($options, $html, $merchant, $receiver){
@@ -654,21 +670,15 @@ class Service extends Base\Service
         foreach ($paymentsDetails as $details) {
             $payment = $details['details']['payment'];
 
-            $createdDate = date('Y-m-d H:i:s', $payment[Constants::CREATED_DATE]);
-            $createdTimestamp = strtotime($createdDate);
-            $currentTimestamp = time();
+            $tableRow = array();
+            $tableRow[Constants::PAYMENT_ID]        = $payment[Constants::ID];
+            $tableRow[Constants::METHOD]            = $payment[Constants::METHOD];
+            $tableRow[Constants::BASE_AMOUNT]       = $payment[Constants::BASE_AMOUNT];
+            $tableRow[Constants::SOURCE]            = Constants::CYBER_HELPDESK;
+            $tableRow[Constants::CREATED_DATE]      = date('Y-m-d H:i:s', $payment[Constants::CREATED_DATE]);
+            $tableRow[Constants::RESPOND_BY]        = 'Within 24 hrs.';
 
-            if (($currentTimestamp - $createdTimestamp) < 86400){
-                $tableRow = array();
-                $tableRow[Constants::PAYMENT_ID]        = $payment[Constants::ID];
-                $tableRow[Constants::METHOD]            = $payment[Constants::METHOD];
-                $tableRow[Constants::BASE_AMOUNT]       = $payment[Constants::BASE_AMOUNT];
-                $tableRow[Constants::SOURCE]            = Constants::CYBER_HELPDESK;
-                $tableRow[Constants::CREATED_DATE]      = $createdDate;
-                $tableRow[Constants::RESPOND_BY]        = 'Within 24 hrs.';
-
-                $tableData[] = $tableRow;
-            }
+            $tableData[] = $tableRow;
 
         }
 

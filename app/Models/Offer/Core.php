@@ -402,7 +402,8 @@ class Core extends Base\Core
                 $this->trace->count(Metric::OFFERS_ENGINE_ORDER_APPLICABILITY_DIFF,
                     [
                         'applicability' => $applicabilityOnOrder,
-                        'validity' => $validityOnOrder
+                        'validity' => $validityOnOrder,
+                        'route' => app('api.route')->getCurrentRouteName(),
                     ]
                 );
             }
@@ -767,13 +768,21 @@ class Core extends Base\Core
     }
 
     //increment the offer usage count after failed payment for max offer validation.
-    public function lockIncrementCurrentOfferUsage(Entity $offer)
+    public function lockIncrementCurrentOfferUsage(Entity $offer, $payment = null)
     {
         if ($offer !== null)
         {
-            $offer = $this->repo->transaction(function () use ($offer)
+            $offer = $this->repo->transaction(function () use ($offer, $payment)
             {
                 $offer = $this->repo->offer->lockForUpdate($offer->getId());
+
+                app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_INCREMENT, [
+                    "offer_id"      => $offer->getId(),
+                    "current_usage" => $offer->getCurrentOfferUsage(),
+                    "new_usage"     => $offer->getCurrentOfferUsage() + 1,
+                    "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null,
+                    "payment_id"    => optional($payment)->getId(),
+                ]);
 
                 $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
 
@@ -794,9 +803,17 @@ class Core extends Base\Core
 
         if ($offer !== null && $offer->getMaxOfferUsage() !== null)
         {
-            $offer = $this->repo->transaction(function () use ($offer)
+            $offer = $this->repo->transaction(function () use ($offer, $payment)
             {
                 $offer = $this->repo->offer->lockForUpdate($offer->getId());
+
+                app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_DECREMENT, [
+                    "offer_id"      => $offer->getId(),
+                    "current_usage" => $offer->getCurrentOfferUsage(),
+                    "new_usage"     => $offer->getCurrentOfferUsage() - 1,
+                    "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null,
+                    "payment"       => optional($payment)->getId(),
+                ]);
 
                 $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() - 1);
 
@@ -807,8 +824,6 @@ class Core extends Base\Core
 
             return $offer;
         }
-
-
     }
 
     private function addSubscriptionData(Entity $offer, array $subscriptionInput = [])
@@ -1081,7 +1096,8 @@ class Core extends Base\Core
 
                 $this->traceNonExistingIins($offer, $merchant);
 
-                if ($this->shouldRouteToOffersEngine($merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true)
+                if ($this->shouldRouteToOffersEngine(
+                    $merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP, true) === true)
                 {
                     $this->offersEngine->createOffer($offer, $subscriptionInput ?? [], $input);
                 }
@@ -1090,63 +1106,52 @@ class Core extends Base\Core
         return $offer;
     }
 
-    public function bulkCalltoSplitz(string $merchantId): array{
-        $result = [];
-
-        try{
-            $whitelistExperiments = [
-                $this->app['config']->get(Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP) => Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP,
-                $this->app['config']->get(Constants::OFFERS_ENGINE_REVERSE_SHADOW_EXP) => Constants::OFFERS_ENGINE_REVERSE_SHADOW_EXP,
+    public function bulkCalltoSplitz(string $merchantId): array
+    {
+        if ((app()->runningUnitTests() === true) or
+            ($this->env === 'bvt' or $this->env === 'automation' or
+             $this->env === 'func' or $this->env === 'availability' or
+             $this->env === 'perf' or $this->env === 'perf2'))
+        {
+            return [
+                Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP => false,
+                Constants::OFFERS_ENGINE_REVERSE_SHADOW_EXP => false,
             ];
-
-            foreach ($whitelistExperiments as $experimentId => $instrument)
-            {
-                $result[$instrument] = false; // Default value
-
-                $experimentsData[] = [
-                    "id" => $merchantId,
-                    "experiment_id" => $experimentId,
-                    'request_data'  => json_encode(
-                        [
-                            'merchant_id' => $merchantId,
-                        ]),
-                ];
-            }
-            $experimentResponses = $this->app['splitzService']->bulkCallsToSplitz($experimentsData);
-
-            foreach ($experimentResponses as $response)
-            {
-                $variables = $response['variant']['variables'];
-
-                foreach ($variables as $variable)
-                {
-                    if ($variable['key'] == "enabled" && $variable['value'] == "true") {
-
-                        $experimentId = $response['experiment']['id'];
-
-                        if(array_key_exists($experimentId, $whitelistExperiments))
-                        {
-                            $result[$whitelistExperiments[$experimentId]] = true;
-                        }
-                    }
-                }
-            }
-
-        }catch (\Exception $e) {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
-                [
-                    'msg' => $e->getMessage()
-                ]);
         }
 
-        return $result;
+        return [
+            Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP => true,
+            Constants::OFFERS_ENGINE_REVERSE_SHADOW_EXP => true,
+        ];
     }
 
-    public function shouldRouteToOffersEngine(string $merchantId, $experiment): bool
+    public function shouldRouteToOffersEngine(string $merchantId, $experiment, $throwError = false): bool
     {
+        if ((app()->runningUnitTests() === true) or
+        ($this->env === 'bvt' or $this->env === 'automation' or
+         $this->env === 'func' or $this->env === 'availability' or
+         $this->env === 'perf' or $this->env === 'perf2'))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function shouldRouteToOffersEngineForPayments(string $merchantId, $experiment, $throwError = false): bool
+    {
+        if (app()->runningUnitTests() === true)
+        {
+            return true;
+        }
+
+        if (($this->env === 'bvt' or $this->env === 'automation' or
+             $this->env === 'func' or $this->env === 'availability' or
+             $this->env === 'perf' or $this->env === 'perf2'))
+        {
+            return false;
+        }
+
         try
         {
             $properties = [
@@ -1163,7 +1168,7 @@ class Core extends Base\Core
 
             return $variant === 'variant_on';
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
@@ -1172,6 +1177,11 @@ class Core extends Base\Core
                 [
                     'msg' => $e->getMessage()
                 ]);
+
+            if ($throwError === true)
+            {
+                throw $e;
+            }
         }
 
         return false;
@@ -1389,6 +1399,7 @@ class Core extends Base\Core
                 [
                     'offer_type' => $offer->getOfferType(),
                     'emi_subvention' => $offer->getEmiSubvention(),
+                    'route' => app('api.route')->getCurrentRouteName(),
                 ]);
 
             $this->trace->debug(TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH, [

@@ -46,10 +46,11 @@ class Constants
     const CONTACT_MOBILE   = 'contact_mobile';
     const BUSINESS_WEBSITE = 'business_website';
 
-    const PAYMENT     = 'payment';
-    const PAYMENT_ID  = 'payment_id';
-    const TRANSACTION = 'transaction';
-    const SETTLED     = 'settled';
+    const PAYMENT           = 'payment';
+    const PAYMENT_ID        = 'payment_id';
+    const TRANSACTION       = 'transaction';
+    const TRANSACTION_DATE  = 'transaction_date';
+    const SETTLED           = 'settled';
 
     const PAYMENT_ANALYTICS = 'payment_analytics';
     const IP                = 'ip';

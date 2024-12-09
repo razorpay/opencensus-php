@@ -4026,6 +4026,58 @@ return [
         ],
     ],
 
+    'testCreateBulkPayoutForMerchantBlockedOnLite' => [
+        'request'   => [
+            'url'     => '/payouts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount'                => '100',
+                        'currency'              => 'INR',
+                        'mode'                  => 'IMPS',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'bank_account',
+                        'account_name'          => 'Vivek Karna',
+                        'account_IFSC'          => 'HDFC0003780',
+                        'account_number'        => '50100244702362',
+                        'account_vpa'           => ''
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Vivek Karna',
+                        'email'                 => 'sampleone@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc123'
+                ]
+            ]
+        ],
+        'response'                                  =>
+            [
+                'content'                               => [
+                    'entity'                            => 'collection',
+                    'count'                             => 1,
+                    'items'                             => [
+                        [
+                            'batch_id'        => 'C0zv9I46W4wiOq',
+                            'idempotency_key' => 'batch_abc123',
+                            'error'           => [
+                                'description' => 'API payouts are not available for this account',
+                                'code'        => 'BAD_REQUEST_ERROR',
+                            ],
+                        ],
+                    ]
+                ],
+            ],
+    ],
+
     'testBulkPayoutWithSameFundAccountNWFS' => [
         'request'   => [
             'url'     => '/payouts/bulk',
@@ -9723,7 +9775,7 @@ return [
         ],
     ],
 
-    'testAdd201CustomPayoutPurposes' => [
+    'testAdd401CustomPayoutPurposes' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/payouts/purposes',
@@ -9736,7 +9788,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'You have reached the maximum limit (200) of custom payout purposes that can be created.',
+                    'description' => 'You have reached the maximum limit (400) of custom payout purposes that can be created.',
                 ],
             ],
             'status_code' => 400,
@@ -9747,7 +9799,7 @@ return [
         ],
     ],
 
-    'testAdd301BulkCustomPayoutPurposes' => [
+    'testAdd501BulkCustomPayoutPurposes' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/payouts/purposes/{merchant_id}',
@@ -9762,7 +9814,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'You have reached the maximum limit (300) of custom payout purposes that can be created.',
+                    'description' => 'You have reached the maximum limit (500) of custom payout purposes that can be created.',
                 ],
             ],
             'status_code' => 400,
@@ -10174,6 +10226,37 @@ return [
                 'batch_id'        => null,
                 'failure_reason'  => NULL,
             ],
+        ],
+    ],
+    'testCreatePayoutForLiteBlockedMerchant' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'API payouts are not available for this account',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
 
@@ -19825,7 +19908,6 @@ return [
             ],
         ],
     ],
-
     'testOnHoldPayoutForFeatureEnabledMerchantAndBeneDown' => [
         'request'  => [
             'method'  => 'POST',
@@ -25169,5 +25251,299 @@ return [
                 ]
             ],
         ],
+    ],
+
+    'testPayoutManualAction' => [
+        'request' => [
+            'method' => 'POST',
+            'url'=> '/payouts/manual_action',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success',
+                'failure_count' => 0,
+                'success_count' => 2,
+                'exceptions' => []
+            ]
+        ]
+    ],
+
+    'testPayoutManualActionDualWriteSuccess' =>  [
+        'request_content' => [
+            'action' => 'dual_write',
+            'reason' => 'some reason',
+            'bulk_input' => [
+                'payout_ids' => ['randomid111111','randomid111112']
+            ]
+        ],
+        'response_content' =>  [
+            'status' => 'success',
+            'failure_count' => 0,
+            'success_count' => 2
+        ]
+    ],
+
+    'testPayoutManualActionDualWriteFailure' =>  [
+        'request_content' => [
+            'action' => 'dual_write',
+            'reason' => 'some reason',
+            'bulk_input' => [
+                'payout_ids' =>  ['randomid111111','randomid111112']
+            ]
+        ],
+        'response_content' =>  [
+            'status' => 'partially',
+            'failure_count' => 1,
+            'success_count' => 1,
+            'exceptions' => [
+                [
+                    "input" => 'randomid111112',
+                    'exception' => 'PAYOUT is not a valid class'
+                ]
+            ]
+        ]
+    ],
+
+    'testPayoutManualActionApproveWorkflowPayoutsSuccess' => [
+        'request_content' => [
+            'action' => 'approve_workflow_payouts',
+            'reason' => 'some reason',
+            'bulk_input' => [
+                'payout_ids' =>  ['randomid111111','randomid111112']
+            ]
+        ],
+        'response_content' =>  [
+            'status' => 'success',
+            'failure_count' => 0,
+            'success_count' => 2
+        ]
+    ],
+
+    'testPayoutManualActionRejectWorkflowPayoutsSuccess' => [
+        'request_content' => [
+            'action' => 'reject_workflow_payouts',
+            'reason' => 'some reason',
+            'bulk_input' => [
+                'payout_ids' =>  ['randomid111111','randomid111112']
+            ]
+        ],
+        'response_content' =>  [
+            'status' => 'success',
+            'failure_count' => 0,
+            'success_count' => 2
+        ]
+    ],
+
+    'testManualActionDashboardProcessedToProcessingSuccess' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/manual_action',
+            'content' => [
+                'reason'  => 'Processed no Debits',
+                'action'     => 'processed_to_processing',
+                'bulk_input' => [
+                    [
+                        'payout_id' => 'dummy_value',
+                        'is_payout_service'=> false
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    'status' => 'success',
+                    'success_count' => 1,
+                    'failure_count' => 0,
+                    'exceptions' => []
+            ]
+        ],
+    ],
+    'testManualActionDashboardProcessedToProcessingInvalidState' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/manual_action',
+            'content' => [
+                'reason'  => 'Processed no Debits',
+                'action'     => 'processed_to_processing',
+                'bulk_input' => [
+                    [
+                        'payout_id' => 'dummy_value',
+                        'is_payout_service'=> false
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            'status' => 'failed',
+            'success_count' => 0,
+            'failure_count' => 1,
+            'exceptions' =>
+                [
+                        [
+                            'input' =>
+                                [
+                                    'is_payout_service' => false,
+                                ],
+                            'exception' => 'Payout Status Details entity not found for payoutId for status: processed',
+                        ],
+                ],
+            ],
+        ],
+    ],
+    'testRedisGetValidationsPass' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Need it',
+                'action' => 'redis_get',
+                'bulk_input' => [[
+                    'key' => 'collectx_enabled'
+                ]]
+            ]
+        ]
+    ],
+    'testRedisGetValidationsFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Need it',
+                'action' => 'redis_get',
+                'bulk_input' => [[
+                    'keys' => 'collectx_enabled'
+                ]]
+            ]
+        ]
+    ],
+    'testRedisSetValidationsPass' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'redis_set',
+                'bulk_input' => [[
+                    'key' => 'collectx_enabled',
+                    'value' => ['ha', 'nahi']
+                ]]
+            ]
+        ]
+    ],
+    'testRedisSetValidationsKeyFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'redis_set',
+                'bulk_input' => [[
+                    'keys' => 'collectx_enabled',
+                    'value' => ['ha', 'nahi']
+                ]]
+            ]
+        ]
+    ],
+    'testRedisSetValidationsValueFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'redis_set',
+                'bulk_input' => [[
+                    'key' => 'collectx_enabled',
+                ]]
+            ]
+        ]
+    ],
+    'testRedisSetValidationsValueTypeFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'redis_set',
+                'bulk_input' => [[
+                    'key' => 'collectx_enabled',
+                    'value' => 'nahi'
+                ]]
+            ]
+        ]
+    ],
+    'testMerchantInvoiceGenerationPass' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'generate_merchant_invoice',
+                'bulk_input' => [[
+                    'month' => 12,
+                    'year' => 2024,
+                    'merchant_ids' => ['mid1', 'mid2']
+                ]]
+            ]
+        ]
+    ],
+    'testMerchantInvoiceGenerationMonthFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'generate_merchant_invoice',
+                'bulk_input' => [[
+                    'year' => 2024,
+                    'merchant_ids' => ['mid1'],
+                ]]
+            ]
+        ]
+    ],
+    'testMerchantInvoiceGenerationYearFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'generate_merchant_invoice',
+                'bulk_input' => [[
+                    'month' => 12,
+                    'merchant_ids' => ['mid1'],
+                ]]
+            ]
+        ]
+    ],
+    'testMerchantInvoiceGenerationMIDFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'generate_merchant_invoice',
+                'bulk_input' => [[
+                    'month' => 10,
+                    'year' => 2024,
+                    'merchant_id' => ['mid1'],
+                ]]
+            ]
+        ]
+    ],
+    'testMerchantInvoiceGenerationMIDTypeFail' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'generate_merchant_invoice',
+                'bulk_input' => [[
+                    'month' => 10,
+                    'year' => 2024,
+                    'merchant_ids' => 'mid1',
+                ]]
+            ]
+        ]
     ],
 ];

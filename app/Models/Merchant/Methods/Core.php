@@ -60,6 +60,11 @@ class Core extends Base\Core
     const GATEWAY = 'gateway';
     const STATUS  = 'status';
     const ENABLED = 'enabled';
+    const EMANDATE = 'emandate';
+    const NAME = 'name';
+    const AUTH_TYPES = 'auth_types';
+    const BANK_CODE = 'bank_code';
+    const IS_MERGED_BANK = 'is_merged_bank';
     const METHOD_ENABLED = 'method_enabled';
     const TERMINAL_AVAILABLE = 'terminal_available';
 
@@ -423,6 +428,7 @@ class Core extends Base\Core
             Payment\Method::INTL_BANK_TRANSFER  => [],
             Payment\Method::FPX                 => [],
             Payment\Method::DUITNOW_PAY         => false,
+            Payment\Method::GIFT_CARDS          => [],
         ];
 
         $methods = $this->getMethods($merchant);
@@ -438,11 +444,14 @@ class Core extends Base\Core
         $netbankingEnabled           = $methods->isNetbankingEnabled();
         $data[Payment\Method::APP]   = $methods->getApps();
         $data[Entity::DEBIT_EMI_PROVIDERS] = $methods->getConsolidatedEnabledDebitEmiProviders();
-//        $data[Entity::CREDIT_EMI_PROVIDERS] = $methods->getConsolidatedEnabledCreditEmiProviders();
+        $data[Entity::OFFLINE_DEBIT_EMI_PROVIDERS] = $methods->getConsolidatedOfflineDebitEmiProviders();
+        $data[Entity::OFFLINE_CREDIT_EMI_PROVIDERS] = $methods->getConsolidatedOfflineCreditEmiProviders();
+        //$data[Entity::CREDIT_EMI_PROVIDERS] = $methods->getConsolidatedEnabledCreditEmiProviders();
         $data[Entity::EMI_TYPES] = $methods->getEmiTypes();
         $data[Entity::COD] = $methods->isCodEnabled();
         $data[Entity::OFFLINE] = $methods->isOfflineEnabled();
         $fpxEnabled = $methods->isFpxEnabled();
+        $data[Payment\Method::GIFT_CARDS] = $methods->isGiftCardsEnabled();
         $data[Entity::INTL_BANK_TRANSFER] = $this->getInternationalBankTransferMethods($methods);
         $data[Payment\Method::DUITNOW_PAY] = $methods->isDuitNowPayEnabled();
 
@@ -487,6 +496,11 @@ class Core extends Base\Core
             $data[Payment\Method::BANK_TRANSFER] = $methods->isBankTransferEnabled();
         }
 
+        // These variables are required for keeping the value returned from emi service
+        $debitEmiProviders = [];
+
+        $emiTypes = [];
+
         if ($methods->isEmiEnabled() === true)
         {
             $data[Payment\Method::EMI] = true;
@@ -498,6 +512,49 @@ class Core extends Base\Core
             $data['emi_plans'] = $emiPlansAndOptions['plans'];
 
             $data['emi_options'] = $emiPlansAndOptions['options'];
+
+            $debitEmiProviders = $emiPlansAndOptions['debit_emi_providers'];
+
+            $emiTypes = $emiPlansAndOptions['emi_types'];
+        }
+        else if($merchant->isFeatureEnabled(FeatureConstants::RAAS))
+        {
+            $emiService = (new Emi\Service);
+
+            if($emiService->shouldFetchEmiPlansFromProviders())
+            {
+                $data[Payment\Method::EMI] = true;
+
+                $data['emi_subvention'] = $merchant->getEmiSubvention();
+
+                $emiPlansAndOptions = $emiService->getEmiPlansFromProviders();
+
+                $data['emi_plans'] = $emiPlansAndOptions['plans'];
+
+                $data['emi_options'] = $emiPlansAndOptions['options'];
+
+                $debitEmiProviders = $emiPlansAndOptions['debit_emi_providers'];
+
+                $emiTypes = $emiPlansAndOptions['emi_types'];
+            }
+        }
+
+        // setting the value as 1 for all the providers which are returned from emi service
+        foreach ($debitEmiProviders as $provider)
+        {
+            $data[Entity::DEBIT_EMI_PROVIDERS][$provider] = 1;
+        }
+
+        // setting the value as true in case razorpay debit/credit is disabled but on provider it's enabled
+        foreach ($emiTypes as $type => $flag)
+        {
+            if(isset($data[Entity::EMI_TYPES])
+                && isset($data[Entity::EMI_TYPES][$type])
+                && $data[Entity::EMI_TYPES][$type] === false
+                && $flag === true)
+            {
+                $data[Entity::EMI_TYPES][$type] = true;
+            }
         }
 
         if ($methods->isCredEnabled() === true)
@@ -795,49 +852,75 @@ class Core extends Base\Core
                 $authTypes = array_diff($authTypes, [Payment\AuthType::AADHAAR]);
             }
         }
+        $experimentName = $this->app['config']->get('app.bank_data_via_npci_api_experiment');
+        if ($this->getSplitzResponse($merchant->getMerchantId(), $experimentName) === 'enable') {
+            if ($this->isTestMode() === true) {
+                $recurringData[self::EMANDATE] = Payment\Gateway::getFilteredEmandateBanks($authTypes);
+            } else {
+               if (!isset($recurringData[self::EMANDATE]) || !is_array($recurringData[self::EMANDATE])) {
+                   $recurringData[self::EMANDATE] = [];
+                }
+                // Iterate over each authType
+                foreach ($authTypes as $authType) {
+                    // Get the banks enabled for the current authType
+                    $banksForAuthType = $this->getEmandateBanksEnabledNew($merchant, $authType);
 
-        foreach ($authTypes as $authType)
-        {
-            if ($this->isTestMode() === true)
-            {
-                $banks = Payment\Gateway::getAvailableEmandateBanksForAuthType($authType);
+                    // Merge the banks for this authType into the recurringData
+                    // Merge using array_merge to avoid overwriting
+                    $recurringData[self::EMANDATE] = array_merge($recurringData[self::EMANDATE], $banksForAuthType[self::EMANDATE]);
+                }
             }
-            else
-            {
-                $banks = $this->getEmandateBanksEnabled($merchant, $authType);
-            }
+        } else {
+            foreach ($authTypes as $authType) {
+                if ($this->isTestMode() === true) {
+                    $banks = Payment\Gateway::getAvailableEmandateBanksForAuthType($authType);
+                } else {
+                    $banks = $this->getEmandateBanksEnabled($merchant, $authType);
+                }
 
-            $banks = Payment\Gateway::removeEmandateRegistrationDisabledBanks($banks);
+                $banks = Payment\Gateway::removeEmandateRegistrationDisabledBanks($banks);
 
-            if($authType === "netbanking")
-            {
-                $banks = Payment\Gateway::removeNetbankingEmandateRegistrationDisabledBanks($banks);
-            }
+                if ($authType === "netbanking") {
+                    $banks = Payment\Gateway::removeNetbankingEmandateRegistrationDisabledBanks($banks);
+                }
 
-            if (empty($banks) === false)
-            {
-                $banks = $this->getBankNames($banks);
+                if (empty($banks) === false) {
+                    $banks = $this->getBankNames($banks);
 
-                foreach ($banks as $ifsc => $name)
-                {
-                    $recurringData['emandate'][$ifsc]['auth_types'][] = $authType;
-                    $recurringData['emandate'][$ifsc]['name'] = $name;
+                    foreach ($banks as $ifsc => $name) {
+                        $recurringData[self::EMANDATE][$ifsc][self::AUTH_TYPES][] = $authType;
+                        $recurringData[self::EMANDATE][$ifsc][self::NAME] = $name;
 
-                    $mergedBankIfsc = Payment\Gateway::ENACH_NPCI_NB_MERGED_BANK_CODE_MAPPING[$ifsc] ?? null;
+                        $mergedBankIfsc = Payment\Gateway::ENACH_NPCI_NB_MERGED_BANK_CODE_MAPPING[$ifsc] ?? null;
 
-                    if($mergedBankIfsc !== null)
-                    {
-                        $recurringData['emandate'][$ifsc]['is_merged_bank'] = true;
+                        if ($mergedBankIfsc !== null) {
+                            $recurringData[self::EMANDATE][$ifsc][self::IS_MERGED_BANK] = true;
 
-                        $recurringData['emandate'][$ifsc]['bank_code'] = $mergedBankIfsc;
-                    }
-                    else
-                    {
-                        $recurringData['emandate'][$ifsc]['is_merged_bank'] = false;
+                            $recurringData[self::EMANDATE][$ifsc][self::BANK_CODE] = $mergedBankIfsc;
+                        } else {
+                            $recurringData[self::EMANDATE][$ifsc][self::IS_MERGED_BANK] = false;
+                        }
                     }
                 }
             }
         }
+    }
+
+    public function getSplitzResponse(string $id, string $experimentId)
+    {
+        $properties = [
+            'id'            => $id,
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     public function addCustomTextForCredIfApplicable(
@@ -935,8 +1018,9 @@ class Core extends Base\Core
         }
     }
 
-    public function setMethods($merchant, Merchant\Entity $aggregatorMerchant = null, string $source=null)
+    public function setMethods($merchant, Merchant\Entity $aggregatorMerchant = null, string $source=null )
     {
+
         $this->trace->info(TraceCode::SET_PAYMENT_METHODS_UNDER_MUTEX_LOCK,
             [
                 'merchant_id' => $merchant->getId(),
@@ -1024,6 +1108,10 @@ class Core extends Base\Core
             $methods->setDebitCard(false);
             $methods->setPrepaidCard(false);
             $methods->setUpi(false);
+            if(OrgEntity::isOrgCurlec($merchant->getOrgId())){
+                $methods->setMobikwik(false);
+                $methods->setBankTransfer(false);
+            }
         }
 
         $this->trace->info(TraceCode::SAVE_MERCHANT_METHODS,
@@ -1165,6 +1253,10 @@ class Core extends Base\Core
                     $addonMethods[Entity::DUITNOW_PAY][Entity::DUITNOW_PAY] = $value;
                     $methods->setAttribute(Entity::ADDON_METHODS, $addonMethods);
 
+                 case $key === Entity::GIFT_CARDS:
+                     $addonMethods = $methods->getAttribute(Entity::ADDON_METHODS);
+                     $addonMethods[Entity::GIFT_CARDS][Entity::RAZORPAY_GIFTCARD] = $value;
+                     $methods->setAttribute(Entity::ADDON_METHODS, $addonMethods);
 
                 default:
                     $methods->setAttribute($key, $value);
@@ -1243,19 +1335,20 @@ class Core extends Base\Core
             return false;
         }
 
-        if (($aggregatorMerchant->isAggregatorPartner() === false) and ($aggregatorMerchant->isFullyManagedPartner() === false))
+        // allowing only for platform partner types(aggregator, pure platform, fully_managed)
+        if (!$aggregatorMerchant->isPartner() || $aggregatorMerchant->isResellerPartner())
         {
             return false;
         }
 
-        $defaultPartnerConfig = (new PartnerConfig\Core)->fetchAllDefaultConfigsByPartner($aggregatorMerchant);
-
-        if (($defaultPartnerConfig === null) or (count($defaultPartnerConfig) === 0))
+        if ($aggregatorMerchant->isPurePlatformPartner())
         {
-            return false;
+            $defaultPaymentMethods = $this->getDefaultPaymentMethodsForPurePlatformPartner($aggregatorMerchant);
         }
-
-        $defaultPaymentMethods = $defaultPartnerConfig->first()->getDefaultPaymentMethods();
+        else
+        {
+            $defaultPaymentMethods = $this->getDefaultPaymentMethodsForNonPurePlatformPartner($aggregatorMerchant);
+        }
 
         if (empty($defaultPaymentMethods) === true)
         {
@@ -1278,6 +1371,30 @@ class Core extends Base\Core
             ]);
 
         return true;
+    }
+
+    protected function getDefaultPaymentMethodsForNonPurePlatformPartner(Merchant\Entity $aggregatorMerchant)
+    {
+        $defaultPartnerConfig = (new PartnerConfig\Core)->fetchAllDefaultConfigsByPartner($aggregatorMerchant);
+
+        if ($defaultPartnerConfig->isEmpty())
+        {
+            return false;
+        }
+
+        return $defaultPartnerConfig->first()->getDefaultPaymentMethods();
+    }
+
+    protected function getDefaultPaymentMethodsForPurePlatformPartner(Merchant\Entity $aggregatorMerchant)
+    {
+        $oauthAppId = $this->app['basicauth']->getOAuthApplicationId() ?? null;
+
+        if($oauthAppId == null)
+            return null;
+
+        $partnerConfig = $this->repo->partner_config->getApplicationConfig($oauthAppId);
+
+        return optional($partnerConfig)->getDefaultPaymentMethods();
     }
 
     public function setPaymentBanksForMerchant($merchant, $input)
@@ -1467,6 +1584,39 @@ class Core extends Base\Core
         }
     }
 
+    protected function getEmandateBanksEnabledNew(Merchant\Entity $merchant, $authType): array
+    {
+        $recurringData[self::EMANDATE] = [];
+        // Fetch all bank data from API
+        $data = Payment\Gateway::fetchBankDataFromApi();
+
+        // Get the merchant's applicable emandate terminals for the specified auth type
+        $applicableEmandateTerminals = $this->repo
+                                            ->terminal
+                                            ->getEmandateTerminalsForMerchantAndSharedMerchant($merchant, $authType);
+
+        $availableGatewaysForMerchant = $applicableEmandateTerminals->pluck(Terminal\Entity::GATEWAY);
+
+        // Loop through each available gateway for the merchant
+        foreach ($availableGatewaysForMerchant as $gateway) {
+            // Check if the gateway has the specified auth type and retrieve the bank IFSCs for that auth type
+            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$gateway][$authType])) {
+                $allowedBanksForAuthType = Payment\Gateway::$gatewaysEmandateBanksMap[$gateway][$authType];
+
+                // Loop through each bank from the API response
+                foreach ($data as $ifsc => $bank) {
+                    // Check if the bank's IFSC is allowed for the given auth type in the gateway
+                    if (in_array($ifsc, $allowedBanksForAuthType, true) && in_array($authType, $bank[self::AUTH_TYPES], true)) {
+                        // Add the bank to the recurring data array for this auth type
+                        $recurringData[self::EMANDATE][$ifsc] = $bank;
+                    }
+                }
+            }
+        }
+
+        return $recurringData;
+    }
+
     protected function getEmandateBanksEnabled(Merchant\Entity $merchant, $authType): array
     {
         $availableEmandateBanks = [];
@@ -1534,6 +1684,11 @@ class Core extends Base\Core
             $providers = array_merge($providers, $enabledProviders);
 
             $paylaterProviders = $methods->getEnabledPaylaterProviders();
+
+            if (in_array(PaylaterProvider::GETSIMPLOPTIMIZER, $providers) and isset($paylaterProviders[PaylaterProvider::GETSIMPL]) === true and
+             $paylaterProviders[PaylaterProvider::GETSIMPL] === 1) {
+                $paylaterProviders[PaylaterProvider::GETSIMPLOPTIMIZER] =1;
+            }
 
             $whitelistedInstruments = (new MerchantCore())->getWhitelistedPaylaterInstruments($merchant);
 
@@ -1611,6 +1766,12 @@ class Core extends Base\Core
             }
 
             $provider[$providerName] = true;
+        }
+
+        if (isset($provider[PaylaterProvider::GETSIMPLOPTIMIZER]) === true and
+        $provider[PaylaterProvider::GETSIMPLOPTIMIZER] === true) {
+            unset($provider[PaylaterProvider::GETSIMPLOPTIMIZER]);
+            $provider[PaylaterProvider::GETSIMPL]=true;
         }
 
         return $provider;

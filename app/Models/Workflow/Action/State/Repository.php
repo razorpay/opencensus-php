@@ -13,7 +13,7 @@ class Repository extends Base\Repository
         Entity::ADMIN_ID  => 'sometimes|string|max:14',
         Entity::ACTION_ID => 'sometimes|string|max:14',
     ];
-    
+
     public function getLatestActionStateByEntityIdAndType(string $entityId, string $entityType)
     {
         return  $this->newQueryWithConnection($this->getMasterReplicaConnection())
@@ -23,12 +23,15 @@ class Repository extends Base\Repository
                      ->first();
     }
 
-    public function isActionNameExistsForEntityIdAndType(string $entityId, string $entityType, string $actionName) : bool
+    public function isActionNameExistsForEntityIdAndType(string $entityId, string $entityType, $actionName) : bool
     {
+        if (is_array($actionName) === false){
+            $actionName = [$actionName];
+        }
         return  $this->newQueryWithConnection($this->getMasterReplicaConnection())
             ->where(ActionState::ENTITY_TYPE, $entityType)
             ->where(ActionState::ENTITY_ID, $entityId)
-            ->where(ActionState::NAME, $actionName)
+            ->whereIn(ActionState::NAME, $actionName)
             ->exists();
     }
 }

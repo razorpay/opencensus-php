@@ -34,6 +34,21 @@ class Repository extends Base\Repository
         string $merchantId, array $types = [], string $mode = null, bool $withTrashed = false, string $appId = null
     ) : Base\PublicCollection
     {
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsMerchantApplicationsDTO();
+            $partnershipsRequest->setMerchantId($merchantId);
+            $partnershipsRequest->setType($types);
+            $partnershipsRequest->setTrashed($withTrashed);
+            $partnershipsRequest->setApplicationId($appId);
+            $partnershipsRequest->setOrderBy([Entity::TYPE,Entity::ID]);
+            [$redirectToApi,$response]=$this->fetchMerchantApplicationsOnFilter($partnershipsRequest);
+            if($redirectToApi===false)
+            {
+                return new Base\PublicCollection($response);
+            }
+        }
         $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
         $query = $query->merchantId($merchantId);
 
@@ -108,6 +123,17 @@ class Repository extends Base\Repository
      */
     public function fetchMerchantApplicationByAppIds(array $applicationIds) : Base\PublicCollection
     {
+//        $flag=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+//        if(!$flag)
+//        {
+//            $partnershipsRequest= new PartnershipsMerchantApplicationsDTO();
+//            $partnershipsRequest->setApplicationId($applicationIds);
+//            [$redirectToApi,$response]=$this->fetchMerchantApplicationsOnFilter($partnershipsRequest);
+//            if($redirectToApi===false)
+//            {
+//                return $response;
+//            }
+//        }
         return $this->newQuery()
                     ->whereIn(Entity::APPLICATION_ID, $applicationIds)
                     ->get();
@@ -120,10 +146,22 @@ class Repository extends Base\Repository
      */
     public function fetchMerchantApplicationByAppIdAndType(string $applicationId, string $type) : Entity|null
     {
-        return $this->newQuery()
-                    ->where(Entity::APPLICATION_ID, $applicationId)
-                    ->where(Entity::TYPE, $type)
-                    ->first();
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsMerchantApplicationsDTO();
+            $partnershipsRequest->setType([$type]);
+            $partnershipsRequest->setApplicationId($applicationId);
+            [$redirectToApi,$response]=$this->fetchMerchantApplicationsOnFilter($partnershipsRequest,true);
+            if($redirectToApi===false)
+            {
+                return $response;
+            }
+        }
+         return $this->newQuery()
+                     ->where(Entity::APPLICATION_ID, $applicationId)
+                     ->where(Entity::TYPE, $type)
+                     ->first();
     }
 
     /**
@@ -140,5 +178,28 @@ class Repository extends Base\Repository
                      ->update([
                          Entity::DELETED_AT => null,
                      ]);
+    }
+
+    private function fetchMerchantApplicationsOnFilter(PartnershipsMerchantApplicationsDTO $partnershipsRequest, $fetchSingleEntity = false)
+    {
+        $redirectFlag = false; // Flag for redirection decision
+        $response = null;
+        try
+        {
+            $partnershipResponse = $this->app['partnerships']->fetchMerchantApplicationsOnFilter($partnershipsRequest);
+
+            // Decide response based on conditions and `fetchSingleEntity` flag
+            $response = empty($partnershipResponse)
+                ? ($fetchSingleEntity ? null : [])
+                : ($fetchSingleEntity ? $partnershipResponse[0] : $partnershipResponse);
+        }
+        catch (\Exception $e)
+        {
+            // If an exception is caught, disable redirection and log the exception
+            $redirectFlag = true;
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PARTNERSHIPS_ACCESS_MAP_LIST_ERROR);
+        }
+
+        return [$redirectFlag, $response];
     }
 }

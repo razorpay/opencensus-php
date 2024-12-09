@@ -23,6 +23,7 @@ class Type
     const CREATE_WALLET_CONTAINER_REVERSALS = 'create_wallet_container_reversals';
     const CREATE_BULK_GIFT_CARDS            = 'create_bulk_gift_cards';
     const UPDATE_GIFT_CARDS_EXPIRY          = 'update_gift_cards_expiry';
+    const CREATE_GIFT_CARD_TRANSFERS        = 'create_gift_card_transfers';
 
     // GCOMS batch types
     CONST GCMS_UPLOAD_BULK_EMAILS = 'gcms_upload_bulk_emails';
@@ -135,6 +136,8 @@ class Type
     const PARTNER_SUBMERCHANT_INVITE_CAPITAL = 'partner_submerchant_invite_capital';
 
     const PGOS_RMDETAILS_BULK = 'pgos_rmdetails_bulk';
+
+    const JAMMU_AND_KASHMIR_ONBOARDING = 'jammu_and_kashmir_onboarding';
 
     const PARTNER_REFERRAL_FETCH = 'partner_referral_fetch';
 
@@ -310,6 +313,8 @@ class Type
 
     const STORE_ORG_DEFINED_MERCHANT_FIELDS = 'store_org_defined_merchant_fields';
 
+    const UPDATE_ODS_MERCHANT_LIMITS = 'update_ods_merchant_limits';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -369,6 +374,7 @@ class Type
         self::S2P_USERS_ONBOARDING,
         self::NACH_MIGRATION,
         self::PGOS_RMDETAILS_BULK,
+        self::JAMMU_AND_KASHMIR_ONBOARDING,
         self::MERCHANT_ACTIVATION,
         self::INTERNAL_INSTRUMENT_REQUEST,
         self::SUBMERCHANT_LINK,
@@ -401,6 +407,7 @@ class Type
         self::BVS_BULK_KYC_VERIFICATION,
         self::OTC_PAYMENT_CREDIT,
         self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
+        self::UPDATE_ODS_MERCHANT_LIMITS,
     ];
 
     /**
@@ -640,6 +647,7 @@ class Type
         self::IRCTC_SETTLEMENT,
         self::CREATE_WALLET_CONTAINER_REVERSALS,
         self::CREATE_BULK_GIFT_CARDS,
+        self::CREATE_GIFT_CARD_TRANSFERS,
         self::GCMS_UPLOAD_BULK_EMAILS,
         self::BVS_BULK_KYC_VERIFICATION,
         self::UPDATE_GIFT_CARDS_EXPIRY,
@@ -664,6 +672,7 @@ class Type
         self::BUY_PRICING_ASSIGN,
         self::VIRTUAL_ACCOUNT_EDIT,
         self::PGOS_RMDETAILS_BULK,
+        self::JAMMU_AND_KASHMIR_ONBOARDING,
         self::EZETAP_SETTLEMENT,
         self::LOC_WITHDRAWAL,
         self::MERCHANT_CONFIG_INHERITANCE,
@@ -746,11 +755,13 @@ class Type
         self::UPDATE_MIQ,
         self::CREATE_BULK_GIFT_CARDS,
         self::CREATE_BULK_GIFT_CARDS,
+        self::CREATE_GIFT_CARD_TRANSFERS,
         self::GCMS_UPLOAD_BULK_EMAILS,
         self::BVS_BULK_KYC_VERIFICATION,
         self::UPDATE_GIFT_CARDS_EXPIRY,
         self::OTC_PAYMENT_CREDIT,
-        self::STORE_ORG_DEFINED_MERCHANT_FIELDS
+        self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
+        self::UPDATE_ODS_MERCHANT_LIMITS,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -817,6 +828,7 @@ class Type
         self::CREATE_EXEC_RISK_ACTION            => Name::ADMIN_BATCH_CREATE,
         self::WHITELISTED_DOMAIN                 => Name::BULK_UPDATE_WHITELISTED_DOMAIN,
         self::PGOS_RMDETAILS_BULK                => Name::ADMIN_BATCH_CREATE,
+        self::JAMMU_AND_KASHMIR_ONBOARDING       => Name::ADMIN_BATCH_CREATE,
         self::EARLY_SETTLEMENT_TRIAL             => Name::ADMIN_BATCH_CREATE,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG=> Name::ADMIN_BATCH_CREATE,
         self::REWARDS                            => Name::ADMIN_BATCH_CREATE,
@@ -855,6 +867,7 @@ class Type
         self::S2P_GROUPS_ONBOARDING                   => Name::ADMIN_BATCH_CREATE,
         self::S2P_USERS_ONBOARDING                    => Name::ADMIN_BATCH_CREATE,
         self::OTC_PAYMENT_CREDIT                      => Name::ADMIN_BATCH_CREATE,
+        self::UPDATE_ODS_MERCHANT_LIMITS              => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
     ];
 
     public static $workflowApplicableBatchTypes = [

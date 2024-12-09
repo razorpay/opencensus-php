@@ -4368,7 +4368,16 @@ class VirtualAccountTest extends TestCase
         $this->testData[__FUNCTION__]['response'] =   [
             'content' => [
                 'challan_no' => $challanNumber,
-                'status' => 0
+                'status' => 1,
+                'error' => [
+                    'code' => 'BAD_REQ_ER',
+                    'description' =>  'Challan marked as failed from the bank',
+                    'field' => '',
+                    'source' => 'business',
+                    'step' => null,
+                    'reason' =>  'Challan marked as failed from the bank',
+                    'metadata' => [],
+                ],
             ],
         ];
 
@@ -4386,11 +4395,40 @@ class VirtualAccountTest extends TestCase
 
         $this->assertEquals('failed', $offlinePayment['status']);
 
+        $this->assertEquals('failed', $payment['status']);
+
         $this->assertEquals('file', $offlinePayment['source']);
 
     }
 
-    public function testOfflinePaymentCreditBeforeExpiryForMerchantChallanWithExpirySuccessByBatch(){
+    public function testOfflinePaymentCreditBeforeExpiryForMerchantChallanWithExpirySuccessByBatch()
+    {
+
+        $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotesWithExpirySetting']['request']['content']['challan_no'];
+
+        $requestContent = [
+            'challan_no' => $challanNumber,
+            'amount' => 1000,
+            'mode' => 'other bank dd',
+            'status' => 'paid',
+            'payment_date' => '01-apr-2025',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+            'source' => 'file'
+        ];
+
+        $responseContent = [
+            'challan_no'    => $challanNumber,
+            'status'        => 0,
+            'error'         => null
+        ];
+
+        $this->testOfflinePaymentCreditBeforeExpiryForMerchantChallanWithExpirySuccess($requestContent, $responseContent);
+
+    }
+
+    public function testOfflinePaymentCreditBeforeExpiryForMerchantChallanWithPaidStatusByBatch()
+    {
 
         $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotesWithExpirySetting']['request']['content']['challan_no'];
 
@@ -4406,12 +4444,28 @@ class VirtualAccountTest extends TestCase
         ];
 
         $responseContent = [
-            'challan_no'    => $challanNumber,
-            'status'        => 0,
-            'error'         => null
+            'challan_no' => $challanNumber,
+            'status' => 1,
+            'error' => [
+                'code' => 'BAD_REQ_ER',
+                'description' =>  'Challan marked as failed from the bank',
+                'field' => '',
+                'source' => 'business',
+                'step' => null,
+                'reason' =>  'Challan marked as failed from the bank',
+                'metadata' => [],
+            ],
         ];
 
         $this->testOfflinePaymentCreditBeforeExpiryForMerchantChallanWithExpirySuccess($requestContent, $responseContent);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $offlinePayment = $this->getDbLastEntity('offline_payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->assertEquals('failed', $offlinePayment['status']);
 
     }
 
@@ -4490,7 +4544,7 @@ class VirtualAccountTest extends TestCase
         $requestContent = [
             'amount' => 1000,
             'mode' => 'other bank dd',
-            'status' => 'paid',
+            'status' => 'return',
             'payment_date' => '01-apr-2025',
             'payment_time' => '21:30:45',
             'client_code'  =>  '12345678',
@@ -4590,11 +4644,11 @@ class VirtualAccountTest extends TestCase
                 'status' => 1,
                 'error' => [
                     'code' => 'BAD_REQ_ER',
-                    'description' =>  'REFUND_OR_CAPTURE_PAYMENT_FAILED',
+                    'description' =>  'Challan was expired on receipt of API push from the bank',
                     'field' => '',
                     'source' => 'business',
                     'step' => null,
-                    'reason' =>  'REFUND_OR_CAPTURE_PAYMENT_FAILED',
+                    'reason' =>  'Challan was expired on receipt of API push from the bank',
                     'metadata' => [],
                 ],
         ];
@@ -4605,7 +4659,13 @@ class VirtualAccountTest extends TestCase
 
         $payment = $this->getDbLastEntity('payment');
 
+        $offlinePayment = $this->getDbLastEntity('offline_payment');
+
         $this->assertEquals('Oc3KkqYe4LjpdA', $payment['terminal_id']);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->assertEquals('failed', $offlinePayment['status']);
 
         Carbon::setTestNow();
     }

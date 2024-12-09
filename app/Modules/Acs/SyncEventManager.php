@@ -146,13 +146,12 @@ class SyncEventManager
         $mode      = $entity->getConnectionName();
 
         switch ($mode) {
-            case Mode::LIVE:
+            case Connection::ASV_WRITER:
                 $this->mergeOutboxJobs($this->liveAccountIds, $accountId, $outboxJobs);
-                break;
-            case Mode::TEST:
                 $this->mergeOutboxJobs($this->testAccountIds, $accountId, $outboxJobs);
                 break;
-            case Connection::ASV_WRITER:
+            case Mode::LIVE:
+            case Mode::TEST:
                 break;
             default:
                 $this->trace->count(

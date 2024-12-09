@@ -532,4 +532,21 @@ class Repository extends Base\Repository
         ]);
     }
 
+    public function getUserRoleMapping(string $userId, string $merchantId, string $role, string $product)
+    {
+        return $this->newQuery()
+            ->where(Entity::USER_ID, '=', $userId)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::ROLE, '=', $role)
+            ->where(Entity::PRODUCT, '=', $product)
+            ->first();
+    }
+    
+    public function deleteByMerchantIdAndRole(string $merchantId, string $role): int
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::ROLE, '=', $role)
+            ->delete();
+    }
 }

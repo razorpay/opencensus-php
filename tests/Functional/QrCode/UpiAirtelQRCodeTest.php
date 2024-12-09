@@ -116,7 +116,7 @@ class UpiAirtelQRCodeTest extends TestCase
         $pa          = $intentParam['pa'];
         if($qrCodeEntity['request_source'] === 'ezetap')
         {
-            $this->assertEquals('testvpaOffline@mairtel', $pa);
+            $this->assertEquals('testvpaoffline@mairtel', $pa);
         }
         $this->assertStringContainsString('@mairtel', $pa);
 
@@ -337,7 +337,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type'  => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@mairtel',
+                         'vpa'   => 'testvpaoffline@mairtel',
                      ],
                      'live',
                      'LiveAccountMer',
@@ -562,6 +562,27 @@ class UpiAirtelQRCodeTest extends TestCase
 
     }
 
+    public function testQrPaymentOnStaticQrCodeWithCapitalVpaInCallback()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $response = $this->makeUpiAirtelPayment($qrCodeEntity,[ 'payeeVPA' => 'TESTVPA@mairtel',]);
+
+        $this->runQrPaymentEntityAssertions(mode: 'live');
+
+        $this->assertTrue($response['success']);
+    }
+
 
     public function testMultipleQrPaymentsOnDynamicQrCode()
     {
@@ -721,7 +742,7 @@ class UpiAirtelQRCodeTest extends TestCase
             [
                 'usage' => 'multiple_use',
                 'type' => 'upi_qr',
-                'vpa'   => 'testvpaOffline@mairtel',
+                'vpa'   => 'testvpaoffline@mairtel',
             ],
             headers: [
                 'X-Razorpay-Request-Source' => 'ezetap'
@@ -774,7 +795,7 @@ class UpiAirtelQRCodeTest extends TestCase
             [
                 'usage' => 'multiple_use',
                 'type' => 'upi_qr',
-                'vpa'   => 'testvpaOffline@mairtel',
+                'vpa'   => 'testvpaoffline@mairtel',
             ],
             headers:[
                 'X-Razorpay-Request-Source' => 'ezetap'
@@ -961,7 +982,7 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
 
         $this->fixtures->create('terminal:dedicated_upi_airtel_terminal',
-                                ['gateway_merchant_id2' => 'testvpaOfflineVpa@mairtel',
+                                ['gateway_merchant_id2' => 'testvpaofflinevpa@mairtel',
                                  'type'                 => [
                                      Type::PAY           => '1',
                                      Type::NON_RECURRING => '1',
@@ -974,7 +995,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type'  => 'upi_qr',
-                         'vpa'   => 'testvpaOfflineVpa@mairtel',
+                         'vpa'   => 'testvpaofflinevpa@mairtel',
                      ],
                      'live',
                      'LiveAccountMer',
@@ -989,7 +1010,7 @@ class UpiAirtelQRCodeTest extends TestCase
 
         $pa = $intentParam['pa'];
 
-        $this->assertEquals('testvpaOfflineVpa@mairtel', $pa);
+        $this->assertEquals('testvpaofflinevpa@mairtel', $pa);
     }
 
     public function testCreateOfflineStaticAirtelQrWithWrongGatewayVpaInput(): void
@@ -999,7 +1020,7 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
 
         $this->fixtures->create('terminal:dedicated_upi_airtel_terminal',
-                                ['gateway_merchant_id2' => 'testvpaOfflineVpa@mairtel',
+                                ['gateway_merchant_id2' => 'testvpaofflinevpa@mairtel',
                                  'type'                 => [
                                      Type::PAY           => '1',
                                      Type::NON_RECURRING => '1',
@@ -1012,7 +1033,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type'  => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@hdfc',
+                         'vpa'   => 'testvpaoffline@hdfc',
                      ],
                      'live',
                      'LiveAccountMer',
@@ -1031,7 +1052,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type'  => 'upi_qr',
-                         'vpa'   => 'testvpaOfflineVpa@mairtel',
+                         'vpa'   => 'testvpaofflinevpa@mairtel',
                      ],
                      'live',
                      'LiveAccountMer',
@@ -1149,7 +1170,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type'  => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@mairtel',
+                         'vpa'   => 'testvpaoffline@mairtel',
                      ],
             headers: [
                          'X-Razorpay-Request-Source' => 'ezetap'
@@ -1196,7 +1217,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type'  => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@mairtel',
+                         'vpa'   => 'testvpaoffline@mairtel',
                      ],
             headers: [
                          'X-Razorpay-Request-Source' => 'ezetap'
@@ -1328,7 +1349,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage'        => 'multiple_use',
                          'type'         => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@mairtel',
+                         'vpa'   => 'testvpaoffline@mairtel',
                      ],
                      'live',
                      'LiveAccountMer',
@@ -1346,7 +1367,7 @@ class UpiAirtelQRCodeTest extends TestCase
         $content = $this->buildQRUnexpectedPaymentRequest($terminal);
         $content['upi']['gateway_merchant_id'] = null;
         unset($content['terminal']['gateway_merchant_id']);
-        $content['terminal']['gateway_merchant_id2'] = 'testvpaOffline@mairtel';
+        $content['terminal']['gateway_merchant_id2'] = 'testvpaoffline@mairtel';
 
         $response = $this->makeUnexpectedLivePaymentAndGetContent($content);
         $this->assertTrue($response['success']);
@@ -1391,7 +1412,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage'        => 'multiple_use',
                          'type'         => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@mairtel',
+                         'vpa'   => 'testvpaoffline@mairtel',
                      ],
                      'live',
                      'LiveAccountMer',
@@ -1409,7 +1430,7 @@ class UpiAirtelQRCodeTest extends TestCase
         $content = $this->buildQRUnexpectedPaymentRequest($terminal);
         $content['upi']['gateway_merchant_id'] = null;
         unset($content['terminal']['gateway_merchant_id']);
-        $content['terminal']['gateway_merchant_id2'] = 'testvpaOffline@mairtel';
+        $content['terminal']['gateway_merchant_id2'] = 'testvpaoffline@mairtel';
 
         $response = $this->makeUnexpectedLivePaymentAndGetContent($content);
         $this->assertTrue($response['success']);
@@ -1464,7 +1485,7 @@ class UpiAirtelQRCodeTest extends TestCase
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
 
-        $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel', 'hdnOrderID' => 'Random90']);
+        $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaoffline@mairtel', 'hdnOrderID' => 'Random90']);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -1584,7 +1605,7 @@ class UpiAirtelQRCodeTest extends TestCase
 
         $content['upi']['gateway_merchant_id'] = null;
         unset($content['terminal']['gateway_merchant_id']);
-        $content['terminal']['gateway_merchant_id2'] = 'testvpaOffline@mairtel';
+        $content['terminal']['gateway_merchant_id2'] = 'testvpaoffline@mairtel';
 
         $response = $this->makeUnexpectedLivePaymentAndGetContent($content);
         $this->assertTrue($response['success']);
@@ -1666,7 +1687,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type' => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@mairtel',
+                         'vpa'   => 'testvpaoffline@mairtel',
                          'device_id' => '873648ABCD6',
                      ],
             headers: [
@@ -1688,7 +1709,7 @@ class UpiAirtelQRCodeTest extends TestCase
         $response = $this->makeRequestAndGetContent($this->testData[__FUNCTION__]['request']);
 
         $this->assertEquals('873648ABCD6', $response['device_detail']);
-        $this->assertEquals('testvpaOffline@mairtel', $response['payee_vpa']);
+        $this->assertEquals('testvpaoffline@mairtel', $response['payee_vpa']);
     }
 
     public function testOnDashboardForOfflineQRCodeIfPOSDeviceDetailIsNull(): void
@@ -1736,7 +1757,7 @@ class UpiAirtelQRCodeTest extends TestCase
         $response = $this->makeRequestAndGetContent($this->testData['testPOSDeviceDetailOnDashboardForOfflineQRCode']['request']);
 
         $this->assertEquals(null, $response['device_detail']);
-        $this->assertEquals('testvpaOffline@mairtel', $response['payee_vpa']);
+        $this->assertEquals('testvpaoffline@mairtel', $response['payee_vpa']);
     }
 
     public function testEzetapNotificationOfflineQRCode()
@@ -1762,7 +1783,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type' => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@mairtel',
+                         'vpa'   => 'testvpaoffline@mairtel',
                      ],
             headers: [
                          'X-Razorpay-Request-Source' => 'ezetap'
@@ -1799,7 +1820,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type' => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@mairtel',
+                         'vpa'   => 'testvpaoffline@mairtel',
                      ],
             headers: [
                          'X-Razorpay-Request-Source' => 'ezetap'
@@ -1929,7 +1950,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type'  => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@mairtel',
+                         'vpa'   => 'testvpaoffline@mairtel',
                      ],
             headers: [
                          'X-Razorpay-Request-Source' => 'ezetap'
@@ -1972,7 +1993,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type'  => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@mairtel',
+                         'vpa'   => 'testvpaoffline@mairtel',
                      ],
             headers: [
                          'X-Razorpay-Request-Source' => 'ezetap'
@@ -2019,7 +2040,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type'  => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@mairtel',
+                         'vpa'   => 'testvpaoffline@mairtel',
                      ],
             headers: [
                          'X-Razorpay-Request-Source' => 'ezetap'
@@ -2069,7 +2090,7 @@ class UpiAirtelQRCodeTest extends TestCase
                      [
                          'usage' => 'multiple_use',
                          'type'  => 'upi_qr',
-                         'vpa'   => 'testvpaOffline@mairtel',
+                         'vpa'   => 'testvpaoffline@mairtel',
                      ],
             headers: [
                          'X-Razorpay-Request-Source' => 'ezetap'

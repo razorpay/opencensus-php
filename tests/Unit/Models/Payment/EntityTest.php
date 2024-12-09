@@ -83,6 +83,16 @@ class EntityTest extends TestCase
         $this->assertEquals('AmBank Malaysia Berhad', $methodWithDetail[1]);
     }
 
+    public function testGetMethodWithDetailGiftCards()
+    {
+        $payment = $this->payment;
+        $payment -> setMethod(Method::GIFT_CARDS);
+        $payment -> setGateway(Payment\Gateway::WALLET_RAZORPAYWALLET);
+        $methodWithDetail = $payment->getMethodWithDetail();
+        $this->assertEquals('Giftcards', $methodWithDetail[0]);
+        $this->assertEquals('Razorpay Gift Card', $methodWithDetail[1]);
+    }
+
     public function testGetBankNameFpx()
     {
         $payment = $this->payment;

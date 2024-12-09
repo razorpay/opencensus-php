@@ -12,7 +12,7 @@ use Request;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Constants\Country;
-use RZP\Error\PublicErrorDescription;
+use RZP\Constants as RzpConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Gateway\Upi\Base\RecurringTrait;
 use RZP\Http\Edge\PassportUtil;
@@ -22,6 +22,7 @@ use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Card\Type;
 use RZP\Models\Emi\CardlessEmiProvider;
 use RZP\Models\Emi\DebitProvider;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Emi\PaylaterProvider;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Constants\Entity as Constants2;
@@ -322,7 +323,7 @@ trait Authorize
             return $ret;
         }
 
-        return $this->processPaymentFinal($payment, $gatewayInput, $data);
+        return $this->processPaymentFinal($payment, $gatewayInput, $data, $input);
     }
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
@@ -434,14 +435,33 @@ trait Authorize
 
                 if ($paymentEvent->getMethod() === Method::CARD and $paymentEvent->isRecurring() === true and
                     $paymentEvent->getRecurringType() === RecurringType::INITIAL) {
-                    $variant = $this->app['splitzService']->getTreatment($paymentEvent->getMerchantId(),
-                        RazorxTreatment::ALLOW_FULCRUM_RECURRING_INITIAL,
-                        Mode::LIVE);
+                    $properties = [
+                        'id'            => $paymentEvent->getMerchantId(),
+                        'experiment_id' => $this->app['config']->get('app.fulcrum_recurring_initial_experiment'),
+                    ];
 
-                    if ($variant === 'on') {
-                        foreach ($this->selectedTerminals as $terminal) {
+                    $response = $this->app['splitzService']->evaluateRequest($properties);
+
+                    $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                        'properties' => $properties,
+                        'response' => $response,
+                    ]);
+
+                    $variant = $response['response']['variant']['name'] ?? '';
+
+                    if ($variant === 'enable') {
+                        foreach ($this->selectedTerminals as $index => $terminal) {
                             if ($terminal->getGateway() == Constants2::FULCRUM) {
+                                $this->trace->info(
+                                    tracecode::MISC_TRACE_CODE,
+                                    [
+                                        "FOUND_FULCRUM_TERMINAL" => $terminal
+                                    ]
+                                );
                                 $currentTerminal = $terminal;
+                                array_splice($this->selectedTerminals, $index, 1);
+                                array_unshift($this->selectedTerminals, $terminal);
+                                break;
                             }
                         }
 
@@ -467,6 +487,40 @@ trait Authorize
             );
         }
         unset($paymentEvent);
+
+        if ($payment->getMethod() === Method::CARD and $payment->isRecurring() === true and
+            $payment->getRecurringType() === RecurringType::AUTO) {
+            $properties = [
+                'id'            => $payment->getMerchantId(),
+                'experiment_id' => $this->app['config']->get('app.fulcrum_recurring_subsequent_experiment'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            if ($variant === 'enable') {
+                foreach ($this->selectedTerminals as $index => $terminal) {
+                    if ($terminal->getGateway() == Constants2::FULCRUM) {
+                        $this->trace->info(
+                            tracecode::MISC_TRACE_CODE,
+                            [
+                                "FOUND_FULCRUM_TERMINAL" => $terminal
+                            ]
+                        );
+                        array_splice($this->selectedTerminals, $index, 1);
+                        array_unshift($this->selectedTerminals, $terminal);
+                        break;
+                    }
+                }
+
+            }
+        }
 
         if ($this->shouldHitGatewayForPayment($payment, $gatewayInput) === false)
         {
@@ -817,6 +871,11 @@ trait Authorize
                         ]);
                     $terminalGatewayInput['upi_autopay_promo_intent'] = 'promo_intent';
                 }
+            }
+
+            // we need gift_cards to pass it to wallets
+            if (($payment->getMethod() === Method::GIFT_CARDS)) {
+                $terminalGatewayInput['gift_cards'] = $input['gift_cards'];
             }
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
@@ -1669,7 +1728,62 @@ trait Authorize
         throw new Exception\LogicException('Should not be called for any payment other than Card Auto Recurring');
     }
 
-    protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput, array $data): array
+    protected function shouldSkipCapturedForOfflinePayments(Payment\Entity $payment, array $input)
+    {
+        //Trace metadata for offline payment method.
+        $this->trace->info(
+            TraceCode::OFFLINE_PAYMENT_METADATA_STATUS_DURING_AUTHORIZE_FLOW,
+            [
+                'payment_metadata'        => $input[Payment\Entity::META],
+                'payment_id'              => $payment->getId(),
+                'payment_status'          => $payment->getStatus(),
+                'payment_method'          => $input[Payment\Entity::METHOD],
+            ]
+        );
+
+        // Check if the payment method is set and is 'OFFLINE'
+        if ((isset($input[Payment\Entity::METHOD]) === false) or ($input[Payment\Entity::METHOD] !== Payment\Method::OFFLINE))
+        {
+            return []; // If not offline, return empty array immediately
+        }
+
+        $data = [
+            'razorpay_payment_id'   => $payment->getPublicId(),
+            'razorpay_order_id'     => $input[Payment\Entity::ORDER_ID] ?? $payment->getOrderId(),
+        ];
+
+        // Extract the 'META' array from input or set it to an empty array if not present
+        $meta = $input[Payment\Entity::META] ?? [];
+
+        // Get the virtual account status and offline payment status from 'META'
+        $virtualAccountStatus = $meta[RzpConstants\Entity::VIRTUAL_ACCOUNT] ?? null;
+        $offlinePaymentStatus = $meta[RzpConstants\Entity::OFFLINE_PAYMENT] ?? null;
+
+        if ($virtualAccountStatus !== null and $virtualAccountStatus === VirtualAccount\Status::CLOSED)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED;
+
+            $exception = new BadRequestException($errorCode);
+
+            $this->failOfflinePaymentByChallanExpiry($payment, $exception);
+
+            return $data; // Return Non-empty array indicating the payment captured should be skipped
+        }
+        else if($offlinePaymentStatus !== null and $offlinePaymentStatus === Payment\Status::FAILED)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CHALLAN_FAILED_BY_BANK;
+
+            $exception = new BadRequestException($errorCode);
+
+            $this->failOfflinePaymentByChallanExpiry($payment, $exception);
+
+            return $data; // Return Non-empty array indicating the payment captured should be skipped
+        }
+
+        return [];
+    }
+
+    protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput, array $data, array $input): array
     {
         if ((isset($gatewayInput['skip_gateway_call']) === true) and
             ($gatewayInput['skip_gateway_call'] === true))
@@ -1704,6 +1818,16 @@ trait Authorize
         if($payment->isInAppUPI() === true)
         {
             return $this->processInAppPaymentCreated($payment);
+        }
+
+        if($payment->isOffline() === true)
+        {
+            $returnData = $this->shouldSkipCapturedForOfflinePayments($payment, $input);
+
+            if(empty($returnData) === false)
+            {
+                return $returnData;
+            }
         }
 
         if ($this->shouldSkipAuthorizeOnRecurringForUpi($payment, $data) === true)
@@ -1979,8 +2103,7 @@ trait Authorize
             $redirectUrl = null;
 
             if ((in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === false) or
-                ($payment->getGateway() === Payment\Gateway::BAJAJ and
-                    strtolower($this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::BAJAJ_FINSERV_REDIRECT_FLOW, $this->mode)) === 'v3'))
+                ($payment->getGateway() === Payment\Gateway::BAJAJ))
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
             }
@@ -4242,7 +4365,7 @@ trait Authorize
 
             foreach ($dccItems as $item) {
                 $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $input[$item],
-                    $dccCurrency, $dccCurrencyRequestId, $dccMarkupPerc, $payment->getMethod(), $payment->merchant->getId());
+                    $dccCurrency, $dccCurrencyRequestId, $dccMarkupPerc, $payment->getMethod(), $payment->merchant->getId(), $payment->merchant);
 
                 if (empty($requestedCurrencyData) === true) {
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID, 'currency_request_id',
@@ -5504,7 +5627,7 @@ trait Authorize
             $dccCurrencyRequestId = $input['currency_request_id'];
 
             $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
-                $dccCurrency, $dccCurrencyRequestId, $payment->merchant->getDccMarkupPercentage(), $payment->getMethod(), $payment->merchant->getId());
+                $dccCurrency, $dccCurrencyRequestId, $payment->merchant->getDccMarkupPercentage(), $payment->getMethod(), $payment->merchant->getId(), $payment->merchant);
 
             if (empty($requestedCurrencyData) === true)
             {
@@ -10466,8 +10589,7 @@ trait Authorize
                 if ((in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === true) and
                     ($payment->isEmi() === true))
                 {
-                    if ($payment->getGateway() !== Payment\Gateway::BAJAJ or
-                        strtolower($this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::BAJAJ_FINSERV_REDIRECT_FLOW, $this->mode)) === 'v2')
+                    if ($payment->getGateway() !== Payment\Gateway::BAJAJ)
                     {
                         return true;
                     }
@@ -11486,6 +11608,17 @@ trait Authorize
         }
     }
 
+    protected function verifyGiftcardEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isGiftCardsEnabled() === false))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_ALLOWED_IN_CONFIG);
+        }
+    }
+
 
     protected function verifyCardEnabledInLive(Payment\Entity $payment)
     {
@@ -11979,15 +12112,31 @@ trait Authorize
             {
                 $payment->setGatewayCaptured(true);
 
-                [$txn, $feesSplit] = (new Transaction\Core)->createFromPaymentAuthorized($payment);
-
-                $this->repo->saveOrFail($txn);
-
                 $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
 
+                $reverseShadowCore = (new ReverseShadowPaymentsCore());
                 if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                 {
-                    (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($payment, $txn->getId());
+                    $apiTxnId = null;
+
+                    if ($this->payment->hasBeenCaptured())
+                    {
+                        $apiTxnId = $reverseShadowCore->getAPITransactionId($this->payment->getPublicId(), $this->payment, \RZP\Models\Ledger\Constants::MERCHANT_CAPTURED);
+
+                        $this->trace->info(
+                            TraceCode::API_TXN_FETCH_PAYMENT_GATEWAY_CAPTURED,
+                            [
+                                'api_txn_id'        => $apiTxnId,
+                            ]);
+                    }
+
+                    $reverseShadowCore->createLedgerEntryForGatewayCaptureReverseShadow($this->payment, $apiTxnId);
+
+                } else {
+
+                    [$txn, $feesSplit] = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+
+                    $this->repo->saveOrFail($txn);
                 }
 
                 // Also sets the transaction association with the payment.
@@ -14384,6 +14533,9 @@ trait Authorize
                 break;
             case Payment\Method::FPX:
                 $this->verifyFpxEnabled($payment);
+                break;
+            case Payment\Method::GIFT_CARDS:
+                $this->verifyGiftcardEnabled();
                 break;
             default:
                 throw new Exception\LogicException(

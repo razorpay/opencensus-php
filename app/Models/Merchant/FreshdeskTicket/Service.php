@@ -2269,11 +2269,11 @@ class Service extends Base\Service
 
     protected function extractRequesterItem($input)
     {
-        if (array_key_exists(Constants::CF_NEW_REQUESTOR_ITEM, $input[Constants::CUSTOM_FIELDS]))
+        if (isset($input[Constants::CUSTOM_FIELDS]) === true &&
+            array_key_exists(Constants::CF_NEW_REQUESTOR_ITEM, $input[Constants::CUSTOM_FIELDS]))
         {
-            return $input[Constants::CUSTOM_FIELDS][Constants::CF_NEW_REQUESTOR_ITEM];
+            return $input[Constants::CUSTOM_FIELDS][Constants::CF_NEW_REQUESTOR_ITEM] ?? "";
         }
-
         return "";
     }
 

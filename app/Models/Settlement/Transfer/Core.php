@@ -55,7 +55,7 @@ class Core extends Base\Core
 
         $destinationMerchant = $this->repo->merchant->findOrFail($destinationMerchantId);
 
-        $destinationBalance= (new ReverseShadowTransferCore())->getBalanceByTypeFromHarvesterForMerchantWithoutFail($destinationMerchant, $balanceType);
+        $destinationBalance= (new ReverseShadowTransferCore())->getBalanceByTypeFromTiDBForMerchantWithoutFail($destinationMerchant, $balanceType);
 
         //
         // We should not transfer the money to the same balance ID

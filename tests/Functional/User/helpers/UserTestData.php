@@ -603,7 +603,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The password field is required.',
+                    'description' => 'The password field is required when email is present.',
                 ],
             ],
             'status_code' => 400,
@@ -677,6 +677,96 @@ return [
             'method'    => 'POST',
             'content'   => [
                 'country_code'  =>  'IN',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+            ],
+        ],
+    ],
+
+    'testCreateUserInternal' => [
+        'request' => [
+            'url'       => '/users/internal',
+            'method'    => 'POST',
+            'content'   => [
+                'contact_mobile_verified'  =>  1,
+                'signup_via_email' => '0',
+                'captcha_disable' => 'true',
+                'name' => 'AP',
+                'contact_mobile' => '7598249212',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [],
+        ]
+    ],
+
+    'testCreateMerchantInternalWithoutUserID' => [
+        'request' => [
+            'url'       => '/users/merchants/internal',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+                "error" => [
+                    "code"=> "BAD_REQUEST_ERROR",
+                    "description" => "The user id field is required.",
+                    "source" => "business",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "user_id",
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testCreateMerchantInternalWithoutOrgID' => [
+        'request' => [
+            'url'       => '/users/merchants/internal',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+                'user_id' => '12345678901234',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+                "error" => [
+                    "code"=> "BAD_REQUEST_ERROR",
+                    "description" => "The org id field is required.",
+                    "source" => "business",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "org_id",
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testCreateMerchantInternal' => [
+        'request' => [
+            'url'       => '/users/merchants/internal',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+                'org_id' => 'org_100000razorpay',
+                'name' => 'APN',
             ],
         ],
         'response'  =>  [
@@ -5479,7 +5569,7 @@ return [
             ],
         ],
     ],
-  
+
     'testVerifyOtpAndUpdateContactMobileAlreadyExistingForActivatedMerchantUsers' => [
         'request' => [
             'url'     => '/users/verify/update/new/mobile',
@@ -5502,7 +5592,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS,
         ],
     ],
-    
+
     'testVerifyOtpAndUpdateContactMobileAlreadyExistingOrphan' => [
         'request' => [
             'url'     => '/users/verify/update/new/mobile',
@@ -7726,36 +7816,6 @@ return [
         ]
     ],
 
-    'testWorkFlowCreationFailedForAssistedMerchants' => [
-        'request' => [
-            'url'     => '/register/merchant/otp/verify',
-            'method'  => 'POST',
-            'server' => [
-                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
-            ],
-            'content' => [
-                'contact_mobile'        => '8877665544',
-                'captcha'               => 'faked',
-                'token'                 => 'token',
-                'otp'                   => '0007',
-                'signup_campaign'       => 'assisted_onboarding'
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'ASSISTED_WORKFLOW_CREATION_FAILED',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
 
     'testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOff' => [
         'request' => [
@@ -8189,6 +8249,23 @@ return [
         ],
     ],
 
+    'testWhatsAppOptInInternalAuth' => [
+        'request' => [
+            'url'     => '/users/whatsapp/opt_in_internal',
+            'method'  => 'POST',
+            'content' => [
+                'source'           => 'rize_incorporation.onboarding.presignup',
+                'business_account' => 'razorpay'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'optin_status' => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testWhatsAppOptInStatusForX' => [
         'request' => [
             'url'     => '/users/whatsapp/opt_in_status?source=x&business_account=razorpayx',
@@ -8569,4 +8646,208 @@ return [
             ]
         ]
     ],
+    'testWorkFlowCreationFailedForAssistedMerchants' => [
+        'request' => [
+            'url'     => '/register/merchant/otp/verify',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'content' => [
+                'contact_mobile'        => '8877665544',
+                'captcha'               => 'faked',
+                'token'                 => 'token',
+                'otp'                   => '0007',
+                'signup_campaign'       => 'assisted_onboarding'],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'ASSISTED_WORKFLOW_CREATION_FAILED',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantEmailRegisterByEzetapPartnerAgent' => [
+        'request' => [
+            'url'     => '/sales/register/merchant',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'content' => [
+                'email'                 => 'vendorportal@razorpay.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+
+                'signup_campaign'       => 'assisted_onboarding'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email'                 => 'vendorportal@razorpay.com'
+            ]
+        ]
+    ],
+
+    'testMerchantEmailRegisterByNonEzetapPartnerAgent' => [
+        'request' => [
+            'url'     => '/sales/register/merchant',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'content' => [
+                'email'                 => 'vendorportal@razorpay.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'signup_campaign'       => 'assisted_onboarding'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email'                 => 'vendorportal@razorpay.com'
+            ]
+        ]
+    ],
+    'testRegisterWithValidReferralCode'  => [   
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'hello123@c.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'partner_referral_code'         => 'teslacomikejzc',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'hello123@c.com',
+            ],
+        ],
+    ],
+    'testRegisterWithNullReferralCode'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'hello123@c.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'partner_referral_code' => null,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'hello123@c.com',
+            ],
+        ],
+    ],
+    'testRegisterWithEmptyReferralCode'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'hello123@c.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'partner_referral_code' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'hello123@c.com',
+            ],
+        ],
+    ],
+
+    'testAssignUserToMerchantFailsForNonexistentUserEmail' => [
+        'request'   => [
+            'content' => [
+                'email' => 'udittest16@gmail.com',
+                'merchant_id' => 'P0rCsM0wzu62Vb'
+            ],
+            'url'     => '/merchants/assign_sales_user',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'ERROR_USER_NOT_FOUND_BY_EMAIL',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDuplicateRoleAssignmentToMerchantUserFails' => [
+        'request'   => [
+            'content' => [
+                'email' => 'udittest16@gmail.com',
+                'merchant_id' => 'NBmMve28Nvwq44'
+            ],
+            'url'     => '/merchants/assign_sales_user',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'User with given role already exists',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testAssignRazorpaySalesUserToMerchantByPosSalesAdmin' => [
+        'request'   => [
+            'content' => [
+                'email' => 'udittest16@gmail.com',
+                'merchant_id' => 'NBmMve28Nvwq66'
+            ],
+            'url'     => '/merchants/assign_sales_user',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'udittest16@gmail.com',
+            ],
+        ],
+    ],
+
+    'testMobileOtpLoginWithSuspendedMerchants' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'is_merchant_entities_empty' => true
+            ],
+        ],
+    ]
 ];

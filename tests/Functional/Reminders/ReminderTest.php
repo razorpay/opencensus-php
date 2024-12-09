@@ -110,7 +110,6 @@ class ReminderTest extends TestCase
         $this->assertEquals(1, $nbReminder->getReminderCount());
     }
 
-
     public function testAmountCreditExpirySuccess()
     {
         Mail::fake();
@@ -139,6 +138,12 @@ class ReminderTest extends TestCase
                 ]
             ]);
 
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn(
+                $this->getAmountCreditsAccounts($expiryDate)
+            );
+
         $this->startTest();
 
         $ledgerOutboxEntry = $this->getDbLastEntity('ledger_outbox');
@@ -156,6 +161,12 @@ class ReminderTest extends TestCase
         $this->app->instance('ledger', $mockLedger);
 
         $expiryDate = Carbon::now()->addDays(1)->getTimestamp();
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn(
+                $this->getAmountCreditsAccounts($expiryDate)
+            );
 
         $this->fixtures->create('credits', [
             'id'            => "MDgIwwZ7dNLFvV",
@@ -181,6 +192,99 @@ class ReminderTest extends TestCase
 
         $ledgerOutboxEntry = $this->getDbLastEntity('ledger_outbox');
         $this->assertNull($ledgerOutboxEntry);
+    }
+
+    public function testAmountCreditExpiryForAccountSplit()
+    {
+        Mail::fake();
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $expiryDate = Carbon::now()->addDays(1)->getTimestamp();
+
+        $this->fixtures->create('credits', [
+            'id'            => "ODgIwwZ7dNLFvV",
+            'merchant_id'   => '10000000000000',
+            'value'         => 1500 ,
+            'campaign'      => 'test amount credits expiry',
+            'type'          => 'amount',
+            'expired_at'    => $expiryDate
+        ]);
+
+        $mockLedger->shouldReceive('deactivateAccount')
+            ->times(1)
+            ->andReturn([]);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn(
+                $this->getAmountCreditsAccounts($expiryDate)
+            );
+
+        $this->startTest();
+
+        $ledgerOutboxEntry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNull($ledgerOutboxEntry);
+    }
+
+    private function getAmountCreditsAccounts($expiryDate)
+    {
+        return [
+            "body" => [
+                "accounts"  => [
+                    [
+                        "id"                => "sampleAccountID1",
+                        "name"              => "test name",
+                        "status"            => "ACTIVATED",
+                        "balance"           => "8000.000000",
+                        "min_balance"       => "0.000000",
+                        "merchant_id"       => "sampleMerchant",
+                        "created_at"        => "1634027277",
+                        "updated_at"        => "1634027277",
+                        "entities"          => [
+                            "account_type"      => ["payable"],
+                            "fund_account_type" => ["reward_credits"],
+                            "credit_id" => ["Of8rSFF0CJh6GY"],
+                            "expired_at" => [$expiryDate + 10000]
+                        ]
+                    ],
+                    [
+                        "id"                => "sampleAccountID2",
+                        "name"              => "test name",
+                        "status"            => "ACTIVATED",
+                        "balance"           => "90.000000",
+                        "min_balance"       => "0.000000",
+                        "merchant_id"       => "sampleMerchant",
+                        "created_at"        => "1634027277",
+                        "updated_at"        => "1634027277",
+                        "entities"          => [
+                            "account_type"      => ["payable"],
+                            "fund_account_type" => ["reward_credits"],
+                            "credit_id" => ["ODgIwwZ7dNLFvV"],
+                            "expired_at" => [$expiryDate - 10000]
+                        ]
+                    ],
+                    [
+                        "id"                => "sampleAccountID3",
+                        "name"              => "test name",
+                        "status"            => "ACTIVATED",
+                        "balance"           => "200.000000",
+                        "min_balance"       => "0.000000",
+                        "merchant_id"       => "sampleMerchant",
+                        "created_at"        => "1634027277",
+                        "updated_at"        => "1634027277",
+                        "entities"          => [
+                            "account_type"      => ["payable"],
+                            "fund_account_type" => ["reward_credits"],
+                            "credit_id" => ["Of8rSFF0CJh6GV"],
+                            "expired_at" => [$expiryDate + 11000]
+                        ]
+                    ]
+                ]
+            ]
+        ];
     }
 
     public function testSendNegativeBalanceReminderBalanceIsPositive()

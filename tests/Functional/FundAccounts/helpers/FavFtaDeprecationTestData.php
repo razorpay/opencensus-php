@@ -16,6 +16,7 @@ return [
                 Validation::FUND_ACCOUNT => [
                     FundAccount::ID => '',
                 ],
+                Validation::AMOUNT       => 100,
                 Validation::CURRENCY     => 'INR',
                 Validation::NOTES        => [],
                 Validation::RECEIPT      => '12345667',

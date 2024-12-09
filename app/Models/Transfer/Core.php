@@ -361,56 +361,88 @@ class Core extends Base\Core
 
         unset($transferInput[Order\Entity::PUBLIC_KEY]);
 
-        $this->mutex->acquireAndReleaseStrict('trf_' . $order->getId(), function () use ($parentMerchant, $transfers, $transferInput, $order) {
-            foreach ($transferInput as $input)
+        $this->mutex->acquireAndReleaseStrict('trf_' . $order->getId(), function () use ($parentMerchant, $transfers, $transferInput, $order)
+        {
+            $this->repo->transaction(function () use ($parentMerchant, $transfers, $transferInput, $order)
             {
-                $input[Entity::STATUS] = Status::CREATED;
-
-                $input[Entity::ORIGIN] = Origin::ORDER_AUTOMATION;
-
-                $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($input, $parentMerchant);
-
-                if (isset($input[Entity::ACCOUNT_CODE]) === true)
+                if ($this->isOrderTransferIdempotencyEnabled($order->getId(), $this->merchant->getId()))
                 {
-                    $accountId = $this->repo->merchant->getIdByAccountCodeAndParent($input[Entity::ACCOUNT_CODE], $this->merchant->getId());
+                    $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $order->getId(), $this->merchant);
 
-                    $input[ToType::ACCOUNT] = Merchant\Account\Entity::getSignedId($accountId);
-                }
+                    if (empty($orderTransfers->getIds()) === false)
+                    {
+                        $this->trace->info(
+                            TraceCode::ORDER_TRANSFER_EXISTS,
+                            [
+                                'transfers' => $orderTransfers->getIds(),
+                            ]
+                        );
 
-                if (isset($input[ToType::BALANCE]) === true)
-                {
-                    $description = 'Transfer for ' . $input[ToType::BALANCE];
-                    if (isset($order->getNotes()['description']) === true) {
-                        $description = $order->getNotes()['description'];
+                        foreach ($orderTransfers as $orderTransfer)
+                        {
+                            $transfers->push($orderTransfer->toArrayPublic());
+                        }
+
+                        return;
                     }
-                    $input[Entity::NOTES]['description'] = $description;
-                    $input[Entity::NOTES]['type'] = $input[ToType::BALANCE];
-                    $to = $this->repo
-                        ->balance
-                        ->getMerchantBalance($this->merchant);
-                }
-                else if (isset($input[ToType::ACCOUNT]) === true)
-                {
-                    $to = $this->repo->account->findByPublicIdAndMerchant($input[ToType::ACCOUNT], $parentMerchant);
-
-                    // extracts linked account notes and validates.
-                    $this->getLinkedAccountNotes($input);
-                }
-                $transfer = Tracer::inSpan(['name' => 'order.transfer.create.build'], function() use ($order, $to, $input)
-                {
-                    return $this->buildTransferEntity($order, $to, $input, $this->merchant);
-                });
-
-                $this->repo->transfer->saveOrFail($transfer);
-
-                if($this->isValidPlatformTransfer() === true)
-                {
-                    (new EntityOrigin\Core)->createEntityOrigin($transfer, EntityOrigin\Constants::MARKETPLACE_APPLICATION);
                 }
 
-                $transfers->push($transfer->toArrayPublic());
-            }
-        }, 900, ErrorCode::BAD_REQUEST_TRANSFER_TXN_CREATION_PROCESS_IN_PROGRESS);
+                foreach ($transferInput as $input)
+                {
+                    $input[Entity::STATUS] = Status::CREATED;
+
+                    $input[Entity::ORIGIN] = Origin::ORDER_AUTOMATION;
+
+                    $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($input, $parentMerchant);
+
+                    if (isset($input[Entity::ACCOUNT_CODE]) === true)
+                    {
+                        $accountId = $this->repo->merchant->getIdByAccountCodeAndParent($input[Entity::ACCOUNT_CODE], $this->merchant->getId());
+
+                        $input[ToType::ACCOUNT] = Merchant\Account\Entity::getSignedId($accountId);
+                    }
+
+                    if (isset($input[ToType::BALANCE]) === true)
+                    {
+                        $description = 'Transfer for ' . $input[ToType::BALANCE];
+
+                        if (isset($order->getNotes()['description']) === true)
+                        {
+                            $description = $order->getNotes()['description'];
+                        }
+
+                        $input[Entity::NOTES]['description'] = $description;
+
+                        $input[Entity::NOTES]['type'] = $input[ToType::BALANCE];
+
+                        $to = $this->repo
+                            ->balance
+                            ->getMerchantBalance($this->merchant);
+                    }
+                    else if (isset($input[ToType::ACCOUNT]) === true)
+                    {
+                        $to = $this->repo->account->findByPublicIdAndMerchant($input[ToType::ACCOUNT], $parentMerchant);
+
+                        // extracts linked account notes and validates.
+                        $this->getLinkedAccountNotes($input);
+                    }
+
+                    $transfer = Tracer::inSpan(['name' => 'order.transfer.create.build'], function () use ($order, $to, $input)
+                    {
+                        return $this->buildTransferEntity($order, $to, $input, $this->merchant);
+                    });
+
+                    $this->repo->transfer->saveOrFail($transfer);
+
+                    if ($this->isValidPlatformTransfer() === true)
+                    {
+                        (new EntityOrigin\Core)->createEntityOrigin($transfer, EntityOrigin\Constants::MARKETPLACE_APPLICATION);
+                    }
+
+                    $transfers->push($transfer->toArrayPublic());
+                }
+            });
+        }, 900, ErrorCode::BAD_REQUEST_TRANSFER_CREATION_IN_PROGRESS);
 
         return $transfers;
     }
@@ -900,69 +932,7 @@ class Core extends Base\Core
             return false;
         }
 
-        $experimentIds = [
-            $this->app['config']->get('app.customer_transfer_reverse_shadow_v2'),
-        ];
-
-        if ($this->merchant->isPostpaid() === true)
-        {
-            $experimentIds[] = $this->app['config']->get('app.customer_transfer_reverse_shadow_v2_postpaid');
-        }
-
-        $ledgerService = $this->app['ledger'];
-
-        $core = (new ReverseShadowTransfersCore());
-
-        $merchantAccountBalances = $core->getMerchantAccountBalances($ledgerService, $this->merchant->getId());
-
-        if ($merchantAccountBalances[LedgerConstants::MERCHANT_AMOUNT_CREDITS] > 0)
-        {
-            $experimentIds[] = $this->app['config']->get('app.customer_transfer_reverse_shadow_v2_amount_credits');
-        }
-
-        $negativeLimit = $core->getMaxNegativeLimitForTransferV2();
-
-        if ($negativeLimit > 0)
-        {
-            $experimentIds[] = $this->app['config']->get('app.customer_transfer_reverse_shadow_v2_negative_limit');
-        }
-
-        $experimentData = [];
-
-        foreach ($experimentIds as $experimentId)
-        {
-            $id = $source->getId();
-
-            // override id in case of balance transfers
-            if ($source instanceof Merchant\Entity)
-            {
-                $id = Uuid::uuid1();
-            }
-
-            $experimentData[] = array(
-                'id'              => strval($id),
-                'experiment_id'   => $experimentId,
-                'request_data'    => json_encode([
-                    'merchant_id' => $this->merchant->getId(),
-                ])
-            );
-        }
-
-        $response = $this->app['splitzService']->bulkCallsToSplitz($experimentData);
-
-        // check all the experiments returned enabled variant, if any of them is not ramped up, this flow should not get triggered.
-        $enabled = array_reduce($response, function ($carry, $item) {
-            return $carry && ($item['variant']['name'] === "enabled");
-        }, true);
-
-        $this->trace->info(
-            TraceCode::CUSTOMER_TRANSFER_REVERSE_SHADOW_EXP,
-            [
-                'merchant_id'           => $this->merchant->getId(),
-                'enabled'     => $enabled,
-            ]);
-
-        return $enabled;
+        return true;
     }
 
     public function createLedgerEntriesForCustomerTransferReverseShadow(Transfer\Entity $transfer)
@@ -2685,6 +2655,18 @@ class Core extends Base\Core
         return $transfersProcessed;
     }
 
+    public function createTransactionsForFromLedgerJournal($transfer)
+    {
+        [$creditJournal, ] = $this->fetchJournalsFromLedgerForTransfer($transfer, $transfer->getToId());
+
+        [, $debitJournal] = $this->fetchJournalsFromLedgerForTransfer($transfer, $transfer->getMerchantId());
+
+        $reverseShadowTransfersCore = new ReverseShadowTransfersCore();
+
+        $reverseShadowTransfersCore->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal);
+    }
+
+
     public function createTransferReversalTransactions(array $input)
     {
         $isRearchRefund = $input["is_rearch_refund"];
@@ -3026,6 +3008,20 @@ class Core extends Base\Core
             LedgerConstants::MERCHANT_ID => $transfer->getMerchantId(),
         ]);
 
+        $transfer->setFees($fee);
+
+        $transfer->setTax($tax);
+
+        $this->repo->saveOrFail($transfer);
+
+        $transferPayment->setFee(0);
+
+        $transferPayment->setTax(0);
+
+        $transferPayment->setMdr(0);
+
+        $this->repo->saveOrFail($transferPayment);
+
         return $transfer;
     }
 
@@ -3264,5 +3260,39 @@ class Core extends Base\Core
         ];
 
         return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    private function isOrderTransferIdempotencyEnabled(string $orderId, string $merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => $orderId,
+                'experiment_id' => $this->app['config']->get('app.order_transfer_idempotency_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::ORDER_TRANSFER_IDEMPOTENCY_EXP_RESULT, [
+                'merchant_id'   => $merchantId,
+                'order_id'      => $orderId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'order_id'      => $orderId,
+                'experiment_id' => $this->app['config']->get('app.order_transfer_idempotency_exp_id') ?? null
+            ]);
+
+            return false;
+        }
     }
 }

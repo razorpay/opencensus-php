@@ -81,4 +81,14 @@ class Repository extends Base\Repository
             ->withTrashed()
             ->get();
     }
+
+    public function fetchOutboxEntriesByPayloadNameWithTrashedOrderByNewest($payloadName) : PublicCollection
+    {
+        return $this->newQuery()
+            ->from(\DB::raw('`ledger_outbox`'))
+            ->where(Entity::PAYLOAD_NAME,'=', $payloadName)
+            ->withTrashed()
+            ->orderBy(Entity::CREATED_AT, 'DESC')
+            ->get();
+    }
 }

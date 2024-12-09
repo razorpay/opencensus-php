@@ -75,7 +75,7 @@ class FundAccountValidationTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
 
         $this->setMockRazorxTreatment([
-            RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control',
+            RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on',
             RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX => 'on',
         ]);
 
@@ -155,7 +155,7 @@ class FundAccountValidationTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
 
         $this->setMockRazorxTreatment([
-            RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control',
+            RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on',
             RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX => 'on',
         ]);
 
@@ -1651,7 +1651,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         // remove features is not required as by default feature would be disabled
         //$this->fixtures->merchant->removeFeatures(['expose_fa_validation_utr']);
@@ -1679,7 +1679,7 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
@@ -1758,7 +1758,7 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         Queue::fake();
 
@@ -1845,6 +1845,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testCreateValidationWithWrongFundAccountId()
     {
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
+
         $this->startTest();
     }
 
@@ -1852,7 +1854,7 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $this->createValidationWithFundAccountEntity();
 
@@ -1867,7 +1869,7 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $admin = $this->ba->getAdmin();
 
@@ -1889,16 +1891,28 @@ class FundAccountValidationTest extends TestCase
 
     public function testCreateValidationWithWrongFundAccountEntity()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
+
         $this->startTest();
     }
 
     public function testCreateValidationWithAmountInDecimalString()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
+
         $this->startTest();
     }
 
     public function testCreateValidationWithAmountInDecimalFloat()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
+
         $this->startTest();
     }
 
@@ -1910,7 +1924,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $this->createValidationWithFundAccountEntity();
 
@@ -1925,7 +1939,7 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $this->createValidationWithFundAccountEntity();
 
@@ -1942,7 +1956,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $this->ba->privateAuth();
 
@@ -1962,7 +1976,7 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -2019,7 +2033,7 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
 
@@ -2047,7 +2061,7 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
@@ -2063,6 +2077,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationOnPrepaidModelWithNoFeeCreditsAndNoBalance()
     {
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
+
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
         $this->fixtures->merchant->editBalance('0');
@@ -2344,7 +2360,7 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -2376,7 +2392,7 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -2934,7 +2950,7 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $this->createValidationWithFundAccountEntity();
 
@@ -3043,6 +3059,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testGetFavByIdInAPI()
     {
+
+
         $mock = Mockery::mock(Fetch::class);
 
         $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
@@ -3157,7 +3175,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -3221,7 +3239,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -3264,7 +3282,7 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -3316,6 +3334,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationMarkAsFailed()
     {
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
@@ -3348,6 +3368,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFinalStateReachedFundAccValidationNotMarkAsFailed()
     {
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
@@ -3381,6 +3403,10 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationOnPrepaidModelWithNoFeeCreditsAndNoBalanceNewApiError()
     {
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on'
+        ]);
+
         $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
         $this->fixtures->merchant->on('test')->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
@@ -3392,6 +3418,10 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationOnPrepaidModelWithNoFeeCreditsAndNoBalanceNewApiErrorOnLiveMode()
     {
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on'
+        ]);
+
         $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
         $this->fixtures->on('live')->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
@@ -3850,7 +3880,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -3899,7 +3929,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -3933,7 +3963,7 @@ class FundAccountValidationTest extends TestCase
         $this->createFAVBankingPricingPlan();
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
         $this->enableRazorXTreatmentForRazorX();
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
         $fundAccountResponse = $this->createFundAccountBankAccount();
         $this->testData[__FUNCTION__]['request'] = $this->testData['testFundAccValidationWithFailedStatusForBusinessBanking']['request'];
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
@@ -3968,7 +3998,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -4020,7 +4050,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -4167,8 +4197,6 @@ class FundAccountValidationTest extends TestCase
 
     public function testCreateValidationForPGMerchantWithNoXLiteAccountAfterCutoff()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
-
         $this->createFundAccountBankAccount();
 
         // enabling the feature here for test merchant
@@ -4202,6 +4230,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testCreateValidationForPGMerchantBeforeCutoff()
     {
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
+
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
         $this->createFAVBankingPricingPlan();
@@ -4217,7 +4247,7 @@ class FundAccountValidationTest extends TestCase
         $balance = $this->getDbEntityById('balance', $fav['balance_id']);
 
         $this->assertEquals('created', $fav['status']);
-        $this->assertEquals('primary', $balance['type']);
+        $this->assertEquals('banking', $balance['type']);
     }
 
     public function testFavWithInsufficientBalance()
@@ -4228,7 +4258,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
 
@@ -4250,7 +4280,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 

@@ -63,6 +63,8 @@ class Transformer
     const MUTEX_MIN_RETRY_DELAY = 1000; // in miliseconds
     const MUTEX_MAX_RETRY_DELAY = 2000; // in miliseconds
 
+    const AUDIT_ID = 'audit_id';
+
     /* $rules //used to do structure conversion
     format = [
         input column name  1   => [
@@ -166,6 +168,8 @@ class Transformer
                             'acquired' => true,
                         ]);
 
+                        unset($transformedData[self::AUDIT_ID]);
+
                         $this->core->savePGOSDataToAPI($transformedData);
                     },
                     self::MUTEX_LOCK_TTL,
@@ -180,6 +184,8 @@ class Transformer
                 $this->trace->info(TraceCode::MUTEX_ON_PGOS_DUAL_WRITE, [
                     'acquired' => false,
                 ]);
+
+                unset($transformedData[self::AUDIT_ID]);
 
                 $this->core->savePGOSDataToAPI($transformedData);
             }

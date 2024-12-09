@@ -688,4 +688,10 @@ class Dashboard extends Base
         $this->addPassportToken();
         return $this->makeRequest($url, $input, self::SERVICE_DASHBOARD, null, Requests::GET);
     }
+
+    public function getHoldReasonCodeMappingsDashboard(array $input) : array
+    {
+        $this->addPassportToken();
+        return $this->makeRequest(self::HOLD_REASON_CODE_MAPPING, $input, self::SERVICE_DASHBOARD, null, Requests::GET);
+    }
 }

@@ -19,12 +19,14 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Merchant\Balance\LowBalanceConfig\Entity;
+use RZP\Tests\Traits\MocksSplitz;
 
 class LowBalanceConfigTest extends TestCase
 {
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
+    use MocksSplitz;
 
     /**
      * @var UserEntity
@@ -74,6 +76,20 @@ class LowBalanceConfigTest extends TestCase
                                   }
                                   return 'on';
                               }));
+    }
+
+    protected function mockSplitzDisableCAC()
+    {
+        $this->mockSplitzTreatment([
+            'id'            => '10000000000000',
+            'experiment_id' => env('CAC_BLACKLIST_EXP_ID'),
+        ], [
+            'response' => [
+                'variant' => [
+                    'name' => 'active'
+                ]
+            ]
+        ]);
     }
 
     public function testCreateLowBalanceConfig()
@@ -165,6 +181,8 @@ class LowBalanceConfigTest extends TestCase
 
         $this->mockRazorx();
 
+        $this->mockSplitzDisableCAC();
+
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->nonOwnerUser->getId());
 
         $testData = & $this->testData[__FUNCTION__];
@@ -179,6 +197,8 @@ class LowBalanceConfigTest extends TestCase
         Carbon::setTestNow($oldDateTime);
 
         $this->mockRazorx();
+
+        $this->mockSplitzDisableCAC();
 
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->nonOwnerUser->getId());
 
@@ -210,6 +230,8 @@ class LowBalanceConfigTest extends TestCase
 
         $this->mockRazorx();
 
+        $this->mockSplitzDisableCAC();
+
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/low_balance_configs/'  . $lowBalanceConfig['id'];
         $this->startTest();
@@ -232,6 +254,8 @@ class LowBalanceConfigTest extends TestCase
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->nonOwnerUser->getId());
 
         $this->mockRazorx();
+
+        $this->mockSplitzDisableCAC();
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/low_balance_configs/'  . $lowBalanceConfig['id'];
@@ -265,6 +289,8 @@ class LowBalanceConfigTest extends TestCase
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->nonOwnerUser->getId());
 
         $this->mockRazorx();
+
+        $this->mockSplitzDisableCAC();
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/low_balance_configs/'  . $lowBalanceConfig['id'];

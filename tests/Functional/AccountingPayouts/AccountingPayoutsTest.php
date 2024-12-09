@@ -13,12 +13,14 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Tests\Traits\MocksSplitz;
 
 class AccountingPayoutsTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
+    use MocksSplitz;
 
     protected $config;
 
@@ -87,6 +89,8 @@ class AccountingPayoutsTest extends TestCase
     {
         $this->mockRazorx();
 
+        $this->mockSplitzDisableCAC();
+
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->opsRoleUser->getId());
 
         $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
@@ -99,6 +103,8 @@ class AccountingPayoutsTest extends TestCase
     public function testOperationsCannotCreateIntegrationURLMapping()
     {
         $this->mockRazorx();
+
+        $this->mockSplitzDisableCAC();
 
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->opsRoleUser->getId());
 
@@ -933,6 +939,20 @@ class AccountingPayoutsTest extends TestCase
                     }
                     return 'on';
                 }));
+    }
+
+    protected function mockSplitzDisableCAC()
+    {
+        $this->mockSplitzTreatment([
+            'id'            => '10000000000000',
+            'experiment_id' => env('CAC_BLACKLIST_EXP_ID'),
+        ], [
+            'response' => [
+                'variant' => [
+                    'name' => 'active'
+                ]
+            ]
+        ]);
     }
 }
 

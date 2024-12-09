@@ -28,6 +28,8 @@ class Core extends Base\Core
 
         $featureConfig->generateId();
 
+        $this->createFeatureConfigInCapitalEs($featureConfig);
+
         $this->repo->saveOrFail($featureConfig);
 
         return $featureConfig;
@@ -65,6 +67,8 @@ class Core extends Base\Core
             $featureConfig->setMaxLimitPerWorkingDay($input[Entity::MAX_LIMIT_PER_WORKING_DAY]);
         }
 
+        $this->updateFeatureConfigInCapitalEs($featureConfig);
+
         $this->repo->saveOrFail($featureConfig);
 
         return $featureConfig;
@@ -77,7 +81,7 @@ class Core extends Base\Core
     {
         try
         {
-            return (new Repository)->getConfigByMerchantId($merchantId);
+            return $this->getFeatureConfigFromCapitalEs($merchantId);
         }
         catch (Exception $e)
         {
@@ -96,5 +100,92 @@ class Core extends Base\Core
             }
             throw $e;
         }
+    }
+
+    private function createFeatureConfigInCapitalEs($featureConfig)
+    {
+        if ($this->mode === Constants\Mode::TEST)
+        {
+            return;
+        }
+
+        if ($this->isCapitalEsReadWriteEnabled('create_merchant_config') === false)
+        {
+            return;
+        }
+
+        $this->app['capital_early_settlements']->createMerchantFeatureConfig($featureConfig->toArray());
+    }
+
+    private function updateFeatureConfigInCapitalEs($featureConfig)
+    {
+        if ($this->mode === Constants\Mode::TEST)
+        {
+            return;
+        }
+
+        if ($this->isCapitalEsReadWriteEnabled('update_merchant_config') === false)
+        {
+            return;
+        }
+
+        $this->app['capital_early_settlements']->updateMerchantFeatureConfig($featureConfig->toArray());
+    }
+
+    private function getFeatureConfigFromCapitalEs($merchantId)
+    {
+        if ($this->mode === Constants\Mode::TEST)
+        {
+            return (new Repository)->getConfigByMerchantId($merchantId);
+        }
+
+        if ($this->isCapitalEsReadWriteEnabled('read_merchant_config') === false)
+        {
+            return (new Repository)->getConfigByMerchantId($merchantId);
+        }
+
+        $response = $this->app['capital_early_settlements']->getFeatureConfig('merchant', $merchantId);
+        $featureConfig = $response['merchant_feature_config'];
+
+        $data = [
+            Entity::MERCHANT_ID                 => $featureConfig[Entity::MERCHANT_ID],
+            Entity::MAX_AMOUNT_LIMIT            => (int) $featureConfig[Entity::MAX_AMOUNT_LIMIT],
+            Entity::PERCENTAGE_OF_BALANCE_LIMIT => (int) $featureConfig[Entity::PERCENTAGE_OF_BALANCE_LIMIT],
+            Entity::SETTLEMENTS_COUNT_LIMIT     => (int) $featureConfig[Entity::SETTLEMENTS_COUNT_LIMIT],
+            Entity::ES_PRICING_PERCENT          => (int) $featureConfig[Entity::ES_PRICING_PERCENT],
+        ];
+
+        if (isset($featureConfig[Entity::MAX_LIMIT_PER_WORKING_DAY]) === true)
+        {
+            $data[Entity::MAX_LIMIT_PER_WORKING_DAY] = (int) $featureConfig[Entity::MAX_LIMIT_PER_WORKING_DAY];
+        }
+        if (isset($featureConfig[Entity::PRICING_PERCENT]) === true)
+        {
+            $data[Entity::PRICING_PERCENT] = (int) $featureConfig[Entity::PRICING_PERCENT];
+        }
+
+        return (new Entity)->build($data);
+    }
+
+    private function isCapitalEsReadWriteEnabled($action)
+    {
+        $request = ['experiment_id' => $this->app['config']->get('app.feature_config_from_capital_es_experiment_id')];
+        $response = $this->app['splitzService']->evaluateRequest($request);
+
+        $variables = $response['response']['variant']['variables'] ?? [];
+        if (is_array($variables) === false)
+        {
+            return false;
+        }
+
+        foreach ($variables as $variable)
+        {
+            if (is_array($variable) === true && $variable['key'] === $action && $variable['value'] === 'on')
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

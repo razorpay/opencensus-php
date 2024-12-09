@@ -352,7 +352,6 @@ class Service extends Base\Service
         $merchantId = $this->merchant->getId();
 
         $disputes = $this->repo->dispute->fetch($input, $merchantId);
-
         return $disputes->toArrayPublic();
     }
 

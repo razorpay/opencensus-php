@@ -24,7 +24,7 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function processPayment(array $gatewayResponse, $terminal, $upiTransferRequestId = null)
+    public function processPayment(array $gatewayResponse, $terminal, $upiTransferRequestId = null, $isCollectXPayment = false)
     {
         $upiTransferInput = $gatewayResponse['upi_transfer_data'];
 
@@ -37,8 +37,9 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::UPI_TRANSFER_PAYMENT_PROCESS_REQUEST,
             [
-                'upi_transfer_data' => $this->removePiiForLogging($upiTransferInput),
-                'terminal'          => $terminal->getId(),
+                'upi_transfer_data'     => $this->removePiiForLogging($upiTransferInput),
+                'terminal'              => $terminal->getId(),
+                'is_collectx_payment'   => $isCollectXPayment
             ]
         );
 
@@ -104,7 +105,7 @@ class Core extends Base\Core
                                                                       $upiTransferRequestId);
 
             (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::UPI_TRANSFER, $isExpected,
-                                                              $paymentSuccess, $terminal->getGateway(), $errorMessage);
+                                                              $paymentSuccess, $terminal->getGateway(), $errorMessage, isCollectXBankTransfer: $isCollectXPayment);
 
             $this->pushUpiTransferSourceToLake($upiTransfer);
         }

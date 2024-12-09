@@ -17,51 +17,45 @@
                 <table style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; width: 100%; margin: 0; padding: 0;"><tr style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
                         <td style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
                             <p>“Dear Team,</p>
-                            <p>We have reconciled our records with your payment file sent. Please find the details below</p>
-
-                            <p>Details of nodal account for remittance of funds</p>
-
-                            <table style="border: 1px solid grey;">
-                                <tbody>
-                                <tr style="border: 1px solid grey">
-                                    <th style="border: 1px solid grey; text-align: center">Account Number</th>
-                                    <th style="border: 1px solid grey; text-align: center">Bank</th>
-                                    <th style="border: 1px solid grey">Branch</th>
-                                    <th style="border: 1px solid grey; text-align: center">Account Title</th>
-                                    <th style="border: 1px solid grey; text-align: center">IFSC: </th>
-                                </tr>
-                                <tr style="border: 1px solid grey">
-                                    <td style="border: 1px solid grey; text-align: center">{{{$account['accountNumber']}}}</td>
-                                    <td style="border: 1px solid grey; text-align: center">{{{$account['bankName']}}}</td>
-                                    <td style="border: 1px solid grey">{{{$account['branch']}}}</td>
-                                    <td style="border: 1px solid grey; text-align: center">{{{$account['accountName']}}}</td>
-                                    <td style="border: 1px solid grey; text-align: center">{{{$account['ifsc']}}}</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                            <p>
-                                Note: - As per RBI norm, All refund has been processed within TAT<br>
-                            </p>
+                            <p>Please credit to us as per below details and find the attached Sale & Refund reference file.</p>
                             <table style="border: 1px solid grey;">
                                 <thead>
                                 <tr style="border: 1px solid grey">
-                                    <th style="border: 1px solid grey">Bank</th>
-                                    <th style="border: 1px solid grey">Bank Collection for upload date {{{$from}}} to {{{$to}}}</th>
-                                    <th style="border: 1px solid grey">Settlement Refunds</th>
-                                    <th style="border: 1px solid grey">DVP Refunds</th>
-                                    <th style="border: 1px solid grey">Amount to be remitted to our Nodal Account</th>
+                                    <th style="border: 1px solid grey">Sr. No</th>
+                                    <th style="border: 1px solid grey">Particular</th>
+                                    <th style="border: 1px solid grey">Amount</th>
+                                    <th style="border: 1px solid grey">No of Txns.</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr style="border: 1px solid grey">
-                                    <td style="border: 1px solid grey; text-align: center">Jammu and Kashmir Bank</td>
-                                    <td style="border: 1px solid grey">{{{$amount['claims']}}}</td>
+                                    <td style="border: 1px solid grey; text-align: center">1</td>
+                                    <td style="border: 1px solid grey">Transaction  for {{{$from}}} to {{{$to}}}</td>
+                                    <td style="border: 1px solid grey; text-align: center">{{{$amount['claims']}}}</td>
+                                    <td style="border: 1px solid grey; text-align: center">{{{$count['claims']}}}</td>
+                                </tr>
+                                <tr style="border: 1px solid grey">
+                                    <td style="border: 1px solid grey; text-align: center">2</td>
+                                    <td style="border: 1px solid grey">Refund</td>
                                     <td style="border: 1px solid grey; text-align: center">{{{$amount['refunds']}}}</td>
-                                    <td style="border: 1px solid grey; text-align: center"> 0 </td>
-                                    <td style="border: 1px solid grey; text-align: center">{{{$amount['total']}}}</td>
+                                    <td style="border: 1px solid grey; text-align: center">{{{$count['refunds']}}}</td>
+                                </tr>
+                                <tr style="border: 1px solid grey">
+                                    <th colspan="2">Amount to be remitted in Nodal account</th>
+                                    <td colspan="2" style="border: 1px solid grey; text-align: center">{{{$amount['total']}}}</td>
                                 </tr>
                                 </tbody>
                             </table>
+                            <p>
+                                <b>Please find below our nodal bank details:-</b><br>
+                                <b>Account Number - </b>{{{$account['accountNumber']}}}<br>
+                                <b>Bank Name - </b> {{{$account['bankName']}}}<br>
+                                <b>Beneficiary Name - </b>{{{$account['accountName']}}}<br>
+                                <b>IFSC Code - </b>{{{$account['ifsc']}}}<br>
+                            </p>
+                            <p>
+                                Note: - As per RBI norm, All refund has been processed within TAT<br>
+                            </p>
                             <p>
                                 For any escalation, please write to <br>
                                 1st Level:- {{{$esc_matrix['l1']}}}<br>

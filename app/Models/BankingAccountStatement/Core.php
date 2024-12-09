@@ -5881,6 +5881,28 @@ class Core extends Base\Core
         $this->upsertMetaDataInPayoutServiceForDualWrite($basId, $currentTime, $metadata);
     }
 
+    public function processAccountStatementDualWrite(array $input)
+    {
+        (new Validator)->validateInput(Validator::ACCOUNT_STATEMENT_DUAL_WRITE_INPUT, $input);
+
+        $basInput = $input['input'];
+
+        $basId = $basInput[Entity::ID];
+
+        /* @var Entity $apiBAS */
+        $apiBAS = $this->repo->banking_account_statement->find($basId);
+
+        if ($apiBAS != null && $apiBAS->getUpdatedAt() > $basInput['updated_at']) {
+            $this->trace->info(
+                TraceCode::ACCOUNT_STATEMENT_SERVICE_DUAL_WRITE_NO_ACTION,
+                $basInput
+            );
+            return;
+        }
+
+        (new DualWrite\Processor)->dualWriteAccountStatementServiceData($basInput);
+    }
+
     public function getMetaDataFromPayoutServiceForDualWrite($payoutId)
     {
         $metadata = $this->repo->payout->getPayoutServicePayoutMetaDataForDualWrite($payoutId, self::DUAL_WRITE_META_NAME);

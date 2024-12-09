@@ -3,13 +3,17 @@
 namespace Unit\Models\Merchant\TestingHelper;
 
 use Config;
+use Database\Connection;
 use Razorpay\Asv\Error\GrpcError;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 
 class RepositoryTestHelper extends TestCase
 {
+    use DbEntityFetchTrait;
+
     private $splitzResponse = [
         'id' => '10000000000000',
         'project_id' => 'K1ZCHBSn7hbCMN',
@@ -39,6 +43,53 @@ class RepositoryTestHelper extends TestCase
             'assign_bucket'
         ]
     ];
+
+    public function validateSaveOrFailReadMigration($entityName, $attributes, $repo)
+    {
+
+        $entity = $this->fixtures->create($entityName);
+        $entity->fill($attributes);
+
+        $repo->saveOrFail($entity);
+        $testEntity = $this->getDbEntityById($entityName, $entity->getKey(), Connection::TEST);
+        $liveEntity = $this->getDbEntityById($entityName, $entity->getKey(), Connection::LIVE);
+        $asvEntity  = $this->getDbEntityById($entityName, $entity->getKey(), Connection::ASV_WRITER);
+
+        $this->assertEquals($testEntity, $liveEntity);
+        $this->assertEquals($asvEntity, $liveEntity);
+        foreach ($attributes as $fieldName => $fieldValue) {
+            $this->assertEquals($fieldValue, $liveEntity->getAttribute($fieldName));
+        }
+    }
+
+    public function validateSaveOrFailMigration($entityName, $attributes, $repo, $entity, $enableSave = true)
+    {
+        $entity->fill($attributes);
+
+        $repo->saveOrFail($entity);
+        $entityClass = $this->getEntityObjectForMode($entityName, 'test');
+        $testEntity = $entityClass->on(Connection::TEST)->findOrFailPublic($entity->getKey());
+        $liveEntity = $entityClass->on(Connection::LIVE)->findOrFailPublic($entity->getKey());
+        $asvEntity  = $entityClass->on(Connection::ASV_WRITER)->findOrFailPublic($entity->getKey());
+
+
+        if ($enableSave === true) {
+            $this->assertEquals($testEntity->getAttributes(), $liveEntity->getAttributes());
+            foreach ($attributes as $fieldName => $fieldValue) {
+                $this->assertEquals($fieldValue, $liveEntity->getAttribute($fieldName));
+                $this->assertEquals($fieldValue, $asvEntity->getAttribute($fieldName));
+                $this->assertEquals($fieldValue, $testEntity->getAttribute($fieldName));
+            }
+        } else {
+            // update won't happen in
+            $this->assertEquals($testEntity->getAttributes(), $liveEntity->getAttributes());
+            foreach ($attributes as $fieldName => $fieldValue) {
+                $this->assertNotEquals($fieldValue, $liveEntity->getAttribute($fieldName));
+                $this->assertEquals($fieldValue, $asvEntity->getAttribute($fieldName));
+                $this->assertNotEquals($fieldValue, $testEntity->getAttribute($fieldName));
+            }
+        }
+    }
 
     public function runTestsForImplicitJoin( $entitiesData)
     {

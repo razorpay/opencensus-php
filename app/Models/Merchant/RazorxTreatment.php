@@ -11,8 +11,6 @@ final class RazorxTreatment
 
     const PAYMENT_CREATE_ROUTE_REARCH = 'payment_create_route_rearch';
 
-    const FETCH_ENTITY_ORIGIN_VIA_FALLBACK = 'fetch_entity_origin_via_fallback';
-
     const GIFU_CUSTOM = 'gifu_custom';
 
     const WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION         = 'WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION';
@@ -87,9 +85,6 @@ final class RazorxTreatment
 
     // Razorx treatment constant, allows system to call ledger service.
     const LEDGER_ONBOARDING_PG_MERCHANT = 'ledger_onboarding_pg_merchant';
-
-    // Razorx treatment constant, for onboarding the order update via order outbox.
-    const ORDER_OUTBOX_ONBOARDING = 'order_outbox_onboarding';
 
     //It is used to maintain backward compatibility for fav composite api response.
     const FAV_COMPOSITE_SERVICE_FORWARDING = 'fav_composite_service_forwarding';
@@ -319,9 +314,6 @@ final class RazorxTreatment
     // experiment to enable whatsapp notifications and also refactoring notifications;
     const WHATSAPP_NOTIFICATIONS = 'whatsapp_notifications';
 
-    const FRAUD_WHATSAPP_NOTIFICATIONS_MIDS = 'whatsapp_notification_mids';
-
-
     // experiment to enable pushing events to segment
     const SEGMENT_ANALYTICS_FUNCTIONALITY = 'segment_analytics_functionality';
 
@@ -494,15 +486,7 @@ final class RazorxTreatment
 
     const ENABLE_CA_RZP_FEES_PAYOUT_VIA_PAYOUTS_SERVICE = 'enable_ca_rzp_fees_payout_via_payouts_service';
 
-    const ROUTE_ORDER_TO_PG_ROUTER = "route_order_to_pg_router";
-
-    const ROUTE_ORDER_TO_PG_ROUTER_REVERSE = "route_order_to_pg_router_reverse";
-
-    const FLIP_PAYMENT_READS = "flip_payment_reads";
-
     const ARCHIVED_REPLICA_QUERY_MOVEMENT = "archived_replica_query_movement";
-
-    const POST_PAYMENT_TO_BILL_ME = "post_payment_to_bill_me";
 
     const ROUTE_CONVENIENCE_FEE_ORDER_TO_PG_ROUTER = "route_convenience_fee_order_to_pg_router";
 
@@ -763,9 +747,6 @@ final class RazorxTreatment
 
     public const REFUND_AMOUNT_VALIDATION_FROM_REFUND_ENTITY = 'refund_amt_validation_from_refund_entity';
 
-    // This is for upi autopay subsequent payment if capture setting time is less then 36 hours
-    public const DEFAULT_CAPTURE_SETTING_CONFIG_UPI_AUTOPAY = "default_capture_setting_config_upi_autopay";
-
     // This is for czrd recurring subsequent payment capture setting
     public const DEFAULT_CAPTURE_SETTING_CONFIG_CARD_RECURRING = "default_capture_setting_config_card_recurring";
 
@@ -893,12 +874,6 @@ final class RazorxTreatment
     /** Experiment used check whether mapns to be de-tokenized or not **/
     const DETOKENIZE_MPANS = "detokenize_mpans";
 
-    // Experiment to use old Pricing plan for upi autopay
-    const UPI_AUTOPAY_PRICING_BLACKLIST = 'upi_autopay_pricing_blacklist';
-
-    //Experiment of susbcription other frequency changes
-    public const UPI_AUTOPAY_CORRECT_FREQUENCY_FETCH = "upi_autopay_correct_frequency_fetch";
-
     const ALLOW_CC_ON_UPI_PRICING = 'allow_cc_on_upi_pricing';
 
     // Experiment to enable async bulk approval or not
@@ -935,37 +910,11 @@ final class RazorxTreatment
     // Experiment to push payout attachment email job to SQS instead of metro
     const PAYOUT_ATTACHMENT_EMAIL_VIA_SQS = 'payout_attachment_email_via_sqs';
 
-    // Experiment to use UPI Autopay Promo Intent flow instead of normal checkout flow for authlinks
-    const UPI_AUTOPAY_PROMOTIONAL_INTENT = 'upi_autopay_promotional_intent';
-
-    //Experiment to enable UPI Autopay Promotional QR Flow
-    const UPI_AUTOPAY_PROMOTIONAL_QR = 'upi_autopay_promotional_qr';
-
     // Partner bank hold payouts experiment
     const PARTNER_BANK_ON_HOLD_PAYOUT = 'partner_bank_on_hold_payout';
 
     // Partner bank hold payouts experiment
     const PARTNER_BANK_ON_HOLD_PAYOUT_ICICI = 'partner_bank_on_hold_payout_icici';
-
-    const UPI_AUTOPAY_REVOKE_PAUSE_TOKEN = 'upi_autopay_revoke_pause_token';
-
-    // Experiment to enable mandate non-revokable
-    const UPI_AUTOPAY_REVOKABLE_FEATURE = 'UPI_AUTOPAY_REVOKABLE_FEATURE';
-
-    // Experiment to show initial amount to customer on PSP app
-    const UPI_AUTOPAY_SHOW_INITIAL_AMOUNT = 'upi_autopay_show_initial_amount';
-
-    // Experiment to increase debit retries for merchants
-    const UPI_AUTOPAY_INCREASE_DEBIT_RETRIES = 'upi_autopay_increase_debit_retries';
-
-    //Experiment to change debit retries time gap for merchant
-    const UPI_AUTOPAY_INCREASE_DEBIT_RETRIES_TIME_GAP = 'upi_autopay_increase_debit_retries_time_gap';
-
-    const UPI_AUTOPAY_ONE_TIME_MANDATE_REATTEMPT_INTERVAL = 'upi_autopay_one_time_mandate_reattempt_interval';
-
-    const UPI_AUTOPAY_PAYMENT_REMARK            = "upi_autopay_payment_remark";
-
-    const UPI_AUTOPAY_GATEWAY_REFUND         = "upi_autopay_gateway_refund";
 
     const CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER  = "card_subscriptions_international_handler";
 
@@ -1099,9 +1048,6 @@ final class RazorxTreatment
     // Experiment to support multiple frequencies for card recurring payment CAW
     const CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES = "card_mandate_enable_multiple_frequencies";
 
-    // experiment to disable default max amount for upi autopay
-    const UPI_AUTOPAY_DISABLE_MAX_AMOUNT_BLACKLIST = 'upi_autopay_disable_max_amount_blacklist';
-
     /**
      * Razorx flag to use merchant_refernce as an identifier to fetch unexpected payments
      */
@@ -1147,12 +1093,6 @@ final class RazorxTreatment
      */
     const SEND_DCC_INDICATOR                    = 'send_dcc_indicator';
 
-
-    /**
-     * Razorx flag to stop sending order data from API to PG-Router
-     */
-    const STOP_SENDING_ORDER_DATA_FROM_API = 'stop_sending_order_data_from_api';
-
     const QR_CODE_BLOCK_PAYMENT = 'qr_code_block_payment';
 
     const ALLOW_EMAIL_OPTIONAL_FOR_PARTNER = 'allow_email_optional_for_partner';
@@ -1173,13 +1113,6 @@ final class RazorxTreatment
     const VALIDATE_ACCOUNT_REARCH_UPS = 'validate_account_rearch_ups';
 
     const TERMINALS_TIDB_QUERIES_MIGRATION = 'terminals_tidb_queries_migration';
-
-    /**
-     * Razorx flag to route fetch order to PG-Router Test Service
-     */
-    const ROUTE_ORDER_FETCH_TO_PG_ROUTER_TEST = 'route_order_fetch_to_pg_router_test';
-
-    const ROUTE_ORDER_CREATE_TO_PG_ROUTER_TEST = 'route_order_create_to_pg_router_test';
 
     const ZERO_EXPONENT_CURRENCY_SUPPORT = 'zero_exponent_currency_support';
 
@@ -1230,8 +1163,6 @@ final class RazorxTreatment
     const QR_PAYMENT_REFACTOR_GATEWAY     = 'qr_payment_refactor_gateway';
     const QR_PAYMENT_REFACTOR_EXISTING_GATEWAY     = 'qr_payment_refactor_existing_gateway';
 
-    const BAJAJ_FINSERV_REDIRECT_FLOW = 'bajaj_finserv_redirect_flow';
-
     const MANDATE_IDEMPOTENCY_KEY_EXPERIMENT  = 'mandate_idempotency_key_experiment';
     const MANDATE_IDEMPOTENCY_KEY_EXPERIMENT_NEW = "mandate_idempotency_key_experiment_new";
     const DCS_MERGE_FIX = 'dcs_merge_fix';
@@ -1239,5 +1170,5 @@ final class RazorxTreatment
     const ALLOW_FULCRUM_RECURRING_INITIAL = 'fulcrum_recurring_initial';
     const ALLOW_FULCRUM_RECURRING_SUBSEQUENT = 'fulcrum_recurring_subsequent';
 
-    const PAYOUT_PROPERTIES_EVENT = 'payout_properties_event';
+    const BANK_DATA_VIA_NPCI_API = 'bank_data_via_npci_api';
 }

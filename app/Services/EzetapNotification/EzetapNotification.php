@@ -109,6 +109,48 @@ class EzetapNotification
         return $responseBody;
     }
 
+    public function sendDeviceNotification(
+        Entity $event,
+        int $timeout = self::TIMEOUT,
+        int $connectTimeout = self::CONNECT_TIMEOUT
+    )
+    {
+        $metric = new EzetapNotificationMetric();
+        $errorMessage = null;
+        try
+        {
+
+            $input = $event->toArrayPublic();
+
+            $url = $this->getDeviceWebhookUrl();
+
+            $signature = $this->getSignatureDetails($input);
+
+            $request = $this->getRequest($url, $signature, $input, $timeout, $connectTimeout);
+
+            $this->trace->info(TraceCode::EZETAP_SERVICE_REQUEST, $request);
+
+            $responseBody = $this->sendRawRequest($request);
+
+            $this->trace->info(TraceCode::EZETAP_SERVICE_RESPONSE, [
+                'responseBody' => $responseBody,
+                'message'      => 'EZETAP_SERVICE_RESPONSE',
+            ]);
+
+            return $responseBody;
+        }
+        catch (\Exception $ex)
+        {
+            $errorMessage = $ex->getMessage();
+        }
+        finally
+        {
+            $metric->pushEzetapNotificationMetrics($input, $errorMessage);
+        }
+
+    }
+
+
     protected function isEzetapNotificationEvent(Entity $event): bool
     {
         $isOmniMerchant      = $event->merchant->isOmniEnabled();
@@ -181,6 +223,11 @@ class EzetapNotification
         $url = $this->config->get('applications.ezetap-notification.url');
 
         return $url;
+    }
+
+    protected function getDeviceWebhookUrl()
+    {
+        return $this->config->get('applications.ezetap-notification.device_webhook_url');
     }
 
 

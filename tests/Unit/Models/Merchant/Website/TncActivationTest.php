@@ -1176,18 +1176,18 @@ class TncActivationTest extends TestCase
                                 'shipping'     =>  ['url' => "https://ilovesarees.com/policies/shipping-policy",'system_approved' => true],
                             ], $merchantWebsiteDetail['admin_website_details']['website']['https://www.ilovesarees.com/']);
     }
-    
+
     public function testGetAdminWebisteSectionWithVerifiedIndividualPolicies()
     {
-        
+
         $this->mockRazorxTreatment();
-        
+
         $merchant = $this->fixtures->create('merchant', [
             'category'  => '5945',
             'category2' => 'ecommerce'
         ]);
-        
-        
+
+
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             "merchant_id"                         => $merchant->getId(),
             "contact_name"                        => "Mohan",
@@ -1198,8 +1198,8 @@ class TncActivationTest extends TestCase
             "business_international"              => 0,
             "business_registered_address"         => "address",
         ]);
-        
-        
+
+
         $this->fixtures->create('merchant_verification_detail', [
             "id"                  => "MH8gGHX1Vf0bK2",
             "merchant_id"         => $merchant->getId(),
@@ -1259,7 +1259,7 @@ class TncActivationTest extends TestCase
                 "policy_details_file" => "file_MH8jjmKC3s9G3a"
             ]
         ]);
-        
+
         /*we don't have all urls in merchant_website fixture, once updation is done ,
          then we have to check expected urls are updated in merchant_website entity
         */
@@ -1304,12 +1304,12 @@ class TncActivationTest extends TestCase
         $this->fixtures->on('live')->create('merchant_website', $websiteAttributes);
         $this->fixtures->on(Connection::ASV_WRITER)->create('merchant_website', $websiteAttributes);
         $this->fixtures->on('test')->create('merchant_website', $websiteAttributes);
-        
+
         $merchantWebsiteDetail = (new Merchant\Website\Service)->getAdminWebsiteSection($merchant->getId());
-        
+
         // this merchant is getting applicable for fee based gating hence his activation status is not changing,
         // temp fix
-        
+
         $this->assertEquals([
                                 'refund'       =>  ['url' => "https://ilovesarees.com/pages/returns",'system_approved' => true],
                                 'cancellation' =>  ['url' => "https://ilovesarees.com/pages/returns",'system_approved' => true],

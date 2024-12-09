@@ -3,6 +3,7 @@
 namespace RZP\Models\Transaction\Processor;
 
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
@@ -117,6 +118,25 @@ class Refund extends Base
     {
         $payment = $this->source->payment;
         $refund  = $this->source;
+
+        $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
+
+        if ($this->txn->isBalanceUpdated() === false && $merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === true)
+        {
+            $this->trace->info(TraceCode::TXN_FAILURE_DURING_CLS_ONBOARDING,
+                [
+                    'merchant_id'           => $merchant->getMerchantId(),
+                    'type'                  => 'refund',
+                ]
+            );
+
+            throw new Exception\RuntimeException(
+                'CLS on-boarding in progress, please try again after some time',
+                [
+                    'merchant_id' => $this->txn->getMerchantId(),
+                    'type'    => $this->txn->getType(),
+                ]);
+        }
 
         if ($payment->hasBeenCaptured() === true)
         {

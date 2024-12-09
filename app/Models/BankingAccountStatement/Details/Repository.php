@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccountStatement\Details;
 
+use RZP\Base\ConnectionType;
 use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Models\Base;
@@ -342,7 +343,13 @@ class Repository extends Base\Repository
         $statusList = Status::getStatusesForActiveCaFlows();
         $directChannels = \RZP\Models\BankingAccountService\Channel::getDirectTypeChannels();
 
-        $query =  $this->newQueryWithConnection($this->getSlaveConnection())
+        if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN));
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        $query =  $query
             ->join(Constants\Table::MERCHANT, $bankingAccountMerchantIdColumn, '=', $merchantIdColumn)
             ->select($merchantIdColumn)
             ->whereIn($channelColumn, $directChannels)
@@ -354,6 +361,7 @@ class Repository extends Base\Repository
                 $query->whereNotIn(Merchant\Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
                     ->orWhereNull(Merchant\Entity::PARENT_ID);
             })
+            ->orderBy($merchantIdColumn, 'ASC')
             ->take($limit)
             ->skip($skip);
 

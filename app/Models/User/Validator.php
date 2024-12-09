@@ -52,10 +52,12 @@ class Validator extends Base\Validator
     const CREATE_COMMON_RULES = [
         Entity::ID                              => 'sometimes|max:14',
         Entity::NAME                            => 'sometimes|string|max:200|utf8',
-        Entity::EMAIL                           => 'required|email',
-        Entity::PASSWORD                        => 'required|between:8,50|confirmed|numbers|letters',
-        Entity::PASSWORD_CONFIRMATION           => 'required|between:8,50',
+        Entity::EMAIL                           => 'required_without:contact_mobile|email',
+        Entity::PASSWORD                        => 'required_with:email|between:8,50|confirmed|numbers|letters',
+        Entity::PASSWORD_CONFIRMATION           => 'required_with:email|between:8,50',
         Entity::CONTACT_MOBILE                  => 'sometimes|nullable|max:15|contact_syntax',
+        Entity::CONTACT_MOBILE_VERIFIED         => 'sometimes|in:0,1', //this will get reflected in db only for internal auth
+        Constants::PARTNER_REFERRAL_CODE        => 'sometimes|string',
         Entity::REMEMBER_TOKEN                  => 'sometimes',
         Entity::CONFIRM_TOKEN                   => 'sometimes',
         Entity::SETTINGS                        => 'nullable|associative_array',
@@ -67,6 +69,16 @@ class Validator extends Base\Validator
         DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
         DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
         DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
+    ];
+
+    const CREATE_MERCHANT_RULES = [
+        Merchant\Entity::COUNTRY_CODE           => 'required|string|max:2|in:IN,MY,SG',
+        Merchant\Entity::NAME                   => 'sometimes|string',
+        DeviceDetail\Entity::SIGNUP_CAMPAIGN    => 'sometimes|string',
+        DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
+        DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
+        DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
+        DeviceDetail\Entity::SIGNUP_SOURCE      => 'sometimes|string',
     ];
 
     protected static $createRules = self::CREATE_COMMON_RULES + [
@@ -350,14 +362,16 @@ class Validator extends Base\Validator
         Entity::ROLE        => 'sometimes|string',
     ];
 
-    protected static $createMerchantRules = [
-        Merchant\Entity::COUNTRY_CODE           => 'required|string|max:2|in:IN,MY,SG',
-        Merchant\Entity::NAME                   => 'sometimes|string',
-        DeviceDetail\Entity::SIGNUP_CAMPAIGN    => 'sometimes|string',
-        DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
-        DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
-        DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
-        DeviceDetail\Entity::SIGNUP_SOURCE      => 'sometimes|string',
+    protected static $addSalesUserToMerchantRules = [
+        Entity::EMAIL       => 'required|email',
+        Entity::MERCHANT_ID => 'required|alpha_num|size:14',
+    ];
+
+    protected static $createMerchantRules = self::CREATE_MERCHANT_RULES;
+
+    protected static $createMerchantInternalRules = self::CREATE_MERCHANT_RULES + [
+        Constants::USER_ID                      => 'required|alpha_num|size:14',
+        Merchant\Entity::ORG_ID                 => 'required|string|size:18',
     ];
 
     protected static $changePasswordTokenRules = [
@@ -1329,7 +1343,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID);
         }
     }
-    
+
     /**
      * @throws NumberParseException
      * @throws BadRequestValidationFailureException
@@ -1347,16 +1361,16 @@ class Validator extends Base\Validator
         }
 
         $existingUserIds = (new Repository())->findUserWithContactNumbersExcludingUser($user->getId(), numbers: $validContactMobileNumberFormats);
-        
+
         $expResult = (new UserCore())->splitzExperimentEvaluatorMobileUpdate($user->getId());
-        
+
         if($expResult === true) {
-            
+
             if ((empty($existingUserIds) === false) and
                 (count($existingUserIds) > 0))
             {
                 $userIdsToNullify = (new UserCore())->getOrphanOrNonActivatedMerchantUserIds($existingUserIds);
-    
+
                 if (count($userIdsToNullify) === 0) {
                     throw new Exception\BadRequestException(
                       ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS);

@@ -10,6 +10,7 @@ use RZP\Http\RequestHeader;
 use RZP\Models\Batch;
 use GuzzleHttp\Client;
 use RZP\Constants\Mode;
+use RZP\Models\Batch\Metric;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -72,13 +73,13 @@ class BatchMicroService
         $this->username = $this->batchServiceConfig['username'];
 
         $this->secret = $this->batchServiceConfig['password'];
-    
+
         // Currently this route appears to take more than 1s, so increasing the timeout
         if ($routeName === 'payment_page_get_batches')
         {
             $this->client = new Client(['base_uri' => $this->batchServiceUrl,'connect_timeout' => 5]);
         }
-        else 
+        else
         {
             // Timeout if the batch service fails to connect to the api in 1 second.
             $this->client = new Client(['base_uri' => $this->batchServiceUrl,'connect_timeout' => 1]);
@@ -399,6 +400,11 @@ class BatchMicroService
                                                 array $options,
                                                 array $input = null)
     {
+        //TODO this will be removed
+        $uri = $relativeUrl;
+
+        $this->trace->info(TraceCode::API_BATCH_REQUEST_DEBUG,["uri"=>$uri, "input" => $input]);
+
         if ($this->shouldBatchServiceBeCalled() === false)
         {
             throw new Exception\ServerNotFoundException('BatchService is not called',
@@ -440,7 +446,14 @@ class BatchMicroService
 
         try
         {
+            $startTime =  millitime();
+
             $response = $this->client->request($method, $relativeUrl, $requestOptions);
+
+            $endTime = millitime();
+
+            $this->trace->histogram(Metric::BATCH_FILE_DOWNLOAD_TIME_MS,($endTime-$startTime),["uri"=>$uri]);
+
         }
         catch (BadResponseException $exception)
         {
@@ -463,7 +476,11 @@ class BatchMicroService
                                                         $throwable->getMessage());
         }
 
-        return  json_decode($response->getBody(), true);
+        $response =  json_decode($response->getBody(), true);
+
+        $this->trace->info(TraceCode::API_BATCH_RESPONSE_DEBUG,["input"=>$input, "time"=>$endTime-$startTime, "uri"=>$uri]);
+
+        return $response;
     }
 
     public function formAndGetMultipartPayload(array $input, Merchant\Entity $merchant)

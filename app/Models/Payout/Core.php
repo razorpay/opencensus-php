@@ -1357,7 +1357,7 @@ class Core extends Base\Core
                 {
                     if (empty($ftaData[Entity::RETURN_UTR]) === false)
                     {
-                        $returnUtr = $ftaData[Attempt\Constants::RETURN_UTR];
+                        $returnUtr = $ftaData[Entity::RETURN_UTR];
 
                         $payout->setReturnUtr($returnUtr);
                     }
@@ -4072,6 +4072,8 @@ class Core extends Base\Core
                 );
             }
         }
+
+        $this->pushAccountStatementsSourceEvent($payout);
     }
 
     /**
@@ -5083,6 +5085,7 @@ class Core extends Base\Core
             $this->processLedgerPayout($clonedPayout, $reversal);
         }
 
+        $this->pushAccountStatementsSourceEvent($payout);
         return $reversal;
     }
 
@@ -5239,6 +5242,84 @@ class Core extends Base\Core
 
             $this->app->events->dispatch('api.payout.failed', [$payout]);
         }
+
+        $this->pushAccountStatementsSourceEvent($payout);
+    }
+
+    private function pushAccountStatementsSourceEvent(Entity $payout): void {
+        try {
+            $properties = [
+                'id'            => $payout->getMerchantId(),
+                'experiment_id' => $this->app['config']->get('app.account_statements_source_event_experiment_id'),
+                'request_data' => json_encode(['merchant_id' => $payout->getMerchantId()])
+            ];
+
+            $isPushToQueueForAccStSourceExperimentEnabled = $this->isSplitzExperimentEnable($properties, 'variables', TraceCode::ACCOUNT_STATEMENTS_SOURCE_EVENT_SPLITZ_ERROR);
+            $isCAPayout = $payout->balance->isAccountTypeDirect();
+
+            if ($isPushToQueueForAccStSourceExperimentEnabled && $isCAPayout) {
+                $this->pushToAccountServiceQueue($payout);
+            }
+        } catch (\Throwable $ex) {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::QUEUE_PUSH_TO_ACCOUNT_STATEMENTS_SOURCE_EVENT_ERROR
+            );
+        }
+    }
+
+    private function pushToAccountServiceQueue(Entity $payout): void {
+        /** @var Attempt\Entity $fundTransferAttempt */
+        $fundTransferAttempt = $payout->fundTransferAttempts()->first();
+
+        $pushData = [
+            PayoutConstants::ENTITY_ID               => $payout->getId(),
+            PayoutConstants::ENTITY_TYPE             => PayoutConstants::PAYOUTS_ENTITY_TYPE,
+            PayoutConstants::UTR                     => $payout->getUtr() ? $payout->getUtr() : "",
+            PayoutConstants::EVENT_CREATED_TIMESTAMP => Carbon::now(Timezone::IST)->getTimestamp(),
+            PayoutConstants::EVENT_ID                => UniqueIdEntity::generateUniqueId(),
+            PayoutConstants::GATEWAY_REF_NO          => $fundTransferAttempt ? $fundTransferAttempt->getGatewayRefNo() : "",
+            PayoutConstants::CMS_REF_NO              => $fundTransferAttempt ? $fundTransferAttempt->getCmsRefNo() : "",
+            PayoutConstants::STATUS                  => $payout->getStatus(),
+            PayoutConstants::MODE                    => $payout->getMode(),
+            PayoutConstants::AMOUNT                  => $payout->getAmount(),
+            PayoutConstants::BALANCE_ID              => $payout->getBalanceId(),
+        ];
+
+        $queueName = $this->app['config']->get('queue.account_statements_source_event.' . $this->mode);
+
+        $this->app['queue']->connection('sqs')->pushRaw(json_encode($pushData), $queueName);
+    }
+
+    public function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode = null): bool
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'splitz_output' => $response,
+            ]);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $id = $properties['id'] ?? null;
+
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+
+            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
+        }
+
+        return false;
     }
 
     protected function verifyPayoutFailedTransaction(Entity $payout, string $ftaFailureReason = null)
@@ -11873,5 +11954,264 @@ class Core extends Base\Core
         ]);
 
         return $modeWiseChannelPriorities;
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws InvalidArgumentException
+     * @throws BadRequestException
+     */
+    public function manualProcessedToProcessing($input) : array
+    {
+        $payoutId = $input['payout_id'];
+        $isPsEntity = $input['is_payout_service'];
+        (new Validator)->validatePayoutId($payoutId);
+
+        if($isPsEntity){
+            // TODO call PS service call.
+            return [];
+        }
+
+        $payout = $this->repo->payout->findByPublicId('pout_'.$payoutId);
+        $fta = $this->repo->fund_transfer_attempt->getAttemptBySourceId($payout->getId(), Entity::PAYOUT);
+
+        if(empty($fta)){
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                "Fta entity not found for payoutId"
+            );
+        }
+
+        $ftaId = $fta->getId();
+
+        $payoutsStatusDetails = $this->repo->payouts_status_details->fetchPayoutStatusDetailsLatest($payoutId);
+
+        if(empty($payoutsStatusDetails)){
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                "Payout Status Details entity not found for payoutId for status: processed"
+            );
+        }
+
+        if ($payout->getStatus() != Status::PROCESSED || $fta->getStatus() != Status::PROCESSED || $payoutsStatusDetails->getStatus() != Status::PROCESSED) {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                "Payout, fta, payoutStatusDetails entities are not in processed state"
+            );
+        }
+
+        // Initialize the state machine for the payout using ManualStateTransitionMachine
+        $payoutStateMachine = new ManualStateTransitionMachine($payout->getStatus());
+
+        $ftaStateMachine = new ManualStateTransitionMachine($fta->getStatus());
+
+        $payoutStatusDetailsMachine = new ManualStateTransitionMachine($payoutsStatusDetails->getStatus());
+
+        \DB::beginTransaction();
+
+        try {
+            // Execute state transition
+            $payoutStateMachine->transition($payout,Status::INITIATED, function () use ($fta, $ftaStateMachine, $payoutsStatusDetails, $payoutStateMachine) {
+                // Transition the FTA by callback only if payout transition was successful
+                $ftaStateMachine->transition($fta, Status::INITIATED, function () use ($payoutsStatusDetails, $payoutStateMachine) {
+                    // Transition the payout status details only if payout transition was successful
+                    $payoutStateMachine->transition($payoutsStatusDetails, 'deleted');
+                });
+            });
+
+            // Commit the transaction
+            \DB::commit();
+
+        } catch (\Exception $e) {
+
+            \DB::rollback();
+
+            throw $e;
+        }
+
+        $response = [
+            'payoutId' => $payoutId,
+            'ftaId' => $ftaId,
+            'payoutStatusDetailsId' => $payoutsStatusDetails->getId()
+        ];
+
+        $this->trace->info(
+            TraceCode::MANUAL_ACTION_PROCESSED_TO_PROCESSING_SUCCESS, [
+                "response" => $response,
+                "description" => "Payout, fta, payoutStatusDetails entities updated "
+            ]
+        );
+        return $response;
+    }
+
+    public function trackPayoutPropertiesEvent(Entity $payout)
+    {
+        $auth = $this->app['basicauth'];
+        if (empty($auth)) {
+            $this->trace->warning(TraceCode::PAYOUT_PROPERTIES_EVENT_FAILED,[
+                'input' => $payout
+            ]);
+            return;
+        }
+
+        $payoutId = $payout->getId();
+        if ($payout->getIsPayoutService() === true) {
+            $psPayout = $payout->payoutServiceResponse;
+            $payout->setMerchantId($psPayout[Entity::MERCHANT_ID]);
+        }
+
+        $merchantId = $payout->getMerchantId();
+        if (empty($merchantId)) {
+            return ;
+        }
+
+        $eventExperimentName = 'payout_properties_event_experiment';
+        $eventExperimentIdConfigKey = 'app.'.$eventExperimentName.'_id';
+
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get($eventExperimentIdConfigKey),
+            'request_data' => json_encode(['merchant_id' => $merchantId])
+        ];
+
+        if($this->isSplitzExperimentEnable($properties,'enable', TraceCode::PAYOUT_PROPERTIES_EVENT_SPLITZ_ERROR) === false){
+            return;
+        }
+
+        $origin = '';
+        if (isset($this->app['api.route']) && $this->app['api.route']->getCurrentRouteName()) {
+            $origin = $this->app['api.route']->getCurrentRouteName();
+        } elseif (isset($this->app['request.ctx']) && $this->app['request.ctx']->getRoute()) {
+            $origin = $this->app['request.ctx']->getRoute();
+        } elseif (isset($this->app['worker.ctx']) && $this->app['worker.ctx']->getJobName()) {
+            $origin = $this->app['worker.ctx']->getJobName();
+        }
+
+        $internalApp = $auth->getInternalApp() ?? 'external';
+        $authType = $auth->getAuthType();
+        $user = $auth->getUser();
+        $userId = $user ? $user->getId() : '';
+        $role = $auth->getUserRole() ?? '';
+
+        // splitz experiment
+        $experimentName  = 'generate_bene_hash_experiment';
+        $experimentIdConfigKey = 'app.'.$experimentName.'_id';
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get($experimentIdConfigKey),
+            'request_data' => json_encode(['merchant_id' => $merchantId])
+        ];
+
+        $beneHash = null;
+        if($this->isSplitzExperimentEnable($properties,'enable', TraceCode::PAYOUT_PROPERTIES_EVENT_SPLITZ_ERROR)){
+
+             $beneHash = $this->getBeneficiaryHash($payoutId);
+        }
+
+        $eventAttributes = [
+            'merchant_id'       => $merchantId,
+            'origin'            => $origin,
+            'user_id'           => $userId,
+            'user_role'         => $role,
+            'app_name'          => $internalApp,
+            'auth_type'         => $authType,
+            'beneficiary_hash'  => $beneHash,
+        ];
+
+        $this->app['diag']->trackPayoutPropertiesEvent(
+            EventCode::PAYOUT_PROPERTIES,
+            $payout,
+            $eventAttributes
+        );
+
+        $this->trace->info(TraceCode::PAYOUT_PROPERTIES_EVENT_SUCCESS,[
+            "payout_id" => $payoutId,
+            "event_attributes" => $eventAttributes
+        ]);
+    }
+
+    public function getBeneficiaryHash($payoutId)
+    {
+        try {
+
+            /* @var \RZP\Models\Payout\Entity $payout */
+            $payout = $this->repo->payout->find($payoutId);
+
+            if(!isset($payout))
+            {
+                $payout = $this->getAPIModelPayoutFromPayoutService($payoutId);
+
+                $balance = (new Balance\Repository())->find($payout->getBalanceId());
+                $fundAccount = (new FundAccount\Repository())->find($payout->getFundAccountId());
+
+                $payout->balance()->associate($balance);
+                $payout->fundAccount()->associate($fundAccount);
+            }
+
+            $mode = $payout->getMode();
+            $merchantId = $payout->getMerchantId();
+
+            $input = $merchantId . $mode;
+            $sourceAccount = $payout->balance->getAccountNumber();
+
+            // Depending on the mode of the payout, generate the appropriate hash input
+            switch ($mode) {
+                case Mode::UPI:
+                    $upiUsername = $payout->fundAccount->account->getUsername();
+                    $upiHandle = $payout->fundAccount->account->getHandle();
+                    $input = $upiUsername . $upiHandle . $input;
+                    break;
+
+                case Mode::IFT:
+                case Mode::NEFT:
+                case Mode::IMPS:
+                case Mode::RTGS:
+                case Mode::DUITNOW:
+                    $accountNumber = $payout->fundAccount->account->getAccountNumber();
+                    $ifsc = $payout->fundAccount->account->getIfscCode();
+                    $input = $accountNumber . $ifsc . $input;
+                    break;
+
+                case Mode::CARD:
+                    $cardDetails = $payout->fundAccount->account->getCardDetailsAsKey();
+                    $cardNetworkCode = $payout->fundAccount->account->getNetworkCode();
+                    $input = $cardDetails . $cardNetworkCode . $input;
+                    break;
+
+                case Mode::AMAZONPAY:
+                    $mobileNumber = $payout->fundAccount->account->getAttribute('phone');
+                    $input = $mobileNumber . $input;
+                    break;
+
+                default:
+                    $this->trace->info(TraceCode::INVALID_MODE_FOR_BENEFICIARY_HASH_GENERATION,[
+                        'payout_id' => $payoutId,
+                        'mode' => $mode
+                    ]);
+                    break;
+            }
+
+            // Generate the hash using SHA-256
+            $hashWithoutSource = hash('sha256', $input);
+            $hashWithSource = hash('sha256', $input . $sourceAccount);
+
+        } catch (\Throwable $e)
+        {
+            $hashWithoutSource = $hashWithSource = 'DEFAULT_'.$input;
+            $this->trace->info(TraceCode::BENEFICIARY_HASH_GENERATION_FAILURE,[
+                'payout_id' => $payoutId,
+                'error' => $e->getMessage()
+            ]);
+        }
+        return [
+            'hash_without_source' => $hashWithoutSource,
+            'hash_with_source' => $hashWithSource
+        ];
     }
 }

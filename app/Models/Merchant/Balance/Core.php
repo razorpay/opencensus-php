@@ -27,7 +27,6 @@ class Core extends Base\Core
 
     const RESERVE_BALANCE_CREATE_MUTEX_PREFIX = 'reserve_balance_';
     const RESERVE_BALANCE_CREATE_LOCK_TIMEOUT = 30;
-
     const NEGATIVE_FLOWS = [
         Type::PRIMARY => [
             Transaction\Type::PAYMENT,
@@ -158,6 +157,22 @@ class Core extends Base\Core
         }
 
         return $balance;
+    }
+
+    public function fetchBalanceWithLock(Merchant\Entity $merchant, string $balanceType, $mode = null): ?Entity
+    {
+        // Fetch the balance with the given type for the given merchant
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType, $mode);
+
+        // If the balance does not exist, return null without creating a new one
+        if ($balance === null) {
+            return null;
+        }
+
+        // Apply a DB lock on the balance using lockForUpdate
+        return Entity::lockForUpdate()->newQuery()
+            ->where(Entity::ID, $balance->getId())
+            ->first();
     }
 
 

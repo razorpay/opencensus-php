@@ -142,6 +142,78 @@ class RepositoryTest extends RepositoryTestHelper
     }';
 
 
+    public function testMerchantWebsiteSaveOrFailReadMigration()
+    {
+        $attributes = [
+            'merchant_id'              => '10000000000000',
+            'status'                   => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "contact_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                ]
+            ]
+        ];
+
+        $this->validateSaveOrFailReadMigration("merchant_website", $attributes, new Repository());
+    }
+
+    public function testMerchantWebsiteSaveOrFailMigration()
+    {
+        $entity = $this->fixtures->create("merchant_website");
+
+        $attributes = [
+            'merchant_id'              => '10000000000000',
+            'status'                   => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "contact_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                ]
+            ]
+        ];
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_website', false);
+
+        $this->validateSaveOrFailMigration("merchant_website", $attributes, new Repository(), $entity, true);
+
+        Config::set('applications.asv_v2.stop_asv_entity_writes_merchant_website', true);
+        // enable flag
+        $attributes = [
+
+            'status'                   => 'notsubmitted',
+            "shipping_period"          => "4-6 days",
+            "refund_request_period"    => "4-6 days",
+            "refund_process_period"    => "4-6 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004018",
+                "support_email"          => "kakarla.vasanthi12@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "contact_us" => [
+                    "section_status" => 4,
+                    "status"         => "notsubmitted",
+                ]
+            ]
+        ];
+        $this->validateSaveOrFailMigration("merchant_website", $attributes, new Repository(), $entity, false);
+    }
+
+
     public function testGetWebsiteDetailsForMerchantId()
     {
         $this->createMerchantWebsiteInDatabase($this->websiteEntityJson1);

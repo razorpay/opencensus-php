@@ -640,7 +640,7 @@ class Checker extends Base\Core
 
         $core = new Core();
 
-        $updatedOffer = $core->lockIncrementCurrentOfferUsage($this->offer);
+        $updatedOffer = $core->lockIncrementCurrentOfferUsage($this->offer, $this->payment);
 
         $result = $updatedOffer->getCurrentOfferUsage() <= $this->offer->getMaxOfferUsage();
 

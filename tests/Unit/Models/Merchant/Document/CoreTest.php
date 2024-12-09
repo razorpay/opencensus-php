@@ -8,6 +8,7 @@ use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class CoreTest extends TestCase
 {
@@ -49,6 +50,21 @@ class CoreTest extends TestCase
         $documentCore = new DocumentCore();
         $shouldPerformOCR = $documentCore->shouldPerfomOcrOnDocumentUpload($document, $merchantDetail->merchant, $merchantDetail);
         $this->assertTrue($shouldPerformOCR);
+    }
+
+    public function testShouldSkipOCRIfExperimentEnabled()
+    {
+        $merchantDetail = $this->getMerchantDetailFixture(11);
+        $document = $this->fixtures->create('merchant_document', [
+            'document_type' => Type::AADHAR_BACK,
+            'file_store_id' => '123123',
+            'merchant_id'   => $merchantDetail->getMerchantId(),
+        ]);
+
+        $documentCore = new DocumentCore();
+        $this->fixtures->org->addFeatures([FeatureConstants::KYC_BLOCK_OCR_FOR_VAS],'100000razorpay');
+        $shouldPerformOCR = $documentCore->shouldPerfomOcrOnDocumentUpload($document, $merchantDetail->merchant, $merchantDetail);
+        $this->assertFalse($shouldPerformOCR);
     }
 
     public function testShouldPerformOcrForGstCertificateDocumentTypeAndExperimentIsEnabled()

@@ -64,6 +64,7 @@ class Metric
     const TIDB_FILTER_ROUTING_RESULT    = 'tidb_filter_routing_result';
     const DB_REQUESTS_BEFORE_MIGRATION          = 'db_requests_before_migration';
     const ASV_SYNC_ACCOUNT_DEVIATION_FAILED     = 'asv_sync_account_deviation_failed';
+    const DUAL_WRITE_ENTITIES_USAGE     = 'dual_write_entities_usage';
 
     const ACCOUNT_SERVICE_CHECK_EXCLUSION_FLOW_RESULT = 'account_service_check_exclusion_flow_result';
 
@@ -73,7 +74,14 @@ class Metric
     const ACCOUNT_SERVICE_CHECK_WRITE_FLOW_RESULT = 'account_service_check_write_flow_result';
 
     const ASV_REQUEST_NOT_ROUTED = 'asv_read_request_not_routed';
+
+
+    const ASV_ENTITIES_STOP_WRITES_TO_API_DB = 'asv_entities_stop_writes_to_api_db';
     const ASV_READ_REQUEST_ROUTING_RESULT = 'asv_read_request_routing_result';
+
+    const ASV_FALLBACK_TO_API_DB_RESULT = 'asv_fallback_to_api_db_result';
+
+    const ASV_READ_REQUEST_ROUTED_FOR_WRITE_FLOW_RESULT = 'asv_read_request_routed_for_write_flow_result';
     const DUAL_WRITES_TOTAL                     = 'dual_writes_total';
     const DUAL_WRITES_FAILED                    = 'dual_writes_failed';
     const DUAL_WRITES_TIME_TAKEN                = 'dual_writes_time_taken';
@@ -196,6 +204,7 @@ class Metric
     const PG_LEDGER_OUTBOX_UPDATE_RETRY_COUNT_FAILURE           = 'pg_ledger_outbox_update_retry_count_failure';
     const LEDGER_ACCOUNT_CREATION_FAILURE                       = 'ledger_account_creation_failure';
     const PG_LEDGER_API_TRANSACTION_JOURNAL_ID_MISMATCH         = 'pg_ledger_api_transaction_journal_id_mismatch';
+    const CLS_ONBOARDING_FAILURE_ADJUSTMENT_CREATION            = 'cls_onboarding_failure_adjustment_creation';
 
     const PG_LEDGER_AMOUNT_CREDIT_EXPIRY_REMINDER_CREATED       = 'pg_ledger_amount_credit_expiry_reminder_created';
     const PG_LEDGER_AMOUNT_CREDIT_EXPIRY_REMINDER_FAILURE       = 'pg_ledger_amount_credit_expiry_reminder_failure';
@@ -211,6 +220,12 @@ class Metric
     //ChargeCollections
     const CC_REQUEST_NOT_ROUTED                                 = 'cc_request_not_routed';
     const CC_REQUEST_ROUTED                                     = 'cc_request_routed';
+    const CC_ROUTER_RESPONSE_MISMATCH                           = 'cc_router_response_mismatch';
+    const CC_ROUTER_PRICING_LEGACY_CALL_TIME                    = 'cc_router_pricing_legacy_call_time';
+    const CC_ROUTER_SPLITZ_RESPONSE_TIME                        = 'cc_router_splitz_response_time';
+    const CC_ROUTER_TOTAL_TIME                                  = 'cc_router_total_time';
+    const CHARGE_COLLECTIONS_RESPONSE_TIME                      = 'charge_collections_response_time';
+
 
     // External repo for Route
     const EXTERNAL_TRANSFER_REPO_FETCH_FAILURE                  = 'ext_trf_repo_fetch_failure_count';
@@ -267,8 +282,21 @@ class Metric
 
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_NOT_FOUND = 'settlement_ondemand_feature_config_max_limit_not_found';
 
+    const BANK_TRANSFER_CREATE_PROCESS_JOB_INIT_COUNT            = 'bank_transfer_create_process_job_init_count';
+
     const OPGSP_UFH_FILE_PUSH                                   = 'opgsp_ufh_file_push';
     const OPGSP_BEAM_PUSH                                       = 'opgsp_beam_push';
     const OPGSP_FILE_SEND_STARTED                               = 'opgsp_file_send_started';
-    const OPGSP_IMPORT_NO_SETTLEMENTS_FOUND                        = 'opgsp_import_no_settlements_found';
+    const OPGSP_IMPORT_NO_SETTLEMENTS_FOUND                     = 'opgsp_import_no_settlements_found';
+    const API_DECOMP_ENTITY_FETCH                               = 'api_decomp_entity_fetch';
+    const API_DECOMP_PARAMETERS                                 = 'api_decomp_parameters';
+    const API_DECOMP_AUTH_DISTRIBUTION                          = 'api_decomp_auth_distribution';
+
+    const CREDCASE_READ_COUNT_MISMATCH = 'credcase_read_count_mismatch';
+
+    const CREDCASE_READ_RESPONSE_MISMATCH = 'credcase_read_response_mismatch';
+
+    const CREDCASE_REQUEST_FAILED = 'credcase_request_failed';
+    const CREDCASE_REQUEST_LATENCY_MS = 'credcase_request_latency_milliseconds.histogram';
+
 }

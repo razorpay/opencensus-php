@@ -117,10 +117,7 @@ class SubscriptionPaymentTest extends TestCase
         $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
 
         // use old autopay pricing for old test cases
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
-        });
+        $this->mockSplitzTreatmentForAutopayPricing('variant_on');
     }
 
     public function testCreateInitialPaymentCard()

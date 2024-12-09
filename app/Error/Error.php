@@ -22,6 +22,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\DetailedError;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use Illuminate\Support\Str;
 
 
 class Error extends Support\Fluent
@@ -707,8 +708,15 @@ class Error extends Support\Fluent
             $metadata = new \ArrayObject([], ArrayObject::STD_PROP_LIST|ArrayObject::ARRAY_AS_PROPS);
         }
 
+        // Check conditions and set the error code accordingly for HDFC_C cancel payment
+
+        $reason = $this->getAttribute(self::REASON) ?? '';
+        $description = $description ?? '';
+
+        $publicErrorCode = (Str::contains($description, 'Payment is pending authorization') || Str::contains($reason, 'payment_pending_approval')) ? $this->getInternalErrorCode() : $this->getPublicErrorCode();
+
         $error = array(
-            self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
+            self::PUBLIC_ERROR_CODE => $publicErrorCode,
             self::DESCRIPTION       => $description,
             self::SOURCE            => $this->getAttribute(self::SOURCE),
             self::STEP              => $this->getAttribute(self::STEP),

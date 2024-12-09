@@ -1958,15 +1958,6 @@ class MerchantFeeTest extends TestCase
 
         $fee = (new Pricing\Fee);
 
-        //Razorx FeatureFlag FEE_MODEL_OVERRIDE disabled
-        $this->mockRazorxControl();
-        $fee->calculateMerchantFees($payment);
-
-        $this->assertEquals($payment->transaction->getFeeModel(),null);
-
-        //Razorx FeatureFlag FEE_MODEL_OVERRIDE enabled
-        $this->mockRazorx();
-
         $fee->calculateMerchantFees($payment);
 
         $this->assertEquals($payment->transaction->getFeeModel(),'postpaid');

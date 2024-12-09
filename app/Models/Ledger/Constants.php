@@ -21,6 +21,9 @@ class Constants
     const ACCOUNTING                                        = "accounting";
     const AMOUNT_CREDITS                                    = 'amount_credits';
     const AMOUNT_CREDITS_REDEMPTION                         = 'amount_credits_redemption';
+
+    const AMOUNT_CREDITS_REDEMPTION_V2                      = 'amount_credits_redemption_v2';
+    const VERSION                                           = 'version';
     const FEE_CREDITS                                       = 'fee_credits';
     const POSTPAID                                          = 'postpaid';
     const DIRECT_SETTLEMENT_ACCOUNTING                      = 'direct_settlement_accounting';
@@ -36,6 +39,7 @@ class Constants
     const RAZORPAY_REWARD                                   = 'razorpay_reward';
     const RAZORPAY_REWARDS                                  = 'razorpay_rewards';
     const DFB_AMOUNT_CREDITS                                = 'dfb_amount_credits';
+    const DFB_AMOUNT_CREDITS_V2                             = 'dfb_amount_credits_v2';
     const VAS_MERCHANT_FLOW                                 = "vas_merchant_flow";
     const HDFC_VAS_DS_CFB_SURCHARGE_FLOW                    = "hdfc_vas_ds_cfb_surcharge_flow";
     const HDFC_NON_DS_SURCHARGE_FLOW                        = "hdfc_non_ds_surcharge_flow";
@@ -90,6 +94,8 @@ class Constants
     const MERCHANT_REFUND_CREDITS_ADDITION                  = "merchant_refund_credits_addition";
     const MERCHANT_SETTLEMENT_AMOUNT                        = "merchant_settlement_amount";
     const CREDIT_AMOUNT                                     = "credit_amount";
+    const REFUND_CREDITS_AMOUNT                             = "refund_credits_amount";
+    const FEE_CREDITS_AMOUNT                                = "fee_credits_amount";
     const CREDIT_TYPE                                       = "credit_type";
     const CREDIT_CONTROL_AMOUNT                             = "credit_control_amount";
     const ENTITY_TYPE                                       = "entity_type";
@@ -98,6 +104,7 @@ class Constants
     const ENTRY_TYPE_DEBIT                                  = "debit";
     const ENTRY_TYPE_CREDIT                                 = "credit";
     const RESERVE_BALANCE_AMOUNT                            = "reserve_balance_amount";
+    const RESERVE_BALANCE_CONTROL_AMOUNT                    = "reserve_balance_control_amount";
     const LEDGER_ENTRY                                      = "ledger_entry";
 
     // Fee Types
@@ -218,6 +225,9 @@ class Constants
     const KAFKA_MESSAGE_DATA                                    = 'data';
     const CREATE_LEDGER_JOURNAL_EVENT                           = 'create-ledger-journal-event';
     const CREDIT_ID                                             = 'credit_id';
+    const EXPIRED_AT                                            = 'expired_at';
+
+    const RESERVE_BALANCE_ID                                    = 'reserve_balance_id';
 
     //Credits loading events
     const MERCHANT_REFUND_CREDIT_LOADING                    = "merchant_refund_credit_loading";
@@ -241,6 +251,7 @@ class Constants
     const MERCHANT_GMV               = 'merchant_gmv';
     const MERCHANT_ONDEMAND_SETTLEMENT_LEDGER = 'merchant_ondemand_settlement';
     const REWARD                     = 'reward';
+    const REWARD_CREDITS             = 'reward_credits';
     const PAYABLE                    = 'payable';
     const BALANCE                    = 'balance';
     const ACCOUNT_TYPE               = 'account_type';
@@ -252,6 +263,12 @@ class Constants
     const TYPE                       = 'type';
     const SHADOW                     = 'shadow';
     const REVERSE_SHADOW             = 'reverse-shadow';
+    const LIABILITY                  = "liability";
+
+    const ACCOUNT_DISCOVERY_CONFIG   = "account_discovery_config";
+    const ACCOUNT_CATEGORY           = "account_category";
+    const DYNAMIC_IDENTIFIERS        = "dynamic_identifiers";
+    const DYNAMIC_MONEY_PARAMS       = "dynamic_money_params";
 
     const JOURNAL_PAYLOAD               = 'JOURNAL_PAYLOAD';
 
@@ -261,6 +278,7 @@ class Constants
     const CREATE_TRANSACTION_FOR_DIRECT_TRANSFER   = 'create_transaction_for_direct_transfer';
     const CREATE_TRANSACTION_FOR_TRANSFER_REVERSAL = 'create_transaction_for_transfer_reversal';
     const LIVE_ART_EVENTS                          = 'live_art_events'; // check if to add prod_
+    const DUAL_WRITE_TRANSACTION_FOR_TRANSFER      = 'dual_write_transaction_for_transfer';
 
     const PRODUCER_KEY  = 'producer_key';
     const TOPIC         = 'topic';
@@ -348,4 +366,10 @@ class Constants
     const FAILED_ENTRIES_COUNT                         =  'failed_entries_count';
 
     const FAILED_IDS                                   =  'failed_ids';
+
+    const MERCHANT_RESERVE_BALANCE_WITHDRAWAL          = 'merchant_reserve_balance_withdrawal';
+
+    const MERCHANT_REFUND_CREDIT_WITHDRAWAL            = 'merchant_refund_credit_withdrawal';
+
+    const MERCHANT_FEE_CREDIT_WITHDRAWAL               = 'merchant_fee_credit_withdrawal';
 }

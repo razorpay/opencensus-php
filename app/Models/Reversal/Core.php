@@ -416,7 +416,7 @@ class Core extends Base\Core
                         if ($reversal !== null && $sourcePayment !== null && $sourcePayment->isExternal())
                         {
                             // payment entity needs to be reloaded for external payments since it has been updated by scrooge during refund creation
-                            $amountTransferred = $sourcePayment->getAmountTransferred();
+                            $amountTransferred = $sourcePayment->getAttribute('amount_transferred');
                             $sourcePayment = $sourcePayment->reload();
                             $sourcePayment->setAmountTransferred($amountTransferred);
 
@@ -887,7 +887,7 @@ class Core extends Base\Core
         // Todo: remove null balance check after backfilling is done
         if ($this->getRefundReversalTxnFetchSplitzResponse($refund->merchant->getId()) === 'enable')
         {
-            $balance = $this->repo->balance->getMerchantBalanceByTypeHarvester($refund->merchant->getId(), Balance\Type::PRIMARY);
+            $balance = $this->repo->balance->getMerchantBalanceByTypeTiDB($refund->merchant->getId(), Balance\Type::PRIMARY);
             $reversal->balance()->associate($balance);
         }
         else

@@ -55,6 +55,12 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_IDAM_ORG_NOT_FOUND);
         }
 
+        // Check if unique_identifier already exists in admins_meta table
+        $existingAdminMeta = $this->repo->admins_meta->fetchAdminIDByUniqueIdentifier($input[Constant::UNIQUE_IDENTIFIER]);
+        if ($existingAdminMeta !== null) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_UNIQUE_IDENTIFIER);
+        }
+
         // verify roles and strip sign from roles
         if (empty($input[Entity::ROLES]) === false) {
             Role\Entity::verifyIdAndStripSignMultiple($transformedInput[Entity::ROLES]);
@@ -118,7 +124,7 @@ class Service extends Base\Service
 
             // Admins Table Update
             $dataArr = array();
-            if ($input[Constant::ACCOUNT_STATUS] === true) {
+            if (isset($input[Constant::ACCOUNT_STATUS]) and !empty($input[Constant::ACCOUNT_STATUS])) {
                 if ($input[Constant::ACCOUNT_STATUS] == Constant::DISABLE) {
                     $dataArr[Entity::DISABLED] = '1';
                     $this->repo->admins_meta->updateUserDisabledAtField($uniqueIdentifier);

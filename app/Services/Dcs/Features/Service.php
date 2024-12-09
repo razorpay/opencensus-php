@@ -1087,9 +1087,12 @@ class Service extends Base
     public function getDcsProxyVariant($featureName, $mode)
     {
         $mode = $mode ?? 'live';
-        $flag = $this->app['razorx']->getTreatment($featureName,
-            RazorxTreatment::DCS_PROXY_ENABLED,
-            $mode);
+        $properties = [
+            'id'            => $featureName,
+            'experiment_id' => $this->app['config']->get('app.dcs_proxy_enabled_splitz_exp_id'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+        $flag = $response['response']['variant']['name'] ?? 'control';
 
         $this->trace->info(TraceCode::DCS_RAZORX_EXPERIMENT, [
             'feature_name' => $featureName,

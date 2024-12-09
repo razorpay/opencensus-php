@@ -773,7 +773,8 @@ class ServiceTest extends TestCase
 
         $method = $this->getPrivateMethod('RZP\Services\Edge\Service', 'authorizeUserAccessExceptRBAC');
         $res = $method->invokeArgs(new Service($this->dashboardRequest2Info['headers']), [$this->merchantIpFilterMock, $this->roleAccessPolicyMapServiceMock]);
-        $this->assertEquals(ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_USER_NOT_FOUND), $res);
+        $expectedRes = ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
+        $this->assertEquals($expectedRes, $res);
     }
 
 

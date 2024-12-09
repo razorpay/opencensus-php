@@ -19,6 +19,8 @@ class AddOndemandRestrictedFeature extends Job
 
     const DATALAKE_QUERY ='';
 
+    protected $metricsEnabled = true;
+
     public function __construct($mode)
     {
         parent::__construct($mode);

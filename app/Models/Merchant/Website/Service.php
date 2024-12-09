@@ -21,6 +21,7 @@ use RZP\Exception\ServerErrorException;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\VerificationDetail as MVD;
@@ -605,7 +606,7 @@ class Service extends Base\Service
         return $this->createResponse($websiteDetail->toArrayPublic(), $websiteDetail, $merchantDetail);
 
     }
-    
+
     /**
      * Verifies the merchant's website policy by sending a request to the PGOS proxy server.
      *
@@ -617,22 +618,22 @@ class Service extends Base\Service
     public function verifyMerchantWebsitePolicy(array $input)
     {
         $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_website_policy_verify', $input, $this->merchant, true);
-        
+
         $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
             'route'         => 'merchant_website_policy_verify',
             'merchant_id'   => $this->merchant->getId(),
             'response'      => $response
         ]);
-        
+
         if (isset($response['meta']) && isset($response['meta']['description']) && $response['meta']['description'] === "something bad happened" && isset($response["msg"]) && empty($response['msg']) === false)
         {
             $response['meta']['description'] = null;
         }
         $this->pgosProxyController->errorHandler($response);
-        
+
         return $response;
     }
-    
+
     private function getAllMerchantWebsites($merchantDetails)
     {
         $urls = [];
@@ -764,10 +765,19 @@ class Service extends Base\Service
 
             $merchantEmail = (new EmailService())->proxyGetSupportDetails($merchant);
 
-            $response[Entity::ADDITIONAL_DATA] = [
-                Constants::SUPPORT_PHONE => $merchantEmail['phone'] ?? '',
-                Constants::SUPPORT_EMAIL => $merchantEmail['email'] ?? ''
-            ];
+            if (isset($merchantEmail[Constants::PHONE]) === true and empty($merchantEmail[Constants::PHONE]) === false)
+            {
+                $response[Entity::ADDITIONAL_DATA] = [
+                    Constants::SUPPORT_PHONE => $merchantEmail[Constants::PHONE],
+                ];
+            }
+
+            if (isset($merchantEmail[Constants::EMAIL]) === true and empty($merchantEmail[Constants::EMAIL]) === false)
+            {
+                $response[Entity::ADDITIONAL_DATA] = [
+                    Constants::SUPPORT_EMAIL => $merchantEmail[Constants::EMAIL],
+                ];
+            }
 
         }
         catch (\Exception $e)
@@ -2213,7 +2223,7 @@ class Service extends Base\Service
                 $websitePolicyLinks[$policy] = true;
             }
         }
-        
+
         $policiesData = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
         /* example of policiesData
         [
@@ -2241,37 +2251,37 @@ class Service extends Base\Service
                     $websitePolicyLinks[$policyName]['url'] = true;
                     $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantWebsite][$policyName]['url'] =$policyDetails['website'][$merchantDetails->getWebsite()]['url'] ;
                     $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantWebsite][$policyName]['system_approved'] = true;
-                    
-                
+
+
             }
         }
         return $this->createResponse($transformedWebsiteDetail, $websiteDetail, $merchantDetails);
     }
-    
+
     function isMerchantProvidedPolicyVerified($existingPolicyLinks, $policyName, $policyMetadata, $merchantDetails)
     {
         if (in_array($policyName, ['about_us', 'pricing']) || isset($existingPolicyLinks[$policyName]))
         {
             return false;
         }
-        
+
         if (empty($policyMetadata['section_status']) === true || $policyMetadata['section_status'] !== 1)
         {
             return false;
         }
-        
+
         $merchantWebsite = $merchantDetails->getWebsite();
         if (empty($policyMetadata['website'][$merchantWebsite]))
         {
             return false;
         }
-        
+
         $merchantWebsitePolicy = $policyMetadata['website'][$merchantWebsite];
         $isSystemApproved = isset($merchantWebsitePolicy['system_approved']) === true and $merchantWebsitePolicy['system_approved'] === true;
-        
+
         return $isSystemApproved;
     }
-    
+
     public function saveAdminWebsiteSection($merchantId, array $input)
     {
         $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, $input);

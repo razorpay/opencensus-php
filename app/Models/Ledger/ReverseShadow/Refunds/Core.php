@@ -16,6 +16,7 @@ use RZP\Models\Feature;
 use RZP\Models\Dispute\Entity;
 use RZP\Services\KafkaProducer;
 use RZP\Models\Merchant\Balance;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Models\Payment\Refund\Speed as Speed;
@@ -92,13 +93,24 @@ class Core extends Base\Core
 
     public function getRefundJournalPayloadBalanceSplitzResponse($merchantId)
     {
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.refund_journal_payload_harvester_balance_experiment'),
-        ];
-        $response = $this->app['splitzService']->evaluateRequest($properties);
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.refund_journal_payload_harvester_balance_experiment'),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
 
-        return $response['response']['variant']['name'] ?? '';
+            return $response['response']['variant']['name'] ?? '';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+            ]);
+
+            return '';
+        }
     }
 
     public function createRefundJournalPayload(RefundEntity $refund, PaymentEntity $payment)
@@ -111,11 +123,11 @@ class Core extends Base\Core
 
         $merchant = $payment->merchant;
 
-        $harvesterBalanceFetch = $this->getRefundJournalPayloadBalanceSplitzResponse($refund->merchant->getId()) === 'enable';
+        $tidbBalanceFetch = $this->getRefundJournalPayloadBalanceSplitzResponse($refund->merchant->getId()) === 'enable';
 
-        if ($harvesterBalanceFetch === true)
+        if ($tidbBalanceFetch === true)
         {
-            $balance = (new Balance\Repository())->getMerchantBalanceByTypeHarvesterOrFail($merchant->getId(), RefundConstants::PRIMARY);
+            $balance = (new Balance\Repository())->getMerchantBalanceByTypeTiDBOrFail($merchant->getId(), RefundConstants::PRIMARY);
         }
         else
         {

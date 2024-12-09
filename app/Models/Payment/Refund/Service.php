@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Error\Error;
+use RZP\Models\Order;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
@@ -68,6 +69,7 @@ use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Email\Type as MerchantEmailType;
 use RZP\Models\Merchant\Email\Core as MerchantEmailCore;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
+use RZP\Models\Insurance\Constants as InsuranceConstants;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Models\Transaction\Processor\Refund as RefundTransactionProcessor;
 use RZP\Models\Terminal\Entity as TerminalEntity;
@@ -1020,7 +1022,7 @@ class Service extends Base\Service
                                 $txnType = Transaction\Type::REFUND;
                                 $merchant = $payment->merchant;
 
-                                $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromHarvesterForMerchantWithFail($merchant, Balance\Type::PRIMARY);
+                                $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromTiDBForMerchantWithFail($merchant, Balance\Type::PRIMARY);
 
                                 $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
 
@@ -2537,7 +2539,7 @@ class Service extends Base\Service
 
                     if ($this->getRefundReversalTxnFetchSplitzResponse($refund->merchant->getId()) === 'enable')
                     {
-                        $txn = $this->repo->transaction->findByEntityIdWithoutMerchantPaymentFetchReplica($refundId);
+                        $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($refundId);
                         $refund->setFee($txn->getFee());
                         $refund->setTax($txn->getTax());
                     }
@@ -2822,6 +2824,8 @@ class Service extends Base\Service
 
         $this->populateMerchantSupportDetails($return);
 
+        $this->populateInsuranceDetails($return);
+
         $this->trace->info(
             TraceCode::CUSTOMER_TRACK_REFUND_STATUS_V2_SERVED,
             [
@@ -2835,13 +2839,39 @@ class Service extends Base\Service
         return $response;
     }
 
+    protected function populateInsuranceDetails(array &$return)
+    {
+        if (empty($return[RefundConstants::PAYMENTS][0][RefundConstants::PAYMENT]))
+        {
+            return;
+        }
+
+        try
+        {
+            $paymentId = $return[RefundConstants::PAYMENTS][0][RefundConstants::PAYMENT][RefundConstants::ID] ?? '';
+            Payment\Entity::silentlyStripSign($paymentId);
+            $orderId = $return[RefundConstants::PAYMENTS][0][RefundConstants::PAYMENT][RefundConstants::ORDER_ID] ?? '';
+            Order\Entity::silentlyStripSign($orderId);
+            $insurance = $this->repo->insurance->fetchInsurance($paymentId, $orderId);
+            if (!empty($insurance))
+            {
+                $return[RefundConstants::PAYMENTS][0][RefundConstants::PAYMENT][InsuranceConstants::INSURANCE] = $insurance->toArray();
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+        }
+    }
+
     protected function slicingDetailsforSecurity(array $payment_array)
     {
         if(empty($payment_array) === false)
         {
             $allowedKeys = [RefundConstants::ID,RefundConstants::AMOUNT,RefundConstants::CURRENCY,RefundConstants::PAYMENT_ID,RefundConstants::SCROOGE_CREATED_AT
                 ,RefundConstants::STATUS,RefundConstants::PRIMARY_MESSAGE,RefundConstants::SECONDARY_MESSAGE,RefundConstants::TERTIARY_MESSAGE,
-                RefundConstants::ACQUIRER_DATA,RefundConstants::MERCHANT_NAME,RefundConstants::DAYS,RefundConstants::LATE_AUTH];
+                RefundConstants::ACQUIRER_DATA,RefundConstants::MERCHANT_NAME,RefundConstants::DAYS,RefundConstants::LATE_AUTH,
+                RefundConstants::ORDER_ID, Payment\Entity::CAPTURED_AT, InsuranceConstants::INSURANCE];
 
             if(empty($payment_array["payments"][0]) === false)
             {

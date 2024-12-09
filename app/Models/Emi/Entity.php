@@ -35,6 +35,9 @@ class Entity extends Base\PublicEntity
     // Appended attributes
     const ISSUER                = 'issuer';
 
+    const SOURCE_CHANNEL_IN_PERSON = 'in_person';
+    const SOURCE_CHANNEL_ONLINE = 'online';
+
 
     // These are the valid durations that emi plan can have
     const VALID_DURATIONS = [2, 3, 6, 9, 12, 18, 24, 30, 36, 48];
@@ -96,7 +99,7 @@ class Entity extends Base\PublicEntity
         self::COBRANDING_PARTNER => null,
         self::SUBVENTION         => Subvention::CUSTOMER,
         self::MERCHANT_PAYBACK   => 0,
-        self::SOURCE_CHANNEL     => 'online'
+        self::SOURCE_CHANNEL     => Entity::SOURCE_CHANNEL_ONLINE
     ];
 
     protected $casts = [

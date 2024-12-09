@@ -64,6 +64,10 @@ class Base
 
     const UPDATE_SCHDEULE  = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/UpdateSchedule';
 
+    /* reason code mapping endpoint, supposed to be used by external services
+      dashboard, Risk. */
+    const HOLD_REASON_CODE_MAPPING = '/v1/settlements/on_hold/reason_codes';
+
     protected $trace;
 
     protected $config;

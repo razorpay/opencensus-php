@@ -65,7 +65,31 @@ class CheckoutHostedTest extends TestCase
                 '","name":"Shopify Test Store","prefill":{"email":"test@razorpay.com"},"notes":{"mode":"' .
                 $mode .
                 '","shopify_order_id":"rQFI1IJ6T2yPiryRCTGjZ3pLx","referer_url":" https:\/\/shoes-store-testing-rzp.myshopify.com\/"},"_":{"integration":"shopify","integration_version":"shopify-payment-app"},"__referer":"https:\/\/shoes-store-testing-rzp.myshopify.com\/","callback_url":"https:\/\/shoes-store-testing-rzp.myshopify.com\/"}',
-            "meta" => '{"type":"hdfcvas","custom_code":"'.$customCode.'","checkout_logo_url":null,"custom_checkout_logo_enabled":false}',
+            "meta" => '{"type":"hdfcvas","custom_code":"'.$customCode.'","checkout_logo_url":null,"custom_checkout_logo_enabled":false,"rmv_cc_text_from_logo":true}',
+            "script" =>
+                "https://cdn.razorpay.com/static/hosted/standard-vas.js",
+            "urls" => "{}",
+        ];
+        $resp = ["type" => "hdfc_checkout_2"];
+
+        View::shouldReceive("make")
+            ->with("public.embedded", $arr)
+            ->andReturn($resp);
+    }
+
+    protected function generateHDFCCheckout2ViewMocksWithCCText($orderId, $mode, $customCode)
+    {
+        $arr = [
+            "key" => " rzp_" . $mode . "_LtX0CbrmyiGV5j",
+            "options" =>
+                '{"key":" rzp_' .
+                $mode .
+                '_LtX0CbrmyiGV5j","order_id":"' .
+                $orderId .
+                '","name":"Shopify Test Store","prefill":{"email":"test@razorpay.com"},"notes":{"mode":"' .
+                $mode .
+                '","shopify_order_id":"rQFI1IJ6T2yPiryRCTGjZ3pLx","referer_url":" https:\/\/shoes-store-testing-rzp.myshopify.com\/"},"_":{"integration":"shopify","integration_version":"shopify-payment-app"},"__referer":"https:\/\/shoes-store-testing-rzp.myshopify.com\/","callback_url":"https:\/\/shoes-store-testing-rzp.myshopify.com\/"}',
+            "meta" => '{"type":"hdfcvas","custom_code":"'.$customCode.'","checkout_logo_url":null,"custom_checkout_logo_enabled":false,"rmv_cc_text_from_logo":true}',
             "script" =>
                 "https://cdn.razorpay.com/static/hosted/standard-vas.js",
             "urls" => "{}",
@@ -119,6 +143,31 @@ class CheckoutHostedTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(["hdfc_checkout_2"]);
         $this->generateHDFCCheckout2ViewMocks($orderId, "test",  $org->getCustomCode());
+        $this->startTest();
+    }
+
+    public function testHdfcCheckout2HitWithCCText()
+    {
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::HDFC_CHECKOUT_2 => "on",
+        ]);
+
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit("10000000000000", [
+            "org_id" => $org->getId(),
+        ]);
+        $this->ba->directAuth();
+        $order = $this->fixtures->create("order");
+        $orderId = "order_" . $order->getId();
+
+        $this->testData[__FUNCTION__] = $this->testData["testHdfcCheckout2Hit"];
+        $this->testData[__FUNCTION__]["request"]["content"]["checkout"][
+        "order_id"
+        ] = $orderId;
+
+        $this->fixtures->merchant->addFeatures(["hdfc_checkout_2","rmv_cc_text_from_logo"]);
+        $this->generateHDFCCheckout2ViewMocksWithCC($orderId, "test",  $org->getCustomCode());
         $this->startTest();
     }
 

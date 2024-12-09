@@ -125,6 +125,8 @@ class Name
     const VIEW_TERMINAL_EXTERNAL_ORG          = 'view_terminal_external_org';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
+    const ENABLE_TERMINALS_ONLINE_TAG_BULK    = 'enable_terminals_online_tag_bulk';
+    const DISABLE_TERMINALS_ONLINE_TAG_BULK   = 'disable_terminals_online_tag_bulk';
     const EDIT_TERMINAL_GOD_MODE              = 'edit_terminal_god_mode';
     const ENABLE_TERMINALS_BULK               = 'enable_terminals_bulk';
     const PAYMENTS_BATCH_CREATE_TERMINALS_BULK = "payments_batch_create_terminals_bulk";
@@ -1220,10 +1222,17 @@ class Name
 
     const VIEW_MERCHANT_LOGIN_READ_ONLY = 'view_merchant_login_read_only';
     const VIEW_MERCHANT_LOGIN_EDIT = 'view_merchant_login_edit';
+
+    const ADMIN_ORG_REPLICATIONS   = 'admin_org_replications';
+
     const VIEW_MERCHANT_LOGIN_NON_ACTIVATED_EDIT = 'view_merchant_login_non_activated_edit';
 
     // Permission to validate merchant brand dealer details
     const POS_VALIDATE_BRAND_DETAILS = 'pos_validate_brand_details';
+
+    const PAYOUT_MANUAL_ACTION = 'payout_manual_action';
+
+    const UPDATE_ALL_ODS_CONFIG = 'update_all_ods_config';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

@@ -2512,7 +2512,7 @@ class QrCodeStatusCheckTest extends TestCase
             if ($action === 'verify')
             {
                 $content = $this->getMockedUpiAirtelQrStatusCheckResponse("0", $qrCodeId,
-                    $requestData['content']['BankRRN'],'razorpayupi','4000','ftfdtft@ybl', 'testvpaOffline@mairtel');
+                    $requestData['content']['BankRRN'],'razorpayupi','4000','ftfdtft@ybl', 'testvpaoffline@mairtel');
             }
         }, 'upi_mozart');
 
@@ -2615,7 +2615,7 @@ class QrCodeStatusCheckTest extends TestCase
             if ($action === 'verify')
             {
                 $content = $this->getMockedUpiAirtelQrStatusCheckResponse("01", $qrCodeId,
-                    $requestData['content']['BankRRN'],'razorpayupi','4000','ftfdtft@ybl', 'testvpaOffline@mairtel');
+                    $requestData['content']['BankRRN'],'razorpayupi','4000','ftfdtft@ybl', 'testvpaoffline@mairtel');
             }
         }, 'upi_mozart');
 

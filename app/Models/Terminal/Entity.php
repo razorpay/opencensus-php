@@ -31,10 +31,12 @@ use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Emi\Subvention as EmiSubvention;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Terminal\Status;
 use RZP\Trace\TraceCode;
 use Illuminate\Support\Arr;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper\ImplicitJoinHelper;
 
 class Entity extends Base\PublicEntity
 {
@@ -111,6 +113,7 @@ class Entity extends Base\PublicEntity
     const STATIC_QR                     = 'static_qr';
     const OFFLINE                       = 'offline';
     const FPX                           = 'fpx';
+    const GIFT_CARDS                    = 'gift_cards';
     const MERCHANT_MOBILE_CONTACT       = 'merchant_mobile_contact';
     const CC_ON_UPI                     = 'cc_on_upi';
     const WALLET_ON_UPI                 = 'wallet_on_upi';
@@ -758,9 +761,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UPI);
     }
 
+
     public function isFpxEnabled()
     {
         return $this->getAttribute(self::FPX);
+    }
+
+    public function isGiftCardsEnabled()
+    {
+        return $this->getAttribute(self::GIFT_CARDS);
     }
 
     public function isTokenizationSupported()
@@ -967,7 +976,7 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicSubMerchantsAttribute(array & $array)
     {
-        $subMerchants = $this->merchants()->get();
+        $subMerchants = $this->merchants;
 
         $subMerchants->transform(
             function ($item, $key)
@@ -2145,5 +2154,15 @@ class Entity extends Base\PublicEntity
 
     public function removeAttributes($fieldToRemove) {
         $this->attributes = Arr::except($this->attributes, $fieldToRemove);
+    }
+
+    public function getMerchantsAttribute()
+    {
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            return (new ImplicitJoinHelper)->getRelationAttribute(
+                $this, $this->entity, 'merchants', 'terminal', 'fetchMerchantsWithTerminalPivot', 'getId'
+            );
+        }
+        return parent::getRelationValue('merchants');
     }
 }

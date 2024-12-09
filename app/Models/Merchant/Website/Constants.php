@@ -48,6 +48,8 @@ class Constants
     //additional_data
     const SUPPORT_EMAIL = 'support_email';
     const SUPPORT_PHONE = 'support_contact_number';
+    const PHONE         = 'phone';
+    const EMAIL         = 'email';
 
     const SECTION_NAME  = 'section_name';
     const WEBSITE       = 'website';

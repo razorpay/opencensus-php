@@ -627,10 +627,20 @@ class Constants
      */
     const VAS_LINK_WALLETS= 'vas_link_wallets';
 
+     /**
+     * Feature flag to close paypal popup on redirect in merchant dashboard
+     */
+    const DISABLE_PAYPAL_POP_UP= 'disable_paypal_pop_up';
+
     /**
      * Feature flag to hide settlement time from merchant dashboard
      */
     const HIDE_SETTLEMENT_TIME= 'hide_settlement_time';
+
+    /**
+     * Feature flag for partial cdo payment on merchant dashboard
+     */
+    const ONE_CC_PARTIAL_COD= 'one_cc_partial_cod';
 
     /**
      * Custom Paypal credentials for org
@@ -1413,6 +1423,8 @@ class Constants
 
     const PG_LEDGER_REVERSE_SHADOW = 'pg_ledger_reverse_shadow';
 
+    const CLS_ONBOARDING_INPROGRESS = 'cls_onboarding_inprogress';
+
     const PG_LEDGER_RAMP_ON_HOLD = "pg_ledger_ramp_on_hold";
 
     const TRANSFER_ON_HOLD = "transfer_on_hold";
@@ -1660,6 +1672,11 @@ class Constants
      * for payouts to cards tokenisation
      */
     const ALLOW_NON_SAVED_CARDS = 'allow_non_saved_cards';
+
+    /**
+     * Feature flag to block payouts via lite account for risk merchants.
+     */
+    const PAYOUTS_BLOCKED_ON_LITE = 'payouts_blocked_on_lite';
 
     /**
      * Feature flag to allow bu_namespace changes for payouts to cards
@@ -2049,6 +2066,7 @@ class Constants
     const ONE_CC_EMAIL_CUSTOMER_CONSENT = 'one_cc_email_consent';
     const ONE_CC_WHATSAPP_CUSTOMER_CONSENT = 'one_cc_whatsapp_consent';
     const ONE_CC_SMS_CUSTOMER_CONSENT = 'one_cc_sms_consent';
+    const ONE_CC_GSTIN_VALIDATION = 'one_cc_gstin_validation';
 
 
     CONST ONE_CC_ENABLE_FLITS_COINS = 'one_cc_enable_flits_coins';
@@ -2077,6 +2095,9 @@ class Constants
      * Feature flag used to identify omni merchants.
      */
     const OMNI_ENABLED = 'omni_enabled';
+
+    /** Feature flag to identify merchants who have split settlement feature enabled*/
+    const SPLIT_SETTLEMENTS_ENABLED = "split_settlements_enabled";
 
     /** Feature flag to remove/hide RZP branding from all places in checkout UIs for Turbo UPI */
     const REMOVE_RAZORPAY_BRANDING = 'remove_rzp_branding';
@@ -2124,6 +2145,21 @@ class Constants
      */
     const LRSNonStandardCheckout = 'lrs_non_standard_checkout';
 
+    /**
+     * Feature flag to indicate onboarding for Razorpay Tax has been completed by Merchant
+     */
+    const RazorpayTaxOnboarding = 'rzp_tax_onboarding';
+
+    /**
+     * Feature flag to enable merchants for payment calculations via Razorpay Tax
+     */
+    const RazorpayTaxProcessing = 'rzp_tax_processing';
+
+    /**
+     * Feature flag to enable merchants for inclusive pricing for Razorpay Tax
+     */
+    const RazorpayTaxInclusiveTaxPricing = 'rzp_tax_incl_tax_pricing';
+
 
     // Feature flag business website validation bvs and mcc automation
     const WEBSITE_AUTOMATED_CHECKS_FEATURE = 'website_automated_checks';
@@ -2145,6 +2181,10 @@ class Constants
 
     const DISABLE_SINCH_SMS_EMAIL = 'disable_sinch_sms_email';
 
+    const OG_SMS_VENDOR_CONFIG_TRAI = 'og_sms_vendor_config_trai';
+
+    const ME_SMS_VENDOR_CONFIG_TRAI = 'me_sms_vendor_config_trai';
+
     /**
      * Feature flags to enable/disable Account Statement in X Dashboard
      */
@@ -2155,6 +2195,11 @@ class Constants
     const STMT_ICICI_FTP_ENABLED = 'stmt_icici_ftp_enabled';
 
     const STMT_RBL_FTP_ENABLED = 'stmt_rbl_ftp_enabled';
+
+    /**
+     * Feature flag for Small merchant Program
+     */
+    const SMALL_MERCHANT_PROGRAM = 'small_merchant_program';
 
     /**
      * Feature flag for Penniless Validation
@@ -2256,6 +2301,8 @@ class Constants
 
     const PG_V3_ONBOARDING_IN_PROGRESS = 'pg_v3_onboarding_progress';
 
+    const C360_MERCHANT_DASHBOARD = 'c360_merchant_dashboard';
+
     /**
      * Feature flag to make idempotency key mandatory for the merchant while creating payouts.
      */
@@ -2297,7 +2344,28 @@ class Constants
      */
     const VAS_ORG_IDENTIFIER = 'vas_org_identifier';
 
+
+    /**
+     * Feature flag will be enabled on
+     * all the orgs where RBI requirements were added
+     * Instead of vas_org_identifier, we will use the new flag to move the RBI compliance changes
+     */
+    const VAS_KYC_RBI = 'vas_kyc_rbi';
+
+
     const ADD_WEBHOOK_HEADERS_ORG = 'add_webhook_headers_org';
+
+    const KYC_BLOCK_CIN_FOR_VAS = 'kyc_block_cin_for_vas';
+
+    const KYC_BLOCK_PPAN_FOR_VAS = 'kyc_block_ppan_for_vas';
+
+    const KYC_BLOCK_CPAN_FOR_VAS = 'kyc_block_cpan_for_vas';
+
+    const KYC_BLOCK_GST_FOR_VAS = 'kyc_block_gst_for_vas';
+
+    const KYC_BLOCK_BAN_FOR_VAS = 'kyc_block_ban_for_vas';
+
+    const KYC_BLOCK_OCR_FOR_VAS = 'kyc_block_ocr_for_vas';
 
     const ADD_WEBHOOK_HEADERS_MX = 'add_webhook_headers_mx';
 
@@ -2317,6 +2385,14 @@ class Constants
      * Feature flag will be enabled for disabling message banner
      */
     const MESSAGE_BANNER_DISABLED = 'message_banner_disabled';
+
+    /**
+     * For some HDFC bank merchants Credit Card payment option is not enabled.
+     * If enabled this feature flag hide credit card text from the logo on checkout page
+     */
+    const RMV_CC_TXT_FRM_LOGO = 'rmv_cc_text_from_logo';
+
+    const HIDE_RZPBRAND_ON_CHECKOUT = 'hide_rzpbrand_on_checkout';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -2395,6 +2471,9 @@ class Constants
         self::LRSTravelFlow,
         self::LRSTravelCitiFlow,
         self::LRSNonStandardCheckout,
+        self::RazorpayTaxOnboarding,
+        self::RazorpayTaxProcessing,
+        self::RazorpayTaxInclusiveTaxPricing,
         DcsConstants::LRSImportFeeBreakup,
         self::CustomMessageForCFB,
         self::ONE_CC_EMAIL_CUSTOMER_CONSENT,
@@ -2402,6 +2481,7 @@ class Constants
         self::ONE_CC_SMS_CUSTOMER_CONSENT,
         self::VAS_NB_CORP_MER,
         self::VAS_NB_CORP_ORG,
+        self::ONE_CC_GSTIN_VALIDATION,
     ];
 
     const ONE_CC_FEATURES = [
@@ -2437,6 +2517,7 @@ class Constants
         self::ONE_CC_EMAIL_CUSTOMER_CONSENT,
         self::ONE_CC_WHATSAPP_CUSTOMER_CONSENT,
         self::ONE_CC_SMS_CUSTOMER_CONSENT,
+        self::ONE_CC_GSTIN_VALIDATION,
     ];
 
     const TRUECALLER_FEATURES = [
@@ -2637,6 +2718,7 @@ class Constants
         self::VA_EDIT_BULK                                 => true,
         self::PAYOUT_WORKFLOWS                             => true,
         self::ASYNC_BALANCE_UPDATE                         => true,
+        self::CLS_ONBOARDING_INPROGRESS                    => true,
         self::ISSUE_MPANS                                  => true,
         self::CUST_CONTACT_EMAIL_NULL                      => true,
         self::PHONEPE_INTENT                               => true,
@@ -3021,6 +3103,9 @@ class Constants
         self::LRSTravelFlow                                => true,
         self::LRSTravelCitiFlow                            => true,
         self::LRSNonStandardCheckout                       => true,
+        self::RazorpayTaxOnboarding                        => true,
+        self::RazorpayTaxProcessing                        => true,
+        self::RazorpayTaxInclusiveTaxPricing               => true,
         DcsConstants::LRSImportFeeBreakup                  => true,
         self::ONE_CLICK_OVERRIDE_THEME                     => true,
         self::PP_CUSTOM_DOMAIN                             => true,
@@ -3142,8 +3227,16 @@ class Constants
         self::VAS_ORG_IDENTIFIER                           => true,
         self::ADD_WEBHOOK_HEADERS_ORG                      => true,
         self::ADD_WEBHOOK_HEADERS_MX                       => true,
+        self::VAS_KYC_RBI                           => true,
+        self::KYC_BLOCK_CIN_FOR_VAS                  => true,
+        self::KYC_BLOCK_PPAN_FOR_VAS                 => true,
+        self::KYC_BLOCK_CPAN_FOR_VAS                 => true,
+        self::KYC_BLOCK_GST_FOR_VAS                  => true,
+        self::KYC_BLOCK_BAN_FOR_VAS                  => true,
+        self::KYC_BLOCK_OCR_FOR_VAS                  => true,
         self::ONE_CC_TAX_INCLUSION                   => true,
         self::OMNI_ENABLED                           => true,
+        self::SPLIT_SETTLEMENTS_ENABLED              => true,
         self::DEBIT_CARD_VALIDATION                  => true,
         self::REMOVE_RAZORPAY_BRANDING               => true,
         self::PREFETCH_ACCOUNT_DISABLED              => true,
@@ -3165,6 +3258,7 @@ class Constants
         self::STMT_RBL_DISABLED                      => true,
         self::STMT_ICICI_FTP_ENABLED                 => true,
         self::STMT_RBL_FTP_ENABLED                   => true,
+        self::SMALL_MERCHANT_PROGRAM => true,
         self::PENNILESS_VALIDATION                   => true,
         self::FAV_SERVICE_ENABLED                    => true,
         self::EXCLUDE_FROM_CA_BILLING                => true,
@@ -3183,6 +3277,8 @@ class Constants
         self::CUSTOM_ONBOARDING_EMAILS               => true,
         self::VAS_LINK_WALLETS                       => true,
         self::HIDE_SETTLEMENT_TIME                   => true,
+        self::DISABLE_PAYPAL_POP_UP                  => true,
+        self::ONE_CC_PARTIAL_COD            => true,
         self::HIDE_INVOICE_REPORT                    => true,
         self::SHOW_INVOICE_REPORT                   => true,
         self::ORG_SPECIFIC_CREDENTIALS              => true,
@@ -3209,6 +3305,8 @@ class Constants
         self::SHOW_PG_V3                             => true,
         self::PG_V3_ONBOARDING_COMPLETED             => true,
         self::PG_V3_ONBOARDING_IN_PROGRESS            => true,
+        self::C360_MERCHANT_DASHBOARD                 => true,
+
 
         self::PAYOUT_IDEM_KEY_REQUIRED        => true,
         self::BANKING_UPI_REARCH                     => true,
@@ -3222,6 +3320,12 @@ class Constants
         self::VAS_NB_CORP_ORG                        => true,
         self::VAS_NB_CORP_MER                        => true,
         self::MESSAGE_BANNER_DISABLED                => true,
+        self::RMV_CC_TXT_FRM_LOGO          => true,
+        self::ONE_CC_GSTIN_VALIDATION      => true,
+        self::HIDE_RZPBRAND_ON_CHECKOUT    => true,
+        self::OG_SMS_VENDOR_CONFIG_TRAI    => true,
+        self::ME_SMS_VENDOR_CONFIG_TRAI    => true,
+        self::PAYOUTS_BLOCKED_ON_LITE      => true
     ];
 
     // Entity type constants
@@ -4365,6 +4469,21 @@ class Constants
             'display_name'  => 'Feature to enable LRS for Non Standard Checkout Merchants',
             'documentation' => '',
         ],
+        self::RazorpayTaxOnboarding => [
+            'feature'       => self::RazorpayTaxOnboarding,
+            'display_name'  => 'Feature to indicate Razorpay Tax onboarding completion',
+            'documentation' => '',
+        ],
+        self::RazorpayTaxProcessing => [
+            'feature'       => self::RazorpayTaxProcessing,
+            'display_name'  => 'Feature to enable Razorpay Tax payment processing',
+            'documentation' => '',
+        ],
+        self::RazorpayTaxInclusiveTaxPricing => [
+            'feature'       => self::RazorpayTaxInclusiveTaxPricing,
+            'display_name'  => 'Feature to enable Razorpay Tax inclusive pricing',
+            'documentation' => '',
+        ],
         DcsConstants::LRSImportFeeBreakup => [
             'feature'       => DcsConstants::LRSImportFeeBreakup,
             'display_name'  => 'Feature to show fee breakup for LRS transactions',
@@ -4550,6 +4669,11 @@ class Constants
             'display_name'  => 'Omni Enabled',
             'documentation' => 'Omni Enabled Merchant',
         ],
+        self::SPLIT_SETTLEMENTS_ENABLED => [
+            'feature'       => self::SPLIT_SETTLEMENTS_ENABLED,
+            'display_name'  => 'Split Settlement Enabled',
+            'documentation' => 'Split Settlement Enabled Merchant',
+        ],
         self::DD_TERMINAL_UPI_QR => [
             'feature'       => self::DD_TERMINAL_UPI_QR,
             'display_name'  => 'Enable device dependent routing for QR payments',
@@ -4645,6 +4769,11 @@ class Constants
             'display_name'  => 'merchant is in progress of new onboarding flow',
             'documentation' => ''
         ],
+        self::C360_MERCHANT_DASHBOARD => [
+            'feature'       => self::C360_MERCHANT_DASHBOARD,
+            'display_name'  => 'display c360 merchant dashboard ',
+            'documentation' => ''
+        ],
         self::PAYOUT_IDEM_KEY_REQUIRED => [
             'feature'       => self::PAYOUT_IDEM_KEY_REQUIRED,
             'display_name'  => 'Payout Idempotency Key Required',
@@ -4675,6 +4804,53 @@ class Constants
             'feature'       => self::MESSAGE_BANNER_DISABLED,
             'display_name'  => 'disable display message banners on merchant checkout',
             'documentation' => ''
+        ],
+        self::VAS_KYC_RBI => [
+            'feature' => self::VAS_KYC_RBI,
+            'display_name' => "VAS KYC RBI",
+            'documentation' => "Feature flag added for the orgs where RBI requirements were added.",
+        ],
+        self::KYC_BLOCK_CIN_FOR_VAS => [
+            'feature'       => self::KYC_BLOCK_CIN_FOR_VAS,
+            'display_name'  => 'KYC BLOCK CIN FOR VAS',
+            'documentation' => 'this feature flag will be used to block the specific CIN KYC parameter'
+        ],
+        self::KYC_BLOCK_PPAN_FOR_VAS => [
+            'feature'       => self::KYC_BLOCK_PPAN_FOR_VAS,
+            'display_name'  => 'KYC BLOCK PPAN FOR VAS',
+            'documentation' => 'this feature flag will be used to block the specific PPAN KYC parameter'
+        ],
+        self::KYC_BLOCK_CPAN_FOR_VAS => [
+            'feature'       => self::KYC_BLOCK_CPAN_FOR_VAS,
+            'display_name'  => 'KYC BLOCK CPAN FOR VAS',
+            'documentation' => 'this feature flag will be used to block the specific CPAN KYC parameter'
+        ],
+        self::KYC_BLOCK_GST_FOR_VAS => [
+            'feature'       => self::KYC_BLOCK_GST_FOR_VAS,
+            'display_name'  => 'KYC BLOCK GST FOR VAS',
+            'documentation' => 'this feature flag will be used to block the specific GST KYC parameter'
+        ],
+        self::KYC_BLOCK_BAN_FOR_VAS => [
+            'feature'       => self::KYC_BLOCK_BAN_FOR_VAS,
+            'display_name'  => 'KYC BLOCK BAN FOR VAS',
+            'documentation' => 'this feature flag will be used to block the specific Bank account detail KYC parameter'
+        ],
+        self::KYC_BLOCK_OCR_FOR_VAS => [
+            'feature'       => self::KYC_BLOCK_OCR_FOR_VAS,
+            'display_name'  => 'KYC BLOCK OCR FOR VAS',
+            'documentation' => 'this feature flag will be used to block the specific OCR KYC parameter'
+        ],
+
+
+        self::ONE_CC_PARTIAL_COD  => [
+            'feature'       => self::ONE_CC_PARTIAL_COD,
+            'display_name'  => 'Feature flag for partial cod payment on merchant dashboard',
+            'documentation' => '',
+        ],
+        self::PG_LEDGER_REVERSE_SHADOW => [
+            'feature' => self::PG_LEDGER_REVERSE_SHADOW,
+            'display_name' => "Feature flag for merchants onboarded on PG-Ledger",
+            'documentation' => "",
         ],
     ];
 

@@ -36,10 +36,10 @@ class MerchantObserver
 
     public function updated(Entity $entity)
     {
-        // We just want to trigger action when the connection mode is not test
+        // We just want to trigger action when the connection mode is asv writer
         try
         {
-            if ($entity->getConnectionName() === Mode::TEST or $entity->getConnectionName() === Connection::ASV_WRITER)
+            if ($entity->getConnectionName() === Mode::TEST or $entity->getConnectionName() === Mode::LIVE)
             {
                 return;
             }

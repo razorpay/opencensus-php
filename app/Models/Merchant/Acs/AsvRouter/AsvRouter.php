@@ -4,7 +4,9 @@ namespace RZP\Models\Merchant\Acs\AsvRouter;
 
 use App;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Models\Merchant\Detail\Repository as MerchantDetailRepository;
@@ -27,10 +29,10 @@ class AsvRouter
     const GOT_EXCEPTION = 'GOT_EXCEPTION';
 
     const READ_EXCLUSION_FLOW = 'READ_EXCLUSION_FLOW';
-    const WRITE_FLOW = 'WRITE_FLOW';
-
-    const FLOW_WITH_TRANSACTION = 'FLOW_WITH_TRANSACTION';
     const SPLITZ_REJECTED = 'SPLITZ_REJECTED';
+    const ENTITY_NOT_WHITELISTED = 'ENTITY_NOT_WHITELISTED';
+
+    const READ_ENABLED_IN_WRITE_FLOW = 'READ_ENABLED_IN_WRITE_FLOW';
     const MERCHANT_FETCH_INTERNAL_USERS =  'merchant_fetch_internal_users';
 
     const None = "none";
@@ -51,6 +53,8 @@ class AsvRouter
 
     protected SplitzHelper $splitzHelper;
 
+    protected $asvConfig;
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -59,26 +63,15 @@ class AsvRouter
 
         $this->trace = $app[Constant::TRACE];
 
+        $this->asvConfig = $app->config->get(ASVV2Constant::ASV_CONFIG);
+
         $this->splitzHelper = new SplitzHelper();
     }
 
     public function isExclusionFlowOrFailure(): bool
     {
         try {
-            $routeOrWorkerName = $this->getRouteOrJobName();
-
-            $isExclusionFlow = AsvFlows::isExclusionFLow($routeOrWorkerName);
-
-            if($isExclusionFlow === true) {
-                $transactionFlowExperimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForEnableExclusionFlow();
-                $isExclusionFlow = $this->splitzHelper->isSplitzOnByExperimentName($transactionFlowExperimentName, $routeOrWorkerName);
-            }
-            // temporarily added this log if the check is working correctly.
-            $this->trace->count(Metric::ACCOUNT_SERVICE_CHECK_EXCLUSION_FLOW_RESULT, [
-                'routeOrWorkerName' => $routeOrWorkerName,
-                'isExclusionFlow' => $isExclusionFlow
-            ]);
-            return $isExclusionFlow;
+            return false;
         } catch (\Exception $e) {
 
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_CHECK_EXCLUSION_FLOW_EXCEPTION);
@@ -275,6 +268,114 @@ class AsvRouter
             return false;
         }
     }
+
+    public function shouldRouteReadRequestDuringWriteToAccountService($entity): bool
+    {
+        if ($this->asvConfig[ASVV2Constant::DISABLE_READ_IN_WRITE_FLOW] === false) {
+            $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => self::READ_ENABLED_IN_WRITE_FLOW,
+                'entity' => $entity->getEntityName()
+            ]);
+
+            return false;
+        }
+
+        try {
+            $whiteListedEntity = [
+                E::MERCHANT,
+                E::MERCHANT_DETAIL,
+                E::STAKEHOLDER,
+                E::MERCHANT_DOCUMENT,
+                E::MERCHANT_EMAIL,
+                E::MERCHANT_WEBSITE,
+                E::MERCHANT_BUSINESS_DETAIL,
+                E::ACCOUNT
+            ];
+
+            $resp = in_array($entity->getEntityName(), $whiteListedEntity, true) === true;
+
+
+            if ($resp === false) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::ENTITY_NOT_WHITELISTED,
+                    'entity' => $entity->getEntityName()
+                ]);
+            } else {
+                $this->trace->count(Metric::ASV_READ_REQUEST_ROUTED_FOR_WRITE_FLOW_RESULT, [
+                    'route' => $this->getRouteOrJobName(),
+                ]);
+            }
+
+            return $resp;
+        } catch (\Exception $e) {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_EXCEPTION_IN_READ_IN_WRITE_FLOW);
+            $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => self::GOT_EXCEPTION,
+                'entity' => $entity->getEntityName()
+            ]);
+            return false;
+        }
+    }
+
+    public function shouldStopWritesToApiLiveAndApiTestDb($entity): bool
+    {
+        try {
+            $entityName = $entity->getEntityName();
+
+            // Define individual entity flags
+            $entityConfigMapping = [
+                E::MERCHANT_EMAIL => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_EMAIL,
+                E::STAKEHOLDER => ASVV2Constant::STOP_ASV_ENTITY_WRITES_STAKEHOLDER,
+                E::MERCHANT_BUSINESS_DETAIL => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_BUSINESS_DETAIL,
+                E::MERCHANT_DOCUMENT => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_DOCUMENT,
+                E::MERCHANT_WEBSITE => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_WEBSITE,
+                E::MERCHANT => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_ACCOUNT, // Shared constant for MERCHANT and ACCOUNT
+                E::MERCHANT_DETAIL => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_DETAIL,
+                E::ACCOUNT => ASVV2Constant::STOP_ASV_ENTITY_WRITES_MERCHANT_ACCOUNT,  // Shared constant for MERCHANT and ACCOUNT
+            ];
+
+            if (isset($entityConfigMapping[$entityName])) {
+                $configKey = $entityConfigMapping[$entityName];
+
+                if ($this->asvConfig[$configKey] === false) {
+                    $this->trace->count(Metric::ASV_ENTITIES_STOP_WRITES_TO_API_DB, [
+                        'routeOrWorkerName' => $this->getRouteOrJobName(),
+                        'reason' => "ENV_FLAG_DISABLED",
+                        'entity' => $entityName,
+                    ]);
+
+                    return false;
+                }
+
+                $this->trace->count(Metric::ASV_ENTITIES_STOP_WRITES_TO_API_DB, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => "REQUEST_ROUTED",
+                    'entity' => $entityName,
+                ]);
+
+                if ($this->app['env'] === Environment::AUTOMATION) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            return false;
+        } catch (\Exception $e) {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_EXCEPTION_WRITE_FLOW);
+            $this->trace->count(Metric::ASV_ENTITIES_STOP_WRITES_TO_API_DB, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => "GOT_EXCEPTION",
+                'entity' => $entity->getEntityName(),
+            ]);
+
+            return false;
+        }
+    }
+
 
     public function shouldRouteImplicitJoinToAccountService($id, $entityName, $repoClass, $functionName): bool {
         try {
@@ -548,9 +649,22 @@ class AsvRouter
     {
         try
         {
-            $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForFallbackToASVDB();
+            $isExclusionFlow = $this->isExclusionFlowOrFailure();
 
-            return $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
+            if ($isExclusionFlow === true) {
+                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'reason' => self::READ_EXCLUSION_FLOW,
+                ]);
+                return false;
+            }
+
+            $this->trace->count(Metric::ASV_FALLBACK_TO_API_DB_RESULT, [
+                'routeOrWorkerName' => $this->getRouteOrJobName(),
+                'reason' => self::READ_EXCLUSION_FLOW,
+            ]);
+
+            return $this->shouldRouteToAsv();
         } catch (\Exception $e)
         {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_SPLITZ_ERROR);

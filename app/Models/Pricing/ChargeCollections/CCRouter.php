@@ -6,6 +6,7 @@ use App;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Metric;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Pricing;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Pricing\Plan as PlanCollection;
 use RZP\Models\Pricing\Entity as PricingEntity;
@@ -55,6 +56,7 @@ class CCRouter
         'RZP\\Models\\Pricing\\Service\\deletePlanRuleForce' => true,
         'RZP\\Models\\Pricing\\Service\\postAddBulkPricingRules' => true,
         'RZP\\Models\\Pricing\\Service\\addPlanRule' => true,
+        'RZP\\Models\\Pricing\\Service\\replicatePlanAndAssign' => true,
         'RZP\\Models\\Pricing\\Repository\\getPlan' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdAndOrgId' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdWithProductAndFeatureFilter' => true,
@@ -76,9 +78,33 @@ class CCRouter
         'RZP\\Models\\Pricing\\Repository\\getAppPayoutPricingRules' => true,
         'RZP\\Models\\Pricing\\Repository\\getPlanRule' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingFromPricingId' => true,
+        'RZP\\Models\\Pricing\\Repository\\getInstantRefundsDefaultPricingPlanForMethod' => true,
     );
 
-    private array $FunctionToCCRouteMap;
+    private const FUNCTION_TO_CC_ROUTE_MAP = array(
+        'RZP\\Models\\Pricing\\Repository\\getPlan' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdAndOrgId' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdWithProductAndFeatureFilter' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdProductAndFeatureWithoutOrgId' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getBankingSharedAccountNonFreePayouDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getPlanByName' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getPricingRuleByMultipleParams' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getPricingPlansSummary' => ChargeCollections::GetPricingPlansSummaryURL,
+        'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdWithoutOrgId' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getPricingRuleIdsByMerchant' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getZeroPricingPlanRuleForMethod' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getBankingDirectAccountNonFreePayoutDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getBankingSharedAccountFreePayoutDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getBankingDirectAccountFreePayoutDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getBankingAccountChargeCollectionDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getBankingAccountRzpFeesDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getInstantRefundsDefaultPricingPlanForMethod' =>  ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getAppPayoutPricingRules' => ChargeCollections::GetPricingPlanURL,
+        'RZP\\Models\\Pricing\\Repository\\getPlanRule' => ChargeCollections::GetPricingRuleURL,
+        'RZP\\Models\\Pricing\\Repository\\getPricingFromPricingId' => ChargeCollections::GetPricingRuleURL,
+    );
 
     public function __construct(bool $writes = false, bool $reads = false)
     {
@@ -87,56 +113,42 @@ class CCRouter
         $this->trace = $app['trace'];
         $this->splitzExperimentID = "";
 
-
         if ($writes) {
             $this->splitzExperimentID = $app['config']->get('app.pricing_writes_experiment_id') ?? '';
         }
         if ($reads) {
             $this->splitzExperimentID= $app['config']->get('app.pricing_reads_experiment_id') ?? 'P3jQnkfWa0vrnm';
         }
-        $this->FunctionToCCRouteMap = array(
-            'RZP\\Models\\Pricing\\Repository\\getPlan' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdAndOrgId' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdWithProductAndFeatureFilter' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdProductAndFeatureWithoutOrgId' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getBankingSharedAccountNonFreePayouDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getPlanByName' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getPricingRuleByMultipleParams' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getPricingPlansSummary' => ChargeCollections::GetPricingPlansSummaryURL,
-            'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdWithoutOrgId' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getPricingRuleIdsByMerchant' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getZeroPricingPlanRuleForMethod' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getBankingDirectAccountNonFreePayoutDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getBankingSharedAccountFreePayoutDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getBankingDirectAccountFreePayoutDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getBankingAccountChargeCollectionDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getBankingAccountRzpFeesDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getAppPayoutPricingRules' => ChargeCollections::GetPricingPlanURL,
-            'RZP\\Models\\Pricing\\Repository\\getPlanRule' => ChargeCollections::GetPricingRuleURL,
-            'RZP\\Models\\Pricing\\Repository\\getPricingFromPricingId' => ChargeCollections::GetPricingRuleURL,
-        );
     }
 
     public function route($fqcn, $ccRequest, $legacyCallable, $sourceInput = null, $buyPricing = false)
     {
+        // skip decomp for buy pricing
+        if ($buyPricing){
+            $legacyCallableWithPhase = $this->getLegacyCallableBasedOnParameterCount($legacyCallable, self::DISABLE, $sourceInput);
+            return call_user_func($legacyCallableWithPhase);
+        }
+
         $planId = $ccRequest['plan_id'] ?? $ccRequest['id'];
         if($planId == null) $planId = '';
+        $startTimeMs = round(microtime(true) * 1000);
         $rampPhase = $this->shouldRouteRequestToChargeCollections($fqcn, $planId);
+
         $methodName = Utils::extractMethodFromFunction($fqcn);
 
         // Modify the legacyCallable to pass rampPhase only if the legacy method accepts it
         $legacyCallableWithPhase = $this->getLegacyCallableBasedOnParameterCount($legacyCallable, $rampPhase, $sourceInput);
-
-        // skip decomp for buy pricing
-        if ($buyPricing){
-            return call_user_func($legacyCallableWithPhase);
-        }
+        $metricDimensions = [
+            'method' => $methodName,
+            'mode' => $rampPhase,
+        ];
 
         if ($rampPhase == CCRouter::DISABLE || $rampPhase == CCRouter::SHADOW) {
             // Legacy request
+            $legacyStartTimeMs = round(microtime(true) * 1000);
             $legacyResponse = call_user_func($legacyCallableWithPhase);
+            $legacyEndTimeMs = round(microtime(true) * 1000);
+            $this->trace->histogram(Metric::CC_ROUTER_PRICING_LEGACY_CALL_TIME, $legacyEndTimeMs- $legacyStartTimeMs, $metricDimensions);
 
             if ($methodName == 'postAddBulkPricingRules'){
                 list($legacyResponse, $ccRequest) = $this->modifyBulkRequestBasedOnLegacyResponse($legacyResponse, $ccRequest);
@@ -150,6 +162,11 @@ class CCRouter
                     'response' => $ccResponse,
                 ]);
             }
+            if($rampPhase == self::SHADOW) {
+                $this->compareCCAndApiReponse($ccResponse, $legacyResponse, $fqcn);
+            }
+            $endTimeMs = round(microtime(true) * 1000);
+            $this->trace->histogram(Metric::CC_ROUTER_TOTAL_TIME, $endTimeMs- $startTimeMs, $metricDimensions);
 
             return $legacyResponse;
 
@@ -164,7 +181,10 @@ class CCRouter
 
             if ($rampPhase == CCRouter::REVERSE_SHADOW) {
                 try {
+                    $legacyStartTimeMs = round(microtime(true) * 1000);
                     $legacyResponse = call_user_func($legacyCallableWithPhase);
+                    $legacyEndTimeMs = round(microtime(true) * 1000);
+                    $this->trace->histogram(Metric::CC_ROUTER_PRICING_LEGACY_CALL_TIME, $legacyEndTimeMs- $legacyStartTimeMs, $metricDimensions);
                     $this->trace->info(TraceCode::API_PRICING_LEGACY_RESPONSE, [
                         'method' => $methodName,
                         'mode' => CCRouter::REVERSE_SHADOW,
@@ -179,6 +199,8 @@ class CCRouter
                     ]);
                 }
             }
+            $endTimeMs = round(microtime(true) * 1000);
+            $this->trace->histogram(Metric::CC_ROUTER_TOTAL_TIME, $endTimeMs- $startTimeMs, $metricDimensions);
 
             return $response;
         }
@@ -216,26 +238,23 @@ class CCRouter
                 $routeName =  app('worker.ctx')->getJobName() ?? '';
             }
             $methodName = Utils::extractMethodFromFunction($fqcn);
-
-            if ($methodName == 'createPlan' || $methodName == 'updatePlanRule'){
-                $this->trace->count(Metric::CC_REQUEST_ROUTED, [
-                    'route' => $routeName,
-                    'function' => $fqcn,
-                    'ramp_phase' => $rampPhase,
+            $this->trace->count(Metric::CC_REQUEST_ROUTED, [
+                'route' => $routeName,
+                'function' => $fqcn,
+                'ramp_phase' => $rampPhase,
                 ]);
-            }
 
-            if ($this->FunctionToCCRouteMap[$fqcn] == ChargeCollections::GetPricingPlansSummaryURL) {
+            if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlansSummaryURL) {
                 $response = $this->app->charge_collections->getPricingPlansSummary($input);
                 return $this->transformSummaryResponse($response);
             }
 
-            if ($this->FunctionToCCRouteMap[$fqcn] == ChargeCollections::GetPricingPlanURL) {
+            if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlanURL) {
                 $response = $this->app->charge_collections->getPricingPlan($input);
                 return $this->transformToPlanModel($response);
             }
 
-            if ($this->FunctionToCCRouteMap[$fqcn] == ChargeCollections::GetPricingRuleURL) {
+            if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingRuleURL) {
                 $response = $this->app->charge_collections->getPricingRule($input);
                 return $this->transformToPricingModel($response);
             }
@@ -243,13 +262,45 @@ class CCRouter
             if ($methodName == 'createPlan'){
                 $response = $this->app->charge_collections->createPricingPlan($input, $headers);
             }else if ($methodName == 'updatePlanRule'){
+                if ($routeName == 'pricing_update_plan_rule') {
+                    $headers = [ChargeCollections::X_PRICING_WORKFLOW_ACTION => 'validate-only'];
+                } else {
+                    $headers = [ChargeCollections::X_PRICING_WORKFLOW_ACTION => 'validate-and-write'];
+                }
+
                 $response = $this->app->charge_collections->updatePricingPlanRule($input, $headers);
+                if (isset($response['rule'])){
+                    $response = $response['rule'];
+                }
+
+                $originalRule = (new Pricing\Repository)->getPlanRule($input['plan_id'], $input['rule_id']);
+
+                if ($routeName == 'pricing_update_plan_rule') {
+                    $this->app['workflow']
+                        ->setEntityAndId('pricing', $input['plan_id'])
+                        ->handle( $originalRule, $response);
+                }
             }else if ($methodName == 'deletePlanRuleForce'){
                 $response = $this->app->charge_collections->deletePricingPlanRule($input);
             }else if ($methodName == 'postAddBulkPricingRules'){
                 $response = $this->app->charge_collections->addBulkPricingPlanRule($input, $headers);
             }else if($methodName == 'addPlanRule'){
-                $response = $this->app->charge_collections->addPricingPlanRule($input);
+                if ($routeName == 'pricing_add_plan_rule') {
+                    $headers = [ChargeCollections::X_PRICING_WORKFLOW_ACTION => 'validate-only'];
+                } else {
+                    $headers = [ChargeCollections::X_PRICING_WORKFLOW_ACTION => 'validate-and-write'];
+                }
+                $response = $this->app->charge_collections->addPricingPlanRule($input, $headers);
+
+                if ($routeName == 'pricing_add_plan_rule') {
+                    $this->app['workflow']
+                        ->setEntityAndId('pricing', $input['plan_id'])
+                        ->handle((new \stdClass), $response);
+                }
+            }
+            else if($methodName == 'replicatePlanAndAssign'){
+                $response = $this->app->charge_collections->replicatePlanAndAssign($input, $headers);
+                return $this->transformToPlanModel($response);
             }else{
                 $this->trace->info(TraceCode::CC_ROUTER_EXCEPTION,
                     [
@@ -299,15 +350,6 @@ class CCRouter
                 return self::DISABLE;
             }
 
-            // skip transaction active check for workflow checker route and for get calls
-            if ($this->isTransactionActive() &&
-                !isset($this->FunctionToCCRouteMap[$functionName]) &&
-                $routeName != 'action_checker_create'){
-                $this->monitorChargeCollectionsRequestNotRouted($routeName,$functionName,self::REPO_TRANSACTION_ACTIVE);
-
-                return self::DISABLE;
-            }
-
             $experimentID = $this->splitzExperimentID;
             // generate a random ID to randomly assign experiment variant
             if (empty($planID)) {
@@ -334,6 +376,7 @@ class CCRouter
 
     private function checkSplitzExperiment(string $id, string $experimentId): array
     {
+        $startTimeMs = round(microtime(true) * 1000);
         try {
             $request = ['id' => $id, 'experiment_id' => $experimentId];
 
@@ -353,6 +396,8 @@ class CCRouter
 
             $variant = $response['response']['variant'] ?? [];
             $variantName = $variant['name'] ?? '';
+            $endTimeMs = round(microtime(true) * 1000);
+            $this->trace->histogram(Metric::CC_ROUTER_SPLITZ_RESPONSE_TIME, $endTimeMs- $startTimeMs);
 
             if (in_array($variantName, self::VALID_CC_EXPERIMENT_VARIANTS)) {
                 return [
@@ -376,6 +421,8 @@ class CCRouter
                 "experiment_id" => $experimentId,
                 "identifier" => $id,
             ]);
+            $endTimeMs = round(microtime(true) * 1000);
+            $this->trace->histogram(Metric::CC_ROUTER_SPLITZ_RESPONSE_TIME, $endTimeMs- $startTimeMs);
 
             return [
                 self::VALID => false,
@@ -451,7 +498,7 @@ class CCRouter
         return $pricingEntity;
     }
 
-    private function transformToPlanModel($response)
+    public function transformToPlanModel($response)
     {
         if(!isset($response['rules']) || count($response['rules']) == 0) {
             return new PlanCollection;
@@ -474,5 +521,186 @@ class CCRouter
             throw new \Exception('Could not map charge collections response to entity');
         }
         return new PlanCollection;
+    }
+
+    private function compareCCAndApiReponse($ccResponse, $legacyResponse, $fqcn)
+    {
+        try {
+            // Only Comparing for read requests
+            if (!isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn])) {
+                return;
+            }
+            if (empty($legacyResponse)) {
+                return;
+            }
+            if (empty($ccResponse)) {
+                $this->trace->info(TraceCode::CC_ROUTER_RESPONSE_MISMATCH, [
+                    'function' => $fqcn,
+                    'reason' => 'empty_cc_response',
+                    'cc_response' => $ccResponse,
+                    'legacy_response' => $legacyResponse,
+                ]);
+                $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
+                    'function' => $fqcn,
+                    'reason' => 'empty_cc_response',
+                ]);
+                return;
+            }
+            if (get_class($ccResponse) !== get_class($legacyResponse)) {
+                $this->trace->info(TraceCode::CC_ROUTER_RESPONSE_MISMATCH, [
+                    'function' => $fqcn,
+                    'reason' => 'type_mismatch',
+                    'cc_response_type' => get_class($ccResponse),
+                    'legacy_response_type' => get_class($legacyResponse),
+                ]);
+                $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
+                    'function' => $fqcn,
+                    'reason' => 'type_mismatch',
+                ]);
+                return;
+            }
+
+            $responseClass = get_class($legacyResponse);
+            $ccRoute = self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn];
+            if ($responseClass == 'RZP\Models\Pricing\Plan') {
+                if ($ccRoute == ChargeCollections::GetPricingPlansSummaryURL) {
+                    $this->compareSummaryResponse($ccResponse, $legacyResponse, $fqcn);
+                } else {
+                    $this->comparePlanCollection($ccResponse, $legacyResponse, $fqcn);
+                }
+            } else if ($responseClass == 'RZP\Models\Pricing\Entity') {
+                $this->comparePricingEntityAndPushMetrics($ccResponse, $legacyResponse, $fqcn);
+            }
+        } catch(\Throwable $e) {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::CC_COMPARE_EXCEPTION, [
+                'method' => $fqcn,
+                'code' => $e->getCode(),
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function comparePlanCollection($ccResponse, $legacyResponse, $fqcn)
+    {
+        $legacyResponseMap = array();
+        $ccResponseMap = array();
+        foreach ($legacyResponse as $legacyItem) {
+            $legacyResponseMap[$legacyItem->getId()] = $legacyItem;
+        }
+        foreach ($ccResponse as $ccResponseItem) {
+            $ccResponseMap[$ccResponseItem->getId()] = $ccResponseItem;
+        }
+        $ccResponseIds = array_keys($ccResponseMap);
+        $legacyResponseIds = array_keys($legacyResponseMap);
+        $keyDiff = array_diff($ccResponseIds, $legacyResponseIds);
+        foreach($legacyResponseMap as $legacyItem) {
+            if (!isset($ccResponseMap[$legacyItem->getId()])) {
+                $this->trace->info(TraceCode::CC_ROUTER_RESPONSE_MISMATCH, [
+                    'function' => $fqcn,
+                    'reason' => 'id_not_present',
+                    'cc_response_ids' => $ccResponseIds,
+                    'legacy_response_ids' => $legacyResponseIds,
+                    'id_diff' => $keyDiff,
+                ]);
+                $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
+                    'function' => $fqcn,
+                    'reason' => 'id_not_present',
+                ]);
+                return;
+            } else {
+                $ccResponseItem = $ccResponseMap[$legacyItem->getId()];
+                if($this->comparePricingEntityAndPushMetrics($ccResponseItem, $legacyItem, $fqcn)) return;
+            }
+        }
+    }
+
+    private function comparePricingEntityAndPushMetrics($ccResponse, $legacyResponse, $fqcn) {
+        $ccResponseArray = $ccResponse->toArray();
+        $legacyResponseArray = $legacyResponse->toArray();
+        $keyAbsent = false;
+        $valueMismatch = false;
+        foreach ($legacyResponseArray as $k => $v) {
+            if (in_array($k, ['created_at', 'updated_at', 'deleted_at', 'audit_id'])) {
+                continue;
+            }
+            if (!array_key_exists($k, $ccResponseArray)) {
+                $keyAbsent = true;
+                if(!empty($v)) {
+                    $valueMismatch = true;
+                    break;
+                }
+                continue;
+            }
+            if ($v !== $ccResponseArray[$k]) {
+                $valueMismatch = true;
+                break;
+            }
+        }
+        if ($keyAbsent || $valueMismatch) {
+            $this->trace->info(TraceCode::CC_ROUTER_RESPONSE_MISMATCH, [
+                'function' => $fqcn,
+                'key_absent' => $keyAbsent,
+                'value_mismatch' => $valueMismatch,
+                'cc_response' => $ccResponseArray,
+                'legacy_response' => $legacyResponseArray,
+            ]);
+            if ($keyAbsent) {
+                $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
+                    'function' => $fqcn,
+                    'reason' => 'key_not_present',
+                ]);
+            }
+            if ($valueMismatch) {
+                $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
+                    'function' => $fqcn,
+                    'reason' => 'key_value_mismatch',
+                ]);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private function compareSummaryResponse($ccResponse, $legacyResponse, $fqcn)
+    {
+        $ccResponseArray = $ccResponse->toArray();
+        $legacyResponseArray = $legacyResponse->toArray();
+        $ccResponsePlanIdToItemMap = array();
+        $legacyResponsePlanIdToItemMap = array();
+        foreach ($ccResponseArray as $ccSummaryItem) {
+            $ccResponsePlanIdToItemMap[$ccSummaryItem['plan_id']] = $ccSummaryItem;
+        }
+        foreach ($legacyResponseArray as $legacySummaryItem) {
+            $legacyResponsePlanIdToItemMap[$legacySummaryItem['plan_id']] = $legacySummaryItem;
+        }
+        foreach ($legacyResponsePlanIdToItemMap as $planId => $summaryItem) {
+           if(!array_key_exists($planId, $ccResponsePlanIdToItemMap)) {
+               $this->trace->info(TraceCode::CC_ROUTER_RESPONSE_MISMATCH, [
+                   'function' => $fqcn,
+                   'reason' => 'plan_id_not_present',
+                   'cc_response' => $ccResponseArray,
+                   'legacy_response' => $legacyResponseArray,
+               ]);
+               $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
+                   'function' => $fqcn,
+                   'reason' => 'plan_id_not_present',
+               ]);
+               return;
+           }
+           $ccSummaryItem = $ccResponsePlanIdToItemMap[$planId];
+           if($summaryItem['plan_name'] != $ccSummaryItem['plan_name'] || $summaryItem['type'] != $ccSummaryItem['type']|| $summaryItem['rules_count'] != $ccSummaryItem['rules_count']) {
+               $this->trace->info(TraceCode::CC_ROUTER_RESPONSE_MISMATCH, [
+                   'function' => $fqcn,
+                   'reason' => 'plan_id_name_mismatch',
+                   'cc_response' => $ccResponseArray,
+                   'legacy_response' => $legacyResponseArray,
+               ]);
+               $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
+                   'function' => $fqcn,
+                   'reason' => 'plan_id_name_mismatch',
+               ]);
+               return;
+           }
+        }
     }
 }

@@ -178,6 +178,7 @@ class PublicEntity extends UniqueIdEntity
 
     public function toArrayPublic()
     {
+
         $attributes = $this->attributesToArray();
 
         $relations = $this->relationsToArrayPublic();
