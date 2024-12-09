@@ -3,7 +3,10 @@
 namespace RZP\Models\Contact;
 
 use Carbon\Carbon;
+use RZP\Services\Mutex;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\FundAccount\Entity;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -21,6 +24,10 @@ use RZP\Models\FundAccount\Service as FundAccountService;
  */
 class Service extends Base\Service
 {
+    const CONTACT_MUTEX_LOCK_TIMEOUT = 180;
+
+    const MUTEX_RESOURCE             = 'CONTACT_%s_%s';
+
     use Base\Traits\ServiceHasCrudMethods;
 
     /**
@@ -38,6 +45,11 @@ class Service extends Base\Service
      */
     protected $fundAccountService;
 
+    /**
+     * @var Mutex
+     */
+    protected $mutex;
+
     public function __construct()
     {
         parent::__construct();
@@ -47,6 +59,8 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->contact;
 
         $this->fundAccountService = new FundAccountService;
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     /**
@@ -65,7 +79,27 @@ class Service extends Base\Service
     {
         $batchId = (isset($input[Entity::BATCH_ID]) === true) ? $input[Entity::BATCH_ID] : null;
 
-        $entity = $this->core->create($input, $this->merchant, $batchId);
+        $properties = [
+            'id'            => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.mutex_lock_contact_experiment_id'),
+            'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+        ];
+        $isMutexLockForContactExperimentEnabled = $this->core->isSplitzExperimentEnabled($properties, 'variables', TraceCode::MUTEX_LOCK_CONTACT_SPLITZ_ERROR);
+
+        if ($isMutexLockForContactExperimentEnabled) {
+            $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->merchant->getId(), $this->core->getHashOfRequestBody($input));
+
+            $entity = $this->mutex->acquireAndRelease(
+                $mutexResource,
+                function () use ($input, $batchId) {
+                    return $this->core->create($input, $this->merchant, $batchId);
+                },
+                self::CONTACT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_CONTACT_OPERATION_IN_PROGRESS
+            );
+        } else {
+            $entity = $this->core->create($input, $this->merchant, $batchId);
+        }
 
         $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
 
@@ -96,7 +130,7 @@ class Service extends Base\Service
                                              array $traceData,
                                              Merchant\Entity $merchant,
                                              bool $compositePayoutSaveOrFail = true,
-                                             array $metadata = []): Entity
+                                             array $metadata = []): \RZP\Models\Contact\Entity
     {
         return $this->core->createForCompositeRequest($input, $merchant, $traceData, $compositePayoutSaveOrFail, $metadata);
     }
@@ -179,7 +213,7 @@ class Service extends Base\Service
 
         $typeObj = new Type;
 
-        $typeObj->addNewCustom($input[Entity::TYPE], $this->merchant);
+        $typeObj->addNewCustom($input[\RZP\Models\Contact\Entity::TYPE], $this->merchant);
 
         return $typeObj->getAll($this->merchant);
     }
