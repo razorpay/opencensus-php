@@ -22,7 +22,7 @@ else
   jira_issue_status=$(curl -s "${BASE_URL}/rest/api/2/issue/${JIRA_ISSUE_ID}?fields=status" --user "${USER_EMAIL}":"${API_TOKEN}" | jq .fields.status.name)
   echo "Server response is <$jira_issue_status>"
   jira_issue_status_in_lower_case="$(echo "$jira_issue_status" | awk '{print tolower($0)}')"
-  if [ "$jira_issue_status_in_lower_case" == "\"done\"" ]
+  if [[ "$jira_issue_status_in_lower_case" == "\"done\""  || "$jira_issue_status_in_lower_case" == "\"approved\"" ]]
   then
     echo "Jira issue is approved."
     exit 0
