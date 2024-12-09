@@ -104,6 +104,15 @@ class WorkflowServiceController extends Controller
         return response()->json($response);
     }
 
+    public function wildcardAdminRequest(string $path)
+    {
+        $input = Request::all();
+
+        $response = $this->workflowConfigService->wildcardAdminRequest($path, $input);
+
+        return response()->json($response);
+    }
+
     public function bulkCreateWorkflowConfig()
     {
         $input = Request::all();

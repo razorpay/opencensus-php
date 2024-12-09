@@ -2008,12 +2008,13 @@ class Route
         'fetch_pending_payouts_summary'             => ['post',     'payouts/pending/summary',                      'PayoutController@fetchPendingPayoutsSummary'                                  ],
         'fetch_pending_payout_links_summary'        => ['post',     'payout-links/pending/summary',                 'PayoutLinkController@fetchPendingPayoutLinksSummary'                          ],
 
-        'workflow_config_create_admin'              => ['post',    'admin/workflow/config',                               'WorkflowServiceController@createWorkflowConfig'                           ],
-        'workflow_config_list_admin'                => ['post',    'admin/workflow/config/list',                          'WorkflowServiceController@listWorkflowConfig'                        ],
-        'workflow_config_update_admin'              => ['put',    'admin/workflow/config',                                'WorkflowServiceController@updateWorkflowConfig'                           ],
-        'workflow_config_delete_admin'              => ['delete',    'admin/workflow/config',                             'WorkflowServiceController@deleteWorkflowConfig'                           ],
-        'workflow_config_create_bulk_admin'         => ['post',    'admin/workflow/config/bulk',                          'WorkflowServiceController@bulkCreateWorkflowConfig'                           ],
-        'workflow_config_create_internal'           => ['post',    'internal/workflow/config',                            'WorkflowServiceController@createWorkflowConfig'                  ],
+        'workflow_config_create_admin'              => ['post',    'admin/workflow/config',                            'WorkflowServiceController@createWorkflowConfig'                      ],
+        'workflow_config_list_admin'                => ['post',    'admin/workflow/config/list',                       'WorkflowServiceController@listWorkflowConfig'                        ],
+        'workflow_config_update_admin'              => ['put',     'admin/workflow/config',                            'WorkflowServiceController@updateWorkflowConfig'                      ],
+        'workflow_config_delete_admin'              => ['delete',  'admin/workflow/config',                            'WorkflowServiceController@deleteWorkflowConfig'                      ],
+        'workflow_service_wildcard_admin'           => ['any',     'workflows/admin/{path}',                           'WorkflowServiceController@wildcardAdminRequest'                      ],
+        'workflow_config_create_bulk_admin'         => ['post',    'admin/workflow/config/bulk',                       'WorkflowServiceController@bulkCreateWorkflowConfig'                  ],
+        'workflow_config_create_internal'           => ['post',    'internal/workflow/config',                         'WorkflowServiceController@createWorkflowConfig'                      ],
 
         'payout_partner_bank_status'                => ['get',     'payouts/partner-bank/status',                           'PayoutController@getPartnerBankStatus'                  ],
 
@@ -9631,6 +9632,7 @@ class Route
         'workflow_config_update_admin',
         'workflow_config_delete_admin',
         'workflow_config_create_bulk_admin',
+        'workflow_service_wildcard_admin',
 
         // cost center admin routes
         'cost_center_list_admin',
@@ -11362,6 +11364,7 @@ class Route
         'workflow_config_update_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_delete_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_create_bulk_admin'         => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'workflow_service_wildcard_admin'           => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'cost_center_list_admin'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'cost_center_create_admin'                  => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'cost_center_update_admin'                  => Permission::SELF_SERVE_WORKFLOW_CONFIG,
@@ -12397,6 +12400,16 @@ class Route
             'settings_fetch_by_key_internal',
             'composite_payout_internal',
             'payout_bulk_update_attachments'
+        ],
+
+        'abacus' => [
+            'merchant_fetch_internal_users',
+            'merchant_search_users_internal',
+            'user_edit_internal',
+            'user_fetch_internal',
+            'xperience_invite_user',
+            'xperience_invite_resend',
+            'xperience_invite_delete',
         ],
 
         'vendor_experience' => [
@@ -16657,6 +16670,7 @@ class Route
             'workflow_config_update_admin',
             'workflow_config_delete_admin',
             'workflow_config_create_bulk_admin',
+            'workflow_service_wildcard_admin',
 
             // cost center admin routes
             'cost_center_list_admin',

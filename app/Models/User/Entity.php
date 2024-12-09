@@ -131,9 +131,10 @@ class Entity extends Base\PublicEntity
     const VISITOR_ID = 'visitorId';
 
     // Constant for skipping sms verification on stage
-
     const SKIP_SMS_REQUEST    = 'skip_sms_request';
+    
     const XPERIENCE = 'xperience';
+    const ABACUS = 'abacus';
 
     // Constant for segregating user and merchant login / signup
     const USER_ONLY = 'user_only';
@@ -828,8 +829,8 @@ class Entity extends Base\PublicEntity
     public function toInternalUserArray()
     {
         $app = App::getFacadeRoot();
-
-        if($app['basicauth']->getInternalApp() == self::XPERIENCE) {
+        $basicAuth = $app['basicauth'];
+        if ($basicAuth->isXperienceApp() || $basicAuth->isAbacusApp()) {
             $attributes = [
                 self::ID => $this->getAttribute(self::ID),
                 self::NAME => $this->getAttribute(self::NAME),
@@ -848,8 +849,8 @@ class Entity extends Base\PublicEntity
             $attributes = $this->toArrayPublic();
         }
 
+        $attributes[self::PRODUCT] = $this->getAttribute(self::PIVOT)->product;
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
-
         $attributes[self::ROLE_NAME] = $app['repo']->roles->fetchRoleName($attributes[self::ROLE]);
 
         return $attributes;

@@ -2031,6 +2031,11 @@ class BasicAuth
         return $this->internalApp == 'xperience';
     }
 
+    public function isAbacusApp()
+    {
+        return $this->internalApp == 'abacus';
+    }
+
     public function isDashboardApp()
     {
         /*

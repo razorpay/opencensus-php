@@ -849,7 +849,7 @@ class Validator extends Base\Validator
     ];
 
     protected static array $searchMerchantUsersInternalRules = [
-        'product'  => 'required|string|in:banking,primary',
+        'product'  => 'sometimes|string|in:banking,primary,billing,capital,issuing,pos',
         'role'     => 'sometimes|string|nullable',
         'emails'   => 'sometimes|array|nullable',
         'user_ids' => 'sometimes|array|nullable',
