@@ -243,6 +243,37 @@ class Repository extends Base\Repository
             ->pluck(Entity::ENTITY_OWNER_ID);
     }
 
+    public function fetchEntityIdsForSubmerchant(string $submerchantId, bool $useSlave = false)
+    {
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipRequest = new PartnershipsAccessMapDTO();
+            $partnershipRequest->setMerchantId($submerchantId);
+            $partnershipRequest->setFields([Entity::ENTITY_ID]);
+            $partnershipRequest->setOrderBy([Entity::CREATED_AT]);
+            [$redirectToApi, $response] = $this->fetchMerchantAccessMapsOnFilter($partnershipRequest);
+            if ($redirectToApi===false)
+            {
+                $responseCollection= new PublicCollection($response);
+                return $responseCollection->pluck(Entity::ENTITY_ID);
+            }
+        }
+
+        $query = $this->newQuery();
+
+        if ($useSlave)
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        return $query->select(Entity::ENTITY_ID)
+            ->where(Entity::MERCHANT_ID, $submerchantId)
+            ->orderBy(Entity::CREATED_AT, 'asc')
+            ->get()
+            ->pluck(Entity::ENTITY_ID);
+    }
+
     /**
      * @param string $merchantId
      * @param string $entityType
