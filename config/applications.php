@@ -1668,6 +1668,10 @@ return [
         'secret'       => env('CMMA_SERVICE_API_SECRET'),
     ],
 
+    'admin-experience-service' => [
+        'secret'       => env('ADMIN_EXPERIENCE_SERVICE_SECRET'),
+    ],
+
     'templating'    => [
         'user'          => env('TEMPLATING_SERVICE_AUTH_KEY'),
         'password'      => env('TEMPLATING_SERVICE_AUTH_SECRET'),

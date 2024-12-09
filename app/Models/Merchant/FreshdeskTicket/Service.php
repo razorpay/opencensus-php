@@ -681,6 +681,21 @@ class Service extends Base\Service
         return $freshdeskTicketResponse;
     }
 
+    public function getTicketsFromFreshdesk($input)
+    {
+        (new Validator)->validateInput('get_tickets_from_freshdesk', $input);
+
+        $fdInstance = $input[Constants::FD_INSTANCE];
+
+        $url = $this->getFreshdeskUrlFromFdInstance($fdInstance);
+
+        $freshdeskTicketResponse = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($input[Constants::TICKET_ID],$url);
+
+        $this->validateTicketResponse($freshdeskTicketResponse);
+
+        return $freshdeskTicketResponse;
+    }
+
     public function addNoteToTicket($ticketId, $input)
     {
         (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('add_note', $input);
@@ -2345,6 +2360,11 @@ class Service extends Base\Service
             return Constants::FRESHDESK_INSTANCES[$type][$fdInstance];
         }
 
+    }
+
+    protected function getFreshdeskUrlFromFdInstance(string $fdInstance)
+    {
+        return Constants::INSTANCES_VS_URL[$fdInstance];
     }
 
     protected function updateStatusForTicket($type, $freshdeskTicketId, $merchant_id, $fd_instance, $status)

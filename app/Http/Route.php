@@ -1999,6 +1999,9 @@ class Route
 
         // Self serve workflow
         'workflow_config_create'                    => ['post',     'workflow/config',                              'WorkflowServiceController@createWorkflowConfig'                        ],
+        'internal_create_workflow'                  => ['post',     'internal/workflow',                            'WorkflowServiceController@createWorkflow'                        ],
+        'get_permissions_admin'                     => ['post',     'internal/permissions/{admin_id}',              'WorkflowServiceController@getPermissionsOfAdmin'                        ],
+
         'workflow_config_list'                      => ['post',     'workflow/config/list',                         'WorkflowServiceController@listWorkflowConfig'                        ],
         'workflow_config_update'                    => ['put',      'workflow/config',                              'WorkflowServiceController@updateWorkflowConfig'                        ],
         'workflow_config_delete'                    => ['delete',   'workflow/config',                              'WorkflowServiceController@deleteWorkflowConfig'                        ],
@@ -2149,6 +2152,7 @@ class Route
         'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                  ],
         'workflow_merchants_create_payout_get'     => ['get',      'merchants/workflows/permissions/create_payout',  'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
         'workflow_observer_data_update'            => ['put',      'workflows/{id}/observer_data',                   'WorkflowController@updateWorkflowObserverData'                     ],
+        'internal_workflow_observer_data_update'   => ['put',      'internal/workflows/{id}/observer_data',                   'WorkflowController@updateWorkflowObserverData'                     ],
         'workflow_observer_data_fetch'             => ['get',      'workflows/{id}/observer_data',                   'WorkflowController@getWorkflowObserverData'                        ],
         'workflow_needs_merchant_clarification'    => ['put',      'merchant/{workflowId}/need_clarification',       'WorkflowController@postNeedClarificationOnWorkflow'                ],
         'merchant_fetch_customer_eligibility'      => ['post',     'merchant/customers/eligibility',                 'EligibilityController@fetchPublicCustomerEligibility'              ],
@@ -4213,6 +4217,7 @@ class Route
         'internal_fd_add_note_graphql'            => ['post',      'internal_create/fd/ticket/{id}/note',                       'FreshdeskTicketController@addNoteToTicket',                   ],
         'internal_fd_fetch_agent_detail_for_ticket' => ['get',     'fd/ticket/{id}/agent',                                      'FreshdeskTicketController@getAgentDetailForFreshdeskTicket'   ],
         'fd_fetch_tickets'                        => ['get',       'fd/{type}/ticket',                                          'FreshdeskTicketController@getTickets'                         ],
+        'internal_fd_fetch_ticket'                => ['get',       'internal/fd/ticket',                                       'FreshdeskTicketController@getTicketsFromFreshdesk'                         ],
         'internal_fd_fetch_agents'                => ['get',       'internal/fd/{type}/agent',                                  'FreshdeskTicketController@getAgents'                          ],
         'fd_fetch_converations'                   => ['get',       'fd/{type}/ticket/{id}/conversations',                       'FreshdeskTicketController@getConversations'                   ],
         'fd_fetch_ticket'                         => ['get',       'fd/{type}/ticket/{id}',                                     'FreshdeskTicketController@getTicket'                          ],
@@ -5765,6 +5770,10 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'internal_fd_fetch_ticket',
+        'internal_create_workflow',
+        'internal_workflow_observer_data_update',
+        'get_permissions_admin',
         'customer_fetch_addresses_by_contact',
         'internal_merchant_get_tags',
         'rupay_push_token',
@@ -12480,6 +12489,14 @@ class Route
             'contact_update_internal',
             'fund_account_get_internal',
             'fund_account_create_internal',
+        ],
+
+        'admin-experience-service' =>[
+            'internal_fd_fetch_ticket',
+            'internal_create_workflow',
+            'get_permissions_admin',
+            'internal_workflow_observer_data_update',
+            'internal_merchant_details_fetch',
         ],
 
         'metro' => [

@@ -21,9 +21,13 @@ use  RZP\Models\BankAccount;
 use RZP\Models\Workflow\Helper;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Base\PublicEntity;
+use RZP\Http\Response\StatusCode;
 use RZP\Models\BulkWorkflowAction;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Http\Controllers\EdgeProxyController;
+use Illuminate\Routing\Route as IlluminateRoute;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Settlement\Service as SettlementService;
@@ -918,7 +922,6 @@ class Core extends Base\Core
 
         $permissionName = $action->permission->getName();
 
-        $this->trace->info(TraceCode::TYPEFORM_WORKFLOW_TRIGGERED, ["before change payload...." => $payload]);
 
         $payload = $this->performMultipleWorkflowChanges($payload, $permissionName);
 

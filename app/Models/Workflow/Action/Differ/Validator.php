@@ -24,7 +24,7 @@ class Validator extends Base\Validator
         Entity::ROUTE                       => 'required|string',
         Entity::ACTION_ID                   => 'required|string|max:14',
         Entity::STATE                       => 'required|string|max:25',
-        Entity::PERMISSION                  => 'required|string|max:50',
+        Entity::PERMISSION                  => 'required|string|max:100',
         Entity::DIFF                        => 'sometimes|array',
         Entity::WORKFLOW_OBSERVER_DATA      => 'sometimes|array',
         Entity::AUTH_DETAILS                => 'sometimes|array',

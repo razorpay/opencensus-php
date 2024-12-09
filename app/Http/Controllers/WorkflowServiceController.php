@@ -246,4 +246,22 @@ class WorkflowServiceController extends Controller
         return response()->json($response);
     }
 
+    public function createWorkflow()
+    {
+        $input = Request::all();
+
+        $response = $this->workflowService->createWorkflow($input);
+
+        return response()->json($response);
+    }
+
+    public function getPermissionsOfAdmin($adminId){
+
+        $input = Request::all();
+
+        $data = $this->workflowService->getPermissionsOfAdmin($input, $adminId);
+
+        return ApiResponse::json($data);
+    }
+
 }

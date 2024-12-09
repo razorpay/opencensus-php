@@ -7282,7 +7282,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RATE_LIMITER_SERVICE_REQUEST                          = 'RATE_LIMITER_SERVICE_REQUEST';
 
     const EDGE_CONTROLLER_WORKFLOW_REQUEST                      = 'EDGE_CONTROLLER_WORKFLOW_REQUEST';
+    const CREATE_WORKFLOW_REQUEST                               = 'CREATE_WORKFLOW_REQUEST';
     const EDGE_CONTROLLER_WORKFLOW_CREATE_REQUEST               = 'EDGE_CONTROLLER_WORKFLOW_CREATE_REQUEST';
+
+    const GET_ADMIN_PERMISSIONS_REQUEST                         = 'GET_ADMIN_PERMISSIONS_REQUEST';
+    const GET_ADMIN_PERMISSIONS_RESPONSE                        = 'GET_ADMIN_PERMISSIONS_RESPONSE';
 
     // Edge Third Party Authenticate
     const EDGE_THIRD_PARTY_AUTHENTICATE_REQUEST                 = 'EDGE_THIRD_PARTY_AUTHENTICATE_REQUEST';
@@ -8058,6 +8062,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const TYPEFORM_PARSED_DATA                                  = 'TYPEFORM_PARSED_DATA';
     const TYPEFORM_WORKFLOW_TRIGGERED                           = 'TYPEFORM_WORKFLOW_TRIGGERED';
+    const WORKFLOW_TAGS                                         = 'WORKFLOW_TAGS';
     const TYPEFORM_RAW_DATA                                     = 'TYPEFORM_RAW_DATA';
     const TYPEFORM_COMPLETE_RESPONSES                           = 'TYPEFORM_COMPLETE_RESPONSES';
     const TYPEFORM_INCOMPLETE_RESPONSES                         = 'TYPEFORM_INCOMPLETE_RESPONSES';

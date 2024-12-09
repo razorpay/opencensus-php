@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin\Role;
 
 use App;
+use RZP\Trace\TraceCode;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
