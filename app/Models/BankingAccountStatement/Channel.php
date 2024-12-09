@@ -11,12 +11,14 @@ class Channel
     const ICICI   = Settlement\Channel::ICICI;
     const AXIS    = Settlement\Channel::AXIS;
     const YESBANK = Settlement\Channel::YESBANK;
+    const IDFC    = Settlement\Channel::IDFC;
 
     protected static $channels = [
         self::RBL,
         self::ICICI,
         self::AXIS,
         self::YESBANK,
+        self::IDFC,
     ];
 
     /**
@@ -29,6 +31,7 @@ class Channel
         self::ICICI,
         self::AXIS,
         self::YESBANK,
+        self::IDFC,
     ];
 
     public static function isValid(string $channel): bool

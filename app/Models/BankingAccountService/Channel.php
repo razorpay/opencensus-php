@@ -10,12 +10,14 @@ class Channel
     const ICICI   = FTAChannel::ICICI;
     const YESBANK = FTAChannel::YESBANK;
     const AXIS    = FTAChannel::AXIS;
+    const IDFC    = FTAChannel::IDFC;
     const RBL     = FTAChannel::RBL; // RBL on BAS
 
     protected static $channels = [
         self::ICICI,
         self::YESBANK,
         self::AXIS,
+        self::IDFC,
     ];
 
     protected static $directTypeChannels = [
@@ -23,6 +25,7 @@ class Channel
         self::YESBANK,
         self::AXIS,
         self::RBL,
+        self::IDFC,
     ];
 
     public static function getDirectTypeChannels(): array

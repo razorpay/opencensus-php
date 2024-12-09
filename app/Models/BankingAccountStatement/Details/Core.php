@@ -82,6 +82,7 @@ class Core extends Base\Core
                     ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_DETAILS_OPERATION_IN_PROGRESS,
                     $retries
                 );
+
             }
             catch (Exception\BadRequestException $e)
             {
