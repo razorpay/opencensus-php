@@ -477,13 +477,16 @@ class Gateway extends Base\Gateway
             IntentParams::BLOCK          => $recurrence['frequency'] === 'ONETIME' ? 'Y' : 'N',
             IntentParams::RECUR_VALUE    => $recurrence['recurring_value'],
             IntentParams::MODE           => '04',
-            IntentParams::FAM            => number_format($input['payment']['amount'] / 100, 2, '.', ''),
             IntentParams::FREQUENCY      => $recurrence['frequency'],
             IntentParams::TXN_REF_ID     => $input['upi']['gateway_data']['id'],
             IntentParams::PURPOSE        => $recurrence['frequency'] === 'ONETIME' ? '01' : '14',
             IntentParams::AMOUNT_RULE    => 'MAX',
             IntentParams::ORG_ID         => '400011',
         ];
+
+        if($recurrence['frequency'] !== 'ONETIME') {
+            $content[IntentParams::FAM ] = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        }
 
         $url = 'upi://mandate?' . str_replace(' ', '', urldecode(http_build_query($content)));
 

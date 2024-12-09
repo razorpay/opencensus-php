@@ -8076,6 +8076,10 @@ class Processor
             return $response;
         }
 
+        $result = $this->checkTokenStatusForUpiRecurringOTMPayment($payment);
+        if($result !== null)
+            return $result;
+
         // If it failed recently, then throw relevant exception
         // directly for the failure.
         $this->checkForRecentFailedPayment($payment);
@@ -8158,6 +8162,40 @@ class Processor
             2000);
 
         return $response;
+    }
+
+
+    protected function checkTokenStatusForUpiRecurringOTMPayment(Payment\Entity $payment)
+    {
+        if ($payment->isUpiRecurring() === false) {
+            return null;
+        }
+
+        if ($payment->isRecurringTypeInitial() === true) {
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            if ($token === null) {
+                return null;
+            }
+
+            // As this is made sure that the payment will be created only for local token
+            $upiMandate = $token->upiMandate;
+
+            if ($upiMandate === null) {
+                $upiMandate = $this->findUpiMandateUsingOrderIdAndUpdateToken($payment, $token);
+            }
+
+            if (($upiMandate !== null) and
+                ($upiMandate->getFrequency() === UpiMandate\Frequency::ONETIME) and
+                ($token->getRecurringStatus() === Token\RecurringStatus::CONFIRMED)) {
+                $response = [
+                    'razorpay_payment_id' => $payment->getPublicId(),
+                    'token_id' => $token->getPublicId(),
+                ];
+                return $response;
+            }
+        }
+        return null;
     }
 
     /**

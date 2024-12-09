@@ -699,7 +699,7 @@ trait UpiRecurring
         }
 
         // if mandate expiry is withing 26 hr we'll not allow to create subsequent payment.
-        if ($upiMandate !== null)
+        if (($upiMandate !== null) and ($upiMandate->getFrequency() !== UpiMandate\Frequency::ONETIME))
         {
             $mandateExpiry = $upiMandate['end_time'];
             $currentTime = Carbon::now()->getTimestamp();
@@ -1687,6 +1687,7 @@ trait UpiRecurring
             );
             return $upiMandate;
         }
+        return $upiMandate;
     }
 
     protected function updateRecurringEntitiesForUpiIfApplicable(Entity $payment, array $data, bool $wasFailed = false)
