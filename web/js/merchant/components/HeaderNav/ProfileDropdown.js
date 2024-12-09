@@ -86,6 +86,16 @@ class ProfileDropdown extends Component {
 
   logout = () => {
     const { isWebView, org, user } = this.props;
+    // if the dashboard is opened in webview for j&k dashboard app
+    // then dispatch an event back to app on logout
+    // As the session is being maintained in mobile, No need of calling logout at dashboard
+    if (isWebView && isJKOfflineMerchant(org, user)) {
+      dispatchWebViewEvent({
+        eventType: 'LOGOUT',
+        data: {},
+      });
+      return;
+    }
     analyticsTrack({
       objectName: 'logout',
       actionName: 'clicked',
@@ -124,15 +134,6 @@ class ProfileDropdown extends Component {
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
-
-        // if the dashboard is opened in webview for j&k dashboard app
-        // then dispatch an event back to app on logout
-        if (isWebView && isJKOfflineMerchant(org, user)) {
-          dispatchWebViewEvent({
-            eventType: 'LOGOUT',
-            data: {},
-          });
-        }
 
         return window.location.reload();
       });
