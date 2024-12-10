@@ -75,4 +75,31 @@ class Refund extends Base
 
         return $refund;
     }
+
+    public function createFromTransferPaymentWithoutTxn($attributes)
+    {
+        $payment = $attributes['payment'];
+
+        unset($attributes['payment']);
+
+        if (isset($attributes['amount']) === false)
+        {
+            $attributes['amount'] = $payment->getAmount();
+        }
+
+        $attributes['payment_id']  = $payment->getId();
+        $attributes['merchant_id'] = $payment->merchant->getId();
+        $attributes['base_amount'] = $attributes['amount'];
+        $attributes['status']      = 'processed';
+
+        $refund = $this->build('refund', $attributes);
+
+        $refund->saveOrFail();
+
+        $payment->refundAmount($attributes['amount'], $attributes['base_amount']);
+
+        $payment->saveOrFail();
+
+        return $refund;
+    }
 }

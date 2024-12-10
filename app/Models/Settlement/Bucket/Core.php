@@ -826,11 +826,6 @@ class Core extends Base\Core
             'international'     => $international
         ];
 
-        if ($sourceSettledRemovalExpEnabled === false)
-        {
-            $meta['source_settled'] = $metaSource->transaction->isSettled();
-        }
-
         if($txn->merchant->isSettlementByCurrencyEnabled() === true && $metaSource->getEntity() === Transaction\Type::PAYMENT)
         {
             $meta += [

@@ -1006,6 +1006,74 @@ trait ReverseShadowTrait
         return $txn;
     }
 
+    public function getMerchantIdCreditsAndPricingInfoFromJournalResponse($journalResponse)
+    {
+        $transactorPublicId = $journalResponse[Constants::TRANSACTOR_ID];
+
+        $transactorInfo = $this->determineTransactionTypeFromTransactorId($transactorPublicId);
+
+        $transactionType = $transactorInfo[Constants::TYPE];
+
+        $merchantBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::MERCHANT_BALANCE_FUND_ACCOUNT);
+
+        $merchantFeeCreditsLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::MERCHANT_FEE_CREDITS);
+
+        $merchantAmountCreditsLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::REWARD);
+
+        $merchantVASAmountLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::RECEIVABLE, Constants::MERCHANT_VAS_ACCOUNT);
+
+        $commissionLedgerEntry = $this->getCommissionLedgerEntryForTransactionTypeFromJournal($journalResponse, $transactionType);
+
+        $taxBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::RZP_GST);
+
+        $merchantReceivableLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::RECEIVABLE, Constants::MERCHANT_INVOICE);
+
+        $merchantRefundCreditLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::MERCHANT_REFUND_CREDITS);
+
+        $merchantGmvLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::MERCHANT_GMV);
+
+        $merchantReserveBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::MERCHANT_RESERVE_BALANCE);
+
+        // Here, for new split account feature of merchants amount credit accounts.
+        // Adding a check if the previous entry amount credit entry was nil, inferring, either amount credit was not used ot the new account was used.
+        if ($merchantAmountCreditsLedgerEntry === null) {
+            // Although ledger entry in journal can have multiple amount credit account, but we are fetching only the first one.
+            // As the only use case here is adding in entity if it is gratis or not.
+            $merchantAmountCreditsLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::PAYABLE, Constants::REWARD_CREDITS);
+        }
+
+        $merchantId = $this->getMerchantIdFromLedgerEntries($merchantBalanceLedgerEntry,$merchantFeeCreditsLedgerEntry, $merchantAmountCreditsLedgerEntry, $merchantReceivableLedgerEntry, $merchantVASAmountLedgerEntry,
+            $merchantRefundCreditLedgerEntry, $merchantGmvLedgerEntry, $merchantReserveBalanceLedgerEntry);
+
+        if ($merchantId === null)
+        {
+            $this->trace->info(TraceCode::MISSING_MERCHANT_ID_LEDGER_ENTRIES,
+                [
+                    'journal'               => $journalResponse,
+                ]);
+        }
+
+        $feeCreditUsed = false; $amountCreditUsed = false; $refundCreditUsed = false;
+
+        $tax =  $taxBalanceLedgerEntry !== null ? $taxBalanceLedgerEntry[Constants::AMOUNT] : 0;
+
+        $fees = $commissionLedgerEntry !== null ? ($commissionLedgerEntry[Constants::AMOUNT] + $tax) : 0;
+
+        if ($merchantFeeCreditsLedgerEntry !== null)
+        {
+            $feeCreditUsed = true;
+        }
+        else if ($merchantAmountCreditsLedgerEntry !== null)
+        {
+            $amountCreditUsed = true;
+        }
+        else if ($merchantRefundCreditLedgerEntry !== null)
+        {
+            $refundCreditUsed = true;
+        }
+
+        return [$merchantId, $fees, $tax, $feeCreditUsed, $amountCreditUsed, $refundCreditUsed];
+    }
     private function getMerchantIdFromLedgerEntries($merchantBalanceLedgerEntry, $merchantFeeCreditsLedgerEntry, $merchantAmountCreditsLedgerEntry,
                                                     $merchantReceivableLedgerEntry, $merchantVASAmountLedgerEntry, $merchantRefundCreditLedgerEntry,
                                                     $merchantGmvLedgerEntry, $merchantReserveBalanceLedgerEntry)
@@ -1081,6 +1149,12 @@ trait ReverseShadowTrait
                 return $res;
             case "credits":
                 $res[Constants::TYPE] = LedgerOutboxConstants::CREDIT;
+                return $res;
+            case "chrg":
+                $res[Constants::TYPE] = Transaction\Type::PRODUCT_CHARGE;
+                return $res;
+            case "bundfee":
+                $res[Constants::TYPE] = Transaction\Type::BUNDLE_FEE;
                 return $res;
             default:
                 $res[Constants::TYPE] = "";
@@ -1292,6 +1366,14 @@ trait ReverseShadowTrait
         if ($transactorType === Transaction\Type::TRANSFER)
         {
             $commissionLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::CASH, Constants::RZP_TRANSFER_FEE);
+        }
+        else if ($transactorType === Transaction\Type::PRODUCT_CHARGE)
+        {
+            $commissionLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::RECEIVABLE, Constants::PRODUCT_REVENUE);
+        }
+        else if ($transactorType === Transaction\Type::BUNDLE_FEE)
+        {
+            $commissionLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::RECEIVABLE, Constants::PRICING_SUBSCRIPTION);
         }
         else
         {

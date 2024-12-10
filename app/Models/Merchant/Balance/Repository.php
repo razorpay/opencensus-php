@@ -237,28 +237,15 @@ class Repository extends Base\Repository
     {
         assertTrue($this->isTransactionActive());
 
-        $properties = [
-            'request_data' => json_encode([
-                "merchant_id" => $balance->merchant->getId()
-            ]),
-            'id'            => $balance->merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
-        ];
-
-        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
-
         $merchant = $this->repo->merchant->findOrFailPublic($balance->getMerchantId());
 
         if(($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and $balance->getType() === BalanceType::PRIMARY)
         {
-            if ($enableTidbStreaming === false)
-            {
-                $balance->setName("enabled");
-            }
-            else
-            {
-                $balance->setName("disabled");
-            }
+            $balance->setName("disabled");
+        }
+        else
+        {
+            $balance->setName("enabled");
         }
 
         $balance->saveOrFail();
@@ -268,26 +255,18 @@ class Repository extends Base\Repository
     {
         assertTrue($this->isTransactionActive());
 
-        $properties = [
-            'request_data' => json_encode([
-                "merchant_id" => $balance->merchant->getId()
-            ]),
-            'id'            => $balance->merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
-        ];
-
-        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
-
         $merchant = $this->repo->merchant->findOrFailPublic($balance->getMerchantId());
+
         if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
+            $balance->setName("disabled");
 
-            if ($enableTidbStreaming === false) {
-                $balance->setName("enabled");
-            } else {
-                $balance->setName("disabled");
-            }
         }
+        else
+        {
+            $balance->setName("enabled");
+        }
+
 
         return $this->newQuery()
                     ->where(Entity::ID, $balance->getId())

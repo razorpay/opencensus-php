@@ -53,6 +53,8 @@ class Transfer extends Base
                 'updated_at'    => $transfer->getCreatedAt(),
             ]);
 
+        $transferPayment->saveOrFail();
+
         return $transfer;
     }
 

@@ -192,6 +192,25 @@ class FundAccountValidation extends BaseProcessor
         $this->debit  = $this->getNetAmount();
     }
 
+    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
+    {
+        switch (true)
+        {
+            case (($this->feeCredits >= $this->fees) and
+                ($this->source->balance['type'] === Balance\Type::PRIMARY)):
+                $this->calculateFeeForFeeCredit();
+                break;
+
+            default:
+                $this->calculateFeeDefault();
+        }
+
+        $this->credit = 0;
+
+        // We should get an Exception if balance is going negative while updating
+        $this->debit  = $this->getNetAmount();
+    }
+
     public function getNetAmount()
     {
         switch (true)

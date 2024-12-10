@@ -92,4 +92,19 @@ class CapitalTransaction extends Base
                 ]);
         }
     }
+
+    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
+    {
+        $amount = $this->source->getAmount();
+
+        if ($amount > 0)
+        {
+            $this->credit = $amount;
+        }
+
+        if ($amount < 0)
+        {
+            $this->debit = abs($amount);
+        }
+    }
 }

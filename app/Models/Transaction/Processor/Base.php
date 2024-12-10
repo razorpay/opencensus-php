@@ -4,9 +4,9 @@ namespace RZP\Models\Transaction\Processor;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Models\Feature;
-use RZP\Constants\Entity;
 use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
@@ -112,6 +112,20 @@ abstract class Base extends BaseCore
             }
         }
         else
+        {
+            $txn = $this->createNewTransaction($txnId);
+        }
+
+        $this->setTransaction($txn);
+    }
+
+    protected function setTransactionForSourceDualWrite($txnId = null)
+    {
+        $txn = null;
+
+        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($this->source);
+
+        if ($txn === null)
         {
             $txn = $this->createNewTransaction($txnId);
         }
@@ -288,6 +302,61 @@ abstract class Base extends BaseCore
         return [$this->txn, $this->feesSplit];
     }
 
+
+    public function createTransactionDualWrite($txnId = null, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
+    {
+        // Creates new or fetches existing transaction entity for the source entity
+        $this->setTransactionForSourceDualWrite($txnId);
+
+        // set transaction attributes from the source entity
+        $this->setSourceDefaults();
+
+        // fills the transaction attributes from the merchant attributes
+        $this->fillDetails();
+
+        $this->setCreditDebitDetailsForDualWrite($this, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
+
+        // updates entity specific attributes in transaction
+        $this->updateTransaction();
+
+        if ($this->txn->getType() === Transaction\Type::PAYMENT)
+        {
+            $this->fillSettledAtInfo();
+        }
+
+        $negativeLimit = (new Balance\Core)->getNegativeLimit($this->txn);
+
+        if ($this->shouldUpdateBalanceForDualWrite() === true)
+        {
+            $startTime = microtime(true);
+
+            try
+            {
+                $lockStartTime = microtime(true);
+                // update merchant credits an balances
+                $this->setMerchantBalanceLockForUpdate();
+
+                $this->decideBalanceSource();
+
+                $this->updateCredits($negativeLimit);
+
+                $this->updateBalances($negativeLimit);
+            }
+            finally
+            {
+                $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_TIME_TAKEN_DUAL_WRITE,
+                    [
+                        'txn_type' => $this->txn->getType(),
+                        'merchant_id' => $this->txn->getMerchantId(),
+                        'balance_update_time' => (microtime(true) - $startTime) * 1000
+                    ]
+                );
+            }
+        }
+
+        return [$this->txn, $this->feesSplit];
+    }
+
     protected function shouldUpdateBalance()
     {
         $merchant = $this->repo->merchant->findOrFailPublic($this->txn->getMerchantId());
@@ -319,6 +388,11 @@ abstract class Base extends BaseCore
                 ]);
         }
 
+        return true;
+    }
+
+    protected function shouldUpdateBalanceForDualWrite()
+    {
         return true;
     }
 
@@ -411,6 +485,8 @@ abstract class Base extends BaseCore
 
     abstract function calculateFees();
 
+    abstract function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
+
     // Currently settlement with merchant is done in the currency of a merchant, Hence
     // all the fields for credit, debit and fee should be in merchant's currency only
     public function setSourceDefaults()
@@ -430,16 +506,6 @@ abstract class Base extends BaseCore
     {
         $merchant = $this->txn->merchant;
 
-        $properties = [
-            'request_data' => json_encode([
-                "merchant_id" => $merchant->getId()
-            ]),
-            'id'            => $merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
-        ];
-
-        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
-
         if ((in_array($this->txn->getType(), [Transaction\Type::ADJUSTMENT, Transaction\Type::REVERSAL, Transaction\Type::SETTLEMENT]) === true) and
             (isset($this->txn->source->balance)=== true) and
             ($this->txn->source->balance->getType() !== Balance\Type::PRIMARY))
@@ -453,20 +519,7 @@ abstract class Base extends BaseCore
                     Transaction\Type::SETTLEMENT, Transaction\Type::TRANSFER, Transaction\Type::BUNDLE_FEE,
                     Transaction\Type::PRODUCT_CHARGE,Transaction\Type::SETTLEMENT_TRANSFER, Transaction\Type::SETTLEMENT_ONDEMAND]) === true))
         {
-            if ($enableTidbStreaming === false)
-            {
-                $this->txn->setReference3("enabled");
-            }
-            else
-            {
-                $this->txn->setReference3("disabled");
-            }
-
-            $this->trace->info(TraceCode::TIDB_STREAMING_MAKESHIFT_LOGIC, [
-                "txn_id"                => $this->txn->getId(),
-                "txnReference3"         => $this->txn->getReference3(),
-                "enableTidbStreaming"   => $enableTidbStreaming
-            ]);
+            $this->txn->setReference3("disabled");
         }
     }
 
@@ -475,6 +528,13 @@ abstract class Base extends BaseCore
         $this->setMerchantCredits();
 
         $this->setMerchantFeeDefaults();
+    }
+
+    public function setFeeDefaultsForDualWrite($fees, $tax)
+    {
+        $this->setMerchantCredits();
+
+        $this->setMerchantFeeDefaultsForDualWrite($fees, $tax);
     }
 
     public function setCreditDebitDetails($processor)
@@ -489,6 +549,18 @@ abstract class Base extends BaseCore
         $processor->setOtherDetails();
     }
 
+    public function setCreditDebitDetailsForDualWrite($processor, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
+    {
+        // fetches credits, balance and calculates fees and taxes
+        $processor->setFeeDefaultsForDualWrite($fees, $tax);
+
+        // calculates fee sources and calculates credit and debit amounts
+        $processor->calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
+
+        // update credit and debit amounts, fees and taxes in transaction
+        $processor->setOtherDetails();
+    }
+
     public function getFeeSplit(): BaseCollection\PublicCollection
     {
         return $this->feesSplit;
@@ -497,6 +569,20 @@ abstract class Base extends BaseCore
     public function setMerchantFeeDefaults()
     {
         list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
+
+        // For dynamic fee bearer, we need to update fee, tax,
+        // with the amounts borne only by merchant and add a debit of equal to customer fee + customer fee GST,
+        // to settle the right amount to mx, all of this is under dfb feature.
+        $this->setCustomerFeeAndTaxForDfb();
+    }
+
+    public function setMerchantFeeDefaultsForDualWrite($fees, $tax)
+    {
+        list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
+
+        $this->fees = $fees;
+
+        $this->tax = $tax;
 
         // For dynamic fee bearer, we need to update fee, tax,
         // with the amounts borne only by merchant and add a debit of equal to customer fee + customer fee GST,

@@ -808,6 +808,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SETTLED_BY, $settledBy);
     }
 
+    public function setTransactionId($transactionId)
+    {
+        $this->setAttribute(self::TRANSACTION_ID, $transactionId);
+    }
+
     public function isDirectSettlementRefund(): bool
     {
         //

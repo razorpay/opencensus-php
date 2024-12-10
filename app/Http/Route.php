@@ -4689,6 +4689,7 @@ class Route
 
 
         //PG Ledger Routes
+        'pg_ledger_balance_analysis'                    => ['post',     'pg_ledger/balance/analysis',           'FeatureController@initiateBalanceAnalysis'],
         'pg_onboard_merchant'                           => ['post',     'pg_ledger/merchant/onboard',           'FeatureController@onboardMerchantsOnPgLedger'],
         'pg_offboard_merchant'                          => ['post',      'pg_ledger/merchant/offboard', 'FeatureController@offboardMerchantsOnPgLedger'],
         'pg_sync_balances_merchant'                     => ['post', 'pg_ledger/merchant/sync_balances', 'FeatureController@syncMerchantBalancesOnPgLedger'],
@@ -6843,6 +6844,7 @@ class Route
         // Ledger Outbox
         'ledger_outbox_retry',
         'expire_amount_credits',
+        'pg_ledger_balance_analysis',
         'workflow_config_create_internal',
         'downtime_auto_resolve_cron',
         'merchant_validate_public_auth_over_internal_auth',
@@ -17358,6 +17360,7 @@ class Route
             'adj_custom_create_cron',
 
             'expire_amount_credits',
+            'pg_ledger_balance_analysis',
         ],
 
         'subscriptions' => [

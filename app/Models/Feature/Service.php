@@ -27,6 +27,8 @@ use RZP\Models\Merchant\CapitalSubmerchantUtility;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\Merchant\Balance\Ledger\Core as BalanceCore;
+use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 
 class Service extends Base\Service
 {
@@ -2588,6 +2590,105 @@ class Service extends Base\Service
                 'response' => 'DCS Features Assign Job dispatched',
             ];
         }
+    }
+
+    public function initiateBalanceAnalysisReverseShadow(array $input)
+    {
+        $response = new Base\PublicCollection;
+
+        $merchantIds = $input["merchant_ids"];
+
+        $ledgerService = $this->app["ledger"];
+
+        $this->trace->info(
+            TraceCode::BALANCE_ANALYSIS,
+            [
+                Constants::MERCHANT_ID => $merchantIds,
+            ]
+        );
+
+        if(empty($merchantIds))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMPTY_PAYLOAD_ERROR,
+                'merchant_ids',
+                null,
+                "merchant_ids should not empty"
+            );
+        }
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $result = [
+                Constants::MERCHANT_ID     => $merchantId,
+            ];
+
+            try
+            {
+                $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, "primary");
+
+                $balanceAmount = (isset($balance) === true) ? $balance->getBalance() : 0;
+                $result["pg_primary_balance"] = $balanceAmount;
+
+                $accountBalance = (new LedgerOutboxCore())->getMerchantAccountBalances($ledgerService, $merchantId);
+                $result["cls_balance"] = $accountBalance[LedgerConstants::MERCHANT_BALANCE];
+
+                if(isset($input["credit_balance_analysis"]) === true and $input["credit_balance_analysis"] === true)
+                {
+                    //fetches fee, amount and refund credits from credits table
+                    $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsWithoutLock($merchantId);
+
+                    if (isset($creditBalances[BalanceCore::FEE]) === false) {
+                        $creditBalances[BalanceCore::FEE] = 0;
+                    }
+                    if (isset($creditBalances[BalanceCore::AMOUNT]) === false) {
+                        $creditBalances[BalanceCore::AMOUNT] = 0;
+                    }
+                    if (isset($creditBalances[BalanceCore::REFUND]) === false) {
+                        $creditBalances[BalanceCore::REFUND] = 0;
+                    }
+
+                    $result["api_fee_credits"] = $creditBalances[BalanceCore::FEE];
+                    $result["api_amount_credits"] = $creditBalances[BalanceCore::AMOUNT];
+                    $result["api_refund_credits"] = $creditBalances[BalanceCore::REFUND];
+
+                    $result["cls_fee_credits_balance"] = $accountBalance[LedgerConstants::MERCHANT_FEE_CREDITS];
+                    $result["cls_amount_credits_balance"] = $accountBalance[LedgerConstants::MERCHANT_AMOUNT_CREDITS];
+                    $result["cls_refund_credits_balance"] = $accountBalance[LedgerConstants::MERCHANT_REFUND_CREDITS];
+                }
+
+
+                $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                    EntityConstants::MERCHANT,
+                    $merchantId,
+                    Constants::PG_LEDGER_REVERSE_SHADOW);
+
+                if($feature !== null)
+                {
+                    $result["merchant_onboarded_date"] = $feature->getCreatedAt();
+                }
+                else
+                {
+                    $result["merchant_onboarded_date"] = "reverse_shadow_not_found";
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(
+                    TraceCode::BALANCE_ANALYSIS,
+                    [
+                        "exception"             => $e,
+                        "message"               => $e->getMessage(),
+                        Constants::MERCHANT_ID  => $merchantId
+                    ]
+                );
+
+            }
+
+            $response->add($result);
+        }
+
+        return $response;
     }
 
     public function removePayoutServiceIntermediateIdempotencyFeatures()

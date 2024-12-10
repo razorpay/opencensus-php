@@ -111,4 +111,19 @@ class Reversal extends Base
 
         return $reversal;
     }
+
+    public function createTransferReversalWithoutTxn(string $transferId, array $attributes = [])
+    {
+        $defaultValues = [
+            'currency' => 'INR',
+        ];
+
+        $attributes = array_merge($attributes, ['entity_id' => $transferId, 'entity_type' => 'transfer']);
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $reversal = parent::create($attributes);
+
+        return $reversal;
+    }
 }

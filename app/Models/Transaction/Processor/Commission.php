@@ -25,7 +25,27 @@ class Commission extends Base
         $this->tax  = 0;
     }
 
+    public function setFeeDefaultsForDualWrite($fees, $tax)
+    {
+        $this->fees = 0;
+        $this->tax  = 0;
+    }
+
     public function calculateFees()
+    {
+        $netAmount = $this->getNetAmount();
+
+        if ($netAmount > 0)
+        {
+            $this->credit = $netAmount;
+        }
+        else if ($netAmount < 0)
+        {
+            $this->debit = -1 * $netAmount;
+        }
+    }
+
+    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
     {
         $netAmount = $this->getNetAmount();
 

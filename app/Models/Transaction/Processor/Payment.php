@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Transaction\Processor;
 
+use Mockery\Exception;
 use RZP\Diag\EventCode;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Feature;
 use RZP\Models\Payment\Constant;
 use RZP\Models\Pricing\Feature as PricingFeature;
@@ -234,6 +237,21 @@ class Payment extends Base
 
     }
 
+    protected function shouldUpdateBalanceForDualWrite()
+    {
+        if ($this->source->isAuthorized() === true)
+        {
+            // in authorize transaction we set to balance updated as true since there is no actual balance update.
+            $this->txn->setBalanceUpdated(true);
+
+            return false;
+        }
+
+        $this->txn->setBalanceUpdated(true);
+
+        return true;
+    }
+
     protected function shouldMoveTxnFillToAsync(): bool
     {
         return ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true) or
@@ -363,6 +381,71 @@ class Payment extends Base
 
     }
 
+    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
+    {
+        switch (true)
+        {
+            case ($this->isVasMerchantWithDirectSettlement()):
+            case ($this->txn->isFeeBearerCustomer()):
+                $this->calculateFeeDefault();
+                break;
+
+            // @todo: Need to rethink this.
+            case ($amountCreditsUsed === true):
+                if (($this->amountCredits > 0) and ($this->source->getAmount() !== 0) and ($this->shouldDisableAmountCredits()=== false)
+                    and ($this->amountCredits >= $this->txn->getAmount()))
+                {
+                    $this->calculateFeeForAmountCredit();
+                    break;
+                }
+                else
+                {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_AMOUNT_CREDITS_INSUFFICIENT);
+                }
+
+            case ($feeCreditsUsed === true):
+                if (($this->feeCredits > 0) and ($this->feeCredits >= ($this->fees - $this->txn->getCustomerFee() - $this->txn->getCustomerTax()))
+                    and ($this->txn->isPostpaid() === false))
+                {
+                    $this->calculateFeeForFeeCredit();
+                    break;
+                }
+                else
+                {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_FEE_CREDITS_INSUFFICIENT);
+                }
+
+            default:
+                $this->calculateFeeDefault();
+        }
+
+        $amount = $this->getNetAmount();
+
+        $this->credit = 0;
+        $this->debit  = 0;
+
+        if ($amount > 0)
+        {
+            $this->credit = $amount;
+        }
+        else
+        {
+            $this->debit = -1 * $amount;
+        }
+
+        $this->trace->debug(TraceCode::CALCULATED_FEES_FOR_PAYMENT,
+            [
+                'credit'            => $this->credit,
+                'debit'             => $this->debit,
+                'amount'            => $amount,
+                'fee'               => $this->fees,
+                'fee_credits'       => $this->feeCredits,
+                'amount_credits'    => $this->amountCredits
+            ]
+        );
+
+    }
+
     public function setMerchantFeeDefaults()
     {
        parent::setMerchantFeeDefaults();
@@ -384,6 +467,7 @@ class Payment extends Base
             }
        }
     }
+
     public function shouldDisableAmountCredits():bool
     {
         $payment = $this->source;

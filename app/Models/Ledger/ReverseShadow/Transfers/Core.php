@@ -820,7 +820,7 @@ class Core extends Base\Core
         $properties = [
             'request_data' => json_encode(["merchant_id" => $transferMerchant->getId()]),
             'id'            => $transferMerchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.api_ledger_dual_write_transfer_rearch'),
+            'experiment_id' => $this->app['config']->get('app.api_ledger_dual_write_rearch'),
         ];
 
         // dual write re-arch enabled for both child+parent if enabled for parent
@@ -871,20 +871,18 @@ class Core extends Base\Core
             // dispatch transfer and payment to nss
             $parentStatus = $bucketCore->shouldProcessViaNewService($transferMerchant->getId());
 
-            if ($parentStatus === true)
-            {
+            if ($parentStatus === true) {
                 $bucketCore->publishForSettlement($transferTxn);
             }
 
             $childStatus = $bucketCore->shouldProcessViaNewService($paymentMerchant->getId());
 
-            if ($childStatus === true)
-            {
+            if ($childStatus === true) {
                 $bucketCore->publishForSettlement($transferPaymentTxn);
             }
 
             // dispatch for dual write job
-            $this->pushTransferDataToKafkaForAPIDualWrite($transfer,$transferPayment,$creditJournal,$debitJournal);
+            $this->pushTransferDataToKafkaForAPIDualWrite($transfer, $transferPayment, $creditJournal, $debitJournal);
 
         }
 
@@ -902,6 +900,7 @@ class Core extends Base\Core
 
         $data = [
             'payload_api'=>[
+                'id' => $transfer->getId(),
                 'transfer_id' => $transfer->getId(),
                 'payment_id' => $transferPayment->getId(),
                 'journals'=>[
@@ -913,10 +912,10 @@ class Core extends Base\Core
 
         $message = [
             Constants::KAFKA_MESSAGE_DATA      => $data,
-            Constants::KAFKA_MESSAGE_TASK_NAME  => Constants::DUAL_WRITE_TRANSACTION_FOR_TRANSFER
+            Constants::KAFKA_MESSAGE_TASK_NAME  => Constants::DUAL_WRITE_TRANSACTION_FOR_API_EVENTS
         ];
 
-        $topic = env('DUAL_WRITE_TRANSACTION_FOR_TRANSFER', Constants::DUAL_WRITE_TRANSACTION_FOR_TRANSFER);
+        $topic = env('DUAL_WRITE_TRANSACTION_FOR_API_EVENTS', Constants::DUAL_WRITE_TRANSACTION_FOR_API_EVENTS);
 
         try
         {
@@ -975,13 +974,6 @@ class Core extends Base\Core
 
         $txn->merchant()->associate($merchant);
 
-        if ($txn->isGratis() === true && $txn->getCreditType() === Transaction\CreditType::AMOUNT)
-        {
-            $pricingRuleId = (new Fee)->getZeroPricingPlanRule($transfer)->getId();
-
-            $txn->setPricingRule($pricingRuleId);
-        }
-
         $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
         $commissionLedgerEntry = $this->getCommissionLedgerEntryForTransactionTypeFromJournal($journal, Transaction\Type::TRANSFER);
@@ -1004,32 +996,10 @@ class Core extends Base\Core
 
         $txn->setBalanceUpdated(false);
 
-        $properties = [
-            'request_data' => json_encode([
-                "merchant_id" => $merchant->getId()
-            ]),
-            'id'            => $merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
-        ];
-
-        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
-
         if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
-            if ($enableTidbStreaming === false)
-            {
-                $txn->setReference3("enabled");
-            }
-            else
-            {
-                $txn->setReference3("disabled");
-            }
+            $txn->setReference3("disabled");
         }
-
-        $this->trace->info(TraceCode::TIDB_STREAMING_MAKESHIFT_LOGIC, [
-            "txnReference3"        => $txn->getReference3(),
-            "enableTidbStreaming"   => $enableTidbStreaming
-        ]);
 
         $this->repo->saveOrFail($txn);
 
@@ -1098,32 +1068,10 @@ class Core extends Base\Core
 
         $merchant = $txn->merchant;
 
-        $properties = [
-            'request_data' => json_encode([
-                "merchant_id" => $merchant->getId()
-            ]),
-            'id'            => $merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
-        ];
-
-        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
-
         if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
-            if ($enableTidbStreaming === false)
-            {
-                $txn->setReference3("enabled");
-            }
-            else
-            {
-                $txn->setReference3("disabled");
-            }
+            $txn->setReference3("disabled");
         }
-
-        $this->trace->info(TraceCode::TIDB_STREAMING_MAKESHIFT_LOGIC, [
-            "txnReference3"        => $txn->getReference3(),
-            "enableTidbStreaming"   => $enableTidbStreaming
-        ]);
 
         $this->repo->saveOrFail($txn);
 
@@ -1142,7 +1090,74 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createTransferPaymentTransactionFromLedgerJournalRearch($journal, $transferPayment)
+    public function createTransferPaymentTransactionFromLedgerJournalWithoutIdempotency($journal, $transferPayment)
+    {
+        $txn = $this->transformJournalResponseToTransactionEntityBase($journal);
+
+        if ($transferPayment->isExternal() === true)
+        {
+            $txn->setEntityId($transferPayment->getId());
+
+            $txn->setType($transferPayment->getEntity());
+        }
+        else
+        {
+            $txn->sourceAssociate($transferPayment);
+
+            $txn->merchant()->associate($transferPayment->merchant);
+        }
+
+        $txnData = [
+            Transaction\Entity::CHANNEL         => $transferPayment->merchant->getChannel(),
+        ];
+
+        if ($transferPayment->getGateway() === Payment\Gateway::WALLET_OPENWALLET)
+        {
+            $txnData[Transaction\Entity::RECONCILED_AT]     = time();
+            $txnData[Transaction\Entity::RECONCILED_TYPE]   = ReconciledType::NA;
+        }
+
+        $txn->fill($txnData);
+
+        $settledAt = (new Transaction\Core())->getSettledAtTimestamp($transferPayment);
+
+        $onHold = $transferPayment->getOnHold() ?? false;
+
+        $txn->setReconciledAt(time());
+
+        $txn->setReconciledType(ReconciledType::NA);
+
+        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $txn->setAttribute(Transaction\Entity::ON_HOLD, $onHold);
+
+        $txn->setBalanceUpdated(false);
+
+        $merchant = $txn->merchant;
+
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            $txn->setReference3("disabled");
+        }
+
+        $this->repo->saveOrFail($txn);
+
+        if ($transferPayment->isExternal() === false)
+        {
+            $this->repo->saveOrFail($transferPayment);
+        }
+
+        $this->trace->info(TraceCode::TRANSFER_TXN_CREATED_IN_REVERSE_SHADOW,
+                           [
+                               'txn_id'                => $txn->getId(),
+                               'payment_id'            => $transferPayment->getId(),
+                               'transfer_id'           => $transferPayment->getTransferId(),
+                           ]);
+
+        return $txn;
+    }
+
+     public function createTransferPaymentTransactionFromLedgerJournalRearch($journal, $transferPayment)
     {
         $txn = $this->transformJournalResponseToTransactionEntityBase($journal);
 
@@ -1220,7 +1235,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createTransferTransactionFromLedgerJournalRearch($journal, $transfer)
+     public function createTransferTransactionFromLedgerJournalRearch($journal, $transfer)
     {
         $txn = $this->transformJournalResponseToTransactionEntityBase($journal);
 
@@ -1294,6 +1309,7 @@ class Core extends Base\Core
 
         return $txn;
     }
+
 
     public function createVirtualTransferPaymentTransactionFromLedgerJournal($journal, $transferPayment)
     {
