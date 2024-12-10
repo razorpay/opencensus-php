@@ -38,6 +38,7 @@ const DeviceMappingScannerComponent = ({
   };
   const [isVerifyingDeviceModalOpen, setIsVerifyingDeviceModalOpen] = useState<boolean>(false);
   const toast = useToast();
+  const [isCameraActive, setIsCameraActive] = useState(false);
 
   const handleNextAction = () => {
     if (!isBarCodeActive) {
@@ -50,22 +51,24 @@ const DeviceMappingScannerComponent = ({
   };
 
   const handleScannerDataUpdate = (scannedInfo: string, qrString: string = '') => {
-    const qrStringParts = qrString.split('?');
-    const queryParams = qrStringParts.length > 1 ? qrStringParts[1] : '';
+    if (!isBarCodeActive) {
+      const qrStringParts = qrString.split('?');
+      const queryParams = qrStringParts.length > 1 ? qrStringParts[1] : '';
 
-    if (!queryParams) {
-      toast.show({
-        content: 'Please scan a valid QR',
-        color: 'neutral',
-        autoDismiss: true,
-      });
-      return;
-    }
+      if (!queryParams) {
+        toast.show({
+          content: 'Please scan a valid QR',
+          color: 'neutral',
+          autoDismiss: true,
+        });
+        return;
+      }
 
-    const qrStringParams = new URLSearchParams(queryParams);
-    if (!qrStringParams.get('tr')) {
-      const separator = qrString.includes('?') ? '&' : '?';
-      qrString = `${qrString}${separator}tr=${deviceId}`;
+      const qrStringParams = new URLSearchParams(queryParams);
+      if (!qrStringParams.get('tr')) {
+        const separator = qrString.includes('?') ? '&' : '?';
+        qrString = `${qrString}${separator}tr=${deviceId}qrv2`;
+      }
     }
 
     let payload;
@@ -85,6 +88,7 @@ const DeviceMappingScannerComponent = ({
     }
     handleModularUpdate(payload);
   };
+
   const handleScannedData = (scannedData: string) => {
     if (isLoading) return;
     const parsedData = new URLSearchParams(scannedData);
@@ -114,10 +118,20 @@ const DeviceMappingScannerComponent = ({
     }
   };
 
+  useEffect(() => {
+    // Activate scanner when the component mounts
+    setIsCameraActive(true);
+    // Deactivate scanner when navigating away
+    return () => {
+      setIsCameraActive(false);
+    };
+  }, [navigate]);
+
   const { ref } = useZxing({
     onDecodeResult(scannedInfo) {
       handleScannedData(scannedInfo?.text);
     },
+    paused: !isCameraActive,
   });
 
   useEffect(() => {
