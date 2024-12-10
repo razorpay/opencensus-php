@@ -1113,6 +1113,32 @@ export const parameters = [
   ...internationalParameter,
   ...currencyParameter,
   ...tokenAuthTypeParameter,
+  {
+    name: 'Paylater Provider',
+    value: '$payment.optimizer_wallet',
+    description: 'Simpl',
+    id: 19,
+    values: [
+      {
+        value: 'getsimpl',
+      },
+    ],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      in: {
+        multiple: true,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'string',
+  },
 ];
 export const PROVIDERS = [
   { name: 'Smart Router1', id: 1, value: 'smartrouter' },

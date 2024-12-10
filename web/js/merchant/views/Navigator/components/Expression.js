@@ -12,6 +12,9 @@ export default class Expression extends React.Component {
 
   getValue = (value) => {
     const r = this.props.parameters;
+    if (this.props.expression.operands[1].value?.includes('getsimpl')) {
+      return r.find((p) => p.value === value && p.name === 'Paylater Provider') || '';
+    }
     return r.find((p) => p.value == value) || '';
   };
 

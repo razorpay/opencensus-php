@@ -641,9 +641,9 @@ const CreateRule = (props, context): JSX.Element => {
           selectedCurrencies,
           selectedMethods,
         );
-        isWallet = methodResult.isWallet;
-        isCurrency = methodResult.isCurrency;
-        isMethod = methodResult.isMethod;
+        isWallet = isWallet || methodResult.isWallet;
+        isCurrency = isCurrency || methodResult.isCurrency;
+        isMethod = isMethod || methodResult.isMethod;
       });
     } else {
       const operands = ruleDetails?.precondition?.operands;
@@ -653,9 +653,9 @@ const CreateRule = (props, context): JSX.Element => {
         selectedCurrencies,
         selectedMethods,
       );
-      isWallet = methodResult.isWallet;
-      isCurrency = methodResult.isCurrency;
-      isMethod = methodResult.isMethod;
+      isWallet = isWallet || methodResult.isWallet;
+      isCurrency = isCurrency || methodResult.isCurrency;
+      isMethod = isMethod || methodResult.isMethod;
     }
   }
 
