@@ -4091,7 +4091,6 @@ return [
                         ],
                         "credits_response"          => [
                             "merchant_fee_credits" => 0,
-                            "merchant_amount_credits"=> 0,
                             "merchant_refund_credits"=> 0,
                         ],
                         "accounts_created_response" => true,
@@ -4155,7 +4154,6 @@ return [
                         ],
                         "credits_response"          => [
                             "merchant_fee_credits" => 0,
-                            "merchant_amount_credits"=> 0,
                             "merchant_refund_credits"=> 0,
                         ],
                         "accounts_created_response" => true,

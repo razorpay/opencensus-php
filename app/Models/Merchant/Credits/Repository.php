@@ -436,6 +436,35 @@ class Repository extends Base\Repository
         return $data;
     }
 
+    public function getMerchantCredits(string $merchantId)
+    {
+        assertTrue($this->isTransactionActive());
+
+        $merchantsCredits = $this->newQuery()
+            ->merchantId($merchantId)
+            ->get();
+
+        $creditsFiltered = $merchantsCredits->filter(function ($item) {
+            return ($item->getUnusedCredits() > 0) and (($item->getExpiredAt() == null) or
+                    ($item->getExpiredAt() > time()));
+        });
+
+        $creditIds = $creditsFiltered->getStringAttributesByKey('id');
+
+        $creditIds = array_keys($creditIds);
+
+        $credits = [];
+
+        if (count($creditIds) > 0)
+        {
+            $credits = Entity::lockForUpdate()->newQuery()
+                ->whereIn(Entity::ID, $creditIds)
+                ->get();
+        }
+
+        return $credits;
+    }
+
     public function getTypeAggregatedMerchantCreditsLockForUpdate(string $merchantId): array
     {
         assertTrue($this->isTransactionActive());

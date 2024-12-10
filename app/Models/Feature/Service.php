@@ -412,15 +412,17 @@ class Service extends Base\Service
             $primaryBalanceAmount =  isset($primaryBalance) ? $primaryBalance->getBalance() : 0;
 
             //fetches fee, amount and refund credits from credits table
-            $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchantId);
+            $credits = $this->repo->credits->getMerchantCredits($merchantId);
+
+            $creditsCore = (new Credits\Core());
+
+            $creditBalances = $creditsCore->getAggregatedMerchantCreditBalancesFromCredits($credits);
+
+            $amountCreditIdBalances = $creditsCore->getAggregateMerchantAmountCreditIdBalancesExpiredAtFromCredits($credits);
 
             if (isset($creditBalances[BalanceCore::FEE]) === false)
             {
                 $creditBalances[BalanceCore::FEE] = 0;
-            }
-            if (isset($creditBalances[BalanceCore::AMOUNT]) === false)
-            {
-                $creditBalances[BalanceCore::AMOUNT] = 0;
             }
             if (isset($creditBalances[BalanceCore::REFUND]) === false)
             {
@@ -432,7 +434,8 @@ class Service extends Base\Service
                 $this->mode,
                 $primaryBalanceAmount,
                 $creditBalances,
-                $reserveBalanceAmount
+                $reserveBalanceAmount,
+                $amountCreditIdBalances
             );
 
             if ($result[Constants::ACCOUNTS_CREATED_RESPONSE] === false)
