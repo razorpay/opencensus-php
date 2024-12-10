@@ -56,7 +56,9 @@ function WebsiteAppDetails({
   });
 
   const isEligiblePolicyWizard =
-    policyWizardV2Data.isEligible || policyWizardV2Data.policyEligible === 'v2';
+    user.isMkycMerchant ||
+    policyWizardV2Data.isEligible ||
+    policyWizardV2Data.policyEligible === 'v2';
 
   const isPolicyV2Merchant = isExpEnabled && isEligiblePolicyWizard;
 
@@ -105,7 +107,12 @@ function WebsiteAppDetails({
       fetchMerchantWebsiteDetails();
     }
 
-    if (isExpEnabled && !policyWizardV2Data.isDataLoaded && !policyWizardV2Data.error) {
+    if (
+      !user.isMkycMerchant &&
+      isExpEnabled &&
+      !policyWizardV2Data.isDataLoaded &&
+      !policyWizardV2Data.error
+    ) {
       fetchEligibilityForPolicyWizardV2();
     }
   }, []);

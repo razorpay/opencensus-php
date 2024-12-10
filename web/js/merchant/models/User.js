@@ -2120,10 +2120,7 @@ export default class User {
     return this.isFeatureEnabled('pg_ledger_reverse_shadow');
   }
   get isMkycMerchant() {
-    return (
-      this?.workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING' ||
-      this?.workflow_type === 'MODULAR_ONBOARDING'
-    );
+    return this?.workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING';
   }
 }
 
