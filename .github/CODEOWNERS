@@ -42,7 +42,7 @@ web/js/merchant/views/POS                         @razorpay/omni-acquisition-fe
 plugins/i18n-rules                                @razorpay/i18n-fe
 smart-linter.js                                   @razorpay/i18n-fe
 # apps/digital-bills                                @mihir-karbelkar-rp           - Will add it back later after shell rollout
-apps/pos                                          @razorpay/omni-acquisition-fe 
+apps/pos                                          @razorpay/omni-acquisition-fe @razorpay/partnerships-fe 
 pnpm-lock.yaml                                    @razorpay/ssab-fe
 web/js/common/utils/posAgent.ts                   @razorpay/omni-acquisition-fe
 environment/.env.vault.j2                         @razorpay-sanjib @shubham25kr07 @loombarishav @dhruvdutt @rahul-rzp
