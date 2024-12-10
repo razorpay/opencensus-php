@@ -13,12 +13,17 @@ import MonetizationChargesModalMobile from './components/MonetizationChargesModa
 import getPricingPlan from './utils/getPricingPlan';
 import { getNoCodeMonetizationExperiment } from './utils/getNoCodeMonetizationExperiment';
 import { getItem, setItem } from 'common/utils/localStorage';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { fetchPricingConfig } from 'merchant/reducers/session';
 
 const MonetizationChargesBanner = ({
   bannerKey = 'monetizationCharges',
   userId = '',
   screen,
   user = {},
+  pricingPlanConfig,
+  fetchPricingConfig,
 }) => {
   const { bannerId } = content[bannerKey];
   const { bannerText, title } = content[bannerKey][screen];
@@ -26,16 +31,15 @@ const MonetizationChargesBanner = ({
   const { isDesktop } = useBladeBreakpoints();
   const [showProductWiseBenefits, setShowProductWiseBenefits] = useState(false);
   const [showCustomPricing, setShowCustomPricing] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
+  const [pricingPlanForMerchant, setPricingPlanForMerchant] = useState('');
   const [hidden, setHidden] = useState(() => {
     return (
       sessionStorage.getItem(`${bannerKey}-${screen}-hidden`) === 'true' ||
       Number(getItem(`${bannerKey}-${screen}-closeCount`)) >= 4
     );
   });
-  const pricingPlanForMerchant = getPricingPlan(user);
   const isNoCodeMonetizationExperimentOn = getNoCodeMonetizationExperiment();
-  const showBanner =
-    (user?.isNocodeappFeeApplicable || isNoCodeMonetizationExperimentOn) && pricingPlanForMerchant;
 
   const openModal = () => {
     analyticsTrack({
@@ -105,6 +109,25 @@ const MonetizationChargesBanner = ({
     sessionStorage.setItem(`${bannerKey}-${screen}-hidden`, 'true');
     setHidden(true);
   };
+
+  useEffect(() => {
+    if (!pricingPlanConfig) {
+      const pricingPlanId = user?.merchant?.pricing_plan_id;
+      if (pricingPlanId) {
+        fetchPricingConfig(pricingPlanId);
+      }
+    }
+  }, [fetchPricingConfig, pricingPlanConfig, user?.merchant?.pricing_plan_id]);
+
+  useEffect(() => {
+    if (pricingPlanConfig) {
+      const pricingPlan = getPricingPlan(user, isNoCodeMonetizationExperimentOn);
+      setPricingPlanForMerchant(pricingPlan);
+      const bannerEnabled =
+        (user?.isNocodeappFeeApplicable || isNoCodeMonetizationExperimentOn) && pricingPlan;
+      setShowBanner(bannerEnabled);
+    }
+  }, [pricingPlanConfig]);
 
   useEffect(() => {
     if (showBanner && !hidden) {
@@ -189,4 +212,17 @@ const MonetizationChargesBanner = ({
   ) : null;
 };
 
-export default React.memo(MonetizationChargesBanner);
+const mapActionsToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      fetchPricingConfig,
+    },
+    dispatch,
+  );
+};
+
+export default connect((state) => {
+  return {
+    pricingPlanConfig: state?.session?.user?.pricing_plan_config,
+  };
+}, mapActionsToProps)(MonetizationChargesBanner);

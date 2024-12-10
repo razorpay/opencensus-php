@@ -10,6 +10,7 @@ const UPDATE_USER_FEATURES = 'UPDATE_USER_FEATURES';
 const UPDATE_USER_CAMPAIGNS = 'UPDATE_USER_CAMPAIGNS';
 const UPDATE_USER_TAGS = 'UPDATE_USER_TAGS';
 const UPDATE_I18N_TAGS = 'UPDATE_I18N_TAGS';
+const FETCH_PRICING_CONFIG = 'FETCH_PRICING_CONFIG';
 const USER_FETCH = 'USER_FETCH';
 const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
@@ -68,6 +69,16 @@ export const fetchConfigTags = (countryCode) => {
     type: UPDATE_I18N_TAGS,
     payload: merchantFetch({
       url: `country/${countryCode}/dashboard/configs`,
+      method: 'GET',
+    }),
+  };
+};
+
+export const fetchPricingConfig = (pricingPlanId) => {
+  return {
+    type: FETCH_PRICING_CONFIG,
+    payload: merchantFetch({
+      url: `nocodeapps/pricing/plan/${pricingPlanId}`,
       method: 'GET',
     }),
   };
@@ -244,11 +255,33 @@ export default function sessionReducer(state = initialState, action) {
         }),
       });
 
+    case `${FETCH_PRICING_CONFIG}::SUCCESS`:
+      return merge(state, {
+        user: new User({
+          ...state.user,
+          pricing_plan_config: action?.payload?.data || {
+            nocodeapp_pricing_applicable: false,
+            nocodeapp_percent_rate: '',
+          },
+        }),
+      });
+
     case `${UPDATE_I18N_TAGS}::ERROR`:
       return merge(state, {
         user: new User({
           ...state.user,
           configTags: {},
+        }),
+      });
+
+    case `${FETCH_PRICING_CONFIG}::ERROR`:
+      return merge(state, {
+        user: new User({
+          ...state.user,
+          pricing_plan_config: {
+            nocodeapp_pricing_applicable: false,
+            nocodeapp_percent_rate: '',
+          },
         }),
       });
 

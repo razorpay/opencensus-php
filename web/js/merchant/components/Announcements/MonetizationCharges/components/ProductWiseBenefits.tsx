@@ -19,6 +19,7 @@ import { isMobileDevice } from 'merchant/components/Home/data';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import getPricingPlan from '../utils/getPricingPlan';
 import CheckCircle2Icon from 'icons/merchant/check-circle-2.svg';
+import { getNoCodeMonetizationExperiment } from '../utils/getNoCodeMonetizationExperiment';
 
 interface ProductWiseBenefitsProps {
   setShowProductWiseBenefits: (show: boolean) => void;
@@ -40,7 +41,8 @@ const ProductWiseBenefits: React.FC<ProductWiseBenefitsProps> = ({
   const { title } = content[bannerKey][screen];
   const { noCodeApps } = content[bannerKey];
   const { isDesktop } = useBladeBreakpoints();
-  const pricingPlanForMerchant = getPricingPlan(user);
+  const isNoCodeMonetizationExperimentOn = getNoCodeMonetizationExperiment();
+  const pricingPlanForMerchant = getPricingPlan(user, isNoCodeMonetizationExperimentOn);
 
   const closeModalHandler = () => {
     analyticsTrack({

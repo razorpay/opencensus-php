@@ -11,6 +11,7 @@ import LeadFormLayout from './LeadFormLayout';
 import { User } from 'common/typings';
 import getPricingPlan from '../utils/getPricingPlan';
 import LazyLoad from 'react-lazyload';
+import { getNoCodeMonetizationExperiment } from '../utils/getNoCodeMonetizationExperiment';
 
 interface CustomPricingProps {
   closeModal: () => void;
@@ -44,7 +45,8 @@ const CustomPricing = ({
   bannerKey,
 }: CustomPricingProps) => {
   const { title } = content[bannerKey][screen];
-  const pricingPlanForMerchant = getPricingPlan(user);
+  const isNoCodeMonetizationExperimentOn = getNoCodeMonetizationExperiment();
+  const pricingPlanForMerchant = getPricingPlan(user, isNoCodeMonetizationExperimentOn);
 
   const sendAnalytics = () => {
     analyticsTrack({

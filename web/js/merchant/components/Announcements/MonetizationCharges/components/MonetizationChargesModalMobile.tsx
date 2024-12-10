@@ -9,6 +9,7 @@ import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 import { BottomSheet, BottomSheetBody, BottomSheetHeader, Box } from '@razorpay/blade/components';
 import { User } from 'common/typings';
 import getPricingPlan from '../utils/getPricingPlan';
+import { getNoCodeMonetizationExperiment } from '../utils/getNoCodeMonetizationExperiment';
 
 interface MonetizationChargesModalMobileProps {
   isOpen: boolean;
@@ -34,7 +35,8 @@ const MonetizationChargesModalMobile: React.FC<MonetizationChargesModalMobilePro
   bannerKey,
 }) => {
   const { title } = content[bannerKey][screen];
-  const pricingPlanForMerchant = getPricingPlan(user);
+  const isNoCodeMonetizationExperimentOn = getNoCodeMonetizationExperiment();
+  const pricingPlanForMerchant = getPricingPlan(user, isNoCodeMonetizationExperimentOn);
   const initialFocusRef = useRef<HTMLElement | null>(null);
 
   const closeModal = () => {

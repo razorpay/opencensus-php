@@ -28,6 +28,7 @@ import {
 import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import getPricingPlan from 'merchant/components/Announcements/MonetizationCharges/utils/getPricingPlan';
+import { getNoCodeMonetizationExperiment } from 'merchant/components/Announcements/MonetizationCharges/utils/getNoCodeMonetizationExperiment';
 
 const CustomBadge = ({ text }: { text: string }) => {
   return (
@@ -73,7 +74,8 @@ const NavLinkItem = ({
   const { isConfigTagEnabled } = useI18Service();
   const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
   const isRTUXHomepage = useIsRTUXHomepageEnabled();
-  const pricingPlanForMerchant = getPricingPlan(user);
+  const isNoCodeMonetizationExperimentOn = getNoCodeMonetizationExperiment();
+  const pricingPlanForMerchant = getPricingPlan(user, isNoCodeMonetizationExperimentOn);
 
   // Checkout360 experience
   if (abExperiments?.magicx_publicapp_cod?.variables?.result === 'on') {

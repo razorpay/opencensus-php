@@ -23,20 +23,13 @@ import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 import { MonetizationChargesDetailsWrapper, NoCodeAppButton, NoCodeAppButtonIcon } from './styled';
 import { User } from 'common/typings';
 import getPricingPlan from '../utils/getPricingPlan';
+import { getNoCodeMonetizationExperiment } from '../utils/getNoCodeMonetizationExperiment';
 
 const getBannerRates = (pricingPlan: string | null) => {
-  switch (pricingPlan) {
-    case '2%':
-      return ['3%', '3.5%'];
-    case '2.1%':
-      return ['3.1%', '3.6%'];
-    case '2.2%':
-      return ['3.2%', '3.7%'];
-    case '2.5%':
-      return ['3.5%', '4%'];
-    default:
-      return [null, null];
-  }
+  if (!pricingPlan) return [null, null];
+  const price = Number(pricingPlan?.split('%')?.[0]);
+  if (isNaN(price)) return [null, null];
+  return [`${price + 1}%`, `${price + 1.5}%`];
 };
 
 interface MonetizationChargesDetailsProps {
@@ -59,7 +52,8 @@ const MonetizationChargesDetails: React.FC<MonetizationChargesDetailsProps> = ({
   const { isDesktop } = useBladeBreakpoints();
   const { noCodeAppsBenefits } = content[bannerKey];
   const { title } = content[bannerKey]?.[screen];
-  const pricingPlanForMerchant = getPricingPlan(user);
+  const isNoCodeMonetizationExperimentOn = getNoCodeMonetizationExperiment();
+  const pricingPlanForMerchant = getPricingPlan(user, isNoCodeMonetizationExperimentOn);
   const [creditCardPlan, intlCreditCardPlan] = getBannerRates(pricingPlanForMerchant);
   const tooltipContent = `*Instruments like Diners and Amex Cards, International Cards, EMI (Credit Card, Debit Card & Cardless) & Corporate (Business) Credit Cards will be charged at ${creditCardPlan}. International Amex Cards will be charged at ${intlCreditCardPlan}.`;
 

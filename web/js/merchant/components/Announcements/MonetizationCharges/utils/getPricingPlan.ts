@@ -1,27 +1,24 @@
-import { getNoCodeMonetizationExperiment } from './getNoCodeMonetizationExperiment';
-
-const getPricingPlan = (user: any) => {
+const getPricingPlan = (user: any, isNoCodeMonetizationExperimentOn: boolean) => {
   const pricingPlanId = user?.merchant?.pricing_plan_id;
-  const isNoCodeMonetizationExperimentOn = getNoCodeMonetizationExperiment();
 
   if (!pricingPlanId) {
     return null;
   }
 
-  switch (pricingPlanId) {
-    case 'Og341WhcTYm2JZ':
-      return '2.1%';
-    case 'Og362mlR9xxuoY':
-      return '2.2%';
-    case 'Og373UFu1pj3i1':
-      return '2.5%';
-    case '1In3Yh5Mluj605':
-      return isNoCodeMonetizationExperimentOn ? '2%' : null;
-    case 'FL6zMNWhnSUooe':
-      return isNoCodeMonetizationExperimentOn ? '2%' : null;
-    default:
-      return null;
+  if (pricingPlanId === '1In3Yh5Mluj605' || pricingPlanId === 'FL6zMNWhnSUooe') {
+    return isNoCodeMonetizationExperimentOn ? '2%' : null;
   }
+
+  const pricingPlanConfig = user?.pricing_plan_config;
+
+  if (!pricingPlanConfig) return null;
+
+  const nocodeappPricingApplicable = pricingPlanConfig?.nocodeapp_pricing_applicable;
+  const nocodeappPercentRate = pricingPlanConfig?.nocodeapp_percent_rate;
+
+  if (!nocodeappPricingApplicable || !nocodeappPercentRate) return null;
+  const truncatedPlan = Math.floor(Number(nocodeappPercentRate) * 10) / 10;
+  return truncatedPlan % 1 === 0 ? `${truncatedPlan.toFixed(0)}%` : `${truncatedPlan.toFixed(1)}%`;
 };
 
 export default getPricingPlan;

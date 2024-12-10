@@ -9,6 +9,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 import { User } from 'common/typings';
 import getPricingPlan from '../utils/getPricingPlan';
+import { getNoCodeMonetizationExperiment } from '../utils/getNoCodeMonetizationExperiment';
 
 interface MonetizationChargesModalDesktopProps {
   isOpen: boolean;
@@ -34,7 +35,8 @@ const MonetizationChargesModalDesktop: React.FC<MonetizationChargesModalDesktopP
   bannerKey,
 }) => {
   const { title } = content[bannerKey][screen];
-  const pricingPlanForMerchant = getPricingPlan(user);
+  const isNoCodeMonetizationExperimentOn = getNoCodeMonetizationExperiment();
+  const pricingPlanForMerchant = getPricingPlan(user, isNoCodeMonetizationExperimentOn);
   const closeModal = () => {
     setShowProductWiseBenefits(false);
     setShowCustomPricing(false);
