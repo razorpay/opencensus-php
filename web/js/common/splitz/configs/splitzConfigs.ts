@@ -1512,7 +1512,9 @@ export const splitzConfig: SplitzInitConfig = {
     },
     {
       matchByDashboard: ['product'],
-      routesToMatch: [/^(\/optimizer\/(add-provider|update-provider|provider\/[^/]*$))/i],
+      routesToMatch: [
+        /^(\/optimizer\/(onboarding|add-provider|update-provider|provider\/[^/]*$))/i,
+      ],
       abExperiments: [
         {
           uniqueHashKey: 'checkout_dot_com_optimizer_gateway',
@@ -1551,6 +1553,22 @@ export const splitzConfig: SplitzInitConfig = {
           experimentId: {
             beta: 'NW0ESOMHunD3on',
             production: 'Nl2wGYuH4sQ9ek',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
+          uniqueHashKey: 'opti_sme_onboarding',
+          experimentId: {
+            beta: 'PIpuaVkVfMGhGH',
+            production: 'PVTCzMgAJV37ne',
           },
           defaultVariant: {
             name: 'variables',
