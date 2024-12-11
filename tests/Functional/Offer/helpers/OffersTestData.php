@@ -2111,4 +2111,21 @@ return [
             ]
         ]
     ],
+
+    'testFetchOffersDiscountForSubscription' => [
+        'request'  => [
+            'content' => [
+                "expired"         => "0",
+                "active"          => "1",
+                "amount"          => "11620",
+            ],
+            'url'     => '/offers/subscription/discounted_amount',
+            'method'  => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'offer_valid' => 1
+            ]
+        ]
+    ],
 ];

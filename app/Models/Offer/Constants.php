@@ -163,6 +163,8 @@ final class Constants
 
     const OFFERS_ENGINE_REVERSE_SHADOW_EXP = 'app.offers_engine_reverse_shadow_exp_id';
 
+    const OFFERS_ENGINE_FIND_BY_PUBLIC_ID_MIGRATION_EXP = 'app.offers_engine_find_by_public_id_migration_exp_id';
+
     // FACT CONSTANTS
 
     // order fact

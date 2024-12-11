@@ -152,7 +152,8 @@ trait ValidatesAndAppliesOffer
         // If offer is present in the request, we need to validate it against the order.
         if ($offerId !== '' && $offers->contains($offerId) === false) {
 
-            $offer = $this->repo->offer->findByPublicId(OfferEntity::getSignedId($offerId));
+            $offer = $this->repo->offer->findByPublicIdAndMerchantId(
+                OfferEntity::getSignedId($offerId), $checkoutOrder->getMerchantId());
 
             if ($offer->isPlatformOffer())
             {
