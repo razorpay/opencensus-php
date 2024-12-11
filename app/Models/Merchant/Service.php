@@ -6885,7 +6885,7 @@ class Service extends Base\Service
             $data[EntityConstants::MERCHANT_DETAIL][DeviceDetailConstants::WORKFLOW_TYPE] = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
             $data[EntityConstants::MERCHANT_DETAIL][DeviceDetailConstants::WORKFLOW_DETAILS] = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS);
         }
-       
+
         if($merchantDetail != null) {
 
             $merchantAov = $merchantDetail->avgOrderValue;
@@ -7946,7 +7946,7 @@ class Service extends Base\Service
             'experiment_id' => $this->app['config']->get(MerchantOnboardingProxyController::LINKED_ACCOUNT_MODULAR_ONBOARDING_ACTIVATE_EXPERIMENT_ID),
         ];
         $linkedAccountModularOnboardingEnabled =  $this->core()->isSplitzExperimentEnable($properties, 'enable');
-        if(ORG_ENTITY::isOrgCurlec($merchant->getOrgId()) and $linkedAccountModularOnboardingEnabled){
+        if(!(new MerchantDetailCore())->isSubmittedViaProductConfigApi() and $isLinkedAccount === true and ORG_ENTITY::isOrgCurlec($merchant->getOrgId()) and $linkedAccountModularOnboardingEnabled){
 
             $this->trace->info(
                 TraceCode::LINKED_ACCOUNT_MODULAR_ONBOARDING,
