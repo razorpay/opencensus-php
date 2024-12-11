@@ -8032,6 +8032,17 @@ class Processor
          */
         $method = $payment->getMethod();
 
+        if (($method === Method::WALLET) &&
+            ($gateway === Payment\Gateway::TNGD || $gateway === Payment\Gateway::EGHL)) {
+
+            $this->trace->info(TraceCode::MY_WALLET_ASYNC_PAYMENT_STATUS, [
+                'status' => $payment->getStatus(),
+                'wallet' => $payment->getWallet()
+            ]);
+
+            return $this->getMYWalletPaymentStatus();
+        }
+
         if (($gateway === Payment\Gateway::PAYTM or $gateway === Payment\Gateway::CCAVENUE) and
             ($method !== Payment\Method::UPI))
         {
@@ -8376,6 +8387,40 @@ class Processor
             $response['status'] = 'successful';
 
             $response['razorpay_payment_id'] = $this->payment->getId();
+        }
+
+        return $response;
+    }
+
+    public function getMYWalletPaymentStatus(): array
+    {
+        $response = [];
+
+        // Check if payment is in a 'created' or 'failed' state
+        if ($this->payment->isCreated() || $this->payment->isFailed()) {
+            if ($this->payment->isCreated()) {
+                $response['status'] = 'created';
+            } else {
+                $metadata = ['payment_id' => $this->payment->getPublicId()];
+
+                if ($this->payment->hasOrder()) {
+                    $order = $this->payment->order;
+                    $metadata['order_id'] = $order->getPublicId();
+                }
+
+                throw new Exception\BadRequestException(
+                    $this->payment->getInternalErrorCode(),
+                    null,
+                    $metadata
+                );
+            }
+        }
+
+        // Check if payment is in an authorized or captured
+        if ($this->payment->isAuthorized() || $this->payment->isCaptured()) {
+            $order = $this->payment->order;
+            $response['razorpay_order_id'] = $order->getPublicId();
+            $response['razorpay_payment_id'] = $this->payment->getPublicId();
         }
 
         return $response;
