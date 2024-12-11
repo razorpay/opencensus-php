@@ -182,7 +182,10 @@ final class RepoAndFunctionToSplitzMap
         "MERCHANT_HANDLE_VALIDATION",
         "MERCHANT_DETAIL_CONTACT_MOBILE_VALIDATION",
         "deletePartnerDashboardAccessOnSubmerchants",
-        "getMerchantsAttributeForAdmin"
+        "getMerchantsAttributeForAdmin",
+        "baseEagerLoadRelation",
+        "fetchLinkedAccountIdsForParentMerchant",
+        "fetchMultipleEntities",
     );
 
     public const SPLITZ_REMOVED_TIDB_FILTER = array(
