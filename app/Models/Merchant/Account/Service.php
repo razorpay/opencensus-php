@@ -53,6 +53,8 @@ class Service extends Merchant\Service
      */
     public function createLinkedAccount(array $input): array
     {
+        $this->core()->checkLinkedAccountBetaCreateEnabled($this->merchant);
+
         $account = $this->core()->createLinkedAccount($input, $this->merchant);
 
         return $account->toArrayPublic();

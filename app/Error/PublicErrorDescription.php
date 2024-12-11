@@ -1612,6 +1612,8 @@ class PublicErrorDescription
     const BAD_REQUEST_DCC_CONFIG_PRESENT                                            = 'Dcc Config is already present for the provided merchant';
 
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST                       = 'Must not be able to make live request when not activated';
+
+    const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_BETA_LINKED_ACCOUNT_CREATION       = 'Merchant is not activated for beta linked account creation';
     const BAD_REQUEST_BUSINESS_BANKING_NOT_ENABLED_FOR_VA_ACTIVATION                = 'Business banking is required for VA activation';
     const BAD_REQUEST_SUBSCRIPTION_OFFER_METHOD_MISMATCH                            = 'Payment method does not match with offer payment method';
 

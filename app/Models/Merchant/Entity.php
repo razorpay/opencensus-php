@@ -1057,6 +1057,11 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::ENABLE_CUSTOMER_AMOUNT);
     }
 
+    public function isLinkedAccountBetaCreateEnabled() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::BETA_LA_CREATE_ENABLE);
+    }
+
     public function linkedAccountsRequireKyc(): bool
     {
         return $this->getAttribute(self::LINKED_ACCOUNT_KYC);
