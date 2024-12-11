@@ -681,6 +681,16 @@ class Payment extends Base
             }
         }
 
+
+        if ($payment->isCreditLineOnUpi()=== true)
+        {
+            if (($payment->isFeeBearerCustomer() === false) and
+                ($payment->checkIfCreditLineOnUPIPricingSplitzExperimentEnabled() === true))
+            {
+                $receiverType = PaymentsUpi\PayerAccountType::PRICING_PLAN_RECEIVER_TYPE_CREDIT_LINE;
+            }
+        }
+
         /*
          *  For CC on Turbo UPI payments, separate pricing is to be applied INSTEAD of the base UPI pricing.
          *  CC on Turbo UPI pricing is identified by
