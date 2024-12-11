@@ -1974,7 +1974,9 @@ class Validator extends Base\Validator
     {
         $featureNames = array_keys($input['features']);
 
-        $visibleFeatures = array_keys(Feature\Constants::$visibleFeaturesMap);
+        $core = new Feature\Core();
+
+        $visibleFeatures = array_keys($core->getVisibleFeatureMap());
         $editableFeature = Feature\Constants::$merchantEditableFeatures;
         $featureDependency = array_keys(Feature\Constants::$featureDependencyMap);
 

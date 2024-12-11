@@ -8,6 +8,7 @@ use Config;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -51,6 +52,8 @@ class Core extends Base\Core
      */
     protected $payoutServiceMerchantConfigClient;
 
+    protected $dcsFeatureService;
+
     public function __construct()
     {
         parent::__construct();
@@ -61,6 +64,7 @@ class Core extends Base\Core
         }
 
         $this->payoutServiceMerchantConfigClient = $this->app[PayoutService\MerchantConfig::PAYOUT_SERVICE_MERCHANT_CONFIG];
+        $this->dcsFeatureService = $this->app['dcs'];
     }
 
     /**
@@ -499,7 +503,7 @@ class Core extends Base\Core
         {
             $featureName     = $feature->getName();
 
-            $visibleFeatures = Constants::$visibleFeaturesMap;
+            $visibleFeatures = $this->getVisibleFeatureMap();
 
             $featureDisplayName = $visibleFeatures[$featureName][Constants::DISPLAY_NAME];
 
@@ -1052,7 +1056,7 @@ class Core extends Base\Core
 
         $featureName     = $feature->getName();
 
-        $visibleFeatures = Constants::$visibleFeaturesMap;
+        $visibleFeatures = $this->getVisibleFeatureMap();
 
         $featureDisplayName = $visibleFeatures[$featureName][Constants::DISPLAY_NAME];
 
@@ -1541,5 +1545,115 @@ class Core extends Base\Core
         }
 
         return $feature;
+    }
+
+    public function getVisibleFeatureMap(): array
+    {
+        $visibleFeatureMap = Constants::$visibleFeaturesMap;
+
+        $this->trace->info(TraceCode::FEATURE_FETCH_FROM_DCS, [
+            'message' => 'count_pre_dcs_call',
+            'VisibleFeatureMapStatic_Count' => count($visibleFeatureMap),
+        ]);
+
+        if($this->isFeatureFetchFromDCSExpEnabled() === true) {
+            $this->trace->info(TraceCode::FEATURE_FETCH_FROM_DCS, [
+                'message' => 'check_splitz_exp_enabled',
+                'IS_DCS_ENABLED' => true,
+            ]);
+            $allFeatureMap = $this->dcsFeatureService->fetchAllFeatures();
+            $existingKeys = array_map('strtolower', array_keys($visibleFeatureMap));
+
+            if (empty($allFeatureMap) === false) {
+                foreach ($allFeatureMap as $key => $featureDetails) {
+                    // Normalize the key to lowercase for case-insensitive comparison
+                    $normalizedKey = strtolower($key);
+
+                    if (in_array($normalizedKey, $existingKeys) === false) {
+                        $visibleFeatureMap[$normalizedKey] = [
+                            'feature' => $normalizedKey,
+                            'display_name' => $featureDetails['display_name'],
+                            'documentation' => $featureDetails['documentation'],
+                        ];
+                    }
+                }
+            }
+        }
+
+        $this->trace->info(TraceCode::FEATURE_FETCH_FROM_DCS, [
+            'message' => 'count_post_dcs_call',
+            'VisibleFeatureMap_DCS_Fetch_Count' => count($visibleFeatureMap),
+        ]);
+
+        return $visibleFeatureMap;
+    }
+
+    public function getFeatureValueMap(): array
+    {
+        $featureValueMap = Constants::$featureValueMap;
+        $this->trace->info(TraceCode::FEATURE_FETCH_FROM_DCS, [
+            'message' => 'count_pre_dcs_call',
+            'FeatureValueMapStatic_Count' => count($featureValueMap),
+        ]);
+
+        if($this->isFeatureFetchFromDCSExpEnabled() === true) {
+            $this->trace->info(TraceCode::FEATURE_FETCH_FROM_DCS, [
+                'message' => 'check_splitz_exp_enabled',
+                'IS_DCS_ENABLED' => true,
+            ]);
+
+            $allFeatureMap = $this->dcsFeatureService->fetchAllFeatures();
+            $existingKeys = array_map('strtolower', array_keys($featureValueMap));
+
+            if (empty($allFeatureMap) === false) {
+                foreach ($allFeatureMap as $key => $featureDetails) {
+                    $normalizedKey = strtolower($key);
+
+                    if (in_array($normalizedKey, $existingKeys) === false) {
+                        $featureValueMap[$normalizedKey] = $featureDetails['default_value'];
+                    }
+                }
+            }
+        }
+
+        $this->trace->info(TraceCode::FEATURE_FETCH_FROM_DCS, [
+            'message' => 'count_post_dcs_call',
+            'FeatureValueMap_DCS_Fetch_Count' => count($featureValueMap),
+        ]);
+
+        return $featureValueMap;
+    }
+
+    public function isFeatureFetchFromDCSExpEnabled(string $merchantId = ""): bool
+    {
+        $enabled_variant = "enable";
+
+        try
+        {
+            $properties = [
+                'id' => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get(Constants::ENABLE_FEATURE_FETCH_FROM_DCS_EXP_ID),
+                'request_data' => json_encode(['merchantId' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'message' => 'is_enable_feature_fetch_from_dcs_enabled',
+                'SPLITZ_RESPONSE' => $response,
+            ]);
+
+            $variant = $response['response']['variant']['name'] ?? 'disable';
+
+            return $variant === $enabled_variant;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get(Constants::ENABLE_FEATURE_FETCH_FROM_DCS_EXP_ID) ?? null
+            ]);
+
+            return false;
+        }
     }
 }

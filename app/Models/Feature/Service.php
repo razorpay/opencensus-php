@@ -772,7 +772,9 @@ class Service extends Base\Service
             ->feature
             ->fetchByEntityTypeAndEntityId($entityType, $entityId);
 
-        $response['all_features'] =  array_keys(Constants::$featureValueMap);
+        $core = new Core();
+        $featureValueMap = $core->getFeatureValueMap();
+        $response['all_features'] =  array_keys($featureValueMap);
 
         return $response;
     }
@@ -785,7 +787,9 @@ class Service extends Base\Service
             ->feature
             ->fetchByEntityTypeAndEntityId($entityType, $entityId);
 
-        $response['all_features'] =  array_keys(Constants::$featureValueMap);
+        $core = new Core();
+        $featureValueMap = $core->getFeatureValueMap();
+        $response['all_features'] =  array_keys($featureValueMap);
 
         return $response;
     }
@@ -1102,7 +1106,11 @@ class Service extends Base\Service
 
         $enabledFeatures = array_unique(array_merge($enabledFeatures, $roleEnabledFeatures));
 
-        foreach (Constants::$visibleFeaturesMap as $visibleFeature => $featureDetails)
+        $core = new Core();
+
+        $visibleFeatureMap = $core->getVisibleFeatureMap();
+
+        foreach ($visibleFeatureMap as $visibleFeature => $featureDetails)
         {
             $feature = $featureDetails['feature'];
 

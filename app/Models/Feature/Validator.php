@@ -69,7 +69,9 @@ class Validator extends Base\Validator
 
     protected function validateName($attribute, $value)
     {
-        $allFeatures = array_keys(Constants::$featureValueMap);
+        $core = new Core();
+        $allFeatureMap = $core->getFeatureValueMap(null);
+        $allFeatures = array_keys($allFeatureMap);
 
         array_push($allFeatures,Constants::PG_LEDGER_REVERSE_SHADOW );
 
@@ -301,7 +303,10 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException('Feature name not provided');
         }
 
-        $allFeatures = array_keys(Constants::$featureValueMap);
+        $core = new Core();
+        $allFeatureMap = $core->getFeatureValueMap();
+
+        $allFeatures = array_keys($allFeatureMap);
 
         if (in_array($featureName, $allFeatures) === false)
         {
@@ -311,7 +316,9 @@ class Validator extends Base\Validator
 
     public function validateFeatureNames(array $featureNames)
     {
-        $allFeatures = array_keys(Constants::$featureValueMap);
+        $core = new Core();
+        $allFeatureMap = $core->getFeatureValueMap();
+        $allFeatures = array_keys($allFeatureMap);
 
         array_push($allFeatures,Constants::PG_LEDGER_REVERSE_SHADOW );
 

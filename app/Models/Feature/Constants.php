@@ -5086,7 +5086,9 @@ class Constants
 
     public static function getFeatureValue($featureName): bool
     {
-        return self::$featureValueMap[$featureName];
+        $core = new Core();
+        $featureValueMap = $core->getFeatureValueMap();
+        return $featureValueMap[$featureName];
     }
 
     public const FEATURES_WITHOUT_MERCHANT_AUTHENTICATION = [
@@ -5120,4 +5122,6 @@ class Constants
     const MERCHANT_BALANCE = "merchant_balance";
 
     const IS_AMOUNT_VALID = "is_amount_valid";
+
+    const ENABLE_FEATURE_FETCH_FROM_DCS_EXP_ID = "app.enable_feature_fetch_from_dcs_exp_id";
 }

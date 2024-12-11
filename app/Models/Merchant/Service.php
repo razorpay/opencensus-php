@@ -301,6 +301,8 @@ class Service extends Base\Service
 
     protected $app;
 
+    protected $featureCore;
+
     public function __construct()
     {
         parent::__construct();
@@ -318,6 +320,8 @@ class Service extends Base\Service
         $this->pgosProxyController = new MerchantOnboardingProxyController();
 
         $this->host = $this->app['config']->get('app.merchant_policies_subdomain');
+
+        $this->featureCore = new Feature\Core();
     }
 
     /**
@@ -6591,16 +6595,18 @@ class Service extends Base\Service
     {
         $featureNames = [];
 
+        $visibleFeatureMap = $this->featureCore->getVisibleFeatureMap();
+
         foreach ($features as $name => $value)
         {
             $value = (bool) $value;
 
             $defaultValue = Feature\Constants::getFeatureValue(
-                    Feature\Constants::$visibleFeaturesMap[$name]['feature']);
+                    $visibleFeatureMap[$name]['feature']);
 
             if ($value === $defaultValue)
             {
-                $featureNames[] = Feature\Constants::$visibleFeaturesMap[$name]['feature'];
+                $featureNames[] = $visibleFeatureMap[$name]['feature'];
             }
         }
 
@@ -6619,16 +6625,18 @@ class Service extends Base\Service
     {
         $featureNames = [];
 
+        $visibleFeatureMap = $this->featureCore->getVisibleFeatureMap();
+
         foreach ($features as $name => $value)
         {
             $value = (bool) $value;
 
             $defaultValue = Feature\Constants::getFeatureValue(
-                    Feature\Constants::$visibleFeaturesMap[$name]['feature']);
+                    $visibleFeatureMap[$name]['feature']);
 
             if ($value !== $defaultValue)
             {
-                $featureNames[] = Feature\Constants::$visibleFeaturesMap[$name]['feature'];
+                $featureNames[] = $visibleFeatureMap[$name]['feature'];
             }
         }
 
@@ -13197,11 +13205,13 @@ class Service extends Base\Service
     {
         $featureNames = [];
 
+        $visibleFeatureMap = $this->featureCore->getVisibleFeatureMap();
+
         foreach ($features as $name)
         {
             try
             {
-                $featureName = Feature\Constants::$visibleFeaturesMap[$name]['feature'];
+                $featureName = $visibleFeatureMap[$name]['feature'];
 
                 if(isset($featureName) === false || empty($featureName) === true)
                 {
@@ -13239,8 +13249,9 @@ class Service extends Base\Service
     private function sendMerchantNotifications($merchant, $features)
     {
         foreach ($features as $name)
+        $visibleFeatureMap = $this->featureCore->getVisibleFeatureMap();
         {
-            switch(Feature\Constants::$visibleFeaturesMap[$name]['feature'])
+            switch($visibleFeatureMap[$name]['feature'])
             {
                 case FeatureConstants::ACCEPT_ONLY_3DS_PAYMENTS:
                     $args = [
@@ -13299,7 +13310,9 @@ class Service extends Base\Service
 
         $featuresToRemove = [];
 
-        $featuresToRemove[] = Feature\Constants::$visibleFeaturesMap[FeatureConstants::ACCEPT_ONLY_3DS_PAYMENTS]['feature'];
+        $visibleFeatureMap = $this->featureCore->getVisibleFeatureMap();
+
+        $featuresToRemove[] = $visibleFeatureMap[FeatureConstants::ACCEPT_ONLY_3DS_PAYMENTS]['feature'];
 
         $shouldSync = true;
 

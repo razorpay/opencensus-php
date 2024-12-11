@@ -1171,7 +1171,7 @@ return array(
     'p2p' => [
         'encryption_key' => env('P2P_NACL_SESSION_TOKEN_ENCRYPTION_KEY')
     ],
-  
+
     'dcs_edit_enabled_splitz_exp_id' => env('DCS_EDIT_ENABLED_SPLITZ_EXP_ID'),
 
     'dcs_proxy_enabled_splitz_exp_id' => env('DCS_PROXY_ENABLED_SPLITZ_EXP_ID'),
@@ -1191,5 +1191,7 @@ return array(
 
     'skip_optimizer_card_callback' => env('SKIP_OPTIMIZER_CARD_CALLBACK'),
 
-    'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID')
+    'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID'),
+
+    'enable_feature_fetch_from_dcs_exp_id' => env('ENABLE_FEATURE_FETCH_FROM_DCS_EXP_ID')
 );

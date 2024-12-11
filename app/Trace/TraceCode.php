@@ -8,6 +8,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 {
     //consents
     const BALANCE_ANALYSIS                          = 'BALANCE_ANALYSIS';
+    const FEATURE_FETCH_FROM_DCS                    = 'FEATURE_FETCH_FROM_DCS';
     const PS_CA_FEE_RECOVERY_FAILED                 = 'PS_CA_FEE_RECOVERY_FAILED';
     const PS_CA_PAYOUT_STATUS_FAILED                = 'PS_CA_PAYOUT_STATUS_FAILED';
     const SKIP_NOTIFY_ON_LATE_AUTH = 'SKIP_NOTIFY_ON_LATE_AUTH';
@@ -326,6 +327,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DCS_GET_BANKING_CONFIG                                = 'DCS_GET_BANKING_CONFIG';
 
     const DCS_UPSERT_SAVED_PAYMENT_COLUMNS                      = 'DCS_UPSERT_SAVED_PAYMENT_COLUMNS';
+    const DCS_GET_ALL_FEATURES_FAILED                           = 'DCS_GET_ALL_FEATURES_FAILED';
 
     // payout links
     const PAYOUT_LINK_GET_MODE_AND_MERCHANT                     = "PAYOUT_LINK_GET_MODE_AND_MERCHANT";
