@@ -37,9 +37,9 @@ class Repository extends Base\Repository
         if($switchOverExperimentEnabled)
         {
             $partnershipsRequest= new PartnershipsConfigDTO();
-            $partnershipsRequest->setEntityId($appId);
+            $partnershipsRequest->setEntityId([$appId]);
             $partnershipsRequest->setEntityType(Constants::APPLICATION);
-            $partnershipsRequest->setOriginId("NULL");
+            $partnershipsRequest->setOriginId(["NULL"]);
             $partnershipsRequest->setOriginType("NULL");
             $partnershipsRequest->setLimit(1);
             [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,__FUNCTION__,true);
@@ -72,9 +72,9 @@ class Repository extends Base\Repository
         if($switchOverExperimentEnabled)
         {
             $partnershipsRequest= new PartnershipsConfigDTO();
-            $partnershipsRequest->setEntityId($subMerchantId);
+            $partnershipsRequest->setEntityId([$subMerchantId]);
             $partnershipsRequest->setEntityType(Constants::MERCHANT);
-            $partnershipsRequest->setOriginId($appId);
+            $partnershipsRequest->setOriginId([$appId]);
             $partnershipsRequest->setOriginType(Constants::APPLICATION);
             $partnershipsRequest->setLimit(1);
             [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,__FUNCTION__,true);
@@ -175,9 +175,9 @@ class Repository extends Base\Repository
         if($switchOverExperimentEnabled)
         {
             $partnershipsRequest= new PartnershipsConfigDTO();
-            $partnershipsRequest->setEntityId($subMerchantId);
+            $partnershipsRequest->setEntityId([$subMerchantId]);
             $partnershipsRequest->setEntityType(Constants::MERCHANT);
-            $partnershipsRequest->setOriginId($partnerId);
+            $partnershipsRequest->setOriginId([$partnerId]);
             $partnershipsRequest->setOriginType(Constants::MERCHANT);
             $partnershipsRequest->setLimit(1);
             [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,__FUNCTION__,true);
@@ -202,22 +202,22 @@ class Repository extends Base\Repository
      */
     public function getPlatformPartnerDefaultConfig(string $partnerId)
     {
-        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
-//        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
-//        if(!$switchOverExperimentEnabled)
-//        {
-//            $partnershipsRequest= new PartnershipsConfigDTO();
-//            $partnershipsRequest->setEntityId($partnerId);
-//            $partnershipsRequest->setEntityType(Constants::MERCHANT);
-//            $partnershipsRequest->setOriginId("NULL");
-//            $partnershipsRequest->setOriginType("NULL");
-//            $partnershipsRequest->setLimit(1);
-//            [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,true);
-//            if($redirectToApi===false)
-//            {
-//                return $response;
-//            }
-//        }
+//        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsConfigDTO();
+            $partnershipsRequest->setEntityId([$partnerId]);
+            $partnershipsRequest->setEntityType(Constants::MERCHANT);
+            $partnershipsRequest->setOriginId(["NULL"]);
+            $partnershipsRequest->setOriginType("NULL");
+            $partnershipsRequest->setLimit(1);
+            [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,__FUNCTION__,true);
+            if($redirectToApi===false)
+            {
+                return $response;
+            }
+        }
 
         return $this->newQuery()
                     ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
@@ -273,21 +273,20 @@ class Repository extends Base\Repository
 
     public function fetchOverriddenConfigsByMerchantId(array $appIds, string $subMerchantId)
     {
-        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
-//        $flag=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
-//        if($flag===true)
-//        {
-//            $partnershipsRequest= new PartnershipsConfigDTO();
-//            $partnershipsRequest->setEntityId($subMerchantId);
-//            $partnershipsRequest->setEntityType(Constants::MERCHANT);
-//            $partnershipsRequest->setOriginId($appIds);
-//            $partnershipsRequest->setOrderBy([Entity::CREATED_AT,Entity::ID]);
-//            [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest);
-//            if($redirectToApi===false)
-//            {
-//                return new Base\PublicCollection($response);
-//            }
-//        }
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled===true)
+        {
+            $partnershipsRequest= new PartnershipsConfigDTO();
+            $partnershipsRequest->setEntityId([$subMerchantId]);
+            $partnershipsRequest->setEntityType(Constants::MERCHANT);
+            $partnershipsRequest->setOriginId($appIds);
+            $partnershipsRequest->setOrderBy([Entity::CREATED_AT,Entity::ID]);
+            [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,__FUNCTION__);
+            if(!$redirectToApi)
+            {
+                return new Base\PublicCollection($response);
+            }
+        }
 
         return $this->newQuery()
                     ->whereIn(Entity::ORIGIN_ID, $appIds)
@@ -298,24 +297,23 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchDefaultConfigForAppIds(array $appIds) {
-
-        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
-//        $flag=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
-//        if($flag===true)
-//        {
-//            $partnershipsRequest= new PartnershipsConfigDTO();
-//            $partnershipsRequest->setEntityId($appIds);
-//            $partnershipsRequest->setEntityType(Constants::MERCHANT);
-//            $partnershipsRequest->setOriginId("NULL");
-//            $partnershipsRequest->setOriginType("NULL");
-//            $partnershipsRequest->setOrderBy([Entity::CREATED_AT,Entity::ID]);
-//            [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest);
-//            if($redirectToApi===false)
-//            {
-//                return new Base\PublicCollection($response);
-//            }
-//        }
+    public function fetchDefaultConfigForAppIds(array $appIds)
+    {
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsConfigDTO();
+            $partnershipsRequest->setEntityId($appIds);
+            $partnershipsRequest->setEntityType(Constants::APPLICATION);
+            $partnershipsRequest->setOriginId(["NULL"]);
+            $partnershipsRequest->setOriginType("NULL");
+            $partnershipsRequest->setOrderBy([Entity::CREATED_AT,Entity::ID]);
+            [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,__FUNCTION__);
+            if(!$redirectToApi)
+            {
+                return new Base\PublicCollection($response);
+            }
+        }
 
         return $this->newQuery()
                     ->whereIn(Entity::ENTITY_ID, $appIds)

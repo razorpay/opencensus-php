@@ -1165,10 +1165,11 @@ class PartnershipsService extends Base\Service
                 'function' => $function,
                 'data' => $e->getData()
             ]);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PARTNERSHIPS_ACCESS_MAP_LIST_ERROR);
             throw $e;
         }
 
-        if (!array_key_exists('status_code', $response) || $response['status_code'] !== '200')
+        if (!array_key_exists('status_code', $response) || $response['status_code'] != '200')
         {
             $this->trace->count(Metric::SWITCH_OVER_PARTNERSHIPS_EXPERIMENT_FAILURE,[
                 'function' => $function,

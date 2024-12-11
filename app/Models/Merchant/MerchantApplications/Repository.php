@@ -44,7 +44,7 @@ class Repository extends Base\Repository
             $partnershipsRequest->setType($types);
             $partnershipsRequest->setTrashed($withTrashed);
             if(!empty($appId)) {
-                $partnershipsRequest->setApplicationId($appId);
+                $partnershipsRequest->setApplicationId([$appId]);
             }
             $partnershipsRequest->setOrderBy([Entity::TYPE,Entity::ID]);
             [$redirectToApi,$response]=$this->fetchMerchantApplicationsOnFilter($partnershipsRequest,__FUNCTION__,false,$mode);
@@ -124,7 +124,7 @@ class Repository extends Base\Repository
                     $partnershipsRequest->setType([$entityId]);
                     break;
                 case Entity::APPLICATION_ID:
-                    $partnershipsRequest->setApplicationId($entityId);
+                    $partnershipsRequest->setApplicationId([$entityId]);
                     break;
                 case Entity::MERCHANT_ID:
                     $partnershipsRequest->setMerchantId($entityId);
@@ -154,18 +154,17 @@ class Repository extends Base\Repository
      */
     public function fetchMerchantApplicationByAppIds(array $applicationIds) : Base\PublicCollection
     {
-        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
-//        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);;
-//        if($switchOverExperimentEnabled)
-//        {
-//            $partnershipsRequest= new PartnershipsMerchantApplicationsDTO();
-//            $partnershipsRequest->setApplicationId($applicationIds);
-//            [$redirectToApi,$response]=$this->fetchMerchantApplicationsOnFilter($partnershipsRequest,__FUNCTION__);
-//            if(!$redirectToApi)
-//            {
-//                return new Base\PublicCollection($response);
-//            }
-//        }
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);;
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsMerchantApplicationsDTO();
+            $partnershipsRequest->setApplicationId($applicationIds);
+            [$redirectToApi,$response]=$this->fetchMerchantApplicationsOnFilter($partnershipsRequest,__FUNCTION__);
+            if(!$redirectToApi)
+            {
+                return new Base\PublicCollection($response);
+            }
+        }
         return $this->newQuery()
                     ->whereIn(Entity::APPLICATION_ID, $applicationIds)
                     ->get();
@@ -183,7 +182,7 @@ class Repository extends Base\Repository
         {
             $partnershipsRequest= new PartnershipsMerchantApplicationsDTO();
             $partnershipsRequest->setType([$type]);
-            $partnershipsRequest->setApplicationId($applicationId);
+            $partnershipsRequest->setApplicationId([$applicationId]);
             [$redirectToApi,$response]=$this->fetchMerchantApplicationsOnFilter($partnershipsRequest,__FUNCTION__,true);
             if($redirectToApi===false)
             {
