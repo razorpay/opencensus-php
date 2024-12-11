@@ -62,6 +62,8 @@ class Base
 
     const FILE_GENERATION_TRIGGER  = '/twirp/rzp.settlements.file_generation.v1.FileGenerationService/TriggerFileGeneration';
 
+    const FETCH_URI                    = '/twirp/rzp.settlements.dashboard.v1.DashboardService/Fetch';
+
     const UPDATE_SCHDEULE  = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/UpdateSchedule';
 
     /* reason code mapping endpoint, supposed to be used by external services

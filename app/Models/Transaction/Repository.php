@@ -999,6 +999,15 @@ class Repository extends Base\Repository
         return $txns;
     }
 
+    public function fetchByIdFromTiDB($txnId)
+    {
+        $txns = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+                     ->where(Transaction\Entity::ID, '=', $txnId)
+                     ->get();
+
+        return $txns;
+    }
+
     public function fetchBySettlementIdAndSource($settlementId, $source, $skip, $limit, $sourceId)
     {
         $result = $this->newQueryWithConnection($this->getSlaveConnection())

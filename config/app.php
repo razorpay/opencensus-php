@@ -1018,6 +1018,8 @@ return array(
 
     'settlements_processed_comms_experiment_id' => env('SETTLEMENTS_PROCESSED_COMMS_EXPERIMENT_ID'),
 
+    'transfer_settlement_nss_experiment_id'=> env('TRANSFER_SETTLEMENT_NSS_EXPERIMENT_ID'),
+
     'fee_breakup_in_ledger_experiment_id' => env('FEE_BREAKUP_IN_LEDGER_EXP_ID'),
 
     'amount_credits_split_in_ledger_experiment_id' => env('AMOUNT_CREDITS_SPLIT_IN_LEDGER_EXPERIMENT_ID'),
