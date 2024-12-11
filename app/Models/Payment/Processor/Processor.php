@@ -1357,10 +1357,8 @@ class Processor
     private function isOptimizerCFBInternalFlow(): bool
     {
         $isOptimizerCFBFlow = $this->merchant->isAtLeastOneFeatureEnabled(Features::OPTIMIZER_CFB_FEATURES);
-        $isInternalFlow = $this->ba->isAppAuth();
         $isPaymentCreateAjaxRoute = $this->route->getCurrentRouteName() === 'payment_create_ajax';
-
-        return $isOptimizerCFBFlow && $isInternalFlow && $isPaymentCreateAjaxRoute;
+        return $isOptimizerCFBFlow && $isPaymentCreateAjaxRoute;
     }
 
     private function inputCurrencyNotINR($input): bool{
