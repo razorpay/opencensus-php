@@ -1357,10 +1357,8 @@ class Processor
     private function isOptimizerCFBInternalFlow(): bool
     {
         $isOptimizerCFBFlow = $this->merchant->isAtLeastOneFeatureEnabled(Features::OPTIMIZER_CFB_FEATURES);
-        $isInternalFlow = $this->ba->isAppAuth();
         $isPaymentCreateAjaxRoute = $this->route->getCurrentRouteName() === 'payment_create_ajax';
-
-        return $isOptimizerCFBFlow && $isInternalFlow && $isPaymentCreateAjaxRoute;
+        return $isOptimizerCFBFlow && $isPaymentCreateAjaxRoute;
     }
 
     private function inputCurrencyNotINR($input): bool{
@@ -8034,6 +8032,17 @@ class Processor
          */
         $method = $payment->getMethod();
 
+        if (($method === Method::WALLET) &&
+            ($gateway === Payment\Gateway::TNGD || $gateway === Payment\Gateway::EGHL)) {
+
+            $this->trace->info(TraceCode::MY_WALLET_ASYNC_PAYMENT_STATUS, [
+                'status' => $payment->getStatus(),
+                'wallet' => $payment->getWallet()
+            ]);
+
+            return $this->getMYWalletPaymentStatus();
+        }
+
         if (($gateway === Payment\Gateway::PAYTM or $gateway === Payment\Gateway::CCAVENUE) and
             ($method !== Payment\Method::UPI))
         {
@@ -8075,6 +8084,10 @@ class Processor
 
             return $response;
         }
+
+        $result = $this->checkTokenStatusForUpiRecurringOTMPayment($payment);
+        if($result !== null)
+            return $result;
 
         // If it failed recently, then throw relevant exception
         // directly for the failure.
@@ -8158,6 +8171,40 @@ class Processor
             2000);
 
         return $response;
+    }
+
+
+    protected function checkTokenStatusForUpiRecurringOTMPayment(Payment\Entity $payment)
+    {
+        if ($payment->isUpiRecurring() === false) {
+            return null;
+        }
+
+        if ($payment->isRecurringTypeInitial() === true) {
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            if ($token === null) {
+                return null;
+            }
+
+            // As this is made sure that the payment will be created only for local token
+            $upiMandate = $token->upiMandate;
+
+            if ($upiMandate === null) {
+                $upiMandate = $this->findUpiMandateUsingOrderIdAndUpdateToken($payment, $token);
+            }
+
+            if (($upiMandate !== null) and
+                ($upiMandate->getFrequency() === UpiMandate\Frequency::ONETIME) and
+                ($token->getRecurringStatus() === Token\RecurringStatus::CONFIRMED)) {
+                $response = [
+                    'razorpay_payment_id' => $payment->getPublicId(),
+                    'token_id' => $token->getPublicId(),
+                ];
+                return $response;
+            }
+        }
+        return null;
     }
 
     /**
@@ -8340,6 +8387,40 @@ class Processor
             $response['status'] = 'successful';
 
             $response['razorpay_payment_id'] = $this->payment->getId();
+        }
+
+        return $response;
+    }
+
+    public function getMYWalletPaymentStatus(): array
+    {
+        $response = [];
+
+        // Check if payment is in a 'created' or 'failed' state
+        if ($this->payment->isCreated() || $this->payment->isFailed()) {
+            if ($this->payment->isCreated()) {
+                $response['status'] = 'created';
+            } else {
+                $metadata = ['payment_id' => $this->payment->getPublicId()];
+
+                if ($this->payment->hasOrder()) {
+                    $order = $this->payment->order;
+                    $metadata['order_id'] = $order->getPublicId();
+                }
+
+                throw new Exception\BadRequestException(
+                    $this->payment->getInternalErrorCode(),
+                    null,
+                    $metadata
+                );
+            }
+        }
+
+        // Check if payment is in an authorized or captured
+        if ($this->payment->isAuthorized() || $this->payment->isCaptured()) {
+            $order = $this->payment->order;
+            $response['razorpay_order_id'] = $order->getPublicId();
+            $response['razorpay_payment_id'] = $this->payment->getPublicId();
         }
 
         return $response;

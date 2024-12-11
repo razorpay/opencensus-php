@@ -10,6 +10,7 @@ class Channel
     const ICICI   = 'icici';
     const AXIS    = 'axis';
     const YESBANK = 'yesbank';
+    const IDFC     = 'idfc';
 
     public static function getChannels()
     {
@@ -18,6 +19,7 @@ class Channel
             self::ICICI,
             self::AXIS,
             self::YESBANK,
+            self::IDFC,
         ];
     }
 
@@ -27,6 +29,7 @@ class Channel
             self::ICICI,
             self::AXIS,
             self::YESBANK,
+            self::IDFC,
         ];
     }
 

@@ -695,4 +695,44 @@ class Core extends Base\Core
         return $journal;
     }
 
+    public function getAggregateMerchantAmountCreditIdBalancesExpiredAtFromCredits($credits): array
+    {
+        $data = [];
+
+        if (count($credits) > 0)
+        {
+            foreach ($credits as $credit)
+            {
+                if($credit->getType() !== Type::AMOUNT)
+                {
+                    continue;
+                }
+
+                $data[$credit->getId()] = [$credit->getUnusedCredits(), $credit->getExpiredAt()];
+            }
+        }
+
+        return $data;
+    }
+
+    public function getAggregatedMerchantCreditBalancesFromCredits($credits): array
+    {
+        $data = [];
+
+        foreach ($credits as $credit)
+        {
+            if ($credit->getType() === Type::AMOUNT)
+            {
+                continue;
+            }
+            if (isset($data[$credit->getType()]) === false)
+            {
+                $data[$credit->getType()] = 0;
+            }
+
+            $data[$credit->getType()] += $credit->getUnusedCredits();
+        }
+
+        return $data;
+    }
 }

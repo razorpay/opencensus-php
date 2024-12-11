@@ -205,6 +205,45 @@ class Client
         return json_decode($res->body, true);
     }
 
+    public function wildcardAdminRequest(string $path, array $input): array
+    {
+        $this->trace->info(TraceCode::SELF_SERVE_WORKFLOW_SERVICE_TRACE_INFO, $input);
+
+        $res = $this->workflowServiceClient->request($path, $input);
+
+        if ($res->status_code !== 200)
+        {
+            $resBody = json_decode($res->body, true);
+
+            $description = array_pull($resBody, 'msg', "Error occurred");
+
+            if ($res->status_code >= 400 && $res->status_code <= 499)
+            {
+                $this->trace->error(TraceCode::BAD_REQUEST_WORKFLOW_WILDCARD_ADMIN_REQUEST_FAILED,
+                    [
+                        'response' => $res
+                    ]);
+                throw new Exception\BadRequestException(
+                    $description,
+                    ErrorCode::BAD_REQUEST_WORKFLOW_WILDCARD_ADMIN_REQUEST_FAILED,
+                    $input);
+            }
+            else
+            {
+                $this->trace->error(TraceCode::SERVER_ERROR_WORKFLOW_WILDCARD_ADMIN_REQUEST_FAILED,
+                    [
+                        'response' => $res
+                    ]);
+                throw new Exception\ServerErrorException(
+                    $description,
+                    ErrorCode::SERVER_ERROR_WORKFLOW_WILDCARD_ADMIN_REQUEST_FAILED,
+                    $input);
+            }
+        }
+
+        return json_decode($res->body, true);
+    }
+
     /**
      * @param array $input
      * @return mixed

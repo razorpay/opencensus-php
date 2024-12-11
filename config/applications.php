@@ -1101,6 +1101,12 @@ return [
         'timeout'                => env('XPERIENCE_URL_TIMEOUT_SECS', 25)
     ],
 
+    'abacus' => [
+        'url'                    => env('APP_ABACUS_URL', 'http://localhost:8000'),
+        'secret'                 => env('APP_ABACUS_SECRET'),
+        'timeout'                => env('ABACUS_URL_TIMEOUT_SECS', 25)
+    ],
+
     'vendor_experience' => [
         'url'               => env('APP_VENDOR_EXPERIENCE_URL'),
         'secret'            => env('APP_VENDOR_EXPERIENCE_SECRET'),
@@ -1660,6 +1666,10 @@ return [
 
     'cmma' => [
         'secret'       => env('CMMA_SERVICE_API_SECRET'),
+    ],
+
+    'admin-experience-service' => [
+        'secret'       => env('ADMIN_EXPERIENCE_SERVICE_SECRET'),
     ],
 
     'templating'    => [

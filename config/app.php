@@ -413,7 +413,7 @@ return array(
 
     'ledger_makeshift_dual_write_enabled' => env('LEDGER_MAKESHIFT_DUAL_WRITE_ENABLED'),
 
-    'api_ledger_dual_write_transfer_rearch' => env('API_LEDGER_DUAL_WRITE_TRANSFER_REARCH'),
+    'api_ledger_dual_write_rearch' => env('API_LEDGER_DUAL_WRITE_REARCH'),
 
     'partner_regenerate_referrals_links_exp_id' => env('PARTNER_REGENERATE_REFERRAL_LINKS_EXP_ID'),
 
@@ -667,11 +667,7 @@ return array(
 
     'pricing_fee_round_experiment_id' => env('PRICING_FEE_ROUND_EXPERIMENT_ID'),
 
-    'charge_collections_invoicing_experiment_id' => env('CHARGE_COLLECTIONS_INVOICING_EXPERIMENT_ID'),
-
     'fetch_merchant_consent_from_pgos_experimant_id' => env('FETCH_MERCHANT_CONSENTS_FROM_PGOS_EXPERIMENT_ID'),
-
-    'charge_collections_invoicing_x_experiment_id' => env('CHARGE_COLLECTIONS_INVOICING_X_EXPERIMENT_ID'),
 
     'ppi_wallet_on_upi_pricing_splitz_experiment_id' => env('PPI_WALLET_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
 
@@ -751,6 +747,8 @@ return array(
 
     'cross_border_skip_fee_bearer_check_experiment_id' => env('CROSS_BORDER_SKIP_FEE_BEARER_CHECK_EXPERIMENT_ID'),
 
+    'cross_border_payment_fee_fix_experiment_id' => env('CROSS_BORDER_PAYMENT_FEE_FIX_EXPERIMENT_ID'),
+
     'show_upi_autopay_method_on_dashboard' => env('SHOW_UPI_AUTOPAY_METHOD_ON_DASHBOARD'),
 
     'enable_force_auth_on_upi_autopay' => env('ENABLE_FORCE_AUTH_ON_UPI_AUTOPAY'),
@@ -805,15 +803,15 @@ return array(
 
     'account_statements_source_event_experiment_id' => env('ACCOUNT_STATEMENTS_SOURCE_EVENT_EXPERIMENT_ID'),
 
+    'mutex_lock_contact_experiment_id' => env('MUTEX_LOCK_CONTACT_EXPERIMENT_ID'),
+
+    'mutex_lock_fund_account_experiment_id' => env('MUTEX_LOCK_FUND_ACCOUNT_EXPERIMENT_ID'),
+
     '1cc_shipping_info_migration_splitz_experiment_id' => env('MAGIC_CHECKOUT_SHIPPING_INFO_MIGRATION_EXP_ID'),
 
     'magic_show_coupon_callout_experiment_id'  => env('MAGIC_SHOW_COUPON_CALLOUT_EXP_ID'),
 
     'merchant_automation_activation_exp_id' => env('MERCHANT_AUTOMATION_ACTIVATION_EXP_ID'),
-
-    'nc_automation_activation_exp_id' => env('NC_AUTOMATION_ACTIVATION_EXP_ID'),
-
-    'bank_cancelled_check_exp_id' => env('BANK_CANCELLED_CHECK_EXP_ID'),
 
     'nocodeapp_pricing_exp_id' => env('NOCODEAPP_PRICING_EXP_ID'),
 
@@ -1167,7 +1165,7 @@ return array(
     'p2p' => [
         'encryption_key' => env('P2P_NACL_SESSION_TOKEN_ENCRYPTION_KEY')
     ],
-
+  
     'dcs_edit_enabled_splitz_exp_id' => env('DCS_EDIT_ENABLED_SPLITZ_EXP_ID'),
 
     'dcs_proxy_enabled_splitz_exp_id' => env('DCS_PROXY_ENABLED_SPLITZ_EXP_ID'),
@@ -1186,5 +1184,6 @@ return array(
 
 
     'skip_optimizer_card_callback' => env('SKIP_OPTIMIZER_CARD_CALLBACK'),
+
     'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID')
 );

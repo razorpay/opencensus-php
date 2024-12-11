@@ -5,6 +5,7 @@ namespace RZP\Models\LedgerOutbox;
 use App;
 use Exception;
 use Carbon\Carbon;
+use RZP\Services\KafkaProducer;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Entity as EntityConstants;
@@ -30,6 +31,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Ledger\ReverseShadow;
 use RZP\Models\Adjustment\Status;
 use RZP\Models\Merchant\Balance\Type;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Settlement\Ondemand\Repository;
 use RZP\Models\Settlement\Ondemand\Service as Service;
@@ -896,26 +898,37 @@ class Core extends Base\Core
         }
         else if($transactionType === Constants::PAYMENT)
         {
-            if($transactorEvent === LedgerConstants::GATEWAY_CAPTURED)
-            {
-                $payment = $this->repo
-                    ->payment
-                    ->findByPublicIdAndMerchant($transactorPublicId, $this->merchant, []);
+            $payment = $this->repo
+                ->payment
+                ->findByPublicIdAndMerchant($transactorPublicId, $this->merchant, []);
 
+            $dualWriteRearchEnabled = $this->isAPILedgerDualWriteRearchSplitzEnabled($payment->merchant);
+
+            if ($dualWriteRearchEnabled === true)
+            {
+                if($transactorEvent === LedgerConstants::MERCHANT_CAPTURED)
+                {
+                    // dispatch for dual write job
+                    $this->pushTxnDataToKafkaForAPIDualWrite($journal, $payment->getId());
+                }
+            }
+            else
+            {
+                if($transactorEvent === LedgerConstants::GATEWAY_CAPTURED)
+                {
                     $txn = $this->createTransactionFromAuthorisedPaymentInReverseShadow($payment, $transactorPublicId);
+                }
+
+                if($transactorEvent === LedgerConstants::MERCHANT_CAPTURED)
+                {
+                    $txn = $this->createTransactionFromCapturedPaymentInReverseShadow($payment, $journalId, $transactorEvent);
+
+                    // Todo: Once transaction in API is decomposed, we need to set fee and tax to payment entity
+                    // and save it as that is curretly taken care of by the transaction module.
+                }
             }
 
-            if($transactorEvent === LedgerConstants::MERCHANT_CAPTURED)
-            {
-                $payment = $this->repo
-                    ->payment
-                    ->findByPublicIdAndMerchant($transactorPublicId, $this->merchant, []);
 
-                $txn = $this->createTransactionFromCapturedPaymentInReverseShadow($payment, $journalId, $transactorEvent);
-
-                // Todo: Once transaction in API is decomposed, we need to set fee and tax to payment entity
-                // and save it as that is curretly taken care of by the transaction module.
-            }
         }
         else if($transactionType === Constants::CREDIT_LOADING)
         {
@@ -1018,30 +1031,41 @@ class Core extends Base\Core
 
             $resource = $this->getTransactionMutexresource($transfer);
 
-            $txn = $this->mutex->acquireAndRelease(
-                $resource,
-                function () use ($transfer,$journal, $journalId)
-                {
-                    return $this->repo->transaction(function () use ($transfer,$journal, $journalId) {
-                        $txnCore = new Transaction\Core();
+            $dualWriteRearchEnabled = $this->isAPILedgerDualWriteRearchSplitzEnabled($transfer->merchant);
 
-                        list($txn, $feeSplit) = $txnCore->createFromTransfer($transfer, $journalId, false);
+            if ($dualWriteRearchEnabled === true)
+            {
+                $this->pushTxnDataToKafkaForAPIDualWrite($journal, $transfer->getId());
 
-                        $transfer->transaction()->associate($txn);
+                return;
+            }
+            else
+            {
+                $txn = $this->mutex->acquireAndRelease(
+                    $resource,
+                    function () use ($transfer,$journal, $journalId)
+                    {
+                        return $this->repo->transaction(function () use ($transfer,$journal, $journalId) {
+                            $txnCore = new Transaction\Core();
 
-                        $transfer->save();
+                            list($txn, $feeSplit) = $txnCore->createFromTransfer($transfer, $journalId, false);
 
-                        $this->trace->info(TraceCode::CUSTOMER_TRANSFER_TRANSACTION_CREATED,
-                            [
-                                'transaction_id' => $txn->getId(),
-                            ]);
+                            $transfer->transaction()->associate($txn);
 
-                        return $txn;
-                    });
-                }
-            );
+                            $transfer->save();
 
-            return $txn;
+                            $this->trace->info(TraceCode::CUSTOMER_TRANSFER_TRANSACTION_CREATED,
+                                [
+                                    'transaction_id' => $txn->getId(),
+                                ]);
+
+                            return $txn;
+                        });
+                    }
+                );
+
+                return $txn;
+            }
         }
         else if($transactionType === Constants::TRANSFER)
         {
@@ -1328,7 +1352,7 @@ class Core extends Base\Core
             return $txn;
     }
 
-    private function createTransactionFromAuthorisedPaymentInReverseShadow($payment, $transactorPublicId)
+    public function createTransactionFromAuthorisedPaymentInReverseShadow($payment, $transactorPublicId)
     {
         $resource = $this->getTransactionMutexresource($payment);
 
@@ -2079,6 +2103,22 @@ class Core extends Base\Core
                 $bucketCore->publishForSettlement($virtualPaymentTransaction);
             }
         }
+        else if ($transactorEvent === LedgerConstants::GATEWAY_CAPTURED)
+        {
+            $transactorPublicId = $journal[LedgerConstants::TRANSACTOR_ID];
+
+            $transactorInfo = $this->determineTransactionTypeFromTransactorId($transactorPublicId);
+
+            $paymentId =  $transactorInfo[LedgerConstants::ID];
+
+            $payment = $this->repo->payment->findOrFail($paymentId);
+
+            $apiTransactionId = $this->getAPITransactionId($transactorPublicId, $payment);
+
+            $payment->setAttribute(Payment\Entity::TRANSACTION_ID, $apiTransactionId);
+
+            $this->repo->saveOrFail($payment);
+        }
         else if ($transactorEvent === LedgerConstants::CUSTOMER_WALLET_LOADING)
         {
             $bucketCore = new Bucket\Core;
@@ -2192,6 +2232,75 @@ class Core extends Base\Core
         }
 
         return $paymentID;
+
+    }
+
+    public function isAPILedgerDualWriteRearchSplitzEnabled($merchant)
+    {
+        $properties = [
+            'request_data' => json_encode(["merchant_id" => $merchant->getId()]),
+            'id' => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.api_ledger_dual_write_rearch'),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    private function pushTxnDataToKafkaForAPIDualWrite(array $journal, $producerKey)
+    {
+        if (($this->app->runningUnitTests() === true))
+        {
+            return;
+        }
+
+        $data = [
+            'payload_api'=>[
+                'journal'=> $journal,
+            ]
+        ];
+
+        $message = [
+            LedgerConstants::KAFKA_MESSAGE_DATA       => $data,
+            LedgerConstants::KAFKA_MESSAGE_TASK_NAME  => LedgerConstants::DUAL_WRITE_TRANSACTION_FOR_API_EVENTS
+        ];
+
+        $topic = env('DUAL_WRITE_TRANSACTION_FOR_API_EVENTS', LedgerConstants::DUAL_WRITE_TRANSACTION_FOR_API_EVENTS);
+
+        try
+        {
+            $kafkaProducer = (new KafkaProducer($topic, stringify($message)));
+
+            $kafkaProducer->Produce();
+
+            $this->trace->info(TraceCode::KAFKA_PAYMENTS_API_TXN_PUSH_SUCCESS, [
+                LedgerConstants::PRODUCER_KEY => $producerKey,
+                LedgerConstants::TOPIC        => $topic,
+                LedgerConstants::MESSAGE      => $message
+            ]);
+
+            $this->trace->count(Metric::KAFKA_PAYMENT_API_TXN_PUSH_SUCCESS, [
+                LedgerConstants::TOPIC        => $topic,
+            ]);
+
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->count(Metric::KAFKA_PAYMENT_API_TXN_PUSH_FAILURE, [
+                LedgerConstants::TOPIC        => $topic,
+            ]);
+
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::KAFKA_PAYMENT_API_TXN_PUSH_FAILURE,
+                [
+                    LedgerConstants::PRODUCER_KEY => $producerKey,
+                    LedgerConstants::TOPIC        => $topic,
+                    LedgerConstants::MESSAGE      => $message
+                ]);
+
+            throw $ex;
+        }
 
     }
 }

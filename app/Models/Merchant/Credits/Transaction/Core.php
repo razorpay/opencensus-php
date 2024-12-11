@@ -32,27 +32,9 @@ class Core extends Base\Core
 
         $creditTxn->updateCreditsUsed($creditsUsed);
 
-        $properties = [
-            'request_data' => json_encode([
-                "merchant_id" => $txn->merchant->getId()
-            ]),
-            'id'            => $txn->merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
-        ];
-
-        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
-
         if($txn->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
-
-            if ($enableTidbStreaming === false)
-            {
-                $creditTxn->setTidbStream("enabled");
-            }
-            else
-            {
-                $creditTxn->setTidbStream("disabled");
-            }
+            $creditTxn->setTidbStream("disabled");
         }
 
         $this->repo->saveOrFail($credit);

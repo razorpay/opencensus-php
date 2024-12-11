@@ -753,6 +753,7 @@ class Route
         'bank_transfer_insert'                     => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'bank_transfer_payment_receiver_backfill'  => ['post',     'payment/bank_transfer_backfill',                 'PaymentController@updateReceiverData'                              ],
         'offline_payment_credit'                   => ['post',     'credit/ecollect/offline',                        'OfflinePaymentController@processOfflinePayment'                    ],
+        'offline_payment_credit_internal'          => ['post',     'internal/credit/ecollect/offline',               'OfflinePaymentController@processOfflinePayment'                    ],
         'payment_card_vault_migrate'               => ['post',     'payments/cards',                                 'PaymentController@paymentCardVaultMigrate'                         ],
         'payments_card_es_sync_cron'               => ['post',     'payments_cards/payments/es_sync',                'PaymentController@paymentsCardEsSyncCron'                          ],
         'refund_processed_at_backfill'             => ['post',     'refunds/processed_at_backfill',                  'RefundController@updateProcessedAt'                                ],
@@ -1999,6 +2000,9 @@ class Route
 
         // Self serve workflow
         'workflow_config_create'                    => ['post',     'workflow/config',                              'WorkflowServiceController@createWorkflowConfig'                        ],
+        'internal_create_workflow'                  => ['post',     'internal/workflow',                            'WorkflowServiceController@createWorkflow'                        ],
+        'get_permissions_admin'                     => ['post',     'internal/permissions/{admin_id}',              'WorkflowServiceController@getPermissionsOfAdmin'                        ],
+
         'workflow_config_list'                      => ['post',     'workflow/config/list',                         'WorkflowServiceController@listWorkflowConfig'                        ],
         'workflow_config_update'                    => ['put',      'workflow/config',                              'WorkflowServiceController@updateWorkflowConfig'                        ],
         'workflow_config_delete'                    => ['delete',   'workflow/config',                              'WorkflowServiceController@deleteWorkflowConfig'                        ],
@@ -2008,12 +2012,13 @@ class Route
         'fetch_pending_payouts_summary'             => ['post',     'payouts/pending/summary',                      'PayoutController@fetchPendingPayoutsSummary'                                  ],
         'fetch_pending_payout_links_summary'        => ['post',     'payout-links/pending/summary',                 'PayoutLinkController@fetchPendingPayoutLinksSummary'                          ],
 
-        'workflow_config_create_admin'              => ['post',    'admin/workflow/config',                               'WorkflowServiceController@createWorkflowConfig'                           ],
-        'workflow_config_list_admin'                => ['post',    'admin/workflow/config/list',                          'WorkflowServiceController@listWorkflowConfig'                        ],
-        'workflow_config_update_admin'              => ['put',    'admin/workflow/config',                                'WorkflowServiceController@updateWorkflowConfig'                           ],
-        'workflow_config_delete_admin'              => ['delete',    'admin/workflow/config',                             'WorkflowServiceController@deleteWorkflowConfig'                           ],
-        'workflow_config_create_bulk_admin'         => ['post',    'admin/workflow/config/bulk',                          'WorkflowServiceController@bulkCreateWorkflowConfig'                           ],
-        'workflow_config_create_internal'           => ['post',    'internal/workflow/config',                            'WorkflowServiceController@createWorkflowConfig'                  ],
+        'workflow_config_create_admin'              => ['post',    'admin/workflow/config',                            'WorkflowServiceController@createWorkflowConfig'                      ],
+        'workflow_config_list_admin'                => ['post',    'admin/workflow/config/list',                       'WorkflowServiceController@listWorkflowConfig'                        ],
+        'workflow_config_update_admin'              => ['put',     'admin/workflow/config',                            'WorkflowServiceController@updateWorkflowConfig'                      ],
+        'workflow_config_delete_admin'              => ['delete',  'admin/workflow/config',                            'WorkflowServiceController@deleteWorkflowConfig'                      ],
+        'workflow_service_wildcard_admin'           => ['any',     'workflows/admin/{path}',                           'WorkflowServiceController@wildcardAdminRequest'                      ],
+        'workflow_config_create_bulk_admin'         => ['post',    'admin/workflow/config/bulk',                       'WorkflowServiceController@bulkCreateWorkflowConfig'                  ],
+        'workflow_config_create_internal'           => ['post',    'internal/workflow/config',                         'WorkflowServiceController@createWorkflowConfig'                      ],
 
         'payout_partner_bank_status'                => ['get',     'payouts/partner-bank/status',                           'PayoutController@getPartnerBankStatus'                  ],
 
@@ -2148,6 +2153,7 @@ class Route
         'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                  ],
         'workflow_merchants_create_payout_get'     => ['get',      'merchants/workflows/permissions/create_payout',  'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
         'workflow_observer_data_update'            => ['put',      'workflows/{id}/observer_data',                   'WorkflowController@updateWorkflowObserverData'                     ],
+        'internal_workflow_observer_data_update'   => ['put',      'internal/workflows/{id}/observer_data',                   'WorkflowController@updateWorkflowObserverData'                     ],
         'workflow_observer_data_fetch'             => ['get',      'workflows/{id}/observer_data',                   'WorkflowController@getWorkflowObserverData'                        ],
         'workflow_needs_merchant_clarification'    => ['put',      'merchant/{workflowId}/need_clarification',       'WorkflowController@postNeedClarificationOnWorkflow'                ],
         'merchant_fetch_customer_eligibility'      => ['post',     'merchant/customers/eligibility',                 'EligibilityController@fetchPublicCustomerEligibility'              ],
@@ -4212,6 +4218,7 @@ class Route
         'internal_fd_add_note_graphql'            => ['post',      'internal_create/fd/ticket/{id}/note',                       'FreshdeskTicketController@addNoteToTicket',                   ],
         'internal_fd_fetch_agent_detail_for_ticket' => ['get',     'fd/ticket/{id}/agent',                                      'FreshdeskTicketController@getAgentDetailForFreshdeskTicket'   ],
         'fd_fetch_tickets'                        => ['get',       'fd/{type}/ticket',                                          'FreshdeskTicketController@getTickets'                         ],
+        'internal_fd_fetch_ticket'                => ['get',       'internal/fd/ticket',                                       'FreshdeskTicketController@getTicketsFromFreshdesk'                         ],
         'internal_fd_fetch_agents'                => ['get',       'internal/fd/{type}/agent',                                  'FreshdeskTicketController@getAgents'                          ],
         'fd_fetch_converations'                   => ['get',       'fd/{type}/ticket/{id}/conversations',                       'FreshdeskTicketController@getConversations'                   ],
         'fd_fetch_ticket'                         => ['get',       'fd/{type}/ticket/{id}',                                     'FreshdeskTicketController@getTicket'                          ],
@@ -4682,6 +4689,7 @@ class Route
 
 
         //PG Ledger Routes
+        'pg_ledger_balance_analysis'                    => ['post',     'pg_ledger/balance/analysis',           'FeatureController@initiateBalanceAnalysis'],
         'pg_onboard_merchant'                           => ['post',     'pg_ledger/merchant/onboard',           'FeatureController@onboardMerchantsOnPgLedger'],
         'pg_offboard_merchant'                          => ['post',      'pg_ledger/merchant/offboard', 'FeatureController@offboardMerchantsOnPgLedger'],
         'pg_sync_balances_merchant'                     => ['post', 'pg_ledger/merchant/sync_balances', 'FeatureController@syncMerchantBalancesOnPgLedger'],
@@ -5764,6 +5772,10 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'internal_fd_fetch_ticket',
+        'internal_create_workflow',
+        'internal_workflow_observer_data_update',
+        'get_permissions_admin',
         'customer_fetch_addresses_by_contact',
         'internal_merchant_get_tags',
         'rupay_push_token',
@@ -5936,6 +5948,7 @@ class Route
         'merchant_bulk_onboarding_admin',
         'setl_pos_create',
         'payment_page_create_file_upload_record',
+        'offline_payment_credit_internal',
         'currency_fetch_rates_internal',
         'loc_mail',
         'capital_cards_mail',
@@ -6831,6 +6844,7 @@ class Route
         // Ledger Outbox
         'ledger_outbox_retry',
         'expire_amount_credits',
+        'pg_ledger_balance_analysis',
         'workflow_config_create_internal',
         'downtime_auto_resolve_cron',
         'merchant_validate_public_auth_over_internal_auth',
@@ -9631,6 +9645,7 @@ class Route
         'workflow_config_update_admin',
         'workflow_config_delete_admin',
         'workflow_config_create_bulk_admin',
+        'workflow_service_wildcard_admin',
 
         // cost center admin routes
         'cost_center_list_admin',
@@ -11362,6 +11377,7 @@ class Route
         'workflow_config_update_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_delete_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_create_bulk_admin'         => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'workflow_service_wildcard_admin'           => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'cost_center_list_admin'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'cost_center_create_admin'                  => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'cost_center_update_admin'                  => Permission::SELF_SERVE_WORKFLOW_CONFIG,
@@ -12399,6 +12415,16 @@ class Route
             'payout_bulk_update_attachments'
         ],
 
+        'abacus' => [
+            'merchant_fetch_internal_users',
+            'merchant_search_users_internal',
+            'user_edit_internal',
+            'user_fetch_internal',
+            'xperience_invite_user',
+            'xperience_invite_resend',
+            'xperience_invite_delete',
+        ],
+
         'vendor_experience' => [
             'user_all_roles',
             'internal_merchant_fetch',
@@ -12467,6 +12493,14 @@ class Route
             'contact_update_internal',
             'fund_account_get_internal',
             'fund_account_create_internal',
+        ],
+
+        'admin-experience-service' =>[
+            'internal_fd_fetch_ticket',
+            'internal_create_workflow',
+            'get_permissions_admin',
+            'internal_workflow_observer_data_update',
+            'internal_merchant_details_fetch',
         ],
 
         'metro' => [
@@ -16657,6 +16691,7 @@ class Route
             'workflow_config_update_admin',
             'workflow_config_delete_admin',
             'workflow_config_create_bulk_admin',
+            'workflow_service_wildcard_admin',
 
             // cost center admin routes
             'cost_center_list_admin',
@@ -17325,6 +17360,7 @@ class Route
             'adj_custom_create_cron',
 
             'expire_amount_credits',
+            'pg_ledger_balance_analysis',
         ],
 
         'subscriptions' => [
@@ -17778,6 +17814,7 @@ class Route
             'merchant_bulk_onboarding_admin',
             'setl_pos_create',
             'payment_page_create_file_upload_record',
+            'offline_payment_credit_internal',
             'bulk_invoice_create',
             'bulk_contact_create',
             'bulk_submerchant_assign',

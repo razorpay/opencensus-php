@@ -78,10 +78,10 @@ class Validator extends Base\Validator
         Entity::MIN_FEE             => 'sometimes|integer|max:10000000',
         Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:10000000',
         Entity::FEE_BEARER          => 'sometimes|in:platform,customer',
-        Entity::PROCURER            => 'sometimes',
+        Entity::PROCURER            => 'sometimes|nullable|in:razorpay,merchant',
         Entity::CHANNEL             => 'sometimes',
         Entity::FEE_MODEL           => 'sometimes|nullable|in:prepaid,postpaid',
-        Entity::PERCENT_RATE_SCALE_FACTOR  => 'sometimes|integer|max:1000000'
+        Entity::PERCENT_RATE_SCALE_FACTOR  => 'sometimes|integer|in:100,1000,10000,100000,1000000'
     ];
 
     protected static $pricingPlansSummaryRules = [

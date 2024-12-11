@@ -8,6 +8,7 @@ class PartnershipsAccessMapDTO
     private $merchant_id;
     private $entity_id;
     private $entity_type;
+    private $entity_owner_id;
     private $fields;
     private $limit;
     private $offset;
@@ -26,6 +27,7 @@ class PartnershipsAccessMapDTO
     public function __construct($merchant_id = null,
                                 $entity_id = null,
                                 $entity_type = null,
+                                $entity_owner_id = null,
                                 $limit = null,
                                 $fields=null,
                                 $offset = null,
@@ -35,6 +37,7 @@ class PartnershipsAccessMapDTO
         $this->merchant_id = $merchant_id;
         $this->entity_id = $entity_id;
         $this->entity_type = $entity_type;
+        $this->entity_owner_id = $entity_owner_id;
         $this->fields=$fields;
         $this->limit = $limit;
         $this->offset = $offset;
@@ -96,6 +99,22 @@ class PartnershipsAccessMapDTO
     public function setLimit($limit): void
     {
         $this->limit = $limit;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEntityOwnerId()
+    {
+        return $this->entity_owner_id;
+    }
+
+    /**
+     * @param mixed $entity_owner_id
+     */
+    public function setEntityOwnerId($entity_owner_id): void
+    {
+        $this->entity_owner_id = $entity_owner_id;
     }
 
     public function getDistinct()

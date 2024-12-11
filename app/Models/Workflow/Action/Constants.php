@@ -77,6 +77,14 @@ class Constants
 
     const WORKFLOW_TAGS = 'workflow_tags';
 
+    const PERMISSION_VS_CONTROLLER = [
+        'merchant_activation_save_admin_login' => 'RZP\Http\Controllers\MerchantController@postSaveActivationDetails',
+    ];
+
+    const PERMISSION_VS_CONTROLLER_FUNCTION = [
+        'merchant_activation_save_admin_login' => 'postSaveActivationDetails',
+    ];
+
     public static function getActionRejectHandlerByPermissionName(string $permissionName): ?string
     {
         if (isset(self::ACTION_REJECT_CALLBACK_HANDLERS[$permissionName]) === false)

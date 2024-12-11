@@ -2981,7 +2981,7 @@ class Core extends Base\Core
 
         return $queryBuilder
             ->get()
-            ->callOnEveryItem('toArrayMerchant');
+            ->callOnEveryItem('toInternalUserArray');
     }
 
     /**

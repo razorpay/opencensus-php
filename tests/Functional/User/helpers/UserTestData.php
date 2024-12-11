@@ -1725,6 +1725,23 @@ return [
         ],
     ],
 
+    'testMobileLoginWithNewSmsTemplateAndSendsViaStorkSalesAssisted' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                'contact_mobile'        => '9891817371',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testMobileSignupWithNewSmsTemplateAndSendsViaStork' => [
         'request' => [
             'url'     => '/users/register/otp',
@@ -8719,7 +8736,7 @@ return [
             ]
         ]
     ],
-    'testRegisterWithValidReferralCode'  => [   
+    'testRegisterWithValidReferralCode'  => [
         'request'  => [
             'url'     => '/users/register',
             'method'  => 'POST',

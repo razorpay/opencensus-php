@@ -7,6 +7,9 @@ use App;
 use Ramsey\Uuid\Uuid;
 use RZP\Constants\Metric;
 use RZP\Models\Base;
+use RZP\Models\Ledger\Constants;
+use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
+use RZP\Models\Merchant\Credits;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
@@ -29,6 +32,7 @@ class Core extends Base\Core
     const SHARED_GATEWAY_ONBOARDING             = 'shared_gateway_onboarding';
     const PG_MERCHANT_ONBOARDING                = 'pg_merchant_onboarding';
     const PG_GATEWAY_ONBOARDING                 = 'pg_gateway_onboarding';
+    const PG_MERCHANT_CREDIT_ONBOARDING         = 'pg_merchant_credit_onboarding';
     const LEDGER_ONDEMAND_SETTLEMENT_ONBOARDING = "capital_odsettlement_onboarding";
 
     const MODE                              = 'mode';
@@ -59,7 +63,6 @@ class Core extends Base\Core
     const PAYLOAD                           = 'payload';
     const LEDGER_RESPONSE                   = 'LEDGER_RESPONSE';
     const NOT_UPDATED                       = "not updated";
-
     const MERCHANT_BALANCE_OPENING_BALANCE   = 'merchant_balance_opening_balance';
     const MERCHANT_REWARD_OPENING_BALANCE    = 'merchant_reward_opening_balance';
     const MERCHANT_FEE_OPENING_BALANCE       = "merchant_fee_opening_balance";
@@ -67,6 +70,9 @@ class Core extends Base\Core
     const MERCHANT_RESERVE_OPENING_BALANCE   = "merchant_reserve_opening_balance";
     const MERCHANT_BALANCE_MINIMUM_BALANCE   = "merchant_balance_minimum_balance";
     const MERCHANT_OPENING_BALANCES          = "merchant_opening_balances";
+
+    const CREDIT_ID  = 'credit_id';
+    const EXPIRED_AT = 'expired_at';
 
     const IDEMPOTENCY_KEY = 'idempotency_key';
     const UUID_FORMAT     = '%04x%04x-%04x-%04x-%04x-%04x%04x%04x';
@@ -95,6 +101,8 @@ class Core extends Base\Core
 
     /** @var LedgerService $ledgerService */
     protected $ledgerService;
+
+    use ReverseShadowTrait;
 
     public function __construct()
     {
@@ -158,7 +166,7 @@ class Core extends Base\Core
      * @param int $balanceAmount
      * @param array $creditBalances
      */
-    public function createPGLedgerAccount(Merchant $merchant, string   $mode, int $primaryBalanceAmount, array $creditBalances, int $reserveBalanceAmount)
+    public function createPGLedgerAccount(Merchant $merchant, string   $mode, int $primaryBalanceAmount, array $creditBalances, int $reserveBalanceAmount, array $amountCreditIdBalances)
     {
         try
         {
@@ -171,6 +179,19 @@ class Core extends Base\Core
             ];
             $ledgerService = $this->app['ledger'];
             $ledgerService->createAccountsOnEvent($payload, $requestHeaders, true);
+
+            if (empty($amountCreditIdBalances) === false)
+            {
+                foreach ($amountCreditIdBalances as $amountCreditId => $value)
+                {
+                    $amountCreditIdBalance   = $value[0];
+                    $amountCreditIdExpiredAt = $value[1];
+
+                    $this->createAmountCreditAccountOnEvent($amountCreditId, $amountCreditIdExpiredAt, $mode, $merchant->getId());
+
+                    $this->loadFundsInAmountCreditAccount($amountCreditId, $amountCreditIdBalance, $merchant->getId());
+                }
+            }
             return true;
         }
         catch (\Throwable $ex)
@@ -186,6 +207,74 @@ class Core extends Base\Core
                 ]);
             return false;
         }
+    }
+
+    public function createAmountCreditAccountOnEvent($amountCreditId, $amountCreditIdExpiredAt, $mode, $merchantId)
+    {
+        $eventObj = [
+            self::EVENT_NAME            => self::PG_MERCHANT_CREDIT_ONBOARDING,
+            self::ENTITIES => [
+                self::CREDIT_ID =>  [$amountCreditId],
+                self::EXPIRED_AT => [$amountCreditIdExpiredAt]
+            ]
+        ];
+
+        $payload = [
+            self::TENANT            => self::PG,
+            self::MODE              => $mode,
+            self::MERCHANT_ID       => $merchantId,
+            self::EVENTS      => [
+                $eventObj
+            ],
+        ];
+
+        $requestHeaders = [
+            LedgerService::LEDGER_TENANT_HEADER    => self::PG,
+            LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()
+        ];
+        $this->app['ledger']->createAccountsOnEvent($payload, $requestHeaders, true);
+    }
+
+    public function loadFundsInAmountCreditAccount($amountCreditId, $amountCreditIdBalance, $merchantId)
+    {
+        $transactionMessage = [];
+        $transactionMessage = $this->createTransactionMessageForMerchantAmountCreditLoading($amountCreditIdBalance, $amountCreditId, $merchantId);
+
+        $transactorId = $transactionMessage[Constants::TRANSACTOR_ID];
+        $transactorEvent = $transactionMessage[Constants::TRANSACTOR_EVENT];
+
+        $payloadName = $this->getPayloadName($transactorId, $transactorEvent);
+
+        $outboxPayload = $this->prepareOutboxPayload($payloadName, $transactionMessage);
+
+        $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
+    }
+
+    public function createTransactionMessageForMerchantAmountCreditLoading($amountCreditIdBalance, $amountCreditId, $merchantId): array
+    {
+        $transactorEvent = Constants::MERCHANT_AMOUNT_CREDIT_LOADING;
+        $amount =  abs($amountCreditIdBalance);
+
+        $msg = array(
+            Constants::TRANSACTOR_ID             => 'credits_'.$amountCreditId,
+            Constants::TRANSACTOR_EVENT          => $transactorEvent,
+            Constants::MONEY_PARAMS              => [
+                Constants::AMOUNT_CREDITS   => strval($amount),
+                Constants::RAZORPAY_REWARD  => strval($amount)
+            ],
+            Constants::ADDITIONAL_PARAMS         => null,
+            Constants::MERCHANT_ID               => $merchantId,
+            Constants::CURRENCY                  => Constants::INR_CURRENCY,
+            Constants::TRANSACTION_DATE          =>  time(),
+            Constants::IDEMPOTENCY_KEY              => Uuid::uuid1(),
+            Constants::LEDGER_INTEGRATION_MODE      => Constants::REVERSE_SHADOW,
+            Constants::TENANT                       => Constants::TENANT_PG,
+            Constants::IDENTIFIERS => [
+                Constants::CREDIT_ID => $amountCreditId,
+            ]
+        );
+
+        return $msg;
     }
 
     public function updatePGMerchantBalance(Merchant $merchant, int $balanceAmount)
@@ -563,11 +652,6 @@ class Core extends Base\Core
         if(isset($creditBalances[self::FEE]) === true)
         {
             $openingBalances[self::MERCHANT_FEE_OPENING_BALANCE] = (string) $creditBalances[self::FEE];
-        }
-
-        if(isset($creditBalances[self::AMOUNT]) === true)
-        {
-            $openingBalances[self::MERCHANT_REWARD_OPENING_BALANCE] = (string) $creditBalances[self::AMOUNT];
         }
 
         if(isset($creditBalances[self::REFUND]) === true)

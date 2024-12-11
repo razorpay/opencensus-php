@@ -252,6 +252,43 @@ class HUFTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testGetBusinessTypeSalesAssisted()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => $merchant->getId()
+        ]);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'       => $merchant->getId(),
+            'signup_campaign'   => 'assisted_onboarding'
+        ]);
+
+        $input = [
+            "experiment_id" => "NrNH1e3F8IjUfb",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => '',
+                ]
+            ]
+        ];
+
+        $this->createAndFetchMocks('on');
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->id);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->id, $merchantUser['id']);
+
+        $this->startTest();
+    }
+
     public function testGetBusinessTypeSubMerchantWithPartnershipExpOn()
     {
         $subMerchant = $this->fixtures->create('merchant');

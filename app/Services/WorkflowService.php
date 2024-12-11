@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use Request;
 use Throwable;
 use \WpOrg\Requests\Session as Requests_Session;
 use \WpOrg\Requests\Response;
@@ -12,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\RequestHeader;
 use RZP\Exception\ServerErrorException;
 
 class WorkflowService
@@ -105,7 +107,14 @@ class WorkflowService
 
                 $startAt = millitime();
 
-                $res = $this->request->post($path, [], empty($payload) ? '{}' : json_encode($payload));
+                $headers = [];
+
+                if (empty(Request::header(RequestHeader::DEV_SERVE_USER)) === false)
+                {
+                    $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+                }
+
+                $res = $this->request->post($path, $headers, empty($payload) ? '{}' : json_encode($payload));
 
                 $this->trace->histogram(
                     self::WORKFLOW_SERVICE_REQUEST_MILLISECONDS,

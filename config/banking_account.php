@@ -23,6 +23,10 @@ return [
             'account_number'    => env('RZP_FEES_DETAILS_AXIS_ACCOUNT_NUMBER'),
             'ifsc'              => env('RZP_FEES_DETAILS_AXIS_IFSC'),
         ],
+        'idfc'              => [
+            'account_number'    => env('RZP_FEES_DETAILS_IDFC_ACCOUNT_NUMBER'),
+            'ifsc'              => env('RZP_FEES_DETAILS_IDFC_IFSC'),
+        ],
         'yesbank'              => [
             'account_number'    => env('RZP_FEES_DETAILS_YESBANK_ACCOUNT_NUMBER'),
             'ifsc'              => env('RZP_FEES_DETAILS_YESBANK_IFSC'),

@@ -21,7 +21,18 @@ class Settlement extends Base
         $this->tax  = 0;
     }
 
+    public function setFeeDefaultsForDualWrite($fees, $tax)
+    {
+        $this->fees = 0;
+        $this->tax  = 0;
+    }
+
     public function calculateFees()
+    {
+        $this->debit = $this->source->getAmount();
+    }
+
+    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
     {
         $this->debit = $this->source->getAmount();
     }

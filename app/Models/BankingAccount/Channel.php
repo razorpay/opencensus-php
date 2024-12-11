@@ -12,6 +12,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Channel
 {
     const YESBANK = FTAChannel::YESBANK;
+    const IDFC    = FTAChannel::IDFC;
     const RBL     = FTAChannel::RBL;
     const ICICI   = FTAChannel::ICICI;
     const KOTAK   = FTAChannel::KOTAK;
@@ -24,14 +25,17 @@ class Channel
         self::ICICI,
         self::AXIS,
         self::YESBANK,
+        self::IDFC
     ];
 
     public static $rxWalletTypeChannels = [
         self::YESBANK,
+        self::IDFC,
     ];
 
     protected static $channels = [
         self::YESBANK,
+        self::IDFC,
         self::RBL,
         self::ICICI,
         self::AXIS,
@@ -43,7 +47,8 @@ class Channel
         self::ICICI,
         self::KOTAK,
         self::YESBANK,
-        self::AXIS
+        self::AXIS,
+        self::IDFC,
     ];
 
     protected static $corpCardChannels = [

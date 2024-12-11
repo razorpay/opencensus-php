@@ -23,16 +23,15 @@ class KafkaMessageProcessor
     const WEBSITE_POLICY_EVENTS                     = 'pg-website-verification-notification-events';
     const NEGATIVE_KEYWORDS_EVENTS                  = 'api-bvs-kyc-document-result-events';
     const MCC_NOTIFICATION_EVENTS                   = 'pg-mcc-notification-events';
+
     const API_PG_LEDGER_ACKNOWLEDGMENTS             = 'outbox_jobs_api';
-    const MERCHANT_PAYMENTS_ENABLED_CALLBACK_EVENTS = 'merchant-payments-enabled-callback';
-    const PGOS_STAGE_CDC_EVENTS                     = 'cdc_events_mysql_stage_pg_onboarding';
-    const PGOS_PROD_CDC_EVENTS                      = 'cdc_events_mysql_prod_pg_onboarding';
+
     const STAGE_TEST_PAYMENT_EVENTS                 = 'stage_test_payment_events';
     const STAGE_LIVE_PAYMENT_EVENTS                 = 'stage_live_payment_events';
-    const PROD_LIVE_PAYMENT_EVENTS                  = 'prod_live_payment_events';
-    const PROD_TEST_PAYMENT_EVENTS                  = 'prod_test_payment_events';
-    const PROD_LIVE_API_LEDGER_DUAL_WRITE_EVENTS    = 'prod_live_api_cls_events';
-    const PROD_TEST_API_LEDGER_DUAL_WRITE_EVENTS    = 'prod_test_api_cls_events';
+    const PROD_LIVE_PAYMENT_EVENTS                 = 'prod_live_payment_events';
+    const PROD_TEST_PAYMENT_EVENTS                 = 'prod_test_payment_events';
+    const PROD_LIVE_API_LEDGER_DUAL_WRITE_EVENTS   = 'prod_live_api_cls_events';
+    const PROD_TEST_API_LEDGER_DUAL_WRITE_EVENTS   = 'prod_test_api_cls_events';
 
     const PROD_LIVE_API_LEDGER_DUAL_WRITE_RETRY_EVENTS   = 'prod_live_api_ledger_dual_write_retry_events';
     const PROD_TEST_API_LEDGER_DUAL_WRITE_RETRY_EVENTS   = 'prod_test_api_ledger_dual_write_retry_events';
@@ -42,6 +41,11 @@ class KafkaMessageProcessor
 
     const STAGE_LIVE_API_LEDGER_DUAL_WRITE_RETRY_EVENTS   = 'stage_live_api_ledger_dual_write_retry_events';
     const STAGE_TEST_API_LEDGER_DUAL_WRITE_RETRY_EVENTS   = 'stage_test_api_ledger_dual_write_retry_events';
+
+    const MERCHANT_PAYMENTS_ENABLED_CALLBACK_EVENTS = 'merchant-payments-enabled-callback';
+    const PGOS_STAGE_CDC_EVENTS                     = 'cdc_events_mysql_stage_pg_onboarding';
+    const PGOS_PROD_CDC_EVENTS                      = 'cdc_events_mysql_prod_pg_onboarding';
+
     const MERCHANT_POS_ACTIVATION_STAGE             = 'merchant_pos_activation_stage';
     const MERCHANT_POS_ACTIVATION_PROD              = 'merchant_pos_activation_prod';
     const PROD_LIVE_REFUND_EVENTS                   = 'prod_live_refund_events';
@@ -79,7 +83,7 @@ class KafkaMessageProcessor
      *
      * @return bool <TRUE/FALSE> - True - processing success, False - in case of failure
      */
-    public function process(string $topic, array $payload, string $mode = null)
+    public function process(string $topic, array $payload, string $mode = null, $refundApiLedgerDualWrite = false)
     {
         $traceTopicDetails = [
             'topicName' => $topic,
@@ -89,7 +93,7 @@ class KafkaMessageProcessor
         $this->trace->info(TraceCode::KAFKA_MESSAGE_PROCESSOR_PAYLOAD, $traceTopicDetails);
 
         /** @var KafkaJobs\Job $job */
-        $job = $this->getJob($topic, $payload, $mode);
+        $job = $this->getJob($topic, $payload, $mode, $refundApiLedgerDualWrite);
 
         try
         {
@@ -151,7 +155,7 @@ class KafkaMessageProcessor
         }
     }
 
-    protected function getJob(string $topic, array $payload, string $mode = null)
+    protected function getJob(string $topic, array $payload, string $mode = null, $refundApiLedgerDualWrite = false)
     {
         switch ($topic)
         {
@@ -180,11 +184,14 @@ class KafkaMessageProcessor
             case self::PROD_TEST_API_LEDGER_DUAL_WRITE_EVENTS:
             case self::STAGE_LIVE_API_LEDGER_DUAL_WRITE_EVENTS:
             case self::STAGE_TEST_API_LEDGER_DUAL_WRITE_EVENTS:
+                return new KafkaJobs\PGLedgerDualWriteJob($payload, $mode);
+
             case self::PROD_LIVE_API_LEDGER_DUAL_WRITE_RETRY_EVENTS:
             case self::PROD_TEST_API_LEDGER_DUAL_WRITE_RETRY_EVENTS:
             case self::STAGE_LIVE_API_LEDGER_DUAL_WRITE_RETRY_EVENTS:
             case self::STAGE_TEST_API_LEDGER_DUAL_WRITE_RETRY_EVENTS:
-                return new KafkaJobs\PGLedgerDualWriteJob($payload, $mode);
+                return new KafkaJobs\PGLedgerDualWriteRetryJob($payload, $mode);
+
             case self::INVALID_ADDRESS_EVENTS:
                 return new InvalidAddressConsumer($payload, $mode);
 
@@ -210,6 +217,10 @@ class KafkaMessageProcessor
             case self::PROD_TEST_REFUND_EVENTS:
             case self::STAGE_LIVE_REFUND_EVENTS:
             case self::STAGE_TEST_REFUND_EVENTS:
+                if ($refundApiLedgerDualWrite === true)
+                {
+                    return new KafkaJobs\PGLedgerDualWriteJob($payload, $mode);
+                }
                 return new KafkaJobs\EzetapRefundEventsJob($payload,$mode);
             case self::PARTNER_WEBHOOK_CALLBACK_EVENTS:
                 return new KafkaJobs\PartnerWebhookEventHandlerJob($payload, $mode);

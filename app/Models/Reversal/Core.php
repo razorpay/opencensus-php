@@ -576,6 +576,7 @@ class Core extends Base\Core
 
     private function createReverseShadowLedgerEntriesForTransferReversalInSync($reversal, $refund, $customerRefund, $sourcePayment, $isCustomerRefundApplicable, $isRearchRefund = false)
     {
+        // called from parent reversal / LA reversal
         if (isset($refund) === false)
         {
             return;

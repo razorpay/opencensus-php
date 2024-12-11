@@ -16,6 +16,7 @@ class Channel
     const RBL     = BankingAccount\Channel::RBL;
     const ICICI   = BankingAccount\Channel::ICICI;
     const AXIS    = BankingAccount\Channel::AXIS;
+    const IDFC     = BankingAccount\Channel::IDFC;
     const YESBANK = BankingAccount\Channel::YESBANK;
 
     public static function exists(string $channel): bool

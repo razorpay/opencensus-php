@@ -27,6 +27,10 @@ class Validator extends Base\Validator
     protected static $emailCompulsoryRules = [
         'email'                                  => 'required|email',
     ];
+    protected static $getTicketsFromFreshdeskRules = [
+            Constants::FD_INSTANCE  => 'required|custom',
+            Entity::TICKET_ID       => 'required|string',
+    ];
 
     protected static $createCustomerTicketRules = [
         'email'                                  => 'required|email',

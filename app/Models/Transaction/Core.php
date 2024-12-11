@@ -108,6 +108,13 @@ class Core extends Base\Core
         return $txnProcessor->createTransaction($txnId);
     }
 
+    public function createTransactionForSourceDualWrite(Base\Entity $source, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
+    {
+        $txnProcessor = $this->getFactory($source);
+
+        return $txnProcessor->createTransactionDualWrite($txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
+    }
+
     /**
      * This will be called only in case of Non Auth Capture Flow
      * We will create a dummy transaction with no fee split.
@@ -208,6 +215,30 @@ class Core extends Base\Core
         }
         return [$txn, $feesSplit];
     }
+
+    public function createPaymentTransactionForDualWrite($payment, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
+    {
+        list($txn, $feesSplit) = $this->createTransactionForSourceDualWrite($payment, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
+
+        $this->saveFeeDetails($txn, $feesSplit);
+
+        return [$txn, $feesSplit];
+    }
+
+    public function createTransferTransactionForDualWrite(Transfer\Entity $transfer, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
+    {
+        list($txn, $feesSplit) = $this->createTransactionForSourceDualWrite($transfer, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
+
+        return [$txn, $feesSplit];
+    }
+
+    public function createAdjustmentTransactionForDualWrite(Adjustment\Entity $adjustment, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
+    {
+        list($txn, $feesSplit) = $this->createTransactionForSourceDualWrite($adjustment, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
+
+        return [$txn, $feesSplit];
+    }
+
 
     public function createUpdateLedgerTransaction(Payment\Entity $payment, $txnId =null)
     {
@@ -1131,32 +1162,9 @@ class Core extends Base\Core
 
         $merchant = $txn->merchant;
 
-        $properties = [
-            'request_data' => json_encode([
-                "merchant_id" => $merchant->getId()
-            ]),
-            'id'            => $merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
-        ];
-
-        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
-
         if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
-            if ($enableTidbStreaming === false)
-            {
-                $txn->setReference3("enabled");
-            }
-            else
-            {
-                $txn->setReference3("disabled");
-            }
-
-            $this->trace->info(TraceCode::TIDB_STREAMING_MAKESHIFT_LOGIC, [
-                "txn_id"                => $txn->getId(),
-                "txnReference3"         => $txn->getReference3(),
-                "enableTidbStreaming"   => $enableTidbStreaming
-            ]);
+            $txn->setReference3("disabled");
         }
 
         $this->updateBalances($txn, false);

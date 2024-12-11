@@ -7338,6 +7338,14 @@ class Core extends Base\Core
             return Status::ACTIVATED;
         }
 
+        $excludeActivationStatusList = [
+            Status::NEEDS_CLARIFICATION,
+            Status::ACTIVATED,
+            Status::REJECTED
+        ];
+
+        $currentActivationStatus = $merchantDetails->getActivationStatus();
+
         //For scenarios where we don't have category/sub-cat of a merchant, setting activation flow as blacklist by default.
         $currentActivationFlow = ActivationFlow::BLACKLIST;
 
@@ -7356,7 +7364,14 @@ class Core extends Base\Core
 
         $isImpersonated = $this->dedupeCore->isMerchantImpersonated($merchantDetails->merchant);
 
-        $eligibleForAMP = $this->isEligibleForActivation($merchantDetails, $isActivationFlowEligible, $isImpersonated);
+        $eligibleForAMP = (
+            $isActivationFlowEligible === true and
+            $isImpersonated === false and
+            $this->hasRiskTags($merchantDetails->merchant) === false and
+            in_array($currentActivationStatus, $excludeActivationStatusList) === false and
+            (new ClarificationDetailCore)->getNcCount($merchantDetails->merchant) === 0
+            // Merchant should not go in AMP from NC or UR if already been in NC
+        );
 
         $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
             'merchant_id'               => $merchantDetails->getId(),
@@ -7440,6 +7455,7 @@ class Core extends Base\Core
             {
                 $this->trace->traceException($ex, Logger::ERROR, TraceCode::MERCHANT_EDIT_BUSINESS_DETAILS_FAILED);
             }
+
             if (in_array($splitzVariant, [Constants::SPLITZ_LIVE, Constants::SPLITZ_KQU]) === true)
             {
                 if (($activationStatusAutomation === Status::ACTIVATED_MCC_PENDING) and
@@ -11286,6 +11302,7 @@ class Core extends Base\Core
         {
             $merchant             = $this->repo->merchant->findOrFailPublic($merchantId);
             $merchantBusinessType = $merchant->merchantDetail->getBusinessType();
+            $userDeviceDetails = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
         }
         foreach (BusinessType::$businessTypeBuckets as $bucketName => $businessTypes)
         {
@@ -11296,6 +11313,16 @@ class Core extends Base\Core
 
                 if (empty($merchantId) ===  false and $merchantBusinessType != BusinessType::NGO and $businessType === BusinessType::NGO and $this->isMerchantEligibleToRemoveNGO($merchant->merchantDetail) === true)
                 {
+                    continue;
+                }
+
+//              If the merchant is sales assisted skip adding individual or not_yet_registered as business type
+                if (empty($merchantId) ===  false and ($businessType === BusinessType::INDIVIDUAL or $businessType === BusinessType::NOT_YET_REGISTERED) and !empty($userDeviceDetails) and $userDeviceDetails->isAssistedOnboardedMerchant())
+                {
+                    $this->trace->info(TraceCode::REMOVE_INDIVIDUAL_BUSINESS_TYPE, [
+                        "signup_campaign"     => $userDeviceDetails->signup_campaign,
+                        "business_type"       => $businessType
+                    ]);
                     continue;
                 }
 
@@ -13906,30 +13933,5 @@ class Core extends Base\Core
 
         return [$type, $format];
     }
-
-    private function isEligibleForActivation(Entity $merchantDetails, bool $isActivationFlowEligible, bool $isImpersonated): bool
-    {
-        $currentActivationStatus = $merchantDetails->getActivationStatus();
-        $splitzResult = $this->getSplitzResponse($merchantDetails->getMerchantId(), 'nc_automation_activation_exp_id');
-
-        if ($splitzResult === 'variables' && $currentActivationStatus === Status::NEEDS_CLARIFICATION
-            && (new Merchant\Core())->isRegularMerchant($merchantDetails->merchant)) {
-            return $isActivationFlowEligible && $isImpersonated === false;
-        }
-        $excludeActivationStatusList = [
-            Status::NEEDS_CLARIFICATION,
-            Status::ACTIVATED,
-            Status::REJECTED
-        ];
-        $ncCount = (new ClarificationDetailCore)->getNcCount($merchantDetails->merchant);
-        return (
-            $isActivationFlowEligible === true &&
-            $isImpersonated === false &&
-            $this->hasRiskTags($merchantDetails->merchant) === false &&
-            in_array($currentActivationStatus, $excludeActivationStatusList) === false &&
-            $ncCount === 0
-        );
-    }
-
 }
 

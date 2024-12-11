@@ -2,9 +2,17 @@
 
 namespace RZP\Models\Workflow\Service\Workflow;
 
+use App;
+use Route;
+use Request;
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Workflow\Service\Builder\Constants;
+use \RZP\Models\Workflow\Action\Constants as ActionConstants;
 use RZP\Models\Workflow\Service\Client;
 use RZP\Error\ErrorCode;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -107,4 +115,75 @@ class Service extends Base\Service
 
         return $this->workflowServiceClient->listWorkflows($input);
     }
+
+    public function createWorkflow(array $input): array
+    {
+        $this->app['trace']->info(TraceCode::CREATE_WORKFLOW_REQUEST, [
+            'input' => $input,
+        ]);
+
+        // replacing the below implementation by findByOrgIdAndEmail, one email can be part of multiple org
+        // for backward compatibility keeping RZP_ORG as default
+        // $maker = $this->repo->admin->findByEmail($data[Constants::ADMIN_EMAIL]);
+        $admin = $this->repo->admin->findByPublicId($input['admin_id']);
+
+        if (array_key_exists($input['permission_name'],ActionConstants::PERMISSION_VS_CONTROLLER) == false){
+            throw new Exception\BadRequestValidationFailureException("no approval controller defined");
+        }
+        try
+        {
+            $this->app['workflow']
+                ->setPermission($input['permission_name'])
+                ->setRouteName($input['route_name'])
+                ->setController(ActionConstants::PERMISSION_VS_CONTROLLER[$input['permission_name']])
+                ->setMakerFromAuth(false)
+                ->setInput($input['input'])
+                ->setWorkflowMaker($admin)
+                ->setWorkflowMakerType(MakerType::ADMIN)
+                ->setEntityAndId(E::MERCHANT, $input['entity_id'])
+                ->setTags(['AES_CREATED'])
+                ->handle(null, $input['input']);
+        }
+        catch (Exception\EarlyWorkflowResponse $e)
+        {
+            throw $e;
+        }
+
+        return [];
+    }
+
+    public function getPermissionsOfAdmin(array $input, $adminId): array
+    {
+        $this->app['trace']->info(TraceCode::GET_ADMIN_PERMISSIONS_REQUEST, [
+            'adminId'           => $adminId,
+            'input'             => $input,
+
+        ]);
+
+        $admin = $this->repo->admin->findByPublicId($adminId);
+
+        $permissions = [];
+
+
+        foreach ($input['permissions'] as $permission){
+
+            if ($admin->hasPermission($permission) === true)
+            {
+                $permissions[$permission] = true;
+            }
+            else
+            {
+                $permissions[$permission] = false;
+            }
+        }
+
+        $this->app['trace']->info(TraceCode::GET_ADMIN_PERMISSIONS_RESPONSE, [
+            'adminId'           => $adminId,
+            'input'             => $permissions,
+
+        ]);
+
+        return ['permissions' => $permissions];
+    }
+
 }

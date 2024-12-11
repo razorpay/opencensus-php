@@ -87,6 +87,14 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function wildcardAdminRequest(string $path, array $input): array
+    {
+      
+        $response = $this->workflowServiceClient->wildcardAdminRequest($path, $input);
+
+        return $response;
+    }
+
     /**
      * @param array $response
      * @param string $config_type

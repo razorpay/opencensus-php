@@ -2226,6 +2226,10 @@ class GatewayController extends Controller
      */
     protected function shouldSkipOptimizerCardsCallback($gateway, $payment): bool
     {
+        if (isset($payment) === false)
+        {
+            return false;
+        }
         $webhookNotSupportedGateways = [Gateway::PAYU, Gateway::CASHFREE];
         $webhookNotSupportedMethods = [Payment\Method::CARD];
         if ( in_array($gateway, $webhookNotSupportedGateways) === true && in_array($payment->getMethod(), $webhookNotSupportedMethods) && $payment->isRecurring() == false)

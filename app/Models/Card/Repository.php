@@ -17,8 +17,10 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FundAccount;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\Traits\ExternalCore;
 use RZP\Models\Base\Traits\ExternalRepo;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 class Repository extends Base\Repository
 {
@@ -208,10 +210,18 @@ class Repository extends Base\Repository
 
         $globalFingerprint = $this->dbColumn(Entity::GLOBAL_FINGERPRINT);
 
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_upi_experiment_id'),
+        ];
+
+        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
 
         // TODO: Further optimization can be picked up later on this. Once a merchant is found for given fingerprint
         //       These is no need to query further rows.
-        return  $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        return  $this->newQueryWithConnection($connectionType)
             ->select(Entity::MERCHANT_ID)
             ->where($globalFingerprint, '=', $fingerprint)
             ->whereIn(Entity::MERCHANT_ID, $merchant_ids)

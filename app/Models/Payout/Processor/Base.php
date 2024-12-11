@@ -4353,6 +4353,12 @@ class Base extends BaseCore
         {
             $this->isPayoutServiceEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED);
 
+
+            if ($this->balance->getAccountType() == AccountType::SHARED)
+            {
+                return false;
+            }
+
             if ($this->isPayoutServiceEnabled === true)
             {
                 $check = [

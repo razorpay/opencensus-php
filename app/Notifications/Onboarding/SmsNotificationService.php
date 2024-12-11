@@ -184,6 +184,8 @@ class SmsNotificationService extends BaseNotificationService
 
         $templateNamespace = Events::SMS_TEMPLATES_CUSTOM_NAMESPACES[$this->event] ?? OnboardingConstants::PAYMENTS_ONBOARDING;
 
+        $source = $this->getSource($templateName);
+
         $payload = [
             OnboardingConstants::OWNER_ID                    => $merchantId,
             OnboardingConstants::OWNER_TYPE                  => OnboardingConstants::MERCHANT,
@@ -197,7 +199,9 @@ class SmsNotificationService extends BaseNotificationService
                 Constants::MERCHANT_NAME => $merchant->getName(),
                 Constants::DASHBOARD_URL => $this->app[Constants::CONFIG]->get(Constants::APPLICATIONS_DASHBOARD_URL)
             ],
-            OnboardingConstants::DELIVERY_CALLBACK_REQUESTED => true
+            OnboardingConstants::DELIVERY_CALLBACK_REQUESTED => true,
+            Constants::SOURCE => $source,
+            OnboardingConstants::APPEND_SOURCE_TO_CONTEXT => true
         ];
 
         Handler::updateNCUrlIfApplicable($merchantId, $this->event, $this->args, true);
@@ -225,5 +229,14 @@ class SmsNotificationService extends BaseNotificationService
         }
 
         return Events::SMS_TEMPLATES[$this->event];
+    }
+
+    private function getSource(string $templateName): string
+    {
+        if (in_array($templateName, [Events::SMS_TEMPLATES[Events::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE], Events::SMS_TEMPLATES[Events::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE]])) {
+            return 'api.user.kyc_qualified_update';
+        }
+
+        return 'default';
     }
 }

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\FundAccount;
 
+use RZP\Services\Mutex;
+use RZP\Error\ErrorCode;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -30,6 +32,11 @@ use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
  */
 class Service extends Base\Service
 {
+    const FA_MUTEX_LOCK_TIMEOUT = 180;
+
+    const FA_CONTACT_MUTEX_RESOURCE        = 'FUND_ACCOUNT_CONTACT_%s_%s';
+    const FA_CUSTOMER_MUTEX_RESOURCE        = 'FUND_ACCOUNT_CUSTOMER_%s_%s';
+
     use Base\Traits\ServiceHasCrudMethods;
 
     /**
@@ -47,6 +54,11 @@ class Service extends Base\Service
      */
     protected $entityRepo;
 
+    /**
+     * @var Mutex
+     */
+    protected $mutex;
+
     public function __construct()
     {
         parent::__construct();
@@ -56,6 +68,8 @@ class Service extends Base\Service
         $this->contactCore = new ContactCore;
 
         $this->entityRepo = $this->repo->fund_account;
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public function create(array $input): array
@@ -370,7 +384,27 @@ class Service extends Base\Service
 
         $batchId = (isset($input[Entity::BATCH_ID]) === true) ? $input[Entity::BATCH_ID] : null;
 
-        $entity = $this->core->create($input, $this->merchant, $source, $createDuplicate, $batchId);
+        $properties = [
+            'id'            => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.mutex_lock_fund_account_experiment_id'),
+            'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+        ];
+        $isMutexLockForFundAccountExperimentEnabled = $this->core->isSplitzExperimentEnabled($properties, 'variables', TraceCode::MUTEX_LOCK_FUND_ACCOUNT_SPLITZ_ERROR);
+
+        if ($isMutexLockForFundAccountExperimentEnabled) {
+            $mutexResource = sprintf(self::FA_CONTACT_MUTEX_RESOURCE, $this->merchant->getId(), $source->getId());
+
+            $entity = $this->mutex->acquireAndRelease(
+                $mutexResource,
+                function () use ($input, $source, $createDuplicate, $batchId) {
+                    return $this->core->create($input, $this->merchant, $source, $createDuplicate, $batchId);
+                },
+                self::FA_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_OPERATION_IN_PROGRESS
+            );
+        } else {
+            $entity = $this->core->create($input, $this->merchant, $source, $createDuplicate, $batchId);
+        }
 
         $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
 
@@ -424,7 +458,27 @@ class Service extends Base\Service
                 'Fund accounts cannot be created on an inactive ' . $source->getEntity());
         }
 
-        $entity = $this->core->create($input, $this->merchant, $source);
+        $properties = [
+            'id'            => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.mutex_lock_fund_account_experiment_id'),
+            'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+        ];
+        $isMutexLockForFundAccountExperimentEnabled = $this->core->isSplitzExperimentEnabled($properties, 'variables', TraceCode::MUTEX_LOCK_FUND_ACCOUNT_SPLITZ_ERROR);
+
+        if ($isMutexLockForFundAccountExperimentEnabled) {
+            $mutexResource = sprintf(self::FA_CUSTOMER_MUTEX_RESOURCE, $this->merchant->getId(), $source->getId());
+
+            $entity = $this->mutex->acquireAndRelease(
+                $mutexResource,
+                function () use ($input, $source) {
+                    return $this->core->create($input, $this->merchant, $source);
+                },
+                self::FA_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_OPERATION_IN_PROGRESS
+            );
+        } else {
+            $entity = $this->core->create($input, $this->merchant, $source);
+        }
 
         return [
             Constants\Entity::FUND_ACCOUNT => $entity,

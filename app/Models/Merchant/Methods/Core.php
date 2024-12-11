@@ -1146,6 +1146,13 @@ class Core extends Base\Core
             return;
         }
 
+        $skipMethodResetForSubmerchant = $this->isSkipMethodResetForSubmerchant($merchant->getId());
+
+        if($skipMethodResetForSubmerchant === true)
+        {
+            return;
+        }
+
         $this->trace->info(
             TraceCode::MERCHANT_METHODS_RESET_BASED_ON_CATEGORY_REQUEST,
             [
@@ -1393,6 +1400,16 @@ class Core extends Base\Core
             return null;
 
         $partnerConfig = $this->repo->partner_config->getApplicationConfig($oauthAppId);
+
+        return optional($partnerConfig)->getDefaultPaymentMethods();
+    }
+
+    protected function getDefaultPaymentMethodsForPartnerApplication(?string $applicationId)
+    {
+        if($applicationId == null)
+            return null;
+
+        $partnerConfig = $this->repo->partner_config->getApplicationConfig($applicationId);
 
         return optional($partnerConfig)->getDefaultPaymentMethods();
     }
@@ -2060,5 +2077,39 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    /**
+     * If default_payment_methods in partner config table is set for the first connected partner app of the sub-merchant,
+     * then we will skip subsequent steps to reset payment methods, considering that the merchant would have picked
+     * default payment methods from partner config during merchant_banks entry creation.
+     */
+    private function isSkipMethodResetForSubmerchant(string $merchantId): bool
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_METHODS_RESET_BASED_ON_CATEGORY_REQUEST,
+            [
+                'merchant_id'                         => $merchantId,
+                'DEFAULT_PARTNER_PAYMENT_METHODS_SET_CHECK' => true
+            ]
+        );
+
+        $applicationId =  $this->repo->merchant_access_map->fetchEntityIdsForSubmerchant($merchantId, true)->first();
+
+        $defaultPaymentMethods = $this->getDefaultPaymentMethodsForPartnerApplication($applicationId);
+
+        if (empty($defaultPaymentMethods) === false)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_METHODS_RESET_BASED_ON_CATEGORY_REQUEST,
+                [
+                    'merchant_id'                         => $merchantId,
+                    'DEFAULT_PARTNER_PAYMENT_METHODS_SET' => true,
+                    'partner_app_id'                      => $applicationId
+                ]
+            );
+            return true;
+        }
+        return false;
     }
 }

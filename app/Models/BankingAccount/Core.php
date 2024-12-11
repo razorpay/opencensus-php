@@ -206,6 +206,7 @@ class Core extends Base\Core
         Channel::AXIS,
         Channel::ICICI,
         Channel::RBL,
+        Channel::IDFC,
     ];
 
     public function __construct()
@@ -1705,6 +1706,7 @@ class Core extends Base\Core
                         ['key' => ConfigKey::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE]) ?? false;
 
             case Channel::AXIS:
+            case Channel::IDFC:
             case Channel::YESBANK:
                 return (new AdminService)->getConfigKey(
                     ['key' => ConfigKey::CONNECTED_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE]) ?? false;
@@ -2477,6 +2479,7 @@ class Core extends Base\Core
                 break;
 
             case Channel::AXIS:
+            case Channel::IDFC:
             case Channel::YESBANK:
                 $limit = (int) (new AdminService)->getConfigKey(
                     ['key' => ConfigKey::CONNECTED_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT]);

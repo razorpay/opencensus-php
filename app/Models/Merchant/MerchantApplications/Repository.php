@@ -7,7 +7,9 @@ use DB;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
+use RZP\Models\Partner\Metric;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Repository extends Base\Repository
 {
@@ -41,9 +43,11 @@ class Repository extends Base\Repository
             $partnershipsRequest->setMerchantId($merchantId);
             $partnershipsRequest->setType($types);
             $partnershipsRequest->setTrashed($withTrashed);
-            $partnershipsRequest->setApplicationId($appId);
+            if(!empty($appId)) {
+                $partnershipsRequest->setApplicationId($appId);
+            }
             $partnershipsRequest->setOrderBy([Entity::TYPE,Entity::ID]);
-            [$redirectToApi,$response]=$this->fetchMerchantApplicationsOnFilter($partnershipsRequest);
+            [$redirectToApi,$response]=$this->fetchMerchantApplicationsOnFilter($partnershipsRequest,__FUNCTION__,false,$mode);
             if($redirectToApi===false)
             {
                 return new Base\PublicCollection($response);
@@ -111,6 +115,33 @@ class Repository extends Base\Repository
      */
     public function fetchMerchantApplication(string $entityId, string $entityType) : Base\PublicCollection
     {
+        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
+        if($switchOverExperimentEnabled)
+        {
+            $partnershipsRequest= new PartnershipsMerchantApplicationsDTO();
+            switch ($entityType) {
+                case Entity::TYPE:
+                    $partnershipsRequest->setType([$entityId]);
+                    break;
+                case Entity::APPLICATION_ID:
+                    $partnershipsRequest->setApplicationId($entityId);
+                    break;
+                case Entity::MERCHANT_ID:
+                    $partnershipsRequest->setMerchantId($entityId);
+                    break;
+            }
+            if(!(empty($partnershipsRequest->getType()) && empty($partnershipsRequest->getApplicationId()) && empty($partnershipsRequest->getMerchantId()))) {
+                [$redirectToApi, $response] = $this->fetchMerchantApplicationsOnFilter($partnershipsRequest,__FUNCTION__);
+                if ($redirectToApi === false) {
+                    return new Base\PublicCollection($response);
+                }
+            } else {
+                $this->trace->count(Metric::SWITCH_OVER_PARTNERSHIPS_MERCHANT_APPLICATION_UNKNOWN_ENTITY,[
+                    'entityType' => $entityType,
+                    'entityId' => $entityId,
+                ]);
+            }
+        }
         return $this->newQuery()
                     ->where($entityType, $entityId)
                     ->get();
@@ -123,15 +154,16 @@ class Repository extends Base\Repository
      */
     public function fetchMerchantApplicationByAppIds(array $applicationIds) : Base\PublicCollection
     {
-//        $flag=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
-//        if(!$flag)
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
+//        $switchOverExperimentEnabled=$this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);;
+//        if($switchOverExperimentEnabled)
 //        {
 //            $partnershipsRequest= new PartnershipsMerchantApplicationsDTO();
 //            $partnershipsRequest->setApplicationId($applicationIds);
-//            [$redirectToApi,$response]=$this->fetchMerchantApplicationsOnFilter($partnershipsRequest);
-//            if($redirectToApi===false)
+//            [$redirectToApi,$response]=$this->fetchMerchantApplicationsOnFilter($partnershipsRequest,__FUNCTION__);
+//            if(!$redirectToApi)
 //            {
-//                return $response;
+//                return new Base\PublicCollection($response);
 //            }
 //        }
         return $this->newQuery()
@@ -152,7 +184,7 @@ class Repository extends Base\Repository
             $partnershipsRequest= new PartnershipsMerchantApplicationsDTO();
             $partnershipsRequest->setType([$type]);
             $partnershipsRequest->setApplicationId($applicationId);
-            [$redirectToApi,$response]=$this->fetchMerchantApplicationsOnFilter($partnershipsRequest,true);
+            [$redirectToApi,$response]=$this->fetchMerchantApplicationsOnFilter($partnershipsRequest,__FUNCTION__,true);
             if($redirectToApi===false)
             {
                 return $response;
@@ -180,13 +212,13 @@ class Repository extends Base\Repository
                      ]);
     }
 
-    private function fetchMerchantApplicationsOnFilter(PartnershipsMerchantApplicationsDTO $partnershipsRequest, $fetchSingleEntity = false)
+    private function fetchMerchantApplicationsOnFilter(PartnershipsMerchantApplicationsDTO $partnershipsRequest,$function=null,$fetchSingleEntity = false,$mode=null)
     {
         $redirectFlag = false; // Flag for redirection decision
         $response = null;
         try
         {
-            $partnershipResponse = $this->app['partnerships']->fetchMerchantApplicationsOnFilter($partnershipsRequest);
+            $partnershipResponse = $this->app['partnerships']->fetchMerchantApplicationsOnFilter($partnershipsRequest,$function,$mode);
 
             // Decide response based on conditions and `fetchSingleEntity` flag
             $response = empty($partnershipResponse)

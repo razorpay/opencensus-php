@@ -137,7 +137,7 @@ class Fee extends Base\Core
 
         $timeTaken = $endTimeMs - $startTimeMs;
 
-        $this->trace->histogram(Metrics::PRICING_FEE_CALCULATION_TIME_IN_MS, $timeTaken);
+        $this->trace->histogram(Metrics::PRICING_FEE_CALCULATION_TIME_IN_MS, $timeTaken,['entity'=>$entity->getEntityName()]);
 
         return [$totalFee, $totalTax, $feeSplit];
     }

@@ -7,6 +7,7 @@ use RZP\Models\State;
 use RZP\Models\Payout;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestHeader;
 use RZP\Models\Workflow\Helper;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
@@ -320,6 +321,10 @@ class Service
         else if ($this->getImitateProxyAuth() === true)
         {
             $authDetails['merchant_id'] = $maker->getId();
+        }
+        else if ($this->ba->isAdminExperienceServiceApp() === true)
+        {
+            $authDetails['merchant_id'] =  $entityId;
         }
 
         if (empty($authDetails) === false)

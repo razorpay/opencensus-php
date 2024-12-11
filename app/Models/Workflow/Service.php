@@ -11,6 +11,7 @@ use RZP\Models\Admin\Org;
 use RZP\Trace\TraceCode;
 use RZP\Models\State\Name;
 use RZP\Models\Workflow\Step;
+use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -348,6 +349,16 @@ class Service extends Base\Service
             DifferEntity::WORKFLOW_OBSERVER_DATA    => $input,
             DifferEntity::ACTION_ID                 => $actionId,
         ]);
+
+
+        if ($this->app['workflow']->getWorkflowMaker() === null && !empty($input['admin_id']))
+        {
+            $admin = $this->repo->admin->findByPublicId($input['admin_id']);
+
+            $this->app['workflow']->setWorkflowMaker($admin);
+
+            unset($input['admin_id']);
+        }
 
         $orgId = $this->app['workflow']->getWorkflowMaker()->getOrgId();
 

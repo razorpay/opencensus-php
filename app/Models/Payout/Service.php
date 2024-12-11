@@ -3466,6 +3466,9 @@ class Service extends Base\Service
             case Channel::AXIS:
                 $debitAccountName = PayoutConstants::CHANNEL_AXIS_BANK;
                 break;
+            case Channel::IDFC:
+                $debitAccountName = PayoutConstants::CHANNEL_IDFC_BANK;
+                break;
             case Channel::ICICI:
                 $debitAccountName = PayoutConstants::CHANNEL_ICICI_BANK;
                 break;

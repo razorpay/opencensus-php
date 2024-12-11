@@ -137,14 +137,6 @@ class VerificationDetailsTransformer extends Base\Transformer
                     'verification_unit' => 'ocr'
                 ],
                 "function"  => 'mapVerificationStatus'
-            ],
-            [
-                "column"    => 'bank_details_verification_status',
-                'condition' => [
-                    'artefact_type'     => 'bank_account',
-                    'verification_unit' => 'ocr'
-                ],
-                "function"  => 'mapVerificationStatus'
             ]
         ],
     ];

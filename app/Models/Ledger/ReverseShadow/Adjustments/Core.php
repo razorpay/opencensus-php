@@ -225,17 +225,39 @@ class Core extends Base\Core
 
         $producerKey =  $adjustment->getId();
 
-        $data = [
-            Entity::ID  => $adjustment->getId(),
-            Entity::TRANSACTION_ID => $journal['id']
-        ];
+        $dualWriteRearchEnabled = (new \RZP\Models\LedgerOutbox\Core())->isAPILedgerDualWriteRearchSplitzEnabled($adjustment->merchant);
 
-        $message = [
-            Constants::KAFKA_MESSAGE_DATA      => $data,
-            Constants::KAFKA_MESSAGE_TASK_NAME  => Constants::CREATE_TRANSACTION_FOR_ADJUSTMENT
-        ];
+        if ($dualWriteRearchEnabled === true)
+        {
+            $journal['adjustment_id'] = $adjustment->getPublicId();
 
-        $topic = env('CREATE_REFUND_TXN_API', Constants::CREATE_REFUND_TXN_API);
+            $data = [
+                'payload_api'=>[
+                    'journal'       => $journal,
+                ]
+            ];
+
+            $message = [
+                LedgerConstants::KAFKA_MESSAGE_DATA       => $data,
+                LedgerConstants::KAFKA_MESSAGE_TASK_NAME  => LedgerConstants::DUAL_WRITE_TRANSACTION_FOR_API_EVENTS
+            ];
+
+            $topic = env('DUAL_WRITE_TRANSACTION_FOR_API_EVENTS', LedgerConstants::DUAL_WRITE_TRANSACTION_FOR_API_EVENTS);
+        }
+        else
+        {
+            $data = [
+                Entity::ID  => $adjustment->getId(),
+                Entity::TRANSACTION_ID => $journal['id']
+            ];
+
+            $message = [
+                Constants::KAFKA_MESSAGE_DATA      => $data,
+                Constants::KAFKA_MESSAGE_TASK_NAME  => Constants::CREATE_TRANSACTION_FOR_ADJUSTMENT
+            ];
+
+            $topic = env('CREATE_REFUND_TXN_API', Constants::CREATE_REFUND_TXN_API);
+        }
 
         try
         {

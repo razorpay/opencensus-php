@@ -90,6 +90,7 @@ class Constants
     public const FMP_DESTINATION_CHANNEL_TO_IFSC_MAP = [
         Channel::YESBANK => "YESB0000022",
         Channel::AXIS    => "UTIB0001506",
+        Channel::IDFC    => "IDFB0080151",
         Channel::RBL     => "RATN0000091",
         Channel::ICICI   => BankCodes::IFSC_ICIC,
     ];
@@ -109,6 +110,8 @@ class Constants
     const RAZORPAYX_LITE                    = 'RazorpayX Lite';
 
     const CHANNEL_AXIS_BANK                      = 'Axis Bank';
+
+    const CHANNEL_IDFC_BANK                      = 'IDFC Bank';
 
     const CHANNEL_ICICI_BANK                     = 'ICICI Bank';
 

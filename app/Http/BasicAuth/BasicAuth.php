@@ -2021,6 +2021,11 @@ class BasicAuth
         return $this->internalApp === 'care';
     }
 
+    public function isAdminExperienceServiceApp()
+    {
+        return $this->internalApp === 'admin-experience-service';
+    }
+
     public function isMobApp()
     {
         return $this->internalApp === 'master_onboarding';
@@ -2029,6 +2034,11 @@ class BasicAuth
     public function isXperienceApp()
     {
         return $this->internalApp == 'xperience';
+    }
+
+    public function isAbacusApp()
+    {
+        return $this->internalApp == 'abacus';
     }
 
     public function isDashboardApp()
@@ -2181,6 +2191,11 @@ class BasicAuth
     public function isCmmaApp(): bool
     {
         return ($this->getInternalApp() === 'cmma');
+    }
+
+    public function isAesApp(): bool
+    {
+        return ($this->getInternalApp() === 'admin-experience-service');
     }
 
     public function isCrossBorderApp(): bool

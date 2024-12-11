@@ -152,6 +152,15 @@ class Constants
         self::URL_EZETAP => self::EZETAPIND
     ];
 
+    const INSTANCES_VS_URL = [
+        self::RZPX      => self::URLX,
+        self::RZPCAP    => self::URLCAP,
+        self::RZPIND    => self::URLIND,
+        self::RZPMY     => self::URLMY,
+        self::RZP       => self::URL,
+        self::EZETAPIND => self::URL_EZETAP,
+    ];
+
     const FRESHDESK_URL_LIST = [self::URL, self::URLIND, self::URLMY, self::URLCAP, self::URLX, self::URL_EZETAP];
 
     // Active tickets and work in progress tickets

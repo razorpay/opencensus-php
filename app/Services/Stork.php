@@ -267,7 +267,7 @@ class Stork
                     'owner_id'                    => $input['ownerId'],
                     'owner_type'                  => $input['ownerType'],
                     'org_id'                      => $input['orgId'],
-                    'context'                     => $this->appendOrgIdInContext($input),
+                    'context'                     => $this->getStorkContext($input),
                     'sender'                      => $input['sender'],
                     'destination'                 => $input['destination'],
                     'template_name'               => $input['templateName'],
@@ -304,16 +304,34 @@ class Stork
     /**
      * If org id is not passed in stork context then copy from the orgId param.
      * @param array $input
-     * @return mixed
+     * @return void
      */
-    private function appendOrgIdInContext(array $input)
+    private function appendOrgIdInContext(array &$input)
     {
         if (empty($input['stork']['context']['org_id']) === true)
         {
-            $input['stork']['context']['org_id'] = $input['orgId'];
+            $input['stork']['context']['org_id'] = $input['orgId'] ?? null;
         }
+    }
 
-        return $input['stork']['context'];
+    /**
+     * If append source to context is passed in input then add source to context.
+     * @param array $input
+     * @return void
+     */
+    private function appendSourceInContext(array &$input)
+    {
+        if (empty($input['source']) === false and empty($input['append_source_to_context']) === false and $input['append_source_to_context'] === true ){
+            // adding source to stork context for custom rate limit
+            $input['stork']['context']['source'] = $input['source'];
+        }
+    }
+
+    private function getStorkContext(array $input){
+        $this->appendOrgIdInContext($input);
+        $this->appendSourceInContext($input);
+
+        return $input['stork']['context'] ?? [];
     }
 
     /**

@@ -2279,6 +2279,8 @@ class Constants
      */
     const VENDOR_ONBOARDING_ENABLED = 'vendor_onboarding_enabled';
 
+    const VENDOR_EXPERIENCE_ENABLED = 'vendor_experience_enabled';
+
     const BUYER_PROTECT_SIGNED_UP = 'buyer_protect_signed_up';
 
     /**
@@ -3320,9 +3322,10 @@ class Constants
         self::VAS_NB_CORP_ORG                        => true,
         self::VAS_NB_CORP_MER                        => true,
         self::MESSAGE_BANNER_DISABLED                => true,
-        self::RMV_CC_TXT_FRM_LOGO          => true,
-        self::ONE_CC_GSTIN_VALIDATION      => true,
-        self::HIDE_RZPBRAND_ON_CHECKOUT    => true,
+        self::RMV_CC_TXT_FRM_LOGO                    => true,
+        self::VENDOR_EXPERIENCE_ENABLED              => true,
+        self::ONE_CC_GSTIN_VALIDATION                => true,
+        self::HIDE_RZPBRAND_ON_CHECKOUT              => true,
         self::OG_SMS_VENDOR_CONFIG_TRAI    => true,
         self::ME_SMS_VENDOR_CONFIG_TRAI    => true,
         self::PAYOUTS_BLOCKED_ON_LITE      => true
@@ -4851,6 +4854,11 @@ class Constants
             'feature' => self::PG_LEDGER_REVERSE_SHADOW,
             'display_name' => "Feature flag for merchants onboarded on PG-Ledger",
             'documentation' => "",
+        ],
+        self::VENDOR_EXPERIENCE_ENABLED => [
+            'feature'       => self::VENDOR_EXPERIENCE_ENABLED,
+            'display_name'  => 'Vendor Experience Enabled',
+            'documentation' => 'Vendor Experience Enabled Merchant',
         ],
     ];
 

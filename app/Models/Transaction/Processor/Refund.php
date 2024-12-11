@@ -52,6 +52,14 @@ class Refund extends Base
         $this->setMerchantCredits();
     }
 
+    public function setFeeDefaultsForDualWrite($fees, $tax)
+    {
+        $this->fees = 0;
+        $this->tax  = 0;
+
+        $this->setMerchantCredits();
+    }
+
     // This is for setting a lock on the merchant's refund credits
     public function setMerchantCredits()
     {
@@ -152,6 +160,25 @@ class Refund extends Base
         return false;
     }
 
+    protected function shouldUpdateBalanceForDualWrite()
+    {
+        $payment = $this->source->payment;
+        $refund  = $this->source;
+
+        if ($payment->hasBeenCaptured() === true)
+        {
+            return true;
+        }
+
+        if (($payment->hasBeenAuthorized() === true) and
+            ($refund->isDirectSettlementWithoutRefund() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function getNetAmount()
     {
         $refund = $this->source;
@@ -231,6 +258,39 @@ class Refund extends Base
             $merchant = $refund->merchant;
 
             if ($merchant->getRefundSource() === RefundSource::CREDITS)
+            {
+                $this->debit = 0;
+
+                $this->txn->setCredits($netAmount);
+
+                $this->txn->setCreditType(Transaction\CreditType::REFUND);
+            }
+        }
+    }
+
+    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
+    {
+        $refund = $this->source;
+
+        $payment = $refund->payment;
+
+        if (($payment->hasBeenCaptured() === true) or
+            ($refund->isDirectSettlementWithoutRefund() === true))
+        {
+            if ($refund->isRefundSpeedInstant() === true)
+            {
+                list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
+
+                $this->fees = $fees;
+
+                $this->tax = $tax;
+            }
+
+            $netAmount = $this->getNetAmount();
+
+            $this->debit = $netAmount;
+
+            if ($refundCreditsUed === true)
             {
                 $this->debit = 0;
 

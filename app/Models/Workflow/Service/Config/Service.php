@@ -259,6 +259,16 @@ class Service extends Base\Service
         return $this->core->deleteWorkflowConfig($workflowInput);
     }
 
+    public function wildcardAdminRequest(string $path, array $input): array
+    {
+        $this->trace->info(TraceCode::SELF_SERVE_WORKFLOW_WILDCARD_ADMIN_REQUEST, [
+            'path'  => $path,
+            'input' => $input,
+        ]);
+
+        return $this->core->wildcardAdminRequest($path, $input);
+    }
+
     /**
      * @throws BadRequestValidationFailureException
      */

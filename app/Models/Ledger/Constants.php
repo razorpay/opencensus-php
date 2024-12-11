@@ -241,6 +241,7 @@ class Constants
     const MERCHANT_REFUND_CREDITS    = 'merchant_refund_credits';
     const MERCHANT_BALANCE           = 'merchant_balance';
     const MERCHANT_RESERVE_BALANCE   = 'merchant_reserve_balance';
+    const PRODUCT_REVENUE            = 'product_revenue';
     const MERCHANT_NEGATIVE_BALANCE  = 'merchant_negative_balance';
     const MERCHANT_VA_MERCHANT       = 'merchant_va_merchant';
 
@@ -278,7 +279,10 @@ class Constants
     const CREATE_TRANSACTION_FOR_DIRECT_TRANSFER   = 'create_transaction_for_direct_transfer';
     const CREATE_TRANSACTION_FOR_TRANSFER_REVERSAL = 'create_transaction_for_transfer_reversal';
     const LIVE_ART_EVENTS                          = 'live_art_events'; // check if to add prod_
-    const DUAL_WRITE_TRANSACTION_FOR_TRANSFER      = 'dual_write_transaction_for_transfer';
+
+    const DUAL_WRITE_TRANSACTION_FOR_API_EVENTS      = 'dual_write_transaction_for_api_events';
+
+    const LIVE_API_LEDGER_RETRY                     = 'live_api_ledger_retry';
 
     const PRODUCER_KEY  = 'producer_key';
     const TOPIC         = 'topic';
@@ -366,6 +370,20 @@ class Constants
     const FAILED_ENTRIES_COUNT                         =  'failed_entries_count';
 
     const FAILED_IDS                                   =  'failed_ids';
+
+    const PAYMENT_MERCHANT_CAPTURED              = "payment_merchant_captured";
+    const PAYMENT_GATEWAY_CAPTURED               = "payment_gateway_captured";
+    const PAYMENT_MERCHANT_CAPTURED_IN_PERSON    = "payment_merchant_captured_in_person";
+    const PAYMENT_GATEWAY_CAPTURED_IN_PERSON     = "payment_gateway_captured_in_person";
+    const PRICING_SUBSCRIPTION_CHARGE            = "pricing_subscription_charge";
+    const PRICING_SUBSCRIPTION                   = "pricing_subscription";
+    const REVERSE_PRICING_SUBSCRIPTION_CHARGE    = "reverse_pricing_subscription_charge";
+    const RAZORPAY_ACCOUNT_METHOD_CREDIT         = "razorpay_account_method_credit";
+    const RAZORPAY_ACCOUNT_METHOD_DEBIT          = "razorpay_account_method_debit";
+    const AGGREGATE_SETTLEMENT_TRANSFER_PROCESSED = "aggregate_settlement_transfer_processed";
+    const AGGREGATE_SETTLEMENT_PROCESSED         = "aggregate_settlement_processed";
+    const PAYMENT_GATEWAY_CAPTURE_COMMISSION     = "payment_gateway_capture_commission";
+    const TRANSFER_PROCESSED                     = "transfer_processed";
 
     const MERCHANT_RESERVE_BALANCE_WITHDRAWAL          = 'merchant_reserve_balance_withdrawal';
 

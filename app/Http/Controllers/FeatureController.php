@@ -102,6 +102,15 @@ class FeatureController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function initiateBalanceAnalysis()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->initiateBalanceAnalysisReverseShadow($input);
+
+        return ApiResponse::json($data->toArrayWithItems());
+    }
+
     /**
      * Adds features to entities
      *

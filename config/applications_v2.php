@@ -1640,5 +1640,26 @@ return [
                 ]
             ]
         ]
+    ],
+    env('APP_V2_ID_AES_SERVICE')               => [
+        "name"        => "aes_service",
+        "credentials" => [
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_AES_SERVICE'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_AES_SERVICE'),
+                "mode"     => "live",
+                "roles"    => [
+                    "app.aes_service"
+                ]
+            ],
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_TEST_AES_SERVICE'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_AES_SERVICE'),
+                "mode"     => "test",
+                "roles"    => [
+                    "app.aes_service"
+                ]
+            ]
+        ]
     ]
 ];

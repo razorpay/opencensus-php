@@ -591,8 +591,8 @@ class FreshdeskTicketClient
 
         $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_RESPONSE,
                            [
-                               'response'       => $responseBody['total'] ?? (isset($responseBody) ? count($responseBody) : 0),
-                               'response_code'  =>  $statusCode
+                               'response_total'       => $responseBody['total'] ?? (isset($responseBody) ? count($responseBody) : 0),
+                               'response_code'        =>  $statusCode
                            ]
         );
 
