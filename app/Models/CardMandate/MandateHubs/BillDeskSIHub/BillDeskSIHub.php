@@ -166,6 +166,31 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
         return null;
     }
 
+
+    public function setTerminalIDInput(Payment\Entity $payment, CardMandate\Entity $cardMandate): ?array {
+        $properties = [
+            'id'            => $payment->getMerchantId(),
+            'experiment_id' => $this->app['config']->get('app.mecode_sihub_from_initial'),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        if ($variant === 'enable' && isset($cardMandate->terminal)) {
+            return $cardMandate->terminal->toArray();
+        } elseif (isset($payment->terminal)) {
+            return $payment->terminal->toArray();
+        }
+
+        return null;
+    }
+
     /**
      * @param Payment\Entity $payment
      * @param CardMandate\Entity $cardMandate
@@ -327,9 +352,11 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             $cardData[Constants::CARD_NUMBER] = $this->getCardNumber($card, $payment->getGateway());
         }
 
+        $terminal = $this->setTerminalIDInput($payment, $cardMandate);
+
         $inputResponse = [
             Constants::PAYMENT      => $payment->toArray(),
-            Constants::TERMINAL     => $payment->terminal ? $payment->terminal->toArray() : null,
+            Constants::TERMINAL     =>  $terminal,
             Constants::GATEWAY      => MandateHubs::BILLDESK_SIHUB,
             Constants::NOTIFICATION => $payment->cardMandateNotification->toArray(),
             Constants::CARD         => $cardData ?? null,
@@ -403,11 +430,13 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
      */
     protected function getReportSubsequentPaymentInput(Payment\Entity $payment, CardMandate\Entity $cardMandate, array $authorizationData): array
     {
+        $terminal = $this->setTerminalIDInput($payment, $cardMandate);
+
         return [
             Constants::PAYMENT              => $payment->toArray(),
             Constants::GATEWAY              => MandateHubs::BILLDESK_SIHUB,
             Constants::CARD                 => $payment->card->toArray(),
-            Constants::TERMINAL             => $payment->terminal ? $payment->terminal->toArray() : null,
+            Constants::TERMINAL             => $terminal,
             Constants::MERCHANT             => $payment->merchant->toArray(),
             Constants::NOTIFICATION         => $payment->cardMandateNotification->toArray(),
             Constants::RECURRING_DEBIT_TYPE => Constants::RECURRING_DEBIT_TYPE_SUBSEQUENT,
@@ -500,9 +529,11 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
      */
     protected function getCreatePreDebitNotificationInput(Payment\Entity $payment, CardMandate\Entity $cardMandate, $input)
     {
+        $terminal = $this->setTerminalIDInput($payment, $cardMandate);
+
         return [
             Constants::PAYMENT      => $payment->toArray(),
-            Constants::TERMINAL     => $payment->terminal ? $payment->terminal->toArray() : null,
+            Constants::TERMINAL     =>  $terminal,
             Constants::GATEWAY      => MandateHubs::BILLDESK_SIHUB,
             Constants::CARD         => $payment->card->toArray(),
             Constants::MERCHANT     => $payment->merchant->toArray(),
