@@ -113,3 +113,4 @@ app/Http/Controllers/UserController.php                                  @joel-j
 app/Http/routes.php                                                      @joel-jaimon @dhruvdutt
 resources/views/merchant/*                                               @joel-jaimon @dhruvdutt
 resources/views/partials/*                                               @joel-jaimon @dhruvdutt
+web/e2e/suites/partnerDashboard/pos/partnerAgent/clientAccounts.spec.js @razorpay/deploy-leads-dashboard
