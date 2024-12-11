@@ -63,7 +63,7 @@ class Repository extends Base\Repository
      */
     public function getKeysForMerchantV2($apiKeys, $routeName, $merchantId, $mode, $expired = false)
     {
-        $enabled = $this->app[Constants::CREDCASE_API]->getKeysDualwriteVariant($merchantId, "read");
+        $enabled = $this->app[Constants::CREDCASE_API]->getKeysDualwriteVariant($merchantId, $mode, $routeName, "read");
         if(!$enabled) {
             return $apiKeys;
         }

@@ -79,7 +79,7 @@ class CredcaseApi
         }
     }
 
-    public function getKeysDualwriteVariant($merchantId, $type)
+    public function getKeysDualwriteVariant($merchantId, $mode, $routeName, $type)
     {
         try
         {
@@ -87,6 +87,8 @@ class CredcaseApi
             $this->trace->info(
                 TraceCode::SPLITZ_REQUEST,
                 [
+                    Constants::MODE => $mode,
+                    Constants::ROUTE => $routeName,
                     Constants::MERCHANT_ID => $merchantId,
                     Constants::SPLITZ_EXPERIMENT => $experimentId,
                 ]);
@@ -94,6 +96,7 @@ class CredcaseApi
             $properties = [
                 'id'            => $merchantId,
                 'experiment_id' => $experimentId,
+                'request_data'  => json_encode(['mode' => $mode, 'route' => $routeName]),
             ];
 
             $response = $this->app['splitzService']->evaluateRequest($properties);

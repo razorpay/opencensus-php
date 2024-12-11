@@ -20,6 +20,8 @@ class Constants
 
     const MERCHANT_ID = "merchantId";
 
+    const MODE = "mode";
+
     const SPLITZ_EXPERIMENT= "experiment";
 
     const SPLITZ_VARIANT = "variant";
@@ -27,4 +29,6 @@ class Constants
     const CREDCASE_API = 'credcase';
 
     const CREDCASE_SERVICE = 'credcaseService';
+
+    const ROUTE = "route";
 }
