@@ -152,6 +152,8 @@ class ApprovedPayoutProcessor extends Job
         }
         else
         {
+            $this->trace->count(Metric::APPROVED_PAYOUT_PROCESSOR_QUEUE_FAILURE_COUNT);
+
             $this->trace->info(TraceCode::PAYOUT_ASYNC_APPROVE_PROCESSOR_PUSH_TO_DLQ, [
                 'retry_attempt' => $this->attempts,
                 'merchant_id'   => $this->merchantId,

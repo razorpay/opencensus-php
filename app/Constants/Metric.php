@@ -181,6 +181,8 @@ class Metric
 
     const RAZORPAYX_PAYOUTS_BANKING_QUEUES_TIMEOUT_COUNT = 'razorpayx_payouts_banking_queues_timeout_count';
 
+    const APPROVED_PAYOUT_PROCESSOR_QUEUE_FAILURE_COUNT = 'approved_payout_processor_queue_failure_count';
+
     // Order Outbox
     const ORDER_OUTBOX_SOFT_DELETE_FAILURE                  = 'order_outbox_soft_delete_failure';
     const ORDER_OUTBOX_CRON_RETRY_FAILURE                   = 'order_outbox_cron_retry_failure';
