@@ -2227,6 +2227,7 @@ class Route
 
         'payout_fetch_by_id'                       => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_by_id_internal'              => ['get',      'payouts_internal/{id}',                          'PayoutController@getPayout'                                        ],
+        'payout_source_event_info_internal'        => ['get',      'payouts_internal/{id}/source_event_info',        'PayoutController@getSourceEventInfo'                               ],
         'payout_fetch_multiple'                    => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
         'payout_fetch_multiple_all'                => ['get',      'payouts/all',                                    'PayoutController@getPayoutsAll'                                    ],
         'payout_fetch_multiple_internal'           => ['get',      'payouts_internal',                               'PayoutController@getPayouts'                                       ],
@@ -6580,6 +6581,7 @@ class Route
         'payouts_source_update',
         'status_details_source_update',
         'rename_attachments_for_payouts',
+        'payout_source_event_info_internal',
 
         'rollback_free_payouts',
         'payouts_service_redis_key_set',
@@ -18346,6 +18348,7 @@ class Route
             'fund_account_validate_vpa_internal',
             'fund_account_validate_pennydrop_internal',
             'fetch_fav_pricing_info_internal',
+            'payout_source_event_info_internal',
         ],
 
         'ledger' => [

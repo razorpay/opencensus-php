@@ -5270,22 +5270,7 @@ class Core extends Base\Core
     }
 
     private function pushToAccountServiceQueue(Entity $payout): void {
-        /** @var Attempt\Entity $fundTransferAttempt */
-        $fundTransferAttempt = $payout->fundTransferAttempts()->first();
-
-        $pushData = [
-            PayoutConstants::ENTITY_ID               => $payout->getId(),
-            PayoutConstants::ENTITY_TYPE             => PayoutConstants::PAYOUTS_ENTITY_TYPE,
-            PayoutConstants::UTR                     => $payout->getUtr() ? $payout->getUtr() : "",
-            PayoutConstants::EVENT_CREATED_TIMESTAMP => Carbon::now(Timezone::IST)->getTimestamp(),
-            PayoutConstants::EVENT_ID                => UniqueIdEntity::generateUniqueId(),
-            PayoutConstants::GATEWAY_REF_NO          => $fundTransferAttempt ? $fundTransferAttempt->getGatewayRefNo() : "",
-            PayoutConstants::CMS_REF_NO              => $fundTransferAttempt ? $fundTransferAttempt->getCmsRefNo() : "",
-            PayoutConstants::STATUS                  => $payout->getStatus(),
-            PayoutConstants::MODE                    => $payout->getMode(),
-            PayoutConstants::AMOUNT                  => $payout->getAmount(),
-            PayoutConstants::BALANCE_ID              => $payout->getBalanceId(),
-        ];
+        $pushData = $this->getSourceEventInfoForStatementEnrichment($payout);
 
         $queueName = $this->app['config']->get('queue.account_statements_source_event.' . $this->mode);
 
@@ -5310,7 +5295,7 @@ class Core extends Base\Core
                 return true;
             }
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $id = $properties['id'] ?? null;
 
@@ -12214,4 +12199,29 @@ class Core extends Base\Core
             'hash_with_source' => $hashWithSource
         ];
     }
+
+    /**
+     * @param Entity $payout
+     *
+     * @return array
+     */
+    public function getSourceEventInfoForStatementEnrichment(Entity $payout): array
+    {
+        /** @var Attempt\Entity $fundTransferAttempt */
+        $fundTransferAttempt = $payout->fundTransferAttempts()->first();
+
+        return [
+            PayoutConstants::ENTITY_ID               => $payout->getId(),
+            PayoutConstants::ENTITY_TYPE             => PayoutConstants::PAYOUTS_ENTITY_TYPE,
+            PayoutConstants::UTR                     => $payout->getUtr() ? $payout->getUtr() : "",
+            PayoutConstants::EVENT_CREATED_TIMESTAMP => Carbon::now(Timezone::IST)->getTimestamp(),
+            PayoutConstants::EVENT_ID                => UniqueIdEntity::generateUniqueId(),
+            PayoutConstants::GATEWAY_REF_NO          => $fundTransferAttempt ? $fundTransferAttempt->getGatewayRefNo() : "",
+            PayoutConstants::CMS_REF_NO              => $fundTransferAttempt ? $fundTransferAttempt->getCmsRefNo() : "",
+            PayoutConstants::STATUS                  => $payout->getStatus(),
+            PayoutConstants::MODE                    => $payout->getMode(),
+            PayoutConstants::AMOUNT                  => $payout->getAmount(),
+            PayoutConstants::BALANCE_ID              => $payout->getBalanceId(),
+        ];
+}
 }
