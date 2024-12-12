@@ -18064,6 +18064,8 @@ class Route
             'internal_payment_pricing',
             'internal_pricing',
             'internal_merchant_risk_notification',
+            'pricing_fetch_plan',
+            'internal_transactions',
         ],
 
         'upi_payment_service' => [
