@@ -456,6 +456,7 @@ export default class User {
       this.isOrgRZP &&
       !this.isFeatureEnabled('one_click_checkout') &&
       this.isFeatureEnabled('one_cc_merchant_dashboard') &&
+      this.isFeatureEnabled('c360_merchant_dashboard') &&
       !this.isFeatureEnabled('pg_v3_onboarding_complete')
     );
   }

@@ -89,7 +89,7 @@ const MagicCheckout = ({
 
   return (
     <OnBoardingWrapper class="MagicCheckout">
-      {isMagicXPublicappCodEnabled && user.isC360OnboardingToBeResumed ? (
+      {isMagicXPublicappCodEnabled && user.isC360OnboardingStarted ? (
         <MagicXControlCenter />
       ) : (
         <Slider active={active} afterSlide={getOnBoardingSliderDots()}>

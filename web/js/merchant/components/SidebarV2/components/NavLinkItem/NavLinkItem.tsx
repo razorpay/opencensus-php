@@ -80,7 +80,9 @@ const NavLinkItem = ({
   // Checkout360 experience
   if (abExperiments?.magicx_publicapp_cod?.variables?.result === 'on') {
     title =
-      (user?.isC360OnboardingToBeResumed || user?.isC360OnboardingCompleted) &&
+      (user?.isC360OnboardingToBeResumed ||
+        user?.isC360OnboardingCompleted ||
+        user?.isC360OnboardingStarted) &&
       product_id === 'magic_checkout'
         ? 'Checkout360'
         : title;
