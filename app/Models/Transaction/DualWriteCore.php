@@ -477,11 +477,11 @@ class DualWriteCore extends Base\Core
                     return $txn;
                 });
             },
-            self::PAYMENT_TRANSACTION_CREATION_MUTEX_TTL,
+            self::ENTITY_TRANSACTION_CREATION_MUTEX_TTL,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
-            self::PAYMENT_TRANSACTION_CREATION_MUTEX_RETRIES,
-            self::PAYMENT_TRANSACTION_CREATION_MUTEX_MIN_RETRY_DELAY,
-            self::PAYMENT_TRANSACTION_CREATION_MUTEX_MAX_RETRY_DELAY
+            self::ENTITY_TRANSACTION_CREATION_MUTEX_RETRIES,
+            self::ENTITY_TRANSACTION_CREATION_MUTEX_MIN_RETRY_DELAY,
+            self::ENTITY_TRANSACTION_CREATION_MUTEX_MAX_RETRY_DELAY
         );
 
         $this->trace->info(TraceCode::CUSTOMER_TRANSFER_TRANSACTION_CREATED,
