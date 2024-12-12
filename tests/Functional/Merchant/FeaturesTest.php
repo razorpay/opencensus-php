@@ -3472,6 +3472,14 @@ Regards,
                 ],
                 'code' => 200
             ]);
+        $mockLedger->shouldReceive('updateAccountByEntitiesAndMerchantID')
+            ->zeroOrMoreTimes()
+            ->andReturn([
+                'body' => [
+                    "balance" => 12000
+                ],
+                'code' => 200
+            ]);
 
         $this->startTest($testData);
         $featuresArray = $this->getDbEntity('feature',

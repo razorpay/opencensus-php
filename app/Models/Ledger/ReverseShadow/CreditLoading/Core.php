@@ -163,6 +163,12 @@ class Core extends Base\Core
         $credit_type= self::CREDIT_TYPES[Credits\Type::AMOUNT];
 
         $transactorEvent = $credit_type[Constants::TRANSACTOR_EVENT];
+
+        if($amountCreditsSplitEnabled === true)
+        {
+            $transactorEvent = Constants::MERCHANT_AMOUNT_CREDIT_LOADING_V2;
+        }
+
         $amount =  abs($creditLogs->getValue());
 
         $msg = array(

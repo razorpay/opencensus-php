@@ -252,7 +252,7 @@ class Core extends Base\Core
 
     public function createTransactionMessageForMerchantAmountCreditLoading($amountCreditIdBalance, $amountCreditId, $merchantId): array
     {
-        $transactorEvent = Constants::MERCHANT_AMOUNT_CREDIT_LOADING;
+        $transactorEvent = Constants::MERCHANT_AMOUNT_CREDIT_LOADING_V2;
         $amount =  abs($amountCreditIdBalance);
 
         $msg = array(
@@ -277,6 +277,10 @@ class Core extends Base\Core
         return $msg;
     }
 
+    /**
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
     public function updatePGMerchantBalance(Merchant $merchant, int $balanceAmount)
     {
         try
@@ -296,7 +300,7 @@ class Core extends Base\Core
             ];
 
             $ledgerService = $this->app['ledger'];
-            $ledgerResponse = $ledgerService->updateAccountByEntitiesAndMerchantID($payload, $requestHeaders);
+            $ledgerResponse = $ledgerService->updateAccountByEntitiesAndMerchantID($payload, $requestHeaders, true);
 
             if(isset($ledgerResponse["code"]) and $ledgerResponse["code"] == 200 and isset($ledgerResponse["body"]["balance"]))
             {
@@ -325,12 +329,14 @@ class Core extends Base\Core
                     "exception"             => $ex,
                     "merchant_id"           => $merchant->getId()
                 ]);
-            return [
-                "exception" => $ex->getMessage()
-            ];
+            throw $ex;
         }
     }
 
+    /**
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
     public function updatePGMerchantReserveBalance(Merchant $merchant, int $reserveBalanceAmount)
     {
         try
@@ -350,7 +356,7 @@ class Core extends Base\Core
             ];
 
             $ledgerService = $this->app['ledger'];
-            $ledgerResponse = $ledgerService->updateAccountByEntitiesAndMerchantID($payload, $requestHeaders);
+            $ledgerResponse = $ledgerService->updateAccountByEntitiesAndMerchantID($payload, $requestHeaders, true);
 
             if(isset($ledgerResponse["code"]) and $ledgerResponse["code"] == 200 and isset($ledgerResponse["body"]["balance"]))
             {
@@ -379,12 +385,14 @@ class Core extends Base\Core
                     "exception"             => $ex,
                     "merchant_id"           => $merchant->getId()
                 ]);
-            return [
-                "exception" => $ex->getMessage()
-            ];
+            throw $ex;
         }
     }
 
+    /**
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
     public function updatePGLedgerMerchantCreditBalances(Merchant $merchant, array $creditBalances): array
     {
         try {
@@ -408,7 +416,7 @@ class Core extends Base\Core
                     ],
                     self::BALANCE => $feeCredits
                 ];
-                $feeCreditsResponse = $ledgerService->updateAccountByEntitiesAndMerchantID($payload, $requestHeaders);
+                $feeCreditsResponse = $ledgerService->updateAccountByEntitiesAndMerchantID($payload, $requestHeaders, true);
 
                 if(isset($feeCreditsResponse["code"]) and $feeCreditsResponse["code"] == 200 and isset($feeCreditsResponse["body"]["balance"]))
                 {
@@ -496,9 +504,7 @@ class Core extends Base\Core
                     "exception"             => $ex,
                     "merchant_id"           => $merchant->getId()
                 ]);
-            return [
-                "exception" => $ex->getMessage()
-            ];
+            throw $ex;
         }
     }
 
