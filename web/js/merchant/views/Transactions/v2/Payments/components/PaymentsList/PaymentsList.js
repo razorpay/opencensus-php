@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Link, SettingsIcon } from '@razorpay/blade/components';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import { withSplitzService } from 'common/splitz';
@@ -74,7 +74,7 @@ class PaymentsList extends ListContainer {
           selectedColumnsList: [
             ...selectedColumnsData.payment_optional_keys_columns,
             ...selectedColumnsData.user_notes_key_columns,
-          ],
+          ].filter((column) => column !== null),
         });
       else throw new Error();
     } catch (error) {
