@@ -5,7 +5,6 @@ import Loader from 'common/ui/Loader';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
 import EasterEgg from 'merchant/components/EasterEgg';
 import { RouteGuard } from 'merchant/components/ShowWhen';
 import { fetchCurrentBalance as fnFetchCurrentBalance } from 'merchant/reducers/home';
@@ -197,7 +196,7 @@ const Settlements = ({
     <>
       {/* instant settlements banner */}
       <div className="settlements-banner-container">
-        <EarlySettlementsAnnouncement userId={user.current} />
+        {/* <EarlySettlementsAnnouncement userId={user.current} /> */}
         {current_balance.data.balance < 0 && !user.isCountrySingapore && (
           <AnnouncementBanner
             title="Add Funds"
