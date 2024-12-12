@@ -54,6 +54,37 @@ trait ExternalOffersRepo
         return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
     }
 
+    public function findByPublicIdAndMerchantId($id, $merchantId, string $connectionType = null)
+    {
+        $id = OfferEntity::verifyIdAndSilentlyStripSign($id);
+
+        if ($this->fetchFromOEFindByPublicIdMigration($merchantId) === true)
+        {
+            try
+            {
+                // add prefix to id
+                $offer = $this->fetchExternalEntity('offer_' . $id, $merchantId);
+
+                // fetch offer from API if it has limits
+                return $this->fetchOffersWithLimitsFromAPI([$offer])[0];
+            } catch (\Throwable $e)
+            {
+                $this->trace->count(
+                    Metric::OFFERS_ENGINE_FETCH_BY_ID_FAIL, [
+                    'route' => app('api.route')->getCurrentRouteName(),
+                ]);
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::OFFERS_ENGINE_FETCH_BY_ID_FAIL, [
+                    ]);
+            }
+        }
+        // if experiment is false or exception caught, calls parent repo function but the offer response does not change
+        return parent::findOrFail($id, ['*'], $connectionType);
+    }
+
     public function findByIdAndMerchant(
         string $id,
         Merchant\Entity $merchant,
@@ -384,6 +415,12 @@ trait ExternalOffersRepo
     {
         return ($this->validateExternalFetchEnabled() === true)
         && ($this->core->shouldRouteToOffersEngine($merchantId, Constants::OFFERS_ENGINE_FETCH_EXP) === true);
+    }
+
+    private function fetchFromOEFindByPublicIdMigration(string $merchantId): bool
+    {
+        return ($this->validateExternalFetchEnabled() === true)
+               && ($this->core->shouldRouteToOffersEngineForPayments($merchantId, Constants::OFFERS_ENGINE_FIND_BY_PUBLIC_ID_MIGRATION_EXP) === true);
     }
 
     private function fetchRemainingFromAPI(array $offerIds, $offerEngineOffers)

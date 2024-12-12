@@ -25546,4 +25546,34 @@ return [
             ]
         ]
     ],
+
+    'testFetchSourceEventInfo' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts_internal/{id}/source_event_info',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchSourceEventInfoError' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts_internal/12345678901234/source_event_info',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'We are facing some trouble completing your request at the moment. Please try again shortly.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\ServerErrorException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_DB_QUERY_FAILED,
+        ],
+    ],
 ];

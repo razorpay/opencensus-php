@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Offer;
 use Carbon\Carbon;
 use Mockery;
 use RZP\Constants\Entity;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\DbMigrationMetricsObserver;
 use RZP\Models\Merchant\Account;
@@ -1100,6 +1101,44 @@ class OffersTest extends TestCase
     public function testCreateCardlessEmiOfferWithoutIssuer()
     {
         $this->fixtures->merchant->enableCardlessEmi(Account::TEST_ACCOUNT);
+        $this->startTest();
+    }
+
+    public function testFetchOffersDiscountForSubscription()
+    {
+        $offer = $this->fixtures->create('offer', [
+            'merchant_id'    => '10000000000000',
+            'starts_at'      => 1414764800,
+            'product_type'   => 'subscription',
+            'payment_method' => 'upi',
+        ]);
+
+        $subOffer = $this->fixtures->create('subscription_offers_master', [
+            'redemption_type' => 'cycle',
+            'applicable_on'   => 'both',
+            'no_of_cycles'    => 10,
+            'offer_id'        => $offer->getId(),
+        ]);
+
+        $payment = $this->fixtures->payment->create(
+            [
+                'merchant_id'     => '10000000000000',
+                'amount'          => 1000,
+                'currency'        => 'INR',
+                'method'          => 'upi',
+                'status'          => 'captured',
+                'bank'            => 'BARB',
+                'gateway'         => 'hdfc_debit_emi',
+                'captured_at'     => Carbon::now(Timezone::IST)->getTimestamp(),
+                'reference2'      => '1038203',
+                'subscription_id' => $subOffer->getId(),
+            ]
+        );
+
+        $this->testData[__FUNCTION__]['request']['content']['offer']           = 'offer_' . $offer->getId();
+        $this->testData[__FUNCTION__]['request']['content']['payment_id']      = $payment->getId();
+        $this->testData[__FUNCTION__]['request']['content']['subscription_id'] = $subOffer->getId();
+
         $this->startTest();
     }
 }

@@ -782,7 +782,9 @@ class Core extends Base\Core
             return;
         }
 
-        $visibleFeatures = Feature\Constants::$visibleFeaturesMap;
+        $core = new Feature\Core();
+
+        $visibleFeatures = $core->getVisibleFeatureMap();
 
         $data = [
             'feature'         => $visibleFeatures[$featureName]['display_name'],
@@ -819,7 +821,9 @@ class Core extends Base\Core
             return;
         }
 
-        $visibleFeatures = Feature\Constants::$visibleFeaturesMap;
+        $core = new Feature\Core();
+
+        $visibleFeatures = $core->getVisibleFeatureMap();
 
         // Replacing empty new lines with breaks and enclosing them in paragraphs. Since this text would be coming
         // from frontend, we need to do this to format it in html.

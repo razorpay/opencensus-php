@@ -4,8 +4,12 @@ namespace RZP\Tests\Functional\CheckoutOrder;
 
 use Carbon\Carbon;
 use Mockery;
+use RZP\Models\Offer;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Admin\Service as AdminService;
+use RZP\Services\OffersEngine as OffersEngine;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Order\Entity as OrderEntity;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -1683,5 +1687,156 @@ class CheckoutOrdersTest extends TestCase
         $this->splitzMock
             ->shouldReceive('evaluateRequest')
             ->andReturn($output);
+    }
+
+    function getOffersEngineConvertedResponse($response)
+    {
+        if (empty($response) === false)
+        {
+            $response[Offer\Constants::PUBLISH] = $response[Offer\Constants::OFFER_PUBLISHERS][0];
+
+            return (new Offer\OffersEngine())->
+            convertOffersEngineResponseToEntityOffer($response)[Offer\Constants::OFFER];
+        }
+
+        return null;
+    }
+
+    public function testCreateCheckoutOrderWithOffer(): void
+    {
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED => true,
+            ]);
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '100000razorpay', 'activated' => 1]);
+
+        $this->fixtures->create('order', ['amount' => 5000]);
+        $order = $this->getDbLastEntity('order');
+
+        $this->fixtures->create('offer', [
+            'merchant_id'    => $merchant['id'],
+            'payment_method' => 'upi',
+        ]);
+        $offer = $this->getDbLastEntity('offer');
+
+        $offerResponse = [
+            'offer'            => [
+                'metadata' => [
+                    'offer_id'      => $offer->getPublicId(),
+                    'name'          => 'Test Offer',
+                    'display_name'  => 'Test Offer',
+                    'advertiser_id' => 'rzp.merchant.' . $merchant['id'],
+                    'created_by'    => 'rzp_merchant',
+                    'state'         => 'STATE_CREATED',
+                    'offer_on'      => 'BENEFICIARY_TYPE_SELF',
+                    'currency'      => 'INR',
+                    'schedules'     => [
+                        'starts_at' => 1514764800,
+                        'ends_at'   => 1546300800,
+                    ],
+                ],
+                'spec'     => [
+                    'allowed_channels' => [
+                        'CHANNEL_RZP_CHECKOUT',
+                    ],
+                    'funding'          => [
+                        'type'  => 'BENEFICIARY_TYPE_SELF',
+                        'split' => [
+                            [
+                                'type'   => 'VALUE_OPTION_PERCENTAGE',
+                                'bearer' => 'USER_TYPE_PUBLISHER',
+                                'value'  => 100,
+                            ],
+                        ],
+                    ],
+                    'benefits_types'   => [
+                        'BENEFIT_TYPE_DISCOUNT',
+                    ],
+                    'rule_groups'      => [
+                        'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true',
+                                    'then'            => [
+                                        [
+                                            'discount' => [
+                                                'percent_discount' => 1000,
+                                                'applicable_on'    => 'Order.total_amount',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL'    => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.CardType == \"credit\" && PaymentInstrument.CardNetwork == \"VISA\" && PaymentInstrument.Issuer == \"HDFC\"',
+                                    'then'            => [
+                                        [
+                                            'discount' => [
+                                                [
+                                                    'percent_discount' => 1000,
+                                                    'applicable_on'    => 'Order.total_amount',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'usage_limits'     => [
+                        [
+                            'on'            => 'LIMIT_ON_OFFER',
+                            'maximum_value' => 2,
+                        ],
+                    ],
+                ],
+            ],
+            'offer_publishers' => [
+                [
+                    'continue_txn_on_failure' => 0,
+                    'offer_type'              => 'OFFER_TYPE_STAGE_REGULAR',
+                    'channel_name'            => 'CHANNEL_RZP_CHECKOUT',
+                    'total_usage'             => 200,
+                ]
+            ]
+        ];
+
+        $OffersEngineMock = Mockery::mock(OffersEngine::class, [$this->app])
+                                   ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $OffersEngineMock->shouldReceive('fetch')
+                         ->andReturnUsing(function(
+                             string $entity,
+                             string $id,
+                             string $merchantId,
+                             array  $input
+                         ) use ($offerResponse) {
+                             self::assertEquals('offer', $entity);
+                             self::assertEquals('10000000000000', $merchantId);
+
+                             return $this->getOffersEngineConvertedResponse($offerResponse);
+                         })->times(1);
+
+        $this->app->instance('offers_engine', $OffersEngineMock);
+
+        $response = $this->createCheckoutOrder(
+            ['offer_id' => $offer['id'],
+             'order_id' => $order['id']]
+        );
+
+        $this->assertEquals('order_' . $order['id'], $response['order_id']);
+        $this->assertEquals('active', $response['status']);
+
+        $checkoutOrder = $this->getDbEntityById('checkout_order', $response['id']);
+        $this->assertEquals($offer->getId(), $checkoutOrder['meta_data']['offer_id']);
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED => false,
+            ]);
     }
 }

@@ -68,20 +68,20 @@ class DualWriteCore extends Base\Core
                 return;
             }
 
-            $identifier = $payload['id'];
+//            $identifier = $payload['id'];
+//
+//            // bulk journals are embedded inside payload
+//            if($identifier==='' || $identifier===null)
+//            {
+//                $identifier=$payload[LedgerConstants::JOURNALS][0][LedgerConstants::TRANSACTOR_ID];
+//            }
 
-            // bulk journals are embedded inside payload
-            if($identifier==='' || $identifier===null)
-            {
-                $identifier=$payload[LedgerConstants::JOURNALS][0][LedgerConstants::TRANSACTOR_ID];
-            }
+//            if ($this->isKafkaMessageProcessingAttemptExceeded($identifier, $kafkaPayload,$jobName, self::PG_LEDGER_DUAL_WRITE_ATTEMPT_COUNT) === true)
+//            {
+//                return;
+//            }
 
-            if ($this->isKafkaMessageProcessingAttemptExceeded($identifier, $kafkaPayload,$jobName, self::PG_LEDGER_DUAL_WRITE_ATTEMPT_COUNT) === true)
-            {
-                return;
-            }
-
-            $this->incrementKafkaMessageProcessingAttempt($identifier,self::PG_LEDGER_DUAL_WRITE_ATTEMPT_COUNT, $jobName);
+            //$this->incrementKafkaMessageProcessingAttempt($identifier,self::PG_LEDGER_DUAL_WRITE_ATTEMPT_COUNT, $jobName);
 
             $this->processLedgerDualWrite($payload);
         }
@@ -94,7 +94,7 @@ class DualWriteCore extends Base\Core
                 null,
                 TraceCode::PG_LEDGER_DUAL_WRITE_ERROR);
 
-            throw $e;
+            $this->pushToApiLedgerRetryTopic($kafkaPayload);
         }
     }
 
@@ -705,7 +705,7 @@ class DualWriteCore extends Base\Core
                 LedgerConstants::MESSAGE      => $payload,
             ]);
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $this->trace->traceException(
                 $ex,

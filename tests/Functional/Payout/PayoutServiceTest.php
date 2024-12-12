@@ -2965,35 +2965,6 @@ class PayoutServiceTest extends TestCase
     {
         $this->mockPayoutServiceCreate();
 
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $payout = $this->testCreatePayoutServiceFtaCreation();
 
@@ -3045,27 +3016,6 @@ class PayoutServiceTest extends TestCase
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
-
         $testData = $this->testData['testCreatePayout'];
         $testData['request']['url']              = '/payouts_with_otp';
         $testData['request']['content']['otp']   = '0007';
@@ -3089,26 +3039,6 @@ class PayoutServiceTest extends TestCase
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $testData = $this->testData['testCreatePayoutWithAttachments'];
         $testData['request']['url']              = '/payouts_with_otp';
@@ -3403,21 +3333,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutWithNewBankingError(): array
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
             'entity_id'   => 10000000000000,
@@ -3429,21 +3344,6 @@ class PayoutServiceTest extends TestCase
         $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true, $assertionBody);
 
         $payout = $this->testCreatePayoutServiceFtaCreation();
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
@@ -3484,29 +3384,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutViaMicroserviceAndPassFundAccountInfo()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
 
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
@@ -3568,29 +3445,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutForCardViaMicroserviceAndPassFundAccountInfo()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
 
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
@@ -3679,29 +3533,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutForVpaViaMicroserviceAndPassFundAccountInfo()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
 
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
@@ -3792,29 +3623,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutForBankAccountViaMicroserviceAndPassVaToVaInfo()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
 
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
@@ -4255,29 +4063,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutForVpaViaMicroserviceAndPassVaToVaInfo()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
 
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
@@ -4394,29 +4179,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateRzpFeesPayoutForBankAccountViaMicroserviceAndPassVaToVaInfo()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
 
 
         $this->fixtures->on('live')->create('contact', [
@@ -4571,26 +4333,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutViaDashboardViaMicroserviceAndPassFundAccountInfo()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $assertionBody = [];
 
@@ -4651,26 +4393,7 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutForCardViaDashboardViaMicroserviceAndPassFundAccountInfo()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
 
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
         $card = $this->fixtures->on('live')->create('card', [
             'merchant_id'  => '10000000000000',
             'name'         => 'chirag',
@@ -4753,26 +4476,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutForVpaViaDashboardViaMicroserviceAndPassFundAccountInfo()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $this->fixtures->on('live')->create('contact', [
             'id' => 'cont1000000000',
@@ -4858,29 +4561,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateInternalPayoutViaMicroServiceAndPassFundAccountInfo()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
 
         $assertionBody = [];
 
@@ -4942,29 +4622,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateInternalPayoutForCardViaMicroServiceAndPassFundAccountInfo()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
 
         $card = $this->fixtures->on('live')->create('card', [
             'merchant_id'  => '10000000000000',
@@ -5049,29 +4706,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateInternalPayoutForVpaViaMicroServiceAndPassFundAccountInfo()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
 
         $this->fixtures->on('live')->create('contact', [
             'id' => 'cont1000000000',
@@ -5158,35 +4792,7 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutInsufficientBalance()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
 
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
         $this->mockPayoutServiceCreate(false, [], [], 'created', true);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
@@ -5199,29 +4805,6 @@ class PayoutServiceTest extends TestCase
     {
         $assertionBody = [];
 
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
 
         $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true, $assertionBody);
 
@@ -5244,29 +4827,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateInternalPayoutViaMicroServiceWithUserIdInHeaders()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
 
         $this->mockRazorxDefault();
 
@@ -5292,35 +4852,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutWithFeeRewards(): array
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $metadata = [
             'entity'          => 'payout',
@@ -5382,29 +4913,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutInternalContact()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
 
         $metadata = [
             'tax'             => 0,
@@ -5423,11 +4931,6 @@ class PayoutServiceTest extends TestCase
 
         $this->fixtures->on('live')->edit('contact', '1000001contact', ['type' => 'rzp_tax_pay']);
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $this->startTest();
 
@@ -5445,22 +4948,6 @@ class PayoutServiceTest extends TestCase
             'fees'            => 0,
             'origin'          => 'api',
         ];
-
-        $balance = $this->getDbEntities('balance',
-                                        [
-                                            'account_number'   => '2224440041626905',
-                                        ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
 
         $this->mockPayoutServiceCreate(false,
             $metadata,
@@ -5482,26 +4969,11 @@ class PayoutServiceTest extends TestCase
 
         $payout = $this->getDbLastEntity('payout','live');
 
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
         $this->fixtures->on('live')->edit(
             'payout',
             $payout->getId(),
             [
                 'workflow_feature' => 4,
-            ]
-        );
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
             ]
         );
 
@@ -5525,21 +4997,6 @@ class PayoutServiceTest extends TestCase
             'fees'            => 0,
             'origin'          => 'api',
         ];
-
-        $balance = $this->getDbEntities('balance',
-                                        [
-                                            'account_number'   => '2224440041626905',
-                                        ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
 
         $this->mockPayoutServiceCreate(false,
             $metadata,
@@ -5569,22 +5026,6 @@ class PayoutServiceTest extends TestCase
             ]
         );
 
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
-
         $this->startTest();
 
         $payout = $this->getDbLastEntity('payout', 'live');
@@ -5601,36 +5042,6 @@ class PayoutServiceTest extends TestCase
     public function testCreatePayoutServiceFailure()
     {
         $this->mockPayoutServiceCreate(true);
-
-        $balance = $this->getDbEntities('balance',
-                                        [
-                                            'account_number'   => '2224440041626905',
-                                        ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
@@ -5663,35 +5074,6 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, false, $assertionBody, $actualPayload,true);
 
-        $balance = $this->getDbEntities('balance',
-                                        [
-                                            'account_number'   => '2224440041626905',
-                                        ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
@@ -6164,35 +5546,6 @@ class PayoutServiceTest extends TestCase
         $request['headers'][RequestHeader::X_PAYOUT_IDEMPOTENCY] =
             $this->testData[__FUNCTION__]['request']['server']['HTTP_' . \RZP\Http\RequestHeader::X_PAYOUT_IDEMPOTENCY];
 
-        $balance = $this->getDbEntities('balance',
-                                        [
-                                            'account_number'   => '2224440041626905',
-                                        ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $this->mockPayoutServiceCreate(false, [], $request, 'pending');
 
@@ -6299,35 +5652,6 @@ class PayoutServiceTest extends TestCase
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
-        $balance = $this->getDbEntities('balance',
-                                        [
-                                            'account_number'   => '2224440041626905',
-                                        ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $this->startTest();
 
@@ -6395,35 +5719,6 @@ class PayoutServiceTest extends TestCase
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
-        $balance = $this->getDbEntities('balance',
-                                        [
-                                            'account_number'   => '2224440041626905',
-                                        ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $this->startTest();
 
@@ -6504,35 +5799,6 @@ class PayoutServiceTest extends TestCase
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
-        $balance = $this->getDbEntities('balance',
-                                        [
-                                            'account_number'   => '2224440041626905',
-                                        ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $this->startTest();
 
@@ -10190,35 +9456,12 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutToFundAccount_BatchID_InHeader()
     {
-        $balance = $this->getDbEntities('balance',
+        $this->fixtures->on('live')->edit('balance', '10000000000000',
             [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
+                'account_type' => 'shared',
+                'type'         => 'banking',
+                'channel'      => 'icici',
+            ]);
 
         $merchant = $this->getDbEntity('merchant',
                                        [
@@ -10267,34 +9510,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutToFundAccount_BatchID_In_Input()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $payoutServiceCreateMock = Mockery::mock('RZP\Services\PayoutService\Create',
                                                  [$this->app])->makePartial();
@@ -10327,34 +9542,6 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutToFundAccount_IdempotencyKey()
     {
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $payoutServiceCreateMock = Mockery::mock('RZP\Services\PayoutService\Create',
                                                  [$this->app])->makePartial();
@@ -12873,35 +12060,6 @@ class PayoutServiceTest extends TestCase
 
         $assertionBody = [];
 
-        $balance = $this->getDbEntities('balance',
-            [
-                'account_number'   => '2224440041626905',
-            ], 'live')->first();
-
-
-        $this->fixtures->on('live')->edit(
-            'balance',
-            $balance->getId(),
-            [
-                'account_type' => 'direct',
-                'channel'      => 'rbl',
-            ]
-        );
-
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
-            Details\Entity::ID             => 'xbas0000000002',
-            Details\Entity::MERCHANT_ID    => '10000000000000',
-            Details\Entity::BALANCE_ID     => $balance->getId(),
-            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
-            Details\Entity::CHANNEL        => Details\Channel::RBL,
-            Details\Entity::STATUS         => Details\Status::ACTIVE,
-        ]);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
         $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true, $assertionBody);
 

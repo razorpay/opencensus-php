@@ -164,19 +164,28 @@ class Core extends QrCode\Core
                 ]
             );
 
-            if ((empty($tr) === true) and
-                ($terminal?->getGateway() !== 'upi_jkbank') )
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_REFERENCE_REQUIRED);
-            }
+            if(empty($tr)===true){
+                if($qrCode->getUsageType() !== UsageType::MULTIPLE_USE)
+                {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_REFERENCE_REQUIRED);
+                }
 
-            if(($terminal?->getGateway() === 'upi_jkbank') and (empty($tr) === true)) {
-                $tr = $qrCode->getId() . 'qrv2';
-                $qrString = $this->updateTrIdInQrString($tr, $additionalData['qrString']);
+                if($terminal?->getGateway() !== 'upi_jkbank' and $terminal?->getGateway() !== 'upi_airtel' )
+                {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_REFERENCE_REQUIRED);
+                }
+
+                if($terminal?->getGateway() === 'upi_jkbank')
+                {
+                    $tr = $qrCode->getId() . 'qrv2';
+                    $qrString = $this->updateTrIdInQrString($tr, $additionalData['qrString']);
+                }
             }
 
             $qrCode->setQrString($qrString);
-            $qrCode->setReference($tr);
+            if(empty($tr) === false) {
+                $qrCode->setReference($tr);
+            }
 
             //register the qrcode in switch
             if ($terminal?->getGateway() === Gateway::UPI_RZPAPB)

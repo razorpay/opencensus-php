@@ -239,5 +239,35 @@ return [
             ],
             'status_code' => 400,
         ]
-    ]
+    ],
+    'testProductAndSubProductInResponse' => [
+        'request' => [
+            'dashboard' => [
+                'key' => 'rzp_test',
+                'secret' => env('APP_DASHBOARD_SECRET'),
+                'org_id' => Org::RZP_ORG,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'product' => 'pos',
+                'sub_product' => 'merchant_dashboard'
+            ]
+        ]
+    ],
+    'testProductAndSubProductInResponseWithoutSplitz' => [
+        'request' => [
+            'dashboard' => [
+                'key' => 'rzp_test',
+                'secret' => env('APP_DASHBOARD_SECRET'),
+                'org_id' => Org::RZP_ORG,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'product' => 'primary',
+                'sub_product' => ''
+            ]
+        ]
+    ],
 ];

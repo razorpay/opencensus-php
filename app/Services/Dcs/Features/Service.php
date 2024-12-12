@@ -34,6 +34,8 @@ class Service extends Base
      */
     private mixed $desc;
 
+    protected array $all_feature_map = [];
+
     public function __construct($app = null)
     {
         $this->app = $app ?? App::getFacadeRoot();
@@ -1190,4 +1192,91 @@ class Service extends Base
         }
         return $features;
     }
+
+    public function fetchAllFeatures(): array
+    {
+        if(empty($this->all_feature_map) === false){
+            $this->trace->info(TraceCode::FEATURE_FETCH_FROM_DCS, [
+                'message' => 'all_features_map_from_local_cache',
+                'allFeaturesMapCountFromLocalCache' => sizeof($this->all_feature_map),
+            ]);
+            return $this->all_feature_map;
+        }
+
+        try {
+            $cacheKey = "dcs:proxy:feature_mappings";
+            $allFeaturesMapString = $this->cache->get($cacheKey);
+
+            $allFeaturesMap = [];
+
+            if(empty($allFeaturesMapString) === false) {
+                $allFeaturesMap = json_decode($allFeaturesMapString, true);
+            }
+
+            if (empty($allFeaturesMap) === false) {
+
+                $this->trace->info(TraceCode::FEATURE_FETCH_FROM_DCS, [
+                    'message' => 'all_features_map_from_redis_cache',
+                    'allFeaturesMapCountFromRedis' => sizeof($allFeaturesMap),
+                ]);
+            }
+
+            if (empty($allFeaturesMap) === true) {
+                $allFeaturesMap = $this->fetchAllFeaturesViaProxy($this->getMode());
+                $ttl = 3600;
+                $this->cache->set($cacheKey, json_encode($allFeaturesMap), $ttl);
+                $this->trace->info(TraceCode::FEATURE_FETCH_FROM_DCS, [
+                    'message' => 'all_features_map_set_to_redis_cache',
+                    'cache_set' => "successful",
+                ]);
+            }
+
+            $allFeaturesMap = array_combine(
+                array_map(function ($key) {
+                    $parts = explode(':', $key, 2); // Split the key on the first ':' only
+                    return isset($parts[1]) ? $parts[1] : $parts[0]; // Use the part after ':' if it exists
+                }, array_keys($allFeaturesMap)),
+                $allFeaturesMap
+            );
+
+            $this->all_feature_map = $allFeaturesMap;
+
+            return $allFeaturesMap;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::DCS_GET_ALL_FEATURES_FAILED);
+            return [];
+        }
+    }
+
+    public function fetchAllFeaturesViaProxy(string $mode): array
+    {
+        try {
+            $proxyResp = $this->client($mode)->getAllFeaturesViaProxy();
+            $features = [];
+            if(empty($proxyResp->getFeatureMappings()) === false) {
+                foreach ($proxyResp->getFeatureMappings() as $key => $value) {
+                    $features[$key] = [
+                        'key' => $value->getKey(),
+                        'field_name' => $value->getFieldName(),
+                        'write_via_client' => $value->getWriteViaClient(),
+                        'read_enabled_via_dcs' => $value->getReadEnabledViaDcs(),
+                        'default_value' => $value->getDefaultValue(),
+                        'display_name' => $value->getDisplayName(),
+                        'documentation' => $value->getDocumentation(),
+                    ];
+                }
+            }
+            $this->trace->info(TraceCode::FEATURE_FETCH_FROM_DCS, [
+                'message' => 'all_features_fetch_from_dcs',
+                'features' => $features,
+            ]);
+            return $features;
+        } catch (\Throwable $ex) {
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::DCS_GET_ALL_FEATURES_FAILED);
+            return [];
+        }
+    }
+
 }

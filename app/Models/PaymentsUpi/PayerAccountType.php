@@ -18,6 +18,9 @@ class PayerAccountType
 
     const PRICING_PLAN_RECEIVER_TYPE_WALLET = 'wallet';
 
+    const PRICING_PLAN_RECEIVER_TYPE_CREDIT_LINE = 'credit_line';
+
+
     const SUPPORTED_PAYER_ACCOUNT_TYPES = [
         self::PAYER_ACCOUNT_TYPE_BANK_ACCOUNT,
         self::PAYER_ACCOUNT_TYPE_CREDIT,

@@ -1281,4 +1281,11 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getSourceEventInfo(string $id)
+    {
+        $data = $this->service()->fetchSourceEventInfo($id);
+
+        return ApiResponse::json($data);
+    }
 }

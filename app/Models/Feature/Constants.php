@@ -2396,6 +2396,8 @@ class Constants
 
     const HIDE_RZPBRAND_ON_CHECKOUT = 'hide_rzpbrand_on_checkout';
 
+    const BETA_LA_CREATE_ENABLE = 'beta_la_create_enable';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3328,6 +3330,7 @@ class Constants
         self::HIDE_RZPBRAND_ON_CHECKOUT              => true,
         self::OG_SMS_VENDOR_CONFIG_TRAI    => true,
         self::ME_SMS_VENDOR_CONFIG_TRAI    => true,
+        self::BETA_LA_CREATE_ENABLE        => true,
         self::PAYOUTS_BLOCKED_ON_LITE      => true
     ];
 
@@ -4860,6 +4863,11 @@ class Constants
             'display_name'  => 'Vendor Experience Enabled',
             'documentation' => 'Vendor Experience Enabled Merchant',
         ],
+        self::BETA_LA_CREATE_ENABLE => [
+            'feature'       => self::BETA_LA_CREATE_ENABLE,
+            'display_name'  => 'Beta Linked Account Enable',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -5078,7 +5086,9 @@ class Constants
 
     public static function getFeatureValue($featureName): bool
     {
-        return self::$featureValueMap[$featureName];
+        $core = new Core();
+        $featureValueMap = $core->getFeatureValueMap();
+        return $featureValueMap[$featureName];
     }
 
     public const FEATURES_WITHOUT_MERCHANT_AUTHENTICATION = [
@@ -5112,4 +5122,6 @@ class Constants
     const MERCHANT_BALANCE = "merchant_balance";
 
     const IS_AMOUNT_VALID = "is_amount_valid";
+
+    const ENABLE_FEATURE_FETCH_FROM_DCS_EXP_ID = "app.enable_feature_fetch_from_dcs_exp_id";
 }

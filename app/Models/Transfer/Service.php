@@ -46,6 +46,8 @@ use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
 
 class Service extends Base\Service
 {
+    const TRANSFER_SETTLEMENT_NSS_EXPERIMENT_KEY        = "app.transfer_settlement_nss_experiment_id";
+
     protected $core;
 
     public function __construct()
@@ -1237,6 +1239,76 @@ class Service extends Base\Service
         $transferIdsFailed = [];
         $transactionIdsFailed = [];
 
+        $merchantId='';
+
+        $expResult=false;
+
+        $experimentId='';
+
+        try{
+            if(count($transactionIds)>0){
+
+                $txnId= $transactionIds[0];
+
+                $txn= $this->repo->transaction->fetchByIdFromTiDB($txnId);
+
+                if($txn === null){
+
+                    $ex= new SettlementIdUpdateException($transactionIds, false);
+
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::CRITICAL,
+                        TraceCode::TRANSFER_RECON_FAILURE,
+                        [
+                            'transaction_id' => $transactionIds,
+                            'message'=>'transactions could not be updated due to mid extraction failure'
+                        ]
+                    );
+
+                    throw $ex;
+                }
+
+                $merchantId=$txn[0]['merchant_id'];
+            }
+
+            $experimentId=$this->app['config']->get(self::TRANSFER_SETTLEMENT_NSS_EXPERIMENT_KEY);
+
+            $properties= [
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+            ];
+
+            $response= $this->app['splitzService']->evaluateRequest($properties);
+
+            $expResult = $response['response']['variant']['name']==='variant_on' ?? false;
+
+            $this->trace->info(
+                TraceCode::TRANSFER_RECON_EXPERIMENT,
+                [
+                    'experiment_evaluated' => $expResult,
+                    'experiment_id'=> $experimentId,
+                    'merchant_id'=>$merchantId,
+                ]
+            );
+
+
+        }catch(\Throwable $ex){
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::TRANSFER_RECON_FAILURE,
+                [
+                    'id'            => $merchantId,
+                    'experiment_id' => $experimentId,
+                    'transaction_id' => $transactionIds,
+                    'message'=> 'exception while fetching tidb data or exp evaluation'
+                ]
+            );
+            $expResult=false;
+        }
+
+
         foreach ($transactionIds as $transactionId)
         {
             $transferId = null;
@@ -1244,7 +1316,14 @@ class Service extends Base\Service
 
             try
             {
-                [$transferId, $settlementId] = $this->updateSingleTransferWithSettlementId($transactionId);
+
+                if ($expResult===true){
+                    [$transferId, $settlementId] = $this->updateSingleTransferWithSettlementIdRearch($transactionId);
+                }
+                else {
+                    [$transferId, $settlementId] = $this->updateSingleTransferWithSettlementId($transactionId);
+                }
+
 
                 if ($transferId === null and $settlementId === null)
                 {
@@ -1351,6 +1430,67 @@ class Service extends Base\Service
         $transfer->setRecipientSettlementId($settlementId);
 
         $this->repo->transfer->saveOrFail($transfer);
+
+        $this->trace->info(
+            TraceCode::TRANSFER_RECIPIENT_SETTLEMENT_ID_UPDATED,
+            [
+                'transfer_id'               => $transfer->getId(),
+                'recipient_settlement_id'   => $transfer->getRecipientSettlementId(),
+            ]
+        );
+
+        return [$transfer->getId(), $settlementId];
+    }
+
+    protected function updateSingleTransferWithSettlementIdRearch(string $transactionId): array
+    {
+
+        $fetchInput = [
+            'id' => $transactionId,
+            'entity_name' => 'transaction',
+        ];
+
+        $transactionEntity = app('settlements_api')->fetch($fetchInput);
+
+        $transaction=$transactionEntity['entity'];
+
+        $sourceId=$transaction['source_id'];
+
+        $sourceType =$transaction['source_type'];
+
+        $this->trace->info(
+            TraceCode::TRANSACTION_FETCHED_FOR_TRANSFER_RECON,
+            [
+                'transaction_id' => $transactionId,
+            ]
+        );
+
+        if ($sourceType !== EntityConstant::PAYMENT)
+        {
+            return [null, null];
+        }
+
+        $payment = $this->repo->payment->findOrFail($sourceId);
+
+        if ($payment->transfer === null)
+        {
+            return [null, null];
+        }
+
+        $transfer = $payment->transfer;
+
+        $this->trace->info(
+            TraceCode::TRANSFER_FETCHED_FOR_RECON,
+            [
+                'transfer_id' => $transfer->getId(),
+            ]
+        );
+
+        $settlementId = $transaction['settlement_id'];
+
+        $transfer->setRecipientSettlementId($settlementId);
+
+        $this->repo->saveOrFail($transfer);
 
         $this->trace->info(
             TraceCode::TRANSFER_RECIPIENT_SETTLEMENT_ID_UPDATED,

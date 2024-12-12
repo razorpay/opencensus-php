@@ -168,29 +168,58 @@ class Service extends UpiPaymentService
         $payload = $content['data']['gateway']['payload'];
         $payload = json_decode($payload, true);
 
-        $data['data'] = [
-            'version' => 'v2',
-            'upi' => [
-                'vpa' => $payload['payerVPA'] ?? '',
-                'status_code' => $payload['errorCode'],
-                'npci_reference_id' => $payload['rrn'],
-                'merchant_reference' => $payload['hdnOrderID'],
-            ],
-            'payment' => [
-                'currency' => 'INR',
-                'amount_authorized' => (string) $payload['amount'] * 100
-            ],
-            'terminal' => [
-                'gateway_merchant_id2' => $content['data']['terminal']['gateway_merchant_id2'],
-                'gateway'              => $content['data']['terminal']['gateway'],
-            ],
-        ];
+        if ($content['gateway'] == Payment\Gateway::UPI_RZPAXIS)
+        {
+            $amount = $payload['amount'];
+
+            if ($payload['description'] === 'amount_mismatch')
+            {
+                $amount = $payload['amount'] + 100;
+            }
+
+            $data['data'] = [
+                'version' => 'v2',
+                'upi' => [
+                    'vpa' => $payload['vpa'] ?? '',
+                    'npci_reference_id' => '002002002002',
+                    'merchant_reference' => $payload['id'],
+                ],
+                'payment' => [
+                    'currency' => 'INR',
+                    'amount_authorized' => (string) $amount
+                ],
+                'terminal' => [
+                    'gateway'              => Payment\Gateway::UPI_RZPAXIS,
+                ],
+            ];
+        }
+        else
+        {
+            $data['data'] = [
+                'version' => 'v2',
+                'upi' => [
+                    'vpa' => $payload['payerVPA'] ?? '',
+                    'status_code' => $payload['errorCode'],
+                    'npci_reference_id' => $payload['rrn'],
+                    'merchant_reference' => $payload['hdnOrderID'],
+                ],
+                'payment' => [
+                    'currency' => 'INR',
+                    'amount_authorized' => (string) $payload['amount'] * 100
+                ],
+                'terminal' => [
+                    'gateway_merchant_id2' => $content['data']['terminal']['gateway_merchant_id2'],
+                    'gateway'              => $content['data']['terminal']['gateway'],
+                ],
+            ];
+        }
 
         $data['success'] = true;
         $data['error'] = null;
         $data['next'] = null;
 
-        if ($payload['code'] !== '0')
+        if (($payload['code'] !== '0' && $content['gateway'] == Payment\Gateway::UPI_AIRTEL) or
+            ($payload['description'] === 'payment_failed' && $content['gateway'] == Payment\Gateway::UPI_RZPAXIS))
         {
             $data['error'] = [
                 'description'               => 'Debit has been failed',

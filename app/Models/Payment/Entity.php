@@ -3289,6 +3289,21 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return false;
     }
 
+    public function isCreditLineOnUpi(): bool
+    {
+        if ($this->isUpi() === false)
+        {
+            return false;
+        }
+
+        $PayerAccountType=$this->getPayerAccountTypeAttribute();
+        if ($PayerAccountType === PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_CREDIT_LINE) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function isPPIOnUpi(): bool
     {
         if ($this->isUpi() === false)
@@ -3346,6 +3361,51 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 $e,
                 null,
                 TraceCode::CC_ON_UPI_PRICING_SPLITZ_ERROR);
+        }
+
+        return false;
+    }
+
+    public function checkIfCreditLineOnUPIPricingSplitzExperimentEnabled(): bool
+    {
+        $app = \App::getFacadeRoot();
+        try
+        {
+            $merchantId=$this->getMerchantId();
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $app['config']->get('app.credit_line_on_upi_pricing_splitz_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+            $response   = $app['splitzService']->evaluateRequest($properties);
+
+            $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties'    => $properties,
+                'merchant_id'   => $merchantId,
+                'response'      => $response
+            ]);
+
+            if ($response['response']['variant'] !== null)
+            {
+                $variables = $response['response']['variant']['variables'] ?? [];
+
+                foreach ($variables as $variable)
+                {
+                    $key   = $variable['key'] ?? '';
+                    $value = $variable['value'] ?? '';
+                    if ($key == "result" && $value == "on")
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::CL_ON_UPI_PRICING_SPLITZ_ERROR);
         }
 
         return false;

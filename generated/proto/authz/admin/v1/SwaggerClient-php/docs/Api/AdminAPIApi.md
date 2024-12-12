@@ -25,6 +25,7 @@ Method | HTTP request | Description
 [**adminAPIDeleteService**](AdminAPIApi.md#adminAPIDeleteService) | **DELETE** /v1/services/{id} | DeleteService deletes the service entity from AuthZ policy store.
 [**adminAPIDeleteSubject**](AdminAPIApi.md#adminAPIDeleteSubject) | **DELETE** /v1/subjects | DeleteSubject detaches all roles for the given subject entity in AuthZ policy store.
 [**adminAPIDeleteSubjectRoleMapping**](AdminAPIApi.md#adminAPIDeleteSubjectRoleMapping) | **DELETE** /v1/subject_role_mappings | DeleteSubjectRoleMapping detaches the role from a subject entity in AuthZ policy store.
+[**adminAPIGetRole**](AdminAPIApi.md#adminAPIGetRole) | **GET** /v1/roles/{identifier} | GetRole returns the role entity from AuthZ policy store.
 [**adminAPIListAction**](AdminAPIApi.md#adminAPIListAction) | **GET** /v1/actions | ListAction returns a list of actions based on the supplied filters.
 [**adminAPIListPermission**](AdminAPIApi.md#adminAPIListPermission) | **GET** /v1/permissions | ListPermission returns a list of permissions satisfying the filter conditions.
 [**adminAPIListPolicy**](AdminAPIApi.md#adminAPIListPolicy) | **GET** /v1/policies | ListPolicy returns a list of policies satisfying the filter conditions.
@@ -40,6 +41,7 @@ Method | HTTP request | Description
 [**adminAPIUpdateResourceGroup**](AdminAPIApi.md#adminAPIUpdateResourceGroup) | **PUT** /v1/resource_groups | UpdateResourceGroup updates the given resource group entity.
 [**adminAPIUpdateRole**](AdminAPIApi.md#adminAPIUpdateRole) | **PUT** /v1/roles | UpdateRole creates the role entity in AuthZ policy store.
 [**adminAPIUpdateService**](AdminAPIApi.md#adminAPIUpdateService) | **PUT** /v1/services | UpdateService creates the service entity in AuthZ policy store.
+[**adminAPIUpdateSubjectRoleMapping**](AdminAPIApi.md#adminAPIUpdateSubjectRoleMapping) | **PUT** /v1/subject_role_mappings | UpdateSubjectRoleMapping updates the roles attached to a subject entity in AuthZ policy store.
 
 
 # **adminAPICreateAction**
@@ -564,7 +566,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeletePermission**
-> \AuthzAdmin\Client\Model\V1Null adminAPIDeletePermission($id, $resource_id, $action_id, $effect)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeletePermission($id, $resource_id, $action_id, $effect, $group)
 
 DeletePermission deletes the permission entity from AuthZ policy store.
 
@@ -582,9 +584,10 @@ $id = "id_example"; // string |
 $resource_id = "resource_id_example"; // string | 
 $action_id = "action_id_example"; // string | 
 $effect = "EFFECT_UNKNOWN"; // string | 
+$group = "group_example"; // string | 
 
 try {
-    $result = $apiInstance->adminAPIDeletePermission($id, $resource_id, $action_id, $effect);
+    $result = $apiInstance->adminAPIDeletePermission($id, $resource_id, $action_id, $effect, $group);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling AdminAPIApi->adminAPIDeletePermission: ', $e->getMessage(), PHP_EOL;
@@ -600,6 +603,7 @@ Name | Type | Description  | Notes
  **resource_id** | **string**|  | [optional]
  **action_id** | **string**|  | [optional]
  **effect** | **string**|  | [optional] [default to EFFECT_UNKNOWN]
+ **group** | **string**|  | [optional]
 
 ### Return type
 
@@ -823,7 +827,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeleteRole**
-> \AuthzAdmin\Client\Model\V1Null adminAPIDeleteRole($id, $name, $org_id, $type, $owner_type, $owner_id)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeleteRole($id, $name, $org_id, $type, $owner_type, $owner_id, $child_ids, $created_by, $description)
 
 DeleteRole deletes the role entity from AuthZ policy store.
 
@@ -843,9 +847,12 @@ $org_id = "org_id_example"; // string |
 $type = "ROLE_POLICY_TYPE_INTERNAL"; // string | 
 $owner_type = "owner_type_example"; // string | 
 $owner_id = "owner_id_example"; // string | 
+$child_ids = array("child_ids_example"); // string[] | 
+$created_by = "created_by_example"; // string | 
+$description = "description_example"; // string | 
 
 try {
-    $result = $apiInstance->adminAPIDeleteRole($id, $name, $org_id, $type, $owner_type, $owner_id);
+    $result = $apiInstance->adminAPIDeleteRole($id, $name, $org_id, $type, $owner_type, $owner_id, $child_ids, $created_by, $description);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling AdminAPIApi->adminAPIDeleteRole: ', $e->getMessage(), PHP_EOL;
@@ -863,6 +870,9 @@ Name | Type | Description  | Notes
  **type** | **string**|  | [optional] [default to ROLE_POLICY_TYPE_INTERNAL]
  **owner_type** | **string**|  | [optional]
  **owner_id** | **string**|  | [optional]
+ **child_ids** | [**string[]**](../Model/string.md)|  | [optional]
+ **created_by** | **string**|  | [optional]
+ **description** | **string**|  | [optional]
 
 ### Return type
 
@@ -1087,6 +1097,59 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
+# **adminAPIGetRole**
+> \AuthzAdmin\Client\Model\V1Role adminAPIGetRole($identifier, $org_id, $owner_id, $expand_children)
+
+GetRole returns the role entity from AuthZ policy store.
+
+### Example
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client()
+);
+$identifier = "identifier_example"; // string | 
+$org_id = "org_id_example"; // string | 
+$owner_id = "owner_id_example"; // string | 
+$expand_children = true; // bool | 
+
+try {
+    $result = $apiInstance->adminAPIGetRole($identifier, $org_id, $owner_id, $expand_children);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AdminAPIApi->adminAPIGetRole: ', $e->getMessage(), PHP_EOL;
+}
+?>
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **identifier** | **string**|  |
+ **org_id** | **string**|  | [optional]
+ **owner_id** | **string**|  | [optional]
+ **expand_children** | **bool**|  | [optional]
+
+### Return type
+
+[**\AuthzAdmin\Client\Model\V1Role**](../Model/V1Role.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
+
 # **adminAPIListAction**
 > \AuthzAdmin\Client\Model\V1ListActionResponse adminAPIListAction($pagination_token, $action_name_prefix)
 
@@ -1190,7 +1253,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIListPolicy**
-> \AuthzAdmin\Client\Model\V1ListPolicyResponse adminAPIListPolicy($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id)
+> \AuthzAdmin\Client\Model\V1ListPolicyResponse adminAPIListPolicy($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id, $role_owner_id, $enrich_roles, $role_ids, $role_identifier, $org_ids)
 
 ListPolicy returns a list of policies satisfying the filter conditions.
 
@@ -1212,9 +1275,14 @@ $service_id_list = array("service_id_list_example"); // string[] |
 $permission_id_list = array("permission_id_list_example"); // string[] | 
 $role_names = array("role_names_example"); // string[] | 
 $org_id = "org_id_example"; // string | 
+$role_owner_id = "role_owner_id_example"; // string | 
+$enrich_roles = true; // bool | 
+$role_ids = array("role_ids_example"); // string[] | 
+$role_identifier = "role_identifier_example"; // string | 
+$org_ids = array("org_ids_example"); // string[] | 
 
 try {
-    $result = $apiInstance->adminAPIListPolicy($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id);
+    $result = $apiInstance->adminAPIListPolicy($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id, $role_owner_id, $enrich_roles, $role_ids, $role_identifier, $org_ids);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling AdminAPIApi->adminAPIListPolicy: ', $e->getMessage(), PHP_EOL;
@@ -1234,6 +1302,11 @@ Name | Type | Description  | Notes
  **permission_id_list** | [**string[]**](../Model/string.md)|  | [optional]
  **role_names** | [**string[]**](../Model/string.md)|  | [optional]
  **org_id** | **string**|  | [optional]
+ **role_owner_id** | **string**|  | [optional]
+ **enrich_roles** | **bool**|  | [optional]
+ **role_ids** | [**string[]**](../Model/string.md)|  | [optional]
+ **role_identifier** | **string**|  | [optional]
+ **org_ids** | [**string[]**](../Model/string.md)|  | [optional]
 
 ### Return type
 
@@ -1353,7 +1426,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIListRole**
-> \AuthzAdmin\Client\Model\V1ListRoleResponse adminAPIListRole($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id)
+> \AuthzAdmin\Client\Model\V1ListRoleResponse adminAPIListRole($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id, $key_id, $key_owner_type, $key_owner_id, $owner_ids, $type)
 
 ListRole returns a list of roles matching the filter condition.
 
@@ -1372,9 +1445,14 @@ $role_name_prefix = "role_name_prefix_example"; // string |
 $role_names = array("role_names_example"); // string[] | 
 $role_ids = array("role_ids_example"); // string[] | 
 $org_id = "org_id_example"; // string | 
+$key_id = "key_id_example"; // string | 
+$key_owner_type = "key_owner_type_example"; // string | 
+$key_owner_id = "key_owner_id_example"; // string | 
+$owner_ids = array("owner_ids_example"); // string[] | 
+$type = "type_example"; // string | RolePolicyType defaults to internal
 
 try {
-    $result = $apiInstance->adminAPIListRole($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id);
+    $result = $apiInstance->adminAPIListRole($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id, $key_id, $key_owner_type, $key_owner_id, $owner_ids, $type);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling AdminAPIApi->adminAPIListRole: ', $e->getMessage(), PHP_EOL;
@@ -1391,6 +1469,11 @@ Name | Type | Description  | Notes
  **role_names** | [**string[]**](../Model/string.md)|  | [optional]
  **role_ids** | [**string[]**](../Model/string.md)|  | [optional]
  **org_id** | **string**|  | [optional]
+ **key_id** | **string**|  | [optional]
+ **key_owner_type** | **string**|  | [optional]
+ **key_owner_id** | **string**|  | [optional]
+ **owner_ids** | [**string[]**](../Model/string.md)|  | [optional]
+ **type** | **string**| RolePolicyType defaults to internal | [optional]
 
 ### Return type
 
@@ -1471,7 +1554,7 @@ $apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \AuthzAdmin\Client\Model\V1Null(); // \AuthzAdmin\Client\Model\V1Null | 
+$body = new \AuthzAdmin\Client\Model\V1Null(); // \AuthzAdmin\Client\Model\V1Null | Null defines an empty message which the service uses when it doesn't have any data to return.
 
 try {
     $result = $apiInstance->adminAPIRecon($body);
@@ -1486,7 +1569,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)| Null defines an empty message which the service uses when it doesn&#39;t have any data to return. |
 
 ### Return type
 
@@ -1820,6 +1903,53 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**\AuthzAdmin\Client\Model\V1Service**](../Model/V1Service.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
+
+# **adminAPIUpdateSubjectRoleMapping**
+> \AuthzAdmin\Client\Model\V1Null adminAPIUpdateSubjectRoleMapping($body)
+
+UpdateSubjectRoleMapping updates the roles attached to a subject entity in AuthZ policy store.
+
+### Example
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client()
+);
+$body = new \AuthzAdmin\Client\Model\V1SubjectRoleMapping(); // \AuthzAdmin\Client\Model\V1SubjectRoleMapping | 
+
+try {
+    $result = $apiInstance->adminAPIUpdateSubjectRoleMapping($body);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AdminAPIApi->adminAPIUpdateSubjectRoleMapping: ', $e->getMessage(), PHP_EOL;
+}
+?>
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**\AuthzAdmin\Client\Model\V1SubjectRoleMapping**](../Model/V1SubjectRoleMapping.md)|  |
+
+### Return type
+
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 

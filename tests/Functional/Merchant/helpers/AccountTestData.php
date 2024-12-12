@@ -202,6 +202,45 @@ return [
         ],
     ],
 
+    'testCreateLinkedAccountBetaFailIfBetaEnableFlagNotEnabledForParent' => [
+        'request'  => [
+            'url'     => '/beta/accounts',
+            'method'  => 'post',
+            'content' => [
+                'name'            => 'Linked Account 1',
+                'email'           => 'linked1@account.com',
+                'tnc_accepted'    => true,
+                'notes'           => [
+                    'custom_account_id' => 'Qwerty123',
+                    'custom_attribute'  => 'some_value',
+                ],
+                'account_details' => [
+                    'business_name' => 'Acme solutions',
+                    'business_type' => 'proprietorship',
+                ],
+                'bank_account' => [
+                    'ifsc_code'             => 'ICIC0001206',
+                    'account_number'        => '0002020000304030434',
+                    'account_type'          => 'current',
+                    'beneficiary_name'      => 'Test R4zorpay:'
+                ]
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Merchant is not activated for beta linked account creation',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
     'testCreateLinkedAccountInvalidBusinessType' => [
         'request'   => [
             'url'     => '/beta/accounts',

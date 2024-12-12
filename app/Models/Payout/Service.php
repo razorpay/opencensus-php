@@ -1912,6 +1912,16 @@ class Service extends Base\Service
         return $payout;
     }
 
+    public function fetchSourceEventInfo(string $id): array
+    {
+        $this->trace->info(TraceCode::PAYOUT_FETCH_SOURCE_EVENT_INFO, ['id' => $id]);
+
+        /** @var Entity $payout */
+        $payout = $this->repo->payout->findOrFail($id);
+
+        return $this->core->getSourceEventInfoForStatementEnrichment($payout);
+    }
+
     /**
      * @param array $input
      * @return array

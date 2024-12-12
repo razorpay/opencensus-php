@@ -238,6 +238,7 @@ class Core extends Base\Core
             LedgerConstants::JOURNALS   => $atomicJournalPayload
         ];
 
+
         $journals = $this->createJournalInLedger($journalPayload, false, true);
 
         list($reversalAndRefundJournalIds, $producerKey) = $this->createPayloadForAPITransactionCreation($results, $customerRefund, $journals, true, $isRearchRefund);

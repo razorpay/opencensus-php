@@ -55,6 +55,8 @@ class Fee extends Base\Core
     const DEFAULT_AFFORDABILITY_WIDGET_PLAN_ID = 'L4teuQy3rngjPm';
     const DEFAULT_CC_ON_UPI_PLAN_ID            = 'Lwxtwg54MYaNTw';
     const DEFAULT_PPI_WALLET_ON_UPI_PLAN_ID   = 'MWb8N1erLG7ca1';
+    const DEFAULT_CREDIT_LINE_ON_UPI_PLAN_ID  = 'PVRbL1qySGng3V';
+
 
     const ALLOWED_ENTITIES_FOR_CUSTOM_PRICING = [
         EntityConstants::PAYMENT,
@@ -363,6 +365,12 @@ class Fee extends Base\Core
             $ppiWalletOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_PPI_WALLET_ON_UPI_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($ppiWalletOnUPIPricing);
+        }
+
+        if ($pricingPlan->hasCreditLineReceiver() === false) {
+            $clOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_CREDIT_LINE_ON_UPI_PLAN_ID);
+
+            $pricingPlan = $pricingPlan->merge($clOnUPIPricing);
         }
 
         if ($pricingPlan->hasMethod(Payment\Method::EMI) === false)

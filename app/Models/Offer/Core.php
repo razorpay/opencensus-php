@@ -970,7 +970,7 @@ class Core extends Base\Core
 
         // NOTE - not handling this as part of offers decomp as this
         // involves reading current offer usage and validates on same
-        $baseOffer = $this->repo->offer->findByPublicId(Entity::getSignedId($offerId));
+        $baseOffer = $this->repo->offer->findByPublicIdAndMerchantId(Entity::getSignedId($offerId), $payment->getMerchantId());
         $checker = new Checker($baseOffer, false);
 
         $this->repo->beginTransactionAndRollback(

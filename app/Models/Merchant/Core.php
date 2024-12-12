@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use ApiResponse;
 use App;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\AssertionException;
 use View;
 use Carbon\Carbon;
@@ -8441,6 +8442,17 @@ class Core extends Base\Core
                 Entity::CODE,
                 null,
                 'code is not allowed for this merchant.'
+            );
+        }
+    }
+
+    public function checkLinkedAccountBetaCreateEnabled(Entity $merchant)
+    {
+        if ($merchant->isLinkedAccountBetaCreateEnabled() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, null,
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_BETA_LINKED_ACCOUNT_CREATION
             );
         }
     }

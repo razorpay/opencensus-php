@@ -135,6 +135,7 @@ class Gateway
     const UPI_KOTAK              = 'upi_kotak';
     const UPI_RZPRBL             = 'upi_rzprbl';
     const UPI_RZPAPB             = 'upi_rzpapb';
+    const UPI_RZPAXIS            = 'upi_rzpaxis';
     const UPI_MINDEED            = 'upi_mindeed';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
@@ -740,6 +741,7 @@ class Gateway
         self::UPI_YESBANK,
         self::UPI_RZPAPB,
         self::AMEX,
+        self::UPI_RZPAXIS,
     ];
 
     const FORCE_AUTHORIZE_FAILED_SYNC_GATEWAYS = [
@@ -3264,7 +3266,8 @@ class Gateway
             self::UPI_KOTAK,
             self::ATOM,
             self::EASEBUZZ_OPTIMIZER,
-            self::UPI_RZPAPB
+            self::UPI_RZPAPB,
+            self::UPI_RZPAXIS
         ],
 
         Method::AEPS => [
@@ -3443,6 +3446,7 @@ class Gateway
         self::UPI_KOTAK,
         self::UPI_RZPRBL,
         self::UPI_RZPAPB,
+        self::UPI_RZPAXIS,
         self::ATOM,
         self::WALLET_PHONEPE,
         self::CRED,
@@ -4667,6 +4671,7 @@ class Gateway
         Gateway::UPI_KOTAK,
         Gateway::UPI_RZPRBL,
         Gateway::UPI_RZPAPB,
+        Gateway::UPI_RZPAXIS,
         Gateway::PAYU,
         Gateway::PAYTM,
         // Cybersource does not make s2s callback, Google Pay makes s2s callback for payments
@@ -5204,6 +5209,7 @@ class Gateway
         Gateway::UPI_KOTAK,
         Gateway::UPI_RZPRBL,
         Gateway::UPI_RZPAPB,
+        Gateway::UPI_RZPAXIS,
         Gateway::ATOM,
         Gateway::CASHFREE,
         Gateway::PHONEPE,
@@ -5368,7 +5374,8 @@ class Gateway
         self::UPI_AXIS,
         self::UPI_YESBANK,
         self::GOOGLE_PAY,
-        self::UPI_RZPAPB
+        self::UPI_RZPAPB,
+        self::UPI_RZPAXIS
     ];
 
     const CURRENCIES_SUPPORTED_BY_INTL_BANK_TRANSFER_BY_MODE = [
@@ -6649,6 +6656,7 @@ class Gateway
             self::UPI_AXISOLIVE,
             self::UPI_RZPRBL,
             self::UPI_RZPAPB,
+            self::UPI_RZPAXIS,
             self::ATOM,
         ];
 
@@ -6664,6 +6672,16 @@ class Gateway
             self::UPI_AXISOLIVE,
             self::UPI_RZPRBL,
             self::UPI_RZPAPB,
+            self::UPI_RZPAXIS,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
+    public static function isOnlyUpiPaymentServiceGateway($gateway): bool
+    {
+        $gateways = [
+            self::UPI_RZPAXIS,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -6676,6 +6694,7 @@ class Gateway
             self::UPI_AXISOLIVE,
             self::UPI_RZPRBL,
             self::UPI_RZPAPB,
+            self::UPI_RZPAXIS,
             self::UPI_YESBANK,
             self::UPI_ICICI,
             self::UPI_AXIS,
@@ -6691,6 +6710,7 @@ class Gateway
             self::UPI_KOTAK,
             self::UPI_RZPRBL,
             self::UPI_RZPAPB,
+            self::UPI_RZPAXIS,
             self::ATOM,
         ];
 

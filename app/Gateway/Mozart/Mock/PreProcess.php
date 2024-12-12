@@ -514,7 +514,7 @@ class PreProcess extends Base\Mock\Server
             UpiEntity::NPCI_REFERENCE_ID    => $data['npci_upi_txn_id'],
             UpiEntity::MERCHANT_REFERENCE   => $data['payment_id'],
             UpiEntity::GATEWAY_PAYMENT_ID   => $data['upi_txn_id'],
-            UpiEntity::CUSTOMER_NAME        => $data['payer_name']      
+            UpiEntity::CUSTOMER_NAME        => $data['payer_name']
         ]);
 
         $response->setPayment([

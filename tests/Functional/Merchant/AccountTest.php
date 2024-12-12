@@ -32,6 +32,7 @@ class AccountTest extends TestCase
         parent::setUp();
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
+        $this->fixtures->merchant->addFeatures(['beta_la_create_enable']);
 
         $this->ba->privateAuth();
 
@@ -798,6 +799,15 @@ class AccountTest extends TestCase
             $this->assertNull($merchant['hold_funds_reason']);
             $this->assertEquals('live disabled due to XYZ', $merchant['live_disable_reason']);
         }
+    }
+
+
+    public function testCreateLinkedAccountBetaFailIfBetaEnableFlagNotEnabledForParent()
+    {
+        $this->fixtures->merchant->removeFeatures(['beta_la_create_enable']);
+
+        $this->startTest();
+
     }
 
     public function setAdminForInternalAuth()

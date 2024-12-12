@@ -1266,7 +1266,6 @@ class Gateway extends Base\Gateway
             case Payment\Gateway::UPI_KOTAK:
             case Payment\Gateway::UPI_RZPRBL:
             case Payment\Gateway::UPI_RZPAPB:
-
                 $data = [
                     'payload'       => $input,
                     'gateway'       => $gateway,
@@ -1351,6 +1350,7 @@ class Gateway extends Base\Gateway
             case Payment\Gateway::UPI_KOTAK:
             case Payment\Gateway::UPI_RZPRBL:
             case Payment\Gateway::UPI_RZPAPB:
+            case Payment\Gateway::UPI_RZPAXIS:
 
                 $version = $response['data']['version'] ?? '';
 

@@ -932,6 +932,11 @@ class GatewayController extends Controller
                             $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
                             break;
 
+            case Gateway::UPI_RZPAXIS:
+                $input = Request::getContent();
+                $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
+                break;
+
             case Gateway::UPI_ICICI:
                 $input = Request::getContent();
 
@@ -2152,6 +2157,11 @@ class GatewayController extends Controller
     // Determines if callback should be preprocessed by UPS
     protected function shouldPreProcessThroughUpiPaymentService($gateway, $mode = null)
     {
+        if (Payment\Gateway::isOnlyUpiPaymentServiceGateway($gateway) === true)
+        {
+            return true;
+        }
+
         if (Payment\Gateway::isUpiPaymentServicePreProcessGateway($gateway) === false)
         {
             return false;

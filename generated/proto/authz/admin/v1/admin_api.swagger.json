@@ -336,6 +336,12 @@
               "EFFECT_DENY"
             ],
             "default": "EFFECT_UNKNOWN"
+          },
+          {
+            "name": "group",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -430,6 +436,44 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "roleOwnerId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "enrichRoles",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "roleIds",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "roleIdentifier",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "orgIds",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
           }
         ],
         "tags": [
@@ -549,7 +593,9 @@
             "type": "string",
             "enum": [
               "ROLE_POLICY_TYPE_INTERNAL",
-              "ROLE_POLICY_TYPE_EXTERNAL"
+              "ROLE_POLICY_TYPE_EXTERNAL",
+              "ROLE_POLICY_TYPE_CUSTOM",
+              "ROLE_POLICY_TYPE_STANDARD"
             ],
             "default": "ROLE_POLICY_TYPE_INTERNAL"
           },
@@ -592,6 +638,7 @@
         "parameters": [
           {
             "name": "body",
+            "description": "Null defines an empty message which the service uses when it doesn't have any data to return.",
             "in": "body",
             "required": true,
             "schema": {
@@ -1080,6 +1127,41 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "key.id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "key.ownerType",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "key.ownerId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ownerIds",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "type",
+            "description": "RolePolicyType defaults to internal",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1149,6 +1231,55 @@
         ]
       }
     },
+    "/v1/roles/{identifier}": {
+      "get": {
+        "summary": "GetRole returns the role entity from AuthZ policy store.",
+        "operationId": "AdminAPI_GetRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Role"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ownerId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "expandChildren",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
     "/v1/roles/{id}": {
       "delete": {
         "summary": "DeleteRole deletes the role entity from AuthZ policy store.",
@@ -1193,7 +1324,9 @@
             "type": "string",
             "enum": [
               "ROLE_POLICY_TYPE_INTERNAL",
-              "ROLE_POLICY_TYPE_EXTERNAL"
+              "ROLE_POLICY_TYPE_EXTERNAL",
+              "ROLE_POLICY_TYPE_CUSTOM",
+              "ROLE_POLICY_TYPE_STANDARD"
             ],
             "default": "ROLE_POLICY_TYPE_INTERNAL"
           },
@@ -1205,6 +1338,28 @@
           },
           {
             "name": "ownerId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "childIds",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "createdBy",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "description",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1443,6 +1598,37 @@
         "tags": [
           "AdminAPI"
         ]
+      },
+      "put": {
+        "summary": "UpdateSubjectRoleMapping updates the roles attached to a subject entity in AuthZ policy store.",
+        "operationId": "AdminAPI_UpdateSubjectRoleMapping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SubjectRoleMapping"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
       }
     },
     "/v1/subjects": {
@@ -1543,6 +1729,7 @@
         "details": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
         }
@@ -1559,6 +1746,17 @@
         },
         "type": {
           "$ref": "#/definitions/ActionActionType"
+        }
+      }
+    },
+    "v1ChildRoles": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
         }
       }
     },
@@ -1586,6 +1784,9 @@
         },
         "effect": {
           "$ref": "#/definitions/v1Effect"
+        },
+        "group": {
+          "type": "string"
         }
       },
       "description": "ExpandedPermission is the struct defining a permission which has all sub entities expanded."
@@ -1645,6 +1846,7 @@
         "items": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1Action"
           }
         }
@@ -1663,6 +1865,7 @@
         "items": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1ExpandedPermission"
           }
         }
@@ -1681,6 +1884,7 @@
         "items": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1ExpandedPolicy"
           }
         }
@@ -1699,6 +1903,7 @@
         "items": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1ResourceGroup"
           }
         }
@@ -1717,6 +1922,7 @@
         "items": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1Resource"
           }
         }
@@ -1735,6 +1941,7 @@
         "items": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1Role"
           }
         }
@@ -1753,6 +1960,7 @@
         "items": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1Service"
           }
         }
@@ -1776,6 +1984,9 @@
         },
         "effect": {
           "$ref": "#/definitions/v1Effect"
+        },
+        "group": {
+          "type": "string"
         }
       }
     },
@@ -1858,6 +2069,25 @@
         },
         "ownerId": {
           "type": "string"
+        },
+        "childIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ChildRoles"
+          }
+        },
+        "description": {
+          "type": "string"
         }
       }
     },
@@ -1876,7 +2106,9 @@
       "type": "string",
       "enum": [
         "ROLE_POLICY_TYPE_INTERNAL",
-        "ROLE_POLICY_TYPE_EXTERNAL"
+        "ROLE_POLICY_TYPE_EXTERNAL",
+        "ROLE_POLICY_TYPE_CUSTOM",
+        "ROLE_POLICY_TYPE_STANDARD"
       ],
       "default": "ROLE_POLICY_TYPE_INTERNAL",
       "description": "RolePolicyType defines the allowed types for role \u0026 policy entities."

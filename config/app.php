@@ -645,6 +645,8 @@ return array(
 
     'cc_on_upi_pricing_splitz_experiment_id' => env('CC_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
 
+    'credit_line_on_upi_pricing_splitz_experiment_id' => env('CREDIT_LINE_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
+
     'allow_offers_on_rearch_ups_splitz_experiment_id' => env('ALLOW_OFFERS_ON_REARCH_UPS_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_netbanking_corporate_splitz_experiment_id' => env('CHECKOUT_NETBANKING_CORPORATE_SPLITZ_EXPERIMENT_ID'),
@@ -918,6 +920,8 @@ return array(
 
     'offers_engine_reverse_shadow_exp_id' => env('OFFERS_ENGINE_REVERSE_SHADOW_EXP'),
 
+    'offers_engine_find_by_public_id_migration_exp_id' => env('OFFERS_ENGINE_FIND_BY_PUBLIC_ID_MIGRATION_EXP'),
+
     'fee_based_gating_exp_id' => env('FEE_BASED_GATING_EXP_ID'),
 
     'fee_based_gating_website_exp_id' => env('FEE_BASED_GATING_WEBSITE_EXP_ID'),
@@ -1015,6 +1019,8 @@ return array(
     'onboarding_api_upi_terminal_creation_disabled' => env('ONBOARDING_API_UPI_TERMINAL_CREATION_DISABLED'),
 
     'settlements_processed_comms_experiment_id' => env('SETTLEMENTS_PROCESSED_COMMS_EXPERIMENT_ID'),
+
+    'transfer_settlement_nss_experiment_id'=> env('TRANSFER_SETTLEMENT_NSS_EXPERIMENT_ID'),
 
     'fee_breakup_in_ledger_experiment_id' => env('FEE_BREAKUP_IN_LEDGER_EXP_ID'),
 
@@ -1146,6 +1152,8 @@ return array(
 
     'fulcrum_recurring_initial_experiment' => env('FULCRUM_RECURRING_INITIAL_PAYMENT_EXP_ID'),
 
+    'mecode_sihub_from_initial' => env('MECODE_SIHUB_FROM_INITIAL'),
+
     'splitz_recurring_harvester_query_experiment_id' => env('SPLITZ_RECURRING_HARVESTER_QUERY_EXPERIMENT_ID'),
 
     'fulcrum_recurring_subsequent_experiment' => env('FULCRUM_RECURRING_SUBSEQUENT_PAYMENT_EXP_ID'),
@@ -1165,13 +1173,17 @@ return array(
     'p2p' => [
         'encryption_key' => env('P2P_NACL_SESSION_TOKEN_ENCRYPTION_KEY')
     ],
-  
+
     'dcs_edit_enabled_splitz_exp_id' => env('DCS_EDIT_ENABLED_SPLITZ_EXP_ID'),
 
     'dcs_proxy_enabled_splitz_exp_id' => env('DCS_PROXY_ENABLED_SPLITZ_EXP_ID'),
 
     'external_updates_enabled_for_tokens' => env('EXTERNAL_UPDATES_ENABLED_FOR_TOKENS'),
 
+    'pg_pos_rbac_splitz_experiment_id' => env('PG_POS_RBAC_SPLITZ_EXPERIMENT_ID'),
+
+    'pg_pos_auth_rbac_splitz_experiment_id' => env('PG_POS_AUTH_RBAC_SPLITZ_EXPERIMENT_ID'),
+  
     'insufficient_fund_tng' => env('INSUFFICIENT_FUND_TNG'),
 
     'generate_bene_hash_experiment_id' => env('GENERATE_BENE_HASH_EXPERIMENT_ID'),
@@ -1185,5 +1197,7 @@ return array(
 
     'skip_optimizer_card_callback' => env('SKIP_OPTIMIZER_CARD_CALLBACK'),
 
-    'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID')
+    'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID'),
+
+    'enable_feature_fetch_from_dcs_exp_id' => env('ENABLE_FEATURE_FETCH_FROM_DCS_EXP_ID')
 );

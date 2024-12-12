@@ -56,7 +56,7 @@ class Context extends ArrayObject
 
     const OPTIONS_RULES = [
         self::REQUEST_ID                              => 'nullable|string|max:50',
-        // Make handle as nullable since it is not required for create session. 
+        // Make handle as nullable since it is not required for create session.
         // SetHandleAndMode method is already handling the scenario where handle is required.
         self::HANDLE                                  => 'nullable|string',
         self::DEVICE                                  => 'array',
@@ -65,7 +65,7 @@ class Context extends ArrayObject
         self::META                                    => 'array',
         self::META . '.' . self::OS                   => 'nullable|string|max:50',
         self::META . '.' . self::OS_VERSION           => 'nullable|string|max:50',
-        self::META . '.' . self::SDK_SESSION_ID       => 'nullable|string|max:50',
+        self::META . '.' . self::SDK_SESSION_ID       => 'nullable|string|max:100',
         self::META . '.' . self::SDK_VERSION          => 'nullable|string|max:50',
         self::META . '.' . self::NETWORK_TYPE         => 'nullable|string|max:50',
         self::META . '.' . Device\Entity::IP          => 'nullable|ipv4',

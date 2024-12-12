@@ -234,6 +234,7 @@ class Constants
     const MERCHANT_FEE_CREDIT_LOADING                       = "merchant_fee_credit_loading";
     const MERCHANT_RESERVE_BALANCE_LOADING                  = "merchant_reserve_balance_loading";
     const MERCHANT_AMOUNT_CREDIT_LOADING                    = "amount_credit_loading";
+    const MERCHANT_AMOUNT_CREDIT_LOADING_V2                 = "amount_credit_loading_v2";
 
     //Reverse Shadow constants
     const MERCHANT_FEE_CREDITS       = 'merchant_fee_credits';

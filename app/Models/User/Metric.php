@@ -47,4 +47,5 @@ final class Metric
 
     const CAPTCHA_VALIDATION_DURATION                 = 'captcha_validation_duration';
     const USER_LOGIN_CAPTCHA_DCS_FAILURE_TOTAL        = 'user_login_captcha_dcs_failure_total';
+    const AUTHZ_POLICY_LIST_REQUEST_FAILED            = 'authz_policy_list_request_failed';
 }

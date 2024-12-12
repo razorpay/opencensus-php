@@ -130,6 +130,7 @@ class ProcessSettlementServiceTxns extends Job
         }
     }
 
+
     /**
      * Get settlement details from message payload.
      * @param $payload array

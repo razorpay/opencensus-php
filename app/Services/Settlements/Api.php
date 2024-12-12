@@ -97,6 +97,12 @@ class Api extends Base
         return $this->makeRequest(self::ORG_CONFIG_GET, $input, self::SERVICE_API);
     }
 
+    public function fetch(array $input) : array
+    {
+        return $this->makeRequest(self::FETCH_URI, $input, self::SERVICE_API);
+    }
+
+
     /**
      *
      * @param $input

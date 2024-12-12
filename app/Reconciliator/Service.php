@@ -920,7 +920,8 @@ class Service extends Base\Service
         {
             $paymentId = $input['payment_id'];
 
-            if ($payment->isExternal() === true)
+            if (($payment->isExternal() === true) and
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
             {
                 $payment->transaction = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
             }
@@ -942,7 +943,16 @@ class Service extends Base\Service
 
             $this->repo->transaction(function () use ($paymentId, $input, $payment)
             {
-                $this->updateTransactionData($input, $payment);
+                // Transaction is not updated for CLS MIDs because transaction does not exist in api hot storage and
+                // the ART dual write updates will flow by the event streaming events to CLS Makeshift.
+                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                {
+                    $this->updatePaymentReconData($input, $payment);
+                }
+                else
+                {
+                    $this->updateTransactionData($input, $payment);
+                }
 
                 $this->updateGatewayData($input, $payment);
 
@@ -995,7 +1005,8 @@ class Service extends Base\Service
 
         $paymentId = $input['payment_id'];
 
-        if ($payment->isExternal() === true)
+        if (($payment->isExternal() === true) and
+            ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
         {
             $payment->transaction = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
         }
@@ -1029,7 +1040,16 @@ class Service extends Base\Service
 
             $this->repo->transaction(function () use ($paymentId, $input, $payment)
             {
-                $this->updateTransactionData($input, $payment);
+                // Transaction is not updated for CLS MIDs because transaction does not exist in api hot storage and
+                // the ART dual write updates will flow by the event streaming events to CLS Makeshift.
+                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                {
+                    $this->updatePaymentReconData($input, $payment);
+                }
+                else
+                {
+                    $this->updateTransactionData($input, $payment);
+                }
 
                 $this->updateCpsData($input, $payment);
 
@@ -1109,7 +1129,16 @@ class Service extends Base\Service
         {
             $this->repo->transaction(function () use ($paymentId, $input, $payment)
             {
-                $this->updateTransactionData($input, $payment);
+                // Transaction is not updated for CLS MIDs because transaction does not exist in api hot storage and
+                // the ART dual write updates will flow by the event streaming events to CLS Makeshift.
+                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                {
+                    $this->updatePaymentReconData($input, $payment);
+                }
+                else
+                {
+                    $this->updateTransactionData($input, $payment);
+                }
             });
 
             switch ($payment->getMethod())
@@ -1185,7 +1214,16 @@ class Service extends Base\Service
         {
             $this->repo->transaction(function () use ($paymentId, $input, $payment)
             {
-                $this->updateTransactionData($input, $payment);
+                // Transaction is not updated for CLS MIDs because transaction does not exist in api hot storage and
+                // the ART dual write updates will flow by the event streaming events to CLS Makeshift.
+                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                {
+                    $this->updatePaymentReconData($input, $payment);
+                }
+                else
+                {
+                    $this->updateTransactionData($input, $payment);
+                }
 
                 $this->handleVAUnExpectedPaymentRefundInReconDualWrite($payment);
 
@@ -1564,6 +1602,46 @@ class Service extends Base\Service
             ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
         {
             (new Transaction\Core)->dispatchUpdatedTransactionToCPS($transaction, $payment);
+        }
+    }
+
+    /** Updates payment data post reconciliation on ART
+     * @param array $input
+     * @param Payment\Entity $payment
+     * @return void
+     */
+    protected function updatePaymentReconData(array $input, Payment\Entity $payment)
+    {
+        if ($payment->getMethod() === Payment\Method::PAYLATER)
+        {
+            if (empty($input['paylater']['arn']) === false)
+            {
+                $payment->setReference1($input['paylater']['arn']);
+
+                $this->repo->saveOrFail($payment);
+            }
+        }
+
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            $payment->setGatewayCaptured(true);
+
+            if (empty($input['card']['auth_code']) === false)
+            {
+                $payment->setReference2($input['card']['auth_code']);
+            }
+
+            if (empty($input['card']['rrn']) === false)
+            {
+                $payment->setReference16($input['card']['rrn']);
+            }
+
+            if (empty($input['card']['arn']) === false)
+            {
+                $payment->setReference1($input['card']['arn']);
+            }
+
+            $this->repo->saveOrFail($payment);
         }
     }
 
