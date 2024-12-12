@@ -1,6 +1,6 @@
 <?php
 /**
- * V1ListResourceGroupResponse
+ * V1ChildRoles
  *
  * PHP version 5
  *
@@ -33,14 +33,14 @@ use \ArrayAccess;
 use \AuthzAdmin\Client\ObjectSerializer;
 
 /**
- * V1ListResourceGroupResponse Class Doc Comment
+ * V1ChildRoles Class Doc Comment
  *
  * @category Class
  * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
-class V1ListResourceGroupResponse implements ModelInterface, ArrayAccess
+class V1ChildRoles implements ModelInterface, ArrayAccess
 {
     const DISCRIMINATOR = null;
 
@@ -49,7 +49,7 @@ class V1ListResourceGroupResponse implements ModelInterface, ArrayAccess
       *
       * @var string
       */
-    protected static $swaggerModelName = 'v1ListResourceGroupResponse';
+    protected static $swaggerModelName = 'v1ChildRoles';
 
     /**
       * Array of property to type mappings. Used for (de)serialization
@@ -57,9 +57,8 @@ class V1ListResourceGroupResponse implements ModelInterface, ArrayAccess
       * @var string[]
       */
     protected static $swaggerTypes = [
-        'pagination_token' => 'string',
-        'count' => 'string',
-        'items' => '\AuthzAdmin\Client\Model\V1ResourceGroup[]'
+        'id' => 'string',
+        'name' => 'string'
     ];
 
     /**
@@ -68,9 +67,8 @@ class V1ListResourceGroupResponse implements ModelInterface, ArrayAccess
       * @var string[]
       */
     protected static $swaggerFormats = [
-        'pagination_token' => null,
-        'count' => 'int64',
-        'items' => null
+        'id' => null,
+        'name' => null
     ];
 
     /**
@@ -100,9 +98,8 @@ class V1ListResourceGroupResponse implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $attributeMap = [
-        'pagination_token' => 'paginationToken',
-        'count' => 'count',
-        'items' => 'items'
+        'id' => 'id',
+        'name' => 'name'
     ];
 
     /**
@@ -111,9 +108,8 @@ class V1ListResourceGroupResponse implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $setters = [
-        'pagination_token' => 'setPaginationToken',
-        'count' => 'setCount',
-        'items' => 'setItems'
+        'id' => 'setId',
+        'name' => 'setName'
     ];
 
     /**
@@ -122,9 +118,8 @@ class V1ListResourceGroupResponse implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $getters = [
-        'pagination_token' => 'getPaginationToken',
-        'count' => 'getCount',
-        'items' => 'getItems'
+        'id' => 'getId',
+        'name' => 'getName'
     ];
 
     /**
@@ -187,9 +182,8 @@ class V1ListResourceGroupResponse implements ModelInterface, ArrayAccess
      */
     public function __construct(array $data = null)
     {
-        $this->container['pagination_token'] = isset($data['pagination_token']) ? $data['pagination_token'] : null;
-        $this->container['count'] = isset($data['count']) ? $data['count'] : null;
-        $this->container['items'] = isset($data['items']) ? $data['items'] : null;
+        $this->container['id'] = isset($data['id']) ? $data['id'] : null;
+        $this->container['name'] = isset($data['name']) ? $data['name'] : null;
     }
 
     /**
@@ -217,73 +211,49 @@ class V1ListResourceGroupResponse implements ModelInterface, ArrayAccess
 
 
     /**
-     * Gets pagination_token
+     * Gets id
      *
      * @return string
      */
-    public function getPaginationToken()
+    public function getId()
     {
-        return $this->container['pagination_token'];
+        return $this->container['id'];
     }
 
     /**
-     * Sets pagination_token
+     * Sets id
      *
-     * @param string $pagination_token pagination_token
+     * @param string $id id
      *
      * @return $this
      */
-    public function setPaginationToken($pagination_token)
+    public function setId($id)
     {
-        $this->container['pagination_token'] = $pagination_token;
+        $this->container['id'] = $id;
 
         return $this;
     }
 
     /**
-     * Gets count
+     * Gets name
      *
      * @return string
      */
-    public function getCount()
+    public function getName()
     {
-        return $this->container['count'];
+        return $this->container['name'];
     }
 
     /**
-     * Sets count
+     * Sets name
      *
-     * @param string $count count
+     * @param string $name name
      *
      * @return $this
      */
-    public function setCount($count)
+    public function setName($name)
     {
-        $this->container['count'] = $count;
-
-        return $this;
-    }
-
-    /**
-     * Gets items
-     *
-     * @return \AuthzAdmin\Client\Model\V1ResourceGroup[]
-     */
-    public function getItems()
-    {
-        return $this->container['items'];
-    }
-
-    /**
-     * Sets items
-     *
-     * @param \AuthzAdmin\Client\Model\V1ResourceGroup[] $items items
-     *
-     * @return $this
-     */
-    public function setItems($items)
-    {
-        $this->container['items'] = $items;
+        $this->container['name'] = $name;
 
         return $this;
     }

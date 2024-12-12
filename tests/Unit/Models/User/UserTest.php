@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\Models\User;
 
+use AuthzAdmin\Client\Model\V1ExpandedPolicy;
+use AuthzAdmin\Client\Model\V1ListPolicyResponse;
 use Mockery;
 use Carbon\Carbon;
 use Tests\Unit\TestCase;
@@ -219,7 +221,7 @@ class UserTest extends TestCase
 
         $this->assertEquals($content['userData']['email'], $response['email']);
     }
-    
+
     public function testCreate()
     {
         $content = [
@@ -3298,7 +3300,7 @@ class UserTest extends TestCase
         $this->merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
 
         // Merchant Service Mocking
-        $this->merchantServiceMock = Mockery::mock('RZP\Models\Merchant\Service');
+        $this->merchantServiceMock = Mockery::mock('overload:RZP\Models\Merchant\Service');
 
         // M2M Referral Service Mocking
         $this->m2mReferralServiceMock = Mockery::mock('RZP\Models\Merchant\M2MReferral\Service');
@@ -3607,6 +3609,868 @@ class UserTest extends TestCase
         $response = $this->coreMock->isDirectSendMailEnabled($merchantId);
 
         $this->assertEquals($response, false);
+    }
+
+    public function testPopulateUserPermissionsForPg()
+    {
+        $merchants = [
+            [
+                'id' => '10000Razorpay',
+                'product' => 'primary',
+                'role' => 'admin',
+            ],
+            [
+                'id' => '10001Razorpay',
+                'product' => 'primary',
+                'role' => 'owner',
+            ]
+        ];
+
+        $expected = [
+            [
+                'id' => '10000Razorpay',
+                'product' => 'primary',
+                'role' => 'admin',
+                'permissions' => ['view_invoice1', 'view_invoice2']
+            ],
+            [
+                'id' => '10001Razorpay',
+                'product' => 'primary',
+                'role' => 'owner',
+                'permissions' => []
+            ]
+        ];
+
+        $pgosResponse = ["pos_activation_status" => null];
+        $authzServiceResponse = new V1ListPolicyResponse([
+            "pagination_token" => "*",
+            "count" => "1",
+            "items" => [
+                new V1ExpandedPolicy(
+                    [
+                        "id" => "M1ra4G2g1XH2rD",
+                        "name" => "policy_1",
+                        "service" => [
+                            "id" => "M1rZ84DvlsbUoN",
+                            "name" => "gateway"
+                        ],
+                        "permission" => [
+                            "id" => "M1ra48WU8jeRiJ",
+                            "resource" => [
+                                "id" => "M1ra3b6OIkecVJ",
+                                "name" => "/v1/invoices/{id}/issue"
+                            ],
+                            "action" => [
+                                "id" => "M1rTfqv6uGvc5B",
+                                "name" => "post",
+                                "type" => "ACTION_TYPE_C"
+                            ],
+                            "effect" => "EFFECT_ALLOW",
+                            "group" => "view_invoice1"
+                        ],
+                        "type" => "ROLE_POLICY_TYPE_INTERNAL",
+                        "is_assignable" => true,
+                        "is_active" => true
+                    ]
+                ),
+                new V1ExpandedPolicy(
+                    [
+                        "id" => "M1ra4G2g1XH2rD",
+                        "name" => "policy_2",
+                        "service" => [
+                            "id" => "M1rZ84DvlsbUoN",
+                            "name" => "gateway"
+                        ],
+                        "permission" => [
+                            "id" => "M1ra48WU8jeRiJ",
+                            "resource" => [
+                                "id" => "M1ra3b6OIkecVJ",
+                                "name" => "/v1/invoices/{id}/issue"
+                            ],
+                            "action" => [
+                                "id" => "M1rTfqv6uGvc5B",
+                                "name" => "post",
+                                "type" => "ACTION_TYPE_C"
+                            ],
+                            "effect" => "EFFECT_ALLOW",
+                            "group" => "view_invoice2"
+                        ],
+                        "type" => "ROLE_POLICY_TYPE_INTERNAL",
+                        "is_assignable" => true,
+                        "is_active" => true
+                    ]
+                )
+            ]
+        ]);
+
+        $this->setupMocksAndData($merchants, $expected, $pgosResponse, $authzServiceResponse);
+
+        $reflection = new \ReflectionMethod('RZP\Models\User\Core', 'populateUserPermissionsForPosAndPg');
+        $reflection->setAccessible(true);
+
+        $response = $reflection->invoke($this->coreMock, $merchants);
+
+        $this->assertEquals($expected, $response);
+    }
+
+    public function testPopulateUserPermissionsForPos()
+    {
+        $merchants = [
+            [
+                'id' => '10000Razorpay',
+                'product' => 'primary',
+                'role' => 'admin',
+            ],
+            [
+                'id' => '10001Razorpay',
+                'product' => 'primary',
+                'role' => 'owner',
+            ]
+        ];
+
+        $expected = [
+            [
+                'id' => '10000Razorpay',
+                'product' => 'primary',
+                'role' => 'admin',
+                'permissions' => ['view_invoice1', 'view_invoice2']
+            ],
+            [
+                'id' => '10001Razorpay',
+                'product' => 'primary',
+                'role' => 'owner',
+                'permissions' => []
+            ]
+        ];
+
+        $pgosResponse = ["pos_activation_status" => 'activated'];
+        $authzServiceResponse = new V1ListPolicyResponse([
+            "pagination_token" => "*",
+            "count" => "1",
+            "items" => [
+                new V1ExpandedPolicy(
+                    [
+                        "id" => "M1ra4G2g1XH2rD",
+                        "name" => "policy_1",
+                        "service" => [
+                            "id" => "M1rZ84DvlsbUoN",
+                            "name" => "gateway"
+                        ],
+                        "permission" => [
+                            "id" => "M1ra48WU8jeRiJ",
+                            "resource" => [
+                                "id" => "M1ra3b6OIkecVJ",
+                                "name" => "/v1/invoices/{id}/issue"
+                            ],
+                            "action" => [
+                                "id" => "M1rTfqv6uGvc5B",
+                                "name" => "post",
+                                "type" => "ACTION_TYPE_C"
+                            ],
+                            "effect" => "EFFECT_ALLOW",
+                            "group" => "view_invoice1"
+                        ],
+                        "type" => "ROLE_POLICY_TYPE_INTERNAL",
+                        "is_assignable" => true,
+                        "is_active" => true
+                    ]
+                ),
+                new V1ExpandedPolicy(
+                    [
+                        "id" => "M1ra4G2g1XH2rD",
+                        "name" => "policy_2",
+                        "service" => [
+                            "id" => "M1rZ84DvlsbUoN",
+                            "name" => "gateway"
+                        ],
+                        "permission" => [
+                            "id" => "M1ra48WU8jeRiJ",
+                            "resource" => [
+                                "id" => "M1ra3b6OIkecVJ",
+                                "name" => "/v1/invoices/{id}/issue"
+                            ],
+                            "action" => [
+                                "id" => "M1rTfqv6uGvc5B",
+                                "name" => "post",
+                                "type" => "ACTION_TYPE_C"
+                            ],
+                            "effect" => "EFFECT_ALLOW",
+                            "group" => "view_invoice2"
+                        ],
+                        "type" => "ROLE_POLICY_TYPE_INTERNAL",
+                        "is_assignable" => true,
+                        "is_active" => true
+                    ]
+                )
+            ]
+        ]);
+
+        $this->setupMocksAndData($merchants, $expected, $pgosResponse, $authzServiceResponse);
+
+        $reflection = new \ReflectionMethod('RZP\Models\User\Core', 'populateUserPermissionsForPosAndPg');
+        $reflection->setAccessible(true);
+
+        $response = $reflection->invoke($this->coreMock, $merchants);
+
+        $this->assertEquals($expected, $response);
+    }
+
+    public function testPopulateUserPermissionsForPosAndPg()
+    {
+        $merchants = [
+            [
+                'id' => '10000Razorpay',
+                'product' => 'primary',
+                'role' => 'admin',
+            ],
+            [
+                'id' => '10001Razorpay',
+                'product' => 'primary',
+                'role' => 'owner',
+            ]
+        ];
+
+        $expected = [
+            [
+                'id' => '10000Razorpay',
+                'product' => 'primary',
+                'role' => 'admin',
+                'permissions' => ['view_invoice1', 'view_invoice2']
+            ],
+            [
+                'id' => '10001Razorpay',
+                'product' => 'primary',
+                'role' => 'owner',
+                'permissions' => []
+            ]
+        ];
+
+        $pgosResponse = ["pos_activation_status" => 'activated'];
+        $authzServiceResponse = new V1ListPolicyResponse([
+            "pagination_token" => "*",
+            "count" => "1",
+            "items" => [
+                new V1ExpandedPolicy(
+                    [
+                        "id" => "M1ra4G2g1XH2rD",
+                        "name" => "policy_1",
+                        "service" => [
+                            "id" => "M1rZ84DvlsbUoN",
+                            "name" => "gateway"
+                        ],
+                        "permission" => [
+                            "id" => "M1ra48WU8jeRiJ",
+                            "resource" => [
+                                "id" => "M1ra3b6OIkecVJ",
+                                "name" => "/v1/invoices/{id}/issue"
+                            ],
+                            "action" => [
+                                "id" => "M1rTfqv6uGvc5B",
+                                "name" => "post",
+                                "type" => "ACTION_TYPE_C"
+                            ],
+                            "effect" => "EFFECT_ALLOW",
+                            "group" => "view_invoice1"
+                        ],
+                        "type" => "ROLE_POLICY_TYPE_INTERNAL",
+                        "is_assignable" => true,
+                        "is_active" => true
+                    ]
+                ),
+                new V1ExpandedPolicy(
+                    [
+                        "id" => "M1ra4G2g1XH2rD",
+                        "name" => "policy_2",
+                        "service" => [
+                            "id" => "M1rZ84DvlsbUoN",
+                            "name" => "gateway"
+                        ],
+                        "permission" => [
+                            "id" => "M1ra48WU8jeRiJ",
+                            "resource" => [
+                                "id" => "M1ra3b6OIkecVJ",
+                                "name" => "/v1/invoices/{id}/issue"
+                            ],
+                            "action" => [
+                                "id" => "M1rTfqv6uGvc5B",
+                                "name" => "post",
+                                "type" => "ACTION_TYPE_C"
+                            ],
+                            "effect" => "EFFECT_ALLOW",
+                            "group" => "view_invoice2"
+                        ],
+                        "type" => "ROLE_POLICY_TYPE_INTERNAL",
+                        "is_assignable" => true,
+                        "is_active" => true
+                    ]
+                )
+            ]
+        ]);
+
+        $this->setupMocksAndData($merchants, $expected, $pgosResponse, $authzServiceResponse);
+
+        $reflection = new \ReflectionMethod('RZP\Models\User\Core', 'populateUserPermissionsForPosAndPg');
+        $reflection->setAccessible(true);
+
+        $response = $reflection->invoke($this->coreMock, $merchants);
+
+        $this->assertEquals($expected, $response);
+    }
+
+    public function testPopulateUserPermissionsSplitzOff()
+        {
+            $merchants = [
+                [
+                    'id' => '10000Razorpay',
+                    'product' => 'primary',
+                    'role' => 'admin',
+                ],
+                [
+                    'id' => '10001Razorpay',
+                    'product' => 'primary',
+                    'role' => 'owner',
+                ]
+            ];
+
+            $expected = [
+                [
+                    'id' => '10000Razorpay',
+                    'product' => 'primary',
+                    'role' => 'admin',
+                    'permissions' => []
+                ],
+                [
+                    'id' => '10001Razorpay',
+                    'product' => 'primary',
+                    'role' => 'owner',
+                    'permissions' => []
+                ]
+            ];
+
+            $utilityMock = Mockery::mock('alias:' . \RZP\Models\Merchant\Utility::class);
+            $utilityMock->allows('splitzBulkEvaluate')
+                ->with($merchants, 'O85moJtATjSxPO')
+                ->andReturns(['10000Razorpay' => false, '10001Razorpay' => false]);
+
+            // Reflect and invoke the private method
+            $reflection = new \ReflectionMethod('RZP\Models\User\Core', 'populateUserPermissionsForPosAndPg');
+            $reflection->setAccessible(true);
+
+            $response = $reflection->invoke($this->coreMock, $merchants);
+
+            $this->assertEquals($expected, $response);
+        }
+
+    public function testPopulateUserPermissionsSplitzBulkFailure()
+    {
+        $merchants = [
+            [
+                'id' => '10000Razorpay',
+                'product' => 'primary',
+                'role' => 'admin',
+            ],
+            [
+                'id' => '10001Razorpay',
+                'product' => 'primary',
+                'role' => 'owner',
+            ]
+        ];
+
+        $utilityMock = Mockery::mock('alias:' . \RZP\Models\Merchant\Utility::class);
+        $utilityMock->allows('splitzBulkEvaluate')
+            ->with($merchants, 'O85moJtATjSxPO')
+            ->andThrow(new ServerErrorException(
+                'error',
+                ErrorCode::SERVER_ERROR
+            ));
+
+        $this->expectException(ServerErrorException::class);
+        $this->expectExceptionMessage('error');
+        // Reflect and invoke the private method
+        $reflection = new \ReflectionMethod('RZP\Models\User\Core', 'populateUserPermissionsForPosAndPg');
+        $reflection->setAccessible(true);
+        $reflection->invoke($this->coreMock, $merchants);
+
+    }
+
+    public function testPopulateUserPermissionsForAuthzFailure()
+    {
+        $merchants = [
+            [
+                'id' => '10000Razorpay',
+                'product' => 'primary',
+                'role' => 'admin',
+            ],
+            [
+                'id' => '10001Razorpay',
+                'product' => 'primary',
+                'role' => 'owner',
+            ]
+        ];
+
+        $expected = [
+            [
+                'id' => '10000Razorpay',
+                'product' => 'primary',
+                'role' => 'admin',
+                'permissions' => []
+            ],
+            [
+                'id' => '10001Razorpay',
+                'product' => 'primary',
+                'role' => 'owner',
+                'permissions' => []
+            ]
+        ];
+
+        $utilityMock = Mockery::mock('alias:' . \RZP\Models\Merchant\Utility::class);
+        $utilityMock->allows('splitzBulkEvaluate')
+            ->with($merchants, 'O85moJtATjSxPO')
+            ->andReturns(['10000Razorpay' => true, '10001Razorpay' => false]);
+
+        $expectedPgosResponse = [
+            "pos_activation_status"     => 'activated',
+        ];
+        $merchantOnboardingProxyControllerMock = Mockery::mock(MerchantOnboardingProxyController::class);
+        $merchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->with('merchant_pgos_fetch_activation_status', Mockery::any(), Mockery::any(), true)
+            ->andReturn($expectedPgosResponse);
+
+        $this->app->instance('MerchantOnboardingProxyController', $merchantOnboardingProxyControllerMock);
+
+        $this->merchantServiceMock->shouldReceive('internalGetMerchant')
+            ->with('10001Razorpay')
+            ->andReturn([
+                'merchant' => ['feature' => ['otp_auth_default']],
+                'merchant_detail' => ['activation_status' => null]
+            ]);
+        $this->merchantServiceMock->shouldReceive('internalGetMerchant')
+            ->with('10000Razorpay')
+            ->andReturn([
+                'merchant' => ['feature' => ['otp_auth_default']],
+                'merchant_detail' => ['activation_status' => 'null']
+            ]);
+
+        // Inject mocks into the class
+        $merchantEntityMock = Mockery::mock('RZP\Models\Merchant\Entity');
+        $merchantEntityDetailMock = Mockery::mock('RZP\Models\Merchant\Detail\Entity');
+        $merchantEntityDetailMock->allows('getMerchantId')->andReturns('10000Razorpay');
+        $merchantEntityDetailMock->allows('getActivationStatus')->andReturns('activated');
+
+        $merchantEntityMock->shouldReceive('getAttribute')
+            ->with('merchantDetail')
+            ->andReturn($merchantEntityDetailMock)
+            ->atLeast()->once();
+
+        $merchantEntityDetailMock->shouldReceive('getAttribute')
+            ->with('merchant')
+            ->andReturn($merchantEntityMock)
+            ->atLeast()->once();
+
+
+        $this->repoMock->shouldReceive('driver')->with('merchant')->andReturn($this->merchantRepoMock);
+        $this->merchantRepoMock->shouldReceive('findOrFailPublic')->andReturn($merchantEntityMock);
+
+        $authzServiceMock = Mockery::mock('AuthzAdmin\Client\Api\AdminAPIApi');
+        app()->instance('authzOmniPlatformAdmin', $authzServiceMock);
+        $authzServiceMock->shouldReceive('adminAPIListPolicy')
+            ->with(
+                '*',
+                ['AUTHZ_OMNI_ADMIN_RESOURCE_GROUP_ID'],
+                null,
+                null,
+                ['AUTHZ_OMNI_ADMIN_SERVICE_ID'],
+                null,
+                null,
+                '100000razorpay::pg::merchant_dashboard',
+                '100000razorpay',
+                true,
+                null,
+                'admin'
+            )
+            ->andReturn(new ServerErrorException(
+                'Unauthenticated',
+                ErrorCode::SERVER_ERROR));
+
+        $this->coreMock->shouldReceive('getService')
+            ->with('authz_service')
+            ->andReturn($authzServiceMock);
+
+
+        // Reflect and invoke the private method
+        $reflection = new \ReflectionMethod('RZP\Models\User\Core', 'populateUserPermissionsForPosAndPg');
+        $reflection->setAccessible(true);
+
+        $response = $reflection->invoke($this->coreMock, $merchants);
+
+        $this->assertEquals($expected, $response);
+    }
+
+    public function testPopulateUserPermissionsNonOmniProduct()
+    {
+        $merchants = [
+            [
+                'id' => '10000Razorpay',
+                'product' => 'banking',
+                'role' => 'admin',
+            ],
+            [
+                'id' => '10001Razorpay',
+                'product' => 'banking',
+                'role' => 'owner',
+            ]
+        ];
+
+        $expected = [
+            [
+                'id' => '10000Razorpay',
+                'product' => 'banking',
+                'role' => 'admin'
+            ],
+            [
+                'id' => '10001Razorpay',
+                'product' => 'banking',
+                'role' => 'owner'
+            ]
+        ];
+
+        $utilityMock = Mockery::mock('alias:' . \RZP\Models\Merchant\Utility::class);
+        $utilityMock->allows('splitzBulkEvaluate')
+            ->with($merchants, 'O85moJtATjSxPO')
+            ->andReturns(['10000Razorpay' => true, '10001Razorpay' => false]);
+
+
+        // Reflect and invoke the private method
+        $reflection = new \ReflectionMethod('RZP\Models\User\Core', 'populateUserPermissionsForPosAndPg');
+        $reflection->setAccessible(true);
+
+        $response = $reflection->invoke($this->coreMock, $merchants);
+
+        $this->assertEquals($expected, $response);
+    }
+
+    public function testGetWithPermissions()
+    {
+        $this->basicAuthMock->shouldReceive('isAdminAuth')->andReturn(true);
+
+        $userRepoMock = Mockery::mock('RZP\Models\User\Repository');
+
+        $merchantUserRepoMock = Mockery::mock('RZP\Models\Merchant\MerchantUser');
+
+        $deviceDetailMock = Mockery::mock('RZP\Models\DeviceDetail\Repository');
+
+        $deviceDetailMock->shouldReceive('fetchByUserId')->andReturn('');
+
+        $this->repoMock->shouldReceive('driver')->with('user')->andReturn($userRepoMock);
+
+        $this->repoMock->shouldReceive('driver')->with('merchant_user')->andReturn($merchantUserRepoMock);
+
+        $this->repoMock->shouldReceive('driver')->with('user_device_detail')->andReturn($deviceDetailMock);
+
+        $merchantUserRepoMock->shouldReceive('fetchBankingSignUpTimeStamp')->andReturn(21323);
+
+        $userData = [
+            'id' => '10000Razorpay',
+            'name' => 'dummy',
+            'email' => 'dummy@example.com',
+            'password' => 'blahblah123',
+            'password_confirmation' => 'blahblah123',
+            'contact_mobile' => '9999999999',
+            'confirm_token' => 'hello123',
+            'captcha_disable' => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $userRepoMock->shouldReceive('findOrFailPublic')->withAnyArgs()->andReturn($this->userEntityMock);
+
+        $this->userEntityMock->shouldReceive('toArrayPublic')->andReturn($userData);
+
+        $merchantEntityMock = Mockery::mock('RZP\Models\User\Entity')->makePartial();
+
+        $this->merchantEntityMock->shouldReceive('users')->andReturn($this->userEntityMock);
+
+        $this->userEntityMock->shouldReceive('where')->withAnyArgs()->andReturn($this->userEntityMock);
+
+        $this->userEntityMock->shouldReceive('first')->andReturn($userData);
+
+        $queryBuilderMock = Mockery::mock('\Illuminate\Database\Query\Builder');
+
+        $queryBuilderMock->shouldReceive('where')->andReturn($merchantEntityMock);
+
+        $this->userEntityMock->shouldReceive('merchant')->andReturn($queryBuilderMock);
+
+        $this->userEntityMock->shouldReceive('getAllSettings')->andReturn([]);
+
+        $merchantUnique = [
+            'id' => '1X4hRFHFx4UiXt',
+        ];
+
+        $merchantEntityMock->shouldReceive('callOnEveryItem')->andReturn($merchantUnique);
+
+        $this->coreMock->shouldReceive('getUnifiedMerchants')->andReturn($merchantUnique);
+
+        $this->coreMock->shouldReceive('appendBankingSpecificDetails')->andReturn($merchantUnique);
+
+        $invitation = Mockery::mock('RZP\Models\Invitation\Entity');
+
+        $invitation->shouldReceive('callOnEveryItem')->andReturn([]);
+
+        $this->userEntityMock->shouldReceive('invitation')->andReturn($invitation);
+
+        $expectedResponse = [
+            'id' => '10000Razorpay',
+            'name' => 'dummy',
+            'email' => 'dummy@example.com',
+            'password' => 'blahblah123',
+            'password_confirmation' => 'blahblah123',
+            'contact_mobile' => '9999999999',
+            'confirm_token' => 'hello123',
+            'captcha_disable' => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'merchants' => $merchantUnique,
+            'invitations' => [],
+            'settings' => [],
+            'permissions'=> ['view_invoice1', 'view_invoice2']
+        ];
+
+        $utilityMock = Mockery::mock('alias:' . \RZP\Models\Merchant\Utility::class);
+        $utilityMock->allows('splitzBulkEvaluate')
+            ->with([], 'O85moJtATjSxPO')
+            ->andReturns(['10000Razorpay' => true, '10001Razorpay' => false]);
+
+        $expectedPgosResponse = [
+            "pos_activation_status"     => 'activated',
+        ];
+        $merchantOnboardingProxyControllerMock = Mockery::mock(MerchantOnboardingProxyController::class);
+        $merchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->with('merchant_pgos_fetch_activation_status', Mockery::any(), Mockery::any(), true)
+            ->andReturn($expectedPgosResponse);
+
+        $this->app->instance('MerchantOnboardingProxyController', $merchantOnboardingProxyControllerMock);
+
+        $this->merchantServiceMock->shouldReceive('internalGetMerchant')
+            ->with('10001Razorpay')
+            ->andReturn([
+                'merchant' => ['feature' => ['otp_auth_default']],
+                'merchant_detail' => ['activation_status' => 'activated']
+            ]);
+        $this->merchantServiceMock->shouldReceive('internalGetMerchant')
+            ->with('10000Razorpay')
+            ->andReturn([
+                'merchant' => ['feature' => ['otp_auth_default']],
+                'merchant_detail' => ['activation_status' => 'null']
+            ]);
+
+        // Inject mocks into the class
+        $merchantEntityMock = Mockery::mock('RZP\Models\Merchant\Entity');
+        $merchantEntityDetailMock = Mockery::mock('RZP\Models\Merchant\Detail\Entity');
+        $merchantEntityDetailMock->allows('getMerchantId')->andReturns('10000Razorpay');
+        $merchantEntityDetailMock->allows('getActivationStatus')->andReturns('activated');
+
+        $merchantEntityMock->shouldReceive('getAttribute')
+            ->with('merchantDetail')
+            ->andReturn($merchantEntityDetailMock)
+            ->atLeast()->once();
+
+        $merchantEntityDetailMock->shouldReceive('getAttribute')
+            ->with('merchant')
+            ->andReturn($merchantEntityMock)
+            ->atLeast()->once();
+
+
+        $this->repoMock->shouldReceive('driver')->with('merchant')->andReturn($this->merchantRepoMock);
+        $this->merchantRepoMock->shouldReceive('findOrFailPublic')->andReturn($merchantEntityMock);
+
+        $response = new V1ListPolicyResponse([
+            "pagination_token" => "*",
+            "count" => "1",
+            "items" => [
+                new V1ExpandedPolicy(
+                    [
+                        "id" => "M1ra4G2g1XH2rD",
+                        "name" => "policy_1",
+                        "service" => [
+                            "id" => "M1rZ84DvlsbUoN",
+                            "name" => "gateway"
+                        ],
+                        "permission" => [
+                            "id" => "M1ra48WU8jeRiJ",
+                            "resource" => [
+                                "id" => "M1ra3b6OIkecVJ",
+                                "name" => "/v1/invoices/{id}/issue"
+                            ],
+                            "action" => [
+                                "id" => "M1rTfqv6uGvc5B",
+                                "name" => "post",
+                                "type" => "ACTION_TYPE_C"
+                            ],
+                            "effect" => "EFFECT_ALLOW",
+                            "group" => "view_invoice1"
+                        ],
+                        "type" => "ROLE_POLICY_TYPE_INTERNAL",
+                        "is_assignable" => true,
+                        "is_active" => true
+                    ]
+                ),
+                new V1ExpandedPolicy(
+                    [
+                        "id" => "M1ra4G2g1XH2rD",
+                        "name" => "policy_2",
+                        "service" => [
+                            "id" => "M1rZ84DvlsbUoN",
+                            "name" => "gateway"
+                        ],
+                        "permission" => [
+                            "id" => "M1ra48WU8jeRiJ",
+                            "resource" => [
+                                "id" => "M1ra3b6OIkecVJ",
+                                "name" => "/v1/invoices/{id}/issue"
+                            ],
+                            "action" => [
+                                "id" => "M1rTfqv6uGvc5B",
+                                "name" => "post",
+                                "type" => "ACTION_TYPE_C"
+                            ],
+                            "effect" => "EFFECT_ALLOW",
+                            "group" => "view_invoice2"
+                        ],
+                        "type" => "ROLE_POLICY_TYPE_INTERNAL",
+                        "is_assignable" => true,
+                        "is_active" => true
+                    ]
+                )
+            ]
+        ]);
+
+        $authzServiceMock = Mockery::mock('AuthzAdmin\Client\Api\AdminAPIApi');
+        app()->instance('authzOmniPlatformAdmin', $authzServiceMock);
+        $authzServiceMock->shouldReceive('adminAPIListPolicy')
+            ->with(
+                '*',
+                ['AUTHZ_OMNI_ADMIN_RESOURCE_GROUP_ID'],
+                null,
+                null,
+                ['AUTHZ_OMNI_ADMIN_SERVICE_ID'],
+                null,
+                null,
+                '100000razorpay::pos::merchant_dashboard',
+                '100000razorpay',
+                true,
+                null,
+                'admin'
+            )
+            ->andReturn($response);
+        $authzServiceMock->shouldReceive('adminAPIListPolicy')
+            ->with(
+                '*',
+                ['AUTHZ_OMNI_ADMIN_RESOURCE_GROUP_ID'],
+                null,
+                null,
+                ['AUTHZ_OMNI_ADMIN_SERVICE_ID'],
+                null,
+                null,
+                '100000razorpay::pg::merchant_dashboard',
+                '100000razorpay',
+                true,
+                null,
+                'admin'
+            )
+            ->andReturn($response);
+
+        $this->coreMock->shouldReceive('getService')
+            ->with('authz_service')
+            ->andReturn($authzServiceMock);
+
+        $response = $this->userService->get('10000Razorpay');
+
+        $this->assertEquals($expectedResponse, $response);
+
+    }
+
+    private function setupMocksAndData($merchants, $expected, $pgosResponse, $authzServiceResponse)
+    {
+        $utilityMock = Mockery::mock('alias:' . \RZP\Models\Merchant\Utility::class);
+        $utilityMock->allows('splitzBulkEvaluate')
+            ->with($merchants, 'O85moJtATjSxPO')
+            ->andReturns(['10000Razorpay' => true, '10001Razorpay' => false]);
+
+        $merchantOnboardingProxyControllerMock = Mockery::mock(MerchantOnboardingProxyController::class);
+        $merchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->with('merchant_pgos_fetch_activation_status', Mockery::any(), Mockery::any(), true)
+            ->andReturn($pgosResponse);
+
+        $this->app->instance('MerchantOnboardingProxyController', $merchantOnboardingProxyControllerMock);
+
+        $this->merchantServiceMock->shouldReceive('internalGetMerchant')
+            ->with('10001Razorpay')
+            ->andReturn([
+                'merchant' => ['feature' => ['otp_auth_default']],
+                'merchant_detail' => ['activation_status' => 'activated']
+            ]);
+        $this->merchantServiceMock->shouldReceive('internalGetMerchant')
+            ->with('10000Razorpay')
+            ->andReturn([
+                'merchant' => ['feature' => ['otp_auth_default']],
+                'merchant_detail' => ['activation_status' => 'activated']
+            ]);
+
+        $merchantEntityMock = Mockery::mock('RZP\Models\Merchant\Entity');
+        $merchantEntityMock->allows('isFeatureEnabled')->with('omni_enabled')->andReturns(false);
+        $merchantEntityDetailMock = Mockery::mock('RZP\Models\Merchant\Detail\Entity');
+        $merchantEntityDetailMock->allows('getMerchantId')->andReturns('10000Razorpay');
+        $merchantEntityDetailMock->allows('getActivationStatus')->andReturns('activated');
+
+        $merchantEntityMock->shouldReceive('getAttribute')
+            ->with('merchantDetail')
+            ->andReturn($merchantEntityDetailMock)
+            ->atLeast()->once();
+
+        $merchantEntityDetailMock->shouldReceive('getAttribute')
+            ->with('merchant')
+            ->andReturn($merchantEntityMock)
+            ->atLeast()->once();
+
+        $this->repoMock->shouldReceive('driver')->with('merchant')->andReturn($this->merchantRepoMock);
+        $this->merchantRepoMock->shouldReceive('findOrFailPublic')->andReturn($merchantEntityMock);
+
+        $authzServiceMock = Mockery::mock('AuthzAdmin\Client\Api\AdminAPIApi');
+        app()->instance('authzOmniPlatformAdmin', $authzServiceMock);
+        $authzServiceMock->shouldReceive('adminAPIListPolicy')
+            ->with(
+                '*',
+                ['AUTHZ_OMNI_ADMIN_RESOURCE_GROUP_ID'],
+                null,
+                null,
+                ['AUTHZ_OMNI_ADMIN_SERVICE_ID'],
+                null,
+                null,
+                '100000razorpay::pg::merchant_dashboard',
+                '100000razorpay',
+                true,
+                null,
+                'admin'
+            )
+            ->andReturn($authzServiceResponse);
+        $authzServiceMock->shouldReceive('adminAPIListPolicy')
+            ->with(
+                '*',
+                ['AUTHZ_OMNI_ADMIN_RESOURCE_GROUP_ID'],
+                null,
+                null,
+                ['AUTHZ_OMNI_ADMIN_SERVICE_ID'],
+                null,
+                null,
+                '100000razorpay::pos::merchant_dashboard',
+                '100000razorpay',
+                true,
+                null,
+                'admin'
+            )
+            ->andReturn($authzServiceResponse);
+
+        $this->coreMock->shouldReceive('getService')
+            ->with('authz_service')
+            ->andReturn($authzServiceMock);
+
+        return [$utilityMock, $merchantOnboardingProxyControllerMock, $merchantEntityMock, $merchantEntityDetailMock, $authzServiceMock];
     }
 }
 

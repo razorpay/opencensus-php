@@ -67,6 +67,20 @@ class Role
     const IT_L1                 = 'it_l1';
     const IT_L2                 = 'it_l2';
 
+    const STATE_MANAGER         = 'state_manager';
+    const REGION_MANAGER         = 'region_manager';
+    const COUNTRY_MANAGER         = 'country_manager';
+
+    const MERCHANT_ADMIN =  'merchant_admin';
+
+    const SUPER_ADMIN_INTERNAL = 'super_admin_internal';
+    const SUPPORT_ADMIN_INTERNAL = 'support_admin_internal';
+
+    const SUPPORT_EXECUTIVE = 'support_executive';
+
+
+
+
     const ALL_ROLES = [
         self::ADMIN_READONLY,
 
@@ -92,6 +106,17 @@ class Role
         self::CHECKER_L3,
         self::MAKER_ADMIN,
         self::MAKER,
+
+        self::CASHIER,
+        self::OWNER,
+        self::STORE_MANAGER,
+        self::STATE_MANAGER,
+        self::REGION_MANAGER,
+        self::COUNTRY_MANAGER,
+        self::MERCHANT_ADMIN,
+        self::SUPER_ADMIN_INTERNAL,
+        self::SUPPORT_ADMIN_INTERNAL,
+        self::SUPPORT_EXECUTIVE
 
     ];
 
@@ -158,6 +183,19 @@ class Role
         self::RBL_AGENT
     ];
 
+    const POS_ROLES = [
+        self::CASHIER,
+        self::OWNER,
+        self::STORE_MANAGER,
+        self::STATE_MANAGER,
+        self::REGION_MANAGER,
+        self::COUNTRY_MANAGER,
+        self::MERCHANT_ADMIN,
+        self::SUPER_ADMIN_INTERNAL,
+        self::SUPPORT_ADMIN_INTERNAL,
+        self::SUPPORT_EXECUTIVE
+    ];
+
     /**
      * Only Owner/Admin can update some user details
      * such as mobile number, unlock user account.
@@ -175,6 +213,11 @@ class Role
     public static function getBillingRoles(): array
     {
         return self::BILLING_ROLES;
+    }
+
+    public static function getPosRoles(): array
+    {
+        return self::POS_ROLES;
     }
 
     public static function exists(string $action): bool
@@ -206,6 +249,9 @@ class Role
 
             case Product::BILLING:
                 $productRoles = self::getBillingRoles();
+                break;
+            case Product::POS:
+                $productRoles = self::getPosRoles();
                 break;
             default:
                 throw new LogicException('Logic not defined for product: ' . $product);

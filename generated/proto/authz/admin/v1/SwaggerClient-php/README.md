@@ -100,6 +100,7 @@ Class | Method | HTTP request | Description
 *AdminAPIApi* | [**adminAPIDeleteService**](docs/Api/AdminAPIApi.md#adminapideleteservice) | **DELETE** /v1/services/{id} | DeleteService deletes the service entity from AuthZ policy store.
 *AdminAPIApi* | [**adminAPIDeleteSubject**](docs/Api/AdminAPIApi.md#adminapideletesubject) | **DELETE** /v1/subjects | DeleteSubject detaches all roles for the given subject entity in AuthZ policy store.
 *AdminAPIApi* | [**adminAPIDeleteSubjectRoleMapping**](docs/Api/AdminAPIApi.md#adminapideletesubjectrolemapping) | **DELETE** /v1/subject_role_mappings | DeleteSubjectRoleMapping detaches the role from a subject entity in AuthZ policy store.
+*AdminAPIApi* | [**adminAPIGetRole**](docs/Api/AdminAPIApi.md#adminapigetrole) | **GET** /v1/roles/{identifier} | GetRole returns the role entity from AuthZ policy store.
 *AdminAPIApi* | [**adminAPIListAction**](docs/Api/AdminAPIApi.md#adminapilistaction) | **GET** /v1/actions | ListAction returns a list of actions based on the supplied filters.
 *AdminAPIApi* | [**adminAPIListPermission**](docs/Api/AdminAPIApi.md#adminapilistpermission) | **GET** /v1/permissions | ListPermission returns a list of permissions satisfying the filter conditions.
 *AdminAPIApi* | [**adminAPIListPolicy**](docs/Api/AdminAPIApi.md#adminapilistpolicy) | **GET** /v1/policies | ListPolicy returns a list of policies satisfying the filter conditions.
@@ -115,6 +116,7 @@ Class | Method | HTTP request | Description
 *AdminAPIApi* | [**adminAPIUpdateResourceGroup**](docs/Api/AdminAPIApi.md#adminapiupdateresourcegroup) | **PUT** /v1/resource_groups | UpdateResourceGroup updates the given resource group entity.
 *AdminAPIApi* | [**adminAPIUpdateRole**](docs/Api/AdminAPIApi.md#adminapiupdaterole) | **PUT** /v1/roles | UpdateRole creates the role entity in AuthZ policy store.
 *AdminAPIApi* | [**adminAPIUpdateService**](docs/Api/AdminAPIApi.md#adminapiupdateservice) | **PUT** /v1/services | UpdateService creates the service entity in AuthZ policy store.
+*AdminAPIApi* | [**adminAPIUpdateSubjectRoleMapping**](docs/Api/AdminAPIApi.md#adminapiupdatesubjectrolemapping) | **PUT** /v1/subject_role_mappings | UpdateSubjectRoleMapping updates the roles attached to a subject entity in AuthZ policy store.
 
 
 ## Documentation For Models
@@ -123,6 +125,7 @@ Class | Method | HTTP request | Description
  - [ProtobufAny](docs/Model/ProtobufAny.md)
  - [RpcStatus](docs/Model/RpcStatus.md)
  - [V1Action](docs/Model/V1Action.md)
+ - [V1ChildRoles](docs/Model/V1ChildRoles.md)
  - [V1Effect](docs/Model/V1Effect.md)
  - [V1ExpandedPermission](docs/Model/V1ExpandedPermission.md)
  - [V1ExpandedPolicy](docs/Model/V1ExpandedPolicy.md)

@@ -1,6 +1,6 @@
 <?php
 /**
- * V1ExpandedPolicyTest
+ * V1ChildRolesTest
  *
  * PHP version 5
  *
@@ -30,15 +30,15 @@
 namespace AuthzAdmin\Client;
 
 /**
- * V1ExpandedPolicyTest Class Doc Comment
+ * V1ChildRolesTest Class Doc Comment
  *
  * @category    Class
- * @description ExpandedPolicy is the struct defining a policy which has all sub entities expanded.
+ * @description V1ChildRoles
  * @package     AuthzAdmin\Client
  * @author      Swagger Codegen team
  * @link        https://github.com/swagger-api/swagger-codegen
  */
-class V1ExpandedPolicyTest extends \PHPUnit_Framework_TestCase
+class V1ChildRolesTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
@@ -70,9 +70,9 @@ class V1ExpandedPolicyTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test "V1ExpandedPolicy"
+     * Test "V1ChildRoles"
      */
-    public function testV1ExpandedPolicy()
+    public function testV1ChildRoles()
     {
     }
 
@@ -87,41 +87,6 @@ class V1ExpandedPolicyTest extends \PHPUnit_Framework_TestCase
      * Test attribute "name"
      */
     public function testPropertyName()
-    {
-    }
-
-    /**
-     * Test attribute "service"
-     */
-    public function testPropertyService()
-    {
-    }
-
-    /**
-     * Test attribute "permission"
-     */
-    public function testPropertyPermission()
-    {
-    }
-
-    /**
-     * Test attribute "type"
-     */
-    public function testPropertyType()
-    {
-    }
-
-    /**
-     * Test attribute "is_assignable"
-     */
-    public function testPropertyIsAssignable()
-    {
-    }
-
-    /**
-     * Test attribute "is_active"
-     */
-    public function testPropertyIsActive()
     {
     }
 }

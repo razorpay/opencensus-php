@@ -141,6 +141,12 @@ class Entity extends Base\PublicEntity
     const DEFAULT_MERCHANT_ID = 'default_merchant_id';
     const IS_MERCHANT_ENTITIES_EMPTY = 'is_merchant_entities_empty';
 
+    const ACTIVATION_STATUS = 'activation_status';
+    const POS_ACTIVATION_STATUS = 'pos_activation_status';
+    const MERCHANT_DETAIL = 'merchant_detail';
+    const MERCHANT = 'merchant';
+    const FEATURE= 'feature';
+
     protected $fillable = [
         self::ID,
         self::NAME,

@@ -1180,6 +1180,10 @@ return array(
 
     'external_updates_enabled_for_tokens' => env('EXTERNAL_UPDATES_ENABLED_FOR_TOKENS'),
 
+    'pg_pos_rbac_splitz_experiment_id' => env('PG_POS_RBAC_SPLITZ_EXPERIMENT_ID'),
+
+    'pg_pos_auth_rbac_splitz_experiment_id' => env('PG_POS_AUTH_RBAC_SPLITZ_EXPERIMENT_ID'),
+  
     'insufficient_fund_tng' => env('INSUFFICIENT_FUND_TNG'),
 
     'generate_bene_hash_experiment_id' => env('GENERATE_BENE_HASH_EXPERIMENT_ID'),
