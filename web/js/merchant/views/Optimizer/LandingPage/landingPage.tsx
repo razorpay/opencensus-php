@@ -231,8 +231,11 @@ const LandingPage = (props): JSX.Element => {
                               {uniqueArray(
                                 OP.map(
                                   (o) =>
-                                    getValue('parameter', o?.operands?.[0]?.value)?.name ||
-                                    o?.operands?.[0]?.value.split('.')[1],
+                                    getValue(
+                                      'parameter',
+                                      o?.operands?.[0]?.value,
+                                      o?.operands?.[1]?.value,
+                                    )?.name || o?.operands?.[0]?.value.split('.')[1],
                                 ),
                               ).join(', ')}
                             </div>
