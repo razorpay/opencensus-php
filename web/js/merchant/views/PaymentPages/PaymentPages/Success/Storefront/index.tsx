@@ -138,10 +138,13 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
       },
       slug: formData.slug || null,
     };
-
     editStorefrontPageApiCall(props.id, payload, false)
       .then(() => {
-        editStorefrontDeepMerge(payload);
+        const newPayload = {
+          ...payload,
+          expire_by: payload.expire_by ? Math.round(payload.expire_by / 1000) : null,
+        };
+        editStorefrontDeepMerge(newPayload);
 
         showNotification({
           type: 'success',

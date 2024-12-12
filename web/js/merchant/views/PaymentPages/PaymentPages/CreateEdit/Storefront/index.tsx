@@ -482,7 +482,7 @@ const StoreFront = ({
     }
 
     if (formData.expire_by) {
-      payload.expire_by = +formData.expire_by;
+      payload.expire_by = Math.round(formData.expire_by / 1000);
     }
 
     if (formData.slug) {

@@ -73,7 +73,7 @@ const DrawerWrapper = styled(_Modal)(
   box-shadow: 0px 10px 10px 1px #aaaaaa;
   z-index: 10000;
   .Modal-content {
-    overflow: auto;
+    overflow: ${isStorefront ? 'unset' : 'auto'};
     margin-bottom: 100px;
     height: calc(100vh - 45px - 120px);
   }

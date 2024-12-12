@@ -70,7 +70,7 @@ const StorefrontSettings = ({
   const handleSubmit = (formData) => {
     const updatedFormData = {
       ...formData,
-      expire_by: formData?.expire_by ? formData.expire_by / 1000 : undefined,
+      expire_by: formData?.expire_by ? formData.expire_by : undefined,
     };
 
     onSave(updatedFormData);
