@@ -1,3 +1,5 @@
+import { SpiltzContextState } from 'common/splitz/types';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import { Parameter, Operator, LogicalOperator, Rule, RuleGroup, Provider } from './types';
 
 export const OPERATORS: Operator[] = [
@@ -1313,3 +1315,9 @@ export const findProviderName = (providers: Provider[], id: string): string => {
 
 // This helps adding ticket into Mission Integrations queue
 export const FD_TICKET_GROUP_ID = 82000661025;
+
+export const isSMEOnboardingEnabled = (splitz: SpiltzContextState): boolean => {
+  const { abExperiments } = splitz || { abExperiments: { opti_sme_onboarding: undefined } };
+  if (!abExperiments?.opti_sme_onboarding) return false;
+  return isExperimentEnabled(abExperiments.opti_sme_onboarding);
+};

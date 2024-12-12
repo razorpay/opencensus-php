@@ -11,6 +11,7 @@ import { fetchRules, fetchRule, fetchTerminalProviders } from 'merchant/reducers
 import lazy from 'merchant/routes/LazyLoader';
 import { shouldShowRules } from 'merchant/views/Navigator/components/util';
 import { isIntegrationAuditEnabled } from 'merchant/views/Optimizer/AddProvider/utils';
+import { isSMEOnboardingEnabled } from './utils';
 
 const AddProvider = lazy(
   () =>
@@ -41,6 +42,10 @@ const OnBoarding = lazy(
     import(
       /* webpackChunkName: 'OptimizerOnBoarding' */ 'merchant/views/Navigator/components/OnBoarding'
     ),
+);
+
+const SMEOnBoarding = lazy(
+  () => import(/* webpackChunkName: 'OptimizerOnBoarding' */ 'merchant/views/Optimizer/OnBoarding'),
 );
 
 const Optimizer = ({ fetchRules, fetchTerminalProviders, user, splitz }): JSX.Element => {
@@ -112,7 +117,7 @@ const Optimizer = ({ fetchRules, fetchTerminalProviders, user, splitz }): JSX.El
                     user.isOptimizerOnboardingEnabled && !user.isOptimizerEnabled
                   }
                 >
-                  <OnBoarding />
+                  {isSMEOnboardingEnabled(splitz) ? <SMEOnBoarding /> : <OnBoarding />}
                 </RouteGuard>
               }
             />
