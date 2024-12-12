@@ -26,6 +26,13 @@ import {
 } from './typings';
 import { useValidatePermissions } from 'merchant/helpers/permissions/utils';
 import { PERMISSIONS } from 'merchant/helpers/permissions/constant';
+import {
+  isBlocked,
+  isSettlementSOHBlockEnabled,
+  SETTLEMENT_HOLD_CTA_TEXT,
+} from 'merchant/views/Settlements/components/utils';
+import { useSplitzService } from 'common/splitz';
+import { BannerType } from './components/Banner/config';
 
 const BankAccountDetails = ({
   openModal,
@@ -101,14 +108,15 @@ const BankAccountDetails = ({
 
   const triggerBankAccountAction = (): void =>
     handleBankAccountAction({ flowType: FLOW_TYPE.UPDATE });
-
   useEffect(() => {
     const { isAdminOrOwner, id } = user;
     const promises: Promise<void>[] = [fetchBankAccount(), fetchSettlementConfig()];
     if (isRBACEnabled ? canUpdateBankAccount : isAdminOrOwner) {
       promises.push(
         fetchBankAccountChangeStatus(id)
-          .then(({ data }) => setIsBankUpdateEnabled(!data))
+          .then(({ data }) => {
+            setIsBankUpdateEnabled(!data);
+          })
           .catch(() => {
             showNotification({
               type: 'error',
@@ -119,6 +127,33 @@ const BankAccountDetails = ({
     }
     Promise.allSettled(promises).then(() => setIsDataSettled(true));
   }, [user.id, user.isAdminOrOwner, isRBACEnabled, canUpdateBankAccount]);
+  const splitz = useSplitzService();
+  const isExpEnabled = isSettlementSOHBlockEnabled(splitz);
+  const feature = settlementConfig?.data?.config?.features;
+  const isBlock = isBlocked(feature);
+
+  let bannerSettlementConfig = {};
+  let bannerType = '';
+
+  switch (true) {
+    case feature?.global_hold_config?.status:
+      bannerSettlementConfig = feature?.global_hold_config;
+      bannerType = BannerType.RISK_FOH;
+      break;
+    case feature?.hold?.status &&
+      feature?.hold?.cta_text === SETTLEMENT_HOLD_CTA_TEXT.CONTACT_SUPPORT:
+      bannerSettlementConfig = feature?.hold;
+      bannerType = BannerType.SOH_CONTACT_SUPPORT;
+      break;
+    case feature?.hold?.status:
+      bannerSettlementConfig = feature?.hold;
+      bannerType = BannerType.SOH;
+      break;
+    case feature?.block?.status:
+      bannerSettlementConfig = feature?.block;
+      bannerType = BannerType.BLOCK;
+      break;
+  }
 
   return (
     <>
@@ -133,7 +168,15 @@ const BankAccountDetails = ({
       />
       <StyledBankAccountDetails>
         <WorkflowStatus isSettlementOnHold={isHold} />
-        {hold_type && <Banner type={hold_type} />}
+        {isExpEnabled && isBlock ? (
+          <Banner
+            type={bannerType}
+            settlementConfig={bannerSettlementConfig}
+            bankAccountChangeStatus={!isBankUpdateEnabled}
+          />
+        ) : (
+          hold_type && <Banner type={hold_type} />
+        )}
         {activeBank && Object.keys(activeBank).length ? (
           <AccountSection
             id="Active Bank Account"

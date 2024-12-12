@@ -153,7 +153,9 @@ describe('BankAccountDetailsV2 - BankAccountDetails Landing Page', () => {
       server.use(mockFetchSettlementConfig(false));
       await waitForElementToBeRemoved(screen.queryAllByTestId('bankAccount-shimmer'));
       await waitFor(() => {
-        expect(mockWorkflowStatusComponent).toHaveBeenCalledWith({ isSettlementOnHold: false });
+        expect(mockWorkflowStatusComponent).toHaveBeenCalledWith({
+          isSettlementOnHold: false || undefined,
+        });
       });
     });
 

@@ -1,3 +1,4 @@
+import { isExperimentEnabled } from 'common/splitz/utils';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import LocRepaymentTooltip from 'merchant/views/Capital/CashAdvanceNudges/components/LocRepaymentTooltip';
@@ -105,12 +106,70 @@ export function filterAndTransformInPersonSchedule(obj) {
   return transformed;
 }
 
+export const isSettlementSOHBlockEnabled = (splitz) => {
+  const { abExperiments } = splitz || { abExperiments: { settlements_soh_block: undefined } };
+  if (!abExperiments?.settlements_soh_block) return false;
+  return isExperimentEnabled(abExperiments.settlements_soh_block);
+};
+
 export const TIMELINE_EVENTS = {
   PAYMENT_CAPTURED: 'PAYMENT_CAPTURED',
   REFUND_PROCESSED: 'REFUND_PROCESSED',
   SCHEDULE_INFO: 'SCHEDULE_INFO',
   SETTLEMENT_INFO: 'SETTLEMENT_INFO',
   HOLIDAY_INFO: 'HOLIDAY_INFO',
+};
+
+export const SETTLEMENT_HOLD_FEATURE = {
+  FOH: 'FOH', //FOH: Funds on Hold
+  HOLD: 'SOH', //SOH: Settlement on Hold
+  BLOCK: 'Block', //BLOCK: Settlement Blocked
+};
+
+export const SETTLEMENT_HOLD_CTA_TEXT = {
+  UPDATE_BANKACC: 'Update bank details',
+  CONTACT_SUPPORT: 'Contact Support',
+};
+
+export const DEFAULT_SETTLEMENT_TITLE = {
+  SOH: 'Update Bank Account Details to resume settlements',
+  SOH_POST_BA_UPDATE: 'Your bank details have been successfully updated and are under review',
+  SOH_CONTACT_SUPPORT: 'Contact support to resume settlements',
+  FOH: 'Contact support to resume settlements for your account',
+  BLOCK: 'Contact support to resume settlements for your account',
+};
+
+export const DEFAULT_SETTLEMENT_SUB_TITLE = {
+  SOH: 'Your settlements are on-hold as we’ve encountered a few issues with your given bank account',
+  SOH_POST_BA_UPDATE: 'Settlements will be retried after your bank account has been verified.',
+  SOH_CONTACT_SUPPORT:
+    'Your settlements are on-hold as we’ve encountered a few issues with your given bank account',
+  FOH: 'Your settlements are on-hold as we’ve noticed unusual activity in your account',
+  BLOCK: 'Your settlements are on-hold as per your request',
+};
+
+export const SETTLEMENT_HOLD_MESSAGE = {
+  SOH: 'Update your bank account details to resume settlements',
+  FOH: 'Contact support to resume settlements',
+  BLOCK: 'Contact support to resume settlements',
+};
+
+export const SETTLEMENT_BANNER_BANK_UPDATE_MESSAGE = {
+  TITLE: 'Your bank details have been successfully updated and are under review.',
+  SUB_TITLE: 'Settlements will be retried after your bank account has been verified.',
+};
+
+export const SETTLEMENT_HOLD_PRIMARY_TEXT = 'Your settlements are on-hold';
+
+export const SETTLEMENT_HOLD_BANK_UPDATE_MESSAGE = {
+  HEADING: 'Your settlements are on hold, expect an update within 48 hours',
+  STEP1: 'Bank account updated successfully and is under review',
+  STEP2: 'Once verified, your settlements will be retried.',
+};
+
+export const SETTLEMENT_HOLD_CONTACT_SUPPORT_MESSAGE = {
+  SUB_TITLE:
+    "Please reach out to our support team, and we'll assist you in resolving this issue and getting your settlements back on track.",
 };
 
 export const SETTLEMENT_SLA_IN_HOURS = 3;
@@ -131,6 +190,7 @@ export const HEADING_INFO = {
 export const ALERT_INTENT = {
   NOTICE: 'notice',
   NEGATIVE: 'negative',
+  INFORMATION: 'information',
 };
 
 export const SETTLEMENT_STATUS = {
@@ -147,4 +207,8 @@ export const BADGE_INFO = {
     'The due settlement deposit is successful and complete from our end (The settlement amount may take 2-3 hours to reflect in your account depending on the bank)',
   DELAYED: 'The settlement processing is taking more than the usual time',
   BLOCKED: 'All upcoming settlements are on-hold for your account',
+};
+
+export const isBlocked = (feature) => {
+  return feature?.hold.status || feature?.global_hold_config.status || feature?.block?.status;
 };

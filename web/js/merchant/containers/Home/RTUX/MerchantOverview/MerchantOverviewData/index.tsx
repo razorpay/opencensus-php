@@ -1,7 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { TEXT_CONTENT } from 'merchant/containers/Home/RTUX/MerchantOverview/constants';
-import { IMerchantOverview } from 'merchant/containers/Home/RTUX/MerchantOverview/types';
+import {
+  IMerchantOverview,
+  settlementConfig,
+} from 'merchant/containers/Home/RTUX/MerchantOverview/types';
 import { ErrorState } from 'merchant/widgets/common/ErrorState';
 import { useRetryWidget } from 'merchant/widgets/hooks';
 import { CommonWidgetProps } from 'merchant/widgets/types';
@@ -12,6 +15,7 @@ import Settlement from './Settlement';
 import SettlementLoader from './Settlement/Loader';
 import { getUcsAliasFromQueryKey, track } from 'merchant/widgets/utils';
 import { getAnalyticsHeroCardStateIdentifier } from '../utils';
+import { SETTLEMENT_HOLD_FEATURE } from 'merchant/views/Settlements/components/utils';
 
 const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
   queryKey,
@@ -22,10 +26,11 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
   user,
   type,
 }) => {
+  const [bankUpdate, setBankUpdate] = useState(false);
   const [isRetrying, retryHandler] = useRetryWidget(queryKey);
   const screen = getUcsAliasFromQueryKey(queryKey) ?? '';
   const widgetId = `merchantDashboard.${screen}.${type}.${id}`;
-
+  const [settlementConfig, setSettlementConfig] = useState<settlementConfig>({});
   useEffect(() => {
     if (!isLoading && !isRetrying) {
       const properties = {
@@ -45,6 +50,42 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
       });
     }
   }, [isRetrying, isLoading, error]);
+
+  useEffect(() => {
+    if (data) {
+      const bankAccountUpdate = data?.hero_card_data?.settlement?.bank_update_status;
+      setBankUpdate(bankAccountUpdate ?? false);
+
+      const features = data?.hero_card_data?.settlement?.settlement_config_details?.features;
+      let updatedConfig = {};
+      if (features?.global_hold_config) {
+        updatedConfig = {
+          source: SETTLEMENT_HOLD_FEATURE.FOH,
+          status: true,
+          sub_title: features?.global_hold_config_sub_title,
+          cta_text: features?.global_hold_config_cta_text,
+          cta_link: features?.global_hold_config_cta_url,
+        };
+      } else if (features?.hold) {
+        updatedConfig = {
+          source: SETTLEMENT_HOLD_FEATURE.HOLD,
+          status: true,
+          sub_title: features?.hold_sub_title,
+          cta_text: features?.hold_cta_text,
+          cta_link: features?.hold_cta_url,
+        };
+      } else if (features?.block) {
+        updatedConfig = {
+          source: SETTLEMENT_HOLD_FEATURE.BLOCK,
+          status: true,
+          sub_title: features?.block_sub_title,
+          cta_text: features?.block_cta_text,
+          cta_link: features?.block_cta_url,
+        };
+      }
+      setSettlementConfig(updatedConfig);
+    }
+  }, [data]);
 
   if (isLoading || isRetrying)
     return user.isTransacted ? <SettlementLoader /> : <NonSettlementLoader />;
@@ -80,6 +121,8 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
   return isSettlement && settlement ? (
     <Settlement
       settlement={settlement}
+      bankUpdate={bankUpdate}
+      settlementConfig={settlementConfig}
       analyticsProperties={{ settlementState, screen, widgetId }}
     />
   ) : (

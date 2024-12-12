@@ -1,7 +1,28 @@
 import store from 'merchant/store';
-import { getSettlementTimeFormat } from 'merchant/views/Settlements/components/utils';
+import {
+  getSettlementTimeFormat,
+  isSettlementSOHBlockEnabled,
+} from 'merchant/views/Settlements/components/utils';
 describe('Settlement Helper', () => {
   const stateSpy = jest.spyOn(store, 'getState');
+  describe('isSettlementSOHBlockEnabled', () => {
+    test('should return false if variant is not "on"', () => {
+      const splitz = {
+        abExperiments: { settlements_soh_block: { variables: { result: 'off' } } },
+      };
+
+      const result = isSettlementSOHBlockEnabled(splitz);
+      expect(result).toBe(false);
+    });
+    test('should return true if variant is "on"', () => {
+      const splitz = {
+        abExperiments: { settlements_soh_block: { variables: { result: 'on' } } },
+      };
+
+      const result = isSettlementSOHBlockEnabled(splitz);
+      expect(result).toBe(true);
+    });
+  });
 
   test('should return settlement date with time when the org feature flag "hide_settlement_time" is disabled', () => {
     stateSpy.mockReturnValue({

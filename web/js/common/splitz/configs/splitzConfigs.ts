@@ -70,6 +70,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'settlements_soh_block',
+        experimentId: {
+          beta: 'PPV75LUJhQsV3F',
+          production: 'PQPDXEie1XF0ic',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'is_merchant_pos_for_ftx',
         experimentId: {
           beta: 'NdViMia8Elf8e7',

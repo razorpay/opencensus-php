@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRightIcon, Link } from '@razorpay/blade/components';
 import { NavLink } from 'react-router-dom';
-
+import styled from 'styled-components';
 import { currencySymbols } from 'common/utils/rzp-utils';
 import { ROUTES, TEXT_CONTENT } from 'merchant/containers/Home/RTUX/MerchantOverview/constants';
 import {
@@ -16,6 +16,7 @@ import {
   TodaySettlementKeys,
   UpcomingSettlementKeys,
   IAnalyticsProperties,
+  ISettlementFeatures,
 } from 'merchant/containers/Home/RTUX/MerchantOverview/types';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
@@ -29,6 +30,19 @@ export function getFormattedDateFromTimestamp(timestamp: number): string {
     day: 'numeric',
   });
 }
+
+export const StyledImage = styled.img`
+  height: 100%;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+`;
+
+export const isBlocked = (settlementFeatures: ISettlementFeatures): boolean => {
+  return (
+    settlementFeatures?.global_hold_config || settlementFeatures?.block || settlementFeatures?.hold
+  );
+};
 
 // this utils transforms the settlement data for merchant overview widget and returns which settlement types to show
 // Settlement

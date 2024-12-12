@@ -1,21 +1,36 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { withRouter } from 'common/deprecated/withRouter';
 import styled from 'styled-components';
+import { withRouter } from 'common/deprecated/withRouter';
+import { useSplitzService } from 'common/splitz';
+
+import { getFormattedAmountNew } from 'common/utils/rzp-utils';
+import { analyticsTrack, analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
+
+import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import {
   openModal as openModalFn,
   closeModal as closeModalFn,
 } from 'merchant_common/reducers/modals';
-import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
+
 import SettlementMessage from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage';
+
 import { Alert } from '@razorpay/blade/components';
-import { ALERT_INTENT, SETTLEMENT_RETRY_SLA_IN_HOURS, SETTLEMENT_STATUS } from './utils';
+import {
+  ALERT_INTENT,
+  DEFAULT_SETTLEMENT_SUB_TITLE,
+  DEFAULT_SETTLEMENT_TITLE,
+  isSettlementSOHBlockEnabled,
+  SETTLEMENT_HOLD_CTA_TEXT,
+  SETTLEMENT_HOLD_MESSAGE,
+  SETTLEMENT_RETRY_SLA_IN_HOURS,
+  SETTLEMENT_STATUS,
+} from './utils';
 import moment from 'moment/moment';
-import { getFormattedAmountNew } from 'common/utils/rzp-utils';
-import { analyticsTrack, analyticsTrackWithUserInfo } from 'common/utils/analytics';
-import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
-import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 export const BannerWrapper = styled.div(
   ({ theme }) => `
@@ -45,15 +60,20 @@ const SettlementsBannerV2 = ({
     holidayList?.loading ||
     settlementsList?.loading;
 
-  const no_settlement = settlement_amount?.data?.no_settlement;
+  const splitz = useSplitzService();
+  const isExpEnabled = isSettlementSOHBlockEnabled(splitz);
+
+  const feature = settlementConfig?.data?.config?.features;
+  const isSOH = settlementConfig?.data?.config?.features?.hold?.status;
+
+  const isSohContactSupport =
+    isSOH && feature?.hold?.cta_text === SETTLEMENT_HOLD_CTA_TEXT.FOH && isExpEnabled;
+
+  const isFOH = feature?.global_hold_config?.status;
 
   const settlement_currency = settlement_amount?.data?.settlement_currency;
 
-  const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
-
-  const isOnHold = no_settlement?.on_hold;
-
-  const isBlocked = settlementConfig?.data?.config?.features?.block?.status;
+  const isBlocked = feature?.block?.status;
 
   const balance = current_balance?.data?.balance || 0;
 
@@ -181,51 +201,82 @@ const SettlementsBannerV2 = ({
       },
     };
     intent = ALERT_INTENT.NOTICE;
-  } else if (isOnHold) {
+  } else if (isFOH) {
     // We are showing this banner if the user is put on Funds on hold
-    title = 'Contact support to resume settlements for your account';
-    subTitle = 'Your settlements are on-hold as we’ve noticed unusual activity in your account';
+
+    title = isExpEnabled
+      ? feature?.global_hold_config?.title || DEFAULT_SETTLEMENT_TITLE.FOH
+      : DEFAULT_SETTLEMENT_TITLE.FOH;
+
+    subTitle = isExpEnabled
+      ? feature?.global_hold_config?.sub_title || DEFAULT_SETTLEMENT_SUB_TITLE.FOH
+      : DEFAULT_SETTLEMENT_SUB_TITLE.FOH;
+
     actions = {
       primary: {
-        text: 'Contact support',
+        text: SETTLEMENT_HOLD_CTA_TEXT.CONTACT_SUPPORT,
         onClick: () => {
           handleContactSupport(title);
         },
       },
     };
     intent = ALERT_INTENT.NEGATIVE;
-  } else if (isOnTemporaryHold) {
-    // We are showing this banner if the user is put on NSS hold funds
-    // Different communication if user has already updated bank details
-    title = bankAccountChangeStatus
-      ? 'Your bank account update request is under review'
-      : 'Update your bank account details to resume settlements';
-    subTitle = bankAccountChangeStatus
-      ? 'We’ll verify your details in some time and share an update. Please note, you will be able to receive collected payments in your bank account after the update is successful'
-      : 'Your settlements are on-hold as we’ve encountered a few issues with your given bank account';
-    actions = !bankAccountChangeStatus && {
-      primary: {
-        text: 'Update Bank Account Details',
-        onClick: () => {
-          user?.isAccountAndSettingsRevampEnabled
-            ? history.push('/bank-accounts-settlements/bank-account-details')
-            : history.push('/profile/update_bank_account');
-        },
-      },
-    };
-    intent = bankAccountChangeStatus ? ALERT_INTENT.NOTICE : ALERT_INTENT.NEGATIVE;
-  } else if (isBlocked) {
-    // We are showing this banner if the user is put on NSS block feature
-    title = 'Contact support to resume settlements for your account';
-    subTitle = 'Your settlements are on-hold as per your request';
+  } else if (isExpEnabled && isSohContactSupport) {
+    title = feature?.hold?.title || SETTLEMENT_HOLD_MESSAGE.FOH;
+    subTitle = feature?.hold?.sub_title || DEFAULT_SETTLEMENT_SUB_TITLE.FOH;
     actions = {
       primary: {
-        text: 'Contact support',
+        text: SETTLEMENT_HOLD_CTA_TEXT.CONTACT_SUPPORT,
         onClick: () => {
           handleContactSupport(title);
         },
       },
     };
+    intent = ALERT_INTENT.NEGATIVE;
+  } else if (isSOH) {
+    // We are showing this banner if the user is put on NSS hold funds
+    // Different communication if user has already updated bank details
+    title = bankAccountChangeStatus
+      ? DEFAULT_SETTLEMENT_TITLE.SOH_POST_BA_UPDATE
+      : isExpEnabled
+      ? feature?.hold?.title || SETTLEMENT_HOLD_MESSAGE.SOH
+      : SETTLEMENT_HOLD_MESSAGE.SOH;
+    subTitle = bankAccountChangeStatus
+      ? DEFAULT_SETTLEMENT_SUB_TITLE.SOH_POST_BA_UPDATE
+      : isExpEnabled
+      ? feature?.hold?.sub_title || DEFAULT_SETTLEMENT_SUB_TITLE.SOH
+      : DEFAULT_SETTLEMENT_SUB_TITLE.SOH;
+    actions = !bankAccountChangeStatus
+      ? {
+          primary: {
+            text: SETTLEMENT_HOLD_CTA_TEXT.UPDATE_BANKACC,
+            onClick: () => {
+              user?.isAccountAndSettingsRevampEnabled
+                ? history.push('/bank-accounts-settlements/bank-account-details')
+                : history.push('/profile/update_bank_account');
+            },
+          },
+        }
+      : null;
+
+    intent = bankAccountChangeStatus ? ALERT_INTENT.INFORMATION : ALERT_INTENT.NEGATIVE;
+  } else if (isBlocked) {
+    title = isExpEnabled
+      ? feature?.block?.title || DEFAULT_SETTLEMENT_TITLE.BLOCK
+      : DEFAULT_SETTLEMENT_TITLE.BLOCK;
+    subTitle = isExpEnabled
+      ? feature?.block?.sub_title || DEFAULT_SETTLEMENT_SUB_TITLE.BLOCK
+      : DEFAULT_SETTLEMENT_SUB_TITLE.BLOCK;
+
+    actions = {
+      primary: {
+        text: SETTLEMENT_HOLD_CTA_TEXT.CONTACT_SUPPORT,
+        onClick: () => {
+          handleContactSupport(title);
+        },
+      },
+    };
+
     intent = ALERT_INTENT.NEGATIVE;
   } else if (previousSettlementFailed) {
     // We are showing this banner if the user's previous settlement is in failed state

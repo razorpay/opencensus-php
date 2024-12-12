@@ -3,9 +3,90 @@ import { screen, userEvent, waitFor } from 'test-utils';
 import { BannerType } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/Banner/config';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 
+const variantOn = { variables: { result: 'on' } };
+const variantOff = { variables: { result: 'off' } };
+
+const defaultAbExperiments = {};
+
+let mockAbExperiments = defaultAbExperiments;
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({ abExperiments: mockAbExperiments }),
+}));
+
 describe('Banner', () => {
   const maskedAccountNumber = '***789';
   const workflowEta = 'Feb 09, 2023';
+
+  describe('when banner is under Experiment', () => {
+    beforeEach(() => {
+      mockAbExperiments = {
+        settlements_soh_block: variantOn,
+      };
+    });
+
+    afterEach(() => {
+      mockAbExperiments = defaultAbExperiments;
+    });
+
+    test('should render risk_foh banner with title and description', () => {
+      renderApp({
+        props: {
+          type: BannerType.RISK_FOH,
+          settlementConfig: {
+            sub_title: 'Testing Text',
+          },
+        },
+        user: {
+          isOrgRZP: true,
+        },
+      });
+
+      expect(screen.getByText('Testing Text')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Your settlements are on-hold as we’ve noticed unusual activity in your account',
+        ),
+      ).toBeInTheDocument();
+    });
+    test('should render soh banner with title and description - under Exp', () => {
+      renderApp({
+        props: {
+          type: BannerType.SOH,
+          settlementConfig: {
+            sub_title: 'Testing Text2',
+          },
+        },
+        user: {
+          isOrgRZP: true,
+        },
+      });
+
+      expect(screen.getByText('Testing Text2')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Your settlements are on-hold as we’ve encountered a few issues with your given bank account',
+        ),
+      ).toBeInTheDocument();
+    });
+    test('should render Block banner with title and description', () => {
+      renderApp({
+        props: {
+          type: BannerType.BLOCK,
+          settlementConfig: {
+            sub_title: 'Testing Text3',
+          },
+        },
+        user: {
+          isOrgRZP: true,
+        },
+      });
+
+      expect(screen.getByText('Testing Text3')).toBeInTheDocument();
+      expect(
+        screen.getByText('Your settlements are on-hold as per your request'),
+      ).toBeInTheDocument();
+    });
+  });
   describe('When banner type is unknown', () => {
     test('should render default banner with title and description', () => {
       renderApp();
@@ -297,6 +378,7 @@ describe('Banner', () => {
           type: BannerType.SOH,
         },
       });
+
       expect(
         screen.getByText('Update your bank account details to resume settlements'),
       ).toBeInTheDocument();

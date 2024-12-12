@@ -46,6 +46,47 @@ export const HERO_CARD_MOCK_RESPONSE = {
   },
 };
 
+export const SOH_MOCK = {
+  sub_title:
+    'Your settlements are on-hold because your Bank IFSC code is invalid. Please update your Bank details to resume settlements.',
+  cta_text: 'Update bank details',
+  source: 'SOH',
+  cta_link: 'https://dashboard.razorpay.com/app/profile/update_bank_account',
+  status: true,
+};
+export const SOH_MOCK_2 = {
+  sub_title:
+    'Contact Support for resuming your settlements. We are here to help you with any queries you have.',
+  cta_text: 'Contact Support',
+  source: 'SOH',
+  cta_link: 'www.razorpay.com',
+  status: true,
+};
+
+export const FOH_MOCK = {
+  sub_title: 'Contact Support team to resume your settlements.',
+  cta_text: 'Contact Support',
+  cta_link: 'www.razorpay.com',
+  source: 'FOH',
+  status: true,
+};
+
+export const BLOCK_MOCK = {
+  sub_title: 'Please reach out to support team',
+  cta_text: 'Contact Support',
+  cta_link: 'www.razorpay.com',
+  source: 'Block',
+  status: true,
+};
+
+export const DEFAULT_MOCK = {
+  sub_title:
+    "Please reach out to our support team, and we'll assist you in resolving this issue and getting your settlements back on track.",
+  cta_text: 'Contact Support',
+  source: '',
+  status: true,
+};
+
 export const KEY_UPDATES_MOCK_RESPONSE = {
   id: '1',
   type: 'carousel_cards_with_count',

@@ -1,4 +1,4 @@
-import { BankIcon, Link, Text } from '@razorpay/blade/components';
+import { BankIcon, Link, StampIcon, Text } from '@razorpay/blade/components';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { truncatedString } from 'common/utils/rzp-utils';
 import {
@@ -52,10 +52,15 @@ const BankDetails = ({
 }: BankDetailsPropsInterface): JSX.Element => {
   const handleSwitchAction = (): void =>
     handleAction({ bankDetails: bankData, flowType: FLOW_TYPE.SWITCH });
+  const settlementsValue = bankData?.find((detail) => detail.id === 'settlements')?.value;
   return (
     <StyledBankDetailsContainer>
       <BankAccountIconSection>
-        <BankIcon color="interactive.icon.gray.normal" size="large" />
+        {settlementsValue === 'ACTIVE' ? (
+          <BankIcon color="interactive.icon.gray.normal" size="large" />
+        ) : (
+          <StampIcon color="interactive.icon.gray.normal" size="large" />
+        )}
       </BankAccountIconSection>
       {bankData?.map(
         ({ id, name, value, type }): JSX.Element => (

@@ -24,6 +24,8 @@ export enum BannerType {
   COMPLETE_KYC = 'complete_kyc',
   RISK_FOH = 'risk_foh',
   SOH = 'soh',
+  BLOCK = 'block',
+  SOH_CONTACT_SUPPORT = 'soh_contact_support',
 }
 
 export const isBankAccountReq = (type) => {

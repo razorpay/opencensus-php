@@ -97,6 +97,36 @@ export interface ISettlementData {
   today?: ITodaySettlementData;
   upcoming_settlement?: IUpcomingSettlementData;
   previous?: IPreviousSettlementData;
+  bank_update_status?: boolean;
+  settlement_config_details?: {
+    features: ISettlementFeatures;
+  };
+}
+export interface ISettlementConfigDetails {
+  features: ISettlementFeatures;
+}
+export interface ISettlementFeatures {
+  global_hold_config: boolean;
+  global_hold_config_sub_title: string;
+  global_hold_config_cta_url: string;
+  global_hold_config_cta_text: string;
+
+  hold: boolean;
+  hold_sub_title: string;
+  hold_cta_url: string;
+  hold_cta_text: string;
+
+  block: boolean;
+  block_sub_title: string;
+  block_cta_url: string;
+  block_cta_text: string;
+}
+export interface settlementConfig {
+  sub_title?: string;
+  cta_text?: string;
+  source?: string;
+  cta_link?: string;
+  status?: boolean;
 }
 
 export interface IMerchantOverview {
@@ -105,6 +135,8 @@ export interface IMerchantOverview {
   };
   type: string;
   user: User;
+  bankUpdate: boolean;
+  settlementConfig: settlementConfig | null;
 }
 
 export interface IMerchantOverviewData {

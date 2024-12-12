@@ -15,6 +15,16 @@ jest.mock('merchant/views/TicketSupport/utils', () => ({
   },
 }));
 
+const variantOn = { variables: { result: 'on' } };
+
+const defaultAbExperiments = {};
+
+let mockAbExperiments = defaultAbExperiments;
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({ abExperiments: mockAbExperiments }),
+}));
+
 jest.mock(
   'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage',
   () => () => <div>SettlementMessage</div>,
@@ -68,6 +78,138 @@ describe('SettlementsBannerV2', () => {
     modalsSpy.mockClear();
     history = createMemoryHistory();
     history.push = jest.fn();
+  });
+
+  describe('under experiment', () => {
+    beforeEach(() => {
+      mockAbExperiments = {
+        settlements_soh_block: variantOn,
+      };
+    });
+    afterEach(() => {
+      mockAbExperiments = defaultAbExperiments;
+    });
+    test('should render banner when in live mode and config.hold.status is true', () => {
+      const initialState = {
+        ...state,
+        session: {
+          ...state.session,
+          user: {
+            ...state.session.user,
+            isOrgRZP: true,
+          },
+        },
+        settlement: {
+          config: {
+            data: {
+              config: {
+                features: {
+                  hold: {
+                    status: true,
+                    title: 'Testing title',
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      renderApp({
+        initialState,
+      });
+
+      expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
+      expect(screen.getByText('Testing title')).toBeInTheDocument();
+    });
+
+    test('should render success banner when bankAccountChangeStatus is true', () => {
+      const initialState = {
+        ...state,
+        profile: {
+          bankAccountChangeStatus: true,
+        },
+        settlement: {
+          config: {
+            data: {
+              config: {
+                features: {
+                  hold: {
+                    status: true,
+                    title: 'Your bank details have been successfully updated and are under review.',
+                    sub_title:
+                      'Settlements will be retried after your bank account has been verified.',
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      renderApp({ initialState });
+
+      expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
+      expect(
+        screen.getByText('Your bank details have been successfully updated and are under review.'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Settlements will be retried after your bank account has been verified.'),
+      ).toBeInTheDocument();
+    });
+
+    test('should render blocked settlements banner when isBlocked is true', () => {
+      const initialState = {
+        ...state,
+        settlement: {
+          config: {
+            data: {
+              config: {
+                features: {
+                  block: {
+                    title: 'Contact support to resume settlements for your account',
+                    status: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      renderApp({ initialState });
+      expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
+
+      expect(
+        screen.getByText('Contact support to resume settlements for your account'),
+      ).toBeInTheDocument();
+    });
+
+    test('should render FOH banner when isFOH is true', () => {
+      const initialState = {
+        ...state,
+        settlement: {
+          config: {
+            data: {
+              config: {
+                features: {
+                  global_hold_config: {
+                    title: 'Contact support to resume settlements for your account',
+                    status: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      renderApp({ initialState });
+      expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
+
+      expect(
+        screen.getByText('Contact support to resume settlements for your account'),
+      ).toBeInTheDocument();
+    });
   });
 
   test('should render banner when in live mode and user KYC is under review', () => {
@@ -214,15 +356,21 @@ describe('SettlementsBannerV2', () => {
     window.rzpTicketSystem = true;
     const initialState = {
       ...state,
-      home: {
-        ...state.home,
-        settlement_amount: {
+      settlement: {
+        config: {
           data: {
-            no_settlement: { on_hold: true },
+            config: {
+              features: {
+                global_hold_config: {
+                  status: true,
+                },
+              },
+            },
           },
         },
       },
     };
+
     renderApp({ initialState });
     expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
     expect(
@@ -239,17 +387,22 @@ describe('SettlementsBannerV2', () => {
     window.rzpTicketSystem = true;
     const initialState = {
       ...state,
-      home: {
-        ...state.home,
-        settlement_amount: {
+      settlement: {
+        config: {
           data: {
-            no_settlement: { on_hold: true },
+            config: {
+              features: {
+                global_hold_config: {
+                  status: true,
+                },
+              },
+            },
           },
         },
       },
     };
     renderApp({ initialState });
-    userEvent.click(screen.getByText('Contact support'));
+    userEvent.click(screen.getByText('Contact Support'));
     await waitFor(() => {
       expect(modalsSpy).toHaveBeenCalledTimes(1);
       expect(window.rzpAnalytics).toHaveBeenCalledTimes(1);
@@ -267,17 +420,22 @@ describe('SettlementsBannerV2', () => {
     window.rzpTicketSystem = false;
     const initialState = {
       ...state,
-      home: {
-        ...state.home,
-        settlement_amount: {
+      settlement: {
+        config: {
           data: {
-            no_settlement: { on_hold: true },
+            config: {
+              features: {
+                global_hold_config: {
+                  status: true,
+                },
+              },
+            },
           },
         },
       },
     };
     renderApp({ initialState });
-    userEvent.click(screen.getByText('Contact support'));
+    userEvent.click(screen.getByText('Contact Support'));
     await waitFor(() => {
       expect(modalsSpy).toHaveBeenCalledTimes(1);
       expect(CreateTicketEmitter.emit).toHaveBeenCalledTimes(0);
@@ -310,18 +468,16 @@ describe('SettlementsBannerV2', () => {
         'Your settlements are on-hold as we’ve encountered a few issues with your given bank account',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText('Update Bank Account Details')).toBeInTheDocument();
+    expect(screen.getByText('Update bank details')).toBeInTheDocument();
 
     initialState.profile.bankAccountChangeStatus = true;
     renderApp({ initialState });
     expect(screen.getAllByLabelText('settlement-banner')[1]).toBeInTheDocument();
     expect(
-      screen.getByText('Your bank account update request is under review'),
+      screen.getByText('Your bank details have been successfully updated and are under review'),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(
-        'We’ll verify your details in some time and share an update. Please note, you will be able to receive collected payments in your bank account after the update is successful',
-      ),
+      screen.getByText('Settlements will be retried after your bank account has been verified.'),
     ).toBeInTheDocument();
   });
 
@@ -346,7 +502,7 @@ describe('SettlementsBannerV2', () => {
       },
     };
     renderApp({ initialState });
-    userEvent.click(screen.getByText(/Update Bank Account Details/));
+    userEvent.click(screen.getByText(/Update bank details/));
     await waitFor(() => {
       expect(history.push).toHaveBeenCalledTimes(1);
       expect(history.push).toHaveBeenCalledWith(
@@ -358,7 +514,7 @@ describe('SettlementsBannerV2', () => {
 
     initialState.session.user.isAccountAndSettingsRevampEnabled = true;
     renderApp({ initialState });
-    userEvent.click(screen.getAllByText(/Update Bank Account Details/)[1]);
+    userEvent.click(screen.getAllByText(/Update bank details/)[1]);
     await waitFor(() => {
       expect(history.push).toHaveBeenCalledTimes(2);
       expect(history.push).toHaveBeenCalledWith(
@@ -394,8 +550,9 @@ describe('SettlementsBannerV2', () => {
     expect(
       screen.getByText('Your settlements are on-hold as per your request'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Contact support')).toBeInTheDocument();
-    userEvent.click(screen.getByText('Contact support'));
+    expect(screen.getByRole('button', { name: /Contact Support/i })).toBeInTheDocument();
+    expect(screen.getByText('Contact Support')).toBeInTheDocument();
+    userEvent.click(screen.getByText('Contact Support'));
     await waitFor(() => {
       expect(modalsSpy).toHaveBeenCalledTimes(1);
       expect(window.rzpAnalytics).toHaveBeenCalledTimes(1);
