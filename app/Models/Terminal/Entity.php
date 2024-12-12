@@ -70,6 +70,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_CLIENT_CERTIFICATE    = 'gateway_client_certificate';
     const DEVICE_ID                     = 'device_id';
     const LABEL                         = 'label';
+    const KEY_EXCHANGE_TYPE = 'key_exchange_type';
 
     const MC_MPAN                       = 'mc_mpan';
     const VISA_MPAN                     = 'visa_mpan';
@@ -241,7 +242,8 @@ class Entity extends Base\PublicEntity
         self::PLAN_ID,
         self::APP,
         self::OFFLINE,
-        self::RAZORPAY
+        self::RAZORPAY,
+        self::KEY_EXCHANGE_TYPE
     ];
 
     protected $public = [
@@ -321,6 +323,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::OFFLINE,
         self::FPX,
+        self::KEY_EXCHANGE_TYPE
     ];
 
     protected $hidden = [
@@ -431,6 +434,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_MERCHANT_ID       => 'string',
         self::GATEWAY_MERCHANT_ID2      => 'string',
         self::GATEWAY_TERMINAL_ID       => 'string',
+        self::KEY_EXCHANGE_TYPE       => 'string',
     ];
 
     const featureToGatewayMap = [
