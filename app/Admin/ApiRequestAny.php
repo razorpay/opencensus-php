@@ -47,7 +47,9 @@ class ApiRequestAny
     protected $path;
 
     protected $routeMap;
-    
+
+    protected $responseHeaders;
+
     protected $refineUrlPathExpEnable  = false;
 
     protected $shouldProcessInput       = true;
@@ -65,13 +67,21 @@ class ApiRequestAny
     const CONTENT_TYPE_MULTIPART_PREFIX = 'multipart/form-data';
 
     const ADMIN_AS_MERCHANT             = 'admin_as_merchant';
-    
+
     const URL_PATH_REFINEMENT_EXPERIMENT_NAME = "URL_PATH_REFINEMENT_EXPERIMENT_NAME";
 
     // field passed by the API in case of errors are exposed
     // dashboard handles these error in a custom way
     // by passing the data to the frontend
     const INTERNAL_ERROR_CODE = 'internal_error_code';
+
+    // true is a dummy value
+    // presence any value even false will make the key whitelisted
+    // For more details please refer working of array_intersect_key herew
+    // https://www.php.net/manual/en/function.array-intersect-key.php
+    const WHITELISTED_HEADERS_FOR_RESPONSE = [
+        'Set-Cookie'                => true,
+    ];
 
     const INTERNAL_ERROR_CODES = [
         'BAD_REQUEST_LOCKED_USER_LOGIN',
@@ -143,7 +153,7 @@ class ApiRequestAny
     {
         // Increase the time limit
         set_time_limit(600);
-    
+
         $this->refineUrlPathExpEnable = array_get($options, 'refine_url_path_exp', false);
 
         // === Mode
@@ -283,22 +293,32 @@ class ApiRequestAny
         }
     }
 
+    public function setResponseHeaders($headers) {
+        $this->responseHeaders = $headers;
+    }
+
+    public function getResponseHeaders() {
+        return $this->responseHeaders;
+    }
+
     public function processAuthHeaders() {
 
         $clientType = $this->clientType;
 
         $baUser = null;
 
-        $isAdminAsMerchant = (new AdminService())->isAdminLoggedIn();
-
-        $this->options[Headers::HEADERS][Headers::X_DASHBOARD_ADMIN_AS_MERCHANT] = $isAdminAsMerchant;
-
-        $admin = Auth::guard('api')->user();
-        if (empty($admin) === false)
+        if (empty($clientType) === false && $clientType === 'merchant')
         {
-            $this->options[Headers::HEADERS][Headers::X_DASHBOARD_ADMIN_ID] = $admin->id;
-        }
+            $isAdminAsMerchant = (new AdminService())->isAdminLoggedIn();
 
+            $this->options[Headers::HEADERS][Headers::X_DASHBOARD_ADMIN_AS_MERCHANT] = $isAdminAsMerchant;
+
+            $admin = Auth::guard('api')->user();
+            if (empty($admin) === false)
+            {
+                $this->options[Headers::HEADERS][Headers::X_DASHBOARD_ADMIN_ID] = $admin->id;
+            }
+        }
         if (empty($clientType) === false) {
 
             if ($clientType === 'merchant')
@@ -628,30 +648,30 @@ class ApiRequestAny
     {
         return round(microtime(true) * 1000);
     }
-    
+
     // Security Issue - https://razorpay.slack.com/archives/C07RF2PL03C/p1728638407016769
     public function getRefinedPath(string $path): string
     {
         $parsed = parse_url($path);
-        
+
         if (is_array($parsed))
         {
             $host = array_get($parsed, 'host', "");
             $startPath = array_get($parsed, 'path', "");
-            
+
             if ((empty($host) === false) and
                 (Str::startsWith($startPath, '/') === false))
             {
                 $startPath = "/". $startPath;
             }
-            
+
             $path = $host.$startPath;
         }
-        
+
         return $path;
     }
-    
-    
+
+
     /**
      * Fires the request to the API
      * @return array standard response
@@ -664,6 +684,7 @@ class ApiRequestAny
         $errors = [];
         $response = null;
         $httpCode = null;
+        $headersToBeAppended = null;
         $method = $method ?? Request::method();
         $currentRouteName = \Route::currentRouteName() ?? 'unknown_route';
 
@@ -674,7 +695,7 @@ class ApiRequestAny
         $apiPathName = $apiRouteCircuitBreaker->getApiPathName();
 
         $spanOptions = (new ApiRequestSpan($this->client))::getRequestSpanOptions(ApiUrl::getApiBaseUrl().$path);
-    
+
         // In some cases (for instance dashboard merchant searches)
         // $path ends up having URLs which triggers `cURL error 6: Could not resolve host`
         // because Guzzle doesn't attach $path to the base_url set above
@@ -685,11 +706,11 @@ class ApiRequestAny
             Trace::info(TraceCode::REFINED_URL_REQUEST, [
                 'path' => $path,
             ]);
-            
+
         } else {
             $path = str_replace('://', '', $path);
         }
-        
+
         $input = Request::all();
 
         $path = $this->updatePathWithQueryParams($path, $method, $input);
@@ -756,6 +777,8 @@ class ApiRequestAny
                 $clientBody = $client->getBody();
                 $responseBodySize = strlen($clientBody);
 
+                $headersToBeAppended = $this->getWhitelistedHeaders($client->getheaders());
+
                 $apiPathName = $apiRouteCircuitBreaker->getApiPathName();
 
                 $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken, $responseBodySize);
@@ -782,6 +805,8 @@ class ApiRequestAny
                     'message' => $e->getMessage() ?? "unknown_message"
                 ]);
             }
+
+            $this->setResponseHeaders($headersToBeAppended);
 
             return [null, $response, $httpCode];
         }
@@ -886,13 +911,13 @@ class ApiRequestAny
             $end_time = self::millitime();
 
             $time_taken = $end_time - $start_time;
-            
+
             $errors = ["Error in connecting to API"];
 
             $httpCode = $e->getCode() ?? null;
-    
+
             $exception = $httpCode >= 500 ? $e : null;
-            
+
             app('trace')->error(
                 TraceCode::API_CONNECTION_EXCEPTION,
                 [
@@ -929,7 +954,7 @@ class ApiRequestAny
             $httpCode = $e->getCode() ?? null;
 
             $exception = $httpCode >= 500 ? $e : null;
-            
+
             Trace::error(
                 TraceCode::API_GUZZLE_EXCEPTION,
                 [
@@ -963,9 +988,9 @@ class ApiRequestAny
             $errors = [$e->getMessage()];
 
             $httpCode = $e->getCode() ?? null;
-    
+
             $exception = $httpCode >= 500 ? $e : null;
-            
+
             Trace::error(
                 TraceCode::API_RZP_EXCEPTION,
                 [
@@ -1090,6 +1115,11 @@ class ApiRequestAny
             }
         }
 
+        if (empty($_COOKIE['admin_experience_session']) === false and isset($this->options['cookies']['admin_experience_session']) === false)
+        {
+            $this->options['cookies']['admin_experience_session'] = $_COOKIE['admin_experience_session'];
+        }
+
         //Forwarding _ga and gclid cookies for Google Analytics tracking
         if (empty($_COOKIE['_ga']) === false and isset($this->options['cookies']['_ga']) === false)
         {
@@ -1168,6 +1198,14 @@ class ApiRequestAny
         {
             $errorDescription = $exceptionData['error']['description'];
         }
+        // Handle the errors from Admin-experience-service
+        if (array_key_exists('meta', $exceptionData) === true &&
+            array_key_exists('source', $exceptionData['meta']) === true &&
+            $exceptionData['meta']['source'] === 'aes' &&
+            array_key_exists('description', $exceptionData['meta']) === true)
+        {
+            $errorDescription = $exceptionData['meta']['description'];
+        }
 
         return $errorDescription;
     }
@@ -1212,6 +1250,14 @@ class ApiRequestAny
         }
 
         return false;
+    }
+
+    private static function getWhitelistedHeaders(array $allHeaders): array
+    {
+        return array_intersect_key(
+            array_change_key_case($allHeaders),
+            array_change_key_case(self::WHITELISTED_HEADERS_FOR_RESPONSE)
+        );
     }
 
 }

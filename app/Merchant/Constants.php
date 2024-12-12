@@ -16,6 +16,7 @@ class Constants
     const COMMISSION_MODEL = 'commission_model';
     const FETCH_PARTNER_ACTIVATION_FAILED   = 'fetch_partner_activation_failed';
 
+    const AES_LOGIN_PATH   = 'twirp/rzp.adminexperienceservice.loginasmerchant.v1.AdminLoginMerchantServicePublic/Login';
     //
     // This is temporary code to get merchant waitlist
     // This code will be removed, in few weeks

@@ -8,6 +8,7 @@ use Trace;
 use Input;
 use Cache;
 use Config;
+use Cookie;
 use Session;
 use Request;
 use Response;
@@ -561,7 +562,7 @@ class AdminController extends Controller
 
     public function getMerchantLogin($id)
     {
-        $error = (new Admin\Service)->loginUsingPrimaryOwner($id);
+        list($error, $headers) = (new Admin\Service)->loginUsingPrimaryOwner($id);
 
         if (empty($error) === false)
         {
@@ -575,7 +576,7 @@ class AdminController extends Controller
             return AppResponse::jsonResponse(null);
         }
 
-        return redirect('/');
+        return redirect('/')->withHeaders($headers);
     }
 
     public function postMerchantTerminal($id)

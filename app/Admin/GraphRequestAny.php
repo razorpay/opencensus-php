@@ -4,6 +4,7 @@ namespace App\Admin;
 
 use App\User;
 use Auth;
+use Route;
 use Config;
 use Request;
 use Session;
@@ -47,6 +48,8 @@ class GraphRequestAny
 
     protected $data;
 
+    protected $clientType;
+
     protected $headers;
 
     private static function getWhitelistedHeaders(array $allHeaders): array
@@ -72,6 +75,33 @@ class GraphRequestAny
         $this->trace = $app['trace'];
 
         $this->processHeaders();
+
+        if (empty($data['client_type']) === true)
+        {
+            $routeName = Route::currentRouteName();
+
+            if (in_array($routeName, ['merchant', 'admin', 'extension_merchant', 'oauth_merchant', 'oauth_user_logout'], true) === false)
+            {
+                // Default
+                $this->clientType = 'user';
+            }
+            else
+            {
+                if (in_array($routeName,  ['oauth_merchant', 'oauth_user_logout']))
+                {
+                    $this->clientType = 'merchant';
+                }
+                else
+                {
+                    $this->clientType = $routeName;
+                }
+            }
+        }
+        else
+        {
+            $this->clientType = $data['client_type'];
+        }
+
     }
 
     public function send()
@@ -200,6 +230,23 @@ class GraphRequestAny
         if (app('request.ctx')->isOauthRequest() === true)
         {
             $defaultHeaders['X-Mobile-Oauth'] = 'true';
+        }
+
+        $clientType = $this->clientType;
+
+        $baUser = null;
+
+        if (empty($clientType) === false && $clientType === 'merchant')
+        {
+            $isAdminAsMerchant = (new AdminService())->isAdminLoggedIn();
+
+            $this->options[Headers::HEADERS][Headers::X_DASHBOARD_ADMIN_AS_MERCHANT] = $isAdminAsMerchant;
+
+            $admin = Auth::guard('api')->user();
+            if (empty($admin) === false)
+            {
+                $this->options[Headers::HEADERS][Headers::X_DASHBOARD_ADMIN_ID] = $admin->id;
+            }
         }
 
         $this->headers = array_merge($defaultHeaders, $this->headers);

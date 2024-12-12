@@ -33,10 +33,12 @@ use App\Trace\TraceCode;
 use App\MerchantDetails;
 use App\Mailers\MiscMailer;
 use App\Providers\ApiGuard;
+use App\Merchant\Constants;
 use App\Admin\ApiRequestAny;
 use OneLogin\Saml2 as SamlAuth;
 use App\Session as SessionTable;
 use GuzzleHttp\Client as Guzzle;
+use Razorpay\Api\Errors\ErrorCode;
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\Error as ApiError;
 use App\Constants\Constants as AppConstants;
@@ -453,13 +455,16 @@ class Service extends Base\Service
      * Logs the admin in to the user account of the primary owner
      *
      * @param  $merchantId ineteger
-     * @return  Status
+     *
+     * @return  array
      */
     public function loginUsingPrimaryOwner($merchantId)
     {
         $admin = Auth::guard('api')->user();
 
         $error = [];
+
+        $headers = [];
 
         $users = (new Merchant\Service)->getMerchantUsers($merchantId);
 
@@ -472,7 +477,7 @@ class Service extends Base\Service
         {
             $error[] = self::PRIMARY_LOGIN_ERROR;
 
-            return $error;
+            return [$error, $headers];
         }
 
         try
@@ -481,7 +486,7 @@ class Service extends Base\Service
 
             if (empty($error) === false)
             {
-                return $error;
+                return [$error, $headers];
             }
 
             $this->app['session']->put('dashboard_user_payload', $user);
@@ -489,6 +494,15 @@ class Service extends Base\Service
             Auth::login($user, false);
 
             (new User\Service)->switchCurrentMerchantForUser($merchantId, $user);
+
+            list($error, $res, $headers) = $this->loginToAdminExperienceService($merchantId);
+
+            if (empty($error) === false)
+            {
+                $this->trace->error(TraceCode::ADMIN_AS_MERCHANT, ['error' => $error]);
+
+                return [$error, $headers];
+            }
 
             $traceData = [
                 'org_id'            => $admin->org_id,
@@ -503,7 +517,7 @@ class Service extends Base\Service
             $error[] = self::PRIMARY_LOGIN_ERROR;
         }
 
-        return $error;
+        return [$error, $headers];
     }
 
     public function getAdminActivity($id)
@@ -2050,5 +2064,63 @@ class Service extends Base\Service
 
         }
         return ["success"=>$success, "failure"=> $failure];
+    }
+    public function loginToAdminExperienceService($merchantId)
+    {
+
+        $admin = Auth::guard('api')->user();
+
+        $input = Input::all();
+
+        $adminId = "";
+
+        if (!key_exists('ticketID', $input))
+        {
+            return [null, [], []];
+        }
+
+        if (empty($admin) === false)
+        {
+            $adminId = $admin->id;
+        }
+
+        $requestBody = [
+            "merchant"            => [
+                "id" => $merchantId
+            ],
+            "admin"               => [
+                "id" => $adminId
+            ],
+            "ticket_id"           => $input['ticketID'],
+            "reasoning"           => !key_exists('reasoning', $input) ? "" : $input['reasoning'],
+            "additional_comments" => !key_exists('additionalComments', $input) ? "" : $input['additionalComments'],
+        ];
+
+        $request = new \App\Admin\ApiRequestAny(
+            $options=[
+                'client_type'           => 'admin',
+                'headers' => [
+                    'x-admin-id'        => $adminId,
+                    'x-Merchant-Id'     => $merchantId
+                ]
+            ]);
+
+        list($error, $data, $statusCode) = $request->processInput($requestBody)->send(Constants::AES_LOGIN_PATH, 'POST');
+
+        if($statusCode !== 200) {
+            throw new BadRequestError(
+                'Admin Login Failed',
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+        $this->trace->info(TraceCode::AES_LOGIN, [
+            'current_merchant_id' => $error,
+            'data'                => $data,
+            'response'            => $data,
+            'input'               => $input,
+        ]);
+
+        return [$error, $data, $request->getResponseHeaders()];
     }
 }

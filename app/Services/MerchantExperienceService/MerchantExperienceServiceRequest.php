@@ -274,20 +274,20 @@ class MerchantExperienceServiceRequest {
      */
     public function processAuthHeaders(): static
     {
-        $isAdminAsMerchant = $this->isAdminLoggedIn();
-
-        $this->requestOptions[self::Headers][self::HeaderDashboardAdminAsMerchant] = $isAdminAsMerchant;
-
-        $admin = Auth::guard('api')->user();
-
-        if (empty($admin) === false)
-        {
-            $this->requestOptions[self::Headers][self::HeaderDashboardAdminId] = $admin->id;
-        }
-
         if ($this->clientType === self::ClientTypeMerchant)
         {
             $this->processMerchantClientHeaders();
+
+            $isAdminAsMerchant = $this->isAdminLoggedIn();
+
+            $this->requestOptions[self::Headers][self::HeaderDashboardAdminAsMerchant] = $isAdminAsMerchant;
+
+            $admin = Auth::guard('api')->user();
+
+            if (empty($admin) === false)
+            {
+                $this->requestOptions[self::Headers][self::HeaderDashboardAdminId] = $admin->id;
+            }
 
             $this->trace->info(TraceCode::ADMIN_LOGGED_IN_AS_MERCHANT, [
                 self::ADMIN_AS_MERCHANT => $isAdminAsMerchant
