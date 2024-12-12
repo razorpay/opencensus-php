@@ -9,6 +9,7 @@ import * as analytics from 'merchant/views/Settlements/Settlements/analytics';
 import SettlementsHeaderV2 from 'merchant/views/Settlements/components/SettlementsHeaderV2';
 import * as modals from 'merchant_common/reducers/modals';
 import { render, screen, waitFor, updateUseI18ServiceSpy } from 'test-utils';
+import { docsUrl } from 'common/utils/constants';
 
 jest.mock('merchant/views/TicketSupport/utils', () => ({
   CreateTicketEmitter: {
@@ -205,7 +206,7 @@ describe('SettlementsHeaderV2', () => {
     };
 
     render(<SettlementsHeaderV2 />, { initialState });
-    const url = 'https://razorpay.com/docs/payments/settlements/';
+    const url = docsUrl.SETTLEMENTS_DOC_URL;
     await waitFor(() => {
       const docLink = screen.getByRole('link', { name: 'Documentation' });
       expect(docLink).toHaveAttribute('href', url);

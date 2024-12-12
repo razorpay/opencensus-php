@@ -78,6 +78,8 @@ jest.mock('merchant/views/Settings/Applications', () => ({
   default: () => <>Applications component</>,
 }));
 
+const isOrgAllowedFunctionality = jest.fn();
+
 const renderApp = async ({ pathname, user } = {}) => {
   const renderOutput = render(<WebsiteAndAppSettings />, {
     initialEntries: [pathname ?? ROUTES_INFO.BUSINESS_WEBSITE_SETTINGS],
@@ -85,6 +87,7 @@ const renderApp = async ({ pathname, user } = {}) => {
       session: {
         user: {
           isAccountAndSettingsRevampEnabled: true,
+          isOrgAllowedFunctionality,
           isWebsiteComplianceFlowEnabled: true,
           id: 'K16F51VyNzg75l',
           ...user,

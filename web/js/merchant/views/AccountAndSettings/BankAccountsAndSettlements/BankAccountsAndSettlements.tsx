@@ -28,6 +28,9 @@ import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 import { useValidatePermissions } from 'merchant/helpers/permissions/utils';
 import { PERMISSIONS } from 'merchant/helpers/permissions/constant';
+import { getDocUrl } from '../WebsiteAppSettings/WebsiteAndAppSettings';
+import DocsLink from 'merchant/components/DocsLink';
+import { Box } from 'merchant_common/views/Reports/components';
 
 const { BANK_ACCOUNT_DETAILS, SETTLEMENT_DETAILS } = ROUTES_INFO;
 const BankAccountDetails = lazy(
@@ -116,6 +119,10 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
           >
             <NavLink to={SETTLEMENT_DETAILS}>Settlement details</NavLink>
           </ShowWhen>
+          <Box display="inline">
+            <DocsLink title="Documentation" isTab shouldApplyLineHeight shouldFloatRight />
+          </Box>
+           
         </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>

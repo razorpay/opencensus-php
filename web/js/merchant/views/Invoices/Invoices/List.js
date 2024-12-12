@@ -273,13 +273,7 @@ class InvoicesListContainer extends ListContainer {
             <ShowWhen additionalCondition={(_user) => !_user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.INVOICE} />
             </ShowWhen>
-
-            <ShowWhen
-              additionalCondition={() => !isConfigTagEnabled('documentation.documentation')}
-            >
-              <DocsLink url="https://razorpay.com/docs/invoices/" />
-            </ShowWhen>
-
+            <DocsLink url="CREATE_INVOICE_DOC_URL" />
             <ShowWhen
               additionalCondition={(_user) =>
                 (mode !== 'live' || !_user.isRejected) && _user.isAllowedEdit('invoices')

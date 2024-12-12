@@ -37,6 +37,7 @@ import { endOfDay, getFromTime } from 'merchant/views/Transactions/v2/common/uti
 import BottomOverview from './BottomOverview';
 import DowntimeBanner from './DowntimeBanner';
 import TopOverviewContainer from './TopOverview';
+import DocsLink from 'merchant/components/DocsLink';
 
 const LandingAnalytics = ({
   mode,
@@ -222,6 +223,7 @@ const LandingAnalytics = ({
               Refresh
             </Link>
           ) : null}
+          <DocsLink url="DASHBOARD_TRANSACTION_URL_DOC" shouldUseBladeLink />
         </Box>
         <TopOverviewContainer {...topOverviewProps} />
         <BottomOverview {...bottomOverviewProps} />

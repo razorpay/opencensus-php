@@ -5,6 +5,7 @@ import styled from 'styled-components';
 
 import { trackTopHeadingsClicked } from 'merchant/views/PartnerDashboard/PartnerPlaybook/analytics';
 import { ProgramSection } from 'merchant/views/PartnerDashboard/PartnerPlaybook/types';
+import DocsLink from 'merchant/components/DocsLink';
 
 const StyledNavLink = styled.div(
   ({ theme, $isActive }: { theme: Theme; $isActive: boolean }) => `
@@ -35,20 +36,30 @@ const PlaybookNavLinks = ({ sectionItems }: PlaybookNavLinksProps): JSX.Element 
     <Box>
       <Box marginTop="spacing.11">
         <Divider />
-        <Box marginLeft="spacing.7" display="flex" flexDirection="row" gap="spacing.9">
-          {tabsData.map(({ onClick, title, hash, isActive }) => (
-            <StyledNavLink $isActive={isActive} onClick={onClick} key={hash}>
-              <Text
-                color={
-                  isActive ? 'interactive.text.primary.subtle' : 'interactive.text.gray.normal'
-                }
-                weight="semibold"
-                size="medium"
-              >
-                {title}
-              </Text>
-            </StyledNavLink>
-          ))}
+        <Box display="flex" justifyContent="space-between">
+          <Box
+            marginLeft="spacing.7"
+            display="flex"
+            flexDirection="row"
+            gap={{ base: 'spacing.9', l: 'spacing.9', xs: 'spacing.0' }}
+          >
+            {tabsData.map(({ onClick, title, hash, isActive }) => (
+              <StyledNavLink $isActive={isActive} onClick={onClick} key={hash}>
+                <Text
+                  color={
+                    isActive ? 'interactive.text.primary.subtle' : 'interactive.text.gray.normal'
+                  }
+                  weight="semibold"
+                  size="medium"
+                >
+                  {title}
+                </Text>
+              </StyledNavLink>
+            ))}
+          </Box>
+          <Box display="flex" alignItems="center">
+            <DocsLink title="Documentation" url="PLAYBOOK_URL" shouldApplyLineHeight />
+          </Box>
         </Box>
         <Divider />
       </Box>

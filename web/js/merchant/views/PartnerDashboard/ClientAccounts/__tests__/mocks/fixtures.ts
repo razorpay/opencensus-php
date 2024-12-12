@@ -9,4 +9,5 @@ export const defaultUserExtra = {
   isPartnershipFUX: true,
   instantActivation,
   isPartnerAgentRole: false,
+  isOrgAllowedFunctionality: () => true,
 };

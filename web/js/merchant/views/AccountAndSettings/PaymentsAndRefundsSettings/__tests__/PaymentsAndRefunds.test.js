@@ -86,6 +86,8 @@ jest.mock('merchant/views/AccountAndSettings/styled', () => ({
   StyledConfiguration: () => <>Component</>,
 }));
 
+const isOrgAllowedFunctionality = jest.fn();
+
 const renderApp = async ({ pathname, user } = {}) => {
   const renderOutput = render(<PaymentsAndRefunds />, {
     initialEntries: [pathname ?? ROUTES_INFO.BALANCES],
@@ -94,6 +96,7 @@ const renderApp = async ({ pathname, user } = {}) => {
         user: {
           isAccountAndSettingsRevampEnabled: true,
           id: 'K16F51VyNzg75l',
+          isOrgAllowedFunctionality,
           ...user,
         },
       },

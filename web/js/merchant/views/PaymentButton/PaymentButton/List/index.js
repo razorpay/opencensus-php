@@ -182,7 +182,7 @@ class PaymentButtonsList extends ListContainer {
               <TakeATourButton feature={RZPFeatures.PB} onSuccess={this.resetCopyPasteCodeStatus} />
             </ShowWhen>
 
-            <DocsLink url="https://razorpay.com/docs/payment-button/" />
+            <DocsLink url="CREATE_PAYMENT_BUTTON_DOC_URL" />
 
             {isRoleAllowedEdit && user.isPaymentButtonEnabledByRazorX && (
               <span class="cta-container">

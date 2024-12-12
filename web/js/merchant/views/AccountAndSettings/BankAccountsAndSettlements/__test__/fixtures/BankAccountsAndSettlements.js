@@ -24,6 +24,8 @@ jest.mock('merchant/views/Account/Profile/components/SettlementDetails', () => (
   default: () => <div>SettlementDetails</div>,
 }));
 
+const isOrgAllowedFunctionality = jest.fn();
+
 export const renderApp = ({ user, pathname } = {}) => {
   return render(<BankAccountsAndSettlements />, {
     initialEntries: [pathname ?? ROUTES_INFO.BANK_ACCOUNT_DETAILS],
@@ -31,6 +33,7 @@ export const renderApp = ({ user, pathname } = {}) => {
       session: {
         user: {
           isAccountAndSettingsRevampEnabled: true,
+          isOrgAllowedFunctionality,
           ...user,
         },
       },

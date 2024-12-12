@@ -23,6 +23,7 @@ import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { withRouter } from 'common/deprecated/withRouter';
+import DocsLink from 'merchant/components/DocsLink';
 
 @withRouter
 @connect(
@@ -177,6 +178,8 @@ class ItemsListContainer extends ListContainer {
                 <TakeATourButton feature={RZPFeatures.INVOICE} />
               </ShowWhen>
             )}
+
+            <DocsLink url="CREATE_ITEM_DOC_URL" />
 
             <ShowWhen
               additionalCondition={(user) =>

@@ -1,3 +1,4 @@
+import { utmParam } from "common/utils/constants";
 export const SHIPROCKET_DASHBOARD_LINK =
   'https://app.shiprocket.in/register?utm_source=Razorpay&utm_medium=In-Product&utm_campaign=PaymentPages&utm_content=Razorpay-In-product';
 export const MAX_ROWS = 50000;
@@ -17,7 +18,7 @@ export const BATCH_UPLOAD_POINTS = [
   'The number of rows should not exceed 50000.',
 ];
 
-export const CREATE_PP_DOC_URL = 'https://razorpay.com/docs/payment-pages/';
+export const CREATE_PP_DOC_URL = `https://razorpay.com/docs/payments/payment-pages/create/${utmParam}`;
 export const CREATE_BATCH_PP_DOC_URL = 'https://razorpay.com/docs/payments/payment-pages/batch';
 
 export const BATCH_PAYMENT_PAGES_BASE_URL = '/paymentpages/batchpaymentpages';

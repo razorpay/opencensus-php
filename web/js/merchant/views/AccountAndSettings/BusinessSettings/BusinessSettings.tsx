@@ -35,6 +35,7 @@ import {
 import { useGSTUpdateExperiment } from './Tabs/GSTDetails/utils';
 import { BusinessSettingsProps } from './typings';
 import { isBillMeMerchant } from 'merchant/utils/omniUtils';
+import DocsLink from 'merchant/components/DocsLink';
 
 const AccountDetails = lazy(
   () => import(/* webpackChunkName: "AccountDetails" */ './Tabs/AccountDetails/v1'),
@@ -175,6 +176,7 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
           >
             <NavLink to={ROUTES_INFO.STORE_SETTINGS}>Store Settings</NavLink>
           </ShowWhen>
+          <DocsLink title="Documentations" isTab shouldUseBladeLink />
         </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>

@@ -30,6 +30,7 @@ const isPartner = jest.fn();
 const isPartnerIntent = jest.fn();
 const isFeatureEnabled = jest.fn();
 const instantActivation = { isWhitelistFlow: false };
+const isOrgAllowedFunctionality = jest.fn();
 
 const state = {
   session: {
@@ -41,6 +42,7 @@ const state = {
       isPartnershipForCapitalEnabled: true,
       isPartnershipFUX: true,
       instantActivation,
+      isOrgAllowedFunctionality,
     },
   },
 };

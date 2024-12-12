@@ -42,6 +42,8 @@ import {
   WebsiteAppSettingsTitles,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import { useSplitzService } from 'common/splitz';
+import DocsLink from 'merchant/components/DocsLink';
+import { Box } from 'merchant_common/views/Reports/components';
 
 const APIKeys = lazy(() => import(/* webpackChunkName: "APIKeysTab" */ './Tabs/ApiKeys'));
 
@@ -63,6 +65,11 @@ const Webhooks = lazy(
 const Applications = lazy(
   () => import(/* webpackChunkName: "ApplicationsTab" */ 'merchant/views/Settings/Applications'),
 );
+
+export const getDocUrl = (currentRouteParam: Object, docObj: Object): string => {
+  const currentParam = Object.values(currentRouteParam)[0];
+  return docObj[currentParam];
+};
 
 const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element => {
   const {
@@ -155,6 +162,9 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
           >
             <NavLink to={ROUTES_INFO.APPLICATIONS}>Applications</NavLink>
           </ShowWhen>
+          <Box display="inline">
+            <DocsLink title="Documentation" isTab shouldApplyLineHeight shouldFloatRight />
+          </Box>
         </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>

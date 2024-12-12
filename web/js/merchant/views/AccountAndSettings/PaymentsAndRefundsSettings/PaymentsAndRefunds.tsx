@@ -42,6 +42,8 @@ import { useSplitzService } from 'common/splitz';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 import { useValidatePermissions } from 'merchant/helpers/permissions/utils';
 import { PERMISSIONS } from 'merchant/helpers/permissions/constant';
+import DocsLink from 'merchant/components/DocsLink';
+import { Box } from 'merchant_common/views/Reports/components';
 
 const feature = 'allow_cfb_international';
 
@@ -166,6 +168,9 @@ const PaymentsAndRefundsSettings = ({
           <ShowWhen additionalCondition={(user): boolean => isFailedPaymentRetryEnabled(user)}>
             <NavLink to={ROUTES_INFO.FAILED_PAYMENTS_RETRY}>Failed payments recovery</NavLink>
           </ShowWhen>
+          <Box display="inline">
+            <DocsLink title="Documentation" isTab shouldApplyLineHeight shouldFloatRight />
+          </Box>
         </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>

@@ -47,6 +47,8 @@ jest.mock('merchant/views/AccountAndSettings/InternationalSettings/ExporterRewar
   default: () => <>Exporter rewards</>,
 }));
 
+const isOrgAllowedFunctionality = jest.fn();
+
 const renderApp = ({ pathname, user } = {}) => {
   return render(<InternationalSettings location={{ pathname: pathname ?? ROUTES_INFO.FIRS }} />, {
     initialEntries: [pathname ?? ROUTES_INFO.FIRS],
@@ -54,6 +56,7 @@ const renderApp = ({ pathname, user } = {}) => {
       session: {
         user: {
           isAccountAndSettingsRevampEnabled: true,
+          isOrgAllowedFunctionality,
           ...user,
         },
         org: {},

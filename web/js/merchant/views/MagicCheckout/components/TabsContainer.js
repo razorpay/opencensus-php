@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
+import { NavLink, Navigate, Route, Routes, useParams } from 'react-router-dom';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
@@ -145,7 +145,6 @@ const RouteContainer = ({
     if (!redirectPath) {
       redirectPath = item.path;
     }
-
     return (
       <NavLink key={item.path} to={item.path}>
         {getTabName(item.tabName, dashboardView, abExperiments)}

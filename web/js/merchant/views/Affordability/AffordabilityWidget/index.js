@@ -85,7 +85,7 @@ const AffordabilityWidget = (props) => {
       extra={
         <div className="aff-product-nav">
           <TakeATourButton feature={RZPFeatures.AFFORDABILITY_WIDGET} />
-          <DocsLink url="https://razorpay.com/docs/payments/payment-gateway/affordability/widget/" />
+          <DocsLink url="AFFORDABILITY_DOC_URL" />
 
           {affordability.enabled ? (
             <Settings

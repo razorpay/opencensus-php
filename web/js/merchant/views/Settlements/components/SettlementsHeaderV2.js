@@ -56,9 +56,10 @@ import {
   Documentation,
   SettlementCycle,
 } from './styledUtils';
+import { docsUrl } from 'common/utils/constants';
 
 const SETTLEMENT_DOC_LINK = {
-  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: 'https://razorpay.com/docs/payments/settlements/',
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: docsUrl.SETTLEMENTS_DOC_URL,
   [ORG_CUSTOM_CODE_MAP.CURLEC]: 'https://curlec.com/docs/payments/settlements',
 };
 

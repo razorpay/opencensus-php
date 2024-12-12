@@ -50,7 +50,7 @@ class TransfersListContainer extends ListContainer {
           <>
             <TakeATourButton feature={RZPFeatures.ROUTE} />
 
-            <DocsLink url="https://razorpay.com/docs/route/" />
+            <DocsLink url="ROUTE_TRANSFER_DOC_URL" />
 
             {user.isDirectTransferEnabled && (
               <NavLink class="btn btn-primary" to="/route/transfers/direct_transfer">

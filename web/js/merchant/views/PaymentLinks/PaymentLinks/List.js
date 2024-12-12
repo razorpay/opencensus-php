@@ -266,7 +266,7 @@ class PaymentLinksContainer extends ListContainer {
     if (users.isPaymentlinksV2Enabled) {
       docsLinkProps.url = users.isPaymentlinksV2CompatEnabled
         ? 'https://razorpay.com/docs/api/payment-links/v1/'
-        : 'https://razorpay.com/docs/payment-links/api/new/';
+        : 'https://razorpay.com/docs/payments/payment-links/create/?utm_source=razorpay-dashboard&utm_medium=docs-link&utm_campaign=dash-exp';
       docsLinkProps.title = (
         <span>
           Documentation <span class="badge bg-success m-r hidden-xs">new</span>

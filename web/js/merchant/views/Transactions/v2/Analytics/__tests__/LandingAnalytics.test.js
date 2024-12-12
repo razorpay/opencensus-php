@@ -7,6 +7,8 @@ import {
 } from './mocks/fixtures/LandingAnalytics';
 import { useMobile } from 'common/hooks/useMobile';
 
+const isOrgAllowedFunctionality = jest.fn();
+
 describe('LandingAnalytics', () => {
   beforeEach(() => {
     useMobile.mockReturnValue(false);
@@ -102,6 +104,7 @@ describe('LandingAnalytics', () => {
         mode: 'live',
         user: {
           isTransactionsV2Enabled: true,
+          isOrgAllowedFunctionality,
           merchant: {
             currency: 'INR',
           },

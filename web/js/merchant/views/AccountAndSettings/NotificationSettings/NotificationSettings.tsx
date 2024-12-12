@@ -27,6 +27,8 @@ import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import Loader from 'common/components/Loader';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
+import DocsLink from 'merchant/components/DocsLink';
+import { Box } from 'merchant_common/views/Reports/components';
 
 const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | null => {
   const { abExperiments } = useSplitzService();
@@ -74,6 +76,9 @@ const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | n
           >
             <NavLink to={ROUTES_INFO.WHATSAPP_NOTIFICATIONS}>WhatsApp</NavLink>
           </ShowWhen>
+          <Box display="inline">
+            <DocsLink title="Documentation" isTab shouldApplyLineHeight shouldFloatRight />
+          </Box>
         </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>

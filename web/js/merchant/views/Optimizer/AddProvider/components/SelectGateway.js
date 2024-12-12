@@ -22,6 +22,7 @@ import {
 } from 'merchant/views/Navigator/constants';
 
 import { StyledProviderItem, StyledLogoWrapper, StyledProviderLogo, StyledDivider } from './styled';
+import DocsLink from 'merchant/components/DocsLink';
 
 const GATEWAY_CATEGORY_ICON = {
   aggregators: CpuIcon,
@@ -187,7 +188,7 @@ const SelectGateway = (props) => {
       display="flex"
       flexDirection="column"
       padding="spacing.7"
-      gap={isFormEdit ? 'spacing.9' : 'spacing.6'}
+      gap={isFormEdit ? 'spacing.4' : 'spacing.6'}
       backgroundColor="surface.background.gray.intense"
     >
       <Box display="flex" justifyContent="space-between">
@@ -241,6 +242,9 @@ const SelectGateway = (props) => {
             )}
           </Box>
         )}
+      </Box>
+      <Box display="flex" justifyContent="end">
+        <DocsLink url="OPTIMIZER_DOC_URL" />
       </Box>
       {selectedProvider ? (
         <Box display="flex" flexDirection="column" gap="spacing.7">

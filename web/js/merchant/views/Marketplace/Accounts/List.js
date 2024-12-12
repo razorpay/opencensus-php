@@ -338,7 +338,7 @@ class AccountsListContainer extends ListContainer {
               <TakeATourButton feature={RZPFeatures.ROUTE} />
             </ShowWhen>
 
-            <DocsLink title="Documentation" url="https://razorpay.com/docs/route/" />
+            <DocsLink title="Documentation" url="ROUTE_ACCOUNT_DOC_URL" />
 
             <button type="button" className="btn btn-default" onClick={this.exportAccountsCSV}>
               <i className="i i-download" />

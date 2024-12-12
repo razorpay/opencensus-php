@@ -10,6 +10,7 @@ const isPartner = (x) => x !== 'pure_platform';
 const isPartnerIntent = jest.fn();
 const isFeatureEnabled = jest.fn();
 const instantActivation = { isWhitelistFlow: false };
+const isOrgAllowedFunctionality = jest.fn();
 const state = {
   session: {
     user: {
@@ -23,6 +24,7 @@ const state = {
       isPartnershipForCapitalEnabled: true,
       isPartnershipFUX: true,
       instantActivation,
+      isOrgAllowedFunctionality,
     },
   },
 };

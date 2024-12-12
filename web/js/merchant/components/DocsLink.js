@@ -4,20 +4,41 @@ import ShowWhen from './ShowWhen';
 import { getUser } from 'merchant/store';
 import { useI18Service } from 'common/i18';
 import { ExternalLinkIcon, Link } from '@razorpay/blade/components';
+import { docsUrl, docsUrlTabs } from 'common/utils/constants';
 
 export default function DocsLink({
   url,
   title = 'Documentation',
   style = {},
   onClick,
+  isTab = false,
   shouldUseBladeLink = false,
+  shouldApplyLineHeight = false,
+  shouldFloatRight = false,
 }) {
   const { isConfigTagEnabled } = useI18Service();
   if (typeof title === 'string') {
     title = `${title}`;
   }
 
-  const modifiedURL = getCustomURL(url);
+  if (isTab) {
+    url = window.location.pathname.replace('/app', '');
+  }
+
+  if (shouldApplyLineHeight) {
+    style = { ...style, lineHeight: '2rem' };
+  }
+
+  if (shouldFloatRight) {
+    style = { ...style, float: 'right' };
+  }
+
+  const modifiedURL = getCustomURL(url, isTab);
+
+  if (!modifiedURL && isTab) {
+    return null;
+  }
+
   return (
     <ShowWhen
       additionalCondition={(user) =>
@@ -63,11 +84,14 @@ const ORG_TO_URL_MAPPING = {
  * https://${org}-docs.razorpay.com/${path}
  **/
 
-export function getCustomURL(url) {
+export function getCustomURL(url, isTab = false) {
   const user = getUser();
   const orgCustomCode = user.orgCustomCode;
 
-  if (user.isOrgRZP) return url;
+  if (user.isOrgRZP) {
+    return isURL(url) ? url : isTab ? docsUrlTabs[url] : docsUrl[url];
+  }
+
   if (user.isOrgCurlec) {
     return url ? url.replace(ORG_TO_URL_MAPPING.rzp, ORG_TO_URL_MAPPING[orgCustomCode]) : url;
   }
@@ -88,3 +112,12 @@ export const DocLink = (props) => {
     </a>
   );
 };
+
+function isURL(str) {
+  try {
+    new URL(str);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}

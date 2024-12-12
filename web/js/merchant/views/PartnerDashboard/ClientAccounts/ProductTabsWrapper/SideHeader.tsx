@@ -1,11 +1,12 @@
 import React from 'react';
-import { Button, Link, PlusIcon } from '@razorpay/blade/components';
+import { Button, Link, PlusIcon, Box } from '@razorpay/blade/components';
 
 import { I18ContextStateType } from 'common/i18/types';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { ADD_NEW_MERCHANT_ELIGIBLE_ROLES } from 'merchant/views/PartnerDashboard/constants';
 
 import useProductActions from './hooks/useProductActions';
+import DocsLink from 'merchant/components/DocsLink';
 
 type SideHeaderProps = {
   i18: I18ContextStateType;
@@ -24,6 +25,9 @@ const SideHeader = ({ i18, isPlatformPartnerWithPGInviteFlow }: SideHeaderProps)
           // TODO v2: enable Share Referral Link for isPlatformPartnerWithPGInviteFlow
         }
       >
+        <Box display="inline" paddingRight="spacing.7">
+          <DocsLink isTab shouldUseBladeLink />
+        </Box>
         <Link onClick={handleShareReferralLink} variant="button">
           Share Referral Link
         </Link>

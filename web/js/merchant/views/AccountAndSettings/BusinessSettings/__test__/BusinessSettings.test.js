@@ -67,6 +67,8 @@ useGSTUpdateExperimentSpy.mockReturnValue({
   isGSTUpdateEnabled: false,
 });
 
+const isOrgAllowedFunctionality = jest.fn();
+
 const renderApp = ({ user, pathname } = {}) => {
   return render(<BusinessSettings />, {
     initialEntries: [pathname ?? ROUTES_INFO.ACCOUNT_DETAILS],
@@ -74,6 +76,7 @@ const renderApp = ({ user, pathname } = {}) => {
       session: {
         user: {
           isAccountAndSettingsRevampEnabled: true,
+          isOrgAllowedFunctionality,
           ...user,
         },
         org: {},

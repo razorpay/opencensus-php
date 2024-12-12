@@ -136,7 +136,7 @@ class QRCodesListContainer extends ListContainer {
               onAbort={() => track.tourStatus(false)}
             />
 
-            <DocsLink url="https://razorpay.com/docs/qr-codes/" onClick={track.docs} />
+            <DocsLink url="CREATE_QR_CODE" onClick={track.docs} />
             <ShowWhen additionalCondition={(user) => user.isAllowedEdit('qr_codes')}>
               <Box display="inline-block">
                 <Button

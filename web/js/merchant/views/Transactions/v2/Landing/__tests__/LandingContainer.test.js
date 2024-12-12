@@ -1,6 +1,8 @@
 import { screen, render } from 'test-utils';
 import { LandingContainer } from 'merchant/views/Transactions/v2/Landing/Landing';
 
+const isOrgAllowedFunctionality = jest.fn();
+
 const renderContainer = (tags = []) => {
   return render(<LandingContainer />, {
     initialState: {
@@ -8,6 +10,7 @@ const renderContainer = (tags = []) => {
         user: {
           isAuthenticated: true,
           isAllowedView: () => true,
+          isOrgAllowedFunctionality,
           tags,
         },
       },

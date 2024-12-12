@@ -16,6 +16,8 @@ jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
   isCheckoutV2SettingsAllowed: jest.fn(),
 }));
 
+const isOrgAllowedFunctionality = jest.fn();
+
 jest.mock('merchant/views/AccountAndSettings/styled', () => ({
   __esModule: true,
   ...jest.requireActual('merchant/views/AccountAndSettings/styled'),
@@ -43,6 +45,7 @@ const renderApp = ({ pathname, user } = {}) => {
       session: {
         user: {
           isAccountAndSettingsRevampEnabled: true,
+          isOrgAllowedFunctionality,
           ...user,
         },
         org: {},

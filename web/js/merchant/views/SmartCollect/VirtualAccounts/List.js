@@ -259,7 +259,7 @@ class VirtualAccountsListContainer extends ListContainer {
             />
 
             <DocsLink
-              url="https://razorpay.com/docs/smart-collect/"
+              url="SMARTCOLLECT_DOC_URL"
               onClick={() => {
                 this.track('docs');
               }}

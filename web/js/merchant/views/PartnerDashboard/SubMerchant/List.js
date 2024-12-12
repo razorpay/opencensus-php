@@ -31,6 +31,7 @@ import AddMerchant from './AddMerchant';
 import { trackAcceptedInvitesClick, trackAllInvitesClick } from './analytics';
 import { INVITE_MERCHANT_STEPS } from './components/InviteMerchantModal/constants';
 import InviteNavLinks from './components/InviteNavLinks';
+import DocsLink from 'merchant/components/DocsLink';
 
 const AllInvitesTable = lazy(() =>
   import(/* webpackChunkName: "AllInvitesTable" */ './components/AllInvitesTable'),
@@ -310,6 +311,7 @@ class SubMerchantsList extends Component {
           tabsData={tabsData}
           extra={
             <>
+              <DocsLink url="AFFILIATE_ACCOUNT_PAYMENT" />
               <ShowWhen
                 additionalCondition={
                   (currentUser) =>

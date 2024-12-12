@@ -31,6 +31,7 @@ import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import Loader from 'common/components/Loader';
 import lazy from 'merchant/routes/LazyLoader';
 import { withRouter } from 'common/deprecated/withRouter';
+import DocsLink from 'merchant/components/DocsLink';
 
 const TrustedBadge = lazy(
   () => import(/* webpackChunkName: "BankAccountDetails" */ 'merchant/views/Account/TrustedBadge'),
@@ -102,6 +103,7 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
           >
             <NavLink to={ROUTES_INFO.TRUSTED_BADGE}>Trusted Badge</NavLink>
           </ShowWhen>
+          <DocsLink title="Documentation" isTab shouldApplyLineHeight shouldFloatRight />
         </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>

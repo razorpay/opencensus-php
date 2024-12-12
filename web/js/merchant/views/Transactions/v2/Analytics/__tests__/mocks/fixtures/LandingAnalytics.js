@@ -58,6 +58,7 @@ const mockFetchPaymentsData = jest.fn();
 const mockFetchDisputesData = jest.fn();
 const mockFetchFailedPaymentsData = jest.fn();
 const mockFetchSuccessRateData = jest.fn();
+const isOrgAllowedFunctionality = jest.fn();
 
 jest.mock('merchant/views/Transactions/v2/Analytics/hooks', () => ({
   usePaymentsData: () => ({
@@ -114,6 +115,7 @@ const renderApp = ({ session, mode = 'live' } = {}) => {
         mode,
         user: {
           isTransactionsV2Enabled: true,
+          isOrgAllowedFunctionality,
           merchant: {
             currency: 'INR',
           },

@@ -1,9 +1,10 @@
 /* eslint-disable */
 import React from 'react';
 import { NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom';
-import { StyledTab, TabsHeader } from './styled';
+import { StyledTab, TabsContainer, TabsHeader } from './styled';
 import { TabsPropType } from './types';
 import { Box, Text } from 'merchant_common/views/Reports/components';
+import DocsLink from 'merchant/components/DocsLink';
 
 const Tab = ({ children, to, exact }: any) => {
   const { pathname } = useLocation();
@@ -29,15 +30,20 @@ export const Tabs = ({ tabs, basePath }: TabsPropType): JSX.Element => {
   };
   return (
     <Box padding={['spacing.7', 'spacing.6', 'spacing.7', 'spacing.6']}>
-      <TabsHeader>
-        {tabs.map(({ to, exact, label }) => {
-          return (
-            <Tab to={attachBasePath(to)} exact={exact} key={to}>
-              {label}
-            </Tab>
-          );
-        })}
-      </TabsHeader>
+      <TabsContainer>
+        <TabsHeader>
+          {tabs.map(({ to, exact, label }) => {
+            return (
+              <Tab to={attachBasePath(to)} exact={exact} key={to}>
+                {label}
+              </Tab>
+            );
+          })}
+        </TabsHeader>
+        <Box padding="spacing.4">
+          <DocsLink url="REPORT_URL" shouldUseBladeLink />
+        </Box>
+      </TabsContainer>
       <Routes>
         <Route
           element={

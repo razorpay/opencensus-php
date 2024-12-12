@@ -36,7 +36,7 @@ jest.mock(
 
 const isPartner = jest.fn();
 const isFeatureEnabled = jest.fn();
-
+const isOrgAllowedFunctionality = jest.fn();
 const renderApp = ({ userExtra = {}, orgExtra = {} } = {}, experiments = {}) => {
   mockPartnerDashboardExperiments = { ...defaultPartnerDashboardExperiments, ...experiments };
   const session = getInitialUserOrgState({
@@ -44,6 +44,7 @@ const renderApp = ({ userExtra = {}, orgExtra = {} } = {}, experiments = {}) => 
     userExtra: {
       isPartner,
       isFeatureEnabled,
+      isOrgAllowedFunctionality,
       ...userExtra,
     },
     orgExtra,

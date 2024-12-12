@@ -24,6 +24,8 @@ import {
   shouldShowFIRCSection,
   isExporterRewardsEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import DocsLink from 'merchant/components/DocsLink';
+import { Box } from 'merchant_common/views/Reports/components';
 
 const Firs = lazy(() => import(/* webpackChunkName: "FIRS" */ './Tabs/FIRS'));
 const InternationalPaymentsCodes = lazy(
@@ -80,6 +82,9 @@ const InternationalSettings = ({ user, location: { pathname } }): JSX.Element | 
               <NavLink to={ROUTES_INFO.EXPORTER_REWARDS}>Exporter rewards</NavLink>
             </ShowWhen>
           </ShowWhen>
+          <Box display="inline-grid" justifyContent="end" minWidth="59%">
+            <DocsLink isTab />
+          </Box>
         </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps team={Teams.CROSS_BORDER}>

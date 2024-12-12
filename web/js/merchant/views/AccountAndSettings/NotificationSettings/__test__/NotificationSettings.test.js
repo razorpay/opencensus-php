@@ -33,12 +33,15 @@ jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
   isEmailNotificationEnabled: jest.fn(() => true),
 }));
 
+const isOrgAllowedFunctionality = jest.fn();
+
 const renderApp = ({ pathname, user } = {}) => {
   return render(<NotificationSettings />, {
     initialState: {
       session: {
         user: {
           isAccountAndSettingsRevampEnabled: true,
+          isOrgAllowedFunctionality,
           ...user,
           role: rolesList.ADMIN,
         },

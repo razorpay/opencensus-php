@@ -29,7 +29,7 @@ class ReversalsListContainer extends ListContainer {
           <>
             <TakeATourButton feature={RZPFeatures.ROUTE} />
 
-            <DocsLink url="https://razorpay.com/docs/route/" />
+            <DocsLink url="ROUTE_REVERSAL_DOC_URL" />
           </>
         }
       >

@@ -14,6 +14,8 @@ import EarningsTransactionalList from 'merchant/views/PartnerDashboard/Earnings/
 import EarningsDailyList from 'merchant/views/PartnerDashboard/Earnings/Daily/List';
 import CommissionInvoicesList from 'merchant/views/PartnerDashboard/Earnings/Invoices/List';
 import ProductWrapper from 'common/ui/ProductWrapper';
+import DocsLink from 'merchant/components/DocsLink';
+import { Box } from 'merchant_common/views/Reports/components';
 
 class EarningsContainer extends Component {
   state = {
@@ -54,24 +56,31 @@ class EarningsContainer extends Component {
     const { commissionBalance } = this.state;
     const { user } = this.props;
     const currency = user.merchant.currency;
+
     return (
       <div className="earnings-page">
         <ProductWrapper
           tabsData={this.state.tabsData}
           extra={
-            <ShowWhen
-              additionalCondition={(user) =>
-                user.isShowCommissionBalanceEnabled &&
-                user.isOrgAllowedFunctionality('current_balance') &&
-                (commissionBalance == 0 || commissionBalance)
-              }
-            >
-              <div className="partner-dashboard-header-action">
-                <span className="settlement-balance-amount">
-                  Commission Balance: <Amount value={commissionBalance} currency={currency} />
-                </span>
-              </div>
-            </ShowWhen>
+            <>
+              <ShowWhen
+                additionalCondition={(user) =>
+                  user.isShowCommissionBalanceEnabled &&
+                  user.isOrgAllowedFunctionality('current_balance') &&
+                  (commissionBalance == 0 || commissionBalance)
+                }
+              >
+                <div className="partner-dashboard-header-action">
+                  <span className="settlement-balance-amount">
+                    Commission Balance: <Amount value={commissionBalance} currency={currency} />
+                  </span>
+                </div>
+              </ShowWhen>
+
+              <Box display="inline">
+                <DocsLink title="Documentation" isTab />
+              </Box>
+            </>
           }
         >
           <content>

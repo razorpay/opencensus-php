@@ -38,7 +38,6 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { transformCatalog } from 'merchant/reducers/paymentPages/transformer';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { getPaymentPagesTabs } from 'merchant/views/PaymentPages/PaymentPages/utils';
-
 import CategoryIcon from 'assets/payment_pages/categories.svg';
 
 @connect(
@@ -247,12 +246,7 @@ class Products extends ListContainer {
             </ShowWhen>
 
             <ShowWhen additionalCondition={() => user.isOrgAllowedFunctionality('external_links')}>
-              <DocLink
-                class="btn btn-link"
-                href="https://razorpay.com/docs/payment-pages/"
-                target="_blank"
-                // onClick={track.viewDoc}
-              >
+              <DocLink class="btn btn-link" href="PRODUCT_DOC_URL">
                 Documentation&nbsp;
                 <i class="i i-external-link" />
               </DocLink>

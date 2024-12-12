@@ -250,7 +250,7 @@ class SubscriptionButtonsList extends ListContainer {
           <>
             <TakeATourButton feature={RZPFeatures.PB} onSuccess={this.resetCopyPasteCodeStatus} />
 
-            <DocsLink url="https://razorpay.com/docs/payment-button/subscription-buttons/" />
+            <DocsLink url="CREATE_SUBS_BUTTON_DOC_URL" />
 
             {isRoleAllowedEdit && user.isSubscriptionButtonEnabled && (
               <span class="cta-container">
