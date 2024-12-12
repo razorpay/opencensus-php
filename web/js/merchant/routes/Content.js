@@ -727,7 +727,7 @@ class Content extends Component {
       activation_form_milestone,
       submitted,
       activation_status,
-      workflow_details
+      workflow_details,
     } = user;
 
     const isMasterKyc = workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING';
