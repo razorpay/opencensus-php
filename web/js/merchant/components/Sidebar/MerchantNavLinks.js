@@ -20,6 +20,7 @@ import {
   canViewLOCEMIProduct,
   canViewLoans,
 } from 'merchant/views/Capital/utils';
+import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 
@@ -206,6 +207,17 @@ function MerchantNavLinks(props) {
             !isConfigTagEnabled('payment_links.payment_link')
           }
           customBadge={getProductBadge(['payment_link'])}
+        />
+        <MainNavLink
+          label="POS"
+          icon="i i-pos text-primary"
+          type="product"
+          to={routes.posSelfServe}
+          isNew
+          additionalCondition={(user, _) => {
+            const isPosOnboardingEnabled = isPosExperimentEnabled({ user, abExperiments });
+            return isPosOnboardingEnabled;
+          }}
         />
         <MainNavLink
           label="Payment Pages"

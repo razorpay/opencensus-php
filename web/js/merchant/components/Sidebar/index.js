@@ -76,6 +76,7 @@ export const BASE_ROUTES = {
   reconciliations: '/reconciliations/dashboard/processes',
   assistedFinancing: '/assisted-financing',
   posSales: '/pos-sales',
+  posSelfServe: '/pos/catalog',
 };
 
 // Note: cannot use Box because textOverflow is not supported.
