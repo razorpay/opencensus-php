@@ -158,6 +158,7 @@ return [
         "upi_rzprbl",
         "upi_rzpapb",
         'axis_wibmo',
+        "upi_rzpaxis",
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -285,6 +286,7 @@ return [
     'mock_upi_kotak'              => env('UPI_KOTAK_MOCK'),
     'mock_upi_rzprbl'             => env('UPI_RZPRBL_MOCK'),
     'mock_upi_rzpapb'             => env('UPI_RZPAPB_MOCK'),
+    'mock_upi_rzpaxis'            => env('UPI_RZPAXIS_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
