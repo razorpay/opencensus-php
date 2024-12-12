@@ -38,6 +38,8 @@ const bankBackgroundColors = {
   [BANK_NAMES.BOB]: '#FF5D27',
   [BANK_NAMES.ICICI]: theme.colors.background[600],
   [BANK_NAMES.IDFC]: theme.colors.background[600],
+  [BANK_NAMES.INDUSIND_BANK]: theme.colors.background[600],
+  [BANK_NAMES.INDUSIND_BANK_LTD]: theme.colors.background[600],
   [BANK_NAMES.AXIS]: theme.colors.background[600],
   [BANK_NAMES.KKBK]: theme.colors.background[600],
   [BANK_NAMES.AXIS_EASY_PAY]: '#97144d',
@@ -107,6 +109,8 @@ export const getBankingCaptchaColor = (org) => {
     // works for white/light bg
     case BANK_NAMES.ICICI:
     case BANK_NAMES.IDFC:
+    case BANK_NAMES.INDUSIND_BANK:
+    case BANK_NAMES.INDUSIND_BANK_LTD:
     case BANK_NAMES.AXIS:
     case BANK_NAMES.KKBK:
     case BANK_NAMES.YES_BANK:

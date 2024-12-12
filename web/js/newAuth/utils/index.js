@@ -36,6 +36,10 @@ export const BANK_NAMES = {
   HDFC_COLLECT_NOW: 'HDFC',
   /** https://yesbank.razorpay.com/signin */
   YES_BANK: 'YESB',
+  /** https://indusindbank.razorpay.com/ */
+  INDUSIND_BANK: 'INDB',
+  /** https://indusindbankltd.razorpay.com/ */
+  INDUSIND_BANK_LTD: 'ibl0',
   /** https://hdfcgig.razorpay.com/signin */
   HDFC_GIG: 'HDFC GIG',
   /** https://sib.razorpay.com/signin */
