@@ -2855,7 +2855,7 @@ class Service extends Base\Service
             $insurance = $this->repo->insurance->fetchInsurance($paymentId, $orderId);
             if (!empty($insurance))
             {
-                $return[RefundConstants::PAYMENTS][0][RefundConstants::PAYMENT][InsuranceConstants::INSURANCE] = $insurance->toArray();
+                $return[RefundConstants::PAYMENTS][0][InsuranceConstants::INSURANCE] = $insurance->toArray();
             }
         }
         catch (\Throwable $e)
@@ -2871,7 +2871,7 @@ class Service extends Base\Service
             $allowedKeys = [RefundConstants::ID,RefundConstants::AMOUNT,RefundConstants::CURRENCY,RefundConstants::PAYMENT_ID,RefundConstants::SCROOGE_CREATED_AT
                 ,RefundConstants::STATUS,RefundConstants::PRIMARY_MESSAGE,RefundConstants::SECONDARY_MESSAGE,RefundConstants::TERTIARY_MESSAGE,
                 RefundConstants::ACQUIRER_DATA,RefundConstants::MERCHANT_NAME,RefundConstants::DAYS,RefundConstants::LATE_AUTH,
-                RefundConstants::ORDER_ID, Payment\Entity::CAPTURED_AT, InsuranceConstants::INSURANCE];
+                RefundConstants::ORDER_ID, Payment\Entity::CAPTURED_AT];
 
             if(empty($payment_array["payments"][0]) === false)
             {
