@@ -5,7 +5,7 @@ import type {
   ConditionGroup,
   SRCondition,
   SRConditionGroup,
-} from '../../types';
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
 export const formatter: (rule: Rule) => ShopifyRule = (rule) => {
   function parseConditionGroup(group: ConditionGroup): SRConditionGroup {
@@ -35,7 +35,12 @@ export const formatter: (rule: Rule) => ShopifyRule = (rule) => {
   }
 
   return {
-    condition: parseConditionGroup(rule.condition),
-    actions: rule.actions,
+    rules: [
+      {
+        conditions: parseConditionGroup(rule.condition),
+        actions: rule.actions,
+      },
+    ],
+    ruleFacts: {},
   };
 };

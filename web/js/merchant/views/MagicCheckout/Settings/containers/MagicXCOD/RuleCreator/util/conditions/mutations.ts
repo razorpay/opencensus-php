@@ -1,26 +1,19 @@
-import { generateId } from '../id';
-import { findByPath, getParentPath } from '../path';
-import { isConditionGroup } from './index';
+import { isConditionGroup } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/util/conditions';
+import {
+  prepareConditionOrGroup,
+  updatePathsOn,
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/util/conditions/helpers';
+import { generateId } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/util/id';
+import {
+  findByPath,
+  getParentPath,
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/util/path';
 
-import { Rule, ConditionOrGroup, Path } from '../../types';
-
-const prepareConditionOrGroup = (
-  cg: ConditionOrGroup,
-  options: { path: Path; idGenerator: () => string },
-): ConditionOrGroup => {
-  const { idGenerator, path } = options;
-
-  cg.path = path;
-  if (!Boolean(cg.id)) {
-    cg.id = idGenerator();
-  }
-
-  if (isConditionGroup(cg)) {
-    cg.combinator = 'and';
-  }
-
-  return cg;
-};
+import type {
+  Rule,
+  ConditionOrGroup,
+  Path,
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
 type AddConditionOrGroup = (
   rule: Rule,
@@ -44,7 +37,7 @@ export const add: AddConditionOrGroup = (
   parent.conditions.push(
     prepareConditionOrGroup(conditionOrGroup, {
       idGenerator,
-      path: [...parentPath, parent.conditions.length],
+      path: conditionOrGroup.path ?? [...parentPath, parent.conditions.length],
     }),
   );
   return { ...rule };
@@ -61,7 +54,20 @@ export const remove: RemoveConditionOrGroup = (rule, path) => {
   const parent = findByPath(parentPath, rule);
 
   if (parent && isConditionGroup(parent)) {
-    parent.conditions.splice(index, 1);
+    // remove the condition/group
+    const [, ...rest] = parent.conditions.splice(index);
+
+    // update `path` for subsequent entities
+    rest.forEach((conditionOrGroup: any) => {
+      const pathLength = conditionOrGroup.path?.length ?? 0;
+      if (pathLength > 0) {
+        const idx = conditionOrGroup.path[pathLength - 1];
+        conditionOrGroup.path[pathLength - 1] = idx - 1;
+
+        updatePathsOn(conditionOrGroup);
+      }
+    });
+    parent.conditions = [...parent.conditions, ...rest];
   }
 
   return { ...rule };

@@ -23,4 +23,8 @@ export type MagicXACODRulesState = {
   };
   rules: Array<Rule>;
   ruleFacts: [];
+  ruleLimits: {
+    shipping: number;
+    payment: number;
+  };
 };

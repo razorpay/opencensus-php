@@ -11,6 +11,10 @@ const initialState: MagicXACODRulesState = {
   },
   rules: [],
   ruleFacts: [],
+  ruleLimits: {
+    shipping: 0,
+    payment: 0,
+  },
 };
 
 export const magicxACODRulesReducer = (
@@ -22,9 +26,16 @@ export const magicxACODRulesReducer = (
     case ACTIONS.FETCH_ACOD_RULES_PENDING:
       return merge(state, { isLoading: { ...state.isLoading, rules: true } });
     case ACTIONS.FETCH_ACOD_RULES_SUCCESS: {
-      const { rules = [] } = action.payload?.data || {};
+      const {
+        rules = [],
+        registered_customization_count = {
+          shipping: 0,
+          payment: 0,
+        },
+      } = action.payload?.data || {};
       return merge(state, {
         isLoading: { ...state.isLoading, rules: false },
+        ruleLimits: registered_customization_count,
         rules,
       });
     }

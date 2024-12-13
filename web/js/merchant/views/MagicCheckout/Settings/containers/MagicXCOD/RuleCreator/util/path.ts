@@ -1,4 +1,8 @@
-import type { ConditionOrGroup, Path, Rule } from '../types';
+import type {
+  ConditionOrGroup,
+  Path,
+  Rule,
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
 export const findByPath = (path: Path, rule: Rule): ConditionOrGroup | undefined => {
   let level = 0;

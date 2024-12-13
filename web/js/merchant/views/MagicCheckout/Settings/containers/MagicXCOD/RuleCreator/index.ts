@@ -1,1 +1,1 @@
-export { RuleCreator, useRule } from './components/RuleCreator';
+export { RuleCreator } from './components/RuleCreator';

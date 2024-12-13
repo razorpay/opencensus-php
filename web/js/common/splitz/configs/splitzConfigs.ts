@@ -1322,6 +1322,22 @@ export const splitzConfig: SplitzInitConfig = {
           },
         },
         {
+          uniqueHashKey: 'magicx_publicapp_acod',
+          experimentId: {
+            beta: 'PVrN4pgmYL1K5y',
+            production: 'PUfOPVCxDrQClO',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
           uniqueHashKey: 'magic_zones_file_upload',
           experimentId: {
             beta: 'Nh6mUrfEvCtOyQ',

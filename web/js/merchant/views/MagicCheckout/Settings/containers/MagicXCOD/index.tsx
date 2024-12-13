@@ -1,8 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import { useNavigate } from 'react-router-dom';
-
 import {
   Text,
   Heading,
@@ -15,10 +11,19 @@ import {
   ModalBody,
   ModalFooter,
   Button,
+  Tabs,
+  TabList,
+  TabItem,
+  TabPanel,
 } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { bindActionCreators } from 'redux';
+
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { DisplayNotificationTxt } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
 import BasicCOD from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Containers/BasicCOD';
+import AdvancedCOD from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Containers/AdvancedCOD';
 import { ConfirmationModalProvider } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/common/components/ConfirmationModal';
 
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
@@ -34,6 +39,7 @@ import {
 } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/constants';
 import { SWITCH_TEXTS } from 'merchant/views/MagicCheckout/Settings/constants';
 import { COD_ENGINE_TYPES } from 'merchant/views/MagicCheckout/CODSettings/constants';
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 
 import { ToggleCODPayload } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/types';
 
@@ -46,6 +52,7 @@ const MagicXCOD = ({ settings, updateMagicSettings, showNotification, fetchShipp
   const [confirmationModalConfigs, setConfirmationModalConfigs] =
     useState(CONFIRMATION_MODAL_OBJECT);
   const navigate = useNavigate();
+  const isACODExperimentEnabled = useMagicExperiment('magicx_publicapp_acod');
 
   useEffect(() => {
     fetchShippingProfiles();
@@ -238,7 +245,20 @@ const MagicXCOD = ({ settings, updateMagicSettings, showNotification, fetchShipp
             </Box>
             <Box>
               <FormContextProvider>
-                <BasicCOD />
+                <Tabs orientation="horizontal" variant="bordered" defaultValue="basic">
+                  <TabList>
+                    <TabItem value="basic">Basic</TabItem>
+                    {isACODExperimentEnabled && <TabItem value="advanced">Advanced</TabItem>}
+                  </TabList>
+                  <TabPanel value="basic">
+                    <BasicCOD />
+                  </TabPanel>
+                  {isACODExperimentEnabled && (
+                    <TabPanel value="advanced">
+                      <AdvancedCOD />
+                    </TabPanel>
+                  )}
+                </Tabs>
               </FormContextProvider>
             </Box>
           </div>

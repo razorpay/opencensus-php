@@ -1,20 +1,26 @@
 import { parseShopifyRule } from './parse';
-import { ShopifyRule } from '../types';
+
+import type { ShopifyRule } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
 const idRegex = /^\w{7}$/;
 
 describe('parseShopifyRule', () => {
   it('should parse a simple ShopifyRule with one condition into a Rule', () => {
     const shopifyRule: ShopifyRule = {
-      condition: {
-        all: [{ fact: 'age', op: 'gt', val: 18 }],
-      },
-      actions: [{ type: 'HIDE_COD' }],
+      rules: [
+        {
+          conditions: {
+            all: [{ fact: 'age', op: 'gt', val: 18 }],
+          },
+          actions: [{ type: 'HIDE_COD' }],
+        },
+      ],
+      ruleFacts: {},
     };
 
     const parsedRule = parseShopifyRule(shopifyRule);
 
-    expect(parsedRule.actions).toEqual(shopifyRule.actions);
+    expect(parsedRule.actions).toEqual(shopifyRule.rules[0].actions);
     expect(parsedRule.condition.id).toBe('root');
     expect(parsedRule.condition.path).toEqual([]);
     expect(parsedRule.condition.combinator).toBe('and');
@@ -32,23 +38,28 @@ describe('parseShopifyRule', () => {
 
   it('should parse a nested ShopifyRule with multiple conditions and groups', () => {
     const shopifyRule: ShopifyRule = {
-      condition: {
-        all: [
-          { fact: 'age', op: 'gt', val: 18 },
-          {
-            any: [
-              { fact: 'location', op: 'eq', val: 'NY' },
-              { fact: 'subscription', op: 'eq', val: 'premium' },
+      rules: [
+        {
+          conditions: {
+            all: [
+              { fact: 'age', op: 'gt', val: 18 },
+              {
+                any: [
+                  { fact: 'location', op: 'eq', val: 'NY' },
+                  { fact: 'subscription', op: 'eq', val: 'premium' },
+                ],
+              },
             ],
           },
-        ],
-      },
-      actions: [{ type: 'HIDE_COD' }],
+          actions: [{ type: 'HIDE_COD' }],
+        },
+      ],
+      ruleFacts: {},
     };
 
     const parsedRule = parseShopifyRule(shopifyRule);
 
-    expect(parsedRule.actions).toEqual(shopifyRule.actions);
+    expect(parsedRule.actions).toEqual(shopifyRule.rules[0].actions);
     expect(parsedRule.condition.id).toBe('root');
     expect(parsedRule.condition.path).toEqual([]);
     expect(parsedRule.condition.combinator).toBe('and');
@@ -92,18 +103,23 @@ describe('parseShopifyRule', () => {
 
   it("should handle a ShopifyRule with 'any' as the root combinator", () => {
     const shopifyRule: ShopifyRule = {
-      condition: {
-        any: [
-          { fact: 'temperature', op: 'gt', val: 30 },
-          { fact: 'humidity', op: 'lt', val: 20 },
-        ],
-      },
-      actions: [{ type: 'HIDE_COD' }],
+      rules: [
+        {
+          conditions: {
+            any: [
+              { fact: 'temperature', op: 'gt', val: 30 },
+              { fact: 'humidity', op: 'lt', val: 20 },
+            ],
+          },
+          actions: [{ type: 'HIDE_COD' }],
+        },
+      ],
+      ruleFacts: {},
     };
 
     const parsedRule = parseShopifyRule(shopifyRule);
 
-    expect(parsedRule.actions).toEqual(shopifyRule.actions);
+    expect(parsedRule.actions).toEqual(shopifyRule.rules[0].actions);
     expect(parsedRule.condition.id).toBe('root');
     expect(parsedRule.condition.path).toEqual([]);
     expect(parsedRule.condition.combinator).toBe('or');

@@ -4,12 +4,10 @@ import { GetStarted } from 'merchant/views/MagicCheckout/Settings/containers/Mag
 import { GetStartedCards } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/constants';
 import { lazyRenderComponent } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/test-helpers';
 
-const mockCreateShippingRule = jest.fn();
-const mockCreatePaymentRule = jest.fn();
+const mockCreateRule = jest.fn();
 
 const props = {
-  onCreatePaymentRule: mockCreatePaymentRule,
-  onCreateShippingRule: mockCreateShippingRule,
+  onCreateRule: mockCreateRule,
 };
 
 const renderWithProps = lazyRenderComponent(GetStarted);
@@ -29,12 +27,12 @@ describe('GetStarted', () => {
   it('calls onCreateShippingRule when the shipping rule button is clicked', () => {
     const { getByRole } = renderWithProps(props);
     fireEvent.click(getByRole('button', { name: GetStartedCards.shipping.accessibilityLabel }));
-    expect(mockCreateShippingRule).toHaveBeenCalledTimes(1);
+    expect(mockCreateRule).toHaveBeenCalledWith('shipping');
   });
 
   it('calls onCreatePaymentRule when the payment rule button is clicked', () => {
     const { getByRole } = renderWithProps(props);
     fireEvent.click(getByRole('button', { name: GetStartedCards.payment.accessibilityLabel }));
-    expect(mockCreatePaymentRule).toHaveBeenCalledTimes(1);
+    expect(mockCreateRule).toHaveBeenCalledWith('payment');
   });
 });

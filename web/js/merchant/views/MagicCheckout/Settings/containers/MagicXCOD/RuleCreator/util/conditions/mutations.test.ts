@@ -1,9 +1,16 @@
-import { add, remove, update } from './mutations';
-import { generateId } from '../id';
+import { sampleRule as mockedRule } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/__tests__/mocks/rules';
+import {
+  add,
+  remove,
+  update,
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/util/conditions/mutations';
+import { generateId } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/util/id';
 
-import { sampleRule as mockedRule } from '../../__tests__/mocks/rules';
-
-import type { Condition, ConditionGroup, Rule } from '../../types';
+import type {
+  Condition,
+  ConditionGroup,
+  Rule,
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
 let sampleRule: Rule;
 

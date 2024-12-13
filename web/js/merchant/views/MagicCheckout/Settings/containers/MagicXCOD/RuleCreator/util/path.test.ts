@@ -1,6 +1,8 @@
+import { sampleRule } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/__tests__/mocks/rules';
+
 import { findByPath, getParentPath } from './path';
-import { sampleRule } from '../__tests__/mocks/rules';
-import { ConditionGroup } from '../types';
+
+import type { ConditionGroup } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
 describe('findByPath', () => {
   it('should return the root condition group when path is empty', () => {

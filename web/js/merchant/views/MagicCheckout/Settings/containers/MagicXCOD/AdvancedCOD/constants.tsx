@@ -2,9 +2,39 @@ import * as React from 'react';
 import { Box, Link, EditIcon, TrashIcon, PackageIcon, CashIcon } from '@razorpay/blade/components';
 
 import type { Rule } from 'merchant/reducers/magicCheckout/magicxACODRules/types';
+import type { Fact } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
+
+export const Facts: Fact[] = [
+  { name: 'quantity', label: 'Quantity', type: 'number' },
+  { name: 'subtotal', label: 'Cart Total Before Discount', type: 'number' },
+  { name: 'weight', label: 'Weight', type: 'number' },
+  { name: 'discountPercentage', label: 'Discount Percentage', type: 'number' },
+  { name: 'orderAmount', label: 'Cart Total', type: 'number' },
+  {
+    name: 'customerEmail',
+    label: 'Email',
+    type: 'string',
+    placeholder: 'Enter comma separated values e.g. abc@gmail.com,xyz@gmail.com',
+  },
+  {
+    name: 'phone',
+    label: 'Phone',
+    type: 'string',
+    placeholder: 'Enter comma separated values e.g. +919988776655,+919999888866',
+  },
+  {
+    name: 'zipcode',
+    label: 'Zipcode',
+    type: 'string',
+    placeholder: 'Enter comma separated values e.g. 560021,400101',
+  },
+  { name: 'cartContainsDiscount', label: 'Cart Contains Discount', type: 'boolean' },
+];
 
 // Get Started
+const SHOPIFY_APP_NAME = 'Razorpay COD & Checkout360 App';
 export const GetStartedCards = {
+  appUpdateNotice: `Note: Please update the ${SHOPIFY_APP_NAME} on Shopify to create Payment and Shipping rules.`,
   payment: {
     title: 'Payment Rule',
     description:
@@ -72,6 +102,8 @@ export const ACOD_TABLE = {
     newRuleCTA: 'New Payment Rule',
     newRuleCTAAccessibilityLabel: 'Create new payment rule',
     noRuleText: 'No rule created',
+    rulesLimitMaxedOut: (limit: number) =>
+      `Shopify allows a maximum of ${limit} Payment Rules can be created on your store.`,
   },
   shipping: {
     tableHeaderCells,
@@ -80,5 +112,7 @@ export const ACOD_TABLE = {
     newRuleCTA: 'New Shipping Rule',
     newRuleCTAAccessibilityLabel: 'Create new shipping rule',
     noRuleText: 'No rule created',
+    rulesLimitMaxedOut: (limit: number) =>
+      `Shopify allows a maximum of ${limit} Shipping Rules can be created on your store.`,
   },
 };

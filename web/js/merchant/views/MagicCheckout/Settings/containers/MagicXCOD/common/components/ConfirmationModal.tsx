@@ -24,21 +24,45 @@ type ConfirmOptions = {
   description: string;
   confirmText: string;
   dismissText: string;
-} & PrefixedConfirmButtonProps;
+} & PrefixedConfirmButtonProps & {
+    onSuccess?: (res: unknown) => void;
+    onError?: (res: unknown) => void;
+  };
 
 interface ConfirmationModalContextType {
   open: (options: Partial<ConfirmOptions>) => Promise<boolean>;
+  promise: <T extends unknown = unknown>(
+    p: Promise<T> | (() => Promise<T>),
+    options: Partial<ConfirmOptions> & {
+      onSuccess?: (res: T) => void;
+      onError?: (res: unknown) => void;
+    },
+  ) => Promise<boolean>;
   close: () => void;
 }
 
 const ConfirmationModalContext = createContext<ConfirmationModalContextType | undefined>(undefined);
 
-export const useConfirm = (): ((options: Partial<ConfirmOptions>) => Promise<boolean>) => {
+type ConfirmHookReturnValue = {
+  (options: Partial<ConfirmOptions>): Promise<boolean>;
+} & {
+  promise: (
+    p: Promise<unknown> | (() => Promise<unknown>),
+    options: Partial<ConfirmOptions>,
+  ) => Promise<boolean>;
+};
+export const useConfirm = (): ConfirmHookReturnValue => {
   const context = useContext(ConfirmationModalContext);
   if (!context) {
     throw new Error('useConfirm hook must be used within a ConfirmationModalProvider');
   }
-  return context.open;
+
+  function open(options: Partial<ConfirmOptions>): Promise<boolean> {
+    return context?.open(options) || Promise.resolve(false);
+  }
+  open.promise = context.promise;
+
+  return open;
 };
 
 const extractButtonProps: (
@@ -71,6 +95,8 @@ const defaultConfirmOptions: ConfirmOptions = {
 
 export const ConfirmationModalProvider: React.FC = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [promiseOrFunction, setPromiseOrFunction] = useState<unknown>();
   const [options, setOptions] = useState<ConfirmOptions>(defaultConfirmOptions);
   const [resolve, setResolve] = useState<(value: boolean) => void>(() => {});
 
@@ -83,13 +109,66 @@ export const ConfirmationModalProvider: React.FC = ({ children }) => {
     });
   };
 
+  const promise = async <T extends unknown = unknown>(
+    p: Promise<T> | (() => Promise<T>),
+    options: Partial<ConfirmOptions> & {
+      onSuccess?: (res: T) => void;
+      onError?: (res: unknown) => void;
+    } = {
+      onSuccess: () => {},
+      onError: () => {},
+    },
+  ): Promise<boolean> => {
+    setOptions({ ...defaultConfirmOptions, ...options });
+    setIsOpen(true);
+    setPromiseOrFunction(() => p);
+
+    return new Promise<boolean>((resolve) => {
+      setResolve(() => resolve);
+    });
+  };
+
+  const consumePromiseOrFunction = async () => {
+    setIsLoading(true);
+    const p = typeof promiseOrFunction === 'function' ? promiseOrFunction() : promiseOrFunction;
+    let hasSuccessfulResponse = false;
+    let response = null;
+
+    await p
+      .then((res) => {
+        response = res;
+        hasSuccessfulResponse = true;
+      })
+      .catch((err: unknown) => {
+        if (options.onError) {
+          options.onError(err);
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+
+        if (hasSuccessfulResponse) {
+          if (options.onSuccess) {
+            options.onSuccess(response);
+          }
+          setIsOpen(false);
+        }
+
+        resolve(hasSuccessfulResponse);
+      });
+  };
+
   const close = () => {
     setIsOpen(false);
   };
 
   const handleConfirm = () => {
-    resolve(true);
-    close();
+    if (!promiseOrFunction) {
+      resolve(true);
+      close();
+    } else {
+      consumePromiseOrFunction();
+    }
   };
 
   const handleDismiss = () => {
@@ -100,22 +179,29 @@ export const ConfirmationModalProvider: React.FC = ({ children }) => {
   const confirmButtonProps = extractButtonProps(options, 'confirm');
   const dismissButtonProps = extractButtonProps(options, 'dismiss');
   return (
-    <ConfirmationModalContext.Provider value={{ open, close }}>
+    <ConfirmationModalContext.Provider value={{ open, close, promise }}>
       {children}
-      <Modal isOpen={isOpen} onDismiss={handleDismiss} size="small">
+      <Modal isOpen={isOpen} onDismiss={handleDismiss} size="small" zIndex={1500}>
         <ModalHeader title={options.title} />
         <ModalBody>
           <Text>{options.description}</Text>
         </ModalBody>
         <ModalFooter>
           <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
-            <Button onClick={handleDismiss} variant="tertiary" {...dismissButtonProps}>
+            <Button
+              onClick={handleDismiss}
+              variant="tertiary"
+              isDisabled={isLoading}
+              {...dismissButtonProps}
+            >
               {options.dismissText}
             </Button>
             <Button
               onClick={handleConfirm}
               color={options.confirmColor}
               accessibilityLabel={options.confirmAccessibilityLabel || options.confirmText}
+              isDisabled={isLoading}
+              isLoading={isLoading}
               {...confirmButtonProps}
             >
               {options.confirmText}

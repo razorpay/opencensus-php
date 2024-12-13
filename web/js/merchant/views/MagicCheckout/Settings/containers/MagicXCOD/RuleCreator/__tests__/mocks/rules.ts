@@ -1,4 +1,4 @@
-import type { Rule } from '../../types';
+import type { Rule } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
 export const sampleRule: Rule = {
   condition: {

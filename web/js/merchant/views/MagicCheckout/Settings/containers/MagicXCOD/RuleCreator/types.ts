@@ -3,16 +3,16 @@ export type Fact = {
   // key properties
   name: string;
   label: string;
-  type: number | string | boolean;
-  operators: Array<Operator>;
+  type: 'number' | 'string' | 'boolean';
+  operators?: Array<Operator>;
 
   // optional
   valueEditorType?: string;
-  defaultOperator?: string;
+  defaultOperator?: Operator;
   values?: OptionList;
   defaultValue?: any;
   placeholder?: string;
-  validator?: ConditionValidator;
+  validator?: (value: unknown) => boolean | ValidationResult;
 };
 
 // options
@@ -29,7 +29,7 @@ export type OptionGroup = {
 
 export type OptionList = Array<Option> | Array<OptionGroup>;
 
-export type OperatorValue = 'eq' | 'lt' | 'le' | 'gt' | 'ge' | 'in' | 'like';
+export type OperatorValue = 'eq' | 'lt' | 'le' | 'gt' | 'ge' | 'in' | 'contains';
 export type Operator =
   | { name: 'eq'; label: 'equals'; value: 'eq' }
   | { name: 'lt'; label: 'less than'; value: 'lt' }
@@ -37,7 +37,7 @@ export type Operator =
   | { name: 'gt'; label: 'greater than'; value: 'gt' }
   | { name: 'ge'; label: 'greater than or equal to'; value: 'ge' }
   | { name: 'in'; label: 'in'; value: 'in' }
-  | { name: 'like'; label: 'like'; value: 'like' };
+  | { name: 'contains'; label: 'contains'; value: 'contains' };
 
 // condition and condition groups
 export type Path = number[];
@@ -102,8 +102,11 @@ export type SRConditionGroup = Partial<{
 }>;
 export type SRConditionOrGroup = SRCondition | SRConditionGroup;
 export type ShopifyRule = {
-  condition: SRConditionGroup;
-  actions: Array<Action>;
+  rules: Array<{
+    conditions: SRConditionGroup;
+    actions: Array<Action>;
+  }>;
+  ruleFacts: Record<string, never>;
 };
 
 // react context
