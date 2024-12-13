@@ -1221,6 +1221,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'registered_address_for_gst',
+          experimentId: {
+            beta: 'PVu09z6AtRrP06',
+            production: 'PVty9eKO0uBZbO',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

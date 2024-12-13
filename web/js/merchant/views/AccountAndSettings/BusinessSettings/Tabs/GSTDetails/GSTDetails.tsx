@@ -21,6 +21,8 @@ import { AlertStatus, AlertType, GSTDetailsProps } from './types';
 import { fetchGSTList } from './model';
 import { track } from './tracking';
 import { GSTInErrors } from './constant';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const Item = ({ children }: { children: React.ReactNode }) => (
   <Box display="flex" flexDirection="column" gap="spacing.2">
@@ -39,6 +41,10 @@ const GSTDetails = ({
   const [gstList, setGSTList] = useState<string[]>([]);
   const [alertStatus, setAlertStatus] = useState<AlertStatus>();
   const [gstInError, setGstInError] = useState<string | null>(null);
+  const splitz = useSplitzService();
+  const shouldRemoveOperationAddress = isExperimentEnabled(
+    splitz?.abExperiments?.registered_address_for_gst,
+  );
 
   const getGSTList = async () => {
     try {
@@ -173,7 +179,7 @@ const GSTDetails = ({
                 <Item>
                   <Text weight="semibold">Registered Address</Text>
                   <Box maxWidth="420px">
-                    <Text>{getBusinessRegisteredAddress(user)}</Text>
+                    <Text>{getBusinessRegisteredAddress(user, shouldRemoveOperationAddress)}</Text>
                   </Box>
                 </Item>
                 <Item>
