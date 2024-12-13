@@ -513,7 +513,10 @@ return array(
 
     'rejected_communications_from_api_exp_id' => env('SEND_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
 
+    'needs_clarification_communications_from_api_exp_id' => env('SEND_NC_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
+
     'cac_blacklist_exp_id' => env('CAC_BLACKLIST_EXP_ID'),
+
 
     'nocode' => [
         'cache' => [
