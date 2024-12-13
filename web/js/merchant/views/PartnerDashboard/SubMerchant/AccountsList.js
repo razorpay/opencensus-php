@@ -83,10 +83,10 @@ const email = {
 const mobileAndEmail = {
   title: 'Contact',
   value: ({ user, email }) => (
-    <>
-      <div>{user?.contact_mobile || ''}</div>
-      {email}
-    </>
+    <Box>
+      <p>{user?.contact_mobile || ''}</p>
+      <p>{email}</p>
+    </Box>
   ),
 };
 
