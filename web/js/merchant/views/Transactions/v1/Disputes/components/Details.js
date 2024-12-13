@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Tooltip, TooltipInteractiveWrapper } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -9,13 +10,14 @@ import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import { analyticsTrack } from 'common/utils/analytics';
-import { titleCase, daysFromToday, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { daysFromToday, getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
 import roleList from 'merchant/helpers/permissions/roles-list';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
+import { CANNOT_ACCEPT_DISPUTE_TOOLTIP_TEXT } from 'merchant/views/Transactions/v1/Disputes/components/constants';
+import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 import ConfirmModal from './ConfirmModal';
 import ContestDispute from './ContestDispute';
@@ -259,13 +261,28 @@ const DisputeDetails = (props) => {
                     >
                       Contest &amp; upload evidence
                     </button>
-                    <button
-                      class="btn btn-outline"
-                      disabled={!canUserTakeAction}
-                      onClick={acceptDispute}
-                    >
-                      Accept Dispute
-                    </button>
+                    {dispute?.isBalanceSufficient ||
+                    !dispute.hasOwnProperty('isBalanceSufficient') ? (
+                      <button
+                        class="btn btn-outline"
+                        disabled={!canUserTakeAction}
+                        onClick={acceptDispute}
+                      >
+                        Accept Dispute
+                      </button>
+                    ) : (
+                      <Tooltip content={CANNOT_ACCEPT_DISPUTE_TOOLTIP_TEXT}>
+                        <TooltipInteractiveWrapper>
+                          <button
+                            class="btn btn-outline"
+                            disabled={!(canUserTakeAction && dispute?.isBalanceSufficient)}
+                            onClick={acceptDispute}
+                          >
+                            Accept Dispute
+                          </button>
+                        </TooltipInteractiveWrapper>
+                      </Tooltip>
+                    )}
                   </div>
                 )}
               </div>
