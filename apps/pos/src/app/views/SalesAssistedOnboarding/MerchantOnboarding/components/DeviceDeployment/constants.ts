@@ -19,7 +19,7 @@ export const WD10_WIFI_CONFIG_INSTRUCTIONS = [
     id: 4,
   },
   {
-    title: 'Press “Enter Wifi Details” button to enter Wifi username and password',
+    title: 'Press “Configure Device Wifi” button to enter Wifi username and password',
     id: 5,
   },
 ];

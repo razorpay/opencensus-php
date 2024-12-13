@@ -68,7 +68,7 @@ describe('Test POS Language Configuration screen', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Wifi Setup Instructions/i)).toBeInTheDocument();
-      expect(screen.getByText(/Configure Device Wifi/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Configure Device Wifi/i)[1]).toBeInTheDocument();
       expect(screen.getByText(/Wifi-configuration successful/i)).toBeInTheDocument();
     });
   }, 35000);
