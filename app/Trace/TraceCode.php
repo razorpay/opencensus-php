@@ -7,6 +7,8 @@ use RZP\Exception\InvalidArgumentException;
 class TraceCode extends \Razorpay\Trace\TraceCode
 {
     //consents
+    const PS_CA_FEE_RECOVERY_FLOW_INIT              = 'PS_CA_FEE_RECOVERY_FLOW_INIT';
+    const FEE_RECOVERY_SPLITZ_RESPONSE              = 'FEE_RECOVERY_SPLITZ_RESPONSE';
     const BALANCE_ANALYSIS                          = 'BALANCE_ANALYSIS';
     const FEATURE_FETCH_FROM_DCS                    = 'FEATURE_FETCH_FROM_DCS';
     const PS_CA_FEE_RECOVERY_FAILED                 = 'PS_CA_FEE_RECOVERY_FAILED';
