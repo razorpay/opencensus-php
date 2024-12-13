@@ -277,7 +277,7 @@ return [
                             'street1'     => '507, Raipur 1st block',
                             'street2'     => 'Raipur',
                             'city'        => 'Raipur',
-                            'state'       => 'CHATTISGARH',
+                            'state'       => 'CHHATTISGARH',
                             'postal_code' => 490042,
                             'country'     => 'IN'
                         ],
@@ -285,7 +285,7 @@ return [
                             'street1'     => '507, Raipur 1st block',
                             'street2'     => 'Raipur',
                             'city'        => 'Raipur',
-                            'state'       => 'CHATTISGARH',
+                            'state'       => 'CHHATTISGARH',
                             'postal_code' => 490042,
                             'country'     => 'IN'
                         ]
@@ -1605,7 +1605,7 @@ return [
                             'street1'     => '507, Raipur 1st block',
                             'street2'     => 'Raipur',
                             'city'        => 'Raipur',
-                            'state'       => 'CHATTISGARH',
+                            'state'       => 'CHHATTISGARH',
                             'postal_code' => 490042,
                             'country'     => 'IN'
                         ]
