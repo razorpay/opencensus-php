@@ -78,7 +78,7 @@ export const riskReason = {
           <div className="col-sm-1 warning-icon">
             <i className="i i-outlined-caution" />
           </div>
-          <div className="col-sm-11 warning-info">{reason}</div>
+          <div className="col-sm-10 warning-info">{reason}</div>
         </div>
       ))}
     </div>

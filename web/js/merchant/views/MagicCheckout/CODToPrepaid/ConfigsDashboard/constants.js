@@ -49,7 +49,7 @@ export const DISCOUNT_INFO =
 
 export const MAX_HOURS = 48;
 export const MAX_MINS = 59;
-export const MIN_TIME = 5;
+export const MIN_TIME = 2;
 
 export const VALIDATION_MSGS = {
   discount: 'Discount value should be less than minimum order value.',
