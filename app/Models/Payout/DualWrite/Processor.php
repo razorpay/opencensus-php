@@ -16,6 +16,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use Illuminate\Foundation\Application;
 use RZP\Constants\Entity as EntityConstant;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 
 class Processor
@@ -123,9 +124,40 @@ class Processor
             /** @var Entity $apiPayout */
             $apiPayout = $this->repo->payout->find($payoutId);
 
+            $status = $apiPayout->getStatus();
+
+            $this->trace->info(
+                TraceCode::PS_CA_FEE_RECOVERY_FLOW_INIT,
+                [
+                    "payout_previous_status" => $previousStatus,
+                    "payout_current_status" => $apiPayout->getStatus()
+                ]
+            );
+
+            // Ignoring reversed status since this only comes on T+1, and a delay of 24hrs is not expected in dual write
+            if(($status === Status::PROCESSED || $status === Status::FAILED) && $previousStatus === null)
+            {
+                // TODO: move experiment ID to a const
+                $properties = [
+                    "experiment_id" => "fee_recovery_dual_write_flow",
+                    "id" => $apiPayout->getMerchantId(),
+                ];
+
+                $expResp = (new MerchantCore())->isSplitzExperimentEnable($properties, "enabled");
+
+                $this->trace->info(
+                    TraceCode::FEE_RECOVERY_SPLITZ_RESPONSE,
+                    [
+                        "properties" => $properties,
+                        "experiment_response" => $expResp
+                    ]
+                );
+
+                $previousStatus = $expResp ? Status::INITIATED : $previousStatus;
+            }
+
             if ($apiPayout->isBalanceAccountTypeDirect() === true and $previousStatus !== null)
             {
-                $status = $apiPayout->getStatus();
                 if ($previousStatus === $status)
                 {
                     return;

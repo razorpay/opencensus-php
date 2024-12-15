@@ -207,7 +207,11 @@ class Events
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE                           => 'under_review_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE                        => 'under_review_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE                               => 'rejected_communications_from_api_exp_id',
-        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE                            => 'rejected_communications_from_api_exp_id'
+        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE                            => 'rejected_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE                             => 'needs_clarification_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE                          => 'needs_clarification_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE                             => 'needs_clarification_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE                          => 'needs_clarification_communications_from_api_exp_id',
     ];
 
     const SMS_TEMPLATES_RAZORX_EXPERIMENTS = [
@@ -310,7 +314,11 @@ class Events
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE                   => 'under_review_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE                => 'under_review_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE                       => 'rejected_communications_from_api_exp_id',
-        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE                    => 'rejected_communications_from_api_exp_id'
+        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE                    => 'rejected_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE                     => 'needs_clarification_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE                  => 'needs_clarification_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE                     => 'needs_clarification_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE                  => 'needs_clarification_communications_from_api_exp_id',
     ];
 
     const WHATSAPP_TEMPLATES_NEW_EXPERIMENTS = [
@@ -641,7 +649,11 @@ class Events
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE                   => 'under_review_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE                => 'under_review_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE                       => 'rejected_communications_from_api_exp_id',
-        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE                    => 'rejected_communications_from_api_exp_id'
+        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE                    => 'rejected_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE                     => 'needs_clarification_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE                  => 'needs_clarification_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE                     => 'needs_clarification_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE                  => 'needs_clarification_communications_from_api_exp_id',
     ];
 
     const EMAIL_CC = [

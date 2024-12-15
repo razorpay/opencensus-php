@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
@@ -444,6 +445,14 @@ class Core extends Base\Core
     {
         if ($status !== null && AttemptStatus::isValidStateTransition($fta->getStatus(), $status) === false)
         {
+            $this->trace->error(
+                ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+                [
+                    'fta_id' => $fta->getId(),
+                    'current_status' => $fta->getStatus(),
+                    'next_status' => $status
+                ]
+            );
             throw new LogicException('Not a valid state transition');
         }
 
