@@ -80,7 +80,12 @@ test.describe
       await waitForListingLoader({ page });
       await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const id = refunds.refundId.fullRefund.processed;
-      await gotoTransactionDetailsPageById({ page, id, listSelector: 'refunds-list' });
+      await gotoTransactionDetailsPageById({
+        page,
+        id,
+        listSelector: 'refunds-list',
+        ctaRole: 'button',
+      });
       await expect(page.getByText('Details', { exact: true })).toBeVisible();
       await expect(page.getByText('Payment ID')).toBeVisible();
       await expect(page.getByText('pay_MWavaGTL2MpX8U')).toBeVisible();
@@ -98,7 +103,12 @@ test.describe
       await waitForListingLoader({ page });
       await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const id = refunds.refundId.partialRefund.processed;
-      await gotoTransactionDetailsPageById({ page, id, listSelector: 'refunds-list' });
+      await gotoTransactionDetailsPageById({
+        page,
+        id,
+        listSelector: 'refunds-list',
+        ctaRole: 'button',
+      });
       // await expect(page.getByText('Gross amount₹ 100.00₹ - Indian Rupee (INR)')).toBeVisible();
       // await expect(page.getByText('Net amount₹ 96.58₹ - Indian Rupee (INR)')).toBeVisible();
       await expect(page.getByText('Details', { exact: true })).toBeVisible();
@@ -120,7 +130,12 @@ test.describe
       await waitForListingLoader({ page });
       await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const id = refunds.refundId.partialRefund.multiPartialRefundProcessed;
-      await gotoTransactionDetailsPageById({ page, id, listSelector: 'refunds-list' });
+      await gotoTransactionDetailsPageById({
+        page,
+        id,
+        listSelector: 'refunds-list',
+        ctaRole: 'button',
+      });
       // await expect(page.getByText('Gross amount₹ 100.00₹ - Indian Rupee (INR)')).toBeVisible();
       // await expect(page.getByText('Net amount₹ 96.58₹ - Indian Rupee (INR)')).toBeVisible();
       await expect(page.getByText('Details', { exact: true })).toBeVisible();

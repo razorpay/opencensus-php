@@ -49,12 +49,17 @@ export const waitForListingLoader = async ({ page }) => {
   await page.waitForSelector('[data-testid="table-spinner"]', { state: 'hidden', strict: false });
 };
 
-export const gotoTransactionDetailsPageById = async ({ page, id, listSelector }) => {
+export const gotoTransactionDetailsPageById = async ({
+  page,
+  id,
+  listSelector,
+  ctaRole = 'link',
+}) => {
   const listPage = page.getByTestId(listSelector);
   await searchTransactionById({ page: listPage, id });
   await listPage
     .getByTestId(`entity-item-row-${id}`)
-    .getByRole('button', { name: 'Details' })
+    .getByRole(ctaRole, { name: 'Details' })
     .click();
   await expect(page).toHaveURL(new RegExp(id));
   await checkDetailsWithRetries(page);
