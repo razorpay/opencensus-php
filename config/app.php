@@ -818,6 +818,10 @@ return array(
 
     'merchant_automation_activation_exp_id' => env('MERCHANT_AUTOMATION_ACTIVATION_EXP_ID'),
 
+    'nc_automation_activation_exp_id' => env('NC_AUTOMATION_ACTIVATION_EXP_ID'),
+
+    'bank_cancelled_check_exp_id' => env('BANK_CANCELLED_CHECK_EXP_ID'),
+
     'nocodeapp_pricing_exp_id' => env('NOCODEAPP_PRICING_EXP_ID'),
 
     'nocodeapp_pricing_plans_exp_id' => env('NOCODEAPP_PRICING_PLANS_EXP_ID'),
