@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Card\IIN;
 
+use RZP\Constants\Environment;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\BinService;
 use RZP\Http\Request\Requests;
 use RZP\Models\Base\QueryCache\CacheQueries;
@@ -197,6 +199,7 @@ class Repository extends Base\Repository
 
         return $apiServiceIINEntity;
     }
+
 
     public function findOrFailAPIEntity($iin, $columns = array('*'), string $connectionType = null)
     {

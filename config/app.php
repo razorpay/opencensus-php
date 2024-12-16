@@ -1197,6 +1197,10 @@ return array(
 
     'stop_async_capture_card_gateways' => env('STOP_ASYNC_CAPTURE_CARD_GATEWAYS'),
 
+    'read_token_iin_bin_service_primary' => env('READ_TOKEN_IIN_BIN_SERVICE_PRIMARY'),
+
+    'read_token_iin_bin_service_shadow' => env('READ_TOKEN_IIN_BIN_SERVICE_SHADOW'),
+
     'skip_optimizer_card_callback' => env('SKIP_OPTIMIZER_CARD_CALLBACK'),
 
     'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID'),
