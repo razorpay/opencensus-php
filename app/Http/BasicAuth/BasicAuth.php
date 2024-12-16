@@ -3305,6 +3305,8 @@ class BasicAuth
 
                 $hasNonActivatedEditPerm = $permissions['hasNonActivatedEditPermission'];
 
+                $hasActivatedEditPermission = $permissions['hasActivatedEditPermission'];
+
                 $this->trace->info(
                     TraceCode::ADMIN_MERCHANT_LOGIN_PERMISSION,
                     [
@@ -3315,6 +3317,7 @@ class BasicAuth
                         'hasEditPerm'                       => $hasEditPerm,
                         'hasNonActivatedEditPerm'           => $hasNonActivatedEditPerm,
                         'isactivatedMerchant'               => $wasMerchantEverActivated,
+                        'hasActivatedEditPermission'        => $hasActivatedEditPermission,
                     ]
                 );
 
@@ -3331,21 +3334,24 @@ class BasicAuth
                     return;
                 }
 
-                if ($hasViewLoginPerm === true && $hasReadPerm === true && $hasEditPerm === false && $hasNonActivatedEditPerm === false)
+                if ($hasViewLoginPerm === true && $hasReadPerm === true && $hasEditPerm === false &&
+                    $hasNonActivatedEditPerm === false && $hasActivatedEditPermission === false)
                 {
                     $this->userRole = Role::ADMIN_READONLY;
 
                     return;
                 }
                 if ($hasViewLoginPerm === true && $hasReadPerm === true && $hasEditPerm === false &&
-                    ($hasNonActivatedEditPerm === true && $wasMerchantEverActivated == true))
+                    (($hasNonActivatedEditPerm === true && $wasMerchantEverActivated === true &&
+                      $hasActivatedEditPermission === false)))
                 {
                     $this->userRole = Role::ADMIN_READONLY;
 
                     return;
                 }
                 else if ($hasViewLoginPerm === true && $hasEditPerm === false &&
-                         $hasNonActivatedEditPerm === false && $hasNonActivatedEditPerm === false)
+                         $hasNonActivatedEditPerm === false && $hasNonActivatedEditPerm === false &&
+                         $hasActivatedEditPermission== false)
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_ERROR, null, null,
@@ -3472,11 +3478,14 @@ class BasicAuth
 
         $hasEditPermNonActivated = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN_NON_ACTIVATED_EDIT);
 
+        $hasEditPermActivated = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN_ACTIVATED_EDIT);
+
         return [
             'hasReadPermission'              => $hasReadPerm,
             'hasLoginPermission'             => $hasViewLoginPerm,
             'hasEditPermission'              => $hasEditPerm,
-            'hasNonActivatedEditPermission'  => $hasEditPermNonActivated
+            'hasNonActivatedEditPermission'  => $hasEditPermNonActivated,
+            'hasActivatedEditPermission'     => $hasEditPermActivated,
         ];
     }
 

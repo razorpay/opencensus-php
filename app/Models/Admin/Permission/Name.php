@@ -1226,6 +1226,8 @@ class Name
     const ADMIN_ORG_REPLICATIONS   = 'admin_org_replications';
 
     const VIEW_MERCHANT_LOGIN_NON_ACTIVATED_EDIT = 'view_merchant_login_non_activated_edit';
+    
+    const VIEW_MERCHANT_LOGIN_ACTIVATED_EDIT = 'view_merchant_login_activated_edit';
 
     // Permission to validate merchant brand dealer details
     const POS_VALIDATE_BRAND_DETAILS = 'pos_validate_brand_details';
