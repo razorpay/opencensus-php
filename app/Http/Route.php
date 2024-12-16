@@ -18698,6 +18698,7 @@ class Route
         'payment_create_private_json',
         'payment_create_private_json_internal',
         'payment_create_checkout',
+        'payment_create_recurring'
     ];
 
     protected static $nbRearchRoutes = [

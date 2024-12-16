@@ -12448,6 +12448,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BAD_REQUEST_IDENTIFIER_NOT_FOUND = 'BAD_REQUEST_IDENTIFIER_NOT_FOUND';
     const QR_PAYEE_VPA_VALIDATION_FAILED = 'QR_PAYEE_VPA_VALIDATION_FAILED';
 
+    const CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR = 'CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
