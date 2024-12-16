@@ -2295,7 +2295,10 @@ trait Capture
     protected function retryCapture(Payment\Entity $payment): Payment\Entity
     {
         //setting this to avoid lock on balance table
-        $payment->setLateBalanceUpdate();
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            $payment->setLateBalanceUpdate();
+        }
 
         //calling record capture to retry the capture
         [$fee, $tax] = $this->recordCapture(true);
