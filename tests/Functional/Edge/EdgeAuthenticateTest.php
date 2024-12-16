@@ -3,7 +3,6 @@
 namespace Functional\Edge;
 
 use Illuminate\Support\Facades\DB;
-use Mockery;
 use RZP\Constants\Table;
 use Hash;
 use RZP\Http\RequestHeader;
@@ -155,32 +154,6 @@ class EdgeAuthenticateTest extends TestCase
         $data = array_merge($this->testData['baseRequest'], $this->testData['baseResponse']);
         unset($data['request']['org_id']);
         $data = array_replace_recursive($data, $this->testData[__FUNCTION__]);
-        $this->runRequestResponseFlow($data);
-    }
-
-    public function testProductAndSubProductInResponse()
-    {
-        // Arrange
-        $data = array_merge($this->testData['baseRequest'], $this->testData['baseResponse']);
-        $data['request']['auth'] = 'proxy';
-
-        $splitzMock = Mockery::mock('overload:RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator');
-        $splitzMock->allows('evaluateExperiment')
-            ->andReturns(['variant' => 'variant']);
-
-        $this->runRequestResponseFlow($data);
-    }
-
-    public function testProductAndSubProductInResponseWithoutSplitz()
-    {
-        // Arrange
-        $data = array_merge($this->testData['baseRequest'], $this->testData['baseResponse']);
-        $data['request']['auth'] = 'proxy';
-
-        $splitzMock = Mockery::mock('overload:RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator');
-        $splitzMock->allows('evaluateExperiment')
-            ->andReturns(['variant' => null]);
-
         $this->runRequestResponseFlow($data);
     }
 

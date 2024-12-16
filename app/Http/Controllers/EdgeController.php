@@ -1,22 +1,15 @@
 <?php
 
 namespace RZP\Http\Controllers;
-use Cache;
-use Carbon\Carbon;
+Use ApiResponse;
 use Request;
-use ApiResponse;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\RequestHeader;
-use RZP\Models\Order\ProductType;
-use RZP\Trace\TraceCode;
-use RZP\Models\User\Constants;
-use RZP\Services\Edge\TraceError;
 use RZP\Services\Edge\Service;
-use RZP\Models\Merchant\Detail\Core;
-use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
-
+use RZP\Services\Edge\TraceError;
+use RZP\Trace\TraceCode;
 
 class EdgeController extends Controller
 {
@@ -110,62 +103,16 @@ class EdgeController extends Controller
         }
         else if ($this->ba->isProxyAuth())
         {
-            if ($this->ba->isProductBanking())
-            {
-                return [
-                    'user_id' => $this->ba->getUser()->getId(),
-                    'product' => $this->ba->getRequestOriginProduct(),
-                    'is_lms' => $this->ba->isBankLms(),
-                    'roles' => $this->service->getUserRoles(),
-                    'enforcement_roles' => $this->service->getUserEnforcementRoles()
-                ];
-            }
-
-            $merchantId = $this->ba->getMerchantId();
-            $cacheKey = Constants::RBAC_PG_POS_RBAC_SPLITZ_EXPERIMENT . "::" . $merchantId;
-            $variant = Cache::get($cacheKey, null);
-            $response = [
+            return [
                 'user_id' => $this->ba->getUser()->getId(),
                 'product' => $this->ba->getRequestOriginProduct(),
                 'is_lms' => $this->ba->isBankLms(),
                 'roles' => $this->service->getUserRoles(),
                 'enforcement_roles' => $this->service->getUserEnforcementRoles()
             ];
-
-            if($variant === null) {
-                $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
-                    [
-                        'id'            => $merchantId,
-                        'experiment_id' => $this->app['config']->get('app.pg_pos_rbac_splitz_experiment_id')
-                    ],
-                    true,
-                    Constants::VARIANT
-                );
-                $variant = $expResult['experiment_enabled'];
-                Cache::add($cacheKey, $variant, Carbon::now()->addMinutes(30));
-            }
-            if($variant && $this->isPosMerchant($merchantId))
-            {
-                $response['sub_product'] =  Constants::AUTHZ_MERCHANT_DASHBOARD_SUB_PRODUCT;
-                $response['product'] = Constants::AUTHZ_POS_PRODUCT;
-            }
-
-            return $response;
         }
 
         // Should not reach here
         return $this->failedUnreachable();
-    }
-
-    public function isPosMerchant(string $merchantId): string
-    {
-        $merchant = $this->ba->getMerchant();
-        $posActivationStatus = (new Core())->fetchMerchantPosActivationStatus($merchant->merchantDetail);
-
-        if ($merchant->isFeatureEnabled(Constants::OMNI_ENABLED) ||
-                in_array($posActivationStatus,  Constants::POS_ACTIVATION_STATUSES, true)) {
-            return true;
-        }
-        return false;
     }
 }

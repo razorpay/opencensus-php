@@ -4059,7 +4059,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace codes for Users module
     const USER_EDIT                                             = 'USER_EDIT';
     const FETCH_AUTHZ_ROLES_FAILED                              = 'FETCH_AUTHZ_ROLES_FAILED';
-    const FETCH_MERCHANT_DETAIL_FOR_AUTHZ_ROLES_FAILED          = 'FETCH_MERCHANT_DETAIL_FOR_AUTHZ_ROLES_FAILED';
     const AUTHZ_ENFORCER_API_FAILED                             = 'AUTHZ_ENFORCER_API_FAILED';
     const MERCHANT_USER_EMAIL_CHANGE                            = 'MERCHANT_USER_EMAIL_CHANGE';
     const MERCHANT_USER_NUMBER_CHANGE                           = 'MERCHANT_USER_NUMBER_CHANGE';
@@ -10981,7 +10980,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTHZ_ENFORCEMENT_RESPONSE                        = 'AUTHZ_ENFORCEMENT_RESPONSE';
 
     const AUTHZ_POLICY_LIST_REQUEST                         = 'AUTHZ_POLICY_LIST_REQUEST';
-    const AUTHZ_POLICY_LIST_REQUEST_FAILED                  = 'AUTHZ_POLICY_LIST_REQUEST_FAILED';
     const AUTHZ_POLICY_LIST_RESPONSE                        = 'AUTHZ_POLICY_LIST_RESPONSE';
 
     const FORCE_SET_SALESFORCE_REQUEST_JOB_MODE             = 'FORCE_SET_SALESFORCE_REQUEST_JOB_MODE';
@@ -12411,7 +12409,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE = "TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE";
     const PARTNERSHIPS_ACCESS_MAP_SUBMERCHANT_COUNT_ERROR = "PARTNERSHIPS_ACCESS_MAP_SUBMERCHANT_COUNT_ERROR";
     const PARTNERSHIPS_MAPPING_BY_APPLICATION_TYPE_ERROR = "PARTNERSHIPS_MAPPING_BY_APPLICATION_TYPE_ERROR";
-    const AUTHZ_POLICY_LIST_ERROR                           = 'AUTHZ_POLICY_LIST_ERROR';
 
     const API_DECOMP_ORDER_PAYMENTS_ROUTE_PARAM = 'API_DECOMP_ORDER_PAYMENTS_ROUTE_PARAM';
     const API_DECOMP_ES_AND_MYSQL_PARAMETER      = 'API_DECOMP_ES_AND_MYSQL_PARAMETER';
@@ -12657,9 +12654,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::BANKING_ADMIN_UPDATE_REQUEST_ORG_ID                            => 'Trace log after admin update',
         self::ADMIN_ORG_PERMISSIONS_REPLICATIONS                             => 'admin org permission replicated successfully',
         self::TRANSACTION_CREATED_WEBHOOK_SYNC_FIRE                          => 'Firing Transaction.Created Webhook synchronously',
-        self:: TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE                        => 'Firing Transaction.Created Webhook Asynchronously ',
-
-
+        self:: TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE                        => 'Firing Transaction.Created Webhook Asynchronously '
     ];
 
     public static $fileBasedReconTraceCodes = [

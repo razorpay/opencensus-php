@@ -4,9 +4,6 @@ namespace RZP\Models\Merchant;
 
 
 use DOMXPath;
-use RZP\Models\User\Constants;
-use RZP\Models\User\Entity;
-use RZP\Services\SplitzService;
 use ZipArchive;
 use DOMDocument;
 use Response;
@@ -62,27 +59,5 @@ class Utility
     {
     //please don't change, it's live date of policy v2
         return  Carbon::create(2023, 12, 8,0,0,0);
-    }
-
-    public static function splitzBulkEvaluate($merchants, $experimentId)
-    {
-        $variantAtMid = [];
-        $splitzRequest = array_map(function ($merchant) use ($experimentId) {
-            return [
-                'id' => $merchant[Entity::ID],
-                'experiment_id' => $experimentId,
-            ];
-        }, $merchants);
-
-        $expResult = (new SplitzService())->bulkCallsToSplitz($splitzRequest);
-
-        foreach ($expResult as $result) {
-            $variantAtMid[$result['id']] = true;
-
-            if (!isset($result['variant']) || (isset($result['variant']) && $result['variant']['variables'][0]['value'] !== Constants::VARIANT)) {
-                $variantAtMid[$result['id']] = false;
-            }
-        }
-        return $variantAtMid;
     }
 }

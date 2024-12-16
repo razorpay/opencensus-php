@@ -4318,8 +4318,6 @@ class Core extends Base\Core
             $response[Entity::SETTINGS]    = $settings;
         }
 
-        $merchantsUnique = $this->populateUserPermissionsForPosAndPg($merchantsUnique);
-
         $response[Entity::MERCHANTS]   = $merchantsUnique;
 
         return $response;
@@ -4426,66 +4424,6 @@ class Core extends Base\Core
         );
     }
 
-    private function populateUserPermissionsForPosAndPg($merchants)
-    {
-
-        $splitzVariant = Merchant\Utility::splitzBulkEvaluate($merchants, $this->app['config']->get('app.pg_pos_rbac_splitz_experiment_id'));
-
-        foreach ($merchants as &$merchant) {
-            $orgIds = [];
-            $authzPolicies = [];
-
-            if (!in_array($merchant[Entity::PRODUCT], Constants::OMNI_PRODUCTS)) {
-                continue;
-            }
-
-            $merchantId = $merchant[Entity::ID];
-
-            if (empty($splitzVariant) || (isset($splitzVariant[$merchantId]) && $splitzVariant[$merchantId] === false)) {
-                $merchant[Constants::PERMISSIONS] = [];
-                continue;
-            }
-
-            $merchantEntity = $this->repo->merchant->findOrFailPublic($merchantId);
-            $posActivationStatus = (new Merchant\Detail\Core())
-                ->fetchMerchantPosActivationStatus($merchantEntity->merchantDetail);
-            $activationStatus = $merchantEntity->merchantDetail->getActivationStatus();
-
-            if (in_array($posActivationStatus, Constants::POS_ACTIVATION_STATUSES, true) ||
-                $merchantEntity->isFeatureEnabled(Constants::OMNI_ENABLED)) {
-                $orgIds[] = Constants::RAZORPAY_ORG . "::" . Constants::AUTHZ_POS_PRODUCT . "::" . Constants::AUTHZ_MERCHANT_DASHBOARD_SUB_PRODUCT;
-            }
-
-            if (in_array($activationStatus, Constants::ACTIVATED_STATUSES, true)) {
-                $orgIds[] = Constants::RAZORPAY_ORG . "::" . Constants::AUTHZ_PG_PRODUCT . "::" . Constants::AUTHZ_MERCHANT_DASHBOARD_SUB_PRODUCT;
-            }
-
-            try {
-                $authzPolicies = (new \RZP\Models\AuthzAdminOmni\Service())->adminAPIListPermissionGroup(
-                    $merchant[Entity::ROLE],
-                    $orgIds,
-                    Constants::ROLE_OWNER_ID,
-                    true
-                );
-            } catch (\Exception $exception) {
-                $this->trace->count(Metric::AUTHZ_POLICY_LIST_REQUEST_FAILED, [
-                    'error' => $exception->getMessage(),
-                    'role' => $merchant[Entity::ROLE],
-                    'organizatin_id' => $orgIds
-                ]);
-
-                $this->trace->error(TraceCode::AUTHZ_POLICY_LIST_ERROR, [
-                    'error' => $exception->getMessage(),
-                    'route_name' => $this->app['api.route']->getCurrentRouteName(),
-                ]);
-
-                $merchant[Constants::PERMISSIONS] = [];
-            }
-
-            $merchant[Constants::PERMISSIONS] = $authzPolicies;
-        }
-        return $merchants;
-    }
     /**
      * Appends banking specific details in serialized unique list of merchants where applies.
      * @param array $merchants

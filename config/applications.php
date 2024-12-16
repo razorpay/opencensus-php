@@ -1976,17 +1976,6 @@ return [
         'url'      => env('AUTHZ_XPLATFORM_ADMIN_BASE_URL')
     ],
 
-    'authzOmniPlatformAdmin' => [
-        'auth' => [
-            'username' => env('AUTHZ_OMNI_ADMIN_USER'),
-            'password' => env('AUTHZ_OMNI_ADMIN_SECRET'),
-        ],
-        'service_id'        =>  env('AUTHZ_OMNI_ADMIN_SERVICE_ID'),
-        'resource_group_id' => env('AUTHZ_OMNI_ADMIN_RESOURCE_GROUP_ID'),
-        'mock'              => env('AUTHZ_OMNI_ADMIN_MOCK', false),
-        'url'               => env('AUTHZ_OMNI_ADMIN_BASE_URL')
-    ],
-
     'optimizer_core_service' => [
         'url'           => env('APP_OPTIMIZER_CORE_SERVICE_URL'),
         'username'      => 'api',
