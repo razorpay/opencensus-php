@@ -18013,7 +18013,9 @@ class Route
             'methods_update_merchants_internal',
             'merchant_live_enable_internal',
             'create_merchant_balance_entities_internal',
-            'setl_service_migration_internal'
+            'setl_service_migration_internal',
+            'internal_merchant_details_fetch',
+            'payment_fetch_by_id_internal'
         ],
 
         'spinnaker' => [
