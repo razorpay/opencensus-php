@@ -294,6 +294,8 @@ class Core extends Base\Core
 
         $methods = $this->getPaymentMethods($merchant);
 
+        $methods->exists = true;
+
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
             [
@@ -307,6 +309,39 @@ class Core extends Base\Core
         $this->repo->saveOrFail($methods);
 
         $this->pushMethodUpdateEventToKafka($merchant,$methods);
+
+        $methodsArray = $methods->toArrayPublic();
+
+        return array_intersect_key($methodsArray, $input);
+    }
+
+    public function editAllMethods(array $input, Merchant\Entity $merchant = null)
+    {
+        if ($merchant === null)
+        {
+            $merchant = $this->merchant;
+        }
+
+        $methods = $this->getPaymentMethods($merchant);
+
+        $methods->exists = true;
+
+        $this->trace->info(
+            TraceCode::MERCHANT_METHODS_EDIT,
+            [
+                'merchant_id' => $merchant->getId(),
+                'input' => $input,
+                'current_methods' => $methods->toArrayAdmin(),
+            ]);
+
+        if (isset($input['card'])){
+            $methods->setAttribute('card', $input['card']);
+            unset($input["card"]);
+        }
+
+        $methods->setMethods($input);
+
+        (new Methods\Repository())->methodsDualWrite($methods);
 
         $methodsArray = $methods->toArrayPublic();
 

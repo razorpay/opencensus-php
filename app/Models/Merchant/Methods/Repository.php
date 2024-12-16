@@ -355,4 +355,14 @@ class Repository extends Base\Repository
         return $methods;
     }
 
+    public function methodsDualWrite($entity, array $options = array()) {
+        $this->trace->info(TraceCode::METHODS_DUAL_WRITE, [
+            'data' => $entity,
+            'options' => $options,
+        ]);
+
+        //TODO: saveOrFail implementation is required for dualwrite flow and existing write flow for proxy call
+        $this->saveOrFail($entity, $options);
+    }
+
 }

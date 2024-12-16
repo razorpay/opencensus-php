@@ -526,6 +526,7 @@ class Route
         'merchant_put_payment_methods'             => ['put',      'merchants/{mid}/methods',                        'MerchantController@putMethods'                                     ],
         'merchant_methods_edit'                    => ['put',      'merchant/methods',                               'MerchantController@editMethods'                                    ],
         'merchant_methods_edit_internal'           => ['patch',    'merchants/{mid}/methods',                        'MerchantController@editMerchantMethods'                            ],
+        'merchant_edit_all_methods_internal'       => ['post',     'merchants/{mid}/all/methods',                    'MerchantController@editAllMerchantMethods'                         ],
         'merchant_fetch_methods'                   => ['get',      'merchant/methods',                               'MerchantController@getPaymentMethods'                              ],
         'merchant_fetch_methods_internal'          => ['get',      'merchant/methods/{id}',                          'MerchantController@getPaymentMethodsById'                          ],
         'merchant_fetch_all_methods_internal'      => ['get',      'merchant/methods/all/{id}',                      'MerchantController@getAllPaymentMethodsById'                       ],
@@ -6822,6 +6823,8 @@ class Route
         'merchant_fetch_methods_internal',
 
         'merchant_fetch_all_methods_internal',
+
+        'merchant_edit_all_methods_internal',
 
         'terminal_sync_internal',
 
@@ -17994,6 +17997,7 @@ class Route
 
         'payment_methods' => [
             'merchant_fetch_all_methods_internal',
+            'merchant_edit_all_methods_internal',
         ],
 
         'pos_app' => [

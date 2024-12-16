@@ -4404,6 +4404,20 @@ class Service extends Base\Service
         return (new Methods\Core)->editMethods($input, $merchant);
     }
 
+    public function editAllMerchantMethods($mid, $input)
+    {
+        $this->trace->info(
+            TraceCode::METHODS_DUAL_WRITE,
+            [
+                'input'         => $input,
+                'merchant_id'   => $mid
+            ]);
+
+        $merchant =  $this->repo->merchant->findOrFailPublic($mid);
+
+        return (new Methods\Core)->editAllMethods($input, $merchant);
+    }
+
     public function patchMerchantBeneficiaryCode()
     {
         $data = (new BankAccount\Core)->updateBeneficiaryCodes();

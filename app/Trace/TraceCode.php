@@ -2610,6 +2610,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_TERMINALS                                    = 'MERCHANT_TERMINALS';
     const MERCHANT_CREATE                                       = 'MERCHANT_CREATE';
     const MERCHANT_EDIT                                         = 'MERCHANT_EDIT';
+    const MERCHANT_METHODS_EDIT                                 = 'MERCHANT_METHODS_EDIT';
     const MERCHANT_VALIDATE                                     = 'MERCHANT_VALIDATE';
     const MERCHANT_EDIT_RISK_ATTRIBUTES                         = 'MERCHANT_EDIT_RISK_ATTRIBUTES';
     const MERCHANT_BILLING_LABEL_UPDATE_VALIDATION              = 'MERCHANT_BILLING_LABEL_UPDATE_VALIDATION';
@@ -12366,6 +12367,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADMIN_ORG_PERMISSIONS_REPLICATIONS                    = "ADMIN_ORG_PERMISSIONS_REPLICATIONS";
     const ADMIN_ORG_PERMISSIONS_INIT                            = "ADMIN_ORG_PERMISSIONS_INIT";
     const METHODS_WRITE = "METHODS_WRITE";
+    const METHODS_DUAL_WRITE = "METHODS_DUAL_WRITE";
     const SQS_PUSH_FAILED_FOR_CROSS_BORDER_TASK_QUEUE                                     = 'SQS_PUSH_FAILED_FOR_CROSS_BORDER_TASK_QUEUE';
     const PROCESS_CB_SQS_TASK                                    = 'PROCESS_CB_SQS_TASK';
     const POS_ACTIVATION_CHECK_FOR_OFFLINE_PAYMENT_SPLITZ_RESPONSE = 'POS_ACTIVATION_CHECK_FOR_OFFLINE_PAYMENT_SPLITZ_RESPONSE';
