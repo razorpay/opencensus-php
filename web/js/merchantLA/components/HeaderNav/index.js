@@ -52,7 +52,7 @@ export default class HeaderNav extends Component {
     };
 
     return (
-      <nav className="navbar navbar-default navbar-fixed-top">
+      <nav className="navbar navbar-default navbar-fixed-top navbar-left-alignment">
         <div className="container-fluid navbar-container">
           <div className="navbar-collapse" id="headerNav123">
             {showMobileNav && (

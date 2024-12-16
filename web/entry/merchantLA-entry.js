@@ -17,7 +17,11 @@ function MerchantLAEntry() {
     };
 
     websiteAssets.js.forEach((src) => {
-      appendScript(cdnDashboardUrl + src);
+      if (isRedirector) {
+        appendScript(src);
+      } else {
+        appendScript(cdnDashboardUrl + src);
+      }
     });
 
     websiteAssets.css.forEach((src) => {
