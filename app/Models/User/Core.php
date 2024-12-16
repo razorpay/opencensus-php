@@ -1746,16 +1746,6 @@ class Core extends Base\Core
             'THROW_SMS_EXCEPTION_IN_STORK' => true,
         ];
 
-        if($user !== null) {
-            $userDeviceDetail = $this->repo->user_device_detail->fetchByUserId($user->getUserId());
-
-            if (empty($userDeviceDetail) === false && empty($userDeviceDetail->signup_campaign) === false && $userDeviceDetail->isAssistedOnboardedMerchant()) {
-                $payload['source'] = 'api.user.login_otp_assisted';
-                $payload['append_source_to_context'] = true;   // adding source to stork context for custom rate limit
-            }
-        }
-
-
         if($this->app['razorx']->getTreatment($receiver , Constants::UPDATE_LOGIN_SIGNUP_TEMPLATE_RAZORX_EXP , Mode::LIVE) === 'on')
         {
             $autoReadOtpText = $origin_value.' #'.$otp['otp'];
@@ -1780,6 +1770,15 @@ class Core extends Base\Core
                 ],
                 'THROW_SMS_EXCEPTION_IN_STORK' => true,
             ];
+        }
+
+        if($user !== null) {
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByUserId($user->getUserId());
+
+            if (empty($userDeviceDetail) === false && empty($userDeviceDetail->signup_campaign) === false && $userDeviceDetail->isAssistedOnboardedMerchant()) {
+                $payload['source'] = 'api.user.login_otp_assisted';
+                $payload['append_source_to_context'] = true;   // adding source to stork context for custom rate limit
+            }
         }
 
         return $payload;
