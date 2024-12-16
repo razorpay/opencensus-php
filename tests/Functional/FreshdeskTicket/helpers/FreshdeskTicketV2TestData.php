@@ -1343,6 +1343,19 @@ return [
         ],
     ],
 
+    'testGetAgentDetailForTicketUsingResponderInternalAuth' => [
+        'request'  => [
+            'url'     => '/fd/ticket/2342/agent?responder_id=14000006865911',
+            'method'  => \Requests::GET,
+        ],
+        'response' => [
+            'content' => [
+                'agent_name' => 'webhook_agent',
+                'agent_id'   => 'admin_JCTRhsU4aiY0tc',
+            ],
+        ],
+    ],
+
     'testGetAgentDetailForUnassignedTicketInternalAuthFail' => [
         'request'  => [
             'url'     => '/fd/ticket/1234/agent',

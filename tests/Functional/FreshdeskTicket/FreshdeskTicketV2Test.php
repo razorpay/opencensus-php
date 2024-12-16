@@ -59,6 +59,8 @@ class FreshdeskTicketV2Test extends TestCase
 
     const RZP_FETCH_UNASSIGNED_TICKET_BY_ID                                     = 'rzp_fetch_unassigned_ticket_by_id';
     const RZP_FETCH_AGENT_BY_FRESHDESK_AGENT_ID                                 = 'rzp_fetch_agent_by_freshdesk_agent_id';
+    const RZP_FETCH_AGENT_BY_FRESHDESK_TICKET_USING_RESPONDER_ID               = 'rzp_fetch_agent_by_freshdesk_agent_using_responder_id';
+
 
     protected function setUp(): void
     {
@@ -958,6 +960,25 @@ class FreshdeskTicketV2Test extends TestCase
         $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_FETCH_AGENT_BY_FRESHDESK_AGENT_ID);
 
         $this->checkFreshdeskCorrectInstanceCallAndRespondWith('agents/123456789', 'GET', 'rzpind',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
+    }
+
+    public function testGetAgentDetailForTicketUsingResponderInternalAuth()
+    {
+        $this->ba->cmmaAppAuth();
+
+        $this->fixtures->create('admin', [
+            'id'                    => 'JCTRhsU4aiY0tc',
+            'email'                 => 'agentemailwebhook@razorpay.com',
+            'name'                  => 'webhook_agent',
+            'org_id'                => Org::RZP_ORG,
+        ]);
+
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_FETCH_AGENT_BY_FRESHDESK_TICKET_USING_RESPONDER_ID);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('agents/14000006865911', 'GET', 'rzpind',
             $expectedRequestResponse['request'], $expectedRequestResponse['response']);
 
         $this->startTest();
@@ -3144,6 +3165,18 @@ class FreshdeskTicketV2Test extends TestCase
                     'id'            => '123456789',
                     'contact' => [
                         'email'         => 'agentemail@razorpay.com',
+                    ],
+                ],
+            ];
+        }
+        else if ($key === self::RZP_FETCH_AGENT_BY_FRESHDESK_TICKET_USING_RESPONDER_ID)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'id'            => '14000006865911',
+                    'contact' => [
+                        'email'         => 'agentemailwebhook@razorpay.com',
                     ],
                 ],
             ];
