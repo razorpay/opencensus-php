@@ -1186,7 +1186,7 @@ return array(
     'pg_pos_rbac_splitz_experiment_id' => env('PG_POS_RBAC_SPLITZ_EXPERIMENT_ID'),
 
     'pg_pos_auth_rbac_splitz_experiment_id' => env('PG_POS_AUTH_RBAC_SPLITZ_EXPERIMENT_ID'),
-  
+
     'insufficient_fund_tng' => env('INSUFFICIENT_FUND_TNG'),
 
     'generate_bene_hash_experiment_id' => env('GENERATE_BENE_HASH_EXPERIMENT_ID'),
@@ -1197,10 +1197,12 @@ return array(
 
     'stop_async_capture_card_gateways' => env('STOP_ASYNC_CAPTURE_CARD_GATEWAYS'),
 
-
     'skip_optimizer_card_callback' => env('SKIP_OPTIMIZER_CARD_CALLBACK'),
 
     'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID'),
 
-    'enable_feature_fetch_from_dcs_exp_id' => env('ENABLE_FEATURE_FETCH_FROM_DCS_EXP_ID')
+    'enable_feature_fetch_from_dcs_exp_id' => env('ENABLE_FEATURE_FETCH_FROM_DCS_EXP_ID'),
+
+    'gifu_card_upi_ds_refunds_exp_id' => env('GIFU_CARD_UPI_DS_REFUNDS_EXP_ID')
+
 );

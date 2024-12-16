@@ -4,16 +4,19 @@ namespace RZP\Models\Base\Traits;
 
 use RZP\Constants\Entity;
 use RZP\Error\ErrorCode;
+use RZP\Services\Scrooge;
 use RZP\Models\Base\PublicCollection;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Gateway\File\Constants;
 use RZP\Models\Payment\Refund\Service;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 trait ExternalScroogeRepo
@@ -1141,6 +1144,86 @@ trait ExternalScroogeRepo
 
         throw new BadRequestException(
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    public function fetchRefundList($merchantIds, $params): array
+    {
+        // Fetch count of records to process per batch,
+        $count =   $params[RefundConstants::SCROOGE_COUNT] ?? Constants::FETCH_FROM_SCROOGE_COUNT; // Safeguard against infinite loops
+
+        // Initial offset for pagination
+        $skip  =   $params[RefundConstants::SCROOGE_SKIP] ?? 0;
+
+        $refundData = [];
+
+        // Prepare the base input for the refund fetch query
+        $scroogeInput = [
+            RefundEntity::MERCHANT_ID => $merchantIds,
+            RefundConstants::METHOD => $params[RefundConstants::METHOD],
+            RefundConstants::STATUS => $params[RefundConstants::STATUS],
+        ];
+
+        // Add time range (start, end) filters to query input
+        if (isset($params[RefundConstants::SCROOGE_GTE]) === true)
+        {
+            $scroogeInput[RefundConstants::SCROOGE_PROCESSED_AT][RefundConstants::SCROOGE_GTE] = $params[RefundConstants::SCROOGE_GTE];
+        }
+
+        if (isset($params[RefundConstants::SCROOGE_LTE]) === true)
+        {
+            $scroogeInput[RefundConstants::SCROOGE_PROCESSED_AT][RefundConstants::SCROOGE_LTE] = $params[RefundConstants::SCROOGE_LTE];
+        }
+
+        // Construct the Refund fetch query
+        $scrooge_fetch_query = [
+            RefundConstants::SCROOGE_COUNT =>  $count,
+            RefundConstants::SCROOGE_QUERY =>  [
+                RefundConstants::SCROOGE_REFUNDS => $scroogeInput
+            ],
+        ];
+
+       // To fetch refunds in batches
+        do
+        {
+            $scroogeRefunds = [];
+
+            // Update the skip parameter for pagination
+            $scrooge_fetch_query[RefundConstants::SCROOGE_SKIP] = $skip;
+
+            try
+            {
+                $response = $this->app['scrooge']->getRefunds($scrooge_fetch_query);
+
+                if ((in_array($response[RefundConstants::RESPONSE_CODE], Scrooge::RESPONSE_SUCCESS_CODES, true) === true)
+                and (isset($response[RefundConstants::RESPONSE_BODY][RefundConstants::RESPONSE_DATA]) === true))
+                {
+                    $scroogeRefunds = $response[RefundConstants::RESPONSE_BODY][RefundConstants::RESPONSE_DATA];
+
+                    $refundData = array_merge($refundData, $scroogeRefunds);
+
+                    // Update the skip parameter to fetch the next batch
+                    $skip += $count;
+                }
+                else
+                {
+                    return $refundData;
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::EXTERNAL_REPO_FETCH_REQUEST_FAILURE,
+                    [
+                        'error'     => $e->getMessage(),
+                        'input'     => $scrooge_fetch_query,
+                    ]);
+            }
+
+        }while(count($scroogeRefunds) > 0);
+
+        return $refundData;
     }
 
     /*

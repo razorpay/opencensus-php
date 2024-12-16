@@ -336,6 +336,21 @@ EOT;
             ->get();
     }
 
+    public function fetchNonPosPaymentsByIds(array $paymentIds)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->selectRaw(
+                Payment\Entity::TERMINAL_ID . ',' .  Payment\Entity::ID
+            )
+            ->where(function ($query) {
+                $query->whereNull(Payment\Entity::RECEIVER_TYPE)
+                    ->orWhere(Payment\Entity::RECEIVER_TYPE, '!=', 'pos');
+            })
+            ->whereIn(Payment\Entity::ID, $paymentIds)
+            ->pluck(Payment\Entity::TERMINAL_ID, Payment\Entity::ID)
+            ->toArray();
+    }
+
     public function fetchPendingCapturePaymentsBetweenTimestamps($from, $to, $limit = 100)
     {
         $query = $this->newQuery();

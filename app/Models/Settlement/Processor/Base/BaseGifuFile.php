@@ -107,6 +107,9 @@ abstract class BaseGifuFile extends Base\Core
 
             (new AdminService)->setConfigKeys([ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $upiCutoffTimestamp]);
 
+            $refundCutoffTimestamp = $this->getRefundCutoffTimestamp();
+
+            (new AdminService)->setConfigKeys([ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $refundCutoffTimestamp]);
         }
 
         $this->deleteLocalFile($file);

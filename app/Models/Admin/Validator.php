@@ -196,6 +196,7 @@ class Validator extends Base\Validator
         ConfigKey::CARD_REFUNDS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => 'filled|integer',
         ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => 'filled|integer',
         ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => 'filled|integer',
+        ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => 'filled|integer',
         ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => 'array',
         ConfigKey::LOW_BALANCE_CONFIGS_FETCH_LIMIT_IN_ONE_BATCH => 'filled|integer',
         ConfigKey::BATCH_PAYOUTS_FETCH_LIMIT          => 'integer|nullable',

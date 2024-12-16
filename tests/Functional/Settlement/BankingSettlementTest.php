@@ -8,19 +8,25 @@ use Config;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
+use RZP\Services\Mock\Scrooge;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Payment\Processor;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Traits\MocksSplitz;
+use RZP\Services\Ledger as LedgerService;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Services\Mock\UfhService as MockUfhService;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Admin;
 
 class BankingSettlementTest extends TestCase
@@ -75,11 +81,23 @@ class BankingSettlementTest extends TestCase
 
         $poolAcc = random_alphanum_string(14);
 
+        $this->mockRazorxTreatment();
+
+        $this->mockAllSplitzTreatment();
+
         $channel = Channel::AXIS;
 
         // working wednesday 12 july 2023
         $todaydate = Carbon::createFromDate(2023, 7, 12,Timezone::IST);
         Carbon::setTestNow($todaydate->copy());
+
+        $lastCutoffTime = Carbon::yesterday(Timezone::IST)->setTime(20, 0, 0)->getTimestamp() ;
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         foreach ($merchants as $merchant) {
 
@@ -143,6 +161,40 @@ class BankingSettlementTest extends TestCase
                     'amount'      => 100000,
                     'created_at'  => $createdAt,
                     'updated_at'  => $createdAt + 10
+                ]
+
+            );
+
+            $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
+            $capturedAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 10;
+
+            $this->fixtures->times(2)->create(
+                'payment',
+                [
+                    'captured_at' => $capturedAt,
+                    'method'      => 'card',
+                    'merchant_id' => $merchantId,
+                    'amount'      => 100000,
+                    'mdr'         => 400,
+                    'fee'         => 100,
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt + 10,
+                    'settled_by' => 'bank'
+                ]
+
+            );
+            $this->fixtures->times(2)->create(
+                'payment',
+                [
+                    'captured_at' => $capturedAt,
+                    'method'      => 'upi',
+                    'merchant_id' => $merchantId,
+                    'amount'      => 100000,
+                    'mdr'         => 0,
+                    'fee'         => 100,
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt + 10,
+                    'settled_by' => 'bank'
                 ]
 
             );
@@ -182,6 +234,8 @@ class BankingSettlementTest extends TestCase
 
         $this->mockRazorxTreatment();
 
+        $this->mockAllSplitzTreatment();
+
         // working wednesday 12 july 2023
         $todaydate = Carbon::createFromDate(2023, 7, 12,Timezone::IST);
         Carbon::setTestNow($todaydate->copy());
@@ -192,9 +246,20 @@ class BankingSettlementTest extends TestCase
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
-        foreach ($merchants as $merchant) {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+
+        $dataRefunds = [];
+
+        foreach ($merchants as $merchant)
+        {
 
             $merchantId = $merchant->getId();
+
+            $this->fixtures->create('feature', [
+                'name' => Constants::PG_LEDGER_REVERSE_SHADOW,
+                'entity_id' => $merchantId,
+                'entity_type' => 'merchant',
+            ]);
 
             $terminal = $this->fixtures->create(
                 'terminal',
@@ -261,7 +326,7 @@ class BankingSettlementTest extends TestCase
             $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
             $capturedAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 10;
 
-            $this->fixtures->times(2)->create(
+            $cardPayment = $this->fixtures->times(2)->create(
                 'payment',
                 [
                     'captured_at' => $capturedAt,
@@ -276,7 +341,8 @@ class BankingSettlementTest extends TestCase
                 ]
 
             );
-            $this->fixtures->times(2)->create(
+
+            $upiPayment = $this->fixtures->times(2)->create(
                 'payment',
                 [
                     'captured_at' => $capturedAt,
@@ -291,11 +357,50 @@ class BankingSettlementTest extends TestCase
                 ]
 
             );
+
+            $cardRefund = $this->fixtures->create(
+                'refund',
+                [
+                    'payment_id'    => $cardPayment[0]['id'],
+                    'amount'        => 100000,
+                    'base_amount'   => 100000,
+                    'merchant_id'   => $merchantId,
+                    'status'        => 'processed',
+                    'gateway'       => $terminal['gateway'],
+                    'settled_by'    => $cardPayment[0]['settled_by'],
+                    'created_at'    => $createdAt+30,
+                    'processed_at'  => $createdAt+35,
+                ]
+
+            )->toArray();
+
+            $upiRefund = $this->fixtures->create(
+                'refund',
+                [
+                    'payment_id'    => $upiPayment[0]['id'],
+                    'amount'        => 100000,
+                    'base_amount'   => 100000,
+                    'merchant_id'   => $merchantId,
+                    'status'        => 'processed',
+                    'gateway'       => $terminal['gateway'],
+                    'settled_by'    => $upiPayment[0]['settled_by'],
+                    'created_at'    => $createdAt+30,
+                    'processed_at'  => $createdAt+35,
+                ]
+
+            )->toArray();
+
+            $dataRefunds [] = $cardRefund;
+            $dataRefunds [] = $upiRefund;
         }
 
         $this->initiateSettlements(Channel::AXIS);
 
         Carbon::setTestNow($todaydate->copy()->addDay());
+
+        $this->setFetchRefundsFromScroogeMockResponse($dataRefunds);
+
+        $this->setFetchLedgerJournalFromLedgerMockResponse();
 
         $this->ba->cronAuth();
 
@@ -327,6 +432,8 @@ class BankingSettlementTest extends TestCase
 
         $this->mockRazorxTreatment();
 
+        $this->mockAllSplitzTreatment();
+
         // working saturday
         $todaydate = Carbon::createFromDate(2023, 7, 15,Timezone::IST);
         Carbon::setTestNow($todaydate->copy());
@@ -337,9 +444,19 @@ class BankingSettlementTest extends TestCase
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+
+        $dataRefunds = [];
+
         foreach ($merchants as $merchant) {
 
             $merchantId = $merchant->getId();
+
+            $this->fixtures->create('feature', [
+                'name' => Constants::PG_LEDGER_REVERSE_SHADOW,
+                'entity_id' => $merchantId,
+                'entity_type' => 'merchant',
+            ]);
 
             $terminal = $this->fixtures->create(
                 'terminal',
@@ -406,7 +523,7 @@ class BankingSettlementTest extends TestCase
             $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
             $capturedAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 10;
 
-            $this->fixtures->times(2)->create(
+            $cardPayment = $this->fixtures->times(2)->create(
                 'payment',
                 [
                     'captured_at' => $capturedAt,
@@ -421,7 +538,8 @@ class BankingSettlementTest extends TestCase
                 ]
 
             );
-            $this->fixtures->times(2)->create(
+
+            $upiPayment = $this->fixtures->times(2)->create(
                 'payment',
                 [
                     'captured_at' => $capturedAt,
@@ -436,11 +554,50 @@ class BankingSettlementTest extends TestCase
                 ]
 
             );
+
+            $cardRefund = $this->fixtures->create(
+                'refund',
+                [
+                    'payment_id'    => $cardPayment[0]['id'],
+                    'amount'        => 100000,
+                    'base_amount'   => 100000,
+                    'merchant_id'   => $merchantId,
+                    'status'        => 'processed',
+                    'gateway'       => $terminal['gateway'],
+                    'settled_by'    => $cardPayment[0]['settled_by'],
+                    'created_at'    => $createdAt+30,
+                    'processed_at'  => $createdAt+35,
+                ]
+
+            )->toArray();
+
+            $upiRefund = $this->fixtures->create(
+                'refund',
+                [
+                    'payment_id'    => $upiPayment[0]['id'],
+                    'amount'        => 100000,
+                    'base_amount'   => 100000,
+                    'merchant_id'   => $merchantId,
+                    'status'        => 'processed',
+                    'gateway'       => $terminal['gateway'],
+                    'settled_by'    => $upiPayment[0]['settled_by'],
+                    'created_at'    => $createdAt+30,
+                    'processed_at'  => $createdAt+35,
+                ]
+
+            )->toArray();
+
+            $dataRefunds [] = $cardRefund;
+            $dataRefunds [] = $upiRefund;
         }
 
         $this->initiateSettlements(Channel::AXIS);
 
         Carbon::setTestNow($todaydate->copy()->addDay());
+
+        $this->setFetchRefundsFromScroogeMockResponse($dataRefunds);
+
+        $this->setFetchLedgerJournalFromLedgerMockResponse();
 
         $this->ba->cronAuth();
 
@@ -493,6 +650,8 @@ class BankingSettlementTest extends TestCase
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         $cnt = 0;
 
@@ -643,12 +802,15 @@ class BankingSettlementTest extends TestCase
 
         $this->mockRazorxTreatment();
 
+        $this->mockAllSplitzTreatment();
+
         $lastCutoffTime = Carbon::yesterday(Timezone::IST)->setTime(20, 0, 0)->getTimestamp() ;
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         $cnt = 0;
         foreach ($merchants as $merchant) {
@@ -799,6 +961,8 @@ class BankingSettlementTest extends TestCase
 
         $this->mockRazorxTreatment();
 
+        $this->mockAllSplitzTreatment();
+
         $cnt = 0;
         $payId = null;
 
@@ -807,6 +971,8 @@ class BankingSettlementTest extends TestCase
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         foreach ($merchants as $merchant) {
 
@@ -956,11 +1122,15 @@ class BankingSettlementTest extends TestCase
 
         $this->mockRazorxTreatment();
 
+        $this->mockAllSplitzTreatment();
+
         $lastCutoffTime = Carbon::yesterday(Timezone::IST)->setTime(20, 0, 0)->getTimestamp() ;
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         $cnt = 0;
 
@@ -1098,12 +1268,15 @@ class BankingSettlementTest extends TestCase
 
         $this->mockRazorxTreatment();
 
+        $this->mockAllSplitzTreatment();
+
         $lastCutoffTime = Carbon::yesterday(Timezone::IST)->setTime(20, 0, 0)->getTimestamp();
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         $cnt = 0;
         foreach ($merchants as $merchant) {
@@ -1493,7 +1666,94 @@ class BankingSettlementTest extends TestCase
         $this->assertEquals(false, $result["settle_to_org"]);
     }
 
-    public function testGefuFileCreationWithGatewayTerminalIdPrefix190()
+    public function  createTerminalWithType($merchantId, $method, $type, $gateway)
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => random_alphanum_string(14),
+                'merchant_id' => $merchantId,
+                'gateway' => $gateway,
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'gateway_terminal_id' => '190000004',
+                'card' => ($method === 'card' ? 1 : 0 ),
+                'upi'  => ($method === 'upi' ? 1 : 0 ),
+                'mode' => 1,
+            ]);
+
+        if($type === 1)
+        {
+            $terminalType = [
+                    'direct_settlement_with_refund' => '1',
+                    'non_recurring'                 => '1',
+            ];
+        }
+        else{
+            $terminalType = [
+                'direct_settlement_without_refund' => '1',
+                'non_recurring'                    => '1',
+            ];
+        }
+
+        if($method === 'emi')
+        {
+            $this->fixtures->edit('terminal', $terminal['id'], [
+                'card' => 1,
+                'emi'  => 1,
+            ]);
+        }
+
+        $this->fixtures->edit('terminal', $terminal['id'], [
+            "type" => $terminalType,
+        ]);
+
+        return $terminal;
+    }
+
+    public function  createPaymentWithMethod($merchantId, $method, $terminalId, $settledBy, $receiverType = 'bank_account')
+    {
+        $created_at = Carbon::today(Timezone::IST)->setTime(10, 30, 0)->getTimestamp() + 5;
+
+        return $this->fixtures->create(
+            'payment',
+            [
+                'method'      => $method,
+                'merchant_id' => $merchantId,
+                'amount'      => 1000,
+                'mdr'         => 400,
+                'fee'         => 100,
+                'created_at' => $created_at,
+                'captured_at' => $created_at+10,
+                'updated_at' => $created_at+20,
+                'terminal_id' => $terminalId,
+                'receiver_type' => $receiverType,
+                'settled_by' => $settledBy,
+            ]
+        );
+    }
+
+    public function  createRefundWithMethod($merchantId, $amount, $payment, $terminal)
+    {
+        $created_at = Carbon::today(Timezone::IST)->setTime(10, 30, 0)->getTimestamp() + 5;
+
+        return $this->fixtures->create(
+            'refund',
+            [
+                'payment_id'    => $payment['id'],
+                'amount'        => $amount,
+                'base_amount'   => $amount,
+                'merchant_id'   => $merchantId,
+                'status'        => 'processed',
+                'gateway'       => $terminal['gateway'],
+                'settled_by'    => $payment['settled_by'],
+                'created_at'    => $created_at+30,
+                'processed_at'  => $created_at+35,
+            ]
+        );
+    }
+
+    public function testGefuFileCreationWithDSRefunds()
     {
         $this->app['config']->set('applications.ufh.mock', true);
 
@@ -1529,50 +1789,33 @@ class BankingSettlementTest extends TestCase
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+
         $cont = 0;
 
-        foreach ($merchants as $merchant) {
+        $dataRefunds = [];
+
+        foreach ($merchants as $merchant)
+        {
 
             $merchantId = $merchant->getId();
 
+            $this->fixtures->create('feature', [
+                'name' => Constants::PG_LEDGER_REVERSE_SHADOW,
+                'entity_id' => $merchantId,
+                'entity_type' => 'merchant',
+            ]);
+
             if($cont%2 == 0)
             {
-                $terminal = $this->fixtures->create(
-                    'terminal',
-                    [
-                        'id' => random_alphanum_string(14),
-                        'merchant_id' => $merchantId,
-                        'gateway' => 'hdfc',
-                        'gateway_merchant_id' => '250000002',
-                        'gateway_secure_secret' => "1231424",
-                        'gateway_terminal_id' => '190000004',
-                        'card' => 1,
-                        'emi'  => 1,
-                        'mode' => 2,
-                        'type'    => [
-                            'direct_settlement_with_refund' => '1'
-                        ],
-                    ]);
+                $cardTerminal = $this->createTerminalWithType($merchantId,'card',1,'hdfc' );
             }
             else
             {
-                $terminal = $this->fixtures->create(
-                    'terminal',
-                    [
-                        'id' => random_alphanum_string(14),
-                        'merchant_id' => $merchantId,
-                        'gateway' => 'hdfc',
-                        'gateway_merchant_id' => '250000002',
-                        'gateway_secure_secret' => "1231424",
-                        'gateway_terminal_id' => '250000004',
-                        'card' => 1,
-                        'emi'  => 1,
-                        'mode' => 2,
-                        'type'    => [
-                            'direct_settlement_with_refund' => '1'
-                        ],
-                    ]);
+                $cardTerminal = $this->createTerminalWithType($merchantId,'card',0,'hdfc' );
             }
+
+            $upiTerminal = $this->createTerminalWithType($merchantId,'upi',1,'upi_mindgate' );
 
             $this->fixtures->edit('merchant', $merchant->getId(), [
                 'org_id' => $org['id'],
@@ -1602,46 +1845,165 @@ class BankingSettlementTest extends TestCase
                     'type'  => 'org_settlement'
                 ]);
 
-            $createdAt = Carbon::today(Timezone::IST)->setTime(23, 30, 0)->getTimestamp() + 5;
-            $capturedAt = Carbon::today(Timezone::IST)->setTime(23, 35, 0)->getTimestamp() + 10;
+            $amount = ($cont % 2 == 0) ? 10000 : 15000;
 
-            $amount = ($cont % 2 == 1) ? 10000 : 15000;
+            if($cont % 2 === 0)
+            {
+                $cardPayment = $this->createPaymentWithMethod($merchantId,'card',$cardTerminal['id'], 'hdfc');
+            }
+            else
+            {
+                $cardPayment = $this->createPaymentWithMethod($merchantId,'card',$cardTerminal['id'], 'Razorpay');
+            }
 
-            $this->fixtures->times(2)->create(
-                'payment',
-                [
-                    'captured_at' => $capturedAt,
-                    'method'      => 'card',
-                    'merchant_id' => $merchantId,
-                    'amount'      => $amount,
-                    'mdr'         => 400,
-                    'fee'         => 100,
-                    'created_at'  => $createdAt,
-                    'updated_at'  => $createdAt + 10,
-                    'settled_by' => 'bank'
-                ]
+            $upiPayment = $this->createPaymentWithMethod($merchantId,'upi',$upiTerminal['id'], 'hdfc');
 
-            );
-            $this->fixtures->times(2)->create(
-                'payment',
-                [
-                    'captured_at' => $capturedAt,
-                    'method'      => 'upi',
-                    'merchant_id' => $merchantId,
-                    'amount'      => $amount,
-                    'mdr'         => 0,
-                    'fee'         => 100,
-                    'created_at'  => $createdAt,
-                    'updated_at'  => $createdAt + 10,
-                    'settled_by' => 'bank'
-                ]
+            $cardRefund = $this->createRefundWithMethod($merchantId,$amount,$cardPayment,$cardTerminal)->toArray();
 
-            );
+            $upiRefund = $this->createRefundWithMethod($merchantId,$amount,$upiPayment,$upiTerminal)->toArray();
+
+            $dataRefunds [] = $cardRefund;
+            $dataRefunds [] = $upiRefund;
 
             $cont++;
         }
 
         $this->initiateSettlements(Channel::AXIS);
+
+        $this->setFetchRefundsFromScroogeMockResponse($dataRefunds);
+
+        $this->setFetchLedgerJournalFromLedgerMockResponse();
+
+        Carbon::setTestNow($todaydate->copy()->addDay());
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    public function testGefuFileCreationWithPosPaymentsAndCardTid()
+    {
+        $this->app['config']->set('applications.ufh.mock', true);
+
+        $merchants = $this->fixtures->times(6)->create('merchant');
+
+        $org = $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzos',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name' => 'org_pool_settlement',
+            'entity_id' => 'IUXvshap3Hbzos',
+            'entity_type' => 'org',
+        ]);
+
+        $poolAcc = random_alphanum_string(14);
+
+        $channel = Channel::AXIS;
+
+        // working wednesday 12 july 2023
+        $todaydate = Carbon::createFromDate(2023, 7, 12,Timezone::IST);
+
+        Carbon::setTestNow($todaydate->copy());
+
+        $this->mockRazorxTreatment();
+
+        $this->mockAllSplitzTreatment();
+
+        $lastCutoffTime = Carbon::yesterday(Timezone::IST)->setTime(20, 0, 0)->getTimestamp() ;
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+
+        $cont = 0;
+
+        $dataRefunds = [];
+
+        foreach ($merchants as $merchant) {
+
+            $merchantId = $merchant->getId();
+
+            $this->fixtures->create('feature', [
+                'name' => Constants::PG_LEDGER_REVERSE_SHADOW,
+                'entity_id' => $merchantId,
+                'entity_type' => 'merchant',
+            ]);
+
+            if($cont%2 == 0)
+            {
+                $cardTerminal = $this->createTerminalWithType($merchantId,'emi',1,'hdfc' );
+            }
+            else
+            {
+                $cardTerminal = $this->createTerminalWithType($merchantId,'card',0,'hdfc' );
+            }
+
+            $upiTerminal = $this->createTerminalWithType($merchantId,'upi',1,'upi_mindgate' );
+
+            $this->fixtures->edit('merchant', $merchant->getId(), [
+                'org_id' => $org['id'],
+                'channel' => $channel,
+                'activated' => true ,
+                'suspended_at' => null
+            ]);
+
+            $this->fixtures->create('balance', ['id' => $merchantId, 'merchant_id' => $merchantId, 'balance' => 5000]);
+
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'account_number'       => $poolAcc, // constant id for all merchant's pool account
+                    'beneficiary_name' => random_string_special_chars(10) ,
+                    'merchant_id' =>$merchantId,
+                    'type'  => 'merchant'
+                ]);
+
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'beneficiary_name' => random_string_special_chars(10) ,
+                    'merchant_id' =>$merchantId,
+                    'type'  => 'org_settlement'
+                ]);
+
+            $amount = ($cont % 2 == 1) ? 10000 : 15000;
+
+            if($cont % 2 === 0)
+            {
+                $cardPayment = $this->createPaymentWithMethod($merchantId,'card',$cardTerminal['id'], 'hdfc');
+
+                $upiPayment = $this->createPaymentWithMethod($merchantId,'upi',$upiTerminal['id'], 'hdfc', 'pos');
+            }
+            else
+            {
+                $cardPayment = $this->createPaymentWithMethod($merchantId,'card',$cardTerminal['id'], 'hdfc','pos');
+
+                $upiPayment = $this->createPaymentWithMethod($merchantId,'upi',$upiTerminal['id'], 'Razorpay');
+            }
+
+            $cardRefund = $this->createRefundWithMethod($merchantId,$amount,$cardPayment,$cardTerminal)->toArray();;
+
+            $upiRefund = $this->createRefundWithMethod($merchantId,$amount,$upiPayment,$upiTerminal)->toArray();;
+
+            $dataRefunds [] = $cardRefund;
+            $dataRefunds [] = $upiRefund;
+
+            $cont++;
+        }
+
+        $this->initiateSettlements(Channel::AXIS);
+
+        $this->setFetchRefundsFromScroogeMockResponse($dataRefunds);
+
+        $this->setFetchLedgerJournalFromLedgerMockResponse();
 
         Carbon::setTestNow($todaydate->copy()->addDay());
 
@@ -1674,6 +2036,8 @@ class BankingSettlementTest extends TestCase
 
         $this->mockRazorxTreatment();
 
+        $this->mockAllSplitzTreatment();
+
         // working wednesday 12 july 2023
         $todaydate = Carbon::createFromDate(2023, 7, 12,Timezone::IST);
         Carbon::setTestNow($todaydate->copy());
@@ -1683,6 +2047,8 @@ class BankingSettlementTest extends TestCase
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         foreach ($merchants as $index => $merchant) {
 
@@ -1922,6 +2288,8 @@ class BankingSettlementTest extends TestCase
 
         $this->mockRazorxTreatment();
 
+        $this->mockAllSplitzTreatment();
+
         // working wednesday 12 july 2023
         $todaydate = Carbon::createFromDate(2023, 7, 12,Timezone::IST);
         Carbon::setTestNow($todaydate->copy());
@@ -1931,6 +2299,8 @@ class BankingSettlementTest extends TestCase
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
 
         foreach ($merchants as $index => $merchant) {
 
@@ -2095,6 +2465,7 @@ class BankingSettlementTest extends TestCase
         $lastCutoffTime = Carbon::yesterday(Timezone::IST)->setTime(20, 0, 0)->getTimestamp();
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastCutoffTime]);
         $cont = 0;
         foreach ($merchants as $merchant) {
             $merchantId = $merchant->getId();
@@ -2216,6 +2587,142 @@ class BankingSettlementTest extends TestCase
         $this->ba->cronAuth();
         $this->startTest();
         Carbon::setTestNow();
+    }
+
+    public function setFetchRefundsFromScroogeMockResponse($dataRefunds): void
+    {
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getRefunds'])
+            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $scroogeResponse = [
+            'code' => 200,
+            'body' => [
+                'data' => [],
+            ],
+        ];
+
+        foreach ($dataRefunds as $refund)
+        {
+            $refundEntity = $this->getDbEntityById('refund', $refund['id']);
+
+            $terminal = $this->getDbEntityById('terminal', $refundEntity->payment['terminal_id']);
+
+            $scroogeResponse['body']['data'][] = [
+                'id'               => $refund['id'],
+                'merchant_id'      => $refund['merchant_id'],
+                'amount'           => $refund['amount'],
+                'base_amount'      => $refund['base_amount'],
+                'payment_id'       => $refund['payment_id'],
+                'status'           => $refund['status'],
+                'gateway'          => $refund['gateway'],
+                'currency'         => $refund['currency'],
+                'gateway_amount'   => $refund['gateway_amount'],
+                'settled_by'       => $refund['settled_by'],
+                'gateway_currency' => $refund['gateway_currency'],
+                'method'           => $refundEntity->payment['method'],
+                'processed_at'     => $refund['processed_at'],
+                'terminal_id'      => $refundEntity->payment['terminal_id'],
+                'meta'             => [
+                    Processor\Constants::DIRECT_SETTLEMENT_WITH_REFUND  =>  $terminal->isDirectSettlementWithRefund(),
+                    Processor\Constants::PAYMENT_SETTLED_BY             =>  $refundEntity->payment['settled_by'],
+                ],
+            ];
+        }
+
+        $this->app['scrooge']->method('getRefunds')
+            ->will($this->returnCallback(
+                function ($input) use ($scroogeResponse) {
+                    if($input[RefundConstants::SCROOGE_SKIP] === 0)
+                    {
+                        return $scroogeResponse;
+                    }
+                    else{
+                        $refundEntities = [
+                            'body' => [],
+                            'code' => 200,
+                        ];
+                    }
+                    return $refundEntities;
+                }
+
+            ));
+    }
+
+    public function setFetchLedgerJournalFromLedgerMockResponse(): void
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->andReturnUsing(
+                function ($input) {
+                    $refundId = RefundEntity::stripDefaultSign($input[LedgerService::TRANSACTOR_ID]);
+
+                    $refundEntity = $this->getDbEntityById('refund', $refundId);
+
+                    $fundAccountType = ($refundEntity->payment['method'] === 'card')
+                        ? LedgerConstants::MERCHANT_BALANCE
+                        : LedgerConstants::MERCHANT_REFUND_CREDITS;
+
+                    $journalId = random_alphanum_string(14);
+                    return [
+                        'body' => [
+                            "id"                => $journalId,
+                            "created_at"        => $refundEntity['created_at'],
+                            "updated_at"        => $refundEntity['created_at']+10,
+                            "amount"            => $refundEntity['amount'],
+                            "base_amount"       => $refundEntity['amount'],
+                            "currency"          => "INR",
+                            "tenant"            => LedgerConstants::TENANT_PG,
+                            "transactor_id"     => $input[LedgerService::TRANSACTOR_ID],
+                            "transactor_event"  => LedgerConstants::REFUND_PROCESSED,
+                            "ledger_entry" => [
+                                [
+                                    'id'                    => 'sampleLedgerID',
+                                    'created_at'            => $refundEntity['created_at'],
+                                    'updated_at'            => $refundEntity['created_at'],
+                                    'merchant_id'           => $refundEntity['merchant_id'],
+                                    "journal_id"            => $journalId,
+                                    "account_id"            => 'GoRNyEuu9Hl0OZ',
+                                    "amount"                => $refundEntity['amount'],
+                                    "base_amount"           => $refundEntity['amount'],
+                                    'type'                  => LedgerService::DEBIT,
+                                    'balance'               => "3363840.000000",
+                                    "currency"              => "INR",
+                                    'account_entities'      => [
+                                        'account_type'      => ['payable'],
+                                        'fund_account_type' => [$fundAccountType],
+                                    ]
+                                ],
+                                [
+                                    'id'                    => 'sampleLedgerID',
+                                    'created_at'            => $refundEntity['created_at'],
+                                    'updated_at'            => $refundEntity['created_at'],
+                                    'merchant_id'           => $refundEntity['merchant_id'],
+                                    "journal_id"            => $journalId,
+                                    "account_id"            => 'GoRNyEuu9Hl0OZ',
+                                    "amount"                => $refundEntity['amount'],
+                                    "base_amount"           => $refundEntity['amount'],
+                                    'type'                  => LedgerService::CREDIT,
+                                    "currency"              => "INR",
+                                    'account_entities'      => [
+                                        'account_type'      => ['payable'],
+                                        'fund_account_type' => ['gateway_refund'],
+                                    ]
+                                ],
+
+                            ],
+                        ]
+                    ];
+                });
+
     }
 
     protected function mockRazorxTreatment(string $returnValue = 'on')

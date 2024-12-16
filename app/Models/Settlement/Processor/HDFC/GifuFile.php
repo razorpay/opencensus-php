@@ -4,9 +4,10 @@ namespace RZP\Models\Settlement\Processor\HDFC;
 
 use Carbon\Carbon;
 use Exception;
+use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
-use RZP\Mail\Base\Constants;
 use RZP\Models\BankAccount\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FileStore\Storage\Base\Bucket;
@@ -22,7 +23,9 @@ use RZP\Models\Feature;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\VirtualAccount\Receiver;
+use RZP\Mail\Base\Constants as BaseConstants;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Trace\TraceCode;
 
 class GifuFile extends Base\BaseGifuFile
@@ -35,7 +38,9 @@ class GifuFile extends Base\BaseGifuFile
 
     protected $totalAmount;
 
-    protected $mailAddress = Constants::MAIL_ADDRESSES[Constants::BANKING_POD_TECH];
+    protected $totalRefundsAmount;
+
+    protected $mailAddress = BaseConstants::MAIL_ADDRESSES[BaseConstants::BANKING_POD_TECH];
 
     protected $chotaBeam;
 
@@ -49,6 +54,7 @@ class GifuFile extends Base\BaseGifuFile
 
     protected $upiCutoffTimestamp;
 
+    protected $refundCutoffTimestamp;
 
     public function __construct()
     {
@@ -102,6 +108,10 @@ class GifuFile extends Base\BaseGifuFile
 
         $totalAmount = 0;
 
+        $failedRefundsMids = [];
+
+        $totalAmountForRefunds = 0;
+
         $modData = [];
 
         if (Holidays::isWorkingDay(Carbon::today(Timezone::IST)) === false)
@@ -116,6 +126,8 @@ class GifuFile extends Base\BaseGifuFile
         }
 
         $date = Carbon::now()->format('d-m-Y');
+
+        $refundDate = Carbon::yesterday(Timezone::IST)->format('d-m-Y');
 
         $prevWorkingDay = Holidays::getPreviousWorkingDay(Carbon::today(Timezone::IST));
 
@@ -185,7 +197,10 @@ class GifuFile extends Base\BaseGifuFile
                 'key' => ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP
             ]);
 
-            if($this->isGifuUpiDsSettlementExperimentEnabled($orgId) === true)
+            // Experiment For Gifu UPI DS Settlement Timestamp
+            $experimentName = 'gifu_upi_ds_settlement_timestamp_exp_id';
+
+            if($this->isGifuSplitzExperimentEnabled($orgId, $experimentName) === true)
             {
                 $toForUpi = $manualGifuTimeRange['to_upi_ds_timestamp'] ?? Carbon::today(Timezone::IST)->startOfDay()->getTimestamp(); // today's time at 12:00 AM in IST
             }
@@ -221,24 +236,20 @@ class GifuFile extends Base\BaseGifuFile
             ]
         );
 
+        $merchantService = (new Merchant\Service());
+
         foreach ($modData as $mid=>$value)
         {
-            try{
-                $merchant = (new Merchant\Service())->getMerchantFromMid($mid);
+            try
+            {
+                $merchant = $merchantService->getMerchantFromMid($mid);
 
                 if ($merchant->isFeatureEnabled(Feature\Constants::CANCEL_SETTLE_TO_BANK) === true)
                 {
                     return [];
                 }
 
-                if ($merchant->isFeatureEnabled(Feature\Constants::OLD_CUSTOM_SETTL_FLOW) === true)
-                {
-                    $accountNumber = (new Merchant\Service())->getBankAccount($mid,[Type::ORG_SETTLEMENT])['account_number'];
-                }
-                else
-                {
-                    $accountNumber = (new Merchant\Service())->getBankAccount($mid,[Type::MERCHANT])['account_number'];
-                }
+               $accountNumber = $this->getSettlementAccountNumberForMerchant($merchant, $merchantService);
 
                 if(isset($accountNumber) === false)
                 {
@@ -281,13 +292,13 @@ class GifuFile extends Base\BaseGifuFile
             $totalAmount = $totalAmount + $amount;
 
             $dataAdd = [
-                'A/C No'        =>  $accountNumber,
-                'D/C'           =>  'C',
-                'AMT'           =>  number_format($amount,2,'.',''),
-                'NARRATION'     =>  substr($narration,0,40),
-                'BR CODE'       =>  $brCode,
-                'Currency'      =>  $currency,
-                'Value Date'    =>  $date
+                Constants::ACCOUNT_NUMBER       =>  $accountNumber,
+                Constants::DEBIT_CREDIT         =>  Constants::CREDIT,
+                Constants::AMOUNT               =>  number_format($amount,2,'.',''),
+                Constants::NARRATION            =>  substr($narration,0,40),
+                Constants::BRCODE               =>  $brCode,
+                Constants::CURRENCY             =>  $currency,
+                Constants::VALUE_DATE           =>  $date
             ];
 
             $data[] = $dataAdd;
@@ -298,7 +309,7 @@ class GifuFile extends Base\BaseGifuFile
         $poolAcNo = '';
 
         try{
-            $poolAcNo = (new Merchant\Service())->getBankAccount(array_key_first($modData),[Type::MERCHANT])['account_number'];
+            $poolAcNo = $merchantService->getBankAccount(array_key_first($modData),[Type::MERCHANT])['account_number'];
         }
         catch (BadRequestException $exception)
         {
@@ -315,13 +326,13 @@ class GifuFile extends Base\BaseGifuFile
         $narrationDate = Carbon::parse($date)->isoFormat("DDMMYY");
 
         $dataDebit = [
-            'A/C No'        => $poolAcNo,
-            'D/C'           => 'D',
-            'AMT'           => number_format($this->totalAmount,2,'.',''),
-            'NARRATION'     => 'GIB Settlement_'.$narrationDate,
-            'BR CODE'       => $brCodeForPool,
-            'Currency'      => 1,
-            'Value Date'    => $date
+            Constants::ACCOUNT_NUMBER           => $poolAcNo,
+            Constants::DEBIT_CREDIT             => Constants::DEBIT,
+            Constants::AMOUNT                   => number_format($this->totalAmount,2,'.',''),
+            Constants::NARRATION                => 'GIB Settlement_'.$narrationDate,
+            Constants::BRCODE                   => $brCodeForPool,
+            Constants::CURRENCY                 => 1,
+            Constants::VALUE_DATE               => $date
         ];
 
         array_unshift($data,$dataDebit);
@@ -332,6 +343,139 @@ class GifuFile extends Base\BaseGifuFile
                 'Failed mids'    => $failedMids
             ]
         );
+
+
+        // Experiment For Gifu DS refunds For card and upi.
+        $experimentName = 'gifu_card_upi_ds_refunds_exp_id';
+
+        $isGifuRefundsEnabled = $this->isGifuSplitzExperimentEnabled($orgId, $experimentName);
+
+        if($isGifuRefundsEnabled === true)
+        {
+            // fetching refunds for DS Payments for card,upi
+
+            //TODO setup the initial time.
+            $beginTimeForRefunds = $manualGifuTimeRange['from_ds_refund_timestamp'] ?? (new AdminService)->getConfigKey([
+                'key' => ConfigKey::DS_REFUNDS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP
+            ]);
+
+            $endTimeForRefunds = $manualGifuTimeRange['to_ds_refund_timestamp'] ?? Carbon::today(Timezone::IST)->startOfDay()->getTimestamp(); // 12:00:00 AM today in IST
+
+            $methods = [Payment\Method::CARD,Payment\Method::UPI];
+
+            $this->trace->info(TraceCode::GIFU_FILE_DS_REFUND_MATRIX,
+                [
+                    'begin time for refund from cache'  => $beginTimeForRefunds,
+                    'end time for upi'                  => $endTimeForRefunds,
+                ]
+            );
+
+            [$dataRefunds, $skippedRefundIds, $lastProcessedTimeForRefunds] = $this->repo->refund->fetchAggregatedRefundsForMethodsBetweenTimePeriodForMerchantIds($input, $beginTimeForRefunds, $endTimeForRefunds, $methods);
+
+            $this->refundCutoffTimestamp = count($dataRefunds) > 0 ? $lastProcessedTimeForRefunds + 1 : $beginTimeForRefunds;
+
+            $this->trace->info(TraceCode::GIFU_FILE_DS_REFUND_MATRIX,
+                [
+                    'last processed time refunds'       => $lastProcessedTimeForRefunds,
+                    'next cutoff time for refunds'      => $this->refundCutoffTimestamp,
+                    'refunds count'                     => count($dataRefunds)
+                ]
+            );
+
+            $this->trace->info(TraceCode::SETTLEMENT_FILE_MERCHANTS_TO_PROCESS,
+                [
+                    'Mids with refund data'     =>  array_keys($dataRefunds),
+                    'Skipped refunds ids'       =>  $skippedRefundIds,
+                ]
+            );
+
+            foreach($dataRefunds as $mid => $value)
+            {
+                try
+                {
+                    $merchant = $merchantService->getMerchantFromMid($mid);
+
+                    if ($merchant->isFeatureEnabled(Feature\Constants::CANCEL_SETTLE_TO_BANK) === true)
+                    {
+                        return [];
+                    }
+
+                    $accountNumber = $this->getSettlementAccountNumberForMerchant($merchant, $merchantService);
+
+                    if(isset($accountNumber) === false)
+                    {
+                        $failedRefundsMids[] = $mid;
+                        continue;
+                    }
+
+                    $amount = $this->getAggregatedRefundAmount($value ?? []);
+
+                    $this->trace->info(TraceCode::GIFU_FILE_DS_REFUND_MATRIX,
+                        [
+                            'refund amount' => $amount,
+                            'mid '=>$mid,
+                        ]
+                    );
+
+                    $refundsNarration = $this->getNarrationForRefunds($mid);
+
+                    $brCode = $this->getBrCode($accountNumber);
+                }
+                catch (Exception $exception)
+                {
+                    $failedRefundsMids[] = $mid;
+
+                    $this->trace->info(
+                        TraceCode::SETTLEMENT_FILE_CREATE_ERROR,
+                        [
+                            'exception'             => $exception->getMessage(),
+                            'Failed refund mid'     => $mid
+                        ]
+                    );
+
+                    continue;
+                }
+
+                $currency = 1;
+
+                $totalAmountForRefunds = $totalAmountForRefunds + $amount;
+
+                $dataAddRefunds = [
+                    Constants::ACCOUNT_NUMBER           =>  $accountNumber,
+                    Constants::DEBIT_CREDIT             =>  Constants::DEBIT ,
+                    Constants::AMOUNT                   =>  number_format($amount,2,'.',''),
+                    Constants::NARRATION                =>  substr($refundsNarration,0,40),
+                    Constants::BRCODE                   =>  $brCode,
+                    Constants::CURRENCY                 =>  $currency,
+                    Constants::VALUE_DATE               =>  $refundDate
+                ];
+
+                $data[] = $dataAddRefunds;
+            }
+
+            $this->totalRefundsAmount = $totalAmountForRefunds;
+
+            $refundsNarrationDate = Carbon::yesterday('Asia/Kolkata')->format("dmy");
+
+            $dataRefundCredit = [
+                Constants::ACCOUNT_NUMBER           => $poolAcNo,
+                Constants::DEBIT_CREDIT             => Constants::CREDIT,
+                Constants::AMOUNT                   => number_format($this->totalRefundsAmount,2,'.',''),
+                Constants::NARRATION                => 'GIB Refund_'.$refundsNarrationDate,
+                Constants::BRCODE                   => $brCodeForPool,
+                Constants::CURRENCY                 => 1,
+                Constants::VALUE_DATE               => $refundDate
+            ];
+
+            array_splice($data, 1, 0, [$dataRefundCredit]);
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_FILE_CREATE_MERCHANT_FAILURES,
+                [
+                    'Failed refunds mids'    => $failedRefundsMids
+                ]
+            );
+        }
 
         return $data;
 
@@ -386,6 +530,7 @@ class GifuFile extends Base\BaseGifuFile
 
         return $totalSum/100;
     }
+
     protected function filterBasedonPOStransaction($dataFetch,$from,$to)
     {
         return array_filter($dataFetch, function ($settlement) use ($from, $to) {
@@ -413,6 +558,18 @@ class GifuFile extends Base\BaseGifuFile
             }
             return false;
         });
+    }
+
+    protected function getAggregatedRefundAmount($data): float|int
+    {
+        $totalAmount = 0;
+
+        foreach ($data as $datum)
+        {
+            $totalAmount = $totalAmount + $datum[RefundEntity::AMOUNT];
+        }
+
+        return $totalAmount/100;
     }
 
     protected function getNarration($data,$mid): string
@@ -456,6 +613,62 @@ class GifuFile extends Base\BaseGifuFile
         return $mid . ":" . $setlId . ":" . $tId;
     }
 
+    protected function getNarrationForRefunds($mid): string
+    {
+        //narration -> REF:705001250:MID:DDMMYY
+
+        $narrationDate = Carbon::yesterday('Asia/Kolkata')->format("dmy");
+
+        $fetchParams = [
+            Terminal\Entity::GATEWAY  => Payment\Gateway::HDFC,
+            Terminal\Entity::STATUS => Terminal\Status::ACTIVATED,
+            Terminal\Entity::ENABLED  => '1',
+        ];
+
+        $method = Payment\Method::CARD;
+
+        $terminals = $this->repo->terminal->fetch($fetchParams, $mid);
+
+        $cardTerminal = $this->filterRefundsCardsTerminals($terminals, $method);
+
+        $tId = '';
+
+        if(isset($cardTerminal) === true)
+        {
+            $tId = $cardTerminal[Terminal\Entity::GATEWAY_TERMINAL_ID] ?? '';
+        }
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_FILE_TERMINAL_FETCH_FOR_REFUNDS,
+            [
+                'Terminals Fetch Params' => $fetchParams,
+                'Terminals Count'        => $terminals->count(),
+                'Terminal picked'        => $terminals,
+                'Gateway Terminal Id'    => $tId,
+                'Merchant Id'            => $mid,
+            ]
+        );
+
+        return "REF:". $tId  . ":" . $mid . ":" . $narrationDate;
+
+    }
+
+    protected function filterRefundsCardsTerminals($terminals, $method)
+    {
+        if($terminals->count() === 0)
+            return null;
+
+        foreach ($terminals as $terminal)
+        {
+            if($terminal->$method === true and $terminal->emi === false)
+            {
+                return $terminal;
+            }
+        }
+
+        return null;
+    }
+
     protected function filterTerminalBasedOnMethod($terminals,$method)
     {
         if($terminals->count() === 0)
@@ -494,13 +707,29 @@ class GifuFile extends Base\BaseGifuFile
         return $this->upiCutoffTimestamp;
     }
 
-    public function isGifuUpiDsSettlementExperimentEnabled($orgID): bool
+    public function getRefundCutoffTimestamp()
+    {
+        return $this->refundCutoffTimestamp;
+    }
+
+    public function getSettlementAccountNumberForMerchant($merchant, $merchantService)
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::OLD_CUSTOM_SETTL_FLOW) === true)
+        {
+            $accountNumber = $merchantService->getBankAccount($merchant->getId(),[Type::ORG_SETTLEMENT])['account_number'];
+        }
+        else
+        {
+            $accountNumber = $merchantService->getBankAccount($merchant->getId(),[Type::MERCHANT])['account_number'];
+        }
+
+        return $accountNumber;
+    }
+
+    public function isGifuSplitzExperimentEnabled($orgID, $experimentName): bool
     {
         try
         {
-            // Experiment For Gifu UPI DS Settlement Timestamp
-            $experimentName = 'gifu_upi_ds_settlement_timestamp_exp_id';
-
             $splitzResult = $this->getSplitzResponse($orgID, $experimentName);
 
             if ((isset($splitzResult) === true) and (strtolower($splitzResult) === 'enable'))

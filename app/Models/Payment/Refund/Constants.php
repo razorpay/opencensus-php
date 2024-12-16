@@ -148,6 +148,7 @@ class Constants
     const SCROOGE_REFUNDS          = 'refunds';
     const SCROOGE_GATEWAY          = 'gateway';
     const SCROOGE_CREATED_AT       = 'created_at';
+    const SCROOGE_PROCESSED_AT     = 'processed_at';
     const SCROOGE_BASE_AMOUNT      = 'base_amount';
     const SCROOGE_GATEWAY_ACQUIRER = 'gateway_acquirer';
     const SCROOGE_PROCESSED_SOURCE = 'processed_source';

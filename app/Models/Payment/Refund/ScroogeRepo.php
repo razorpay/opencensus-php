@@ -7,6 +7,7 @@ use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Gateway\File\Constants as FileConstants;
 use stdClass;
 
 trait ScroogeRepo
@@ -599,6 +600,49 @@ trait ScroogeRepo
         }
 
         return $this->fetchIrctcDeltaRefundsFromApi($merchantId,$from,$to);
+    }
+
+    public function fetchRefundsListForMerchantIds(array $input, int $from, int $to, array $methods, string $status): array
+    {
+        $batchSize = FileConstants::FETCH_FROM_SCROOGE_COUNT;
+
+        $routeName = $this->route->getCurrentRouteName();
+
+        $batches = array_chunk($input, $batchSize);
+
+        $response = [];
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2,
+            [
+                'method_name' => __FUNCTION__,
+                'route_naame' => $routeName,
+                'merchant_ids'=> $input,
+                'methods'=> $methods,
+                'status'=> $status,
+                'from' => $from,
+                'to' => $to,
+            ]);
+
+        // Construct the params for Refund query
+        $params = [
+            Constants::METHOD => $methods,
+            Constants::STATUS => $status,
+            Constants::SCROOGE_GTE => $from,
+            Constants::SCROOGE_LTE => $to,
+        ];
+
+        foreach($batches as $batchesInput)
+        {
+            $scroogeResponse = $this->fetchRefundList($batchesInput, $params);
+
+            if(empty($scroogeResponse) === false)
+            {
+                $response = array_merge($response, $scroogeResponse);
+            }
+        }
+
+        return $response;
     }
 }
 

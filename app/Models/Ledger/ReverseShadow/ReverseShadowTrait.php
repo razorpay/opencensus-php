@@ -823,6 +823,31 @@ trait ReverseShadowTrait
         return $searchResults;
     }
 
+    public function fetchFundAccountTypeForDebitFromJournal($journalResponse): ?array
+    {
+        $fundAccountTypes = [];
+
+        if(isset($journalResponse[Constants::LEDGER_ENTRY]) === false)
+        {
+            return null;
+        }
+
+        foreach ($journalResponse[Constants::LEDGER_ENTRY] as $ledgerEntry)
+        {
+            if ((isset($ledgerEntry[Constants::TYPE]) === true) and
+                ($ledgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_DEBIT))
+            {
+                if ((isset($ledgerEntry[Constants::ACCOUNT_ENTITIES]) === true) and
+                    (isset($ledgerEntry[Constants::ACCOUNT_ENTITIES][Constants::FUND_ACCOUNT_TYPE]) === true))
+                {
+                    $fundAccountTypes [] = $ledgerEntry[Constants::ACCOUNT_ENTITIES][Constants::FUND_ACCOUNT_TYPE][0];
+                }
+            }
+        }
+
+        return (empty($fundAccountTypes) === false) ? $fundAccountTypes : null ;
+    }
+
     public function fetchMerchantBalanceOnly($merchant){
 
         $ledgerService = $this->app['ledger'];
