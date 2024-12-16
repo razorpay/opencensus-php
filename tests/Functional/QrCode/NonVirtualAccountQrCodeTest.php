@@ -615,7 +615,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCloseQrCode()
     {
-        $response = $this->createQrCode(['request_source' => 'ezetap']);
+        $response = $this->createQrCode(['request_source' => 'ezetap','usage' => 'single_use']);
 
         $this->assertEquals(Status::ACTIVE, $response['status']);
 

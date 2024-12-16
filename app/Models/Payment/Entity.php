@@ -5332,7 +5332,40 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $this->setUpiIfApplicable($attributes);
 
+        $this->setChannelIfUpiPoDTransaction($attributes);
+
         return $attributes;
+    }
+
+    public function setChannelIfUpiPoDTransaction(array &$attributes)
+    {
+        if (!($this->receiver instanceof QrV2\Entity) or
+            $this->receiver?->getUsageType()  !== QrV2\UsageType::SINGLE_USE)
+        {
+	            return;
+        }
+
+        $analytics = $this->analytics;
+
+        if (isset($analytics))
+        {
+            $isLibraryInvalid =
+                (
+                    empty($analytics[Payment\Analytics\Entity::LIBRARY]) or
+                    ($analytics[Payment\Analytics\Entity::LIBRARY] !== Metadata::LIBRARY_VALUES[Metadata::CHECKOUTJS] and
+                     $analytics[Payment\Analytics\Entity::LIBRARY] !== Metadata::LIBRARY_VALUES[Metadata::HOSTED])
+                );
+
+            $isDeviceInvalid =
+                (empty($analytics[Payment\Analytics\Entity::DEVICE]) or
+                ($analytics[Payment\Analytics\Entity::DEVICE] !== Metadata::DEVICE_VALUES[Metadata::DESKTOP]));
+
+
+            if ($isLibraryInvalid && $isDeviceInvalid)
+            {
+                $attributes['channel'] = 'offline_pod';
+            }
+        }
     }
 
     public function toArrayRecon()

@@ -320,8 +320,7 @@ class Core extends QrCode\Core
 
     public function close($qrCode, $closeReason)
     {
-        if (($this->generator->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->merchant->getId()) === true) and
-            ($qrCode->getUsageType() === UsageType::MULTIPLE_USE))
+        if ($qrCode->getUsageType() === UsageType::MULTIPLE_USE)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CLOSE_STATIC_QR_CODE_FAILURE);
         }
