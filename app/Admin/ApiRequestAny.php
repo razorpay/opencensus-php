@@ -233,6 +233,10 @@ class ApiRequestAny
             $headers['ledger-tenant'] = Request::header('ledger-tenant'); // only add the header if it exists
         }
 
+        if (empty(Request::header('country-code')) === false) {
+            $headers['country-code'] = Request::header('country-code'); // only add the country-code header if it exists
+        }
+
         if (empty(Request::header(Headers::X_SPLITZ_PROJECT)) === false) {
             $headers[Headers::X_SPLITZ_PROJECT] = Request::header(Headers::X_SPLITZ_PROJECT);
         }
