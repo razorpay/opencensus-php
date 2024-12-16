@@ -4542,8 +4542,8 @@ GROUP BY
         END = '%s'
     ";
 
-        $startDate =  Carbon::createFromTimestamp($start)->format('d-m-Y');
-        $endDate = Carbon::createFromTimestamp($end)->format('d-m-Y');
+        $startDate =  Carbon::createFromTimestamp($start, Timezone::IST)->format('d-m-Y');
+        $endDate = Carbon::createFromTimestamp($end, Timezone::IST)->format('d-m-Y');
 
         $dataLakeQuery = sprintf($query, $parentMerchantId, $merchantId, $startDate, $endDate, $filterType);
 
@@ -4554,7 +4554,21 @@ GROUP BY
             "DL_QUERY_RESULT" => $results,
         ]);
 
-        return !empty($results) ? $results[0]:[];
+        if (!empty($results)) {
+            // Round the fee, tax, and total_amount to the nearest rupee
+            $results[0]['fee'] = (int) round((float)$results[0]['fee']);
+            $results[0]['tax'] = (int) round((float)$results[0]['tax']);
+            $results[0]['total_amount'] = (int) round((float)$results[0]['total_amount']);
+
+            // Convert to paise
+            $results[0]['fee'] = $results[0]['fee'] * 100;
+            $results[0]['tax'] = $results[0]['tax'] * 100;
+            $results[0]['total_amount'] = $results[0]['total_amount'] * 100;
+
+            return $results[0];
+        }
+        return [];
+
     }
 
     /**
