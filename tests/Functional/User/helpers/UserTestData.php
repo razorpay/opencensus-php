@@ -1759,6 +1759,49 @@ return [
         ],
     ],
 
+    'testRegisterWithOtpWithUslOriginWithCaptcha' => [
+        'request'  => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'content' => [
+                'contact_mobile' => '8766776665',
+                'captcha'        => 'faked'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://accounts.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testRegisterWithOtpWithUslOriginWithoutCaptcha' => [
+        'request'  => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'content' => [
+                'contact_mobile' => '8766776665',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://accounts.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'The captcha field is required when none of captcha disable are present.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testMobileVerifyOtpForLoginWithNewSmsTemplate' => [
         'request' => [
             'url'     => '/users/login/otp/verify',

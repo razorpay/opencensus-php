@@ -350,7 +350,14 @@ class Core extends Base\Core
      */
     public function registerWithOtp(array $input): ?array
     {
-        $this->getUserEntity()->getValidator()->validateInput('signupOtp', $input);
+        $origin  = $this->app['request']->header(RequestHeader::X_REQUEST_ORIGIN) ?? "";
+
+        if ($this->isUnifiedRequest($origin)) {
+            $this->getUserEntity()->getValidator()->validateInput('signupOtpWithCaptcha', $input);
+        }
+        else {
+            $this->getUserEntity()->getValidator()->validateInput('signupOtp', $input);
+        }
 
         // if by any change both email and contact number are present, prefer email
         if (isset($input[Entity::EMAIL]))
@@ -361,6 +368,17 @@ class Core extends Base\Core
         {
             return $this->sendSignupOtpViaSms($input);
         }
+    }
+
+    public function isUnifiedRequest($origin): bool
+    {
+        foreach (Constants::UNIFIED_ORIGINS as $unified_origin) {
+            if ($origin == $unified_origin) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function sendOtpSalesforce(array $input): ?array

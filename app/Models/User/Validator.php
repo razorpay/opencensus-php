@@ -133,6 +133,19 @@ class Validator extends Base\Validator
         DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
     ];
 
+    protected static $signupOtpWithCaptchaRules = [
+        Entity::CONTACT_MOBILE                  => 'required_without:email|max:15|contact_syntax',
+        Entity::EMAIL                           => 'required_without:contact_mobile|email',
+        Entity::CAPTCHA                         => 'required_without_all:captcha_disable',
+        Entity::TOKEN                           => 'sometimes|string',
+        Entity::APP                             => 'sometimes|string',
+        Entity::SKIP_SMS_REQUEST                => 'sometimes|boolean',
+        Merchant\Entity::COUNTRY_CODE           => 'sometimes|string',
+        DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
+        DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
+        DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
+    ];
+
     protected static $salesforceOtpRules = [
         Entity::CONTACT_MOBILE                  => 'required|max:15|contact_syntax',
         Entity::TOKEN                           => 'sometimes|string',
@@ -661,6 +674,11 @@ class Validator extends Base\Validator
 
     protected static $signupOtpValidators = [
         'country_code'
+    ];
+
+    protected static $signupOtpWithCaptchaValidators = [
+        'country_code',
+        'captcha'
     ];
 
     protected static $resetPasswordValidators = [
@@ -1305,12 +1323,12 @@ class Validator extends Base\Validator
 
         $captchaMode = Request::header(self::CAPTCHA_MODE_HEADER);
 
-        if ($captchaMode === 'invisible')
+        if (strcasecmp($captchaMode, 'invisible') === 0)
         {
             return config('app.signup.invisible_captcha_secret');
         }
 
-        if ($captchaMode === 'v3')
+        if (strcasecmp($captchaMode, 'v3') === 0)
         {
             return config('app.signup.v3_captcha_secret');
         }

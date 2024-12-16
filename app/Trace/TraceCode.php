@@ -3478,6 +3478,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const KUBERNETES_INVOICE_JOB_NAMESPACE                      = 'KUBERNETES_INVOICE_JOB_NAMESPACE';
     const SIGNUP_VALIDATIONS                                    = 'SIGNUP_VALIDATIONS';
     const BATCH_WORKFLOW                                        = 'BATCH_WORKFLOW';
+    const REGISTER_WITH_OTP_REQUEST_ORIGIN                      = 'REGISTER_WITH_OTP_REQUEST_ORIGIN';
 
     const BATCH_FILE_DELETE_ERROR                               = 'BATCH_FILE_DELETE_ERROR';
 
