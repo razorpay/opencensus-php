@@ -500,7 +500,7 @@ trait ReverseShadowTrait
     }
 
 
-    protected function createJournalInLedger(array $journalPayload, bool $isBulkJournalRequest = false, bool $isMultipleJournalRequest = false, $isAdjustmentLedgerEntryOnly = false) : array
+    public function createJournalInLedger(array $journalPayload, bool $isBulkJournalRequest = false, bool $isMultipleJournalRequest = false, $isAdjustmentLedgerEntryOnly = false) : array
     {
         $app = App::getFacadeRoot();
 

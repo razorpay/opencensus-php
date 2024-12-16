@@ -211,6 +211,10 @@ class Payment extends Base
 
         $merchant = $this->repo->merchant->findOrFailPublic($this->txn->getMerchantId());
 
+        $featureCore = new Feature\Core();
+
+        $clsOnboardingStatus = $featureCore->isLedgerOnboardingFeaturesInAPI($merchant->getId());
+
         if ($this->source->isAuthorized() === true)
         {
             // in authorize transaction we set to balance updated as true since there is no actual balance update.
@@ -219,7 +223,7 @@ class Payment extends Base
             return false;
         }
         else if ($merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true or
-            $merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === true)
+            $clsOnboardingStatus === true)
         {
             return false;
         }

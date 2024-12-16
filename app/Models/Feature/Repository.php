@@ -118,6 +118,15 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
+    public function findByEntityTypeEntityIdAndNameInAPI(string $entityType, string $entityId, string $featureName)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_TYPE, $entityType)
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::NAME, $featureName)
+                    ->first();
+    }
+
     public function findByEntityTypeEntityIdAndName(string $entityType, string $entityId, string $featureName)
     {
         if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName,

@@ -1656,4 +1656,71 @@ class Core extends Base\Core
             return false;
         }
     }
+
+    public function isLedgerOnboardingFeaturesInAPI(string $merchantId): bool
+    {
+        $enabled_variant = "enable";
+
+        try
+        {
+            $experimentId = $this->app['config']->get('app.cls_onboarding_feature_fetch_exp_id');
+
+            $properties = [
+                "id" => UniqueIdEntity::generateUniqueId(),
+                "experiment_id" => $experimentId,
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'message' => 'cls onboarding splitz exp response',
+                'SPLITZ_RESPONSE' => $response,
+            ]);
+
+            $variant = $response['response']['variant']['name'] ?? 'disable';
+
+            if ($variant === $enabled_variant)
+            {
+                $features = $this->repo->feature->findByEntityTypeEntityIdAndNameInAPI(AppConstants::MERCHANT,
+                    $merchantId,
+                    Constants::CLS_ONBOARDING_INPROGRESS);
+
+                $this->trace->info(TraceCode::CLS_ONBOARDING_FEATURE_FETCH_RESPONSE, [
+                    'merchant_id' => $merchantId,
+                    'features' => $features,
+                ]);
+
+                if ($features !== null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'error' => 'cls onboarding splitz exp failed'
+            ]);
+
+            $features = $this->repo->feature->findByEntityTypeEntityIdAndNameInAPI(AppConstants::MERCHANT,
+                $merchantId,
+                Constants::CLS_ONBOARDING_INPROGRESS);
+
+            $this->trace->info(TraceCode::CLS_ONBOARDING_FEATURE_FETCH_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'features' => $features,
+            ]);
+
+            if ($features !== null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+    }
 }

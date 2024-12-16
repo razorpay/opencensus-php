@@ -1207,6 +1207,8 @@ return array(
 
     'enable_feature_fetch_from_dcs_exp_id' => env('ENABLE_FEATURE_FETCH_FROM_DCS_EXP_ID'),
 
+    'cls_onboarding_feature_fetch_exp_id' => env('CLS_ONBOARDING_FEATURE_FETCH_EXP_ID'),
+
     'gifu_card_upi_ds_refunds_exp_id' => env('GIFU_CARD_UPI_DS_REFUNDS_EXP_ID')
 
 );

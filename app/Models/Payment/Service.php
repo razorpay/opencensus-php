@@ -5132,7 +5132,11 @@ class Service extends Base\Service
 
             $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
 
-            if ($merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === true)
+            $featureCore = new Feature\Core();
+
+            $clsOnboardingStatus = $featureCore->isLedgerOnboardingFeaturesInAPI($merchant->getId());
+
+            if ($clsOnboardingStatus === true)
             {
                 $input = [
                     'payment_id'  => $payment->getId(),

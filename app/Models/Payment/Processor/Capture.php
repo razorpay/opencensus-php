@@ -1124,10 +1124,15 @@ trait Capture
     {
         try
         {
+
+            $featureCore = new Feature\Core();
+
+            $clsOnboardingStatus = $featureCore->isLedgerOnboardingFeaturesInAPI($payment->getMerchantId());
+
             if ((($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false) and
                 ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false) and
                 ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false) and
-                ($payment->merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === false)) or
+                ($clsOnboardingStatus === false)) or
                 ($txn->isBalanceUpdated() === true))
             {
                 return;
@@ -1156,7 +1161,7 @@ trait Capture
 
             $asyncBalancePushedAt = time();
 
-            if ($payment->merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === true and
+            if ($clsOnboardingStatus === true and
                 $payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
             {
                 MerchantBalanceUpdateAfterCLSOnboarding::dispatch($input, $this->mode, $asyncBalancePushedAt);

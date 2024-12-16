@@ -359,9 +359,13 @@ abstract class Base extends BaseCore
 
     protected function shouldUpdateBalance()
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($this->txn->getMerchantId());
+        $merchantId = $this->txn->getMerchantId();
 
-        if ($this->txn->isBalanceUpdated() === false && $merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === true)
+        $featureCore = new Feature\Core();
+
+        $clsOnboardingStatus = $featureCore->isLedgerOnboardingFeaturesInAPI($merchantId);
+
+        if ($this->txn->isBalanceUpdated() === false && $clsOnboardingStatus === true)
         {
             $txnBalanceId = $this->txn->getBalanceId();
 
@@ -375,7 +379,7 @@ abstract class Base extends BaseCore
 
             $this->trace->info(TraceCode::TXN_FAILURE_DURING_CLS_ONBOARDING,
                 [
-                    'merchant_id'           => $merchant->getMerchantId(),
+                    'merchant_id'           => $merchantId,
                     'type'                  => $this->txn->getType(),
                 ]
             );

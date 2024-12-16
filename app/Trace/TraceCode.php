@@ -5016,6 +5016,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_JSON_REQUEST_PAYLOAD_EMPTY                         = 'Json request payload field is empty';
     const QR_PAYMENT_ACQUIRER_DATA                              = 'QR_PAYMENT_ACQUIRER_DATA';
 
+    const CLS_ONBOARDING_FEATURE_FETCH_RESPONSE = 'CLS_ONBOARDING_FEATURE_FETCH_RESPONSE';
+
     //upi status cache
     const UPI_CACHE_STORE_ERROR                                 = 'UPI_CACHE_STORE_ERROR';
     const UPI_CACHE_FLUSH_ERROR                                 = 'UPI_CACHE_FLUSH_ERROR';
