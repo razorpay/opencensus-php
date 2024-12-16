@@ -3215,4 +3215,17 @@ class Repository extends Base\Repository
             ->where(Entity::ENTITY_ID, $payment->getId())
             ->first();
     }
+
+    public function getPaymentIdsBySettlementId($settlementId, $from, $to)
+    {
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+        return $this->newQueryWithConnection($connectionType)
+            ->where(Entity::SETTLEMENT_ID, $settlementId)
+            ->where(Entity::TYPE,ConstantEntity::PAYMENT)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->get()
+            ->pluck(Entity::ENTITY_ID)
+            ->toArray();
+    }
 }

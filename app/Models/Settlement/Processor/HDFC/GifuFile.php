@@ -19,6 +19,9 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Models\Settlement\Processor\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Feature;
+use RZP\Models\Payment\Entity;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Trace\TraceCode;
 
@@ -132,7 +135,11 @@ class GifuFile extends Base\BaseGifuFile
 
         $dataFetch = $this->repo->settlement->getSettlementsBetweenTimePeriodForMerchantIds($input,$from,$to);
 
-        $this->groupSettlementsByMid($dataFetch,$modData);
+        $dataFetchArray = $dataFetch->toArray();
+
+        $dataSettlement = $this->filterBasedonPOStransaction($dataFetchArray,$from,$to);
+
+        $this->groupSettlementsByMid($dataSettlement,$modData);
 
         $orgId = (new Merchant\Repository)->getMerchantOrg(current($input));
 
@@ -378,6 +385,34 @@ class GifuFile extends Base\BaseGifuFile
         }
 
         return $totalSum/100;
+    }
+    protected function filterBasedonPOStransaction($dataFetch,$from,$to)
+    {
+        return array_filter($dataFetch, function ($settlement) use ($from, $to) {
+            $settlementId = $settlement[Entity::ID];
+
+            $paymentIds = $this->repo->transaction->getPaymentIdsBySettlementId($settlementId, $from, $to);
+
+            if(empty($paymentIds) === true)
+            {
+                return true;
+            }
+
+            $payments = $this->repo->payment->getPaymentsByIds($paymentIds, $from, $to);
+
+            if(empty($payments) === true)
+            {
+                return true;
+            }
+            foreach($payments as $payment)
+            {
+                if(($payment->gateway !== Gateway::HDFC_EZETAP) or ($payment->receiver_type !== Receiver::POS))
+                {
+                    return true;
+                }
+            }
+            return false;
+        });
     }
 
     protected function getNarration($data,$mid): string

@@ -5951,4 +5951,12 @@ GROUP BY
             }
         }
     }
+    public function getPaymentsByIds($paymentIds, $from, $to)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+            ->whereIn(Entity::ID, $paymentIds)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->get()
+            ->toArray();
+    }
 }
