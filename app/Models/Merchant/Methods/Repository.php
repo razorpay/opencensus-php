@@ -121,6 +121,18 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function fetchAllMethodsBasedOnMerchantIds($merchantIds)
+    {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
+        return $this->newQuery()
+            ->whereIn(Entity::MERCHANT_ID,$merchantIds)
+            ->get();
+    }
+
     public function fetchMethodsBasedOnMethodName($method,$from,$count)
     {
         $metricData = [
