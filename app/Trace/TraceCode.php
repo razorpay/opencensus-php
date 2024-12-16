@@ -7339,6 +7339,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREDCASE_OUTBOX_REQUEST_MIGRATE                       = 'CREDCASE_OUTBOX_REQUEST_MIGRATE';
     const CREDCASE_OUTBOX_REQUEST_ROTATE                        = 'CREDCASE_OUTBOX_REQUEST_ROTATE';
     const CREDCASE_OUTBOX_REQUEST_EXPIRE                        = 'CREDCASE_OUTBOX_REQUEST_EXPIRE';
+    const API_KEY_TRACE_ERROR                                   = 'API_KEY_REPO_TRACING_ERROR';
     const MIGRATE_TO_CREDCASE_REQUEST                           = 'MIGRATE_TO_CREDCASE_REQUEST';
     const SKIP_INTERNAL_CREDENTIAL_MIGRATION                    = 'SKIP_INTERNAL_CREDENTIAL_MIGRATION';
 

@@ -310,6 +310,7 @@ class Metric
     const CREDCASE_READ_COUNT_MISMATCH = 'credcase_read_count_mismatch';
 
     const CREDCASE_READ_RESPONSE_MISMATCH = 'credcase_read_response_mismatch';
+    const CREDCASE_KEY_READ_ROUTE_COUNT = 'credcase_key_read_count';
 
     const CREDCASE_REQUEST_FAILED = 'credcase_request_failed';
     const CREDCASE_REQUEST_LATENCY_MS = 'credcase_request_latency_milliseconds.histogram';
