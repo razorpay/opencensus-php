@@ -254,8 +254,8 @@ class Service extends Base\Service
         $ccRequest = $this->transformAddPlanRule($input, $ruleId, $id);
         $sourceInput['id'] = $ruleId;
 
-        $legacyCallable = function ($rampPhase, $_) use ($id, $sourceInput, $orgId, $isBuyPricingRule) {
-            return $this->addPlanRuleLegacy($id, $sourceInput, $orgId, $isBuyPricingRule, $rampPhase);
+        $legacyCallable = function () use ($id, $sourceInput, $orgId, $isBuyPricingRule) {
+            return $this->addPlanRuleLegacy($id, $sourceInput, $orgId, $isBuyPricingRule);
         };
 
         return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable, null, $isBuyPricingRule);
@@ -284,7 +284,7 @@ class Service extends Base\Service
         return $input;
     }
 
-    public function addPlanRuleLegacy($id, $input, $orgId = null, $isBuyPricingRule = false, $rampPhase = '')
+    public function addPlanRuleLegacy($id, $input, $orgId = null, $isBuyPricingRule = false)
     {
         if ($isBuyPricingRule === true)
         {
@@ -318,7 +318,7 @@ class Service extends Base\Service
             return $rules;
         }
 
-        $rule = (new Pricing\Core)->addPlanRule($plan, $input, $ruleOrgId, $rampPhase);
+        $rule = (new Pricing\Core)->addPlanRule($plan, $input, $ruleOrgId);
 
         return $rule->toArray();
     }
@@ -1137,8 +1137,8 @@ class Service extends Base\Service
         $planAndRuleIds = Pricing\ChargeCollections\Utils::generatePlanAndRuleIds(1);
         $ccRequest = $this->transformUpdatePlanRequest($input, $planId, $ruleId, $planAndRuleIds);
 
-        $legacyCallable = function ($rampPhase, $_) use ($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds, $orgId) {
-            return $this->updatePlanRuleLegacy($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds, $orgId, $rampPhase);
+        $legacyCallable = function () use ($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds, $orgId) {
+            return $this->updatePlanRuleLegacy($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds, $orgId);
         };
 
         return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable, null, $isBuyPricingRule);
@@ -1157,7 +1157,7 @@ class Service extends Base\Service
         return $input;
     }
 
-    public function updatePlanRuleLegacy($planId, $ruleId, $input, $isBuyPricingRule = false, $planAndRuleIds = null, $orgId = null, $rampPhase = '')
+    public function updatePlanRuleLegacy($planId, $ruleId, $input, $isBuyPricingRule = false, $planAndRuleIds = null, $orgId = null)
     {
         $newRuleIds = $planAndRuleIds['ruleIds'] ?? [];
         if (!empty($newRuleIds[0])) {
@@ -1169,7 +1169,7 @@ class Service extends Base\Service
             $this->repo->pricing->onlyBuyPricing();
         }
 
-        $rule = (new Pricing\Core)->editPlanRule($planId, $ruleId, $input, $orgId, $rampPhase);
+        $rule = (new Pricing\Core)->editPlanRule($planId, $ruleId, $input, $orgId);
 
         return $rule->toArray();
     }

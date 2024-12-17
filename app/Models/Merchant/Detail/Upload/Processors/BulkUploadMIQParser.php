@@ -454,11 +454,11 @@ class BulkUploadMIQParser
                 {
                     if($feeBearerType === UConstants::FEE_TYPE_PERCENT)
                     {
-                        $rule[PricingEntity::PERCENT_RATE] = round($entry[$key], 2) * 100;
+                        $rule[PricingEntity::PERCENT_RATE] = (int)round((float)$entry[$key] * 100);
                     }
                     else
                     {
-                        $rule[PricingEntity::FIXED_RATE] = round($entry[$key], 2) * 100;
+                        $rule[PricingEntity::FIXED_RATE] = (int)round((float)$entry[$key] * 100);
                     }
 
                     $rule[PricingEntity::PAYMENT_NETWORK] = $value;
@@ -500,11 +500,11 @@ class BulkUploadMIQParser
 
                 if($feeBearerType === UConstants::FEE_TYPE_PERCENT)
                 {
-                    $rule[PricingEntity::PERCENT_RATE] = round($entry[Header::MIQ_UPI], 2) * 100;
+                    $rule[PricingEntity::PERCENT_RATE] = (int)round((float)$entry[Header::MIQ_UPI] * 100);
                 }
                 else
                 {
-                    $rule[PricingEntity::FIXED_RATE] = round($entry[Header::MIQ_UPI], 2) * 100;
+                    $rule[PricingEntity::FIXED_RATE] = (int)round((float)$entry[Header::MIQ_UPI] * 100);
                 }
 
                 $rules[]=$rule;
@@ -539,11 +539,11 @@ class BulkUploadMIQParser
 
                     if($feeBearerType === UConstants::FEE_TYPE_PERCENT)
                     {
-                        $rule[PricingEntity::PERCENT_RATE] = round($entry[$key], 2) * 100;
+                        $rule[PricingEntity::PERCENT_RATE] = (int)round((float)$entry[$key] * 100);
                     }
                     else
                     {
-                        $rule[PricingEntity::FIXED_RATE] = round($entry[$key], 2) * 100;
+                        $rule[PricingEntity::FIXED_RATE] = (int)round((float)$entry[$key] * 100);
                     }
 
                     $rule[PricingEntity::PAYMENT_NETWORK] = $value;
@@ -598,11 +598,11 @@ class BulkUploadMIQParser
 
                         if(strtolower($entry[$key]) === UConstants::FEE_TYPE_PERCENT)
                         {
-                            $rule[PricingEntity::PERCENT_RATE] = round($entry[$rangeHeader], 2) * 100;
+                            $rule[PricingEntity::PERCENT_RATE] = (int)round((float)$entry[$rangeHeader] * 100);
                         }
                         else
                         {
-                            $rule[PricingEntity::FIXED_RATE] = round($entry[$rangeHeader], 2) * 100;
+                            $rule[PricingEntity::FIXED_RATE] = (int)round((float)$entry[$rangeHeader] * 100);
                         }
 
                         if($value[UConstants::PRICING_AMOUNT_RANGE_ACTIVE] === '1')
@@ -926,12 +926,12 @@ class BulkUploadMIQParser
     {
             if ($feeBearerType === UConstants::FEE_TYPE_PERCENT)
             {
-                $rule[PricingEntity::PERCENT_RATE] = round($amount, 2) * 100;
+                $rule[PricingEntity::PERCENT_RATE] = (int)round((float)$amount * 100);
                 $rule[PricingEntity::FIXED_RATE] = 0;
             }
             else
             {
-                $rule[PricingEntity::FIXED_RATE] = round($amount, 2) * 100;
+                $rule[PricingEntity::FIXED_RATE] = (int)round((float)$amount * 100);
                 $rule[PricingEntity::PERCENT_RATE] = 0;
             }
     }

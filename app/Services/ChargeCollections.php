@@ -56,9 +56,6 @@ class ChargeCollections
     const TENANT            = 'tenant';
     const X_DASHBOARD_USER_ID = 'X-Dashboard-User-id';
     const X_PRICING_DECOMP_PHASE = 'X-Pricing-Decomp-Phase';
-
-    const X_PRICING_WORKFLOW_ACTION = 'X-Pricing-Workflow-Action';
-
     const DEFAULT_REQUEST_TIMEOUT   = 60;
 
     // Charge Collections APIs
@@ -247,11 +244,6 @@ class ChargeCollections
         if (isset($headers[self::X_PRICING_DECOMP_PHASE]) === true)
         {
             $this->headers[self::X_PRICING_DECOMP_PHASE] = $headers[self::X_PRICING_DECOMP_PHASE];
-        }
-
-        if (isset($headers[self::X_PRICING_WORKFLOW_ACTION]) === true)
-        {
-            $this->headers[self::X_PRICING_WORKFLOW_ACTION] = $headers[self::X_PRICING_WORKFLOW_ACTION];
         }
 
         // Adds rzp-context-dev-serve header

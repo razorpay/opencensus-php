@@ -272,41 +272,16 @@ class CCRouter
             if ($methodName == 'createPlan'){
                 $response = $this->app->charge_collections->createPricingPlan($input, $headers);
             }else if ($methodName == 'updatePlanRule'){
-                if ($routeName == 'pricing_update_plan_rule') {
-                    $headers = [ChargeCollections::X_PRICING_WORKFLOW_ACTION => 'validate-only'];
-                } else {
-                    $headers = [ChargeCollections::X_PRICING_WORKFLOW_ACTION => 'validate-and-write'];
-                }
-
                 $response = $this->app->charge_collections->updatePricingPlanRule($input, $headers);
                 if (isset($response['rule'])){
                     $response = $response['rule'];
-                }
-
-                $originalRule = (new Pricing\Repository)->getPlanRule($input['plan_id'], $input['rule_id']);
-
-                if ($routeName == 'pricing_update_plan_rule') {
-                    $this->app['workflow']
-                        ->setEntityAndId('pricing', $input['plan_id'])
-                        ->handle( $originalRule, $response);
                 }
             }else if ($methodName == 'deletePlanRuleForce'){
                 $response = $this->app->charge_collections->deletePricingPlanRule($input);
             }else if ($methodName == 'postAddBulkPricingRules'){
                 $response = $this->app->charge_collections->addBulkPricingPlanRule($input, $headers);
             }else if($methodName == 'addPlanRule'){
-                if ($routeName == 'pricing_add_plan_rule') {
-                    $headers = [ChargeCollections::X_PRICING_WORKFLOW_ACTION => 'validate-only'];
-                } else {
-                    $headers = [ChargeCollections::X_PRICING_WORKFLOW_ACTION => 'validate-and-write'];
-                }
                 $response = $this->app->charge_collections->addPricingPlanRule($input, $headers);
-
-                if ($routeName == 'pricing_add_plan_rule') {
-                    $this->app['workflow']
-                        ->setEntityAndId('pricing', $input['plan_id'])
-                        ->handle((new \stdClass), $response);
-                }
             }
             else if($methodName == 'replicatePlanAndAssign'){
                 $response = $this->app->charge_collections->replicatePlanAndAssign($input, $headers);
