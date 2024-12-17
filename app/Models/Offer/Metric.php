@@ -18,7 +18,10 @@ final class Metric
 
     const OFFERS_ENGINE_FETCH_BY_ID_RESPONSE_NIL          = 'offers_engine_fetch_by_id_response_nil';
 
+    const OFFERS_ENGINE_FETCH_BY_ID_INVALID_RESPONSE          = 'offers_engine_fetch_by_id_invalid_response';
+
     const OFFERS_ENGINE_FETCH_BY_ID_FAIL          = 'offers_engine_fetch_by_id_fail';
+    const OFFERS_ENGINE_AGGREGATE_FETCH_BY_ID_FAIL          = 'offers_engine_aggregate_fetch_by_id_fail';
 
     const OFFERS_ENGINE_FETCH_SUBSCRIPTION_OFFER_BY_ID_FAIL          = 'offers_engine_fetch_subscription_offer_by_id_fail';
 

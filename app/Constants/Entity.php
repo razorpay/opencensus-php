@@ -1850,6 +1850,8 @@ class Entity
         self::PAYOUTS_PAYOUT_SOURCES                    => \RZP\Services\PayoutService\AdminFetch::class,
         self::PAYOUTS_BANKING_ACCOUNT_STATEMENT_DETAILS => \RZP\Services\PayoutService\AdminFetch::class,
 
+        self::OFFER                                     => \RZP\Models\Offer\OffersEngine::class,
+
         self::GOVERNOR_RULES        => \RZP\Services\GovernorService::class,
         self::GOVERNOR_RULE_GROUPS  => \RZP\Services\GovernorService::class,
 

@@ -2112,6 +2112,175 @@ return [
         ]
     ],
 
+    'testAdminFetchOffer' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/offer?count=20&skip=0',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'admin'  => true,
+                'items'  => [
+                    [
+                        'id'             => 'offer_10000000000000',
+                        'name'           => 'Test Offer',
+                        'display_text'   => 'Some more details',
+                        'terms'          => 'Some more details',
+                        'merchant_id'    => '10000000000000',
+                        'starts_at'      => 1514764800,
+                        'ends_at'        => 1546300800,
+                        'active'         => true,
+                        'block'          => false,
+                        'default_offer'  => true,
+                        'emi_subvention' => false,
+                        'type'           => 'instant',
+                        'flat_cashback'  => null,
+                        'percent_rate'   => 1000,
+                        'max_cashback'   => 0,
+                        'payment_method' => 'card',
+                        'iins'           => [
+                            '411111'
+                        ],
+                        'emi_durations'  => [],
+                        'error_message'  => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                        'entity'         => 'offer',
+                        'admin'          => true,
+                    ],
+                    [
+                        'id'             => 'offer_10000000000001',
+                        'name'           => 'Test Offer',
+                        'display_text'   => 'Some more details',
+                        'terms'          => 'Some more details',
+                        'merchant_id'    => '8K4v0EqHDl342o',
+                        'starts_at'      => 1514764800,
+                        'ends_at'        => 1546300800,
+                        'active'         => true,
+                        'block'          => true,
+                        'default_offer'  => false,
+                        'emi_subvention' => false,
+                        'type'           => 'instant',
+                        'flat_cashback'  => null,
+                        'percent_rate'   => 1000,
+                        'max_cashback'   => 0,
+                        'payment_method' => 'card',
+                        'iins'           => [
+                            '411111'
+                        ],
+                        'emi_durations'  => [],
+                        'error_message'  => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                        'entity'         => 'offer',
+                        'admin'          => true,
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testAdminFetchOfferWithMerchantId' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/offer?count=20&skip=0&merchant_id=8K4v0EqHDl342o',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'admin'  => true,
+                'items'  => [
+                    [
+                        'id'             => 'offer_10000000000000',
+                        'name'           => 'Test Offer',
+                        'display_text'   => 'Some more details',
+                        'terms'          => 'Some more details',
+                        'merchant_id'    => '8K4v0EqHDl342o',
+                        'starts_at'      => 1514764800,
+                        'ends_at'        => 1546300800,
+                        'active'         => true,
+                        'block'          => true,
+                        'default_offer'  => true,
+                        'emi_subvention' => false,
+                        'type'           => 'instant',
+                        'flat_cashback'  => null,
+                        'percent_rate'   => 1000,
+                        'max_cashback'   => 0,
+                        'payment_method' => 'card',
+                        'iins'           => [
+                            '411111'
+                        ],
+                        'emi_durations'  => [],
+                        'error_message'  => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                        'entity'         => 'offer',
+                        'admin'          => true,
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testAdminFetchOfferById' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/offer/offer_10000000000000',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => 'offer_10000000000000',
+                'name'           => 'Test Offer',
+                'display_text'   => 'Some more details',
+                'terms'          => 'Some more details',
+                'merchant_id'    => '10000000000000',
+                'starts_at'      => 1514764800,
+                'ends_at'        => 1546300800,
+                'active'         => true,
+                'block'          => true,
+                'default_offer'  => true,
+                'emi_subvention' => false,
+                'type'           => 'instant',
+                'flat_cashback'  => null,
+                'percent_rate'   => 1000,
+                'max_cashback'   => 0,
+                'payment_method' => 'card',
+                'iins'           => [
+                    '411111'
+                ],
+                'emi_durations'  => [],
+                'error_message'  => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                'entity'         => 'offer',
+                'admin'          => true,
+            ]
+        ]
+    ],
+
+    'testAdminFetchOfferByIdFailure' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/offer/offer_10000000000000',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
     'testFetchOffersDiscountForSubscription' => [
         'request'  => [
             'content' => [

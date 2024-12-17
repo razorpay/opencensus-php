@@ -7,6 +7,7 @@ use Mockery;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
+use RZP\Models\Base\Collection;
 use RZP\Models\Base\DbMigrationMetricsObserver;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Offer\Core;
@@ -673,10 +674,10 @@ class OffersTest extends TestCase
 
         $this->startTest();
 
-        $offers = $this->getEntities('offer', [], true);
+        $offers = $this->getDbEntities('offer');
 
-        $this->assertEquals('100000Razorpay', $offers['items'][0]['merchant_id']);
-        $this->assertEquals('10000000000000', $offers['items'][1]['merchant_id']);
+        $this->assertEquals('100000Razorpay', $offers[1]->getMerchantId());
+        $this->assertEquals('10000000000000', $offers[0]->getMerchantId());
     }
 
     public function testBulkDeactivateOffer()
@@ -1101,6 +1102,523 @@ class OffersTest extends TestCase
     public function testCreateCardlessEmiOfferWithoutIssuer()
     {
         $this->fixtures->merchant->enableCardlessEmi(Account::TEST_ACCOUNT);
+        $this->startTest();
+    }
+
+    public function testAdminFetchOffer()
+    {
+        $offersEngineMock = Mockery::mock('RZP\Services\OffersEngine', [$this->app])
+                                         ->makePartial()
+                                         ->shouldAllowMockingProtectedMethods();
+
+        $offersEngineMock->shouldReceive('sendRequest')
+                         ->andReturnUsing(
+                             function(string $endpoint,
+                                      string $method,
+                                      array  $data = [],
+                                      bool   $throwExceptionOnFailure = true,
+                                      int    $timeout = 60
+                             ) {
+
+                                 self::assertEquals('v1/admin/offers?page_size=20&page=1&channel=CHANNEL_RZP_CHECKOUT', $endpoint);
+                                 self::assertEquals("GET", $method);
+                                 self::assertEmpty($data);
+                                 self::assertTrue($throwExceptionOnFailure);
+
+                                 $testOffersEngineOfferEntity1 = [
+                                     'metadata' => [
+                                         'offer_id'      => 'offer_10000000000000',
+                                         'name'          => 'Test Offer',
+                                         'display_name'  => 'Test Offer',
+                                         'description'   => 'Some more details',
+                                         'terms'         => [
+                                             'tnc' => 'Some more details',
+                                         ],
+                                         'advertiser_id' => 'rzp.merchant.10000000000000', // Replace with the actual advertiser ID
+                                         'created_by'    => 'rzp_merchant',
+                                         'state'         => 'STATE_CREATED',
+                                         'offer_on'      => 'BENEFICIARY_TYPE_SELF',
+                                         'currency'      => 'INR',
+                                         'schedules'     => [
+                                             'starts_at' => 1514764800,
+                                             'ends_at'   => 1546300800,
+                                         ],
+                                     ],
+                                     'spec'     => [
+                                         'allowed_channels' => [
+                                             'CHANNEL_RZP_CHECKOUT',
+                                         ],
+                                         'funding'          => [
+                                             'type'  => 'BENEFICIARY_TYPE_SELF',
+                                             'split' => [
+                                                 [
+                                                     'type'   => 'VALUE_OPTION_PERCENTAGE',
+                                                     'bearer' => 'USER_TYPE_PUBLISHER',
+                                                     'value'  => 100,
+                                                 ],
+                                             ],
+                                         ],
+                                         'benefits_types'   => [
+                                             'BENEFIT_TYPE_DISCOUNT',
+                                         ],
+                                         'rule_groups'      => [
+                                             'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                                                 'rules' => [
+                                                     [
+                                                         'when_expression' => 'true',
+                                                         'then'            => [
+                                                             [
+                                                                 'discount' => [
+                                                                     [
+                                                                         'percent_discount' => 1000,
+                                                                         'applicable_on'    => 'Order.total_amount',
+                                                                     ],
+                                                                 ],
+                                                             ],
+                                                         ],
+                                                     ],
+                                                 ],
+                                             ],
+                                             'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL'    => [
+                                                 'rules' => [
+                                                     [
+                                                         'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.Iin in [\"411111\"]',
+                                                         'then'            => [
+                                                             [
+                                                                 'discount' => [
+                                                                     [
+                                                                         'percent_discount' => 1000,
+                                                                         'applicable_on'    => 'Order.total_amount',
+                                                                     ],
+                                                                 ],
+                                                             ],
+                                                         ],
+                                                     ],
+                                                 ],
+                                             ],
+                                         ],
+                                     ],
+                                 ];
+                                 $testOffersEngineOfferEntity2 = $testOffersEngineOfferEntity1;
+                                 $testOffersEngineOfferEntity2['metadata']['offer_id'] = 'offer_10000000000001';
+                                 $testOffersEngineOfferEntity2['metadata']['advertiser_id'] = '8K4v0EqHDl342o';
+
+                                 return [
+                                     'offers'           => [
+                                         $testOffersEngineOfferEntity1,
+                                         $testOffersEngineOfferEntity2
+                                     ],
+                                     'offer_publishers' => [
+                                         [
+                                             'offer_id'                => '10000000000001',
+                                             'publisher_id'            => 'IE4v1EwHDl342o',
+                                             'channel_name'            => 'CHANNEL_RZP_CHECKOUT',
+                                             'starts_at'               => 1514764800,
+                                             'ends_at'                 => 1546300800,
+                                             'state'                   => 'STATE_PUBLISHED',
+                                             'continue_txn_on_failure' => false,
+                                             'offer_type'              => 'OFFER_TYPE_STAGE_HIDDEN',
+                                             'auto_apply'              => false,
+                                             'published_at'            => 0,
+                                         ],
+                                         [
+                                             'offer_id'                => '10000000000000',
+                                             'publisher_id'            => '8K4v0EqHDl342o',
+                                             'channel_name'            => 'CHANNEL_RZP_CHECKOUT',
+                                             'starts_at'               => 1514764800,
+                                             'ends_at'                 => 1546300800,
+                                             'state'                   => 'STATE_PUBLISHED',
+                                             'continue_txn_on_failure' => true,
+                                             'offer_type'              => 'OFFER_TYPE_STAGE_REGULAR',
+                                             'auto_apply'              => false,
+                                             'published_at'            => 0,
+                                         ]
+                                     ],
+                                     'total_offers'     => 2,
+                                     'page'             => 1,
+                                     'page_size'        => 20
+                                 ];
+                             }
+                         )->times(1);
+
+        $this->app['offers_engine'] = $offersEngineMock;
+
+        $this->ba->adminAuth('live');
+
+        $response = $this->startTest();
+
+        $this->assertTrue(is_array($response));
+
+        $this->assertNotEmpty($response);
+    }
+
+    public function testAdminFetchOfferWithMerchantId()
+    {
+        $offersEngineMock = Mockery::mock('RZP\Services\OffersEngine', [$this->app])
+                                   ->makePartial()
+                                   ->shouldAllowMockingProtectedMethods();
+
+        $offersEngineMock->shouldReceive('sendRequest')
+                         ->andReturnUsing(
+                             function(string $endpoint,
+                                      string $method,
+                                      array  $data = [],
+                                      bool   $throwExceptionOnFailure = true,
+                                      int    $timeout = 60
+                             ) {
+
+                                 self::assertEquals('v1/admin/offers?page_size=20&page=1&publisher_id=rzp.merchant.8K4v0EqHDl342o&channel=CHANNEL_RZP_CHECKOUT', $endpoint);
+                                 self::assertEquals("GET", $method);
+                                 self::assertEmpty($data);
+                                 self::assertTrue($throwExceptionOnFailure);
+
+                                 return [
+                                     'offers'           => [
+                                         [
+                                             'metadata' => [
+                                                 'offer_id'      => 'offer_10000000000000',
+                                                 'name'          => 'Test Offer',
+                                                 'display_name'  => 'Test Offer',
+                                                 'description'   => 'Some more details',
+                                                 'terms'         => [
+                                                     'tnc' => 'Some more details',
+                                                 ],
+                                                 'advertiser_id' => 'rzp.merchant.8K4v0EqHDl342o', // Replace with the actual advertiser ID
+                                                 'created_by'    => 'rzp_merchant',
+                                                 'state'         => 'STATE_CREATED',
+                                                 'offer_on'      => 'BENEFICIARY_TYPE_SELF',
+                                                 'currency'      => 'INR',
+                                                 'schedules'     => [
+                                                     'starts_at' => 1514764800,
+                                                     'ends_at'   => 1546300800,
+                                                 ],
+                                             ],
+                                             'spec'     => [
+                                                 'allowed_channels' => [
+                                                     'CHANNEL_RZP_CHECKOUT',
+                                                 ],
+                                                 'funding'          => [
+                                                     'type'  => 'BENEFICIARY_TYPE_SELF',
+                                                     'split' => [
+                                                         [
+                                                             'type'   => 'VALUE_OPTION_PERCENTAGE',
+                                                             'bearer' => 'USER_TYPE_PUBLISHER',
+                                                             'value'  => 100,
+                                                         ],
+                                                     ],
+                                                 ],
+                                                 'benefits_types'   => [
+                                                     'BENEFIT_TYPE_DISCOUNT',
+                                                 ],
+                                                 'rule_groups'      => [
+                                                     'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                                                         'rules' => [
+                                                             [
+                                                                 'when_expression' => 'true',
+                                                                 'then'            => [
+                                                                     [
+                                                                         'discount' => [
+                                                                             [
+                                                                                 'percent_discount' => 1000,
+                                                                                 'applicable_on'    => 'Order.total_amount',
+                                                                             ],
+                                                                         ],
+                                                                     ],
+                                                                 ],
+                                                             ],
+                                                         ],
+                                                     ],
+                                                     'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL'    => [
+                                                         'rules' => [
+                                                             [
+                                                                 'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.Iin in [\"411111\"]',
+                                                                 'then'            => [
+                                                                     [
+                                                                         'discount' => [
+                                                                             [
+                                                                                 'percent_discount' => 1000,
+                                                                                 'applicable_on'    => 'Order.total_amount',
+                                                                             ],
+                                                                         ],
+                                                                     ],
+                                                                 ],
+                                                             ],
+                                                         ],
+                                                     ],
+                                                 ],
+                                             ],
+                                         ]
+                                     ],
+                                     'offer_publishers' => [
+                                         [
+                                             'offer_id'                => '10000000000000',
+                                             'publisher_id'            => '8K4v0EqHDl342o',
+                                             'channel_name'            => 'CHANNEL_RZP_CHECKOUT',
+                                             'starts_at'               => 1514764800,
+                                             'ends_at'                 => 1546300800,
+                                             'state'                   => 'STATE_PUBLISHED',
+                                             'continue_txn_on_failure' => false,
+                                             'offer_type'              => 'OFFER_TYPE_STAGE_REGULAR',
+                                             'auto_apply'              => false,
+                                             'published_at'            => 0,
+                                         ],
+                                     ],
+                                     'total_offers'     => 1,
+                                     'page'             => 1,
+                                     'page_size'        => 20
+                                 ];
+                             }
+                         )->times(1);
+
+        $this->app['offers_engine'] = $offersEngineMock;
+
+        $this->ba->adminAuth('live');
+
+        $response = $this->startTest();
+
+        $this->assertTrue(is_array($response));
+
+        $this->assertNotEmpty($response);
+    }
+
+    public function testAdminFetchOfferById()
+    {
+        $offersEngineMock = Mockery::mock('RZP\Services\OffersEngine', [$this->app])
+                                   ->makePartial()
+                                   ->shouldAllowMockingProtectedMethods();
+
+        $offersEngineMock->shouldReceive('sendRequest')
+                         ->andReturnUsing(
+                             function(string $endpoint,
+                                      string $method,
+                                      array  $data = [],
+                                      bool   $throwExceptionOnFailure = true,
+                                      int    $timeout = 60
+                             ) {
+
+                                 self::assertEquals('v1/admin/offers?page_size=1&page=1&channel=CHANNEL_RZP_CHECKOUT&offer_ids=offer_10000000000000', $endpoint);
+                                 self::assertEquals("GET", $method);
+                                 self::assertEmpty($data);
+                                 self::assertTrue($throwExceptionOnFailure);
+
+                                 return [
+                                     'offers'           => [
+                                         [
+                                             'metadata' => [
+                                                 'offer_id'      => 'offer_10000000000000',
+                                                 'name'          => 'Test Offer',
+                                                 'display_name'  => 'Test Offer',
+                                                 'description'   => 'Some more details',
+                                                 'terms'         => [
+                                                     'tnc' => 'Some more details',
+                                                 ],
+                                                 'advertiser_id' => 'rzp.merchant.10000000000000', // Replace with the actual advertiser ID
+                                                 'created_by'    => 'rzp_merchant',
+                                                 'state'         => 'STATE_CREATED',
+                                                 'offer_on'      => 'BENEFICIARY_TYPE_SELF',
+                                                 'currency'      => 'INR',
+                                                 'schedules'     => [
+                                                     'starts_at' => 1514764800,
+                                                     'ends_at'   => 1546300800,
+                                                 ],
+                                             ],
+                                             'spec'     => [
+                                                 'allowed_channels' => [
+                                                     'CHANNEL_RZP_CHECKOUT',
+                                                 ],
+                                                 'funding'          => [
+                                                     'type'  => 'BENEFICIARY_TYPE_SELF',
+                                                     'split' => [
+                                                         [
+                                                             'type'   => 'VALUE_OPTION_PERCENTAGE',
+                                                             'bearer' => 'USER_TYPE_PUBLISHER',
+                                                             'value'  => 100,
+                                                         ],
+                                                     ],
+                                                 ],
+                                                 'benefits_types'   => [
+                                                     'BENEFIT_TYPE_DISCOUNT',
+                                                 ],
+                                                 'rule_groups'      => [
+                                                     'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                                                         'rules' => [
+                                                             [
+                                                                 'when_expression' => 'true',
+                                                                 'then'            => [
+                                                                     [
+                                                                         'discount' => [
+                                                                             [
+                                                                                 'percent_discount' => 1000,
+                                                                                 'applicable_on'    => 'Order.total_amount',
+                                                                             ],
+                                                                         ],
+                                                                     ],
+                                                                 ],
+                                                             ],
+                                                         ],
+                                                     ],
+                                                     'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL'    => [
+                                                         'rules' => [
+                                                             [
+                                                                 'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.Iin in [\"411111\"]',
+                                                                 'then'            => [
+                                                                     [
+                                                                         'discount' => [
+                                                                             [
+                                                                                 'percent_discount' => 1000,
+                                                                                 'applicable_on'    => 'Order.total_amount',
+                                                                             ],
+                                                                         ],
+                                                                     ],
+                                                                 ],
+                                                             ],
+                                                         ],
+                                                     ],
+                                                 ],
+                                             ],
+                                         ],
+                                     ],
+                                     'offer_publishers' => [
+                                         [
+                                             'offer_id'                => '10000000000000',
+                                             'publisher_id'            => '10000000000pub',
+                                             'channel_name'            => 'CHANNEL_RZP_CHECKOUT',
+                                             'starts_at'               => 1514764800,
+                                             'ends_at'                 => 1546300800,
+                                             'state'                   => 'STATE_PUBLISHED',
+                                             'continue_txn_on_failure' => false,
+                                             'offer_type'              => 'OFFER_TYPE_STAGE_REGULAR',
+                                             'auto_apply'              => false,
+                                             'published_at'            => 0,
+                                         ],
+                                     ],
+                                     'total_offers'     => 1,
+                                     'page'             => 1,
+                                     'page_size'        => 1
+                                 ];
+                             }
+                         )->times(1);
+
+        $this->app['offers_engine'] = $offersEngineMock;
+
+        $this->ba->adminAuth('live');
+
+        $response = $this->startTest();
+
+        $this->assertTrue(is_array($response));
+
+        $this->assertNotEmpty($response);
+    }
+
+    public function testAdminFetchOfferByIdFailure()
+    {
+        $offersEngineMock = Mockery::mock('RZP\Services\OffersEngine', [$this->app])
+                                   ->makePartial()
+                                   ->shouldAllowMockingProtectedMethods();
+
+        $offersEngineMock->shouldReceive('sendRequest')
+                         ->andReturnUsing(
+                             function(string $endpoint,
+                                      string $method,
+                                      array  $data = [],
+                                      bool   $throwExceptionOnFailure = true,
+                                      int    $timeout = 60
+                             ) {
+
+                                 self::assertEquals('v1/admin/offers?page_size=1&page=1&channel=CHANNEL_RZP_CHECKOUT&offer_ids=offer_10000000000000', $endpoint);
+                                 self::assertEquals("GET", $method);
+                                 self::assertEmpty($data);
+                                 self::assertTrue($throwExceptionOnFailure);
+
+                                 return [
+                                     'offers'           => [
+                                         [
+                                             'metadata' => [
+                                                 'offer_id'      => 'offer_10000000000000',
+                                                 'name'          => 'Test Offer',
+                                                 'display_name'  => 'Test Offer',
+                                                 'description'   => 'Some more details',
+                                                 'terms'         => [
+                                                     'tnc' => 'Some more details',
+                                                 ],
+                                                 'advertiser_id' => 'rzp.merchant.10000000000000', // Replace with the actual advertiser ID
+                                                 'created_by'    => 'rzp_merchant',
+                                                 'state'         => 'STATE_CREATED',
+                                                 'offer_on'      => 'BENEFICIARY_TYPE_SELF',
+                                                 'currency'      => 'INR',
+                                                 'schedules'     => [
+                                                     'starts_at' => 1514764800,
+                                                     'ends_at'   => 1546300800,
+                                                 ],
+                                             ],
+                                             'spec'     => [
+                                                 'allowed_channels' => [
+                                                     'CHANNEL_RZP_CHECKOUT',
+                                                 ],
+                                                 'funding'          => [
+                                                     'type'  => 'BENEFICIARY_TYPE_SELF',
+                                                     'split' => [
+                                                         [
+                                                             'type'   => 'VALUE_OPTION_PERCENTAGE',
+                                                             'bearer' => 'USER_TYPE_PUBLISHER',
+                                                             'value'  => 100,
+                                                         ],
+                                                     ],
+                                                 ],
+                                                 'benefits_types'   => [
+                                                     'BENEFIT_TYPE_DISCOUNT',
+                                                 ],
+                                                 'rule_groups'      => [
+                                                     'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                                                         'rules' => [
+                                                             [
+                                                                 'when_expression' => 'true',
+                                                                 'then'            => [
+                                                                     [
+                                                                         'discount' => [
+                                                                             [
+                                                                                 'percent_discount' => 1000,
+                                                                                 'applicable_on'    => 'Order.total_amount',
+                                                                             ],
+                                                                         ],
+                                                                     ],
+                                                                 ],
+                                                             ],
+                                                         ],
+                                                     ],
+                                                     'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL'    => [
+                                                         'rules' => [
+                                                             [
+                                                                 'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.Iin in [\"411111\"]',
+                                                                 'then'            => [
+                                                                     [
+                                                                         'discount' => [
+                                                                             [
+                                                                                 'percent_discount' => 1000,
+                                                                                 'applicable_on'    => 'Order.total_amount',
+                                                                             ],
+                                                                         ],
+                                                                     ],
+                                                                 ],
+                                                             ],
+                                                         ],
+                                                     ],
+                                                 ],
+                                             ],
+                                         ]
+                                     ],
+                                     'offer_publishers' => [],
+                                     'total_offers'     => 1,
+                                     'page'             => 1,
+                                     'page_size'        => 1
+                                 ];
+                             }
+                         )->times(1);
+
+        $this->app['offers_engine'] = $offersEngineMock;
+
+        $this->ba->adminAuth('live');
+
         $this->startTest();
     }
 

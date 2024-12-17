@@ -423,7 +423,10 @@ trait RepositoryFetch
 
     public function printApiDecompLog()
     {
-        if ($this->app['api.route']->getCurrentRouteName() === 'order_payments' || $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_by_id' || $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_multiple')
+        if ($this->app['api.route']->getCurrentRouteName() === 'order_payments' ||
+            $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_by_id' ||
+            $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_multiple' ||
+            $this->app['api.route']->getCurrentRouteName() === 'offer_fetch_multiple')
         {
             return true;
         }

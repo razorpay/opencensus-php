@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Error\Error;
 use RZP\Error\ErrorClass;
 use RZP\Exception;
+use RZP\Models\Offer;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
@@ -50,6 +51,8 @@ class OffersEngine
     const X_TASK_ID         = 'X-Task-Id';
     const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
 
+    const ADMIN = 'admin';
+
     const DEFAULT_REQUEST_TIMEOUT   = 60;
 
     // Offers Engine APIs
@@ -62,6 +65,8 @@ class OffersEngine
     const OffersEngineAdminUpdateOffer = 'v1/admin/offers/%s';
 
     const OffersEngineGetOfferByID = 'v1/offers/%s';
+
+    const OffersEngineAdminGetOffers = 'v1/admin/offers';
 
     const OffersEngineGetOffers = 'v1/offers';
 
@@ -83,6 +88,15 @@ class OffersEngine
     ];
 
     const RESPONSE_LOGGER_MAP = [];
+
+    /*
+     * This map stores routes and their methods for which
+     * user_type and user_id would be set as admin
+     * before sending a request to Offers Engine
+     */
+    const ADMIN_ROUTES = [
+        self::OffersEngineAdminGetOffers => Requests::GET,
+    ];
 
     /**
      * Offers Engine constructor.
@@ -376,6 +390,18 @@ class OffersEngine
 
         $headers = $this->headers;
 
+        foreach (self::ADMIN_ROUTES as $adminRoute => $adminMethod)
+        {
+            if ((str_starts_with($endpoint, $adminRoute) === true) and
+                ($method === $adminMethod))
+            {
+                $headers['X-User-Id']   = self::ADMIN;
+                $headers['X-User-Type'] = self::ADMIN;
+
+                break;
+            }
+        }
+
         return [
             'url'       => $url,
             'method'    => $method,
@@ -458,6 +484,158 @@ class OffersEngine
             'merchant_id' => $this->merchantId
         ]);
 
+    }
+
+    /*
+     * This function retrieves offer and the latest associated offer publisher from the
+     * offer engine based on the parameters provided in the request.
+     * This API operates without requiring publisher or advertiser context in the request but
+     * relies on the admin context to interact with the Offers engine.
+     */
+    public function fetchAdminOfferById(string $id, array $input)
+    {
+        $endpoint = self::OffersEngineAdminGetOffers;
+
+        $input['channel'] = Constants::CHANNEL_RZP_CHECKOUT;
+
+        $input['page_size'] = $input['page_size'] ?? 1;
+
+        $input['page'] = $input['page'] ?? 1;
+
+        if (empty($input) === false)
+        {
+            $endpoint .= "?".http_build_query($input);
+        }
+
+        if (empty($id) === false)
+        {
+            $endpoint .= '&offer_ids=' . 'offer_' . Offer\Entity::silentlyStripSign($id);
+        }
+
+        $response = $this->sendRequest($endpoint, Requests::GET);
+
+        if (empty($response) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, [
+                'id'         => $id,
+            ]);
+        }
+
+        $offerEntity = null;
+
+        foreach ($response[Constants::OFFERS] as $offer)
+        {
+            $convertedResponse = [];
+            $filter = false;
+            foreach ($response[Constants::OFFER_PUBLISHERS] as $offerPublisher)
+            {
+                if ('offer_' . $offerPublisher[Constants::OFFER_ID] === $offer[Constants::METADATA][Constants::OFFER_ID])
+                {
+                    $filter = true;
+
+                    $convertedResponse = $this->offersEngine->convertOffersEngineResponseToEntityOffer(
+                        [
+                            Constants::OFFER   => $offer,
+                            Constants::PUBLISH => $offerPublisher,
+                        ]);
+                    // prefer the first offer_publisher associated with the offer.
+                    break;
+                }
+            }
+            if ($filter === true)
+            {
+                $offerEntity = $convertedResponse[Constants::OFFER];
+            }
+            break;
+        }
+
+        // Possibility of a misconfigured offer which doesn't have a offer publisher in offers engine
+        if ($offerEntity === null)
+        {
+            $this->trace->error(TraceCode::OFFER_MISCONFIGURED_IN_OFFERS_ENGINE, [
+                'offer_id' => $id,
+            ]);
+
+            app('trace')->count(Offer\Metric::OFFERS_ENGINE_FETCH_BY_ID_INVALID_RESPONSE, [
+                'route' => app('api.route')->getCurrentRouteName(),
+            ]);
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, [
+                'id' => $id,
+            ]);
+        }
+
+        return $offerEntity;
+    }
+
+    /*
+     * This function retrieves latest offers and the aggregated data of offer publishers from the
+     * offer engine based on the parameters provided in the request.
+     * This API operates without requiring publisher or advertiser context in the request but
+     * relies on the admin context to interact with the Offers engine.
+     */
+    public function fetchAdminOfferBulk(array $input)
+    {
+        if (isset($input['merchant_id']) === true)
+        {
+            $input['publisher_id'] = 'rzp.merchant.' . $input['merchant_id'];
+
+            unset($input['merchant_id']);
+        }
+
+        $input['channel'] = Constants::CHANNEL_RZP_CHECKOUT;
+
+        $input['page_size'] = $input['page_size'] ?? 20;
+
+        $input['page'] = $input['page'] ?? 1;
+
+        $endpoint = self::OffersEngineAdminGetOffers;
+
+        if (empty($input) === false)
+        {
+            $endpoint .= "?".http_build_query($input);
+        }
+
+        $response = $this->sendRequest($endpoint, Requests::GET);
+
+        if (empty($response) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY, null, [
+                'input'       => $input
+            ]);
+        }
+
+        $convertedOffers = [];
+
+        // for each offer<>offer_publisher pair, convert into API offer and filter based on input
+        foreach ($response[Constants::OFFERS] as $offer)
+        {
+            $convertedResponse = [];
+            $filter = false;
+            foreach ($response[Constants::OFFER_PUBLISHERS] as $key => $offerPublisher)
+            {
+                if ('offer_' . $offerPublisher[Constants::OFFER_ID] === $offer[Constants::METADATA][Constants::OFFER_ID])
+                {
+                    $filter = true;
+
+                    $convertedResponse = $this->offersEngine->convertOffersEngineResponseToEntityOffer(
+                        [
+                            Constants::OFFER   => $offer,
+                            Constants::PUBLISH => $offerPublisher,
+                        ]);
+
+                    unset($response[Constants::OFFER_PUBLISHERS][$key]);
+
+                    break;
+                }
+            }
+            if ($filter === true)
+            {
+                $convertedOffers[] = $convertedResponse[Constants::OFFER];
+            }
+        }
+
+        return $convertedOffers;
     }
 
     /**

@@ -86,6 +86,7 @@ class Validator extends Base\Validator
         ConfigKey::CARD_PAYMENT_SERVICE_ENABLED         => 'filled|boolean',
         ConfigKey::PG_ROUTER_SERVICE_ENABLED            => 'filled|boolean',
         ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED        => 'filled|boolean',
+        ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => 'filled|boolean',
         ConfigKey::CARD_ARCHIVAL_FALLBACK_ENABLED       => 'filled|boolean',
         ConfigKey::PAYMENT_ARCHIVAL_EAGER_LOAD          => 'filled|boolean',
         ConfigKey::PAYMENT_ARCHIVAL_FALLBACK_ENABLED    => 'filled|boolean',

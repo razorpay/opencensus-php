@@ -923,6 +923,8 @@ return array(
 
     'offers_engine_fetch_offers_exp_id' => env('OFFERS_ENGINE_FETCH_OFFERS_EXP'),
 
+    'offers_engine_admin_fetch_offers_exp_id' => env('OFFERS_ENGINE_ADMIN_FETCH_OFFERS_EXP'),
+
     'offers_engine_validate_offer_exp_id' => env('OFFERS_ENGINE_VALIDATE_OFFER_EXP'),
 
     'offers_engine_reverse_shadow_exp_id' => env('OFFERS_ENGINE_REVERSE_SHADOW_EXP'),

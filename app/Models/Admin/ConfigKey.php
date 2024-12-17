@@ -54,6 +54,7 @@ class ConfigKey
     const CPS_SERVICE_ENABLED                   = self::PREFIX . 'cps_service_enabled';
     const PG_ROUTER_SERVICE_ENABLED             = self::PREFIX . 'pg_router_service_enabled';
     const OFFERS_ENGINE_SERVICE_ENABLED         = self::PREFIX . 'offers_engine_service_enabled';
+    const OFFERS_ENGINE_REVERSE_SHADOW_ENABLED  = self::PREFIX.  'offers_engine_reverse_shadow_enabled';
     const PAYMENTS_DUAL_WRITE                   = self::PREFIX . 'payments_dual_write';
     const UPI_DUAL_WRITE_ENABLED                = self::PREFIX . 'upi_dual_write_enabled';
     const CARD_ARCHIVAL_FALLBACK_ENABLED        = self::PREFIX . 'card_archival_fallback_enabled';
@@ -521,6 +522,7 @@ class ConfigKey
         self::CARD_PAYMENT_SERVICE_ENABLED,
         self::PG_ROUTER_SERVICE_ENABLED,
         self::OFFERS_ENGINE_SERVICE_ENABLED,
+        self::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED,
         self::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT,
         self::LOW_BALANCE_RX_EMAIL,
         self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING,

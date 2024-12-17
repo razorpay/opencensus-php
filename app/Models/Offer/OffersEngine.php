@@ -36,6 +36,55 @@ class OffersEngine extends Base\Core
         $this->auth = App::getFacadeRoot()['basicauth'];
     }
 
+    /*
+     * `fetch` function is used to power admin dashboard for fetching
+     * offers by ID from offers engine
+     */
+    public function fetch(string $entityName, string $id, array $input)
+    {
+        $input['page_size'] = 1;
+
+        unset($input['count']);
+
+        $input['page'] = 1;
+
+        unset($input['skip']);
+
+        $validationInput = $input;
+
+        $validationInput['offer_id'] = Entity::silentlyStripSign($id);
+
+        (new Validator())->validateInput('admin_fetch', $validationInput);
+
+        $offer = $this->app['offers_engine']->fetchAdminOfferById($id, $input);
+
+        return $offer->toArrayAdmin();
+    }
+
+    /*
+     * `fetchMultiple` function is used to power admin dashboard for fetching
+     * multiple offers based on params provided from offers engine
+     */
+    public function fetchMultiple(string $entityName, array $input)
+    {
+        $input['page_size'] = isset($input['count']) === true ? $input['count'] : 20;
+
+        unset($input['count']);
+
+        $input['page'] = isset($input['skip']) === true ?
+            max(1, (floor($input['skip']/$input['page_size']) + 1)) : 1;
+
+        unset($input['skip']);
+
+        (new Validator())->validateInput('admin_fetch_multiple', $input);
+
+        $offersResponse =  $this->app['offers_engine']->fetchAdminOfferBulk($input);
+
+        $offersCollection = new PublicCollection($offersResponse);
+
+        return $offersCollection->toArrayAdmin();
+    }
+
     /**
      * @throws BadRequestException
      */
@@ -754,8 +803,14 @@ class OffersEngine extends Base\Core
 
     /**
      * @param array $offersEngineResponse
+     *
      * @return array
      * @throws Exception\BadRequestException
+     *
+     * This function, during the conversion process, assumes that the advertiser and
+     * publisher of an offer are the same. This assumption holds true in this context,
+     * as API offers inherently share the same advertiserID and publisherID and are
+     * automatically published by default upon creation.
      */
     public function convertOffersEngineResponseToEntityOffer(array $offersEngineResponse)
     {

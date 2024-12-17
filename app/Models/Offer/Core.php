@@ -18,6 +18,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order\ProductType;
@@ -1132,7 +1133,7 @@ class Core extends Base\Core
          $this->env === 'func' or $this->env === 'availability' or
          $this->env === 'perf' or $this->env === 'perf2'))
         {
-            return false;
+            return (bool) ConfigKey::get(ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED, false);
         }
 
         return true;

@@ -68,7 +68,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -126,7 +126,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(500000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(25900, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -292,7 +292,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -330,7 +330,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
     }
@@ -363,7 +363,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
     }
@@ -398,7 +398,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
     }
@@ -433,7 +433,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
     }
@@ -466,7 +466,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
     }
@@ -501,7 +501,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
     }
@@ -537,7 +537,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -574,7 +574,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
 
@@ -732,7 +732,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -789,7 +789,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -843,7 +843,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -883,7 +883,7 @@ class OffersPaymentTest extends TestCase
         $order = $this->getLastEntity('order', true);
         $this->assertEquals(100000, $order['amount']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
 
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
@@ -905,7 +905,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals($order['status'], 'paid');
 
         $discount = $this->getLastEntity('discount', true);
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $this->assertEquals(100000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
         $this->assertEquals($order['id'], $discount['order_id']);

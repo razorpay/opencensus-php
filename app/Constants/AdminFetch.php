@@ -1711,6 +1711,13 @@ class AdminFetch
                 ],
             ],
 
+            Entity::OFFER => [
+                'merchant_id'       => [
+                    Fetch::LABEL    => 'Merchant Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::GOVERNOR_RULES => [
                 'rule_group_id'       => [
                     Fetch::LABEL        => 'RuleGroup Public Id',
