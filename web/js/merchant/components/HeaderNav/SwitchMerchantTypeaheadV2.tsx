@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
+import { ActionList, ActionListItem, Box, SearchInput, Button } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import { ActionList, ActionListItem, Box, SearchInput } from '@razorpay/blade/components';
-import useModalComponents from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/hooks/useModalComponents';
+
 import { useMobile } from 'common/hooks/useMobile';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentActive } from 'common/utils/rzp-utils';
+import useModalComponents from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/hooks/useModalComponents';
+
+import { createNewAccountTrack } from './track';
+
+const EXISTING_ACCOUNT_LABEL = 'Existing Account';
 
 const SwitchMerchantTypeaheadV2: React.FC<{
   onSwitchMerchant: (arg: string) => void;
@@ -11,20 +18,41 @@ const SwitchMerchantTypeaheadV2: React.FC<{
   onDismiss: () => void;
 }> = ({ onSwitchMerchant, user, isOpen, onDismiss }) => {
   const isMobile = useMobile();
-  const merchantList = Object.keys(user.merchants) || [];
+  const {
+    abExperiments: { create_merchant_cta },
+  } = useSplitzService();
 
-  const [filteredMerchants, setFilteredMerchants] = useState<string[]>(merchantList);
+  const isCreateMerchantCTAEnabled = isExperimentActive(create_merchant_cta);
+
+  const merchantIds = Object.keys(user.merchants) || [];
+  let merchantsWithoutNameCount = 1;
+  // Assigning name 'Existing Account <n>' to all the accounts whose name is null
+  const merchants = merchantIds.reduce((acc, merchantID) => {
+    const merchant = { ...user.merchants[merchantID] };
+    if (!merchant.name) {
+      merchant.name = `${EXISTING_ACCOUNT_LABEL} ${merchantsWithoutNameCount}`;
+      merchantsWithoutNameCount++;
+    }
+    acc[merchantID] = merchant;
+    return acc;
+  }, {});
+
+  const [filteredMerchants, setFilteredMerchants] = useState<string[]>(merchantIds);
+
+  const handleCreateNewAccount = () => {
+    createNewAccountTrack();
+  };
 
   const onSearch = (searchValue: string | undefined) => {
     if (!searchValue) {
-      setFilteredMerchants(merchantList);
+      setFilteredMerchants(merchantIds);
       return;
     }
 
     const searchValueInLowerCase = searchValue.toLowerCase();
 
-    const merchants = merchantList.filter((item) => {
-      const { name = '', display_name = '' } = user.merchants[item] || {};
+    const searchedMerchants = merchantIds.filter((item) => {
+      const { name = '', display_name = '' } = merchants[item] || {};
       const merchantId = item.toLowerCase();
       return (
         name?.toLowerCase().indexOf(searchValueInLowerCase) >= 0 ||
@@ -33,10 +61,10 @@ const SwitchMerchantTypeaheadV2: React.FC<{
       );
     });
 
-    setFilteredMerchants(merchants);
+    setFilteredMerchants(searchedMerchants);
   };
 
-  const { Modal, ModalBody, ModalHeader } = useModalComponents(isMobile);
+  const { Modal, ModalBody, ModalHeader, ModalFooter } = useModalComponents(isMobile);
 
   return (
     <Modal
@@ -63,10 +91,10 @@ const SwitchMerchantTypeaheadV2: React.FC<{
               return (
                 <ActionListItem
                   isSelected={isActive}
-                  title={user.merchants[merchantId].display_name || user.merchants[merchantId].name}
+                  title={merchants[merchantId].display_name || merchants[merchantId].name}
                   key={merchantId}
                   description={`MID : ${merchantId}`}
-                  onClick={() => onSwitchMerchant(user.merchants[merchantId])}
+                  onClick={() => onSwitchMerchant(merchants[merchantId])}
                   value={merchantId}
                 />
               );
@@ -74,6 +102,21 @@ const SwitchMerchantTypeaheadV2: React.FC<{
           </ActionList>
         </Box>
       </ModalBody>
+      {isCreateMerchantCTAEnabled ? (
+        <ModalFooter>
+          <Box display="flex" alignItems="center" justifyContent="end" columnGap="spacing.5">
+            <Button
+              onClick={handleCreateNewAccount}
+              href={`${window.RAZORPAY_ACCOUNTS_URL}/merchants/new`}
+              target="_blank"
+              isFullWidth={true}
+              testID="create-new-account-cta"
+            >
+              Create A New Account
+            </Button>
+          </Box>
+        </ModalFooter>
+      ) : null}
     </Modal>
   );
 };

@@ -24,4 +24,5 @@ interface Window {
   STREAKS_REWARDS?: string;
   rzp_user: any;
   glu?: any;
+  RAZORPAY_ACCOUNTS_URL: string;
 }
