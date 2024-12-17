@@ -2913,6 +2913,8 @@ class Base extends BaseCore
             return;
         }
 
+        (new Payout\Core)->checkIfPayoutsBlockedOnLite($this->balance);
+
         if ($this->merchant->isFeatureEnabled(Feature::BLOCK_VA_PAYOUTS) === true)
         {
             throw new BadRequestValidationFailureException("Payouts not supported for the debit account");

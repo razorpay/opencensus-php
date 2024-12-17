@@ -413,6 +413,40 @@ class RblPayoutTest extends TestCase
         $this->assertEquals(0, $updatedSummary['bacc_xba00000000000'][Payout\Status::QUEUED]['total_amount']);
     }
 
+    //Test if CA payout is running fine when a merchant is blocked on lite account for payouts.
+    public function testCreatePayoutWithMerchantBlockedOnLite()
+    {
+        $this->setMockRazorxTreatment(['ca_payout_skip_balance_fetch' => 'on']);
+
+        $this->fixtures->merchant->addFeatures([Features::PAYOUTS_BLOCKED_ON_LITE]);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $summary = $this->makePayoutSummaryRequest();
+
+        // Assert that there is a payout in queued state with amount 2000000.
+        $this->assertEquals(1, $summary['bacc_xba00000000000'][Payout\Status::QUEUED]['syncing_balance']['count']);
+        $this->assertEquals(2000000, $summary['bacc_xba00000000000'][Payout\Status::QUEUED]['syncing_balance']['total_amount']);
+    }
+
 
     protected function createPendingPayoutAndApprovePayoutUptoSecondLevel(int $gatewayBalance, $queueFlag = 1)
     {

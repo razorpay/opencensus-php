@@ -5051,25 +5051,6 @@ class Service extends Base\Service
         return $this->core->updatePayoutEntry($payoutId, $input);
     }
 
-    protected function checkIfPayoutsBlockedOnLite(Merchant\Balance\Entity $balance = null)
-    {
-        if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_BLOCKED_ON_LITE) === true)
-        {
-            $this->trace->error(TraceCode::PAYOUTS_BLOCKED_ON_LITE,
-                [
-                    'balance_id'  => $balance->getId(),
-                    'merchant_id' => $balance->getMerchantId()
-                ]);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR,
-                null,
-                null,
-                'API payouts are not available for this account'
-            );
-        }
-    }
-
     protected function checkIfPayoutIsAllowed(bool $isCompositePayout, array $input, bool $internal = false, Merchant\Balance\Entity $balance = null)
     {
         $payoutMode = $input[Payout\Entity::MODE] ?? null;
@@ -5079,7 +5060,7 @@ class Service extends Base\Service
             $balance = $this->repo->balance->findByPublicIdAndMerchant($input[Payout\Entity::BALANCE_ID], $this->merchant);
         }
 
-        $this->checkIfPayoutsBlockedOnLite($balance);
+        $this->core->checkIfPayoutsBlockedOnLite($balance);
 
         $this->checkIfDirectAccountIsActive($balance);
 

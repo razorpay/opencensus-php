@@ -500,6 +500,7 @@ class Core extends Base\Core
         return $payout;
     }
 
+
     /**
      * Creates a payout entity and triggers an ICICI OTP creation request via FTS
      *
@@ -10132,6 +10133,26 @@ class Core extends Base\Core
             600,
             ErrorCode::BAD_REQUEST_ANOTHER_FUND_MANAGEMENT_REQUEST_IN_PROGRESS
         );
+    }
+
+    public function checkIfPayoutsBlockedOnLite(Merchant\Balance\Entity $balance = null)
+    {
+        if (($this->merchant->isFeatureEnabled(Feature\Constants::PAYOUTS_BLOCKED_ON_LITE) === true) and
+            ($balance->isAccountTypeShared() === true))
+        {
+            $this->trace->error(TraceCode::PAYOUTS_BLOCKED_ON_LITE,
+                [
+                    'balance_id'  => $balance->getId(),
+                    'merchant_id' => $balance->getMerchantId()
+                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'API payouts are not available for this account'
+            );
+        }
     }
 
     public function fetchMerchantAccountDetailsAndValidate(
