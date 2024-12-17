@@ -310,6 +310,7 @@ class Metric
     const API_DECOMP_ENTITY_FETCH                               = 'api_decomp_entity_fetch';
     const API_DECOMP_PARAMETERS                                 = 'api_decomp_parameters';
     const API_DECOMP_AUTH_DISTRIBUTION                          = 'api_decomp_auth_distribution';
+    const INTERNAL_ORDER_PAYMENTS_FETCH_ERROR                   = 'internal_order_payments_fetch_error';
 
     const CREDCASE_READ_COUNT_MISMATCH = 'credcase_read_count_mismatch';
 

@@ -1382,6 +1382,7 @@ class Route
         'order_fetch_by_id_internal_admin'         => ['get',      'orders_internal_admin/{id}',                     'OrderController@fetchOrderDetailByIdAdmin'                         ],
         'order_fetch_internal_checkout'            => ['post',     'internal/orders/checkout',                       'OrderController@fetchOrderDetailsForCheckout'                      ],
         'order_payments'                           => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
+        'internal_order_payments'                  => ['get',      'internal/orders/{id}/payments',                  'OrderController@fetchInternalPayments'                             ],
         'order_refund_multiple_authorized'         => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'order_edit'                               => ['patch',    'orders/{id}',                                    'OrderController@update'                                            ],
         'internal_order_update'                    => ['patch',    'internal/orders/{id}',                           'OrderController@internalOrderUpdate'                               ],
@@ -5339,6 +5340,7 @@ class Route
 
 
     public static $private = [
+        'internal_order_payments',
         'collect_info_merchant_details_patch',
         'payouts_merchant_smart_routing_summary',
         'mock_bvs_validation_event',
@@ -5774,6 +5776,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'internal_order_payments',
         'internal_fd_fetch_ticket',
         'internal_create_workflow',
         'internal_workflow_observer_data_update',
@@ -18101,6 +18104,7 @@ class Route
         ],
 
         'pg_router' => [
+            'internal_order_payments',
             'internal_merchant_fetch',
             'internal_currency_rates_update',
             'api_entity_fetch',

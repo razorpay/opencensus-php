@@ -2705,6 +2705,21 @@ EOT;
         return $allPayments;
     }
 
+    public function fetchInternalPaymentsForOrderId($orderId, $merchantId = '')
+    {
+
+        $paymentOrderQuery = $this->newQuery()->where(Payment\Entity::ORDER_ID, '=', $orderId);
+
+        if (empty($merchantId) === false)
+        {
+            $paymentOrderQuery = $paymentOrderQuery->where(Payment\Entity::MERCHANT_ID, '=', $merchantId);
+        }
+
+        $payments = $paymentOrderQuery->get();
+
+        return $payments;
+    }
+
     public function fetchPaymentsWithCardForOrderId($orderId)
     {
         $payments = $this->newQuery()

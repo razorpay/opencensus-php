@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use ApiResponse;
+use RZP\Models\Currency;
 use RZP\Http\RequestHeader;
 use RZP\Models\Base;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -17,6 +18,9 @@ use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Flow;
+use RZP\Models\Payment\Status;
+use RZP\Models\Payment\PaymentMeta;
 use RZP\Services\RazorXClient;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
@@ -831,6 +835,65 @@ class Service extends Base\Service
                     "message" => $ex->getMessage()
                 ]);
         }
+    }
+
+    public function fetchInternalPaymentsFor(string $id, array $input)
+    {
+        try
+        {
+            $orderId = Entity::verifyIdAndSilentlyStripSign($id);
+
+            $apiPayments = $this->repo->payment->fetchInternalPaymentsForOrderId($orderId, $input['merchant_id']);
+
+            $responseList = []; // Initialize an array to hold all responses
+
+            // Iterate through each payment
+            foreach ($apiPayments as &$payment) {
+                $response['payment'] = $payment;
+
+                if ($payment->isMethodCardOrEmi() === true)
+                {
+                    // Fetch card details for the current payment
+                    $response['card'] = $this->repo->card->fetchForPayment($payment);
+                }
+
+                $discount = $payment->getDiscountIfApplicable($payment);
+
+                if (isset($discount) === true)
+                {
+                    $response['discount'] = $discount;
+                }
+
+                $upiMetadata = $payment->getUpiMetadata();
+
+                if (isset($upiMetadata) === true and $upiMetadata->getFlow() === Flow::IN_APP)
+                {
+                    $response['upi_metadata'] = $upiMetadata;
+                }
+
+                $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
+
+                if (isset($paymentMeta) === true)
+                {
+                    $response['payment_meta'] = $paymentMeta;
+                }
+
+                $responseList[] = $response;
+            }
+
+            return $responseList;
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->count(Metric::INTERNAL_ORDER_PAYMENTS_FETCH_ERROR);
+
+            $this->trace->error(TraceCode::INTERNAL_ORDER_PAYMENTS_FETCH_ERROR, [
+                'orderId' => $orderId,
+                'merchant_id' => $input['merchant_id'],
+                'error' => $ex->getMessage(),
+            ]);
+        }
+        return null;
     }
 
     public function fetchLineItemsFor(string $id): array

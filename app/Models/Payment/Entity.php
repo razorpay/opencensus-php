@@ -2273,7 +2273,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return (new Dictionary($acquirerData));
     }
 
-    protected function getDiscountIfApplicable()
+    public function getDiscountIfApplicable()
     {
         if (($this->isAppCred() === true) and
             ($this->discount !== null))
