@@ -587,7 +587,7 @@ class Core extends QrCode\Core
 
     public function fetchGatewayFromVpa(string $vpa): ?string
     {
-        $vpaSplit = explode("@", $vpa);
+        $vpaSplit = explode("@", strtolower($vpa));
         $gateway = null;
 
         if (isset($vpaSplit[1])) {
