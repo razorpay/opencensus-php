@@ -193,6 +193,8 @@ class Service extends Base\Service
      */
     public function registerWithOtp(array $input): array
     {
+        $options['headers'][self::CAPTCHA_MODE_HEADER] = Request::header(self::CAPTCHA_MODE_HEADER);
+
         $this->traceApiTrigger(
             $input,
             TraceCode::SEND_SIGNUP_OTP_TRIGGERED,
@@ -203,7 +205,7 @@ class Service extends Base\Service
 
         unset($input[Constants::REQUEST_SOURCE]);
 
-        return $this->requestAPI($input,'users/register/otp', 'POST');
+        return $this->requestAPI($input,'users/register/otp', 'POST', $options);
     }
 
     public function sendOtpForSalesForceUser(array $input): array {
