@@ -1743,7 +1743,7 @@ class Processor
                 {
 
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "other_apps",
+                        'reason' => $order->getProductType(),
                         'merchant_id' => $merchant->getId(),
                     ]);
                     return false;
@@ -2023,6 +2023,7 @@ class Processor
                             }
                             if ($card->getVault() === Card\Vault::PROVIDERS || $card->getVault() === Card\Vault::AXIS)
                             {
+                                $networkToken = (new TokenCore())->fetchToken($token, false);
                                 // Adding this check to route issuer or dual token payments on rearch.
                                 // In this case we would fetch cryptogram on the CPS service & this is how it should be for all network tokenised payments
                                 $issuer_result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_ISSUER_AND_DUAL_TOKEN_PAYMENTS_VIA_PGROUTER, $this->mode);
@@ -2052,6 +2053,25 @@ class Processor
                                     $input[Payment\Entity::API_VAULT] = $card->getVault();   // We are passing API_VALUT key to CPS to send it to router so that it can provide us terminals acc.
                                     // explicitly adding token_id in token since for global customer we add token instead of token_id
                                     $input[Payment\Entity::TOKEN] = $token->getId();
+
+                                    //Iterating over fetched token array to extract trid and token reference number for hdfc_issuer payments
+                                    foreach ($networkToken as $index => $element) {
+                                        if (isset($element['provider_name']) && $element['provider_name'] == 'hdfc') {
+                                            $tokenisedTerminalId = $element[E::TOKENISED_TERMINAL_ID] ?? '';
+                                            $tokenisedTerminal = $this->app['terminals_service']->fetchTerminalById($tokenisedTerminalId);
+
+
+                                            assertTrue(empty($tokenisedTerminal) === false); //trid is needed for hdfc issuer token
+
+                                            $trid = !empty($tokenisedTerminal) ? $tokenisedTerminal[E::GATEWAY_MERCHANT_ID] : '';
+                                            $trn = $element[E::PROVIDER_DATA][E::TOKEN_REFERENCE_NUMBER] ?? '';
+
+                                            $cardInput[E::TOKEN_REFERENCE_NUMBER ]=  $trn;
+                                            $cardInput[E::TOKEN_REFERENCE_ID ]= $trid;
+
+                                        }
+                                    }
+                                    $input[Payment\Entity::CARD] = $cardInput;
                                     $this->trace->info(
                                         TraceCode::DUAL_TOKENISATION_REARCH,
                                         [
@@ -2206,6 +2226,7 @@ class Processor
             if((in_array($iin->getNetworkCode(), $supportedNetworks, true) === false)){
                 $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                     'reason' => "network_not_supported",
+                    'network' => $iin->getNetworkCode(),
                     'merchant_id' => $merchant->getId(),
                 ]);
                 return false;

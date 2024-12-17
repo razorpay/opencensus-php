@@ -2398,6 +2398,11 @@ class Constants
 
     const BETA_LA_CREATE_ENABLE = 'beta_la_create_enable';
 
+    /**
+     * This feature allows merchant to capture payment partially.
+     */
+    const ALLOW_PARTIAL_CAPTURE = 'allow_partial_capture';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3331,7 +3336,8 @@ class Constants
         self::OG_SMS_VENDOR_CONFIG_TRAI    => true,
         self::ME_SMS_VENDOR_CONFIG_TRAI    => true,
         self::BETA_LA_CREATE_ENABLE        => true,
-        self::PAYOUTS_BLOCKED_ON_LITE      => true
+        self::PAYOUTS_BLOCKED_ON_LITE      => true,
+        self::ALLOW_PARTIAL_CAPTURE => true,
     ];
 
     // Entity type constants
@@ -4867,6 +4873,11 @@ class Constants
             'feature'       => self::BETA_LA_CREATE_ENABLE,
             'display_name'  => 'Beta Linked Account Enable',
             'documentation' => '',
+        ],
+        self::ALLOW_PARTIAL_CAPTURE => [
+            'feature' => self::ALLOW_PARTIAL_CAPTURE,
+            'display_name' => "Feature flag for merchants to capture payment partially",
+            'documentation' => "",
         ],
     ];
 
