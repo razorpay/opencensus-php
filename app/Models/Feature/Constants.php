@@ -615,6 +615,11 @@ class Constants
      */
     const NEW_BANKING_ERROR             = 'new_banking_error';
 
+     /**
+     * Org feature flag to send banking mail vai stork
+     */
+    const ENABLE_STORK_EMAIL= 'enable_stork_email';
+
     /**
      * Feature flag to control customizations in merchant onboarding emails
      * https://razorpay.atlassian.net/browse/BP-2547
@@ -3289,6 +3294,7 @@ class Constants
         self::OTC_MERCHANT_CHALLAN                   => true,
         self::EXTERNAL_PA_VAS                        =>  true,
         self::AMAZON_GC_VALIDATIONS                  => true,
+        self::ENABLE_STORK_EMAIL                    => true,
         self::CUSTOM_ONBOARDING_EMAILS               => true,
         self::VAS_LINK_WALLETS                       => true,
         self::HIDE_SETTLEMENT_TIME                   => true,
