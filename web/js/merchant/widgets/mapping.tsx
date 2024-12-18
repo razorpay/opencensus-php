@@ -40,6 +40,12 @@ const Layout = lazy(() =>
   })),
 );
 
+const CampaignHero = lazy(() =>
+  import('merchant/widgets/CampaignHero').then((module) => ({
+    default: module.CampaignHero,
+  })),
+);
+
 const withWidgetErrorBoundary = (Component) => (props) =>
   (
     <ErrorBoundary
@@ -59,6 +65,7 @@ const widgetKeyToComponentMapping = {
   tabbed_chart: TabbedCharts,
   d2c_widget: SteppedSplitPane,
   layout: Layout,
+  campaignhq_banners: CampaignHero,
 };
 
 Object.keys(widgetKeyToComponentMapping).forEach((key) => {

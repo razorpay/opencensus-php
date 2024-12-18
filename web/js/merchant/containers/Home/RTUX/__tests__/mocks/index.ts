@@ -194,6 +194,97 @@ export const KEY_UPDATES_MOCK_RESPONSE = {
   },
 };
 
+export const CAMPAIGN_HERO_MOCK_RESPONSE = {
+  id: '18',
+  type: 'campaignhq_banners',
+  title: 'Campaigns',
+  background_img: '',
+  actions: [],
+  inputs: [],
+  components: [],
+  data: {
+    campaign_hero_card_data: {
+      channelId: 'PVMmiWWPxbmu35',
+      assetData: [
+        {
+          trackingData: {
+            campaign: 'UCS Test Campaign 1',
+            subCampaign: 'UCS Test Campaign 1.1',
+            campaignId: 'PVOitQWBLEAUD7',
+            subCampaignId: 'PVOj5geksyDCDq',
+            tags: {
+              campaign_source: 'CampaignHQ',
+              end_at: 1735583400,
+              start_at: 1733817186,
+            },
+          },
+          templates: [
+            {
+              id: 'PVOl2uC7lTPy9W',
+              asset: 'JSON_SCHEMA',
+              name: 'template-default-Variant A',
+              data: {
+                id: 'UCS_Test_Campaign_#1_DEC1024_JSON_SCHEMA_PVOl2uC7lTPy9W',
+                rtux_ucs_campaigns: {
+                  alt_text: 'This is alt text for first image.',
+                  cta_link: 'https://razorpay.com/',
+                  image: {
+                    lg: 'https://betacdn.np.razorpay.in/growth/PVOj5geksyDCDq/large.png',
+                    md: 'https://betacdn.np.razorpay.in/growth/PVOj5geksyDCDq/medium.png',
+                    sm: 'https://betacdn.np.razorpay.in/growth/PVOj5geksyDCDq/small.png',
+                  },
+                },
+              },
+              created_at: '2024-12-10T07:54:57Z',
+              updated_at: '2024-12-10T07:54:57Z',
+              dynamic_asset_name: 'RTUX_UCS_CAMPAIGNS',
+            },
+          ],
+        },
+        {
+          trackingData: {
+            campaign: 'UCS Test Campaign 2',
+            subCampaign: 'UCS Test Campaign 2.1',
+            campaignId: 'P3MRoSvKlUAdhU',
+            subCampaignId: 'PVPS8ASYSlzffM',
+            tags: {
+              campaign_source: 'CampaignHQ',
+              end_at: 1734114600,
+              start_at: 1733819745,
+            },
+          },
+          templates: [
+            {
+              id: 'PVPTCTBe09eW0D',
+              asset: 'JSON_SCHEMA',
+              name: 'template-default-Variant A',
+              data: {
+                id: 'UCS_Test_Campaign_#2DEC1024_JSON_SCHEMA_PVPTCTBe09eW0D',
+                rtux_ucs_campaigns: {
+                  alt_text: 'This is alt text for second image.',
+                  cta_link: 'https://razorpay.com/',
+                  image: {
+                    lg: 'https://betacdn.np.razorpay.in/growth/PVPS8ASYSlzffM/large.png',
+                    md: 'https://betacdn.np.razorpay.in/growth/PVPS8ASYSlzffM/medium.png',
+                    sm: 'https://betacdn.np.razorpay.in/growth/PVPS8ASYSlzffM/small.png',
+                  },
+                },
+              },
+              created_at: '2024-12-10T08:36:45Z',
+              updated_at: '2024-12-10T08:36:45Z',
+              dynamic_asset_name: 'RTUX_UCS_CAMPAIGNS',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  analytics: {
+    enabled: true,
+  },
+  styles: null,
+};
+
 export const PAYMENTS_OVERVIEW_MOCK_RESPONSE = {
   id: '13',
   type: 'tabbed_chart',

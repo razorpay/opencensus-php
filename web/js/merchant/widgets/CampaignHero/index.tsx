@@ -1,0 +1,138 @@
+import React, { useEffect } from 'react';
+import { Carousel, CarouselItem, Box } from '@razorpay/blade/components';
+import { Link } from 'react-router-dom';
+import styled from 'styled-components';
+
+import { ErrorState } from 'merchant/widgets/common/ErrorState';
+import { CommonWidgetProps } from 'merchant/widgets/types';
+import { getUcsAliasFromQueryKey, track } from 'merchant/widgets/utils';
+
+import { CampaignHeroWidgetLoader } from './Loader';
+import { CampaignHeroWidgetProps } from './types';
+import { calcScaleFromWidth, calHeightOnAspectRatio } from './utils';
+import { useRetryWidget } from '../hooks';
+
+const DropShadowBox = styled.div`
+  & > div {
+    filter: drop-shadow(0px 2px 16px #1326441a);
+  }
+`;
+
+export const CampaignHero = ({
+  id,
+  type,
+  title,
+  data,
+  error,
+  queryKey,
+  isLoading,
+}: CampaignHeroWidgetProps & CommonWidgetProps) => {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [isRetrying, retryHandler] = useRetryWidget(queryKey);
+  const [width, setWidth] = React.useState(0);
+
+  const screen = getUcsAliasFromQueryKey(queryKey) ?? '';
+  const widgetId = `merchantDashboard.${screen}.${type}.${id}`;
+  const campaigns = data?.campaign_hero_card_data?.assetData ?? [];
+  const scale = calcScaleFromWidth(width);
+
+  const _track = (index, objectName, actionName) => {
+    const properties: any = {
+      title,
+      widgetId,
+      actionBy: widgetId,
+    };
+    if (error) {
+      properties.error = `${error.message}`;
+    } else {
+      properties.count = campaigns.length;
+      properties.campaign = { position: index + 1, ...(campaigns?.[index]?.trackingData ?? {}) };
+    }
+    track({
+      objectName,
+      actionName,
+      screen,
+      properties,
+    });
+  };
+
+  useEffect(() => {
+    const container = ref.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver((elements) => {
+      setWidth(elements[0].contentRect.width);
+    });
+    observer.observe(container);
+
+    // eslint-disable-next-line consistent-return
+    return () => {
+      observer.unobserve(container);
+    };
+  }, [isLoading, isRetrying]);
+
+  useEffect(() => {
+    if (!isLoading || !isRetrying) {
+      _track(0, 'widget', error ? 'error' : 'loaded');
+    }
+  }, [error, isLoading, isRetrying]);
+
+  if (!error && campaigns.length === 0 && (!isLoading || !isRetrying)) return null;
+
+  return (
+    <Box ref={ref} marginX={{ base: 'spacing.0', m: 'spacing.6' }} testID="campaign-hero-container">
+      <DropShadowBox>
+        {error ? (
+          <ErrorState
+            marginX={undefined}
+            backgroundColor="surface.background.gray.intense"
+            text={`${title} couldn't be loaded`}
+            retryHandler={() => retryHandler({ id })}
+            analyticsProperties={{
+              screen,
+              error: `${error.message}`,
+              widgetId,
+              actionBy: widgetId,
+              title,
+            }}
+          />
+        ) : isLoading ? (
+          <CampaignHeroWidgetLoader width={width} scale={scale} />
+        ) : (
+          <Carousel
+            visibleItems="autofit"
+            navigationButtonPosition="side"
+            autoPlay
+            onChange={(idx) => _track(idx, 'widget', 'loaded')}
+          >
+            {campaigns.map(({ templates }, idx) => {
+              const asset = templates[0].data;
+              const template = asset.rtux_ucs_campaigns;
+
+              return (
+                <CarouselItem key={asset.id}>
+                  <Box borderRadius="medium" overflow="hidden" testID="campaign-hero-card">
+                    <Link
+                      to={template.cta_link}
+                      target="_blank"
+                      onClick={() => _track(idx, 'link', 'clicked')}
+                    >
+                      <img
+                        src={template.image[scale]}
+                        alt={template.alt_text}
+                        width="100%"
+                        height={calHeightOnAspectRatio(width)}
+                        style={{ objectFit: 'cover' }}
+                        data-testid="campaign-hero-image"
+                      />
+                    </Link>
+                  </Box>
+                </CarouselItem>
+              );
+            })}
+          </Carousel>
+        )}
+      </DropShadowBox>
+    </Box>
+  );
+};
