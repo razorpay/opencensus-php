@@ -388,6 +388,13 @@ class Core extends Base\Core
 
         $subcategory = $merchantDetails->getBusinessSubCategory();
 
+        $skipMethodResetForSubmerchant = $this->isSkipMethodResetForSubmerchant($merchant->getId());
+
+        if($skipMethodResetForSubmerchant === true)
+        {
+            return;
+        }
+
         if ((empty($category) === false) and
             (Emi\Constants::isCategoryOrSubcategoryBlacklisted($category, $subcategory) === false))
         {
