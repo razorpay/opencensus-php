@@ -37,7 +37,6 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Order\Product\Constants as ProductConstants;
-use RZP\Jobs\OrderPaymentsParity as OrderPaymentsParityJob;
 
 class Service extends Base\Service
 {
@@ -797,44 +796,13 @@ class Service extends Base\Service
 
             $res = $apiPayments->merge($rearchPayments);
 
-            $response = $res->toArrayPublic();
-
-            $this->pushPaymentsOrderForParity($response, ["order_id" => $orderId]);
-
-            return $response;
+            return $res->toArrayPublic();
 
         }
 
         $payments = $this->repo->payment->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
-        $response = $payments->toArrayPublic();
-
-        $this->pushPaymentsOrderForParity($response, $input);
-
-        return $response;
-    }
-
-    public function pushPaymentsOrderForParity($payments, $input)
-    {
-        try
-        {
-            $microtime = microtime(true);
-
-            // Convert seconds to milliseconds
-            $milliseconds = round($microtime * 1000);
-
-            OrderPaymentsParityJob::dispatch($this->mode, $input, $payments, $milliseconds);
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                500,
-                TraceCode::ORDER_PAYMENTS_PARITY_EXCEPTION,
-                [
-                    "message" => $ex->getMessage()
-                ]);
-        }
+        return $payments->toArrayPublic();
     }
 
     public function fetchInternalPaymentsFor(string $id, array $input)

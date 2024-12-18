@@ -256,10 +256,6 @@ class Metric
     const KAFKA_TRANSFER_REVERSAL_API_TXN_PUSH_SUCCESS          = 'kafka_transfer_reversal_api_txn_push_success';
     const KAFKA_TRANSFER_REVERSAL_API_TXN_PUSH_FAILURE          = 'kafka_transfer_reversal_api_txn_push_failure';
     const PG_LEDGER_KAFKA_PUSH_FAILURE                          = 'pg_ledger_kafka_push_failure';
-
-    const API_DECOMP_PARITY                                     = "api_decomp_parity";
-    const PAYMENTS_FETCH_RESPONSE_SIZE                          = "payments_fetch_response_size";
-    const API_DECOMP_PARITY_PUSH_FAILURE                        = "api_decomp_parity_push_failure";
     const PG_LEDGER_OUTBOX_CRON_RETRIES_EXHAUSTED               = 'pg_ledger_outbox_cron_retries_exhausted';
     const PG_LEDGER_KAFKA_ACKNOWLEDGMENT_RECEIVED_FROM_PG       = 'pg_ledger_kafka_acknowledgement_received_from_pg';
     const PG_LEDGER_KAFKA_ACKNOWLEDGMENT_RECEIVED_FROM_LEDGER   = 'pg_ledger_kafka_acknowledgement_received_from_ledger';
