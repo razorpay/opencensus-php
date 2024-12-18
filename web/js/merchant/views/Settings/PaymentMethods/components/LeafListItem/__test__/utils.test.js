@@ -9,6 +9,7 @@ import {
   ZESTMONEY,
   GETSIMPL,
   FLEXIPAY,
+  DISABLED_INSTRUMENT,
 } from 'merchant/views/Settings/PaymentMethods/constants';
 
 import {
@@ -99,23 +100,23 @@ describe('displayName', () => {
 });
 
 describe('disabled instrument message check', () => {
-  test('Should return info messgae if instrument is getSimpl', () => {
-    expect(disabledMessagesForInstrument(GETSIMPL, REQUESTED)).toBe(
+  test('Should return info messgae if instrument is getSimpl and disabled', () => {
+    expect(disabledMessagesForInstrument(GETSIMPL, DISABLED_INSTRUMENT)).toBe(
       `${GETSIMPL} has paused onboarding of new merchants. We will keep you updated on when the onboarding resumes.`,
     );
   });
-  test('Should return info messgae if instrument is zestmoney', () => {
-    expect(disabledMessagesForInstrument(ZESTMONEY, REQUESTED)).toBe(
+  test('Should return info messgae if instrument is zestmoney and disabled', () => {
+    expect(disabledMessagesForInstrument(ZESTMONEY, DISABLED_INSTRUMENT)).toBe(
       `${ZESTMONEY} has paused onboarding of new merchants. We will keep you updated on when the onboarding resumes.`,
     );
   });
 
-  test('Should return info messgae if instrument is flexipay', () => {
-    expect(disabledMessagesForInstrument(FLEXIPAY, REQUESTED)).toBe(
+  test('Should return info messgae if instrument is flexipay and disabled', () => {
+    expect(disabledMessagesForInstrument(FLEXIPAY, DISABLED_INSTRUMENT)).toBe(
       `${FLEXIPAY} has paused onboarding of new merchants. We will keep you updated on when the onboarding resumes.`,
     );
   });
   test('Should not return info messgae for other providers', () => {
-    expect(disabledMessagesForInstrument('HDFC', ACTIVATED)).toBeNull();
+    expect(disabledMessagesForInstrument('HDFC', DISABLED_INSTRUMENT)).toBeNull();
   });
 });

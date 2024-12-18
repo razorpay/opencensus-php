@@ -5,7 +5,6 @@ import {
   ACTIVATED,
   REJECTED,
   GREYED,
-  DISABLED_INSTRUMENT,
 } from 'merchant/views/Settings/PaymentMethods/constants';
 
 import { IntermediateInsName } from './styles';
@@ -36,9 +35,9 @@ export function displayName({ name, intermediateInstrument }) {
 
 // For Simpl and Zestmoney we need to disable instrument request
 // and show respective error message
-export const disabledMessagesForInstrument = (name) => {
+export const disabledMessagesForInstrument = (name, disabledInstruments) => {
   let message = null;
-  if (DISABLED_INSTRUMENT.includes(name)) {
+  if (disabledInstruments.includes(name)) {
     message = `${name} has paused onboarding of new merchants. We will keep you updated on when the onboarding resumes.`;
   }
   return message;

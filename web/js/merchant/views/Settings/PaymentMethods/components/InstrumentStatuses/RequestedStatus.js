@@ -1,10 +1,11 @@
 import React from 'react';
 import moment from 'moment';
-import { REQUESTED, DISABLED_INSTRUMENT } from 'merchant/views/Settings/PaymentMethods/constants';
+import { REQUESTED } from 'merchant/views/Settings/PaymentMethods/constants';
+import { getDisabledInstruments } from 'merchant/views/Settings/PaymentMethods/utils';
 
 import { disabledMessagesForInstrument } from 'merchant/views/Settings/PaymentMethods/components/LeafListItem/utils';
 
-export const RequestedStatus = ({ instrument, tat }) => {
+export const RequestedStatus = ({ instrument, tat, user }) => {
   const { status, name } = instrument;
   const isTatExpired =
     tat && moment().diff(moment.unix(instrument.created_at).add(tat[instrument.path], 'days')) > 0;
@@ -12,8 +13,9 @@ export const RequestedStatus = ({ instrument, tat }) => {
     tat &&
     moment.unix(instrument.created_at).add(tat[instrument.path], 'days').format('Do MMMM YYYY');
 
+  const disabledInstruments = getDisabledInstruments(user);
   // Variable to check whether instrument is disabled i.e has paused new merchant onboarding
-  const instrumentDisabledMessage = disabledMessagesForInstrument(name, status);
+  const instrumentDisabledMessage = disabledMessagesForInstrument(name, disabledInstruments);
   const showRequestedStatusBlock = status === REQUESTED || instrumentDisabledMessage;
 
   return showRequestedStatusBlock ? (
@@ -31,7 +33,7 @@ export const RequestedStatus = ({ instrument, tat }) => {
           )}
         </p>
       </div>
-      {isTatExpired && !DISABLED_INSTRUMENT.includes(name) && (
+      {isTatExpired && !disabledInstruments.includes(name) && (
         <p className="disclaimer">
           Sorry for the inconvenience, the request is taking longer than usual.
         </p>

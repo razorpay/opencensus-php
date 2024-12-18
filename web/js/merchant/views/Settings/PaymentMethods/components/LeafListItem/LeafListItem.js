@@ -39,7 +39,6 @@ import {
   GREYED,
   statusClass,
   statusPopoverText,
-  DISABLED_INSTRUMENT,
   additionalDetailsStatus,
   ACTIVATED_ACTION_REQUIRED,
   CC_EMI_SEPARATE_INSTRUMENT,
@@ -50,6 +49,7 @@ import AdditionalDetails from 'merchant/views/Settings/PaymentMethods/components
 import MissingInfoModal from 'merchant/views/Settings/PaymentMethods/components/MissingInfoModal';
 
 import ConfirmBoxContext from 'merchant/views/Settings/PaymentMethods/components/ConfimBoxContent';
+import { getDisabledInstruments } from 'merchant/views/Settings/PaymentMethods/utils';
 import { displayName, getListClass } from './utils';
 
 class LeafListItem extends React.Component {
@@ -402,9 +402,9 @@ class LeafListItem extends React.Component {
       ['2', '11'].includes(user?.business_type) &&
       isMissingInfo?.some((field) => field.name === 'merchant_details|gstin');
 
+    const disabledInstruments = getDisabledInstruments(user);
     const isInstrumentDisabled =
-      instrument.status === GREYED || DISABLED_INSTRUMENT.includes(instrument.name) || !user.live;
-
+      instrument.status === GREYED || disabledInstruments.includes(instrument.name) || !user.live;
     return (
       <li className={getListClass({ status: instrument.status, path: instrument.path, user })}>
         <div>
@@ -546,7 +546,7 @@ class LeafListItem extends React.Component {
               )}
           </div>
         </div>
-        <RequestedStatus instrument={instrument} tat={instrumentsTat} />
+        <RequestedStatus instrument={instrument} tat={instrumentsTat} user={user} />
 
         {[REJECTED, ACTION_REQUIRED].includes(instrument.status) && (
           <RejectedAndActionRequired instrument={instrument} />
