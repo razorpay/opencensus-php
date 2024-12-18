@@ -2297,4 +2297,483 @@ return [
             ]
         ]
     ],
+    'testFetchOffersCreateInfoWithoutEmiPlans' => [
+        'request'  => [
+            'content' => [
+                "merchant_id" => "10000000000000",
+                "offer"       => [
+                    "is_no_cost_emi"      => false,
+                    "emi_durations"       => [
+                        3,
+                        2
+                    ],
+                    "issuer"              => "HDFC",
+                    "payment_network"     => "",
+                    "payment_method"      => "card",
+                    "payment_method_type" => ""
+                ],
+            ],
+            'url'     => '/offers/creation-info',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "merchant_methods" => [
+                    "merchant_id"                  => "10000000000000",
+                    "card"                         => 1,
+                    "netbanking"                   => true,
+                    "amex"                         => false,
+                    "disabled_banks"               => [
+                    ],
+                    "paytm"                        => false,
+                    "mobikwik"                     => false,
+                    "olamoney"                     => false,
+                    "phonepe"                      => false,
+                    "paypal"                       => false,
+                    "phonepeswitch"                => false,
+                    "payzapp"                      => false,
+                    "payumoney"                    => false,
+                    "openwallet"                   => false,
+                    "razorpaywallet"               => false,
+                    "airtelmoney"                  => false,
+                    "amazonpay"                    => false,
+                    "jiomoney"                     => false,
+                    "sbibuddy"                     => false,
+                    "mpesa"                        => false,
+                    "emi"                          => [
+                    ],
+                    "freecharge"                   => false,
+                    "credit_card"                  => true,
+                    "debit_card"                   => true,
+                    "card_subtype"                 => 1,
+                    "prepaid_card"                 => true,
+                    "upi"                          => false,
+                    "upi_type"                     => [
+                        "collect" => 0,
+                        "intent"  => 0
+                    ],
+                    "bank_transfer"                => false,
+                    "aeps"                         => false,
+                    "emandate"                     => false,
+                    "nach"                         => false,
+                    "cardless_emi"                 => false,
+                    "paylater"                     => false,
+                    "card_networks"                => [
+                        "AMEX"  => 0,
+                        "DICL"  => 0,
+                        "MC"    => 1,
+                        "MAES"  => 1,
+                        "VISA"  => 1,
+                        "JCB"   => 0,
+                        "RUPAY" => 1,
+                        "BAJAJ" => 0,
+                        "UNP"   => 0
+                    ],
+                    "apps"                         => [
+                        "cred"    => 0,
+                        "twid"    => 0,
+                        "trustly" => 0,
+                        "poli"    => 0,
+                        "sofort"  => 0,
+                        "giropay" => 0
+                    ],
+                    "debit_emi_providers"          => [
+                        "HDFC" => 0,
+                        "KKBK" => 0,
+                        "INDB" => 0,
+                        "ICIC" => 0
+                    ],
+                    "cod"                          => false,
+                    "offline"                      => false,
+                    "fpx"                          => false,
+                    "itzcash"                      => false,
+                    "oxigen"                       => false,
+                    "amexeasyclick"                => false,
+                    "paycash"                      => false,
+                    "citibankrewards"              => false,
+                    "in_app"                       => 0,
+                    "in_app_credit_card"           => 0,
+                    "cc_on_upi"                    => 0,
+                    "wallet_on_upi"                => 0,
+                    "creditline_on_upi"            => 0,
+                    "credit_emi_providers"         => [
+                        "HDFC"    => 0,
+                        "SBIN"    => 0,
+                        "UTIB"    => 0,
+                        "ICIC"    => 0,
+                        "AMEX"    => 0,
+                        "BARB"    => 0,
+                        "CITI"    => 0,
+                        "HSBC"    => 0,
+                        "INDB"    => 0,
+                        "KKBK"    => 0,
+                        "RATN"    => 0,
+                        "SCBL"    => 0,
+                        "YESB"    => 0,
+                        "onecard" => 0,
+                        "BAJAJ"   => 0,
+                        "FDRL"    => 0,
+                        "IDFB"    => 0
+                    ],
+                    "cardless_emi_providers"       => [
+                        "walnut369"   => 0,
+                        "zestmoney"   => 0,
+                        "earlysalary" => 0,
+                        "hdfc"        => 0,
+                        "icic"        => 0,
+                        "barb"        => 0,
+                        "kkbk"        => 0,
+                        "fdrl"        => 0,
+                        "idfb"        => 0,
+                        "hcin"        => 0,
+                        "krbe"        => 0,
+                        "cshe"        => 0,
+                        "tvsc"        => 0,
+                        "liquiloans"  => 0,
+                        "instant_emi" => 0
+                    ],
+                    "offline_debit_emi_providers"  => [
+                        "HDFC" => 0,
+                        "ICIC" => 0,
+                        "KKBK" => 0
+                    ],
+                    "offline_credit_emi_providers" => [
+                        "AMEX"    => 0,
+                        "AUBL"    => 0,
+                        "BARB"    => 0,
+                        "CITI"    => 0,
+                        "CNRB"    => 0,
+                        "FDRL"    => 0,
+                        "HDFC"    => 0,
+                        "HSBC"    => 0,
+                        "ICIC"    => 0,
+                        "IDFB"    => 0,
+                        "INDB"    => 0,
+                        "JAKA"    => 0,
+                        "KKBK"    => 0,
+                        "PUNB"    => 0,
+                        "RATN"    => 0,
+                        "SBIN"    => 0,
+                        "SCBL"    => 0,
+                        "UTIB"    => 0,
+                        "YESB"    => 0,
+                        "ONECARD" => 0
+                    ],
+                    "paylater_providers"           => [
+                        "getsimpl"      => 0,
+                        "lazypay"       => 0,
+                        "icic"          => 0,
+                        "hdfc"          => 0,
+                        "amazonpay"     => 0,
+                        "rzpx_postpaid" => 0,
+                        "atome"         => 0
+                    ],
+                    "bajajpay"                     => false,
+                    "intl_bank_transfer"           => [
+                    ],
+                    "boost"                        => false,
+                    "mcash"                        => false,
+                    "grabpay"                      => false,
+                    "touchngo"                     => false,
+                    "sodexo"                       => false,
+                    "online_conversion_enabled"    => false,
+                    "duitnow_pay"                  => false,
+                    "razorpay_giftcard"            => 0
+                ]
+            ]
+        ]
+    ],
+    'testFetchOffersCreateInfoWithoutMethodsAndWithoutEmiPlans' => [
+        'request'  => [
+            'content' => [
+                "merchant_id" => "10000000000000",
+                "offer"       => [
+                    "is_no_cost_emi"      => false,
+                    "emi_durations"       => [
+                        3,
+                        2
+                    ],
+                    "issuer"              => "HDFC",
+                    "payment_network"     => "",
+                    "payment_method"      => "",
+                    "payment_method_type" => ""
+                ],
+            ],
+            'url'     => '/offers/creation-info',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testFetchOffersCreateInfoWithoutMethods' => [
+        'request'  => [
+            'content' => [
+                "merchant_id" => "10000000000000",
+                "offer"       => [
+                    "is_no_cost_emi"      => true,
+                    "emi_durations"       => [
+                       6
+                    ],
+                    "issuer"              => "HDFC",
+                    "payment_network"     => "",
+                    "payment_method"      => "",
+                    "payment_method_type" => ""
+                ],
+            ],
+            'url'     => '/offers/creation-info',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "tenure_discount_map" => [
+                    "6" => 518,
+                ]
+            ]
+        ]
+    ],
+    'testFetchOffersCreateInfoSuccess' => [
+        'request'  => [
+            'content' => [
+                "merchant_id" => "10000000000000",
+                "offer"       => [
+                    "is_no_cost_emi"      => true,
+                    "emi_durations"       => [
+                        6
+                    ],
+                    "issuer"              => "HDFC",
+                    "payment_network"     => "",
+                    "payment_method"      => "card",
+                    "payment_method_type" => ""
+                ],
+            ],
+            'url'     => '/offers/creation-info',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "merchant_methods" => [
+                    "merchant_id"                  => "10000000000000",
+                    "card"                         => 1,
+                    "netbanking"                   => true,
+                    "amex"                         => false,
+                    "disabled_banks"               => [
+                    ],
+                    "paytm"                        => false,
+                    "mobikwik"                     => false,
+                    "olamoney"                     => false,
+                    "phonepe"                      => false,
+                    "paypal"                       => false,
+                    "phonepeswitch"                => false,
+                    "payzapp"                      => false,
+                    "payumoney"                    => false,
+                    "openwallet"                   => false,
+                    "razorpaywallet"               => false,
+                    "airtelmoney"                  => false,
+                    "amazonpay"                    => false,
+                    "jiomoney"                     => false,
+                    "sbibuddy"                     => false,
+                    "mpesa"                        => false,
+                    "emi"                          => [
+                    ],
+                    "freecharge"                   => false,
+                    "credit_card"                  => true,
+                    "debit_card"                   => true,
+                    "card_subtype"                 => 1,
+                    "prepaid_card"                 => true,
+                    "upi"                          => false,
+                    "upi_type"                     => [
+                        "collect" => 0,
+                        "intent"  => 0
+                    ],
+                    "bank_transfer"                => false,
+                    "aeps"                         => false,
+                    "emandate"                     => false,
+                    "nach"                         => false,
+                    "cardless_emi"                 => false,
+                    "paylater"                     => false,
+                    "card_networks"                => [
+                        "AMEX"  => 0,
+                        "DICL"  => 0,
+                        "MC"    => 1,
+                        "MAES"  => 1,
+                        "VISA"  => 1,
+                        "JCB"   => 0,
+                        "RUPAY" => 1,
+                        "BAJAJ" => 0,
+                        "UNP"   => 0
+                    ],
+                    "apps"                         => [
+                        "cred"    => 0,
+                        "twid"    => 0,
+                        "trustly" => 0,
+                        "poli"    => 0,
+                        "sofort"  => 0,
+                        "giropay" => 0
+                    ],
+                    "debit_emi_providers"          => [
+                        "HDFC" => 0,
+                        "KKBK" => 0,
+                        "INDB" => 0,
+                        "ICIC" => 0
+                    ],
+                    "cod"                          => false,
+                    "offline"                      => false,
+                    "fpx"                          => false,
+                    "itzcash"                      => false,
+                    "oxigen"                       => false,
+                    "amexeasyclick"                => false,
+                    "paycash"                      => false,
+                    "citibankrewards"              => false,
+                    "in_app"                       => 0,
+                    "in_app_credit_card"           => 0,
+                    "cc_on_upi"                    => 0,
+                    "wallet_on_upi"                => 0,
+                    "creditline_on_upi"            => 0,
+                    "credit_emi_providers"         => [
+                        "HDFC"    => 0,
+                        "SBIN"    => 0,
+                        "UTIB"    => 0,
+                        "ICIC"    => 0,
+                        "AMEX"    => 0,
+                        "BARB"    => 0,
+                        "CITI"    => 0,
+                        "HSBC"    => 0,
+                        "INDB"    => 0,
+                        "KKBK"    => 0,
+                        "RATN"    => 0,
+                        "SCBL"    => 0,
+                        "YESB"    => 0,
+                        "onecard" => 0,
+                        "BAJAJ"   => 0,
+                        "FDRL"    => 0,
+                        "IDFB"    => 0
+                    ],
+                    "cardless_emi_providers"       => [
+                        "walnut369"   => 0,
+                        "zestmoney"   => 0,
+                        "earlysalary" => 0,
+                        "hdfc"        => 0,
+                        "icic"        => 0,
+                        "barb"        => 0,
+                        "kkbk"        => 0,
+                        "fdrl"        => 0,
+                        "idfb"        => 0,
+                        "hcin"        => 0,
+                        "krbe"        => 0,
+                        "cshe"        => 0,
+                        "tvsc"        => 0,
+                        "liquiloans"  => 0,
+                        "instant_emi" => 0
+                    ],
+                    "offline_debit_emi_providers"  => [
+                        "HDFC" => 0,
+                        "ICIC" => 0,
+                        "KKBK" => 0
+                    ],
+                    "offline_credit_emi_providers" => [
+                        "AMEX"    => 0,
+                        "AUBL"    => 0,
+                        "BARB"    => 0,
+                        "CITI"    => 0,
+                        "CNRB"    => 0,
+                        "FDRL"    => 0,
+                        "HDFC"    => 0,
+                        "HSBC"    => 0,
+                        "ICIC"    => 0,
+                        "IDFB"    => 0,
+                        "INDB"    => 0,
+                        "JAKA"    => 0,
+                        "KKBK"    => 0,
+                        "PUNB"    => 0,
+                        "RATN"    => 0,
+                        "SBIN"    => 0,
+                        "SCBL"    => 0,
+                        "UTIB"    => 0,
+                        "YESB"    => 0,
+                        "ONECARD" => 0
+                    ],
+                    "paylater_providers"           => [
+                        "getsimpl"      => 0,
+                        "lazypay"       => 0,
+                        "icic"          => 0,
+                        "hdfc"          => 0,
+                        "amazonpay"     => 0,
+                        "rzpx_postpaid" => 0,
+                        "atome"         => 0
+                    ],
+                    "bajajpay"                     => false,
+                    "intl_bank_transfer"           => [
+                    ],
+                    "boost"                        => false,
+                    "mcash"                        => false,
+                    "grabpay"                      => false,
+                    "touchngo"                     => false,
+                    "sodexo"                       => false,
+                    "online_conversion_enabled"    => false,
+                    "duitnow_pay"                  => false,
+                    "razorpay_giftcard"            => 0
+                ],
+                "tenure_discount_map" => [
+                    "6" => 518,
+                ]
+            ]
+        ]
+    ],
+    'testFetchOffersCreateInfoMerchantNotFound' => [
+        'request'  => [
+            'content' => [
+                "merchant_id" => "10000000000020",
+                "offer"       => [
+                    "is_no_cost_emi"      => true,
+                    "emi_durations"       => [
+                        6
+                    ],
+                    "issuer"              => "HDFC",
+                    "payment_network"     => "",
+                    "payment_method"      => "card",
+                    "payment_method_type" => ""
+                ],
+            ],
+            'url'     => '/offers/creation-info',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+    'testFetchOffersCreateInfoMerchantMethodsNotFound' => [
+    'request'  => [
+        'content' => [
+            "merchant_id" => "10000000000013",
+            "offer"       => [
+                "is_no_cost_emi"      => false,
+                "emi_durations"       => [
+                    6
+                ],
+                "issuer"              => "HDFC",
+                "payment_network"     => "",
+                "payment_method"      => "card",
+                "payment_method_type" => ""
+            ],
+        ],
+        'url'     => '/offers/creation-info',
+        'method'  => 'POST'
+    ],
+    'response' => [
+        'content' => [
+            "merchant_methods" => null,
+        ]
+    ]
+]
 ];
+

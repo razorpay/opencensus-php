@@ -1886,6 +1886,7 @@ class Route
         'mailgun_webhook'                          => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'setcronjob_webhook'                       => ['post',     'setcronjob/callback',                            'AdminController@postSetCronJobCallback'                            ],
         'offer_create'                             => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
+        'fetch_offer_create_info'                  => ['post',     'offers/creation-info',                           'OfferController@fetchOfferCreateInfo'                              ],
         'offer_create_bulk'                        => ['post',     'offers/bulk',                                    'OfferController@createOfferBulk'                                   ],
         'offer_update'                             => ['patch',    'offers/{id}',                                    'OfferController@updateOffer'                                       ],
         'offer_fetch_multiple'                     => ['get',      'offers',                                         'OfferController@fetchOffers'                                       ],
@@ -5782,6 +5783,7 @@ class Route
         'internal_create_workflow',
         'internal_workflow_observer_data_update',
         'get_permissions_admin',
+        'fetch_offer_create_info',
         'customer_fetch_addresses_by_contact',
         'internal_merchant_get_tags',
         'rupay_push_token',
@@ -17987,6 +17989,10 @@ class Route
             'internal_capture_commission',
             'internal_process_commissions_invoice',
             'payment_fetch_by_id_internal'
+        ],
+
+        'offers_engine' => [
+            'fetch_offer_create_info'
         ],
 
         'terminals_service' => [

@@ -517,6 +517,40 @@ class Core extends Base\Core
 
         return $offers;
     }
+    /**
+     * Fetches two things mainly for create validation flow in offers engine
+     * 1. Merchant Methods -> in case offer.payment_method is non-empty
+     * 2. EMI Payback plan -> in case where it is no cost emi offer
+    */
+    public function fetchOfferCreateInfo(array $input)
+    {
+        $response          = array();
+        $tenureDiscountMap = [];
+        $merchantId        = $input[Entity::MERCHANT_ID];
+        $offer             = $input[Entity::OFFER];
+
+        if (empty($offer[Entity::PAYMENT_METHOD]) === false)
+        {
+            $merchant                           = $this->repo->merchant->findOrFailPublic($merchantId);
+            $response[Entity::MERCHANT_METHODS] = $merchant->methods;
+        }
+        if ($offer[Entity::IS_NO_COST_EMI])
+        {
+            $emiPlans = $this->repo->emi_plan->fetchByParams($offer[Entity::EMI_DURATIONS],
+                                                             $offer[Entity::ISSUER],
+                                                             $offer[Entity::PAYMENT_NETWORK],
+                                                             $offer[Entity::PAYMENT_METHOD_TYPE]);
+
+            foreach ($emiPlans as $emiPlan)
+            {
+                $tenureDiscountMap[$emiPlan[Emi\Entity::DURATION]] = $emiPlan[Emi\Entity::MERCHANT_PAYBACK];
+            }
+            $response[Entity::TENURE_DISCOUNT_MAP] = $tenureDiscountMap;
+        }
+        $this->trace->info(TraceCode::FETCH_OFFER_CREATE_INFO_RESPONSE, $response);
+
+        return $response;
+    }
 
     /**
      * Fetches the usage of each offer.

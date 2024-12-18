@@ -131,7 +131,7 @@ class OffersTest extends TestCase
                         'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL' => [
                             'rules' => [
                                 [
-                                    'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.CardType == \"credit\" && PaymentInstrument.CardNetwork == \"VISA\" && PaymentInstrument.Issuer == \"HDFC\"',
+                                        'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.CardType == \"credit\" && PaymentInstrument.CardNetwork == \"VISA\" && PaymentInstrument.Issuer == \"HDFC\"',
                                     'then' => [
                                         [
                                             'discount' => [
@@ -1656,6 +1656,52 @@ class OffersTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['offer']           = 'offer_' . $offer->getId();
         $this->testData[__FUNCTION__]['request']['content']['payment_id']      = $payment->getId();
         $this->testData[__FUNCTION__]['request']['content']['subscription_id'] = $subOffer->getId();
+
+        $this->startTest();
+    }
+
+    public function testFetchOffersCreateInfoWithoutEmiPlans()
+    {
+        $this->ba->offersEngineAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchOffersCreateInfoWithoutMethodsAndWithoutEmiPlans()
+    {
+        $this->ba->offersEngineAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEmpty($response);
+    }
+
+    public function testFetchOffersCreateInfoWithoutMethods()
+    {
+        $this->fixtures->create('emi_plan', ['bank' => 'HDFC', 'duration' => '6', 'rate' => '1399']);
+
+        $this->ba->offersEngineAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchOffersCreateInfoSuccess()
+    {
+        $this->fixtures->create('emi_plan', ['bank' => 'HDFC', 'duration' => '6', 'rate' => '1399']);
+
+        $this->ba->offersEngineAuth();
+
+        $this->startTest();
+    }
+    public function testFetchOffersCreateInfoMerchantNotFound()
+    {
+        $this->ba->offersEngineAuth();
+
+        $this->startTest();
+    }
+    public function testFetchOffersCreateInfoMerchantMethodsNotFound()
+    {
+        $this->ba->offersEngineAuth();
 
         $this->startTest();
     }

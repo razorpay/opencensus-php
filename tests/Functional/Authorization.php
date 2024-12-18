@@ -871,6 +871,15 @@ class Authorization
         $this->appAuth('rzp_'.$mode, $pwd);
     }
 
+    public function offersEngineAuth($mode = 'test')
+    {
+        $cronConfig = \Config::get('applications.offers_engine');
+
+        $pwd = $cronConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
     public function routeAuth($mode = 'test')
     {
         $routeConfig = \Config::get('applications.route');

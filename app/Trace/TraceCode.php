@@ -3980,6 +3980,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const OFFER_CREATE_REQUEST                                  = 'OFFER_CREATE_REQUEST';
     const OFFER_CREATE_BULK                                     = 'OFFER_CREATE_BULK';
+    const FETCH_OFFER_CREATE_INFO_REQUEST                       = 'FETCH_OFFER_CREATE_INFO_REQUEST';
+    const FETCH_OFFER_CREATE_INFO_RESPONSE                      = 'FETCH_OFFER_CREATE_INFO_RESPONSE';
     const OFFER_DISCOUNT_CREATED                                = 'OFFER_DISCOUNT_CREATED';
     const OFFER_IIN_DOES_NOT_EXISTS                             = 'OFFER_IIN_DOES_NOT_EXISTS';
     const OFFER_UPDATE_REQUEST                                  = 'OFFER_UPDATE_REQUEST';

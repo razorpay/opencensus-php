@@ -161,6 +161,18 @@ class Validator extends Base\Validator
         'order_id'                      => 'required|string',
     ];
 
+    protected static $fetchOfferCreateInfoRules = [
+        'merchant_id'               => 'required|unsigned_id',
+        'offer'                     => 'required|array',
+        'offer.emi_durations'       => 'array',
+        'offer.emi_durations.*'     => 'integer',
+        'offer.is_no_cost_emi'      => 'required|boolean',
+        'offer.issuer'              => 'sometimes|string',
+        'offer.payment_network'     => 'sometimes|string',
+        'offer.payment_method'      => 'sometimes|string',
+        'offer.payment_method_type' => 'sometimes|string',
+    ];
+
     protected static $allowedPspApps = [
         upi\ProviderPsp::GOOGLE_PAY,
         upi\ProviderPsp::PHONEPE,
