@@ -2096,6 +2096,11 @@ class Constants
      */
     const OMNI_ENABLED = 'omni_enabled';
 
+    /**
+     * Feature flag used to identify omni single stack merchants.
+     */
+    const OMNI_SINGLE_STACK = 'omni_single_stack';
+
     /** Feature flag to identify merchants who have split settlement feature enabled*/
     const SPLIT_SETTLEMENTS_ENABLED = "split_settlements_enabled";
 
@@ -3245,6 +3250,7 @@ class Constants
         self::KYC_BLOCK_OCR_FOR_VAS                  => true,
         self::ONE_CC_TAX_INCLUSION                   => true,
         self::OMNI_ENABLED                           => true,
+        self::OMNI_SINGLE_STACK                      => true,
         self::SPLIT_SETTLEMENTS_ENABLED              => true,
         self::DEBIT_CARD_VALIDATION                  => true,
         self::REMOVE_RAZORPAY_BRANDING               => true,
@@ -4680,6 +4686,11 @@ class Constants
             'feature'       => self::OMNI_ENABLED,
             'display_name'  => 'Omni Enabled',
             'documentation' => 'Omni Enabled Merchant',
+        ],
+        self::OMNI_SINGLE_STACK => [
+            'feature'       => self::OMNI_SINGLE_STACK,
+            'display_name'  => 'Omni Single Stack Enabled',
+            'documentation' => 'Omni Single Stack Enabled Merchant',
         ],
         self::SPLIT_SETTLEMENTS_ENABLED => [
             'feature'       => self::SPLIT_SETTLEMENTS_ENABLED,
