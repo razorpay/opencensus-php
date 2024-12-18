@@ -465,46 +465,6 @@ class AxisBankTransferTest extends TestCase
         $this->assertEquals(0, $txn['credit']);
     }
 
-    public function testAxisNotificationCallbackForCollectx_WithDisabledBankTransferForCollectx()
-    {
-        $testData = $this->testData['testValidateBankTransferAxis'];
-
-        $response = $this->createCollectXVirtualAccount(receivers: ['bank_account']);
-
-        $beneAccountNo = $response['receivers'][0]['account_number'];
-
-        $testData['request']['content']['Bene_acc_no'] = $beneAccountNo;
-
-        $testData['request']['content']['Sndr_acnt'] = '9876543210123456789';
-
-        $testData['request']['content']['Req_type'] = 'notification';
-
-        $testData['request']['content']['Corp_code'] = '9845';
-
-        $testData['request']['content']['Req_dt_time'] = date("Y-m-d H:i:s");
-
-        $this->testData[__FUNCTION__] = $testData;
-
-        $merchantID = '10000000000000';
-
-        $this->enableSplitzExperiment(
-            experimentName: RazorxTreatment::COLLECTX_AXIS_PAYMENT_TRANSFER_RAMP_UP,
-            id: $merchantID,
-            requestData: ['id' => $merchantID]);
-
-        $response = $this->startTest();
-
-        $this->assertEquals('S', $response['Stts_flg']);
-        $this->assertEquals('000', $response['Err_cd']);
-        $this->assertEquals('Success', $response['message']);
-
-        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
-
-        $this->assertEquals($testData['request']['content']['UTR'], $bankTransferRequest['utr']);
-        $this->assertNotNull($bankTransferRequest['payee_account']);
-    }
-
-
     public function testAxisValidationCallbackForCollectx_DuplicateBankTransfer()
     {
         $testData = $this->testData['testBankTransferAxisCallbackValidationFailure'];

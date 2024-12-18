@@ -5,6 +5,7 @@ namespace RZP\Error;
 class ErrorCode
 {
     const BAD_REQUEST_REFUND_RECEIPT_ALREADY_PRESENT = 'BAD_REQUEST_REFUND_RECEIPT_ALREADY_PRESENT';
+    const BAD_REQUEST_NOTES_TOO_MANY_KEYS            = 'BAD_REQUEST_NOTES_TOO_MANY_KEYS';
 
     /**
      * The error codes are named such that the first and the second word

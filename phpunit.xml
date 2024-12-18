@@ -534,6 +534,7 @@
         </testsuite>
         <testsuite name="Post Payment Test Suite">
             <directory>./tests/Functional/Settlement/</directory>
+            <file>./tests/Functional/Payment/PaymentCreateTestForCollectX.php</file>
         </testsuite>
         <testsuite name="UT_Cards_Test_Suite">
             <directory>./tests/Functional/Gateway/AxisMigs/</directory>
