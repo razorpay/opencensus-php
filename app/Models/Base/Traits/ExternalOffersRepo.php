@@ -60,7 +60,7 @@ trait ExternalOffersRepo
         }
 
         // if experiment is false or exception caught, calls parent repo function but the offer response does not change
-        return parent::findOrFail($id, ['*'], $connectionType);
+        return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
     }
 
     public function findById($id, string $connectionType = null)
