@@ -60,6 +60,8 @@ export type CheckoutEditorProviderProps = {
   saveLocale: (payload: unknown) => Promise<unknown>;
   updateFeatures: (payload: unknown, current?: unknown) => Promise<unknown>;
   createMerchantCheckoutConfig: (payload: unknown) => Promise<unknown>;
+  createSuggestion: (payload: unknown) => Promise<unknown>;
+  createFeedback: (payload: unknown) => Promise<unknown>;
   showNotification: (payload: unknown) => void;
   updateConfig: (payload: unknown) => Promise<unknown>;
   createMerchantCheckoutStylingConfig: (payload: unknown) => Promise<unknown>;
@@ -80,6 +82,8 @@ const CheckoutEditorProvider = ({
   saveLocale,
   updateFeatures,
   createMerchantCheckoutConfig,
+  createSuggestion,
+  createFeedback,
   merchantCheckoutStyledConfig,
   createMerchantCheckoutStylingConfig,
   createMerchantCheckoutBrandConfig,
@@ -374,6 +378,25 @@ const CheckoutEditorProvider = ({
     setMerchantConfigToState(state.values);
   };
 
+  const handleFeedbackSubmit = async (data) => {
+    await createFeedback({ type: 'post', data });
+    selfServeTrackSuccess({
+      selfServeAction: 'Feedback Added',
+      page: 'Checkout',
+      screen: 'Settings',
+    });
+  };
+
+  const handleSuggestionSubmit = async (data) => {
+    try {
+      await createSuggestion({ type: 'post', data });
+      showNotification({ type: 'success', message: 'Suggestion added successfully' });
+    } catch (error) {
+      const { errors, message } = error as { errors: string[]; message: string };
+      showNotification({ type: 'error', message: errors?.[0] ?? message });
+    }
+  };
+
   const handleSave = async () => {
     const payload = createPayloadToSaveConfig(state.values, state.config);
     try {
@@ -597,6 +620,8 @@ const CheckoutEditorProvider = ({
         isLoading: state.isLoading,
         isSavingTitleModalChange: state.isSavingTitleModalChange,
         handleSave,
+        handleSuggestionSubmit,
+        handleFeedbackSubmit,
         handleLocaleChange,
         handleDiscardAllChanges,
         handleCustomMessageToggle,

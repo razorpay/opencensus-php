@@ -38,7 +38,7 @@ const ExtraItems = ({ isChecked, selectedValue, handleEmailValueChange }): React
   );
 };
 
-const EmailSettings = () => {
+const EmailSettings = ({ blockData }: any) => {
   const { values, handleEmailToggle, handleEmailValueChange } = useCheckoutEditor();
   return (
     <FeatureToggle
@@ -47,6 +47,7 @@ const EmailSettings = () => {
       title={EMAIL_SETTINGS_DEFAULT_VALUE.title}
       subTitle={EMAIL_SETTINGS_DEFAULT_VALUE.subTitle}
       toggleHandler={(isChecked) => handleEmailToggle(isChecked)}
+      blockData={blockData}
       extraItems={
         <ExtraItems
           isChecked={values.email.isEnabled}

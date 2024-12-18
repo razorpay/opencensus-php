@@ -41,6 +41,9 @@ const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG = 'CREATE_MERCHANT_CHECKOUT_BRAND_CO
 const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR = 'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR';
 const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_SUCCESS =
   'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_SUCCESS';
+const FETCH_BLOCKS = 'FETCH_BLOCKS';
+const CREATE_SUGGESTION = 'CREATE_SUGGESTION';
+const CREATE_FEEDBACK = 'CREATE_FEEDBACK';
 
 export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
 const ADD_REPLY_URL_CARE_SERVICE =
@@ -617,6 +620,35 @@ export const fetchMerchantCheckoutConfig = () => {
   };
 };
 
+export const fetchBlocks = () => {
+  return {
+    type: FETCH_BLOCKS,
+    payload: merchantFetch('dashboard/blocks'),
+  };
+};
+
+export const createSuggestion = ({ type, data }) => {
+  return {
+    type: CREATE_SUGGESTION,
+    payload: merchantFetch({
+      url: 'dashboard/suggestions',
+      method: type,
+      data,
+    }),
+  };
+};
+
+export const createFeedback = ({ type, data }) => {
+  return {
+    type: CREATE_FEEDBACK,
+    payload: merchantFetch({
+      url: 'dashboard/feedback',
+      method: type,
+      data,
+    }),
+  };
+};
+
 export const createMerchantCheckoutConfig = ({ type, ...data }) => {
   return {
     type: CREATE_MERCHANT_CHECKOUT_CONFIG,
@@ -706,6 +738,11 @@ const initialState = {
     error: null,
   },
   createdLateAuthConfig: {
+    data: {},
+    error: null,
+  },
+  blocks: {
+    loading: false,
     data: {},
     error: null,
   },
@@ -1071,7 +1108,72 @@ const configReducer = (state = initialState, action) => {
         },
       });
     }
+    case `${FETCH_BLOCKS}::PENDING`: {
+      return merge(state, {
+        blocks: {
+          ...state.blocks,
+          loading: true,
+        },
+      });
+    }
 
+    case `${FETCH_BLOCKS}::SUCCESS`: {
+      return set(state, 'blocks', {
+        loading: false,
+        data: action.payload.data,
+        error: null,
+      });
+    }
+    case `${FETCH_BLOCKS}::ERROR`: {
+      return set(state, 'blocks', {
+        loading: false,
+        data: action.payload.data,
+        error: action.payload.errors,
+      });
+    }
+    case `${CREATE_FEEDBACK}::PENDING`: {
+      return set(state, 'feedback', {
+        loading: true,
+        data: {},
+        error: null,
+      });
+    }
+    case `${CREATE_FEEDBACK}::ERROR`: {
+      return set(state, 'feedback', {
+        loading: false,
+        data: action.payload.data,
+        error: action.payload.errors,
+      });
+    }
+    case `${CREATE_FEEDBACK}::SUCCESS`: {
+      return set(state, 'feedback', {
+        loading: false,
+        data: action.payload.data,
+        error: null,
+      });
+    }
+
+    case `${CREATE_SUGGESTION}::PENDING`: {
+      return set(state, 'suggestion', {
+        loading: true,
+        data: {},
+        error: null,
+      });
+    }
+    case `${CREATE_SUGGESTION}::ERROR`: {
+      return set(state, 'suggestion', {
+        loading: false,
+        data: action.payload.data,
+        error: action.payload.errors,
+      });
+    }
+    case `${CREATE_SUGGESTION}::SUCCESS`: {
+      return set(state, 'suggestion', {
+        loading: false,
+        data: action.payload.data,
+        error: null,
+      });
+    }
     case `${CREATE_MERCHANT_CHECKOUT_CONFIG}::SUCCESS`:
     case `${FETCH_MERCHANT_CHECKOUT_CONFIG}::SUCCESS`: {
       return set(state, 'checkoutConfig', {

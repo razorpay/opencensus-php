@@ -5,7 +5,10 @@ export type CheckoutEditorContext<Values> = {
   isSavingTitleModalChange: boolean;
   isLoading: boolean;
   handleSave: () => void;
+  handleSuggestionSubmit: (data: any) => void;
+  handleFeedbackSubmit: (data: any) => void;
   handleLocaleChange: (value: string) => void;
+  handleSuggestionSubmit: (data) => void;
   handleDiscardAllChanges: () => void;
   handleCustomMessageToggle: (isEnabled: boolean) => void;
   handleCustomMessageTextChange: (index: number, value: string) => void;

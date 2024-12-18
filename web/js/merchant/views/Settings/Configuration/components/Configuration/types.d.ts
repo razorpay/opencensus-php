@@ -11,6 +11,7 @@ export type FeatureToggleProps = {
   subTitle: string;
   toggleHandler?: (isChecked: boolean) => void;
   extraItems?: React.ReactNode;
+  blockData?: any;
 };
 
 export type LineItemsProps = {
@@ -18,4 +19,6 @@ export type LineItemsProps = {
   subTitle?: string | React.ReactNode;
   rightChildren?: React.ReactNode;
   extraItems?: React.ReactNode;
+  blockData?: any;
+  showFeedback?: boolean;
 };

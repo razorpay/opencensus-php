@@ -8,13 +8,14 @@ import FeatureToggle from 'merchant/views/Settings/Configuration/components/Conf
 
 import track from './track';
 
-const CustomMessageSettings = () => {
+const CustomMessageSettings = ({ blockData }: any) => {
   const { values, handleCustomMessageToggle } = useCheckoutEditor();
 
   function handleToggleMessageBanner(isChecked: boolean) {
     handleCustomMessageToggle(isChecked);
     track.toggleMessageBanner(isChecked ? 'visible' : 'hidden');
   }
+
   return (
     <FeatureToggle
       isChecked={values[CHECKOUT_EDITOR_FIELDS.CUSTOM_MESSAGE].isEnabled}
@@ -22,6 +23,7 @@ const CustomMessageSettings = () => {
       title={CUSTOM_MESSAGE_DEFAULT_VALUE.title}
       subTitle={CUSTOM_MESSAGE_DEFAULT_VALUE.subTitle}
       toggleHandler={handleToggleMessageBanner}
+      blockData={blockData}
       extraItems={<ExtraItems />}
     />
   );

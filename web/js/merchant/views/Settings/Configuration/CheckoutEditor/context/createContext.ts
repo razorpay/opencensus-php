@@ -10,6 +10,8 @@ export const checkoutEditorContext = createContext<
 >({
   ...CONTEXT_INITIAL_STATE,
   handleSave: noop,
+  handleSuggestionSubmit: noop,
+  handleFeedbackSubmit: noop,
   handleLocaleChange: noop,
   handleDiscardAllChanges: noop,
   handleCustomMessageToggle: noop,

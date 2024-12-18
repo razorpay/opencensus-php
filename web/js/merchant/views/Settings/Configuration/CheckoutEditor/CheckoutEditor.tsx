@@ -24,6 +24,9 @@ import {
   uploadLogo,
   uploadWordmark,
   removeLogo,
+  createSuggestion,
+  createFeedback,
+  fetchBlocks,
   createMerchantCheckoutStylingConfig,
   createMerchantCheckoutBrandConfig,
   updateConfig,
@@ -49,16 +52,27 @@ import {
 import { mapCheckoutEmailConfig } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import CheckoutStyles from './CheckoutStyles';
+import CheckoutStyles from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyles';
+import Suggestion from 'merchant/views/Settings/Configuration/CheckoutEditor/Suggestion';
+import ComingSoonLineItems from 'merchant/views/Settings/Configuration/components/Configuration/ComingSoonLineItem';
+import {
+  PROD_BLOCKS_IDs,
+  STAGE_BLOCKS_IDs,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/constant';
 
 type CheckoutConfigProps = {
   accountConfig?: AccountConfig;
   accountLocale?: AccountLocale | null;
   merchantCheckoutConfig?: MerchantCheckoutConfig;
+  suggestion?: any;
   user: User;
+  blocks?: any;
+  fetchBlocks: typeof fetchBlocks;
   fetchLocale: typeof fetchLocale;
   fetchMerchantCheckoutConfig: typeof fetchMerchantCheckoutConfig;
   fetchMerchantCheckoutStylingConfig: typeof fetchMerchantCheckoutStylingConfig;
+  createSuggestion: typeof createSuggestion;
+  createFeedback: typeof createFeedback;
   extraConfig: ExtraConfig;
   merchantCheckoutStyledConfig?: MerchantCheckoutStyledConfig;
   showFeatures: boolean;
@@ -72,6 +86,7 @@ const CheckoutFeatures = ({
   accountConfig,
   accountLocale,
   merchantCheckoutConfig,
+  suggestion,
   fetchLocale,
   saveLocale,
   uploadLogo,
@@ -83,6 +98,10 @@ const CheckoutFeatures = ({
   fetchMerchantCheckoutConfig,
   fetchMerchantCheckoutStylingConfig,
   createMerchantCheckoutConfig,
+  createSuggestion,
+  createFeedback,
+  blocks,
+  fetchBlocks,
   merchantCheckoutStyledConfig,
   createMerchantCheckoutStylingConfig,
   createMerchantCheckoutBrandConfig,
@@ -119,6 +138,10 @@ const CheckoutFeatures = ({
     triggerHotjarRecording('CHECKOUT_EDITOR_SCREEN', ['CHECKOUT_EDITOR_SCREEN']);
   }, []);
 
+  useEffect(() => {
+    fetchBlocks();
+  }, [fetchBlocks]);
+
   const handleUpdateFeatures = (payload: unknown) => updateFeatures(payload, user.current);
 
   const Features = ({
@@ -130,15 +153,51 @@ const CheckoutFeatures = ({
   }) => {
     return (
       <>
-        <LanguageSettings />
-        <EmailSettings />
-        <ShowWhen additionalCondition={(user) => isFlashCheckoutAllowed(user, extraConfig)}>
-          <FlashCheckout />
-        </ShowWhen>
-        {isCustomMessageFeatureEnabled && <CustomMessageSettings />}
-        <ShowWhen additionalCondition={() => isSkipMandatorySummaryPageAllowed(extraConfig)}>
-          <MandatorySummaryPage />
-        </ShowWhen>
+        {blocks?.map((block) => {
+          switch (block.id) {
+            case PROD_BLOCKS_IDs.emailSettings:
+            case STAGE_BLOCKS_IDs.emailSettings:
+              return <EmailSettings key={block.id} blockData={block} />;
+            case PROD_BLOCKS_IDs.flashCheckout:
+            case STAGE_BLOCKS_IDs.flashCheckout:
+              return (
+                <ShowWhen
+                  key={block.id}
+                  additionalCondition={(user) => isFlashCheckoutAllowed(user, extraConfig)}
+                >
+                  <FlashCheckout blockData={block} />
+                </ShowWhen>
+              );
+            case PROD_BLOCKS_IDs.customMessageSettings:
+            case STAGE_BLOCKS_IDs.customMessageSettings:
+              return isCustomMessageFeatureEnabled ? (
+                <CustomMessageSettings key={block.id} blockData={block} />
+              ) : null;
+            case PROD_BLOCKS_IDs.mandatorySummaryPage:
+            case STAGE_BLOCKS_IDs.mandatorySummaryPage:
+              return (
+                <ShowWhen
+                  key={block.id}
+                  additionalCondition={() => isSkipMandatorySummaryPageAllowed(extraConfig)}
+                >
+                  <MandatorySummaryPage blockData={block} />
+                </ShowWhen>
+              );
+            case PROD_BLOCKS_IDs.languageSettings:
+            case STAGE_BLOCKS_IDs.languageSettings:
+              return <LanguageSettings key={block.id} blockData={block} />;
+            default:
+              return block?.tags
+                .filter((tagData) => tagData?.tag === 'coming soon')
+                .map((tag) => (
+                  <ComingSoonLineItems
+                    key={tag?.id}
+                    title={tag?.name}
+                    subTitle={tag?.description}
+                  />
+                ));
+          }
+        })}
       </>
     );
   };
@@ -153,6 +212,8 @@ const CheckoutFeatures = ({
       uploadWordmark={uploadWordmark}
       removeLogo={removeLogo}
       updateConfig={updateConfig}
+      createSuggestion={createSuggestion}
+      createFeedback={createFeedback}
       createMerchantCheckoutConfig={createMerchantCheckoutConfig}
       showNotification={showNotification}
       createMerchantCheckoutStylingConfig={createMerchantCheckoutStylingConfig}
@@ -188,6 +249,7 @@ const CheckoutFeatures = ({
             />
           )}
           {showStyling && <CheckoutStyles trustedBadge={trustedBadge} />}
+          {!suggestion && <Suggestion />}
           <ConfigControls />
           <ConfigFooter />
         </Box>
@@ -210,6 +272,9 @@ const mapActionsToProps = (dispatch: Dispatch<AnyAction>) => {
       showNotification,
       fetchMerchantCheckoutConfig,
       createMerchantCheckoutConfig,
+      createSuggestion,
+      createFeedback,
+      fetchBlocks,
       fetchMerchantCheckoutStylingConfig,
       createMerchantCheckoutStylingConfig,
       createMerchantCheckoutBrandConfig,
@@ -230,6 +295,8 @@ export default connect((state) => {
       emailConfig: updated_email_config,
       features: state.config?.features,
     },
+    suggestion: state.config?.suggestion,
+    blocks: state.config?.blocks?.data.dashboard_blocks,
     merchantCheckoutStyledConfig: state.config?.checkoutStylingConfig?.data,
     accountLocale: state.config?.locale,
     merchantCheckoutConfig: state.config?.checkoutConfig?.data?.checkout_configuration,
