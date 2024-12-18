@@ -5826,9 +5826,6 @@ class SettlementOndemandTest extends TestCase
     }
 
     public function testOndemandLedgerKafkaOutboxJobSuccessEarlyDispatchToSettlement(){
-
-        $this->mockRazorxTreatmentV2(RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ODS, 'on');
-
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'new_settlement_service']);
 

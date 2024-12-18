@@ -277,9 +277,7 @@ abstract class Base extends BaseCore
             }
             if ($this->txn->getType() === Transaction\Type::SETTLEMENT_ONDEMAND)
             {
-                $isEarlyDispatchExpEnabled = (new Core())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForODS($this->txn->merchant);
-
-                if (($isEarlyDispatchExpEnabled === true) and  ($this->txn->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+                if ($this->txn->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                 {
                     $shouldDispatchSettlementBucket = false;
                 }
