@@ -1,0 +1,213 @@
+<?php
+
+namespace RZP\Services\CMS;
+
+use Razorpay\Trace\Facades\Trace as TraceFacade;
+use RZP\Exception;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
+use RZP\Http\Request\Requests;
+use RZP\Trace\TraceCode;
+
+class Service {
+    const REQUEST_TIMEOUT = 5;
+    const CMS_ROUTES = [
+        'create_customer_v2' => 'v2/internal/customers',
+    ];
+
+    protected $app;
+
+    protected $baseUrl;
+
+    protected $testModeBaseUrl;
+
+    protected $config;
+
+    protected $key;
+
+    protected $secret;
+
+    protected $testModeKey;
+
+    protected $testModeSecret;
+    private $trace;
+
+    public function __construct($app)
+    {
+        $this->app = $app;
+        $this->trace = TraceFacade::getFacadeRoot();
+
+        $this->config = $app['config']->get('applications.cms');
+
+        $this->baseUrl = $this->config['live_url'];
+        $this->key     = $this->config['live_username'];
+        $this->secret  = $this->config['live_password'];
+
+        $this->testModeBaseUrl = $this->config['test_url'];
+        $this->testModeKey     = $this->config['test_username'];
+        $this->testModeSecret  = $this->config['test_password'];
+    }
+
+    /**
+     * @throws ServerErrorException
+     * @throws BadRequestException
+     */
+    public function createCustomerV2($input,$merchantId)
+    {
+        $input = $this->transformV1CreateOptionsToV2CreateOptions($input,$merchantId);
+
+        return $this->sendRequest(self::CMS_ROUTES['create_customer_v2'], 'post', $input);
+    }
+
+    /**
+     * @param string $url
+     * @param string $method
+     * @param array $inputData
+     * @param array $headers
+     *
+     * @return array|mixed
+     * @throws BadRequestException
+     * @throws ServerErrorException
+     */
+
+    public function sendRequest($url, $method, array $inputData = [])
+    {
+        $baseUrl = $this->baseUrl;
+        $key = $this->key;
+        $secret = $this->secret;
+        $success = true;
+
+        if($this->app['rzp.mode'] === Mode::TEST){
+            $baseUrl = $this->testModeBaseUrl;
+            $key = $this->testModeKey;
+            $secret = $this->testModeSecret;
+        }
+
+        $url = $baseUrl . $url;
+
+        $data = '';
+
+        if (empty($inputData) === false)
+        {
+            $data = json_encode($inputData);
+        }
+
+        $headers = [];
+
+        $headers['Content-Type'] = 'application/json';
+
+        $headers['Accept'] = 'application/json';
+
+        $options = array(
+            'timeout' => self::REQUEST_TIMEOUT,
+            'auth'    => [$key, $secret],
+        );
+        $request = array(
+            'url' => $url,
+            'method' => $method,
+            'headers' => $headers,
+            'options' => $options,
+            'content' => $data,
+        );
+
+        $response = $this->sendCMSRequest($request,$success);
+
+        if ($success) {
+            if ($response->status_code !== 200) {
+                $traceData = [
+                    'body' => $response->body,
+                    'status_code' => $response->status_code
+                ];
+                $this->trace->error(TraceCode::CMS_REQUEST_ERROR, $traceData);
+            }
+            else
+            {
+                $decodedResponse = json_decode($response->body, true);
+
+                $decodedResponse = $decodedResponse ?? [];
+
+                //check if $response is a valid json
+                if (json_last_error() !== JSON_ERROR_NONE)
+                {
+                    $this->trace->error(TraceCode::CMS_INVALID_JSON_RESPONSE,
+                        [
+                            'body' => $response->body,
+                            'status_code' => $response->status_code
+                        ]);
+                }
+                else
+                    return  $decodedResponse;
+            }
+        }
+
+        throw new Exception\ServerErrorException("Request Failed to CMS",ErrorCode::SERVER_ERROR_INVALID_RESPONSE,[]);
+    }
+
+    /**
+     * @param $request
+     *
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    protected function sendCMSRequest($request, &$success)
+    {
+        $method = $request['method'];
+        $response = null;
+
+        try
+        {
+            $response = Requests::$method(
+                $request['url'],
+                $request['headers'],
+                $request['content'],
+                $request['options']);
+        }
+
+        catch(\WpOrg\Requests\Exception $e)
+        {
+            $success = false;
+
+            $this->trace->error(TraceCode::CMS_REQUEST_FAILED,[
+                'error_message' => $e->getMessage()
+            ]);
+        }
+        return $response;
+    }
+
+    public function transformV1CreateOptionsToV2CreateOptions($opt,$merchantId)
+    {
+        $v2CreateOptions = [
+            'salutation'          =>        null,
+            'first_name'          =>        $opt['name'] ?? null,
+            'middle_name'         =>        null,
+            'last_name'           =>        null,
+            'email'               =>        $opt['email'] ?? null,
+            'contact'             =>        $opt['contact'] ?? null,
+            'notes'               =>        (object)$opt["notes"] ?? [],
+            'gender'              =>        null,
+            'dob'                 =>        null,
+            'custom_data'         =>        (object)(!empty($opt['global_customer_id']) ? ['global_customer_id' => $opt['global_customer_id']] : []),
+            'tax_details'         =>        $this->convertGstinToTaxDetails($opt['gstin'] ?? null),
+            'merchant_id'         =>        $merchantId,
+        ];
+
+        return $v2CreateOptions;
+    }
+
+    // Helper function to convert Gstin to TaxDetails
+    public function convertGstinToTaxDetails($gstin)
+    {
+        if (empty($gstin)) {
+            return null;
+        }
+
+        return [
+            [
+            'type' => 'IN_GST',
+            'value' => $gstin
+            ]
+        ];
+    }
+}

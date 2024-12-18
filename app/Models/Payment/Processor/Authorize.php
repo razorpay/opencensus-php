@@ -7263,10 +7263,12 @@ trait Authorize
         Customer\Entity $customer)
     {
         $localCustomer = (new Customer\Core)->createLocalCustomerFromGlobal($customer, $this->subscription->merchant);
-
-        $localCustomer->globalCustomer()->associate($customer);
-
-        $this->repo->saveOrFail($localCustomer);
+        $shouldCreateViaCMS = (new Customer\Core)->isCreateOverrideToCmsEnabled($this->subscription->merchant->getId(), $this->mode, app('request.ctx')->getInternalAppName(), $this->app['api.route']->getCurrentRouteName());
+        if (!$shouldCreateViaCMS)
+        {
+            $localCustomer->globalCustomer()->associate($customer);
+            $this->repo->saveOrFail($localCustomer);
+        }
 
         return $localCustomer;
     }

@@ -2143,4 +2143,14 @@ return [
         // Secret used by Route microservice to call API
         'secret' => env('ROUTE_API_SECRET'),
     ],
+
+    'cms' => [
+        'live_url'      => env('CMS_LIVE_BASE_URL'),
+        'live_username' => env('CMS_LIVE_USERNAME'),
+        'live_password' => env('CMS_LIVE_PASSWORD'),
+
+        'test_url'      => env('CMS_TEST_BASE_URL'),
+        'test_username' => env('CMS_TEST_USERNAME'),
+        'test_password' => env('CMS_TEST_PASSWORD'),
+    ],
 ];
