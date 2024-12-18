@@ -281,6 +281,15 @@ class App extends Component {
       this.logoutPopupShown = true;
     });
 
+    window.addEventListener('LOGIN_AS_MX', function loginAsMXHandler(e) {
+      if (e.detail?.message) {
+        self.props.showNotification({
+          type: 'error',
+          message: e.detail.message,
+        });
+      }
+    });
+
     window.addEventListener('REQUEST_ERROR', function requestErrorHandler(e) {
       const errorCode = e.detail.response ? e.detail.response.status : 'UNKNOWN STATUS';
 

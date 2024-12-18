@@ -28,6 +28,21 @@ export default function ajax(params = {}) {
       return encodedParams.join('&'); // Build the encoded query string
     };
 
+    axios.interceptors.response.use((response) => {
+      const { errors } = response?.data || {};
+      if (errors?.source === 'aes') {
+        document.body.dispatchEvent(
+          new CustomEvent('LOGIN_AS_MX', {
+            bubbles: true,
+            detail: {
+              message: errors?.[0] || 'Something went wrong',
+            },
+          }),
+        );
+      }
+      return response;
+    });
+
     axios(params).then(
       (resp) => {
         const { data } = resp;
