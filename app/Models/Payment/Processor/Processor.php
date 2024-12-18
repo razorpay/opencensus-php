@@ -1891,7 +1891,8 @@ class Processor
                     Token\Entity::RECURRING_FAILURE_REASON => $token->getRecurringFailureReason(),
                     Token\Entity::CONFIRMED_AT => $token->getConfirmedAt(),
                     Token\Entity::MAX_AMOUNT => $token->getMaxAmount(),
-                    Token\Entity::EXPIRED_AT => $token->getExpiredAt()
+                    Token\Entity::EXPIRED_AT => $token->getExpiredAt(),
+                    Token\Entity::TOKEN => $token->getToken(),
                 ];
                 $input["recurring_token"] = $recurringToken;
 
