@@ -352,6 +352,12 @@ class Service extends Base\Service
         $merchantId = $this->merchant->getId();
 
         $disputes = $this->repo->dispute->fetch($input, $merchantId);
+        foreach ($disputes as &$dispute) {
+            if (property_exists($dispute, 'international')) {
+                // Replace null 'international' with 0
+                $dispute->international = $dispute->international ?? false;
+            }
+        }
         return $disputes->toArrayPublic();
     }
 

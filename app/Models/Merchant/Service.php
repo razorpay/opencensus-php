@@ -12973,6 +12973,11 @@ class Service extends Base\Service
         $updatedAtTo = ($input[Constants::END_TIMESTAMP] ?? Carbon::now()->getTimestamp());
 
         $merchantsCollection = $this->repo->merchant->getMerchantsForSettlementsEventsCron($cronLastRunAt, $updatedAtTo);
+        $this->app['trace']->info(TraceCode::DEBUG_LOGGING_MERCHANT_SETTLEMENT_CRON, [
+            'merchant_ids before filter' => $merchantsCollection->pluck('id')->toArray(),
+            'cronLastRunAt' => $cronLastRunAt,
+            'updatedAtTo' => $updatedAtTo,
+        ]);
 
         $merchantsCollection = $merchantsCollection->filter(function ($merchant)
         {

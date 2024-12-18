@@ -1023,30 +1023,37 @@ trait RepositoryFetch
             $query = $query->whereIn('phase', $phases);
         }
 
-            if($this->entity == 'dispute') {
-                $disputePaymentIdColumn = $this->repo->dispute->dbColumn(\RZP\Models\Dispute\Entity::PAYMENT_ID);
-                $disputeEvidenceDisputeIdColumn = $this->repo->dispute_evidence_document->dbColumn('dispute_id');
-                $paymentIdColumn = $this->repo->payment->dbColumn(Payment::ID);
-                $paymentInternationalColumn = $this->repo->payment->dbColumn(Payment::INTERNATIONAL);
-                $query = $query->from('disputes')
-                    ->addSelect('disputes.*')
-                    ->addSelect($paymentInternationalColumn . ' as international')  // Add international field from payments
-                    ->leftJoin(Table::PAYMENT, $disputePaymentIdColumn, '=', $paymentIdColumn);
-                if (isset($params['international'])) {
+        if($this->entity == 'dispute') {
+            $disputePaymentIdColumn = $this->repo->dispute->dbColumn(\RZP\Models\Dispute\Entity::PAYMENT_ID);
+            $disputeEvidenceDisputeIdColumn = $this->repo->dispute_evidence_document->dbColumn('dispute_id');
+            $paymentIdColumn = $this->repo->payment->dbColumn(Payment::ID);
+            $paymentInternationalColumn = $this->repo->payment->dbColumn(Payment::INTERNATIONAL);
+            $query = $query->from('disputes')
+                ->addSelect('disputes.*')
+                ->addSelect($paymentInternationalColumn . ' as international')  // Add international field from payments
+                ->leftJoin(Table::PAYMENT, $disputePaymentIdColumn, '=', $paymentIdColumn);
+            if (isset($params['international'])) {
+                if ($params['international'] == 0) {
+                    // Add condition to include NULL values for international
+                    $query = $query->where(function ($subQuery) use ($paymentInternationalColumn) {
+                        $subQuery->where($paymentInternationalColumn, '=', 0)
+                            ->orWhereNull($paymentInternationalColumn);
+                    });
+                } else {
                     $query = $query->where($paymentInternationalColumn, '=', $params['international']);
                 }
             }
-            else if ($this->entity == 'dispute_evidence_document')  {
-                $query = $query->addSelect('dispute_evidence_document.*');
-            }
+        }
+        else if ($this->entity == 'dispute_evidence_document')  {
+            $query = $query->addSelect('dispute_evidence_document.*');
+        }
 
         foreach ($params as $key => $value) {
             if (in_array($key, ['phase'])) {
                 continue;
             }
-            if (in_array($key, ['international'])) {
-                $func = 'addqueryparam'.studly_case('international');
-                $this->$func($query, $params);
+            if (in_array($key, ['international']) and $this->entity == 'dispute') {
+                continue;
             }
             // Dynamically call specific addQueryParam methods if they exist
             $func = 'addQueryParam' . studly_case($key);

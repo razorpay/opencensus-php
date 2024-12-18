@@ -3585,7 +3585,6 @@ class Repository extends Base\Repository
                     $subset = (new AsvSdkMerchantQuery())->getMerchantsForSettlementsEventsCron(
                         $updatedAtFrom, $updateAtTo, $lastMerchantId
                     );
-
                     $lastMerchantId = $subset->pluck(Entity::ID)->last();
 
                     $results->push(...$subset);
