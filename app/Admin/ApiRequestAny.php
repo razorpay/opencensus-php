@@ -823,7 +823,7 @@ class ApiRequestAny
             $json = json_decode($e->getResponse()->getBody(), true);
             $httpCode = $e->getResponse()->getStatusCode();
             $errors = [ $this->getApiErrorDescription($json)];
-
+            $errors = $this->getSourceOFError($json,$errors);
             //in case of 2fa api calls we need the _internal passed by the api
             // and dashboard will consume that _internal. For eg.
             // even if username and password is correct we can have failures, if otp was not passed.
@@ -1213,6 +1213,21 @@ class ApiRequestAny
 
         return $errorDescription;
     }
+
+    public function getSourceOFError($exceptionData, &$errors)
+    {
+        // Handle the errors from Admin-experience-service
+        if (array_key_exists('meta', $exceptionData) === true &&
+            array_key_exists('source', $exceptionData['meta']) === true &&
+            $exceptionData['meta']['source'] === 'aes' &&
+            array_key_exists('description', $exceptionData['meta']) === true)
+        {
+            $errors = array_merge($errors,['source' => 'aes']);
+        }
+
+        return $errors;
+    }
+
 
     protected function updatePathWithQueryParams(string $path, string $method, array $input = []): string
     {
