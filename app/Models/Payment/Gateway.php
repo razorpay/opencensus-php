@@ -486,6 +486,9 @@ class Gateway
         ],
         self::EASEBUZZ_OPTIMIZER    => self::EASEBUZZ_OPTIMIZER,
         self::BT_AXIS               => self::AXIS,
+        self::BT_YESBANK            => self::YESB,
+        self::UPI_YESBANK           => self::YESB,
+        self::BT_RBL                => self::RBL,
     ];
 
     // Map of DS settlement entity with DS Bank/org name
