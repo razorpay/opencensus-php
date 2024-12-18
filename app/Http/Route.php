@@ -19009,7 +19009,7 @@ class Route
         'payout_create_with_otp' => [
             IdempotencyKey\Entity::SOURCE_TYPE                        => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY                         => RequestHeader::X_PAYOUT_IDEMPOTENCY,
-            IdempotencyKey\Constants::IKEY_MANDATORY                  => false,
+            IdempotencyKey\Constants::IKEY_MANDATORY                  => true,
         ],
         'payout_create_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
@@ -19020,7 +19020,7 @@ class Route
         'payout_create_2FA_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
-            IdempotencyKey\Constants::IKEY_MANDATORY => false,
+            IdempotencyKey\Constants::IKEY_MANDATORY => true,
         ],
         'payouts_batch_create' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUTS_BATCH,
@@ -19030,7 +19030,7 @@ class Route
         'payout_create_on_internal_contact' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
-            IdempotencyKey\Constants::IKEY_MANDATORY => false,
+            IdempotencyKey\Constants::IKEY_MANDATORY => true,
         ],
         'transfer_create' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::TRANSFER,
@@ -19045,7 +19045,7 @@ class Route
         'composite_payout_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
-            IdempotencyKey\Constants::IKEY_MANDATORY => false,
+            IdempotencyKey\Constants::IKEY_MANDATORY => true,
         ],
         'settlement_ondemand_create_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::SETTLEMENT_ONDEMAND,

@@ -2,26 +2,26 @@
 
 namespace RZP\Http\Middleware;
 
-use Hash;
-use Closure;
 use ApiResponse;
-use Illuminate\Http\Request;
+use Closure;
+use Hash;
 use Illuminate\Foundation\Application;
-
-use RZP\Http\Route;
-use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
+use Illuminate\Http\Request;
 use RZP\Base\RepositoryManager;
-use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\Route;
 use RZP\Models\Feature\Constants;
 use RZP\Models\IdempotencyKey\Entity;
 use RZP\Models\IdempotencyKey\Metric;
-use RZP\Exception\BadRequestException;
-use RZP\Models\Payout\Entity as Payout;
+use RZP\Models\Merchant;
 use RZP\Models\Payout\Core as PayoutCore;
-use \RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Payout\Entity as Payout;
+use RZP\Trace\TraceCode;
 
 /**
  * Class MerchantIdempotencyHandler
@@ -479,29 +479,102 @@ class MerchantIdempotencyHandler
     }
 
     /**
-     * Check if the idempotency key is mandatory.
+     * Determines if the idempotency key (ikey) is mandatory for the current request.
      *
-     * @return bool
+     * @return bool True if ikey is mandatory, otherwise false.
      */
     protected function isIdempotencyKeyMandatory(): bool
     {
-        if ($this->route->getMandatoryFlagForIdempotencyRequest() === false)
-        {
+        // Check if the route mandates the idempotency key.
+        if (!$this->route->getMandatoryFlagForIdempotencyRequest()) {
             return false;
         }
 
-        $featureFlag = $this->route->getFeatureFlagForIdempotencyRequest();
-        if (empty($featureFlag) === false)
-        {
-            $merchant = $this->basicauth->getMerchant();
-            if ($merchant === null)
-            {
-                return false;
-            }
+        $merchant = $this->basicauth->getMerchant();
 
-            return $merchant->isFeatureEnabled($featureFlag);
+        // Evaluate if ikey is mandatory for internal apps.
+        if ($this->basicauth->isInternalApp()) {
+            return $this->evaluateInternalAppIdempotencyKey($merchant);
         }
 
-        return false;
+        // Evaluate if ikey is mandatory based on merchant's feature flags.
+        return $this->evaluateFeatureFlagIdempotencyKey($merchant);
     }
+
+    /**
+     * Evaluates if the idempotency key is mandatory for an internal app.
+     *
+     * Checks if the internal app is enabled for the idempotency key via the Splitz experiment.
+     *
+     * @param mixed $merchant Merchant object for context.
+     * @return bool True if ikey is mandatory for the internal app, otherwise false.
+     */
+    private function evaluateInternalAppIdempotencyKey($merchant): bool
+    {
+        $experimentName = "mandate_payouts_ikey_internal_experiment";
+        $experimentIdConfigKey = 'app.' . $experimentName . '_id';
+
+        // Prepare Splitz evaluation properties.
+        $appName = $this->basicauth->getInternalApp();
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get($experimentIdConfigKey),
+        ];
+
+        // Call Splitz service to evaluate the experiment.
+        $splitzResponse = $this->app['splitzService']->evaluateRequest($properties);
+        $variables = $splitzResponse['response']['variant']['variables'] ?? [];
+
+        // Determine if the ikey is mandatory based on the experiment variables.
+        $isIkeyMandatory = false;
+        foreach ((array)$variables as $variable) {
+            if (is_array($variable) && $variable['key'] === $appName && $variable['value'] === "on") {
+                $isIkeyMandatory = true;
+                break;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::MANDATE_IKEY_INTERNAL_SERVICE_SPLITZ_EVALUATION,
+            [
+                'is_ikey_mandatory'       => $isIkeyMandatory,
+                'splitz_response'                => $splitzResponse,
+                'properties'              => $properties,
+                'experiment_id_config_key'=> $experimentIdConfigKey,
+            ]
+        );
+
+        return $isIkeyMandatory;
+    }
+
+    /**
+     * Evaluates if the idempotency key is mandatory for a merchant based on feature flags.
+     *
+     * Checks if the merchant has the feature flag for mandatory ikey enabled.
+     *
+     * @param mixed $merchant Merchant object for context.
+     * @return bool True if ikey is mandatory based on the feature flag, otherwise false.
+     */
+    private function evaluateFeatureFlagIdempotencyKey($merchant): bool
+    {
+        // Retrieve the feature flag for mandatory ikey.
+        $featureFlag = $this->route->getFeatureFlagForIdempotencyRequest();
+
+        // Determine if the feature flag is enabled for the merchant.
+        $isIkeyMandatory = !empty($featureFlag) && !empty($merchant) && $merchant->isFeatureEnabled($featureFlag);
+
+        $this->trace->info(
+            TraceCode::MANDATE_IKEY_MERCHANT_FEATURE_FLAG_EVALUATION,
+            [
+                'is_ikey_mandatory' => $isIkeyMandatory,
+                'feature_flag'      => $featureFlag,
+                'merchant_id'       => $merchant ? $merchant->getId() : null,
+            ]
+        );
+
+        return $isIkeyMandatory;
+    }
+
+
+
 }

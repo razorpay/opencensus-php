@@ -1219,5 +1219,9 @@ return array(
 
     'cls_onboarding_feature_fetch_exp_id' => env('CLS_ONBOARDING_FEATURE_FETCH_EXP_ID'),
 
-    'gifu_card_upi_ds_refunds_exp_id' => env('GIFU_CARD_UPI_DS_REFUNDS_EXP_ID')
+    'gifu_card_upi_ds_refunds_exp_id' => env('GIFU_CARD_UPI_DS_REFUNDS_EXP_ID'),
+
+    'mandate_payouts_ikey_internal_experiment_id' => env('MANDATE_PAYOUTS_IKEY_INTERNAL_EXPERIMENT_ID'),
+
+    'enable_payout_ikey_required_feature_flag_experiment_id' => env('ENABLE_PAYOUT_IKEY_REQUIRED_FEATURE_FLAG_EXPERIMENT_ID')
 );

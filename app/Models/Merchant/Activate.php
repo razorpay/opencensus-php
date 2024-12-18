@@ -1311,38 +1311,32 @@ class Activate extends Base\Core
 
     public function addEnableIdemKeyRequiredFeatureOnX(Entity $merchant, string $routeName)
     {
-        $ikeyEnabledPayoutRoutes = ["payout_create", "payout_create_internal"]; // existing merchants
-        $newMerchantOnboardingRoutes = ["bas_banking_accounts_create","banking_account_activate"]; // new merchants
-
+        $newMerchantOnboardingRoutes = ["bas_banking_accounts_create","banking_account_activate"];
         try {
             // Check if the feature is already enabled for the merchant
             if (!$merchant->isFeatureEnabled(Feature\Constants::PAYOUT_IDEM_KEY_REQUIRED)) {
-                $razorxResponse = null;
 
-                // Determine the Razorx treatment based on the route name
-                if (in_array($routeName, $ikeyEnabledPayoutRoutes)) {
-                    $razorxResponse = $this->app['razorx']->getTreatment(
-                        $merchant->getId(),
-                        Merchant\RazorxTreatment::MANDATE_IDEMPOTENCY_KEY_EXPERIMENT,
-                        Mode::LIVE
-                    );
-                } elseif (in_array($routeName, $newMerchantOnboardingRoutes)) {
-                    $razorxResponse = $this->app['razorx']->getTreatment(
-                        $merchant->getId(),
-                        Merchant\RazorxTreatment::MANDATE_IDEMPOTENCY_KEY_EXPERIMENT_NEW,
-                        Mode::LIVE
-                    );
-                }
+                $experimentName = "enable_payout_ikey_required_feature_flag_experiment";
+                $experimentIdConfigKey = 'app.' . $experimentName . '_id';
+                $properties = [
+                    'id'            => $merchant->getId(),
+                    'experiment_id' => $this->app['config']->get($experimentIdConfigKey),
+                ];
 
-                if ($razorxResponse === 'on') {
+                $splitzResponse = $this->app['splitzService']->evaluateRequest($properties);
+                $variant = $splitzResponse['response']['variant']['name'] ?? '';
+
+                if ($variant === 'enable' || in_array($routeName, $newMerchantOnboardingRoutes)) {
                     $this->addFeatureWhileHandlingStaleRead([
                         Feature\Entity::ENTITY_ID   => $merchant->getId(),
                         Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
                         Feature\Entity::NAMES       => [Feature\Constants::PAYOUT_IDEM_KEY_REQUIRED],
                     ]);
 
-                    $this->trace->info(TraceCode::IDEM_KEY_REQUIRED_FEATURE_ADDED, [
-                        Merchant\Constants::MERCHANT_ID => $merchant->getId()
+                    $this->trace->info(TraceCode::IDEM_KEY_REQUIRED_MERCHANT_FEATURE_ADDED, [
+                        Merchant\Constants::MERCHANT_ID => $merchant->getId(),
+                        'splitz_response' => $splitzResponse,
+                        'route_name' => $routeName
                     ]);
                 }
             }

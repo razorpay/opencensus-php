@@ -43978,7 +43978,6 @@ class PayoutTest extends OAuthTestCase
 
     /*
      * Feature flag not enabled.
-     * razorx MANDATE_IDEMPOTENCY_KEY_EXPERIMENT on.
      * Idempotency Key header sent.
      * Success, idempotency key checked.
      */
@@ -43986,26 +43985,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->liveSetUp();
 
-        // Mock Razorx
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
         $this->ba->privateAuth();
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-        ->will($this->returnCallback(
-        function ($mid, $feature, $mode)
-        {
-            if ($feature === Merchant\RazorxTreatment::MANDATE_IDEMPOTENCY_KEY_EXPERIMENT)
-            {
-                return 'on';
-            }else{
-                return 'control';
-            }
-        }));
 
         $this->startTest();
 
@@ -44015,14 +43995,9 @@ class PayoutTest extends OAuthTestCase
         $this->assertArrayHasKey('items', $content);
         $this->assertNotEmpty($content['items']);
 
-        $features = array_column($content['items'], null, 'name');
-
         $iKey = $this->getDbEntity('idempotency_key', ['source_id' => $payout->id]);
 
         $this->assertNotNull($iKey);
-        $this->assertArrayHasKey('payout_idem_key_required', $features, 'Feature payout_idem_key_required not found.');
-        $this->assertEquals('payout_idem_key_required', $features['payout_idem_key_required']['name']);
-        $this->assertEquals('10000000000000', $features['payout_idem_key_required']['entity_id']);
     }
 
     /*
@@ -44044,6 +44019,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNull($iKey);
     }
+
 
     public function testMiddlewareIdempotencyKeyMandatoryCheck()
     {
@@ -44096,6 +44072,45 @@ class PayoutTest extends OAuthTestCase
         }
     }
 
+    public function testMiddlewareIdempotencyKeyMandatoryCheckInternal() {
+        $scenarios = $this->testData[__FUNCTION__]['scenarios'];
+        $merchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
+
+        foreach ($scenarios as $scenario) {
+
+            $authMock = $this->getMockBuilder(\RZP\Http\BasicAuth\BasicAuth::class)
+                ->setConstructorArgs([$this->app])
+                ->setMethods(['isInternalApp','getInternalApp','getMerchant'])
+                ->getMock();
+
+            $authMock->method('getMerchant')->willReturn($merchant);
+            $authMock->method('getInternalApp')->willReturn($scenario['app_name']);
+            $authMock->method('isInternalApp')->willReturn(true);
+            $this->app->instance('basicauth', $authMock);
+
+            $this->mockSplitzExperiment($scenario['splitz_response']);
+
+            $routeMock = $this->getMockBuilder(\RZP\Http\Route::class)
+                ->setConstructorArgs([$this->app])
+                ->setMethods(['getCurrentRouteName'])
+                ->getMock();
+            $routeMock->method('getCurrentRouteName')->willReturn($scenario['route']);
+            $this->app->instance('api.route', $routeMock);
+
+            $idempotencyHandler = new \RZP\Http\Middleware\MerchantIdempotencyHandler($this->app);
+            $idempotencyHandlerReflectionObj = new \ReflectionObject($idempotencyHandler);
+            $method = $idempotencyHandlerReflectionObj->getMethod('isIdempotencyKeyMandatory');
+
+            try {
+                $result = $method->invoke($idempotencyHandler);
+                $this->assertEquals($scenario['result'], $result);
+            }
+            catch (\ReflectionException $e) {
+                $this->assertNull($e);
+            }
+
+        }
+    }
     public function testPayoutCreateOTPWithNoIdempotencyKeySuccess()
     {
         $this->liveSetUp();

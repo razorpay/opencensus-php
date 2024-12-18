@@ -25396,28 +25396,8 @@ return [
                 'result' => false
             ],
             [
-                'route' => 'payout_create_internal',
-                'feature_flag_enabled' => false,
-                'result' => false
-            ],
-            [
-                'route' => 'payout_create_internal',
-                'feature_flag_enabled' => true,
-                'result' => true
-            ],
-            [
-                'route' => 'payout_create_2FA_internal',
-                'feature_flag_enabled' => true,
-                'result' => false
-            ],
-            [
                 'route' => 'payouts_batch_create',
-                'feature_flag_enabled' => true,
-                'result' => false
-            ],
-            [
-                'route' => 'payout_create_on_internal_contact',
-                'feature_flag_enabled' => true,
+                'feature_flag_enabled' => false,
                 'result' => false
             ],
             [
@@ -25430,9 +25410,149 @@ return [
                 'feature_flag_enabled' => true,
                 'result' => false
             ],
+        ]
+    ],
+    'testMiddlewareIdempotencyKeyMandatoryCheckInternal' => [
+        'scenarios' => [
+            [
+                'route' => 'payout_create_internal',
+                'app_name' => 'xpayroll',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'control'
+                                ],[
+                                    'key' => 'vendor_payments',
+                                    'value'=> 'on'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'result' => false
+            ],
+            [
+                'route' => 'payout_create_internal',
+                'app_name' => 'xpayroll',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'on'
+                                ],[
+                                    'key' => 'vendor_payments',
+                                    'value'=> 'on'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'result' => true
+            ],
+            [
+                'route' => 'payout_create_internal',
+                'app_name' => 'xpayroll',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => null
+                    ]
+                ],
+                'result' => false
+            ],
+            [
+                'route' => 'payout_create_2FA_internal',
+                'app_name' => 'vendor_payments',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'control'
+                                ],[
+                                    'key' => 'vendor_payments',
+                                    'value'=> 'on'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'result' => true
+            ],
+            [
+                'route' => 'payout_create_2FA_internal',
+                'app_name' => 'vendor_payments',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'on'
+                                ],[
+                                    'key' => 'vendor_payments',
+                                    'value'=> 'control'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'result' => false
+            ],
+            [
+                'route' => 'settlement_ondemand_create_internal',
+                'app_name' => 'xpayroll',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'on'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'result' => false
+            ],
             [
                 'route' => 'composite_payout_internal',
-                'feature_flag_enabled' => true,
+                'app_name' => 'xpayroll',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'on'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'result' => true
+            ],
+            [
+                'route' => 'composite_payout_internal',
+                'app_name' => 'xpayroll',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'control'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
                 'result' => false
             ],
         ]
