@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Base\Traits;
 
+use DB;
 use App;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -58,7 +59,13 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function () use ($id)
             {
-                return parent::findByPublicId($id, $this->getArchivedEntityConnection());
+                $connectionType = $this->getArchivedEntityConnection();
+                if($connectionType  === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+                    return parent::findArchivedByPublicId($id, $connectionType);
+                }else{
+                    return parent::findByPublicId($id, $connectionType);
+                }
+
             });
 
             $entity->setArchived(true);
@@ -92,7 +99,12 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchant, $params)
             {
-                return parent::findByPublicIdAndMerchant($id, $merchant, $params,$this->getArchivedEntityConnection());
+                $connectionType = $this->getArchivedEntityConnection();
+                if($connectionType  === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+                    return parent::findArchivedByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
+                }else{
+                    return parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
+                }
             });
 
             $entity->setArchived(true);
@@ -126,7 +138,12 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchant, $params)
             {
-                return parent::findByIdAndMerchant($id, $merchant, $params,$this->getArchivedEntityConnection());
+                $connectionType = $this->getArchivedEntityConnection();
+                if($connectionType  === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+                    return parent::findArchivedByIdAndMerchant($id, $merchant, $params, $connectionType);
+                }else{
+                    return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
+                }
             });
 
             $entity->setArchived(true);
@@ -157,7 +174,14 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchantId)
             {
-                return parent::findByIdAndMerchantId($id, $merchantId, $this->getArchivedEntityConnection());
+
+                $connectionType = $this->getArchivedEntityConnection();
+                if($connectionType  === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+                    return parent::findArchivedByIdAndMerchantId($id,$merchantId, $connectionType);
+                }else{
+                    return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
+                }
+
             });
 
             $entity->setArchived(true);
@@ -188,7 +212,14 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $params)
             {
-                return parent::findOrFailByPublicIdWithParams($id, $params, $this->getArchivedEntityConnection());
+
+                $connectionType = $this->getArchivedEntityConnection();
+                if($connectionType  === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+                    return parent::findOrFailArchivedByPublicIdWithParams($id, $params, $connectionType);
+                }else{
+                    return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+                }
+
             });
 
             $entity->setArchived(true);
@@ -219,7 +250,13 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $columns)
             {
-                return parent::findOrFailPublic($id, $columns, $this->getArchivedEntityConnection());
+
+                $connectionType = $this->getArchivedEntityConnection();
+                if($connectionType  === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+                    return parent::findOrFailArchivedPublic($id, $columns, $connectionType);
+                }else{
+                    return parent::findOrFailPublic($id, $columns, $connectionType);
+                }
             });
 
             $entity->setArchived(true);
@@ -255,7 +292,14 @@ trait ArchivedCore
 
                 $entity = $this->newQueryAndResetEntityConnection(function () use ($id, $columns)
                 {
-                    return parent::findOrFail($id, $columns, $this->getArchivedEntityConnection());
+                    $connectionType = $this->getArchivedEntityConnection();
+                    if($connectionType  === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+                        return parent::findArchivedOrFail($id, $columns, $connectionType);
+                    }else{
+                        return parent::findOrFail($id, $columns, $connectionType);
+                    }
+
+
                 });
 
                 $entity->setArchived(true);
@@ -287,7 +331,12 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $columns)
             {
-                return parent::findOrFail($id, $columns, $this->getArchivedEntityConnection());
+                $connectionType = $this->getArchivedEntityConnection();
+                if($connectionType  === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+                    return parent::findArchivedOrFail($id, $columns, $connectionType);
+                }else{
+                    return parent::findOrFail($id, $columns, $connectionType);
+                }
             });
 
             $entity->setArchived(true);

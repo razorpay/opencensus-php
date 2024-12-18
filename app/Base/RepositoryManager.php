@@ -6,6 +6,7 @@ use Closure;
 use Illuminate;
 use Database\Connection;
 
+use DB;
 use RZP\Constants\Metric;
 use RZP\Models;
 use RZP\Gateway;
@@ -404,7 +405,7 @@ class RepositoryManager extends Illuminate\Support\Manager
         {
             if ($this->checkHarvsterQuerySplitzStatus() === true)
             {
-                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)->findNonRearchPaymentsFromDataWarehouse($id);
+                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)->findNonRearchPaymentsFromDataWarehouseLive($id);
             }
             else
             {
@@ -416,7 +417,9 @@ class RepositoryManager extends Illuminate\Support\Manager
         {
             if ($this->checkHarvsterQuerySplitzStatus() === true)
             {
-                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)->find($id);
+                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)
+                    ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"))
+                    ->find($id);
             }
             else
             {
@@ -433,7 +436,7 @@ class RepositoryManager extends Illuminate\Support\Manager
         {
             if ($this->checkHarvsterQuerySplitzStatus() === true)
             {
-                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_TEST)->findNonRearchPaymentsFromDataWarehouse($id);
+                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_TEST)->findNonRearchPaymentsFromDataWarehouseTest($id);
             }
             else
             {

@@ -650,14 +650,20 @@ class Core extends Base\Core
             return [];
         }
 
+        //add ledger-outbox event check here to avoid double gateway_captured request
+        $transactorId = $payment->getPublicId();
+        $transactorEvent =  Constants::GATEWAY_CAPTURED;
+        $payloadName = $this->getPayloadName($transactorId, $transactorEvent);
+        $gatewayCaptureOutboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadNameWithTrashed($payloadName);
+        if (count($gatewayCaptureOutboxEntries) > 0)
+        {
+            return [];
+        }
+
         if ($apiTransactionId === null)
         {
             $apiTransactionId =  UniqueIdEntity::generateUniqueId();
         }
-
-        $transactorId = $payment->getPublicId();
-
-        $transactorEvent =  Constants::GATEWAY_CAPTURED;
 
         $gateway = $payment->terminal ? $payment->terminal->getGateway() : "not found";
 
@@ -686,8 +692,6 @@ class Core extends Base\Core
                 Constants::TRANSACTOR_AMOUNT => $payment->getBaseAmount(),
             ]
         );
-
-        $payloadName = $this->getPayloadName($transactorId, $transactorEvent);
 
         $outboxPayload = $this->prepareOutboxPayload($payloadName, $journalPayload);
 

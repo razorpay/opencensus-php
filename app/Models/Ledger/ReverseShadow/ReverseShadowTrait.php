@@ -753,7 +753,8 @@ trait ReverseShadowTrait
             return $payload[Constants::API_TXN_ID];
         }
 
-        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
+        //change connection here fetchBySourceAndAssociateMerchantForConnectionType
+        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchantForConnectionType($payment, null);
 
         if (isset($txn) === true)
         {

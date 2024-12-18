@@ -105,9 +105,13 @@ class Repository extends Base\Repository
 
         $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
 
-        $txn = $this->newQueryWithConnection($connectionType)
-            ->where(Transaction\Entity::ENTITY_ID, '=', $entity->getId())
-            ->first();
+        $query = $this->newQueryWithConnection($connectionType);
+        if ($variant === true){
+            $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ *"));
+        }
+
+        $txn = $query->where(Transaction\Entity::ENTITY_ID, '=', $entity->getId())
+                     ->first();
 
         if ($txn === null)
         {
@@ -537,14 +541,20 @@ class Repository extends Base\Repository
 
         $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
 
-        return $this->newQueryWithConnection($connectionType)
-            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
-            ->groupBy(Entity::MERCHANT_ID)
-            ->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
-            ->having('first_created_at', '>=', $timestamp)
-            ->get()
-            ->pluck(Entity::MERCHANT_ID)
-            ->toArray();
+        $query = $this->newQueryWithConnection($connectionType)
+                      ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+                      ->groupBy(Entity::MERCHANT_ID);
+        if ($variant === true){
+            $query = $query->selectRaw('/*+ MAX_EXECUTION_TIME(60000) */ MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
+                           ->from(\DB::raw('`transactions` USE INDEX (transactions_merchant_id_created_at_id_index)'));
+        }else{
+            $query = $query->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID);
+        }
+
+        return $query->having('first_created_at', '>=', $timestamp)
+                     ->get()
+                     ->pluck(Entity::MERCHANT_ID)
+                     ->toArray();
     }
 
     public function filterMerchantsWithFirstTransactionBetweenTimestamps(
@@ -552,21 +562,23 @@ class Repository extends Base\Repository
     {
         if($withConnection === true)
         {
-            $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+            $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+                          ->selectRaw('/*+ MAX_EXECUTION_TIME(60000) */ MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
+                          ->from(\DB::raw('`transactions` USE INDEX (transactions_merchant_id_created_at_id_index)'));
         }
         else
         {
-            $query = $this->newQuery();
+            $query = $this->newQuery()
+                          ->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID);
         }
 
         return $query->whereIn(Entity::MERCHANT_ID, $merchantIdList)
-            ->groupBy(Entity::MERCHANT_ID)
-            ->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
-            ->having('first_created_at', '>=', $from)
-            ->having('first_created_at', '<=', $to)
-            ->get()
-            ->pluck(Entity::MERCHANT_ID)
-            ->toArray();
+                     ->groupBy(Entity::MERCHANT_ID)
+                     ->having('first_created_at', '>=', $from)
+                     ->having('first_created_at', '<=', $to)
+                     ->get()
+                     ->pluck(Entity::MERCHANT_ID)
+                     ->toArray();
     }
 
     public function fetchTransactedMerchants(
@@ -2250,15 +2262,20 @@ class Repository extends Base\Repository
 
         $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
 
-        $query = $this->newQueryWithConnection($connectionType)
-                      ->where(Entity::MERCHANT_ID, $partner->getId())
-                      ->where(Entity::BALANCE_ID, $commissionBalance->getId())
-                      ->where(Entity::SETTLED_AT, '<=', $toTimestamp)
-                      ->where(Entity::TYPE, E::COMMISSION)
-                      ->where(Entity::SETTLED, 0)
-                      ->where(Entity::ON_HOLD, 1)
-                      ->with('source')
-                      ->orderBy(Entity::ID);
+        $query = $this->newQueryWithConnection($connectionType);
+
+        if($variant === true){
+            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
+        }
+
+        $query = $query->where(Entity::MERCHANT_ID, $partner->getId())
+                       ->where(Entity::BALANCE_ID, $commissionBalance->getId())
+                       ->where(Entity::SETTLED_AT, '<=', $toTimestamp)
+                       ->where(Entity::TYPE, E::COMMISSION)
+                       ->where(Entity::SETTLED, 0)
+                       ->where(Entity::ON_HOLD, 1)
+                       ->with('source')
+                       ->orderBy(Entity::ID);
 
         if (empty($fromTimestamp) === false)
         {
@@ -2842,12 +2859,17 @@ class Repository extends Base\Repository
 
         $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT) : $this->getPaymentFetchReplicaConnection();
 
-        return $this->newQueryWithConnection($connectionType)
-            ->select($selectColumn)
-            ->where($this->dbColumn(Entity::TYPE), '=', 'payment')
-            ->where(Entity::MERCHANT_ID, '=', $merchantId)
-            ->first()
-            ->toArray();
+        $query = $this->newQueryWithConnection($connectionType);
+        if ($variant === true){
+            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ " . $merchantIdColumn));
+        }else{
+            $query = $query->select($selectColumn);
+        }
+
+        return $query->where($this->dbColumn(Entity::TYPE), '=', 'payment')
+                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                     ->first()
+                     ->toArray();
     }
 
     public function isMerchantPaymentCountAboveThreshold($merchantId,$paymentCountThreshold)
@@ -2864,12 +2886,17 @@ class Repository extends Base\Repository
 
         $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
 
-        return $this->newQueryWithConnection($connectionType)
-                    ->select($merchantIdColumn)
-                    ->where($type, '=', 'payment')
-                    ->where($merchantIdColumn, '=', $merchantId)
-                    ->take($paymentCountThreshold)
-                    ->get();
+        $query = $this->newQueryWithConnection($connectionType);
+        if ($variant === true){
+            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ " . $merchantIdColumn));
+        }else{
+            $query = $query->select($merchantIdColumn);
+        }
+
+        return $query->where($type, '=', 'payment')
+                     ->where($merchantIdColumn, '=', $merchantId)
+                     ->take($paymentCountThreshold)
+                     ->get();
     }
 
     public function fetchCommissionPayoutsCount(array $commissionIds) : int

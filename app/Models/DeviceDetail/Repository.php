@@ -2,6 +2,7 @@
 
 namespace RZP\Models\DeviceDetail;
 
+use DB;
 use App\User;
 use RZP\Models\Base;
 use RZP\Constants\Table;
@@ -74,11 +75,15 @@ class Repository extends Base\Repository
 
         $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
 
-        return $this->newQueryWithConnection($connectionType)
-            ->join(Table::MERCHANT_USER, $merchantUserIdColumn, '=', $userIdColumn)
-            ->where($merchantIdColumn, '=', $merchantId)
-            ->where($merchantUserRoleColumn, '=', $role)
-            ->first();
+        $query = $this->newQueryWithConnection($connectionType);
+        if ($variant === true){
+            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ *"));
+        }
+
+        return $query->join(Table::MERCHANT_USER, $merchantUserIdColumn, '=', $userIdColumn)
+                     ->where($merchantIdColumn, '=', $merchantId)
+                     ->where($merchantUserRoleColumn, '=', $role)
+                     ->first();
     }
 
     public function fetchByMerchantIdAndUserRoleFromMaster(string $merchantId, $role = Role::OWNER)
@@ -112,15 +117,19 @@ class Repository extends Base\Repository
 
         $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
 
-        return $this->newQueryWithConnection($connectionType)
-            ->join(Table::MERCHANT_USER, $merchantUserIdColumn, '=', $this->dbColumn(Entity::USER_ID))
-            ->where($merchantUserRoleColumn, '=', $role)
-            ->whereIn($merchantIdColumn, $merchantIdList)
-            ->where(Entity::SIGNUP_CAMPAIGN, '=', $signupCampaign)
-            ->orWhereIn(Entity::SIGNUP_SOURCE, $signupSources)
-            ->distinct()
-            ->pluck($merchantIdColumn)
-            ->toArray();
+        $query = $this->newQueryWithConnection($connectionType);
+        if ($variant === true){
+            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ *"));
+        }
+
+        return $query->join(Table::MERCHANT_USER, $merchantUserIdColumn, '=', $this->dbColumn(Entity::USER_ID))
+                     ->where($merchantUserRoleColumn, '=', $role)
+                     ->whereIn($merchantIdColumn, $merchantIdList)
+                     ->where(Entity::SIGNUP_CAMPAIGN, '=', $signupCampaign)
+                     ->orWhereIn(Entity::SIGNUP_SOURCE, $signupSources)
+                     ->distinct()
+                     ->pluck($merchantIdColumn)
+                     ->toArray();
     }
 
     public function removeSignupCampaignIdsFromMerchantIdList(array $merchantIdList, string $signupCampaign, $role = Role::OWNER)
@@ -140,14 +149,18 @@ class Repository extends Base\Repository
 
         $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
 
-        $excludeMerchantIdList = $this->newQueryWithConnection($connectionType)
-            ->join(Table::MERCHANT_USER, $merchantUserIdColumn, '=', $this->dbColumn(Entity::USER_ID))
-            ->where($merchantUserRoleColumn, '=', $role)
-            ->whereIn($merchantIdColumn, $merchantIdList)
-            ->where(Entity::SIGNUP_CAMPAIGN, '=', $signupCampaign)
-            ->distinct()
-            ->pluck($merchantIdColumn)
-            ->toArray();
+        $query = $this->newQueryWithConnection($connectionType);
+        if ($variant === true){
+            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ *"));
+        }
+
+        $excludeMerchantIdList = $query->join(Table::MERCHANT_USER, $merchantUserIdColumn, '=', $this->dbColumn(Entity::USER_ID))
+                                       ->where($merchantUserRoleColumn, '=', $role)
+                                       ->whereIn($merchantIdColumn, $merchantIdList)
+                                       ->where(Entity::SIGNUP_CAMPAIGN, '=', $signupCampaign)
+                                       ->distinct()
+                                       ->pluck($merchantIdColumn)
+                                       ->toArray();
 
         return array_diff($merchantIdList, $excludeMerchantIdList);
     }

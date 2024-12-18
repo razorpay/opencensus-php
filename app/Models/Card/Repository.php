@@ -221,13 +221,18 @@ class Repository extends Base\Repository
 
         // TODO: Further optimization can be picked up later on this. Once a merchant is found for given fingerprint
         //       These is no need to query further rows.
-        return  $this->newQueryWithConnection($connectionType)
-            ->select(Entity::MERCHANT_ID)
-            ->where($globalFingerprint, '=', $fingerprint)
-            ->whereIn(Entity::MERCHANT_ID, $merchant_ids)
-            ->distinct()
-            ->get()
-            ->pluck(Entity::MERCHANT_ID)->toArray();
+        $query = $this->newQueryWithConnection($connectionType);
+        if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ " . Entity::MERCHANT_ID));
+        }else{
+            $query = $query->select(Entity::MERCHANT_ID);
+        }
+
+        return  $query->where($globalFingerprint, '=', $fingerprint)
+                      ->whereIn(Entity::MERCHANT_ID, $merchant_ids)
+                      ->distinct()
+                      ->get()
+                      ->pluck(Entity::MERCHANT_ID)->toArray();
     }
 
     public function findCardsWithoutFingerprint(int $limit, int $timestamp, int $timeWindow)
