@@ -257,7 +257,7 @@ class CCRouter
                     "RZP\Models\Pricing\Repository\getZeroPricingPlanRuleForMethod"])) {
                     $modifiedResponse = [];
                     if(isset($response['rules']) && count($response['rules']) > 0) {
-                        $modifiedResponse = ['rule' => $response['rules'][0]];
+                        $modifiedResponse = ['rule' => $response['rules'][count($response['rules']) - 1]];
                     }
                     return $this->transformToPricingModel($modifiedResponse);
                 }
@@ -414,12 +414,12 @@ class CCRouter
 
     private function isRouteApplicableForDecomp($routeName)
     {
-        return self::ROUTE_MAP[$routeName] === true;
+        return isset(self::ROUTE_MAP[$routeName]) && self::ROUTE_MAP[$routeName] === true;
     }
 
     private function isFunctionApplicableForDecomp($functionName): bool
     {
-        return self::FUNCTION_MAP[$functionName] === true;
+        return isset(self::FUNCTION_MAP[$functionName]) && self::FUNCTION_MAP[$functionName] === true;
     }
 
     private function transformSummaryResponse($response) {
@@ -637,7 +637,7 @@ class CCRouter
                     'reason' => 'key_value_mismatch',
                 ]);
             }
-            return true;
+            return $valueMismatch;
         }
         return false;
     }
