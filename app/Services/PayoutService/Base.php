@@ -312,6 +312,40 @@ class Base
                     $error[Error::DESCRIPTION],
                     $error[Error::FIELD]);
             }
+            else if (strtoupper($error[Error::PUBLIC_ERROR_CODE]) === ErrorCode::DUPLICATE_PAYOUT_CREATION_ATTEMPT)
+            {
+                $payoutId = null;
+
+                $customInterval = null;
+
+                if (isset($error[Error::METADATA]) === true)
+                {
+                    $payoutId = $error[Error::METADATA][Payout\Entity::PAYOUT_ID];
+
+                    $customInterval = $error[Error::METADATA][Payout\Entity::CUSTOM_INTERVAL];
+                }
+
+                if (empty($payoutId) === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT_CREATION_ATTEMPT_NO_PAYOUT_ID_FOUND_IN_RESPONSE,
+                        null,
+                        null,
+                        ""
+                    );
+                }
+
+                $errorDescription = PublicErrorDescription::DUPLICATE_PAYOUT_CREATION_ATTEMPT;
+
+                $errorDescription = str_replace(['<payout_id>', '<custom_interval>'], [$payoutId, $customInterval], $errorDescription);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT_CREATION_ATTEMPT,
+                    null,
+                    null,
+                    $errorDescription
+                );
+            }
             else if (strtoupper($error[Error::PUBLIC_ERROR_CODE]) === ErrorCode::BAD_REQUEST_ERROR)
             {
                 if ($error[Error::DESCRIPTION] ===

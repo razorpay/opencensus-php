@@ -1595,6 +1595,643 @@ class PayoutTest extends OAuthTestCase
         return $payout;
     }
 
+    public function testCreatePayoutWithDuplicatePayoutEvaluateTriggeredForUpiAndActionDisabled(): array
+    {
+        $this->ba->privateAuth();
+
+        $duplicatePayoutEvaluateMock = Mockery::mock('RZP\Services\PayoutService\DuplicatePayoutEvaluate', [$this->app])
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $duplicatePayoutEvaluateMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function(array $input) {
+
+                $content = json_decode($input['content']);
+
+                $this->assertEquals('duplicate_payout_evaluate', last(explode('/', $input['url'])));
+
+                $this->assertEquals('POST', $input['method']);
+
+                $response = new \WpOrg\Requests\Response();
+
+                $response->body = json_encode([
+                    'error' => [
+                        'code' => 'DUPLICATE_PAYOUT_CREATION_ATTEMPT',
+                        'description' => '',
+                        'source' => 'internal',
+                        'step' => null,
+                        'reason' => null,
+                        'metadata' => [
+                            'payout_id' => 'pay123',
+                            'custom_interval' => 100,
+                        ],
+                    ],
+                ]);
+
+                $response->status_code = 409;
+
+                return $response;
+            })->times(1);
+
+        $this->app->instance('duplicate_payout_evaluate', $duplicatePayoutEvaluateMock);
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'variables' => [
+                        [
+                            'key' => 'result',
+                            'value' => '{ "enable": "on", "action": false }',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($this->app['config']
+                ->get('app.duplicate_payout_evaluate_splitz_experiment_id')))
+            ->andReturn($splitzResp);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertNotNull($payout['id']);
+
+        return [];
+    }
+
+    public function testCreatePayoutWithDuplicatePayoutEvaluateTriggeredForUpi(): array
+    {
+        $this->ba->privateAuth();
+
+        $duplicatePayoutEvaluateMock = Mockery::mock('RZP\Services\PayoutService\DuplicatePayoutEvaluate', [$this->app])
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $duplicatePayoutEvaluateMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function(array $input) {
+
+                $content = json_decode($input['content']);
+
+                $this->assertEquals('duplicate_payout_evaluate', last(explode('/', $input['url'])));
+
+                $this->assertEquals('POST', $input['method']);
+
+                $response = new \WpOrg\Requests\Response();
+
+                $response->body = json_encode([
+                    'error' => [
+                        'code' => 'DUPLICATE_PAYOUT_CREATION_ATTEMPT',
+                        'description' => '',
+                        'source' => 'internal',
+                        'step' => null,
+                        'reason' => null,
+                        'metadata' => [
+                            'payout_id' => 'pay123',
+                            'custom_interval' => 100,
+                        ],
+                    ],
+                ]);
+
+                $response->status_code = 409;
+
+                return $response;
+            })->times(1);
+
+        $this->app->instance('duplicate_payout_evaluate', $duplicatePayoutEvaluateMock);
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'variables' => [
+                        [
+                            'key' => 'result',
+                            'value' => '{ "enable": "on", "action": true }',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($this->app['config']
+                ->get('app.duplicate_payout_evaluate_splitz_experiment_id')))
+            ->andReturn($splitzResp);
+
+        $this->startTest();
+
+        return [];
+    }
+
+    public function testCreatePayoutWithDuplicatePayoutEvaluateTriggeredForBank(): array
+    {
+        $this->ba->privateAuth();
+
+        $duplicatePayoutEvaluateMock = Mockery::mock('RZP\Services\PayoutService\DuplicatePayoutEvaluate', [$this->app])
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $duplicatePayoutEvaluateMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function(array $input) {
+
+                $content = json_decode($input['content']);
+
+                $this->assertEquals('duplicate_payout_evaluate', last(explode('/', $input['url'])));
+
+                $this->assertEquals('POST', $input['method']);
+
+                $response = new \WpOrg\Requests\Response();
+
+                $response->body = json_encode([
+                    'error' => [
+                        'code' => 'DUPLICATE_PAYOUT_CREATION_ATTEMPT',
+                        'description' => '',
+                        'source' => 'internal',
+                        'step' => null,
+                        'reason' => null,
+                        'metadata' => [
+                            'payout_id' => 'pay123',
+                            'custom_interval' => 100,
+                        ],
+                    ],
+                ]);
+
+                $response->status_code = 409;
+
+                return $response;
+            })->times(1);
+
+        $this->app->instance('duplicate_payout_evaluate', $duplicatePayoutEvaluateMock);
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'variables' => [
+                        [
+                            'key' => 'result',
+                            'value' => '{ "enable": "on", "action": true }',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($this->app['config']
+                ->get('app.duplicate_payout_evaluate_splitz_experiment_id')))
+            ->andReturn($splitzResp);
+
+        $this->startTest();
+
+        return [];
+    }
+
+    public function testCreatePayoutWithDuplicatePayoutEvaluateTriggeredForCard(): array
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $duplicatePayoutEvaluateMock = Mockery::mock('RZP\Services\PayoutService\DuplicatePayoutEvaluate', [$this->app])
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $duplicatePayoutEvaluateMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function(array $input) {
+
+                $content = json_decode($input['content']);
+
+                $this->assertEquals('duplicate_payout_evaluate', last(explode('/', $input['url'])));
+
+                $this->assertEquals('POST', $input['method']);
+
+                $response = new \WpOrg\Requests\Response();
+
+                $response->body = json_encode([
+                    'error' => [
+                        'code' => 'DUPLICATE_PAYOUT_CREATION_ATTEMPT',
+                        'description' => '',
+                        'source' => 'internal',
+                        'step' => null,
+                        'reason' => null,
+                        'metadata' => [
+                            'payout_id' => 'pay123',
+                            'custom_interval' => 100,
+                        ],
+                    ],
+                ]);
+
+                $response->status_code = 409;
+
+                return $response;
+            })->times(1);
+
+        $this->app->instance('duplicate_payout_evaluate', $duplicatePayoutEvaluateMock);
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'variables' => [
+                        [
+                            'key' => 'result',
+                            'value' => '{ "enable": "on", "action": true }',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($this->app['config']
+                ->get('app.duplicate_payout_evaluate_splitz_experiment_id')))
+            ->andReturn($splitzResp);
+
+        $this->startTest();
+
+        return [];
+    }
+
+    public function testCreatePayoutWithDuplicatePayoutEvaluateAndHandleHashUpdateLagForBank(): array
+    {
+        $this->ba->privateAuth();
+
+        $duplicatePayoutEvaluateMock = Mockery::mock('RZP\Services\PayoutService\DuplicatePayoutEvaluate', [$this->app])
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $duplicatePayoutEvaluateMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function(array $input) {
+
+                $content = json_decode($input['content']);
+
+                $this->assertEquals('duplicate_payout_evaluate', last(explode('/', $input['url'])));
+
+                $this->assertEquals('POST', $input['method']);
+
+                $response = new \WpOrg\Requests\Response();
+
+                $response->body = json_encode([
+                    'error' => [
+                        'code' => 'DUPLICATE_PAYOUT_CREATION_ATTEMPT',
+                        'description' => '',
+                        'source' => 'internal',
+                        'step' => null,
+                        'reason' => null,
+                        'metadata' => [],
+                    ],
+                ]);
+
+                $response->status_code = 409;
+
+                return $response;
+            })->times(1);
+
+        $this->app->instance('duplicate_payout_evaluate', $duplicatePayoutEvaluateMock);
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'variables' => [
+                        [
+                            'key' => 'result',
+                            'value' => '{ "enable": "on", "action": true }',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($this->app['config']
+                ->get('app.duplicate_payout_evaluate_splitz_experiment_id')))
+            ->andReturn($splitzResp);
+
+        $bankAccount1 = $this->fixtures->create('bank_account',
+            [
+                'merchant_id'       => '10000000000000',
+                'account_number'    => '123456',
+                'ifsc_code'         => 'SBIN0005943',
+                'beneficiary_name'  => 'Shashi',
+                'type'              => 'contact',
+            ]
+        );
+
+        $bankAccount2 = $this->fixtures->create('bank_account',
+            [
+                'merchant_id'       => '10000000000000',
+                'account_number'    => '12345',
+                'ifsc_code'         => 'SBIN0005943',
+                'beneficiary_name'  => 'Shashi',
+                'type'              => 'contact',
+            ]
+        );
+
+        $fundAccount1 = $this->fixtures->create('fund_account', [
+            'id'           => 'fund1234567890',
+            'source_type'  => 'contact',
+            'source_id'    => '1000001contact',
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'bank_account',
+            'account_id'   => $bankAccount1['id'],
+        ]);
+
+        $fundAccount2 = $this->fixtures->create('fund_account', [
+            'id'           => 'fund1234567891',
+            'source_type'  => 'contact',
+            'source_id'    => '1000001contact',
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'bank_account',
+            'account_id'   => $bankAccount2['id'],
+        ]);
+
+        $payout1 = $this->fixtures->create('payout', [
+            'id'              => 'pay12345678900',
+            'merchant_id'     => '10000000000000',
+            'amount'          => 1000,
+            'purpose'         => 'refund',
+            'narration'       => 'Batman',
+            'notes'           => [
+                'abc' => 'xyz',
+            ],
+            'reference_id'    => 'reference_id',
+            'mode'            => 'IMPS',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'fund_account_id' => $fundAccount1['id'],
+        ]);
+
+        $payout2 = $this->fixtures->create('payout', [
+            'id'              => 'pay12345678901',
+            'merchant_id'     => '10000000000000',
+            'amount'          => 100,
+            'purpose'         => 'refund',
+            'narration'       => 'Batman',
+            'notes'           => [
+                'abc' => 'xyz',
+            ],
+            'reference_id'    => 'reference_id',
+            'mode'            => 'IMPS',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'fund_account_id' => $fundAccount2['id'],
+        ]);
+
+        $this->startTest();
+
+        return [];
+    }
+
+    public function testCreatePayoutWithDuplicatePayoutEvaluateAndHandleHashUpdateLagForUpi(): array
+    {
+        $this->ba->privateAuth();
+
+        $duplicatePayoutEvaluateMock = Mockery::mock('RZP\Services\PayoutService\DuplicatePayoutEvaluate', [$this->app])
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $duplicatePayoutEvaluateMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function(array $input) {
+
+                $content = json_decode($input['content']);
+
+                $this->assertEquals('duplicate_payout_evaluate', last(explode('/', $input['url'])));
+
+                $this->assertEquals('POST', $input['method']);
+
+                $response = new \WpOrg\Requests\Response();
+
+                $response->body = json_encode([
+                    'error' => [
+                        'code' => 'DUPLICATE_PAYOUT_CREATION_ATTEMPT',
+                        'description' => '',
+                        'source' => 'internal',
+                        'step' => null,
+                        'reason' => null,
+                        'metadata' => [],
+                    ],
+                ]);
+
+                $response->status_code = 409;
+
+                return $response;
+            })->times(1);
+
+        $this->app->instance('duplicate_payout_evaluate', $duplicatePayoutEvaluateMock);
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'variables' => [
+                        [
+                            'key' => 'result',
+                            'value' => '{ "enable": "on", "action": true }',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($this->app['config']
+                ->get('app.duplicate_payout_evaluate_splitz_experiment_id')))
+            ->andReturn($splitzResp);
+
+        $vpa1 = $this->fixtures->create('vpa',
+            [
+                'username'    => 'test',
+                'handle'      => 'ybl',
+                'merchant_id' => '10000000000000',
+                'entity_type' => 'contact',
+            ]
+        );
+
+        $vpa2 = $this->fixtures->create('vpa',
+            [
+                'username'    => 'test',
+                'handle'      => 'ybl',
+                'merchant_id' => '10000000000000',
+                'entity_type' => 'contact',
+            ]
+        );
+
+        $fundAccount1 = $this->fixtures->create('fund_account', [
+            'id'           => 'fund1234567890',
+            'source_type'  => 'contact',
+            'source_id'    => '1000001contact',
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'vpa',
+            'account_id'   => $vpa1['id'],
+        ]);
+
+        $fundAccount2 = $this->fixtures->create('fund_account', [
+            'id'           => 'fund1234567891',
+            'source_type'  => 'contact',
+            'source_id'    => '1000001contact',
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'vpa',
+            'account_id'   => $vpa2['id'],
+        ]);
+
+        $payout1 = $this->fixtures->create('payout', [
+            'id'              => 'pay12345678900',
+            'merchant_id'     => '10000000000000',
+            'amount'          => 1000,
+            'purpose'         => 'refund',
+            'narration'       => 'Batman',
+            'notes'           => [
+                'abc' => 'xyz',
+            ],
+            'reference_id'    => 'reference_id',
+            'mode'            => 'UPI',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'fund_account_id' => $fundAccount1['id'],
+        ]);
+
+        $payout2 = $this->fixtures->create('payout', [
+            'id'              => 'pay12345678901',
+            'merchant_id'     => '10000000000000',
+            'amount'          => 100,
+            'purpose'         => 'refund',
+            'narration'       => 'Batman',
+            'notes'           => [
+                'abc' => 'xyz',
+            ],
+            'reference_id'    => 'reference_id',
+            'mode'            => 'UPI',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'fund_account_id' => $fundAccount2['id'],
+        ]);
+
+        $this->startTest();
+
+        return [];
+    }
+
+    public function testCreatePayoutWithDuplicatePayoutEvaluateAndHandleHashUpdateLagForWallet(): array
+    {
+        $this->ba->privateAuth();
+
+        $duplicatePayoutEvaluateMock = Mockery::mock('RZP\Services\PayoutService\DuplicatePayoutEvaluate', [$this->app])
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $duplicatePayoutEvaluateMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function(array $input) {
+
+                $content = json_decode($input['content']);
+
+                $this->assertEquals('duplicate_payout_evaluate', last(explode('/', $input['url'])));
+
+                $this->assertEquals('POST', $input['method']);
+
+                $response = new \WpOrg\Requests\Response();
+
+                $response->body = json_encode([
+                    'error' => [
+                        'code' => 'DUPLICATE_PAYOUT_CREATION_ATTEMPT',
+                        'description' => '',
+                        'source' => 'internal',
+                        'step' => null,
+                        'reason' => null,
+                        'metadata' => [],
+                    ],
+                ]);
+
+                $response->status_code = 409;
+
+                return $response;
+            })->times(1);
+
+        $this->app->instance('duplicate_payout_evaluate', $duplicatePayoutEvaluateMock);
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'variables' => [
+                        [
+                            'key' => 'result',
+                            'value' => '{ "enable": "on", "action": true }',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($this->app['config']
+                ->get('app.duplicate_payout_evaluate_splitz_experiment_id')))
+            ->andReturn($splitzResp);
+
+        $wallet1 = $this->fixtures->create('wallet_account',
+            [
+                'merchant_id' => '10000000000000',
+                'entity_type' => 'contact',
+                'phone'       => '9999999999',
+                'provider'    => 'amazonpay'
+            ]
+        );
+
+        $wallet2 = $this->fixtures->create('wallet_account',
+            [
+                'merchant_id' => '10000000000000',
+                'entity_type' => 'contact',
+                'phone'       => '+919832478134',
+                'provider'    => 'amazonpay'
+            ]
+        );
+
+        $fundAccount1 = $this->fixtures->create('fund_account', [
+            'id'           => 'fund1234567890',
+            'source_type'  => 'contact',
+            'source_id'    => '1000001contact',
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'wallet_account',
+            'account_id'   => $wallet1['id'],
+        ]);
+
+        $fundAccount2 = $this->fixtures->create('fund_account', [
+            'id'           => 'fund1234567891',
+            'source_type'  => 'contact',
+            'source_id'    => '1000001contact',
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'wallet_account',
+            'account_id'   => $wallet2['id'],
+        ]);
+
+        $payout1 = $this->fixtures->create('payout', [
+            'id'              => 'pay12345678900',
+            'merchant_id'     => '10000000000000',
+            'amount'          => 100,
+            'purpose'         => 'refund',
+            'narration'       => 'Batman',
+            'notes'           => [
+                'abc' => 'xyz',
+            ],
+            'reference_id'    => 'reference_id',
+            'mode'            => 'amazonpay',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'fund_account_id' => $fundAccount1['id'],
+        ]);
+
+        $payout2 = $this->fixtures->create('payout', [
+            'id'              => 'pay12345678901',
+            'merchant_id'     => '10000000000000',
+            'amount'          => 100,
+            'purpose'         => 'refund',
+            'narration'       => 'Batman',
+            'notes'           => [
+                'abc' => 'xyz',
+            ],
+            'reference_id'    => 'reference_id',
+            'mode'            => 'amazonpay',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'fund_account_id' => $fundAccount2['id'],
+        ]);
+
+        $this->startTest();
+
+        return [];
+    }
+
     public function testCreatePayoutMY($skipTxnChecks = false)
     {
         $this->ba->privateAuth();

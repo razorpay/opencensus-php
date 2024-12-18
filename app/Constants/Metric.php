@@ -183,6 +183,18 @@ class Metric
 
     const APPROVED_PAYOUT_PROCESSOR_QUEUE_FAILURE_COUNT = 'approved_payout_processor_queue_failure_count';
 
+    const DUPLICATE_PAYOUT_EVAlUATE_NO_CONCRETE_DECISION = 'duplicate_payout_evaluate_no_concrete_decision';
+
+    const DUPLICATE_PAYOUT_EVAlUATE_FOUND_PAYOUT         = 'duplicate_payout_evaluate_found_payout';
+
+    const DUPLICATE_PAYOUT_EVAlUATE_HASH_LAG_OCCURRED = 'duplicate_payout_evaluate_hash_lag_occurred';
+
+    const DUPLICATE_PAYOUT_EVAlUATE_HASH_LAG_HANDLING_MAX_PAYOUT_COUNT_FETCHED = 'duplicate_payout_evaluate_hash_lag_handling_max_payout_count_fetched';
+
+    const DUPLICATE_PAYOUT_EVAlUATE_PS_CALL_DURATION = 'duplicate_payout_evaluate_ps_call_duration';
+
+    const DUPLICATE_PAYOUT_EVAlUATE_TIME_TAKEN = 'duplicate_payout_evaluate_time_taken';
+
     // Order Outbox
     const ORDER_OUTBOX_SOFT_DELETE_FAILURE                  = 'order_outbox_soft_delete_failure';
     const ORDER_OUTBOX_CRON_RETRY_FAILURE                   = 'order_outbox_cron_retry_failure';

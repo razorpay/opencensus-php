@@ -1544,11 +1544,6 @@ class Core extends Base\Core
             {
                 $this->merchant = $this->repo->merchant->findOrFail($merchantId);
             }
-            $this->trace->info(
-                TraceCode::FUND_ACCOUNT_FETCH_FOR_PS_FEE_RECOVERY_PAYOUT,
-                [
-                    'merchant' => $this->merchant->toArray()
-                ]);
 
             $entity = (new FundAccount\Repository)->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
 

@@ -806,6 +806,8 @@ return array(
 
     'double_fta_fix_experiment_id' => env('DOUBLE_FTA_FIX_EXPERIMENT_ID'),
 
+    'duplicate_payout_evaluate_splitz_experiment_id' => env('DUPLICATE_PAYOUT_EVALUATE_SPLITZ_EXPERIMENT_ID'),
+
     'account_statements_source_event_experiment_id' => env('ACCOUNT_STATEMENTS_SOURCE_EVENT_EXPERIMENT_ID'),
 
     'mutex_lock_contact_experiment_id' => env('MUTEX_LOCK_CONTACT_EXPERIMENT_ID'),
@@ -1212,7 +1214,7 @@ return array(
     'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID'),
 
     'enable_feature_fetch_from_dcs_exp_id' => env('ENABLE_FEATURE_FETCH_FROM_DCS_EXP_ID'),
-  
+
     'pgrouter_order_payments_route_update'       => env('PG_ROUTER_ORDER_PAYMENTS_ROUTE_UPDATE'),
 
     'cls_onboarding_feature_fetch_exp_id' => env('CLS_ONBOARDING_FEATURE_FETCH_EXP_ID'),

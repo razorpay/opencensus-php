@@ -74,4 +74,24 @@ class Repository extends Base\Repository
              ->where(Entity::MERCHANT_ID, $merchantID)
              ->update($data);
     }
+
+    public function getPayoutServiceBulkIdempotencyKeyBySourceIdAndSourceType(string $sourceId, string $sourceType)
+    {
+        $tableName = Table::BULK_IDEMPOTENCY_KEYS;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        $tableResult =  \DB::connection($this->getPayoutsServiceConnection())
+            ->select("select * from $tableName where source_id = '$sourceId' and source_type = '$sourceType'");
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_IDEMPOTENCY_KEY_GET,
+            $tableResult
+        );
+
+        return $tableResult;
+    }
 }

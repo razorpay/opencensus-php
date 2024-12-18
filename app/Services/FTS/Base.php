@@ -165,6 +165,7 @@ class Base
     ];
 
     const TRACING_ENABLED_FTS_ROUTES = [
+        self::FUND_TRANSFER_CREATE_URI,
         self::FTS_SMART_ROUTING,
         self::FTS_MAR_ROUTE,
     ];
