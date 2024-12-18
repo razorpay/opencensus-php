@@ -942,11 +942,6 @@ class QrCodeStatusCheckTest extends TestCase
         $this->config['gateway.mock_upi_mozart'] = true;
 
         $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal', ['vpa' => 'randomvpa@ypbiz']);
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
-            ]
-        );
         $remindersCallCount = 0;
         $reminderDeleteCallCount = 0;
         $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
@@ -1062,11 +1057,6 @@ class QrCodeStatusCheckTest extends TestCase
     public function testStatusCheckApiVerifySuccessResponse60Yesbank()
     {
         $this->app['config']->set('gateway.mock_upi_yesbank', true);
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
-            ]
-        );
 
         $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal', ['vpa' => 'randomvpa@ypbiz']);
 
@@ -1182,11 +1172,6 @@ class QrCodeStatusCheckTest extends TestCase
     public function testStatusCheckApiYesbank60ErrorResponse()
     {
         $this->config['gateway.mock_upi_mozart'] = true;
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
-            ]
-        );
         $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal', ['vpa' => 'randomvpa@ypbiz']);
 
         $remindersCallCount = 0;

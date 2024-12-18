@@ -88,13 +88,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateStaticQrWithTerminalForYesbank60(): void
     {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
-            ]
-        );
         $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
-
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -336,13 +330,7 @@ class UpiYesBankQRCodeTest extends TestCase
     }
     public function testPaymentForStaticQrCodeForYesbank60(): void
     {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
-            ]
-        );
-        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
-
+        $this->fixtures->terminal->edit('100YesDedTrmnl',['vpa'=>'testvpa@ypbiz']);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -380,12 +368,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testPaymentOnDynamicQrCodeForYesbank60(): void
     {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
-            ]
-        );
-        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
+        $this->fixtures->terminal->edit('100YesDedTrmnl',['vpa'=>'testvpa@ypbiz']);
 
         $this->createQrCode(
             [
@@ -473,12 +456,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testPaymentForClosedQrCodeForYesbank60(): void
     {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
-            ]
-        );
-        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
+        $this->fixtures->terminal->edit('100YesDedTrmnl',['vpa'=>'testvpa@ypbiz']);
 
         $this->createQrCode(
             [
@@ -581,12 +559,9 @@ class UpiYesBankQRCodeTest extends TestCase
     {
         //Note: Callbacks with failed status are not processed but qr_payment_request entity is saved in DB
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
-            ]
-        );
-        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
+
+        $this->fixtures->terminal->edit('100YesDedTrmnl',['vpa'=>'testvpa@ypbiz']);
+
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -647,11 +622,6 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateDynamicQrCodeForYesbank60(): void
     {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
-            ]
-        );
         $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
 
         $this->createQrCode(

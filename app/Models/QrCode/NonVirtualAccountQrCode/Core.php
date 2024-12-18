@@ -550,7 +550,7 @@ class Core extends QrCode\Core
 //            return null;
 //        }
 
-        $vpa = $input['vpa'];
+        $vpa = strtolower($input['vpa']);
         $gateway = $this->fetchGatewayFromVpa($vpa);
 
         $terminalDetails = [

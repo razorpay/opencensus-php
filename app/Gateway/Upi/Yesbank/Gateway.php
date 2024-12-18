@@ -92,15 +92,19 @@ class Gateway extends Mindgate\Gateway
             $input[Fields::MERCHANT_REFERENCE] = $input['data']['upi'][Fields::MERCHANT_REFERENCE] ?? '';
             $input[Entity::TYPE]               = Base\Type::PAY;
 
-            if (isset($input['terminal']['gateway_merchant_id']) === true)
+            if (isset($input['terminal']['vpa']) === true)
             {
-                $variant = $this->app->razorx->getTreatment($input['terminal']['gateway_merchant_id'], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
-                if (strtolower($variant) === 'on')
+                $merchantVpa =  $input['terminal']['vpa'];
+                $merchantVpaHandle = (explode("@", $merchantVpa));
+                $merchantVpaHandle = $merchantVpaHandle[1];
+
+                //The below check has been changed from "if ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK experiment's result is ON TO if merchant's vpa handle is @ypbiz"
+                if ($merchantVpaHandle === 'ypbiz')
                 {
                     $input[Fields::YBLREFNO]    = $input['data']['upi'][Fields::GATEWAY_PAYMENT_ID] ?? '';
                     $input[Fields::NPCI_TXN_ID] = $input['data']['upi'][Fields::NPCI_TXN_ID] ?? '';
-
                 }
+
             }
             $paymentData = $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
 
@@ -1328,7 +1332,6 @@ class Gateway extends Mindgate\Gateway
     public function getQrPaymentStatus($input)
     {
         $input[CoreEntity::QR_CODE][QrEntity::ID] = Constants::QR_CODE_V2_YESBANK_PREFIX . $input[CoreEntity::QR_CODE][QrEntity::ID] . Constants::QR_CODE_V2_TR_SUFFIX;
-        $variant = $this->app->razorx->getTreatment($input[CoreEntity::TERMINAL][Fields::GATEWAY_MERCHANT_ID], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
 
         $request = [
             CoreEntity::PAYMENT             => [
@@ -1340,7 +1343,13 @@ class Gateway extends Mindgate\Gateway
             Base\Constants::QR_STATUS_CHECK => true
         ];
 
-        if (strtolower($variant) === 'on')
+        $merchantVpa =  $input['terminal']['vpa'];
+        $merchantVpaHandle = (explode("@", $merchantVpa));
+        $merchantVpaHandle = $merchantVpaHandle[1];
+
+
+        //The below check has been changed from "if ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK experiment's result is ON TO if merchant's vpa handle is @ypbiz"
+        if ($merchantVpaHandle === 'ypbiz')
         {
             $request[CoreEntity::PAYMENT]['created_at'] = $input[CoreEntity::QR_CODE]['created_at'];
         }
@@ -1370,7 +1379,9 @@ class Gateway extends Mindgate\Gateway
             if (($result['data'][Fields::STATUS] === Status::VERIFY_SUCCESSFUL))
             {
                 $callbackData = '';
-                if (strtolower($variant) === 'on')
+
+                //The below check has been changed from "if ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK experiment's result is ON TO if merchant's vpa handle is @ypbiz"
+                if ($merchantVpaHandle === 'ypbiz')
                 {
                     $callbackData = $this->parseMozartRespV6($result);
                 }

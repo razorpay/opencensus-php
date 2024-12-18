@@ -30,13 +30,17 @@ class Gateway extends Yesbank\Gateway
 
     public function getQrPaymentStatus($input)
     {
-        $variant = 'control';
+        $merchantVpaHandle = '';
+
         if (isset($input['terminal'][Fields::GATEWAY_MERCHANT_ID]) === true)
         {
-            $variant = $this->app->razorx->getTreatment($input[CoreEntity::TERMINAL][Fields::GATEWAY_MERCHANT_ID], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
+            $merchantVpa =  $input['terminal']['vpa'];
+            $merchantVpaHandle = (explode("@", $merchantVpa));
+            $merchantVpaHandle = $merchantVpaHandle[1];
         }
 
-        if (strtolower($variant) === 'on')
+
+        if ($merchantVpaHandle === 'ypbiz')
         {
             return $this->getQrPaymentStatusStack60($input);
         }

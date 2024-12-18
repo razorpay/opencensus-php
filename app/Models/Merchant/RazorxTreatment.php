@@ -928,8 +928,6 @@ final class RazorxTreatment
 
     const QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS = 'qr_gateway_unrecognised_payment_process';
 
-    const ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK = 'enable_yes_bank_terminal_for_6_0_stack';
-
     // If true, it will select Optimizer mandate hub for card recurring payments.
     const ALLOW_OPTIMIZER_CARD_MANDATE_HUB = 'allow_optimizer_card_mandate_hub';
 

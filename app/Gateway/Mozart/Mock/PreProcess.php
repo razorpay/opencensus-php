@@ -65,9 +65,8 @@ class PreProcess extends Base\Mock\Server
             $inputArr = json_decode($entities['gateway']['payload'], true);
             if (isset($inputArr['pgMerchantId']) === true)
             {
-                $variant = $this->app->razorx->getTreatment($inputArr['pgMerchantId'], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
-
-                if (strtolower($variant) === 'on')
+                $merchantVpaHandle = (new \RZP\Gateway\Mozart\Gateway())->getMerchantVpaHandleFromEncryptedInputForUpiYesbank($inputArr);
+                if ($merchantVpaHandle === 'ypbiz')
                 {
                     return true;
                 }
