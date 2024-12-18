@@ -817,7 +817,7 @@ class Service extends Base\Service
 
             // Iterate through each payment
             foreach ($apiPayments as &$payment) {
-                $response['payment'] = $payment;
+                $response = $payment->toArray();
 
                 if ($payment->isMethodCardOrEmi() === true)
                 {
