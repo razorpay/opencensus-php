@@ -37,6 +37,7 @@ use RZP\Models\Partner\Commission\Invoice as CommissionInvoice;
 use RZP\Models\Merchant\AccessMap\Entity as MerchantAccessMapEntity;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 use RZP\Models\Partner\Config\Entity as PartnerConfigEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 
 class PartnershipsService extends Base\Service
@@ -121,8 +122,11 @@ class PartnershipsService extends Base\Service
     const GET_PARTNER_CONFIG_LIST   = '/twirp/rzp.commissions.partner_config.v1.PartnerConfigAPI/List';
 
     const GET_SUBMERCHANT_COUNT = "/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/GetSubMerchantCount";
-
     const GET_MAPPING_BY_APPLICATION_TYPE = "/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/GetMappingsByApplicationType";
+
+    const GET_MERCHANT_AFFILIATED_PARTNER="/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/GetAffiliatedPartnerMerchantBySubmerchant";
+
+    const GET_SUB_MERCHANT_REFERRED_BY_PARTNER = "/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/GetSubMerchantReferredByPartner";
 
     const ACTIVATED = 'ACTIVATED';
 
@@ -159,6 +163,7 @@ class PartnershipsService extends Base\Service
     const SUCCESS = 'success';
     const RETRY = 'retry';
 
+    const affiliated_partner_merchant="affiliated_partner_merchant";
     /**
      * @var string
      */
@@ -430,6 +435,24 @@ class PartnershipsService extends Base\Service
         }
         return $response['merchant_access_maps'];
     }
+
+    public function getAccessMapsBySubmerchantAppTypeAndPartnerId($subMerchantId, $appType, $entityOwnerId)
+    {
+        $parameters = [
+            'id'            => $subMerchantId,
+            'appType'       => $appType,
+            'entityOwnerId' => $entityOwnerId
+        ];
+        $response = $this->fetchPartnershipsResponse($parameters, self::GET_SUB_MERCHANT_REFERRED_BY_PARTNER);
+        if (empty($response)) {
+            return [];
+        }
+        if(empty($response['merchant_access_maps'])){
+          return null;
+        }
+        return $this->convertMerchantAccessPartnershipApiResponseToEntity($response['merchant_access_maps']);
+    }
+
 
     public function commissionCapture($parameters)
     {
@@ -843,7 +866,6 @@ class PartnershipsService extends Base\Service
     public function fetchMerchantAccessMapsOnFilter(PartnershipsAccessMapDTO $input,$function=null,$mode=null): array
     {
         $request=$input->toArray();
-        $request[self::ADD_BASIC_AUTH_CREDS]=true;
         $response=$this->fetchPartnershipsResponse($request,self::GET_MERCHANT_ACCESS_MAP_LIST,$function,$mode);
         $merchantAccessMapResponses=$response['merchant_access_maps'] ?? [];
         if(!empty($input->getFields()))
@@ -1158,6 +1180,7 @@ class PartnershipsService extends Base\Service
         $mode=null
     ): array
     {
+        $input[self::ADD_BASIC_AUTH_CREDS]=true;
         try {
             $response = $this->sendRequest($input, $endpoint, Requests::POST, $mode);
         } catch (\Exception $e) {
@@ -1197,7 +1220,6 @@ class PartnershipsService extends Base\Service
     public function fetchMerchantApplicationsOnFilter(PartnershipsMerchantApplicationsDTO $input,$function=null,$mode=null): array
     {
         $request=$input->toArray();
-        $request[self::ADD_BASIC_AUTH_CREDS]=true;
         $partnershipsResponses = $this->fetchPartnershipsResponse(
             $request,
             self::GET_MERCHANT_APPLICATION_LIST,
@@ -1206,6 +1228,15 @@ class PartnershipsService extends Base\Service
         );
         $responses = $partnershipsResponses['merchant_application']??[];
         return $this->convertMerchantApplicationsPartnershipResponseToEntity($responses);
+    }
+
+    public function fetchAffiliatedPartnersForSubmerchant(string $subMerchantId,$function) {
+        $request=[
+            "merchant_id"=>$subMerchantId,
+        ];
+        $partnershipsResponses = $this->fetchPartnershipsResponse($request,self::GET_MERCHANT_AFFILIATED_PARTNER,$function);
+        $responses = $partnershipsResponses[self::affiliated_partner_merchant]??[];
+        return $this->convertMerchantWithAccessMapsToEntities($responses);
     }
 
     private function convertMerchantApplicationsPartnershipResponseToEntity(array $merchantApplicationsResponses): array
@@ -1229,10 +1260,10 @@ class PartnershipsService extends Base\Service
         return $merchantApplicationsEntity;
     }
 
+
     public function fetchPartnerConfigOnFilter(PartnershipsConfigDTO $input,$function = null): array
     {
         $request=$input->toArray();
-        $request[self::ADD_BASIC_AUTH_CREDS]=true;
         $partnershipsResponses = $this->fetchPartnershipsResponse(
             $request,
             self::GET_PARTNER_CONFIG_LIST,
@@ -1259,5 +1290,28 @@ class PartnershipsService extends Base\Service
         $partnerConfigEntity->initializeDefaults();
         $partnerConfigEntity->forceFill($partnerConfigResponses);
         return $partnerConfigEntity;
+    }
+
+    private function convertMerchantWithAccessMapsToEntities(array $merchantWithAccessMapsResponses)
+    {
+        if (empty($merchantWithAccessMapsResponses))
+        {
+            return [];
+        }
+        return array_map(function ($response) {
+            return $this->convertMerchantWithAccessMaptoEntity($response);
+        },$merchantWithAccessMapsResponses);
+    }
+
+    private function convertMerchantWithAccessMaptoEntity(array $merchantWithAccessMapResponse): MerchantAccessMapEntity
+    {
+        $merchantAccessMap=new MerchantAccessMapEntity();
+        $merchantAccessMap->forceFill($merchantWithAccessMapResponse["merchant_access_map"]);
+        if(!empty($merchantWithAccessMapResponse["merchant"])){
+            $merchant=new MerchantEntity();
+            $merchant->forceFill($merchantWithAccessMapResponse["merchant"]);
+            $merchantAccessMap->setRelation('entityOwner',$merchantWithAccessMapResponse["merchant"]);
+        }
+        return $merchantAccessMap;
     }
 }
