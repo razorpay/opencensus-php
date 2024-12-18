@@ -46,6 +46,333 @@ return [
         ]
     ],
 
+    'testCreateOfferWithApiReadsConflictingOffers' => [
+        'request' => [
+            'content' => [
+                'name' => 'Test Offer',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network' => 'VISA',
+                'issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'starts_at' => 1514764800,
+                'ends_at' => 1546300800,
+                'display_text' => 'Some more details',
+                'terms' => 'Some more details',
+                'block' => 1,
+                'type' => 'instant'
+            ],
+            'url' => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OFFER_ALREADY_EXISTS
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS
+        ]
+    ],
+    'testCreateOfferWithoutApiReadsConflictingOffers' => [
+        'request' => [
+            'content' => [
+                'name' => 'Test Offer',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network' => 'VISA',
+                'issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'starts_at' => 1514764800,
+                'ends_at' => 1546300800,
+                'display_text' => 'Some more details',
+                'terms' => 'Some more details',
+                'block' => 1,
+                'type' => 'instant'
+            ],
+            'url' => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'active' => true,
+                    'name' => 'Test Offer',
+                    'payment_method' => 'card',
+                    'payment_method_type' => 'credit',
+                    'payment_network' => 'VISA',
+                    'issuer' => 'HDFC',
+                    'percent_rate' => 1000,
+                    'starts_at' => 1514764800,
+                    'ends_at' => 1546300800,
+                    'display_text' => 'Some more details',
+                    'terms' => 'Some more details'
+                ]
+            ]
+        ]
+    ],
+
+    'testCreateOfferWithApiReadsValidateMerchantMethod' => [
+        'request' => [
+            'content' => [
+                'name' => 'Test Offer',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network' => 'VISA',
+                'issuer' => 'HDFC',
+
+                'percent_rate' => 1000,
+                'starts_at' => 1514764800,
+                'ends_at' => 1546300800,
+                'display_text' => 'Some more details',
+                'terms' => 'Some more details',
+                'block' => 1,
+                'type' => 'instant'
+            ],
+            'url' => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment method not enabled for the merchant : card',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testCreateOfferWithoutApiReadsValidateMerchantMethod' => [
+        'request' => [
+            'content' => [
+                'name' => 'Test Offer',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network' => 'VISA',
+                'issuer' => 'HDFC',
+
+                'percent_rate' => 1000,
+                'starts_at' => 1514764800,
+                'ends_at' => 1546300800,
+                'display_text' => 'Some more details',
+                'terms' => 'Some more details',
+                'block' => 1,
+                'type' => 'instant'
+            ],
+            'url' => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'active' => true,
+                    'name' => 'Test Offer',
+                    'payment_network' => 'VISA',
+                    'issuer' => 'HDFC',
+                    'percent_rate' => 1000,
+                    'starts_at' => 1514764800,
+                    'ends_at' => 1546300800,
+                    'display_text' => 'Some more details',
+                    'terms' => 'Some more details',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateOfferWithApiReadsValidateMerchantCategory' => [
+        'request' => [
+            'content' => [
+                'name' => 'Test Offer',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network' => 'VISA',
+                'issuer' => 'HDFC',
+
+                'percent_rate' => 1000,
+                'starts_at' => 1514764800,
+                'ends_at' => 1546300800,
+                'display_text' => 'Some more details',
+                'terms' => 'Some more details',
+                'block' => 1,
+                'type' => 'instant'
+            ],
+            'url' => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Offer creation is not allowed for this Merchant category',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testCreateOfferWithoutApiReadsValidateMerchantCategory' => [
+        'request' => [
+            'content' => [
+                'name' => 'Test Offer',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network' => 'VISA',
+                'issuer' => 'HDFC',
+
+                'percent_rate' => 1000,
+                'starts_at' => 1514764800,
+                'ends_at' => 1546300800,
+                'display_text' => 'Some more details',
+                'terms' => 'Some more details',
+                'block' => 1,
+                'type' => 'instant'
+            ],
+            'url' => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'active' => true,
+                    'name' => 'Test Offer',
+                    'payment_network' => 'VISA',
+                    'issuer' => 'HDFC',
+                    'percent_rate' => 1000,
+                    'starts_at' => 1514764800,
+                    'ends_at' => 1546300800,
+                    'display_text' => 'Some more details',
+                    'terms' => 'Some more details',
+                ],
+            ]
+        ]
+    ],
+
+    'testCreateOfferWithApiReadsValidateOfferFeatureBlock' => [
+        'request' => [
+            'content' => [
+                'name' => 'Test Offer',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network' => 'VISA',
+                'issuer' => 'HDFC',
+
+                'percent_rate' => 1000,
+                'starts_at' => 1514764800,
+                'ends_at' => 1546300800,
+                'display_text' => 'Some more details',
+                'terms' => 'Some more details',
+                'block' => 1,
+                'type' => 'instant'
+            ],
+            'url' => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Offer creation is not allowed for Merchant',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testCreateOfferWithoutApiReadsValidateOfferFeatureBlock' => [
+        'request' => [
+            'content' => [
+                'name' => 'Test Offer',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network' => 'VISA',
+                'issuer' => 'HDFC',
+
+                'percent_rate' => 1000,
+                'starts_at' => 1514764800,
+                'ends_at' => 1546300800,
+                'display_text' => 'Some more details',
+                'terms' => 'Some more details',
+                'block' => 1,
+                'type' => 'instant'
+            ],
+            'url' => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'active' => true,
+                    'name' => 'Test Offer',
+                    'payment_network' => 'VISA',
+                    'issuer' => 'HDFC',
+                    'percent_rate' => 1000,
+                    'starts_at' => 1514764800,
+                    'ends_at' => 1546300800,
+                    'display_text' => 'Some more details',
+                    'terms' => 'Some more details',
+                ],
+            ]
+        ]
+    ],
+
+    'testCreateOfferWithoutApiReadsTenureDiscountMap' => [
+        'request' => [
+            'content' => [
+                'name' => 'Test Offer',
+                'payment_method' => 'emi',
+                'issuer' => 'HDFC_DC',
+                'emi_subvention' => true,
+                'emi_durations' => [6],
+                'max_payment_count' => 2,
+
+                'starts_at' => 1514764800,
+                'ends_at' => 1546300800,
+                'display_text' => 'HDFC Debit Card Emi Subvention offers',
+                'terms' => 'Some more details',
+                'block' => 1,
+                'type' => 'instant'
+            ],
+            'url' => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'active' => true,
+                    'name' => 'Test Offer',
+                    'payment_method' => 'emi',
+                    'issuer' => 'HDFC',
+                    'payment_method_type' => 'debit',
+                    'emi_durations' => [6],
+                    'max_payment_count' => 2,
+                    'min_amount' => 500000,
+                    'display_text' => 'HDFC Debit Card Emi Subvention offers',
+                    'terms' => 'Some more details',
+                    'starts_at' => 1514764800,
+                    'ends_at' => 1546300800,
+                ]
+            ],
+        ],
+    ],
+
     'testCreateOfferWithNullMethod' => [
         'request' => [
             'content' => [

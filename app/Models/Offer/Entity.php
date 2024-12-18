@@ -126,6 +126,8 @@ class Entity extends Base\PublicEntity
     // tokenization when payment was initiated.
     protected bool $isCardSaved = false;
 
+    protected bool $offerCreateExpValue = false;
+
     protected $entity      = 'offer';
 
     protected static $sign = 'offer';
@@ -557,6 +559,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRODUCT_TYPE);
     }
 
+    public function getOfferCreateExpValue()
+    {
+        return $this->offerCreateExpValue;
+    }
+
     public function isCardSaved()
     {
         return ($this->isCardSaved === true);
@@ -594,6 +601,11 @@ class Entity extends Base\PublicEntity
     public function setMerchantId(string $merchantId)
     {
         $this->setAttribute(self::MERCHANT_ID, $merchantId);
+    }
+
+    public function setOfferCreateExpValue(bool $experimentValue)
+    {
+        $this->offerCreateExpValue = $experimentValue;
     }
 
     public function setUpiApps(array $upiApps)

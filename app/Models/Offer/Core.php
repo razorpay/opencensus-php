@@ -1108,15 +1108,23 @@ class Core extends Base\Core
 
         $this->setPaymentMethodTypeForDebitCardIssuers($input);
 
+        $offerCreateReadsMigrationExpResult = $this->shouldRouteToOffersEngineForCreation(
+            $merchant->getMerchantId(), Constants::OFFER_CREATE_READS_MIGRATION_EXP);
+
         $offer = new Entity;
+
+        $offer->setOfferCreateExpValue($offerCreateReadsMigrationExpResult);
 
         $offer->merchant()->associate($merchant);
 
         $offer = $offer->build($input);
 
-        $this->validateMerchant($merchant, $input);
+        if ($offerCreateReadsMigrationExpResult === false)
+        {
+            $this->validateMerchant($merchant, $input);
 
-        $this->checkConflictingOffers($offer);
+            $this->checkConflictingOffers($offer);
+        }
 
         $this->repo->transaction(
           function () use (&$offer, $merchant, $subscriptionInput, $input)
@@ -1171,6 +1179,51 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    public function shouldRouteToOffersEngineForCreation(string $merchantId, $experiment): bool
+    {
+        if (app()->runningUnitTests() === true)
+        {
+            return (bool) ConfigKey::get(ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED, false);
+        }
+        if (
+            ($this->env === 'bvt' or $this->env === 'automation' or
+             $this->env === 'func' or $this->env === 'availability' or
+             $this->env === 'perf' or $this->env === 'perf2'))
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                "id"            => $merchantId,
+                "experiment_id" => $this->app['config']->get($experiment),
+                "request_data"  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === 'variant_on';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
+                [
+                    'msg' => $e->getMessage()
+                ]);
+
+        }
+
+        return false;
     }
 
     public function shouldRouteToOffersEngineForPayments(string $merchantId, $experiment, $throwError = false): bool

@@ -7,10 +7,12 @@ use Mockery;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\Collection;
 use RZP\Models\Base\DbMigrationMetricsObserver;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Offer\Core;
+use RZP\Services\OffersEngine as OffersEngine;
 use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\MocksSplitz;
@@ -18,11 +20,11 @@ use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Admin\Service as AdminService;
 use Illuminate\Support\Facades\Config;
 use RZP\Services\DbRequestsBeforeMigrationMetric;
 use Illuminate\Support\Facades\App;
 use Razorpay\Trace\Facades\Trace;
-
 class OffersTest extends TestCase
 {
     use RazorxTrait;
@@ -158,6 +160,295 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOfferWithApiReadsConflictingOffers()
+    {
+
+        $this->fixtures->create('offer', [
+            'merchant_id'         => '10000000000000',
+            'name'                => 'Test Offer',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'VISA',
+            'issuer'              => 'HDFC',
+            'percent_rate'        => 1000,
+            'starts_at'           => 1546300799,
+            'ends_at'             => 1554764800,
+            'active'              => 1,
+            'display_text'        => 'Some more details',
+            'terms'               => 'Some more details',
+            'block'               => 1,
+            'type'                => 'instant'
+        ]);
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(0);
+
+        $this->startTest();
+    }
+
+    public function testCreateOfferWithoutApiReadsConflictingOffers()
+    {
+        $this->markTestSkipped("marking this as skipped due to concurrency issues with config keys.");
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => true,
+            ]);
+
+        $this->fixtures->create('offer', [
+            'merchant_id'         => '10000000000000',
+            'name'                => 'Test Offer',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'VISA',
+            'issuer'              => 'HDFC',
+            'percent_rate'        => 1000,
+            'starts_at'           => 1546300799,
+            'ends_at'             => 1554764800,
+            'active'              => 1,
+            'display_text'        => 'Some more details',
+            'terms'               => 'Some more details',
+            'block'               => 1,
+            'type'                => 'instant'
+        ]);
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn($this->getOffersEngineMockResponse());
+
+        $this->startTest();
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => false,
+            ]);
+    }
+
+    public function testCreateOfferWithApiReadsValidateMerchantMethod()
+    {
+
+        $this->fixtures->merchant->disableCard();
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(0);
+
+        $this->startTest();
+    }
+
+    public function testCreateOfferWithoutApiReadsValidateMerchantMethod()
+    {
+        $this->markTestSkipped("marking this as skipped due to concurrency issues with config keys.");
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => true,
+            ]);
+
+        $this->fixtures->merchant->disableCard();
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn($this->getOffersEngineMockResponse());
+
+        $this->startTest();
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => false,
+            ]);
+    }
+
+    public function testCreateOfferWithApiReadsValidateMerchantCategory()
+    {
+
+        $this->fixtures->merchant->setCategory('6211');
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(0);
+
+        $this->startTest();
+    }
+
+    public function testCreateOfferWithoutApiReadsValidateMerchantCategory()
+    {
+        $this->markTestSkipped("marking this as skipped due to concurrency issues with config keys.");
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => true,
+            ]);
+
+        $this->fixtures->merchant->setCategory('6211');
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn($this->getOffersEngineMockResponse());
+
+        $this->startTest();
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => false,
+            ]);
+    }
+
+    public function testCreateOfferWithApiReadsValidateOfferFeatureBlock()
+    {
+
+        $this->fixtures->merchant->addFeatures(['block_offer_creation']);
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(0);
+
+        $this->startTest();
+    }
+
+    public function testCreateOfferWithoutApiReadsValidateOfferFeatureBlock()
+    {
+        $this->markTestSkipped("marking this as skipped due to concurrency issues with config keys.")
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => true,
+            ]);
+
+        $this->fixtures->merchant->addFeatures(['block_offer_creation']);
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn($this->getOffersEngineMockResponse());
+
+        $this->startTest();
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => false,
+            ]);
+    }
+
+    public function testCreateOfferWithoutApiReadsTenureDiscountMap()
+    {
+        $this->markTestSkipped("marking this as skipped due to concurrency issues with config keys.");
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => true,
+            ]);
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
+
+        $offersEngineMock = Mockery::mock('RZP\Services\OffersEngine', [$this->app])
+                                   ->makePartial()
+                                   ->shouldAllowMockingProtectedMethods();
+
+        $offersEngineMock->shouldReceive('sendRequest')->andReturnUsing(
+            function(string $endpoint,
+                     string $method,
+                     array  $data,
+            ) {
+                self::assertEquals('v1/offers', $endpoint);
+                self::assertEquals("POST", $method);
+                self::assertNotEmpty($data);
+
+                return
+                    [
+                        "offer"   => [
+                            "metadata" => [
+                                "name"          => "Test Offer",
+                                "display_name"  => "Test Offer",
+                                "description"   => "HDFC Debit Card Emi Subvention offers",
+                                "terms"         => [
+                                    "tnc" => "Some more details"
+                                ],
+                                "advertiser_id" => "rzp.merchant.10000000000000",
+                                "offer_id"      => "offer_PYZ4O1JXyCOrCb",
+                                "created_by_id" => "merchantuser01@razorpay.com",
+                                "state"         => "STATE_CREATED",
+                                "offer_on"      => "BENEFICIARY_TYPE_SELF",
+                                "currency"      => "INR",
+                                "schedules"     => [
+                                    "starts_at" => 1514764800,
+                                    "ends_at"   => 1546300800
+                                ]
+                            ],
+                            "spec"     => [
+                                "allowed_channels" => [
+                                    "CHANNEL_RZP_CHECKOUT"
+                                ],
+                                "funding"          => [
+                                    "type"  => "BENEFICIARY_TYPE_SELF",
+                                    "split" => [
+                                        [
+                                            "type"   => "VALUE_OPTION_PERCENTAGE",
+                                            "bearer" => "USER_TYPE_PUBLISHER",
+                                            "value"  => 100
+                                        ]
+                                    ]
+                                ],
+                                "benefits_types"   => [
+                                    "BENEFIT_TYPE_NO_COST_EMI"
+                                ],
+                                "usage_limits"     => [
+                                    [
+                                        "maximum_value" => 2,
+                                        "on"            => "LIMIT_ON_CARD_NUMBER",
+                                        "limit_type"    => "LIMIT_TYPE_COUNT"
+                                    ]
+                                ],
+                                "rule_groups"      => [
+                                    "CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER" => [
+                                        "rules" => [
+                                            [
+                                                "when_expression" => "Order.TotalAmount >= 500000",
+                                                "then"            => [
+                                                    [
+                                                        "no_cost_emi" => [
+                                                            [
+                                                                "discount" => [
+                                                                    "percent_discount" => null,
+                                                                    "applicable_on"    => "Order.total_amount",
+                                                                ],
+                                                                "tenure"   => 6,
+                                                                "issuer"   => "HDFC"
+                                                            ]
+                                                        ],
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                    "CHANNEL_RZP_CHECKOUT.STAGE_AVAIL"    => [
+                                        "rules" => [
+                                            [
+                                                "when_expression" => "Order.TotalAmount >= 500000 && PaymentInstrument.Method == \"emi\" && PaymentInstrument.CardType == \"debit\" && PaymentInstrument.CardCobrandingPartner == \"NA\" && PaymentInstrument.Issuer == \"HDFC\" && PaymentInstrument.EmiTenure == 6",
+                                                "then"            => [
+                                                    [
+                                                        "no_cost_emi" => [
+                                                            [
+                                                                "discount" => [
+                                                                    "percent_discount" => null,
+                                                                    "applicable_on"    => "Order.total_amount"
+                                                                ],
+                                                                "tenure"   => 6,
+                                                                "issuer"   => "HDFC"
+                                                            ]
+                                                        ],
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        "publish" => [
+                            "continue_txn_on_failure" => false,
+                            "offer_type"              => "OFFER_TYPE_STAGE_HIDDEN",
+                            "auto_apply"              => false,
+                            "channel_name"            => "CHANNEL_RZP_CHECKOUT"
+                        ],
+                    ];
+            }
+        )->times(1);
+
+        $this->app['offers_engine'] = $offersEngineMock;
+
+        $response                   = $this->startTest();
+
+        $this->assertTrue(is_array($response));
+
+        $this->assertNotEmpty($response);
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => true,
+            ]);
+    }
     public function testCreateOfferWithNullMethod()
     {
         $this->offersEngineMock->shouldReceive('createOffer')->times(0)->andReturn( [
@@ -1660,6 +1951,86 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function getOffersEngineMockResponse(): array
+    {
+        return [
+            'offer'   => [
+                'metadata' => [
+                    'offer_id'      => 'offer_10000000000000',
+                    'name'          => 'Test Offer',
+                    'display_name'  => 'Test Offer',
+                    'description'   => 'Some more details',
+                    'terms'         => [
+                        'tnc' => 'Some more details',
+                    ],
+                    'advertiser_id' => 'rzp.merchant.10000000000000', // Replace with the actual advertiser ID
+                    'state'         => 'STATE_CREATED',
+                    'offer_on'      => 'BENEFICIARY_TYPE_SELF',
+                    'currency'      => 'INR',
+                    'schedules'     => [
+                        'starts_at' => 1514764800,
+                        'ends_at'   => 1546300800,
+                    ],
+                ],
+                'spec'     => [
+                    'allowed_channels' => [
+                        'CHANNEL_RZP_CHECKOUT',
+                    ],
+                    'funding'          => [
+                        'type'  => 'BENEFICIARY_TYPE_SELF',
+                        'split' => [
+                            [
+                                'type'   => 'VALUE_OPTION_PERCENTAGE',
+                                'bearer' => 'USER_TYPE_PUBLISHER',
+                                'value'  => 100,
+                            ],
+                        ],
+                    ],
+                    'benefits_types'   => [
+                        'BENEFIT_TYPE_DISCOUNT',
+                    ],
+                    'rule_groups'      => [
+                        'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true',
+                                    'then'            => [
+                                        [
+                                            'discount' => [
+                                                'percent_discount' => 1000,
+                                                'applicable_on'    => 'Order.total_amount',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL'    => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.CardType == \"credit\" && PaymentInstrument.CardNetwork == \"VISA\" && PaymentInstrument.Issuer == \"HDFC\"',
+                                    'then'            => [
+                                        [
+                                            'discount' => [
+                                                [
+                                                    'percent_discount' => 1000,
+                                                    'applicable_on'    => 'Order.total_amount',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'publish' => [
+                'continue_txn_on_failure' => 0,
+                'offer_type'              => 'OFFER_TYPE_STAGE_REGULAR',
+                'channel_name'            => 'CHANNEL_RZP_CHECKOUT',
+            ]];
+    }
     public function testFetchOffersCreateInfoWithoutEmiPlans()
     {
         $this->ba->offersEngineAuth();

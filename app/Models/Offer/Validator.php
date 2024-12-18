@@ -634,7 +634,8 @@ class Validator extends Base\Validator
 
     protected function validateMerchantCategory(array $input)
     {
-        if ($this->entity->merchant === null){
+        if ($this->entity->merchant === null or
+            $this->entity->getOfferCreateExpValue() === true){
             return null;
         }
 
@@ -649,7 +650,9 @@ class Validator extends Base\Validator
 
     protected function validateOfferFeatureBlock(array $input)
     {
-        if ($this->entity->merchant === null){
+        if (($this->entity->merchant === null) or
+            ($this->entity->getOfferCreateExpValue() === true))
+        {
             return null;
         }
         $hasBlockingFeature = $this->entity->merchant->isFeatureEnabled(Constants::BLOCK_OFFER_CREATION);
