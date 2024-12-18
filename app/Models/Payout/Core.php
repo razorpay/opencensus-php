@@ -10135,9 +10135,9 @@ class Core extends Base\Core
         );
     }
 
-    public function checkIfPayoutsBlockedOnLite(Merchant\Balance\Entity $balance = null)
+    public function checkIfPayoutsBlockedOnLite(Merchant\Balance\Entity $balance = null, Merchant\Entity $merchant = null)
     {
-        if (($this->merchant->isFeatureEnabled(Feature\Constants::PAYOUTS_BLOCKED_ON_LITE) === true) and
+        if (($merchant->isFeatureEnabled(Feature\Constants::PAYOUTS_BLOCKED_ON_LITE) === true) and
             ($balance->isAccountTypeShared() === true))
         {
             $this->trace->error(TraceCode::PAYOUTS_BLOCKED_ON_LITE,

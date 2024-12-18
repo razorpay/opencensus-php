@@ -2913,7 +2913,7 @@ class Base extends BaseCore
             return;
         }
 
-        (new Payout\Core)->checkIfPayoutsBlockedOnLite($this->balance);
+        (new Payout\Core)->checkIfPayoutsBlockedOnLite($this->balance, $this->merchant);
 
         if ($this->merchant->isFeatureEnabled(Feature::BLOCK_VA_PAYOUTS) === true)
         {

@@ -5060,7 +5060,7 @@ class Service extends Base\Service
             $balance = $this->repo->balance->findByPublicIdAndMerchant($input[Payout\Entity::BALANCE_ID], $this->merchant);
         }
 
-        $this->core->checkIfPayoutsBlockedOnLite($balance);
+        $this->core->checkIfPayoutsBlockedOnLite($balance, $this->merchant);
 
         $this->checkIfDirectAccountIsActive($balance);
 
