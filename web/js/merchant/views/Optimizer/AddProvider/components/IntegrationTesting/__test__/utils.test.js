@@ -4,6 +4,7 @@ import {
   getCardCoverageData,
   getCardCoverageColumns,
   exportedForTesting,
+  tpvFeaturesPayload,
 } from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/utils';
 
 import { RAZORPAY_COVERAGE, GATEWAY_COVERAGE, PAYTM_GATEWAY_COVERAGE } from './mocks';
@@ -159,5 +160,42 @@ describe('Optimizer IntegrationTesting IntegrationAuditSummary Utils', () => {
         expect(result).toEqual(<CoverageBadge status="notice" />);
       }
     });
+  });
+});
+
+describe('Optimizer IntegrationTesting Utils - tpvFeaturesPayload', () => {
+  test('should return upi features for gateway which support upi features', () => {
+    const result = tpvFeaturesPayload(1, { upi: true }, 'cashfree');
+    expect(result).toEqual({
+      'UPI Features': {
+        tpv: 1,
+      },
+    });
+  });
+
+  test('should return netbanking features for gateway which support netbanking features', () => {
+    const result = tpvFeaturesPayload(2, { netbanking: true }, 'cashfree');
+    expect(result).toEqual({
+      'Netbanking Features': {
+        tpv: 2,
+      },
+    });
+  });
+
+  test('should return upi and netbanking features for gateway which support upi and netbanking features', () => {
+    const result = tpvFeaturesPayload(0, { upi: true, netbanking: true }, 'cashfree');
+    expect(result).toEqual({
+      'UPI Features': {
+        tpv: 0,
+      },
+      'Netbanking Features': {
+        tpv: 0,
+      },
+    });
+  });
+
+  test('should return empty object for gateway which does not support upi and netbanking features', () => {
+    const result = tpvFeaturesPayload(0, { upi: true, netbanking: true }, 'paytm');
+    expect(result).toEqual({});
   });
 });

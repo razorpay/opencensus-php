@@ -232,4 +232,23 @@ describe('Optimizer IntegrationTesting ProviderSettings', () => {
     expect(recurringSwitch).toBeInTheDocument();
     expect(recurringSwitch).toBeEnabled();
   });
+
+  it('should render TPV input when TPV is present', () => {
+    const props = {
+      ...mockProps,
+      gatewayMetaData: {
+        ...mockProps.gatewayMetaData,
+        TPV: {
+          data_type: 'string',
+          data_value: 'tpv',
+          terminals_key: '',
+        },
+      },
+    };
+    render(<App {...props} />);
+    expect(screen.getByText('TPV')).toBeInTheDocument();
+    expect(screen.getByText('Non TPV')).toBeInTheDocument();
+    expect(screen.getByText('TPV Only')).toBeInTheDocument();
+    expect(screen.getByText('Both (TPV and Non TPV)')).toBeInTheDocument();
+  });
 });

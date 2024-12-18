@@ -275,7 +275,7 @@ const ProviderConfiguration = (props) => {
                     )}
                 </Fragment>
               );
-            } else if (label === 'TPV') {
+            } else if (label === 'TPV' && showMethods) {
               return (
                 <Box key={label} display="flex">
                   <Box minWidth="180px">

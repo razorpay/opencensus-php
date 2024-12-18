@@ -573,9 +573,10 @@ const ProviderView = (props) => {
                       </Box>
                     </>
                   )}
-                  {upiFeatures?.tpv ? (
+                  {upiFeatures?.tpv !== null && Number(upiFeatures?.tpv) !== NaN ? (
                     <TPVDetails tpv={upiFeatures?.tpv} />
-                  ) : netbankingFeatures?.tpv ? (
+                  ) : netbankingFeatures?.tpv !== null &&
+                    Number(netbankingFeatures?.tpv) !== NaN ? (
                     <TPVDetails tpv={netbankingFeatures?.tpv} />
                   ) : null}
                   {seamlessOptionExist && (

@@ -585,6 +585,7 @@ const IntegrationTesting = ({
             )}
             {currentStep === 'provider_settings' && (
               <ProviderSettings
+                gateway={gateway}
                 providerName={providerName}
                 gatewayMetaData={gatewayMetaData}
                 methods={methods}

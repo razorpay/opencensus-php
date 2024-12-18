@@ -127,6 +127,7 @@ export const HAS_UPI_FEATURES = [
   'optimizer_razorpay',
   'easebuzz_optimizer',
   'zaakpay',
+  'cashfree',
 ];
 
 export const HAS_NETBANKING_FEATURES = [
@@ -139,6 +140,7 @@ export const HAS_NETBANKING_FEATURES = [
   'optimizer_razorpay',
   'easebuzz_optimizer',
   'zaakpay',
+  'cashfree',
 ];
 
 export const ACCOUNT_TYPE_OPTIONS = [

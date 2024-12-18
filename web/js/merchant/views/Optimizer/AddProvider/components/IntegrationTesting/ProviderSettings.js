@@ -10,12 +10,21 @@ import {
   Tooltip,
   TooltipInteractiveWrapper,
   InfoIcon,
+  RadioGroup,
+  Radio,
 } from '@razorpay/blade/components';
 
 import { titleCase } from 'common/utils/rzp-utils';
 import { METHODS_MAP } from 'merchant/views/Navigator/constants';
+import {
+  SODEXO_HELP_TEXT,
+  RECURRING_HELP_TEXT,
+  TPV_HELP_TEXT,
+} from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/constants';
+import { tpvFeaturesPayload } from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/utils';
 
 export const ProviderSettings = ({
+  gateway,
   providerName,
   gatewayMetaData,
   methods,
@@ -91,9 +100,13 @@ export const ProviderSettings = ({
     });
   };
 
-  const sodexoTooltip =
-    'To activate the Pluxee feature, please make sure to enable the "card" method.';
-  const recurringTooltip = 'Available for Card and UPI, coming soon for Netbanking.';
+  const changeTpv = ({ value }) => {
+    const payload = tpvFeaturesPayload(value, methods, gateway);
+    setMethods({
+      ...methods,
+      ...payload,
+    });
+  };
 
   return (
     <Box display="flex" flexDirection="column" padding="spacing.8">
@@ -114,7 +127,7 @@ export const ProviderSettings = ({
       >
         <Box display="flex" flexDirection="column" gap="spacing.4">
           {methodsList?.map((method, index) => (
-            <>
+            <React.Fragment key={method}>
               <Box display="flex" gap="spacing.4">
                 <Box display="flex" gap="spacing.2" alignItems="center" width="200px">
                   <Text color="surface.text.gray.subtle">
@@ -122,7 +135,7 @@ export const ProviderSettings = ({
                   </Text>
                   {['sodexo', 'recurring'].includes(method) && (
                     <Tooltip
-                      content={method === 'sodexo' ? sodexoTooltip : recurringTooltip}
+                      content={method === 'sodexo' ? SODEXO_HELP_TEXT : RECURRING_HELP_TEXT}
                       onOpenChange={function noRefCheck() {}}
                       placement="right"
                       zIndex={99999}
@@ -149,7 +162,7 @@ export const ProviderSettings = ({
                 </Box>
               </Box>
               {index < methodsList.length - 1 && <Divider />}
-            </>
+            </React.Fragment>
           ))}
           {showWallets && (
             <Box display="flex" gap="spacing.4">
@@ -173,6 +186,33 @@ export const ProviderSettings = ({
                 </Box>
               </Box>
             </Box>
+          )}
+          {gatewayMetaData?.TPV && (
+            <>
+              <Divider />
+              <Box display="flex" gap="spacing.4">
+                <Box display="flex" gap="spacing.2" alignItems="center" width="200px">
+                  <Text color="surface.text.gray.subtle">TPV</Text>
+                  <Tooltip
+                    content={TPV_HELP_TEXT}
+                    onOpenChange={function noRefCheck() {}}
+                    placement="right"
+                    zIndex={99999}
+                  >
+                    <TooltipInteractiveWrapper>
+                      <InfoIcon marginTop="spacing.2" size="medium" />
+                    </TooltipInteractiveWrapper>
+                  </Tooltip>
+                </Box>
+                <Box display="flex" gap="spacing.2">
+                  <RadioGroup name="TPV" onChange={changeTpv}>
+                    <Radio value={0}>Non TPV</Radio>
+                    <Radio value={1}>TPV Only</Radio>
+                    <Radio value={2}>Both (TPV and Non TPV)</Radio>
+                  </RadioGroup>
+                </Box>
+              </Box>
+            </>
           )}
         </Box>
       </Box>
