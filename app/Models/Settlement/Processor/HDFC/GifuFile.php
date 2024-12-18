@@ -147,11 +147,7 @@ class GifuFile extends Base\BaseGifuFile
 
         $dataFetch = $this->repo->settlement->getSettlementsBetweenTimePeriodForMerchantIds($input,$from,$to);
 
-        $dataFetchArray = $dataFetch->toArray();
-
-        $dataSettlement = $this->filterBasedonPOStransaction($dataFetchArray,$from,$to);
-
-        $this->groupSettlementsByMid($dataSettlement,$modData);
+        $this->groupSettlementsByMid($dataFetch,$modData);
 
         $orgId = (new Merchant\Repository)->getMerchantOrg(current($input));
 

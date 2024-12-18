@@ -539,6 +539,8 @@ class SettlementController extends Controller
 
     public function sendGifuFile($orgId)
     {
+        RuntimeManager::setTimeLimit(600);
+
         $input = Request::all();
 
         $data = $this->service()->sendGifuFile($input, $orgId);
