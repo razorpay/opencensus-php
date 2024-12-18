@@ -5876,6 +5876,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function getOffer()
     {
+        $offerNotFoundInOE = false;
+
         if ((new Offer\Core())->shouldRouteToOffersEngineForPayments(
                 $this->getMerchantId(), Offer\Constants::OFFERS_ENGINE_FETCH_EXP) === true)
         {
@@ -5899,7 +5901,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
                 // fetches normal offers from OE and limited offers from API db.
                 // The assumption here is that payment is always associated with one offer_id
-                $offerEntity = $offersEngineRepo->findByIdAndMerchantId($offerIds[0], $this->getMerchantId());
+                $offerEntity = $offersEngineRepo->findByIdAndMerchantId(
+                    $offerIds[0], $this->getMerchantId(), null, true);
 
                 $offersCollection = new Base\PublicCollection();
 
@@ -5916,20 +5919,42 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
             catch (\Throwable $ex)
             {
+                if ($ex->getCode() === ErrorCode::BAD_REQUEST_EXTERNAL_OFFER_NOT_FOUND)
+                {
+                    $offerNotFoundInOE = true;
+                }
+
                 app('trace')->count(
                     Offer\Metric::OFFERS_ENGINE_FETCH_OFFERS_FAIL_FOR_PAYMENTS, [
                     'route' => app('api.route')->getCurrentRouteName(),
                 ]);
 
                 app('trace')->traceException($ex, Trace::ERROR, TraceCode::PAYMENT_OFFER_NOT_FOUND, [
-                    'data' => $ex->getMessage(),
-                    'id'   => $this->getId(),
+                    'data'                  => $ex->getMessage(),
+                    'id'                    => $this->getId(),
+                    'offer_not_found_in_oe' => $offerNotFoundInOE,
                 ]);
             }
         }
 
         // Keeping fallback on API DB for now.
-        return $this->offers()->first();
+        $response = $this->offers()->first();
+
+        if (($response !== null) and
+            ($offerNotFoundInOE === true))
+        {
+            app('trace')->count(
+                Offer\Metric::OFFERS_FETCH_MISMATCH_PAYMENT_FLOW, [
+                'route' => app('api.route')->getCurrentRouteName(),
+            ]);
+
+            app('trace')->info(TraceCode::OFFERS_FETCH_MISMATCH_PAYMENT_FLOW, [
+                'payment_id'   => $this->getId(),
+                'api_response' => $response,
+            ]);
+        }
+
+        return $response;
     }
 
     /**

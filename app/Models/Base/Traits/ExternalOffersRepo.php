@@ -25,7 +25,8 @@ trait ExternalOffersRepo
 
     protected $entityName;
 
-    public function findByIdAndMerchantId($id, $merchantId, string $connectionType = null)
+    public function findByIdAndMerchantId(
+        $id, $merchantId, string $connectionType = null, $throwExceptionIfNotFoundInOE = false)
     {
         if ($this->fetchFromOE($merchantId) === true)
         {
@@ -36,20 +37,28 @@ trait ExternalOffersRepo
 
                 // fetch offer from API if it has limits
                 return $this->fetchOffersWithLimitsFromAPI([$offer])[0];
-            } catch (\Exception $e)
+            }
+            catch (\Exception $offerEngineException)
             {
                 $this->trace->count(
                     Metric::OFFERS_ENGINE_FETCH_BY_ID_FAIL, [
-                        'route' => app('api.route')->getCurrentRouteName(),
-                    ]);
+                    'route' => app('api.route')->getCurrentRouteName(),
+                ]);
 
                 $this->trace->traceException(
-                    $e,
+                    $offerEngineException,
                     Trace::ERROR,
                     TraceCode::OFFERS_ENGINE_FETCH_BY_ID_FAIL, [
-                ]);
+                    ]);
+
+                if (($offerEngineException->getCode() === ErrorCode::BAD_REQUEST_EXTERNAL_OFFER_NOT_FOUND) and
+                    ($throwExceptionIfNotFoundInOE === true))
+                {
+                    throw $offerEngineException;
+                }
             }
         }
+
         // if experiment is false or exception caught, calls parent repo function but the offer response does not change
         return parent::findOrFail($id, ['*'], $connectionType);
     }
@@ -558,5 +567,46 @@ trait ExternalOffersRepo
             );
         }
     }
-}
 
+    private function fetchExternalEntity($id, $merchantId, $input = [])
+    {
+        $class = Entity::getexternalRepoSingleton($this->entity);
+
+        try
+        {
+            $entity = $class->fetch($this->entity, $id, $merchantId, $input);
+
+            if (empty($entity) === false)
+            {
+                $entity->setExternal(true);
+
+                return $entity;
+            }
+
+        }
+        catch (\Throwable $e)
+        {
+            App::getFacadeRoot()['trace']->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_FETCH_REQUEST_FAILURE,
+                [
+                    'data' => $e->getMessage()
+                ]);
+
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_EXTERNAL_OFFER_NOT_FOUND)
+            {
+                throw $e;
+            }
+        }
+
+        $data = [
+            'model'      => $this->entityName,
+            'attributes' => $id,
+            'operation'  => 'find'
+        ];
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+}

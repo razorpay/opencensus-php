@@ -4043,6 +4043,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFERS_ENGINE_TRANSACTION_FAILURE                     = 'OFFERS_ENGINE_TRANSACTION_FAILURE';
     const OFFERS_ENGINE_PAYMENT_REVERSE_SHADOW                  = 'OFFERS_ENGINE_PAYMENT_REVERSE_SHADOW';
     const OFFERS_ENGINE_UPDATED_DISCOUNT                        = 'OFFERS_ENGINE_UPDATED_DISCOUNT';
+    const OFFERS_ENGINE_OFFER_MISMATCH                          = 'OFFERS_ENGINE_OFFER_MISMATCH';
+    const OFFERS_FETCH_MISMATCH_PAYMENT_FLOW                    = 'OFFERS_FETCH_MISMATCH_PAYMENT_FLOW';
+
 
     // Charge collections trace codes
     const CHARGE_COLLECTIONS_REQUEST                            = 'CHARGE_COLLECTIONS_REQUEST';

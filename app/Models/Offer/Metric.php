@@ -34,6 +34,8 @@ final class Metric
 
     const OFFERS_ENGINE_FETCH_OFFERS_FAIL_FOR_PAYMENTS          = 'offers_engine_fetch_offers_fail_for_payments';
 
+    const OFFERS_FETCH_MISMATCH_PAYMENT_FLOW          = 'offers_fetch_mismatch_payment_flow';
+
     const OFFERS_ENGINE_FETCH_DEFAULT_OFFERS_FAIL          = 'offers_engine_fetch_default_offers_fail';
 
     const OFFERS_ENGINE_VALIDATE_OFFER_FAIL          = 'offers_engine_validate_offer_fail';

@@ -253,7 +253,7 @@ class OffersEngine
      * @throws ServerErrorException
      * @throws BadRequestException
      */
-    protected function checkAndParseError($response, $statusCode, bool $throwExceptionOnFailure = false, bool $nullResponseAllowed = false): array
+    public function checkAndParseError($response, $statusCode, bool $throwExceptionOnFailure = false, bool $nullResponseAllowed = false): array
     {
         if ($statusCode === 200)
         {
@@ -297,6 +297,11 @@ class OffersEngine
 
         if ($statusCode === 400)
         {
+            if ($response['message'] === "BAD_REQUEST_ENTITY_NOT_FOUND")
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_EXTERNAL_OFFER_NOT_FOUND, null, $formattedResponse);
+            }
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, $formattedResponse);
         }
 
