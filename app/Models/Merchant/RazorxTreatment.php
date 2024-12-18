@@ -398,6 +398,12 @@ final class RazorxTreatment
 
     const COLLECTX_AXIS_PAYMENT_TRANSFER_RAMP_UP = "collectx_axis_payment_transfer_ramp_up";
 
+    // this experiment is to disable webhooks for collectx merchants
+    const COLLECTX_DISABLE_WEBHOOKS = "collectx_disable_webhooks";
+
+    const COLLECTX_RBL_MERCHANTS_VA_CREATION_BLOCK = "collectx_rbl_merchants_va_creation_block";
+    const COLLECTX_RBL_PAYMENT_TRANSFER_RAMP_UP = "collectx_rbl_payment_transfer_ramp_up";
+
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
     const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED = 'system_based_needs_clarification_not_matched';

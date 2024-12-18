@@ -758,8 +758,36 @@ class Core extends Base\Core
 
     }
 
+    protected function isCollectxWebhookDisableExperimentEnabled(string $merchantID): bool
+    {
+        try
+        {
+            $properties = [
+                "id" => $merchantID,
+                "experiment_name" => RazorxTreatment::COLLECTX_DISABLE_WEBHOOKS,
+                'request_data' => json_encode(['id' => $merchantID])
+            ];
+
+            return (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($properties, 'enable') === true;
+        }
+        catch(\Throwable $ex)
+        {
+            return false;
+        }
+    }
+
     public function eventVirtualAccountCredited(Payment $payment)
     {
+        // TODO: Remove this check once rbl penny testing is done for collectx
+        $merchantID = $payment->getMerchantId();
+
+        if ($merchantID !== null &&
+            $payment[Payment::REFERENCE14] === 'collectx' &&
+            $this->isCollectxWebhookDisableExperimentEnabled($merchantID) === true)
+        {
+            return;
+        }
+
         $eventPayload = [
             ApiEventSubscriber::MAIN => $payment
         ];
@@ -1149,9 +1177,9 @@ class Core extends Base\Core
                 {
                     $newBankAccount = $bankAccount->replicate();
                 }
-    
+
                 $newBankAccount->setIfsc(Provider::IFSC[Provider::AXIS]);
-    
+
                 $this->repo->transaction(function() use ($virtualAccount, $bankAccount, $bankAccount2, $newBankAccount)
                 {
                     // If virtual account was migrated to RBL
@@ -1160,15 +1188,15 @@ class Core extends Base\Core
                     {
                         $virtualAccount->bankAccount()->associate($bankAccount2);
                     }
-    
+
                     // set Axis to bankAccount2
                     $this->repo->saveOrFail($newBankAccount);
-    
+
                     $virtualAccount->bankAccount2()->associate($newBankAccount);
-    
+
                     $this->repo->saveOrFail($virtualAccount);
                 });
-    
+
                 $this->trace->info(TraceCode::VA_MIGRATE_SUCCESS,
                     [
                         'va_id'             => $virtualAccount->getPublicId(),
@@ -1177,7 +1205,7 @@ class Core extends Base\Core
                         'old_ifsc'          => $bankAccount->getIfscCode(),
                         'new_bank_account2' => $newBankAccount->getAccountNumber(),
                         'new_ifsc'          => $newBankAccount->getIfscCode(),
-    
+
                     ]);
                 return 1;
             }
@@ -1193,9 +1221,9 @@ class Core extends Base\Core
                 {
                     $newBankAccount = $bankAccount->replicate();
                 }
-    
+
                 $newBankAccount->setIfsc(Provider::IFSC[Provider::AXIS]);
-    
+
                 $this->repo->transaction(function() use ($virtualAccount, $bankAccount, $bankAccount2, $newBankAccount)
                 {
                     // If virtual account was migrated to RBL
@@ -1204,15 +1232,15 @@ class Core extends Base\Core
                     {
                         $virtualAccount->bankAccount()->associate($bankAccount2);
                     }
-    
+
                     // set Axis to bankAccount2
                     $this->repo->saveOrFail($newBankAccount);
-    
+
                     $virtualAccount->bankAccount2()->associate($newBankAccount);
-    
+
                     $this->repo->saveOrFail($virtualAccount);
                 });
-    
+
                 $this->trace->info(TraceCode::VA_MIGRATE_SUCCESS,
                     [
                         'va_id'             => $virtualAccount->getPublicId(),
@@ -1221,7 +1249,7 @@ class Core extends Base\Core
                         'old_ifsc'          => $bankAccount->getIfscCode(),
                         'new_bank_account2' => $newBankAccount->getAccountNumber(),
                         'new_ifsc'          => $newBankAccount->getIfscCode(),
-    
+
                     ]);
                 return 1;
             }
@@ -1311,7 +1339,7 @@ class Core extends Base\Core
         $processTimes  = $input['process_count'] ?? 1;
         $merchantIds   = $input['merchant_ids'] ?? [];
         $virtualAccountIds = $input['VirtualAccountIds'] ?? [];
-    
+
         if (!empty($merchantIds)) {
             for ($currentCount = 1; $currentCount <= $processTimes; $currentCount++) {
                 $this->trace->debug(TraceCode::VA_MIGRATE_PROCESS_TRIGGERING, [
@@ -1321,33 +1349,33 @@ class Core extends Base\Core
                     'count'        => $currentCount,
                     'merchant_ids' => $merchantIds,
                 ]);
-    
+
                 $subQuery = $this->repo->virtual_account->getMigrateQuery($afterId, $fromTime, $toTime, $limit, $merchantIds, $ifscCode);
                 $nextAfterId = $this->getNextBatchIdForRblBankMigrate($subQuery);
-    
+
                 if ($jobMode === 'sync') {
                     $this->migrateRblBankVirtualAccounts($afterId, $nextAfterId, $fromTime, $toTime, $limit, $ifscCode, $merchantIds);
                 } else {
                     VirtualAccountMigrate::dispatch($this->mode, $afterId, $nextAfterId, $fromTime, $toTime, $limit, $ifscCode, $merchantIds);
                 }
-    
+
                 if ($currentCount === $processTimes || $afterId === $nextAfterId) {
                     break;
                 }
-    
+
                 $afterId = $nextAfterId;
             }
         } else {
             $startTime = millitime();
             $virtualAccounts = $this->repo->virtual_account->fetchActiveVirtualAccountIds($virtualAccountIds);
-    
+
             $this->trace->debug(TraceCode::VA_MIGRATE_PROCESS_TRIGGERING, [
                 'after_id'        => $afterId,
                 'job_mode'        => $jobMode,
                 'from_time'       => $fromTime,
                 'virtualAccounts' => $virtualAccounts,
             ]);
-    
+
             $count = 0;
             foreach ($virtualAccounts as $virtualAccount) {
                 try {
@@ -1359,13 +1387,13 @@ class Core extends Base\Core
                     $this->trace->traceException($e);
                 }
             }
-    
+
             $this->trace->info(TraceCode::VA_MIGRATE_TIME, [
                 'time_taken' => millitime() - $startTime ?? 0,
                 'migrated'   => $count,
             ]);
         }
-    
+
         return [
             'Success'       => true,
             'next_after_id' => $nextAfterId

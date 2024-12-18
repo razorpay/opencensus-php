@@ -4639,8 +4639,36 @@ class Processor
         }
     }
 
+    protected function isCollectxWebhookDisableExperimentEnabled(string $merchantID): bool
+    {
+        try
+        {
+            $properties = [
+                "id" => $merchantID,
+                "experiment_name" => RazorxTreatment::COLLECTX_DISABLE_WEBHOOKS,
+                'request_data' => json_encode(['id' => $merchantID])
+            ];
+
+            return (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($properties, 'enable') === true;
+        }
+        catch(\Throwable $ex)
+        {
+            return false;
+        }
+    }
+
     public function eventPaymentCreated()
     {
+        // TODO: Remove this check once rbl penny testing is done for collectx
+        $merchantID = $this->payment->getMerchantId();
+
+        if ($merchantID !== null &&
+            $this->payment[Payment\Entity::REFERENCE14] === 'collectx' &&
+            $this->isCollectxWebhookDisableExperimentEnabled($merchantID) === true)
+        {
+            return;
+        }
+
         // the scenario where same payment id gets generated in live and test mode is not handled currently.
         $cacheKey = 'EVENT_PAYMENT_CREATED_FIRED_'.$this->payment->getPublicId();
 

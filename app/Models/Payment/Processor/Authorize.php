@@ -10375,6 +10375,16 @@ trait Authorize
 
     public function eventPaymentAuthorized()
     {
+        // TODO: Remove this check once rbl penny testing is done for collectx
+        $merchantID = $this->payment->getMerchantId();
+
+        if ($merchantID !== null &&
+            $this->payment[Payment\Entity::REFERENCE14] === 'collectx' &&
+            $this->isCollectxWebhookDisableExperimentEnabled($merchantID) === true)
+        {
+            return;
+        }
+
         $eventPayload = [
             ApiEventSubscriber::MAIN => $this->payment,
         ];

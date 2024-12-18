@@ -1856,4 +1856,6 @@ class PublicErrorDescription
     // custom terminal procurement
     const BAD_REQUEST_INVALID_VPA                                                   = 'VPA provided is not valid';
     const BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER                               = 'Partner does not have access to this feature';
+
+    const BAD_REQUEST_VA_CREATION_BLOCKED_FOR_RBL_MERCHANTS = "Virtual Account Creation is currently blocked for RBL Merchants.";
 }

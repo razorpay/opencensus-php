@@ -59,4 +59,6 @@ class Constants
     const ENABLE = 'enable';
 
     const TXN_CREATED_FIRE_WEBHOOK_SYNC = 'app.transaction_created_fire_webhook_sync';
+
+    const CREDIT_ACCOUNT_NUMBER = 'creditAccountNumber';
 }

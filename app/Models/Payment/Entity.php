@@ -3166,11 +3166,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isCollectXPayment()
     {
         try {
-            // TODO: UPI check to be removed later once collectx fix is live
             if ($this->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true &&
-                $this->getAttribute(Entity::REFERENCE14) === Constant::COLLECTX &&
-                $this->getAttribute(Entity::METHOD) == self::UPI) {
-
+                ($this->getAttribute(Entity::REFERENCE14) === Constant::COLLECTX) &&
+                (($this->getAttribute(Entity::METHOD) == Payment\Method::UPI) ||
+                    ($this->getAttribute(Entity::METHOD) === Payment\Method::BANK_TRANSFER)))
+            {
                 return true;
             }
         }

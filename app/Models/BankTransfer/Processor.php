@@ -446,7 +446,7 @@ class Processor extends VirtualAccount\Processor
             // Prepares payment input and creates payment and its transaction etc.
             $paymentInput = $this->getPaymentArray($bankTransfer);
 
-            $terminal = $this->fetchTerminal($bankTransfer);
+            $terminal = $this->fetchTerminal($bankTransfer, $isCollectXBankTransferPayment);
 
             $gatewayData[Payment\Entity::TERMINAL_ID] = $terminal->getId();
 
@@ -1290,7 +1290,7 @@ class Processor extends VirtualAccount\Processor
      *
      * @return mixed|Terminal\Entity
      */
-    protected function fetchTerminal(Entity $bankTransfer)
+    protected function fetchTerminal(Entity $bankTransfer, bool $isCollectxBankTransferPayment = false)
     {
         $gateway = Payment\Gateway::$bankTransferProviderGateway[$bankTransfer->getGateway()];
         $merchantId = $bankTransfer->getMerchantId();
@@ -1303,8 +1303,8 @@ class Processor extends VirtualAccount\Processor
         // disabling terminal caching in bank transfer flow due to an issue - https://razorpay.atlassian.net/browse/EPA-605
         $terminalCaching = 'off';
 
-        $getTerminalCallback = function () use ($bankTransfer) {
-            return (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
+        $getTerminalCallback = function () use ($bankTransfer, $isCollectxBankTransferPayment) {
+            return (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer, true, $isCollectxBankTransferPayment);
         };
 
         $terminalFilters = function ($terminalAttributes) use ($gateway) {

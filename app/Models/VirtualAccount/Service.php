@@ -37,6 +37,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\VirtualAccountProducts;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\VirtualAccount\Constant as VAConstants;
 use RZP\Constants\Entity as EntityConstants;
@@ -86,6 +87,9 @@ class Service extends Base\Service
         $this->verifyMerchantCategory();
 
         $this->verifyMerchantIsLiveForLiveRequest();
+
+        // TODO: Remove this check when RBL VA creation API is live
+        $this->verifyMerchantDoesNotBelongToRblCollectx();
 
         $customer = $this->getCustomerIfGiven($input);
 
@@ -884,6 +888,23 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
+        }
+    }
+
+    protected function verifyMerchantDoesNotBelongToRblCollectx(): void
+    {
+        $properties = [
+            "id" => $this->merchant->getId(),
+            "experiment_name" => RazorxTreatment::COLLECTX_RBL_MERCHANTS_VA_CREATION_BLOCK,
+            'request_data'  => json_encode(['id' => $this->merchant->getId()])
+        ];
+
+        $isCollectxRblMerchant = (new Merchant\Core())->isSplitzExperimentEnable($properties,'enable');
+
+        if ($isCollectxRblMerchant === true &&
+            $this->merchant->isFeatureEnabled(Constants::COLLECTX_ENABLED) === true){
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VA_CREATION_BLOCKED_FOR_RBL_MERCHANTS);
         }
     }
 

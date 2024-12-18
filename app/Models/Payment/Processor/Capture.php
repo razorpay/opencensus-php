@@ -1660,6 +1660,16 @@ trait Capture
 
     public function eventPaymentCaptured()
     {
+        // TODO: Remove this check once rbl penny testing is done for collectx
+        $merchantID = $this->payment->getMerchantId();
+
+        if ($merchantID !== null &&
+            $this->payment[Payment\Entity::REFERENCE14] === 'collectx' &&
+            $this->isCollectxWebhookDisableExperimentEnabled($merchantID) === true)
+        {
+            return;
+        }
+
         $payment = $this->payment;
 
         $eventPayload = [

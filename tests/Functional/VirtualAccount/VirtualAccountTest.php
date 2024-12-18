@@ -27,6 +27,7 @@ use RZP\Models\Customer\Entity;
 use RZP\Models\Payment\Gateway;
 use RZP\Services\SmartRouting;
 use RZP\Services\SplitzService;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Traits\TestsMetrics;
@@ -72,6 +73,7 @@ class VirtualAccountTest extends TestCase
     use TestsBusinessBanking;
     use HeimdallTrait;
     use PartnerTrait;
+    Use MocksSplitz;
 
     const CERT_HEADER = "-----BEGIN%20CERTIFICATE-----%0A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%0A-----END%20CERTIFICATE-----%0A-----BEGIN%20CERTIFICATE-----%0AMIIFUTCCBDmgAwIBAgIQB5g2A63jmQghnKAMJ7yKbDANBgkqhkiG9w0BAQsFADBhMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQuY29tMSAwHgYDVQQDExdEaWdpQ2VydCBHbG9iYWwgUm9vdCBDQTAeFw0yMDA3MTYxMjI1MjdaFw0yMzA1MzEyMzU5NTlaMFkxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxMzAxBgNVBAMTKlJhcGlkU1NMIFRMUyBEViBSU0EgTWl4ZWQgU0hBMjU2IDIwMjAgQ0EtMTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANpuQ1VVmXvZlaJmxGVYotAMFzoApohbJAeNpzN+49LbgkrMLv2tblII8H43vN7UFumxV7lJdPwLP22qa0sV9cwCr6QZoGEobda+4pufG0aSfHQCQhulaqKpPcYYOPjTwgqJA84AFYj8l/IeQ8n01VyCurMIHA478ts2G6GGtEx0ucnEfV2QHUL64EC2yh7ybboo5v8nFWV4lx/xcfxoxkFTVnAIRgHrH2vUdOiV9slOix3z5KPs2rK2bbach8Sh5GSkgp2HRoS/my0tCq1vjyLJeP0aNwPd3rk5O8LiffLev9j+UKZo0tt0VvTLkdGmSN4h1mVY6DnGfOwp1C5SK0MCAwEAAaOCAgswggIHMB0GA1UdDgQWBBSkjeW+fHnkcCNtLik0rSNY3PUxfzAfBgNVHSMEGDAWgBQD3lA1VtFMu2bwo+IbG8OXsj3RVTAOBgNVHQ8BAf8EBAMCAYYwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMBIGA1UdEwEB/wQIMAYBAf8CAQAwNAYIKwYBBQUHAQEEKDAmMCQGCCsGAQUFBzABhhhodHRwOi8vb2NzcC5kaWdpY2VydC5jb20wewYDVR0fBHQwcjA3oDWgM4YxaHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0R2xvYmFsUm9vdENBLmNybDA3oDWgM4YxaHR0cDovL2NybDQuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0R2xvYmFsUm9vdENBLmNybDCBzgYDVR0gBIHGMIHDMIHABgRVHSAAMIG3MCgGCCsGAQUFBwIBFhxodHRwczovL3d3dy5kaWdpY2VydC5jb20vQ1BTMIGKBggrBgEFBQcCAjB+DHxBbnkgdXNlIG9mIHRoaXMgQ2VydGlmaWNhdGUgY29uc3RpdHV0ZXMgYWNjZXB0YW5jZSBvZiB0aGUgUmVseWluZyBQYXJ0eSBBZ3JlZW1lbnQgbG9jYXRlZCBhdCBodHRwczovL3d3dy5kaWdpY2VydC5jb20vcnBhLXVhMA0GCSqGSIb3DQEBCwUAA4IBAQAi49xtSOuOygBycy50quCThG45xIdUAsQCaXFVRa9asPaB/jLINXJL3qV9J0Gh2bZM0k4yOMeAMZ57smP6JkcJihhOFlfQa18aljd+xNc6b+GX6oFcCHGr+gsEyPM8qvlKGxc5T5eHVzV6jpjpyzl6VEKpaxH6gdGVpQVgjkOR9yY9XAUlFnzlOCpqsm7r2ZUKpDfrhUnVzX2nSM15XSj48rVBBAnGJWkLPijlACd3sWFMVUiKRz1C5PZyel2l7J/W4d99KFLSYgoy5GDmARpwLc//fXfkr40nMY8ibCmxCsjXQTe0fJbtrrLLyWQlk9VDV296EI/kQOJNLVEkJ54P%0A-----END%20CERTIFICATE-----%0A";
 
@@ -368,7 +370,7 @@ class VirtualAccountTest extends TestCase
         $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
     }
 
-    public function testCreateVirtualAccountForCollectWithReceiverBankAccount()
+    public function testCreateVirtualAccountForCollectxWithReceiverBankAccount()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
 
@@ -425,7 +427,7 @@ class VirtualAccountTest extends TestCase
         $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
     }
 
-    public function testCreateVirtualAccountForCollectWithReceiverVpa()
+    public function testCreateVirtualAccountForCollectxWithReceiverVpa()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
 
@@ -473,6 +475,39 @@ class VirtualAccountTest extends TestCase
         $this->assertTrue(strpos($vpaAddress, 'test.collectx') == 0);
 
         $this->assertEquals('axis', $vpaHandle);
+
+        $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
+    }
+
+    public function testCreateVirtualAccountForCollectx_RblMigratedMerchantVACreationBlock()
+    {
+        $input = [
+            "id" => '10000000000000',
+            'experiment_name' => RazorxTreatment::COLLECTX_RBL_MERCHANTS_VA_CREATION_BLOCK,
+            'request_data' => json_encode(['id'=>'10000000000000'])
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+        $response = $this->startTest();
+
+        $expectedResponse = $this->testData[__FUNCTION__]['response']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $accountNumber = $response['receivers'][0]['account_number'];
+
+        $this->assertTrue(strpos($accountNumber, 'COLLECTX') == 0);
 
         $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
     }
