@@ -11,6 +11,7 @@ use Config;
 use Mockery;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Jobs\EsSync;
+use RZP\Jobs\PayoutUsageEventProcessing;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\FeeRecovery;
 use RZP\Services\Mock\DataLakePresto;
@@ -45430,6 +45431,33 @@ class PayoutTest extends OAuthTestCase
 
         $feeRecovery = $this->getDbLastEntity('fee_recovery','live')->toArray();
         $this->assertEquals($feeRecovery['entity_id'], $payout['id']);
+    }
+
+    public function testTriggerPayoutPropertiesEventViaMicroservice()
+    {
+        $splitzResp = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.generate_bene_hash_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.payout_properties_event_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        Queue::fake();
+
+        $this->testCreatePayout();
+
     }
 
     /*
