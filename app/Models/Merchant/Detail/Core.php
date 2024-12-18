@@ -7500,7 +7500,7 @@ class Core extends Base\Core
         }
 
         //This checks automation activation exclusion logic in PGOS
-        if ($this->isEligibleForAutomationActivation() === false)
+        if ($this->isEligibleForAutomationActivation($merchantId) === false)
         {
             return Status::ACTIVATED_MCC_PENDING;
         }
@@ -12535,7 +12535,7 @@ class Core extends Base\Core
         }
     }
 
-    public function isEligibleForAutomationActivation()
+    public function isEligibleForAutomationActivation(string $merchantId = null)
     {
         $app = App::getFacadeRoot();
 
@@ -12548,15 +12548,20 @@ class Core extends Base\Core
 
         $pgosPayload = [];
 
+        $merchant = $this->merchant;
+        if ( empty($merchant) === true){
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
+
         $proxyForSubMerchant = false;
-        $partnerIds = (new AccessMapCore)->getPartnerIds($this->merchant->getId());
+        $partnerIds = (new AccessMapCore)->getPartnerIds($merchant->getId());
         if ( count($partnerIds) > 0 && (new Merchant\Core())->isOnboardingApiBmcEnabled($partnerIds[0], 'subm_auto_activation') === true )
         {
             $proxyForSubMerchant = true;
         }
 
         $response = $this->pgosProxyController->handlePGOSProxyRequests('get_merchant_eligibility_for_automation_activation',
-            $pgosPayload, $this->merchant, $proxyForSubMerchant);
+            $pgosPayload, $merchant, $proxyForSubMerchant);
 
         if (is_null($response) === true)
         {
