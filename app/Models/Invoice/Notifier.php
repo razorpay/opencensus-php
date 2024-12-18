@@ -563,6 +563,8 @@ class Notifier extends Base\Core
             $request['stork']['context']['org_id'] = $orgId;
         }
 
+        $request['stork']['context']['service_entity_id'] = $this->invoice->getId();
+
         if ($customSender !== null)
         {
             $request['sender'] = $customSender;

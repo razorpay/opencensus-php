@@ -1637,6 +1637,7 @@ class Route
         'hosted_subscription_button_details'       => ['get',      'subscription_buttons/{x_entity_id}/button_details',       'PaymentLinkController@getHostedButtonDetails'             ],
         'subscription_button_create_subscription'  => ['post',     'subscription_buttons/{x_entity_id}/create_subscription',  'PaymentLinkController@createSubscription'                 ],
 
+        // Payment Handle Routes
         'payment_handle_precreate'                 => ['post',     'precreate_payment_handle',                                'PaymentLinkController@precreatePaymentHandle'             ],
         "payment_handle_create"                    => ['post',     'payment_handle',                                          'PaymentLinkController@createPaymentHandle'                ],
         'payment_handle_update_old'                => ['patch',    'payment_handle/{id}',                                     'PaymentLinkController@updatePaymentHandle'                ],
@@ -7473,6 +7474,8 @@ class Route
         'payment_page_save_receipt_for_payment',
         'payment_page_get_pending_payments',
         'payment_page_get_batches',
+
+        // payment handle routes
         'payment_handle_precreate',
         'payment_handle_create',
         'payment_handle_update_old',
@@ -17480,6 +17483,29 @@ class Route
             'order_fetch_by_id_internal',
             'order_fetch_by_id',
             'user_fetch_internal',
+            'merchant_features_fetch',
+            'internal_feature_get_all',
+            // Payment Page Routes
+            'payment_page_get',
+            'payment_page_get_details',
+            'payment_page_get_payments',
+            'payment_page_list',
+            'payment_page_create',
+            'payment_page_update',
+            'payment_page_notify',
+            'payment_page_expire_cron',
+            'payment_page_deactivate',
+            'payment_page_activate',
+            'payment_page_slug_exists',
+            'payment_page_item_update',
+            'payment_page_set_merchant_details',
+            'payment_page_fetch_merchant_details',
+            'payment_page_set_receipt_details',
+            'payment_page_get_invoice_details',
+            'payment_page_send_receipt',
+            'payment_page_save_receipt_for_payment',
+            'fetch_order_line_items',
+            'fetch_product_details_for_order',
         ],
 
         'ucs' => [
