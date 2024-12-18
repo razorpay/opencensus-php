@@ -43,6 +43,10 @@ class Metric extends Base\Core
     const IS_SYNC_PROCESSING_ENABLED                    = 'is_sync_processing_enabled';
     const PAYMENT_TRANSFERS_CREATE_LATENCY              = 'payment_transfers_create_latency';
     const PG_LEDGER_TRANSFER_TRANSACTION_CREATION_DELAY = 'pg_ledger_transfer_transaction_creation_delay';
+    const TRANSFER_SETTLEMENT_ID_UPDATE_FAILED          = 'transfer_settlement_id_update_failed';
+    const TRANSFER_SETTLEMENT_ID_UPDATE_SUCCESS         = 'transfer_settlement_id_update_success';
+    const TRANSFER_SETTLEMENT_STATUS_UPDATE_FAILED      = 'transfer_settlement_status_update_failed';
+    const TRANSFER_SETTLEMENT_STATUS_UPDATE_SUCCESS     = 'transfer_settlement_status_update_success';
     const PENDING_PAYMENT_TRANSFERS_COUNT               = 'pending_payment_transfers_count';
     const PENDING_ORDER_TRANSFERS_COUNT                 = 'pending_order_transfers_count';
     const TRANSFER_WEBHOOK_DISPATCH_FAILURE             = 'transfer_webhook_dispatch_failure';
@@ -222,6 +226,30 @@ class Metric extends Base\Core
         ];
 
         $this->trace->histogram(self::PAYMENT_TRANSFERS_CREATE_LATENCY, $latency, $dimensions);
+    }
+
+    public function pushTransferSettlementIdUpdateMetrics($isSuccess = false)
+    {
+        if ($isSuccess === true)
+        {
+            $this->trace->count(self::TRANSFER_SETTLEMENT_ID_UPDATE_SUCCESS);
+        }
+        else
+        {
+            $this->trace->count(self::TRANSFER_SETTLEMENT_ID_UPDATE_FAILED);
+        }
+    }
+
+    public function pushTransferSettlementStatusUpdateMetrics($isSuccess = false)
+    {
+        if ($isSuccess === true)
+        {
+            $this->trace->count(self::TRANSFER_SETTLEMENT_STATUS_UPDATE_SUCCESS);
+        }
+        else
+        {
+            $this->trace->count(self::TRANSFER_SETTLEMENT_STATUS_UPDATE_FAILED);
+        }
     }
 
     private function getCreateDefaultDimensions(array $input = [])

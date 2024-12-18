@@ -8,15 +8,16 @@ use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Models\Transfer\Core;
+use RZP\Models\Transfer\Metric;
 use RZP\Exception\SettlementStatusUpdateException;
 
 class TransferSettlementStatus extends Job
 {
     const DISPATCH_DELAY_SECONDS = 300;
 
-    const RETRY_INTERVAL = 300;
+    const RETRY_INTERVAL = 900;
 
-    const MAX_RETRY_ATTEMPT = 3;
+    const MAX_RETRY_ATTEMPT = 50;
 
     /**
      * This job will be terminated after <$timeout> seconds.
@@ -50,6 +51,8 @@ class TransferSettlementStatus extends Job
         {
             (new Core())->updateSettlementStatusInTransfers($this->settlementId);
 
+            (new Metric())->pushTransferSettlementStatusUpdateMetrics(true);
+
             $this->delete();
         }
         catch (\Exception $ex)
@@ -82,6 +85,8 @@ class TransferSettlementStatus extends Job
                     'settlement_id' => $this->settlementId,
                 ]
             );
+
+            (new Metric())->pushTransferSettlementStatusUpdateMetrics(false);
 
             $this->delete();
         }
