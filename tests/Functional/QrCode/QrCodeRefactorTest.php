@@ -2673,7 +2673,7 @@ class QrCodeRefactorTest extends TestCase
                            ],
                            'terminal' => [
                                'gateway'             => 'upi_jkbank',
-                               'vpa'                 => 'rzp.qrTest@jkb',
+                               'vpa'                 => 'rzp.qrtest@jkb',
                            ],
                        ],
                    ]

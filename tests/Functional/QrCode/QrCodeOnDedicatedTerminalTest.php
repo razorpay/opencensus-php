@@ -2212,7 +2212,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $qrCode = $this->createMerchantQrCode(
             [
                 'merchant_id'        => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
-                'vpa'                => 'rzp.qrTest@icici',
+                'vpa'                => 'rzp.qrtest@icici',
                 'oauth_application_id'         => $application['id'],
             ]);
 
@@ -2222,7 +2222,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
         $this->assertEquals('api', $qrCodeEntity['request_source']);
         $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
-        $this->assertEquals('rzp.qrTest@icici', $intentParam['pa']);
+        $this->assertEquals('rzp.qrtest@icici', $intentParam['pa']);
 
         $qcc   = $this->getDbLastEntity('qr_code_config','live');
         $this->assertNotNull($qcc);
@@ -2260,7 +2260,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
         $this->assertEquals('api', $qrCodeEntity['request_source']);
         $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
-        $this->assertEquals('rzp.qrTest@icici', $intentParam['pa']);
+        $this->assertEquals('rzp.qrtest@icici', $intentParam['pa']);
 
         $qcc   = $this->getDbLastEntity('qr_code_config','live');
         $this->assertNotNull($qcc);
