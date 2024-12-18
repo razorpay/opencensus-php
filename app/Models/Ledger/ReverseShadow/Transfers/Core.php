@@ -632,7 +632,7 @@ class Core extends Base\Core
 
         $maxNegativeLimit = $this->getMaxNegativeLimitForTransfer($transfer);
 
-        if ($resultingBalance <= $maxNegativeLimit * -1)
+        if ($resultingBalance < $maxNegativeLimit * -1)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
