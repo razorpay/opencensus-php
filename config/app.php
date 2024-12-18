@@ -1223,6 +1223,8 @@ return array(
 
     'gifu_card_upi_ds_refunds_exp_id' => env('GIFU_CARD_UPI_DS_REFUNDS_EXP_ID'),
 
+    'order_payments_parity_producer' => env('ORDER_PAYMENT_PARITY_PRODUCER'),
+
     'mandate_payouts_ikey_internal_experiment_id' => env('MANDATE_PAYOUTS_IKEY_INTERNAL_EXPERIMENT_ID'),
 
     'enable_payout_ikey_required_feature_flag_experiment_id' => env('ENABLE_PAYOUT_IKEY_REQUIRED_FEATURE_FLAG_EXPERIMENT_ID')

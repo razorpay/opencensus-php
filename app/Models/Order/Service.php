@@ -29,6 +29,8 @@ use RZP\Models\BankAccount;
 use RZP\Base\ConnectionType;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Jobs\OrderPaymentsParity;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Offer;
 use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -796,13 +798,73 @@ class Service extends Base\Service
 
             $res = $apiPayments->merge($rearchPayments);
 
-            return $res->toArrayPublic();
+            $response = $res->toArrayPublic();
+
+            if ($this->checkSplitzForOrderPaymentsParity() === true)
+            {
+                $this->pushPaymentsOrderForParity($response, ["order_id" => $orderId]);
+            }
+
+            return $response;
 
         }
 
         $payments = $this->repo->payment->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
-        return $payments->toArrayPublic();
+        $response = $payments->toArrayPublic();
+
+        if ($this->checkSplitzForOrderPaymentsParity() === true)
+        {
+            $this->pushPaymentsOrderForParity($response, $input);
+        }
+
+        return $response;
+    }
+
+    public function checkSplitzForOrderPaymentsParity(): bool
+    {
+        try
+        {
+            $properties = [
+                "id" => UniqueIdEntity::generateUniqueId(),
+                "experiment_id" => $this->app['config']->get('app.order_payments_parity_producer'),
+            ];
+
+            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'allow');
+
+            return $variant;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::ORDER_PAYMENTS_PARITY_SPLITZ_FAILURE, [
+                "error" => $ex->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    public function pushPaymentsOrderForParity($payments, $input)
+    {
+        try
+        {
+            $microtime = microtime(true);
+
+            // Convert seconds to milliseconds
+            $milliseconds = round($microtime * 1000);
+
+            OrderPaymentsParity::dispatchNow($this->mode, $input, $payments, $milliseconds);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::ORDER_PAYMENTS_PARITY_EXCEPTION,
+                [
+                    "message" => $ex->getMessage()
+                ]);
+        }
     }
 
     public function fetchInternalPaymentsFor(string $id, array $input)
