@@ -11,7 +11,6 @@ import {
 } from 'merchant_common/routes';
 
 import lazy from './LazyLoader';
-
 const InstantSettlementDetails = lazy(() =>
   import(
     /* webpackChunkName: "InstantSettlementDetails" */ 'merchant/views/Settlements/InstantSettlements/InstantSettlementDetails'

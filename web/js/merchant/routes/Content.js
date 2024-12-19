@@ -25,7 +25,6 @@ import {
 } from 'merchant/components/Sidebar/helpers';
 import Home from 'merchant/containers/Home/Index';
 import { setActiveEntity, setBaseLocation, setSecActiveEntity } from 'merchant/reducers/app';
-import { Spinner } from '@razorpay/blade/components';
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
 import {
   isConfigurationViewAllowed,

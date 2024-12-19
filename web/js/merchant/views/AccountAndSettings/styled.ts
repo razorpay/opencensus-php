@@ -22,11 +22,17 @@ export const StyledConfiguration = styled(Configuration)`
   }
 `;
 
-export const StyledHeader = styled.header`
-  && {
-    border-top: 0;
-  }
-`;
+export const StyledHeader = styled.header<{
+  showBorderTop?: boolean;
+}>(
+  ({ showBorderTop }: { showBorderTop?: boolean }) =>
+    !showBorderTop &&
+    `
+      && {
+        border-top: 0;
+      }
+    `,
+);
 
 export const StyledContent = styled.div(
   ({ theme }: { theme: Theme }) => `

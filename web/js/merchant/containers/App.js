@@ -76,6 +76,7 @@ import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { isPartnerPage } from 'merchant/utils/isPartnerPage';
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal';
+import OnboardingRoutesWrapper from 'merchant/views/onboarding/OnboardingRoutesWrapper';
 import RequestEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail/RequestEmailModal';
 import { applyTheme } from 'merchant_common/helpers/themes';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -1176,21 +1177,28 @@ class App extends Component {
         abExperiments: this.props.splitz.abExperiments,
       },
     });
-    let FPView = null;
+
+    let FPComponent = null;
+    let fpParams = {};
 
     if (matchView && matchView.match) {
-      const FPComponent = matchView.component;
+      FPComponent = matchView.component;
+      fpParams = matchView.match.params;
+    } else if (this.props.location.pathname.startsWith('/onboarding')) {
+      FPComponent = OnboardingRoutesWrapper;
+    }
 
-      FPView = (
+    if (FPComponent) {
+      return (
         <ErrorBoundary resetOnProps location={location}>
           <Suspense fallback={<Loader />}>
-            <FPComponent {...matchView.match.params} />
+            <FPComponent {...fpParams} />
           </Suspense>
         </ErrorBoundary>
       );
     }
 
-    return FPView;
+    return null;
   };
 
   getSurveyForm = () => {

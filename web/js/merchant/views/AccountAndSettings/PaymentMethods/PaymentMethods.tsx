@@ -1,4 +1,5 @@
 import React, { Suspense, useEffect, useMemo } from 'react';
+import { withRouter } from 'common/deprecated/withRouter';
 import { Route, NavLink, Routes } from 'react-router-dom';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import TestModeBanner from 'merchant/components/TestModeBanner';
@@ -104,6 +105,8 @@ type Props = RouteComponentProps &
     getDiscrepanciesCategories: () => Promise<any>;
     showNotification: (arg0: { type: 'error' | 'warn'; message: string }) => void;
     user: User;
+    isFullScreenView?: boolean;
+    routePrefix?: string;
   };
 
 const PaymentMethodsV2 = ({
@@ -111,7 +114,7 @@ const PaymentMethodsV2 = ({
   instruments,
   clearLeafInstrument,
   clearIntermediateInstrument,
-  location,
+  location = {},
   leafInstrument,
   intermediateInstrument,
   loading,
@@ -121,6 +124,8 @@ const PaymentMethodsV2 = ({
   showNotification,
   user,
   history,
+  isFullScreenView = false,
+  routePrefix = '',
 }: Props): JSX.Element => {
   const handleSetInstrument = (instrument: InstrumentListItem) => {
     clearLeafInstrument();
@@ -169,14 +174,14 @@ const PaymentMethodsV2 = ({
         instrumentAsQueryParam &&
         PaymentMethodsTabsRoutesConfig[instrumentAsQueryParam as string]
       ) {
-        history.replace({
+        history?.replace({
           pathname: PaymentMethodsTabsRoutesConfig[instrumentAsQueryParam as string],
         });
       } else if (!!instruments.length) {
         // sets instrument info on mount if payment method is opened directly from URL
         const currentRouteSlug = Object.keys(PaymentMethodsTabsRoutesConfig).find((slug) => {
           const route = PaymentMethodsTabsRoutesConfig[slug];
-          return route === location.pathname;
+          return `${routePrefix}${route}` === location.pathname;
         });
         if (currentRouteSlug) {
           const currentInstrument = instruments.find(
@@ -186,7 +191,7 @@ const PaymentMethodsV2 = ({
             setInstrument(currentInstrument);
         } else {
           // set first instrument as default payment method if path doesn't exist
-          history.replace({
+          history?.replace({
             pathname: PaymentMethodsTabsRoutesConfig[instruments[0].slug],
           });
         }
@@ -205,7 +210,7 @@ const PaymentMethodsV2 = ({
   }, [loading, isIERevamp]);
 
   const getRefRoute = (routePath: string) => {
-    return routePath.replace('/payment-methods/', '') + '/*';
+    return `${routePath.replace('/payment-methods/', '')}/*`;
   };
 
   return (
@@ -214,21 +219,23 @@ const PaymentMethodsV2 = ({
         <DashboardBanner />
       </div>
       <div className="tabbed-container">
-        <Breadcrumb
-          items={[
-            accountAndSettingsLink,
-            {
-              label: isIERevamp ? ROUTE_MAP[location.pathname] : 'Payment  Methods',
-              link: location.pathname,
-            },
-          ]}
-        />
-        <StyledHeader className="scrollable-tab-header">
+        {isFullScreenView ? null : (
+          <Breadcrumb
+            items={[
+              accountAndSettingsLink,
+              {
+                label: isIERevamp ? ROUTE_MAP[location.pathname] : 'Payment  Methods',
+                link: location.pathname,
+              },
+            ]}
+          />
+        )}
+        <StyledHeader className="scrollable-tab-header" showBorderTop={isFullScreenView}>
           {isIERevamp ? (
             filteredInstruments.map((instrument) => {
               return (
                 <NavLink
-                  to={PaymentMethodsTabsRoutesConfig[instrument.slug]}
+                  to={`${routePrefix}${PaymentMethodsTabsRoutesConfig[instrument.slug]}`}
                   onClick={() => handleSetInstrument(instrument)}
                   key={instrument.slug}
                 >
@@ -237,7 +244,7 @@ const PaymentMethodsV2 = ({
               );
             })
           ) : (
-            <NavLink to={ROUTES_INFO.PAYMENT_METHODS}>Payment Methods</NavLink>
+            <NavLink to={`${routePrefix}${ROUTES_INFO.PAYMENT_METHODS}`}>Payment Methods</NavLink>
           )}
         </StyledHeader>
         <TestModeBanner />
@@ -359,4 +366,4 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default connect(mapStateToProps, mapDispatchToProps)(PaymentMethodsV2);
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(PaymentMethodsV2));
