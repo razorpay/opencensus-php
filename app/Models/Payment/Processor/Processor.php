@@ -2359,6 +2359,25 @@ class Processor
 
             if ($merchant->isFeatureEnabled('raas') === true)
             {
+                $apiBypassPaymentId = $this->app['request']->header(RequestHeader::X_API_BYPASS_PAYMENT_ID);
+
+                $allowed = $this->isOptimizerProxyHostValid();
+
+                if ($input[Payment\Entity::METHOD] === Payment\METHOD::CARD and
+                    empty($apiBypassPaymentId) === false and $allowed === true and
+                    $this->enableOptimizerCardPaymentFetchProviderCall($merchant->getId())
+                )
+                {
+                    $optimizerProviders = $this->app['optimizer_core_service']->fetchProviders($apiBypassPaymentId);
+                    if(isset($optimizerProviders['providers']) and sizeof($optimizerProviders['providers']) !== 0 and
+                        isset($optimizerProviders['providers'][0]['provider_name']) and
+                        $optimizerProviders['providers'][0]['provider_name'] === 'razorpay'
+                    )
+                    {
+                        return true;
+                    }
+                }
+
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::RAAS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
                 if ($result !== 'on') {
@@ -10422,6 +10441,28 @@ class Processor
         }
     }
 
+    // Check for host in header to avoid hackers
+    protected function isOptimizerProxyHostValid(): bool
+    {
+        $requestHost = $this->app['request']->header('Host');
+
+        $allowed = false;
+
+        // Only allowed in lower envs.
+        // And in prod with correct host. This is to avoid hackers using this header to change payment ID
+
+        if(app()->isEnvironmentProduction() === false)
+        {
+            $allowed = true;
+        }
+        else if(app()->isEnvironmentProduction() === true &&
+            ($requestHost === "prod-api-int.razorpay.com" || $requestHost === "api-dark-int.razorpay.com"))
+        {
+            $allowed = true;
+        }
+        return $allowed;
+    }
+
     /**
      * When customer is fee-bearer, the amount received from checkout is
      * inclusive of fees. (Fees is not received from checkout when
@@ -14276,6 +14317,42 @@ class Processor
         }
 
         return $outputArray;
+    }
+
+    /*
+     * enableOptimizerCardPaymentFetchProviderCall determines whether we can make fetch provider call for
+     * optimizer card payment routing through payments-card service
+     */
+    private function enableOptimizerCardPaymentFetchProviderCall($merchantID): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $this->app['config']->get('app.optimizer_card_payment_fetch_provider_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantID]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::OPTIMIZER_CARD_PAYMENT_FETCH_PROVIDER_SPLITZ_RESULT, [
+                'merchant_id' => $merchantID,
+                'variant' => $variant,
+            ]);
+
+            return $variant === 'variant_on';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::OPTIMIZER_CARD_PAYMENT_FETCH_PROVIDER_SPLITZ_ERROR);
+        }
+
+        return false;
     }
 
 }
