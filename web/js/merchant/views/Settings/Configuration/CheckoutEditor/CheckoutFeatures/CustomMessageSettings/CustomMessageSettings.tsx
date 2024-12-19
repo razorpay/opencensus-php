@@ -18,6 +18,7 @@ const CustomMessageSettings = ({ blockData }: any) => {
 
   return (
     <FeatureToggle
+      isFeature
       isChecked={values[CHECKOUT_EDITOR_FIELDS.CUSTOM_MESSAGE].isEnabled}
       feature={CHECKOUT_EDITOR_FIELDS.CUSTOM_MESSAGE}
       title={CUSTOM_MESSAGE_DEFAULT_VALUE.title}

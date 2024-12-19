@@ -12,6 +12,7 @@ const MandatorySummaryPage = ({ blockData }: any) => {
 
   return (
     <FeatureToggle
+      isFeature
       isChecked={values[CHECKOUT_EDITOR_FIELDS.MANDATORY_SUMMARY_PAGE]}
       feature={CHECKOUT_EDITOR_FIELDS.MANDATORY_SUMMARY_PAGE}
       title={MANDATORT_SUMMARY_DEFAULT_VALUE.title}

@@ -396,7 +396,7 @@ const CheckoutEditorProvider = ({
   const handleSuggestionSubmit = async (data) => {
     try {
       await createSuggestion({ type: 'post', data });
-      showNotification({ type: 'success', message: 'Suggestion added successfully' });
+      showNotification({ type: 'success', message: 'Suggestion submitted successfully' });
     } catch (error) {
       const { errors, message } = error as { errors: string[]; message: string };
       showNotification({ type: 'error', message: errors?.[0] ?? message });

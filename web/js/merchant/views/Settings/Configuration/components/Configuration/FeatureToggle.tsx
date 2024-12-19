@@ -24,6 +24,7 @@ const FeatureToggle: React.FC<FeatureToggleProps> = ({
   isChecked,
   title,
   subTitle,
+  isFeature = false,
   toggleHandler,
   extraItems,
   blockData,
@@ -32,7 +33,7 @@ const FeatureToggle: React.FC<FeatureToggleProps> = ({
   const handleSwitchChange = ({ isChecked }: { isChecked: boolean }) => {
     if (toggleHandler) {
       toggleHandler(isChecked);
-      if (!isChecked) {
+      if (!isChecked && isFeature) {
         setIsShowFeedback(true);
       } else {
         setIsShowFeedback(false);

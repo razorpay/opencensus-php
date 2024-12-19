@@ -43,7 +43,7 @@ const LineItems: React.FC<LineItemsProps> = ({
         type,
       });
       blockData.is_feedback_taken = true;
-      showNotification({ type: 'success', message: 'Feedback added successfully' });
+      showNotification({ type: 'success', message: 'Feedback submitted successfully' });
     } catch (error) {
       const { errors, message } = error as { errors: string[]; message: string };
       showNotification({ type: 'error', message: errors?.[0] ?? message });
@@ -53,12 +53,20 @@ const LineItems: React.FC<LineItemsProps> = ({
     <Wrapper>
       <TopWrapper>
         <LeftWrapper>
-          <Text weight="medium" color="surface.text.gray.normal" variant="body" size="medium">
+          <Text
+            weight="medium"
+            color="surface.text.gray.normal"
+            variant="body"
+            size="medium"
+            display={'flex'}
+          >
             {title}
             {isNewTag && (
-              <Badge size="small" color={'positive'} emphasis={'intense'} marginLeft={'8px'}>
-                New
-              </Badge>
+              <Box alignItems={'center'} display={'flex'}>
+                <Badge size="small" color={'positive'} emphasis={'intense'} marginLeft={'8px'}>
+                  New
+                </Badge>
+              </Box>
             )}
           </Text>
           <Text color="surface.text.gray.muted" variant="body" size="small" weight="regular">

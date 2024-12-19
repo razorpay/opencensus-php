@@ -11,6 +11,7 @@ const FlashCheckout = ({ blockData }: any) => {
   const { values, handleFlashCheckoutToggle } = useCheckoutEditor();
   return (
     <FeatureToggle
+      isFeature
       isChecked={values[CHECKOUT_EDITOR_FIELDS.FLASH_CHECKOUT]}
       feature={CHECKOUT_EDITOR_FIELDS.FLASH_CHECKOUT}
       title={FLASH_CHECKOUT_DEFAULT_VALUE.title}

@@ -7,6 +7,7 @@ export type RightChildrenProps = {
 export type FeatureToggleProps = {
   isChecked: boolean;
   feature: string;
+  isFeature?: boolean;
   title: string | React.ReactNode;
   subTitle: string;
   toggleHandler?: (isChecked: boolean) => void;
