@@ -25,6 +25,7 @@ class OTPVerificationSession
     const MAX_RETRY_VALUE = 10;
 
     const enablePasswordAndApiKey2fa = "PASSWORD_API_KEY_2FA";
+    const enableRouteLinkedAccount2fa = "ROUTE_LINKED_ACCOUNT_2FA";
     /**
      * @var array $setUrls will hold the http method prefixed urls for which a session key needs to be set.
      *                     This is a map of http method prefixed url and a map of key value.
@@ -47,7 +48,8 @@ class OTPVerificationSession
 
     /**
      * @var array $checkUrls will hold the http method prefixed urls for which a session key needs to be checked.
-     *                       The keys in this map can be url patterns as well
+     *                       The keys in this map can be url patterns as well. This can also optionally contain
+     *                       the request body that should be checked.
      */
     public static array $checkUrls = [
         "merchant/api/*/users/2fa"      => ["http_method" => "PATCH"],
@@ -56,6 +58,7 @@ class OTPVerificationSession
         "merchant/api/*/keys"           => ["http_method" => "POST"],
         "merchant/api/*/invitations"    => ["http_method" => "POST"],
         "submerchants"                  => ["http_method" => "POST"],
+        "merchant/api/*/batches"        => ["http_method" => "POST", "body" => ["type" => "linked_account_create"]],
     ];
 
     public static array $bankingCheckOnRoutes = [
@@ -75,6 +78,10 @@ class OTPVerificationSession
         "merchant/api/*/keys/rzp_*",
         "merchant/api/*/invitations",
         "submerchants"
+    ];
+
+    private static array $routeLinkedAccountUrlsBehindExp = [
+        "merchant/api/*/batches",
     ];
 
     /**
@@ -124,8 +131,20 @@ class OTPVerificationSession
                     continue;
                 }
 
-                // check for uri pattern
-                if ($request->is($patternUri)) {
+                if ($request->is($patternUri) && isset($data["body"])) {
+                    // Check for URI pattern and body both
+                    $requestBody = $request->all() ?? [];
+
+                    foreach ($data["body"] as $key => $value) {
+                        if (isset($requestBody[$key]) && $requestBody[$key] === $data["body"][$key]) {
+                            $patternUriToBeChecked = $patternUri;
+                            $shouldCheck = true;
+                            break;
+                        }
+                    }
+                }
+                else if ($request->is($patternUri)) {
+                    // Check for only URI pattern
                     $patternUriToBeChecked = $patternUri;
                     $shouldCheck = true;
                     break;
@@ -162,6 +181,14 @@ class OTPVerificationSession
         {
             return;
         }
+
+        // For Route 2FA flows
+        if ((in_array($patternUriToBeChecked, self::$routeLinkedAccountUrlsBehindExp) === true) &&
+            ($this->isExptEnabled(config('splitz.experiments')[self::enableRouteLinkedAccount2fa])=== false))
+        {
+            return;
+        }
+
         // if we need to check and the session key exists, only then we will do the validation
         if ($shouldCheck
             && Session::get(self::OTPVerificationSessionKey) != '1' ) {

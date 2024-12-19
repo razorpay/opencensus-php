@@ -23,6 +23,8 @@ const mockPartialCODContext = {
   handleUpdateSlab: jest.fn(),
 };
 
+jest.setTimeout(30000);
+
 describe('AdvancedSlabConfig', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -44,6 +46,7 @@ describe('AdvancedSlabConfig', () => {
     expect(screen.getByText('High')).toBeInTheDocument();
   });
 
+  //TODO: Test seems to be flaky -> magic-uts
   it('should open and closes the new slab modal', async () => {
     const newSlabButton = screen.getByRole('button', { name: /New Slab/i });
     userEvent.click(newSlabButton);

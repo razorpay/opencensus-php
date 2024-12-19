@@ -184,6 +184,7 @@ class NavFragment extends Component {
             <SwitchMerchant user={user} onSwitchMerchant={onSwitchMerchant} />
           </li>
         ) : null}
+        {/* TODO[IMP]: Move this to new header component for connected navigation post inital release */}
         {showFtuxModal ? (
           <FtuxModal
             closeModal={closeModal}

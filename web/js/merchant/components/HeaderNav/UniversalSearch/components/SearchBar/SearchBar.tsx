@@ -1,4 +1,4 @@
-import { Box, CloseIcon, Link, SearchIcon } from '@razorpay/blade/components';
+import { Box, CloseIcon, Link, SearchIcon, SearchInput } from '@razorpay/blade/components';
 import { CommonStateProps } from 'merchant/components/HeaderNav/UniversalSearch/typings';
 import { trackSearchBarClicked } from 'merchant/components/HeaderNav/UniversalSearch/utils';
 import React, { forwardRef } from 'react';
@@ -14,11 +14,16 @@ const SearchBar = forwardRef(
       isMobile,
       show,
       isDeviceInBreakpoint,
-    }: CommonStateProps & { searchQuery: string; isMobile: boolean },
+      isConnectedNavigation = false,
+    }: CommonStateProps & {
+      searchQuery: string;
+      isMobile: boolean;
+      isConnectedNavigation: boolean;
+    },
     ref,
   ): JSX.Element => {
     const handleChange = (type, e): void => {
-      const { value = '' } = e.target;
+      const { value = '' } = isConnectedNavigation ? e : e.target;
       switch (type) {
         case 'close':
           setSearch('');
@@ -39,6 +44,19 @@ const SearchBar = forwardRef(
     const handleFocus = (): void => {
       setFocussed(true);
     };
+
+    if (isConnectedNavigation) {
+      return (
+        <SearchInput
+          label=""
+          placeholder="Search payment products, settings, and more"
+          value={searchQuery}
+          onChange={handleChange.bind(null, 'change')}
+          onFocus={handleFocus}
+          onClick={trackSearchBarClicked}
+        />
+      );
+    }
 
     return (
       <Box display="flex" alignItems="center" gap="spacing.5">

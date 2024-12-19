@@ -107,11 +107,35 @@ class OTPVerificationSessionTest extends BaseTestCase
         Session::shouldReceive('exists')->with(OTPVerificationSession::OTPVerificationSessionKey)->andReturn(true);
         Session::shouldReceive('get')->with(OTPVerificationSession::OTPVerificationSessionKey)->andReturn('1');
         $this->callMethod('verifyOtpSessionIfApplicable', [$req]);
+
+        $req = Request::create("merchant/api/live/batches", "POST");
+        Session::shouldReceive('exists')->with(OTPVerificationSession::OTPVerificationSessionKey)->andReturn(true);
+        Session::shouldReceive('get')->with(OTPVerificationSession::OTPVerificationSessionKey)->andReturn('1');
+        $this->callMethod('verifyOtpSessionIfApplicable', [$req]);
+    }
+
+    public function testShouldCheckUrl()
+    {
+        // For linked account batch upload
+        $req = Request::create("merchant/api/live/batches", "POST", ["type" => "linked_account_create"]);
+        [$shouldCheck, $pattern, $routeName] = $this->callMethod('shouldCheckUrlForOtpValidation', [$req]);
+        $this->assertTrue($shouldCheck);
+        $this->assertEquals("merchant/api/*/batches", $pattern);
+        $this->assertEmpty($routeName);
+
+        // For payment transfer batch upload
+        $req = Request::create("merchant/api/live/batches", "POST", ["type" => "payment_transfer"]);
+        [$shouldCheck, $pattern, $routeName] = $this->callMethod('shouldCheckUrlForOtpValidation', [$req]);
+        $this->assertFalse($shouldCheck);
+        $this->assertEmpty( $pattern);
+        $this->assertEmpty($routeName);
+
     }
 
     public function testSetOtpSessionIfApplicable()
     {
         Session::shouldReceive('put')->once()->with(OTPVerificationSession::OTPVerificationSessionKey, '1');
+        Session::shouldReceive('put')->with(OTPVerificationSession::MaxRetryForOtpVerificationSkip, 10);
         $req = Request::create("user/verify_contact", "POST");
         $res = JsonResponse::fromJsonString(json_encode(["success" => true]));
         $this->callMethod('setOtpSessionIfApplicable', [$req, $res]);
@@ -123,6 +147,10 @@ class OTPVerificationSessionTest extends BaseTestCase
         $req = Request::create("user/verify_contact/some/other/route", "POST");
         $res = JsonResponse::fromJsonString(json_encode(["success" => true]));
         $this->callMethod('setOtpSessionIfApplicable', [$req, $res]);
+
+        $req = Request::create("merchant/api/live/batches", "POST");
+        $res = JsonResponse::fromJsonString(json_encode(["success" => true]));
+        $this->callMethod('verifyOtpSessionIfApplicable', [$req]);
     }
 
     private function callMethod($method, array $args)

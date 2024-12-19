@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
+import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 
 import {
   createTransferBatch,
@@ -15,6 +16,8 @@ import {
 import { closeModal } from 'merchant_common/reducers/modals';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { withSplitzService } from 'common/splitz';
+import { isExperimentActive } from 'common/utils/rzp-utils';
 
 const gaEvents = setGaTrack('Dashboard - Route - BU');
 
@@ -27,7 +30,7 @@ const gaEvents = setGaTrack('Dashboard - Route - BU');
   validateReversalsBatch,
   closeModal,
 })
-export default class CreateHostedMandateBatch extends Component {
+class CreateHostedMandateBatch extends Component {
   renderTransfersModal = () => (
     <BatchUpload
       acceptFileInfo={['csv', 'xlsx']}
@@ -73,8 +76,27 @@ export default class CreateHostedMandateBatch extends Component {
     />
   );
 
+  openLinkedAccountsModal = ({ criticalFlow, isExpEnabled }) => {
+    if (isExpEnabled) {
+      criticalFlow({
+        enforceVerifyOtp: true,
+        modes: ['live', 'test'],
+        onUserTwoFaVerified: this.props.openUploadModal(this.renderLinkedAccountsModal),
+      });
+    } else {
+      this.props.openUploadModal(this.renderLinkedAccountsModal)();
+    }
+  };
+
   render() {
     const { openUploadModal, user } = this.props;
+
+    const { splitz } = this.props;
+    const {
+      abExperiments: { enable_2fa_batch_upload = {} },
+    } = splitz;
+
+    const is2FAExpEnabled = isExperimentActive(enable_2fa_batch_upload);
 
     return (
       <div className="RouteBatch--dropdown">
@@ -107,23 +129,31 @@ export default class CreateHostedMandateBatch extends Component {
             !user.isRouteLinkedAccountCreationDisabled && !isOrgFeatureExist('block_account_update')
           }
         >
-          <div
-            className="panel panel-default"
-            onClick={openUploadModal(this.renderLinkedAccountsModal)}
-          >
-            <div className="panel-body">
-              <img src="/dist/css/assets/marketplace/linked_accounts.svg" />
-              <div className="description">
-                <div className="text-primary">
-                  <strong>Linked accounts</strong>
+          <TwoFactorVerificationContext.Consumer>
+            {({ criticalFlow }) => (
+              <div
+                className="panel panel-default"
+                onClick={() =>
+                  this.openLinkedAccountsModal({ criticalFlow, isExpEnabled: is2FAExpEnabled })
+                }
+              >
+                <div className="panel-body">
+                  <img src="/dist/css/assets/marketplace/linked_accounts.svg" />
+                  <div className="description">
+                    <div className="text-primary">
+                      <strong>Linked accounts</strong>
+                    </div>
+                    <div>Create linked accounts in a batch</div>
+                  </div>
+                  <i className="i-chevron-right pull-right text-primary" />
                 </div>
-                <div>Create linked accounts in a batch</div>
               </div>
-              <i className="i-chevron-right pull-right text-primary" />
-            </div>
-          </div>
+            )}
+          </TwoFactorVerificationContext.Consumer>
         </ShowWhen>
       </div>
     );
   }
 }
+
+export default withSplitzService(CreateHostedMandateBatch);

@@ -54,6 +54,7 @@ const UniversalSearch = ({
   fetchEnrollmentStatus,
   enrollmentStatus,
   isRTUXHomepage,
+  isConnectedNavigation,
 }: UniversalSearchProps): JSX.Element => {
   const haveIndexedApiBasedItems = useRef(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -236,7 +237,12 @@ const UniversalSearch = ({
 
   return (
     <div ref={searchContainerRef}>
-      <SearchBar ref={inputRef} isRTUXHomepage={isRTUXHomepage} {...commonProps} />
+      <SearchBar
+        ref={inputRef}
+        isRTUXHomepage={isRTUXHomepage}
+        isConnectedNavigation={isConnectedNavigation}
+        {...commonProps}
+      />
       <ProductListing
         ref={listingRef}
         history={history}

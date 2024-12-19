@@ -207,6 +207,7 @@ export const FALLBACK_PRODUCTS = [
 export const LOYALTY_PRODUCTS_SECTION = {
   section_name: 'LOYALTY PRODUCTS',
   section_id: 'issuing',
+  max_default_options: 3,
   product_options: [
     {
       title: SIDEEBAR_PRODUCTS_TITLES.wallet,

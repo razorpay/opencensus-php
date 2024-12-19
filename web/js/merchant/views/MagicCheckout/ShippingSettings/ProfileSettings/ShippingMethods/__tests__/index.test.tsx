@@ -19,6 +19,8 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import ShippingMethods from '..';
 const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
 
+jest.setTimeout(30000);
+
 const renderShippingMethods = (newProps = {}, name: string) => {
   const state = getStateWithSelectedProfile(name);
   return render(

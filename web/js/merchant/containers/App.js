@@ -83,8 +83,9 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
-
 import { isRTUXHomepageEnabled } from './Home/RTUX/utils';
+import NavigationLayout from 'merchant/components/NavigationLayout/NavigationLayout';
+import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
 import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
@@ -1035,7 +1036,6 @@ class App extends Component {
     const {
       splitz: { abExperiments },
     } = this.props;
-
     const isRTUXHomepage = isRTUXHomepageEnabled({ user: this.props.user, abExperiments });
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Header',
@@ -1320,15 +1320,22 @@ class App extends Component {
       config: config.config,
       org_custom_code: org.custom_code,
     };
+
+    const headerProps = {
+      user,
+      mode: currentMode,
+      modeFormatted: currentModeFormatted,
+      showGSTModal: hasGSTIN ? undefined : this.showGSTModal,
+      onSwitchMode: this.switchMode,
+      onSwitchMerchant: this.switchMerchant,
+      showMobileNav: this.props.windowWidth < mobileWidth,
+      org: this.props.org,
+      isSidebarV2: this.showSidebarV2(),
+    };
+
     const isRTUXHomepage = isRTUXHomepageEnabled({ user, abExperiments });
 
-    const showHeaderInWebview = (isWebview) => {
-      if (isWebview && isJKOfflineMerchant(org, user)) {
-        return true;
-      }
-
-      return !isWebview;
-    };
+    const isConnectedNavigation = isConnectedNavigationEnabled({ user, abExperiments });
 
     return (
       <Wrapper
@@ -1360,60 +1367,39 @@ class App extends Component {
             this.orgCode,
             this.renderFullPageView && 'layout--fp',
             isRTUXHomepage && 'layout--rtux--background',
+            isConnectedNavigation && 'layout--connected-navigation',
           )}
         >
           <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
-            {!this.renderFullPageView && showHeaderInWebview(this.state.isWebView) && (
-              <React.Fragment>
-                <HeaderNav
-                  user={user}
-                  mode={currentMode}
-                  modeFormatted={currentModeFormatted}
-                  showGSTModal={hasGSTIN ? undefined : this.showGSTModal}
-                  onSwitchMode={this.switchMode}
-                  onSwitchMerchant={this.switchMerchant}
-                  showMobileNav={this.props.windowWidth < mobileWidth}
-                  org={this.props.org}
-                  isSidebarV2={this.showSidebarV2()}
-                />
-                {this.showSidebarV2() ? (
-                  <SidebarV2 {...sidebarProps} />
-                ) : (
-                  <Sidebar {...sidebarProps} />
-                )}
-              </React.Fragment>
-            )}
-
-            {/* {this.state.isWebView && ( //@NOTE: this will be uncommented when we go live with new ui on webview.
-              <Suspense fallback={null}>
-                <WebViewHeader history={this.props.history} />
-              </Suspense>
-            )} */}
-
-            {this.getSurveyForm()}
-            <SplitzRoutesBasedService
-              customLoader={() =>
-                isMobileDevice() ? <FullPageLoader /> : <FullPageLoaderCenterToMainContent />
-              }
+            <NavigationLayout
+              renderFullPageView={this.renderFullPageView}
+              isWebView={this.state.isWebView}
+              headerProps={headerProps}
+              showSidebarV2={this.showSidebarV2()}
+              windowWidth={this.props.windowWidth}
+              sidebarProps={sidebarProps}
+              user={user}
+              isRTUXHomepage={isRTUXHomepage}
+              isConnectedNavigation={isConnectedNavigation}
             >
-              <Content
-                user={user}
-                modeFormatted={currentModeFormatted}
-                fullPageView={this.renderFullPageView}
-                isWebView={this.state.isWebView}
-                isRTUXHomepage={isRTUXHomepage}
-              />
-            </SplitzRoutesBasedService>
-            {!this.renderFullPageView && !this.state.isWebView && (
-              <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
-            )}
+              {this.getSurveyForm()}
+              <SplitzRoutesBasedService>
+                <Content
+                  user={user}
+                  modeFormatted={currentModeFormatted} // not being used by the Content
+                  fullPageView={this.renderFullPageView}
+                  isWebView={this.state.isWebView}
+                  isRTUXHomepage={isRTUXHomepage}
+                />
+              </SplitzRoutesBasedService>
+            </NavigationLayout>
 
             {/* Creates Portal for the comp */}
             <ModalDialog />
             <Notifications />
           </TwoFactorVerificationProvider>
         </div>
-        {currentMode === 'test' && !isMobileDevice() && (
+        {currentMode === 'test' && !isMobileDevice() && !isConnectedNavigation && (
           <div style={{ position: 'relative' }}>
             <HighlightTestMode onSwitchMode={this.switchMode} />
           </div>

@@ -249,6 +249,9 @@ return [
         // 2fa  for password and api key
         'PASSWORD_API_KEY_2FA' => env('PASSWORD_API_KEY_2FA', ''),
 
+        // 2FA for route linked account batch upload
+        'ROUTE_LINKED_ACCOUNT_2FA' => env('ROUTE_LINKED_ACCOUNT_2FA', ''),
+
         // enable rrn search in Payments
         'VAS_RRN_SEARCH' => env('VAS_RRN_SEARCH', ''),
         

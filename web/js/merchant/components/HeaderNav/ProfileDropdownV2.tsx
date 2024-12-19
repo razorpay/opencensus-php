@@ -95,6 +95,7 @@ const ProfileDropdownV2: React.FC<{
     name,
     isRazorxAnnouncementEnabled,
   } = user;
+
   const { name: loggedInUserName } = loggedInUser!;
   const userRole = getRole({ user });
 

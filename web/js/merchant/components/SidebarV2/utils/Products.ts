@@ -285,7 +285,9 @@ export const PRODUCTS_DATA = {
     bladeIcon: AppStoreIcon,
     icon: 'i-app-store',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
-      !isOrgFeatureExist('hide_razorpay_text_link') && !isConfigTagEnabled?.('app_store.app_store'),
+      !user.isPartnerAgentRole &&
+      !isOrgFeatureExist('hide_razorpay_text_link') &&
+      !isConfigTagEnabled?.('app_store.app_store'),
   },
   accountsettings: {
     bladeIcon: SettingsIcon,
@@ -385,7 +387,14 @@ export const PRODUCTS_DATA = {
   },
 };
 
-export const COMMON_PRODUCTS = [
+export type ProductTypeProp = {
+  title: string;
+  product_id: string;
+  tags: string[];
+  type?: string;
+};
+
+export const COMMON_PRODUCTS: Array<ProductTypeProp> = [
   {
     title: SIDEEBAR_PRODUCTS_TITLES.home,
     product_id: 'home',

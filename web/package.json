@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@razorpay/universe-cli": "18.5.1",
-    "@razorpay/blade": "11.31.2",
+    "@razorpay/blade": "11.34.1",
     "@razorpay/blade-old": "npm:@razorpay/blade-old@0.0.6-hotfix-styled-components",
     "@razorpay/blade-old-for-new-auth": "npm:@razorpay/blade-old@0.0.1",
     "@razorpay/commander-shield": "0.0.1518",

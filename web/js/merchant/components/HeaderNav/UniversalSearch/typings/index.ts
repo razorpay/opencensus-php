@@ -53,6 +53,7 @@ export type EligibleProducts = ProductItem & {
 };
 
 export interface UniversalSearchPropInterface {
+  isConnectedNavigation: boolean;
   isRTUXHomepage: boolean;
   isMobile: boolean;
   user: Required<User>;

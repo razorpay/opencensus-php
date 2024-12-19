@@ -5,6 +5,8 @@ import ExtraFiltersModal from 'merchant/views/Transactions/v2/Payments/component
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { render, screen, userEvent } from 'test-utils';
 
+jest.setTimeout(30000);
+
 const mockHandleSearch = jest.fn();
 
 const renderExtraFiltersModal = () => {

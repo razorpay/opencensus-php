@@ -345,6 +345,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'connected_navigation',
+        experimentId: {
+          beta: 'PK7igAoTxqLVkl',
+          production: 'PK7cRCY8lsu5ER',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'rbacEnabled',
         experimentId: {
           beta: 'O85moJtATjSxPO',
@@ -2008,6 +2024,27 @@ export const splitzConfig: SplitzInitConfig = {
           experimentId: {
             beta: 'PIOvoDyg5mmRXR',
             production: 'PIOmfUioCCNCC0',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      routesToMatch: ['/route/*'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'enable_2fa_batch_upload',
+          experimentId: {
+            beta: 'PYVxFe8ehz8zit',
+            production: 'PYakTWLNXcPKEb',
           },
           defaultVariant: {
             name: 'variables',

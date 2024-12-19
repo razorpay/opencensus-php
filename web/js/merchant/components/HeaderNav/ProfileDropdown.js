@@ -32,6 +32,7 @@ import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { withSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
+import ConnectedProfileDropdown from '../ConnectedNavigation/ConnectedProfileDropdown';
 import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
 import { isJKOfflineMerchant } from '../Sidebar/helpers';
 
@@ -234,6 +235,7 @@ class ProfileDropdown extends Component {
       isRTUXHomepage,
       splitz,
       onSwitchMerchant,
+      isConnectedNavigation = false,
     } = this.props;
     const { badgeStatus } = trustedBadge || {};
     const isRTBEnabled = badgeStatus === STATUS.YES_ELIGIBLE_LIVE;
@@ -248,6 +250,27 @@ class ProfileDropdown extends Component {
       user,
       abExperiments: splitz.abExperiments,
     });
+
+    if (isConnectedNavigation) {
+      return (
+        <ConnectedProfileDropdown
+          user={user}
+          isRTBEnabled={isRTBEnabled}
+          trustedBadgeTooltipInfo={trustedBadgeTooltipInfo}
+          mode={mode}
+          onSwitchMode={onSwitchMode}
+          onLogout={this.logout}
+          showPartnerIntent={this.showPartnerIntent}
+          openSwitchMerchantModal={this.openSwitchMerchantModalV2}
+          showSwitchMerchantModal={showSwitchMerchantModal}
+          onSwitchMerchantDismiss={() =>
+            // eslint-disable-next-line react/no-access-state-in-setstate
+            this.setState({ ...this.state, showSwitchMerchantModal: false })
+          }
+          onSwitchMerchant={onSwitchMerchant}
+        />
+      );
+    }
 
     if (isRTUXHomepage && !isPosSalesAgent) {
       return (

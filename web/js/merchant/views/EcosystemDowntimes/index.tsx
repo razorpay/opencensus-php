@@ -21,12 +21,14 @@ type EcosystemDowntimesProps = {
   mode: string;
   showMobileNav: boolean;
   isRTUXHomepage: boolean;
+  isConnectedNavigation?: boolean;
 };
 
 const EcosystemDowntimes = ({
   mode,
   showMobileNav,
   isRTUXHomepage,
+  isConnectedNavigation = false,
 }: EcosystemDowntimesProps): JSX.Element => {
   return (
     <ErrorBoundary
@@ -41,7 +43,10 @@ const EcosystemDowntimes = ({
       team={Teams.AVAILABILITY_AND_DOWNTIME}
     >
       <Suspense fallback={null}>
-        <EcosystemDowntimesContainer isRTUXHomepage={isRTUXHomepage} />
+        <EcosystemDowntimesContainer
+          isRTUXHomepage={isRTUXHomepage}
+          isConnectedNavigation={isConnectedNavigation}
+        />
       </Suspense>
     </ErrorBoundary>
   );

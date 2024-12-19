@@ -1,4 +1,4 @@
-const ROUTE_REG = {
+export const ROUTE_REG = {
   accountsettings:
     /^\/(account-settings|payment-methods|checkout-settings|notification-settings|website-app-settings|payments-and-refunds-settings|business-settings|bank-accounts-settlements|international-settings)/,
   riskAndFraud: /^\/(risk-and-fraud|risk-analytics)/,

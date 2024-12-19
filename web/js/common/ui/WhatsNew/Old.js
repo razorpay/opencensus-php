@@ -3,7 +3,7 @@ import moment from 'moment';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
-import { AnnouncementIcon } from '@razorpay/blade/components';
+import { AnnouncementIcon, Tooltip, Button } from '@razorpay/blade/components';
 
 import ExclusiveOffer from 'common/ui/ExclusiveOffer';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
@@ -617,7 +617,7 @@ class WhatsNewOld extends Component {
   };
 
   render() {
-    const { announcements, loading } = this.props;
+    const { announcements, loading, isConnectedNavigation } = this.props;
     const { isOpenSlider1, showTooltip } = this.state;
     let contentToShow = null;
 
@@ -634,7 +634,17 @@ class WhatsNewOld extends Component {
 
     return (
       <main className={classList('whats-new-old', isOpenSlider1 && 'whats-new--active')}>
-        <div className="whats-new-slide-toggle">{this.getAnnouncementCta()}</div>
+        {isConnectedNavigation ? (
+          <Tooltip content="View Announcements">
+            <Button
+              variant="tertiary"
+              icon={AnnouncementIcon}
+              onClick={this.handleSliderToggleClick}
+            />
+          </Tooltip>
+        ) : (
+          <div className="whats-new-slide-toggle">{this.getAnnouncementCta()}</div>
+        )}
         <div
           className={classList(
             'whats-new__tooltip',

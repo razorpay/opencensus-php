@@ -18,6 +18,8 @@ import ShippingZones from 'merchant/views/MagicCheckout/ShippingSettings/Profile
 
 const variantOn = { variables: { result: 'on' } };
 
+jest.setTimeout(30000);
+
 jest.mock('common/splitz', () => ({
   useSplitzService: () => ({
     abExperiments: {

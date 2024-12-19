@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { ActivityIcon, Heading } from '@razorpay/blade/components';
+import { ActivityIcon, Heading, Tooltip, Button } from '@razorpay/blade/components';
 import { useQueryClient } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 
@@ -29,7 +29,7 @@ const MethodsContainer = lazy(
 
 const EcosystemDowntimesContainer = (props): JSX.Element => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const { openSlider: sliderOpen, isRTUXHomepage } = props;
+  const { openSlider: sliderOpen, isRTUXHomepage, isConnectedNavigation } = props;
   const methodsContainerRef = useRef<HTMLDivElement | null>(null);
   const ecosystemHealthIcon = useRef<HTMLDivElement | null>(null);
   const queryCache = useQueryClient();
@@ -55,40 +55,52 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
 
   return (
     <>
-      <div
-        aria-label="status-detail-icon-container"
-        className={classList('status-details', isExpanded && 'status-details--active')}
-      >
-        <div className="status-details-slide-toggle">
-          {isRTUXHomepage ? (
-            <div
-              onClick={() => {
-                handleToggleSlider();
-                analyticsTrack({
-                  screen: 'home page',
-                  objectName: 'Ecosystem Health Check Icon',
-                  actionName: 'clicked',
-                  properties: {
-                    version: 'v2',
-                    ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
-                  },
-                });
-              }}
-              ref={ecosystemHealthIcon}
-            >
-              <ActivityIcon size="medium" color="interactive.icon.gray.subtle" />
-            </div>
-          ) : (
-            <i
-              className="i i-downtime"
-              aria-label="status-detail-icon"
-              onClick={handleToggleSlider}
-              ref={ecosystemHealthIcon}
-              role="img"
-            />
-          )}
+      {isConnectedNavigation ? (
+        <Tooltip content="View Ecosystem Health">
+          <Button
+            size="medium"
+            variant="tertiary"
+            icon={ActivityIcon}
+            onClick={handleToggleSlider}
+          />
+        </Tooltip>
+      ) : (
+        <div
+          aria-label="status-detail-icon-container"
+          className={classList('status-details', isExpanded && 'status-details--active')}
+        >
+          <div className="status-details-slide-toggle">
+            {isRTUXHomepage ? (
+              <div
+                onClick={() => {
+                  handleToggleSlider();
+                  analyticsTrack({
+                    screen: 'home page',
+                    objectName: 'Ecosystem Health Check Icon',
+                    actionName: 'clicked',
+                    properties: {
+                      version: 'v2',
+                      ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
+                    },
+                  });
+                }}
+                ref={ecosystemHealthIcon}
+              >
+                <ActivityIcon size="medium" color="interactive.icon.gray.subtle" />
+              </div>
+            ) : (
+              <i
+                className="i i-downtime"
+                aria-label="status-detail-icon"
+                onClick={handleToggleSlider}
+                ref={ecosystemHealthIcon}
+                role="img"
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
       {isExpanded ? (
         <Slider
           overlayCustomClass="ecosystem-downtime-overlay"

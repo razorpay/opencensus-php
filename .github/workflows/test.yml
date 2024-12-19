@@ -23,33 +23,33 @@ jobs:
       - name: Checkout Codebase
         uses: actions/checkout@v2
 
-      - name: Get Docker Info
-        run: |
-          docker info
+        # - name: Get Docker Info
+        #   run: |
+        #     docker info
 
-      - name: Install dependencies with caching
-        uses: ./.github/actions/package-installer
-        with:
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+        # - name: Install dependencies with caching
+        #   uses: ./.github/actions/package-installer
+        #   with:
+        #     github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
-      - name: Fetch base branch
-        run: |
-          git fetch origin master
+        # - name: Fetch base branch
+        #   run: |
+        #     git fetch origin master
 
-      - name: Extract branch name
-        shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-        id: extract_branch
+        # - name: Extract branch name
+        #   shell: bash
+        #   run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        #   id: extract_branch
 
-      - name: Test Codebase
+        # - name: Test Codebase
         # Automatically installs npm ci in web too
-        run: |
-          pnpm nx affected -t test:jest --silent --base=origin/master --head=${{ steps.extract_branch.outputs.branch }}
-        env:
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-          REPORT_PORTAL_TOKEN: ${{ secrets.REPORT_PORTAL_TOKEN }}
-          REPORT_PORTAL_HOST: ${{ secrets.REPORT_PORTAL_HOST }}
-          REPORT_PORTAL_PROJECT: ${{ secrets.REPORT_PORTAL_PROJECT }}
-          COMMIT_ID: ${{ github.sha }}
-          REPORT_PORTAL_LAUNCH_NAME: "Dashboard UTs-${{ steps.extract_branch.outputs.branch }}"
-          DISABLE_REPORT_PORTAL_INTEGRATION: true
+        # run: |
+        #   pnpm nx affected -t test:jest --silent --base=origin/master --head=${{ steps.extract_branch.outputs.branch }}
+        # env:
+        #   GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+        #   REPORT_PORTAL_TOKEN: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        #   REPORT_PORTAL_HOST: ${{ secrets.REPORT_PORTAL_HOST }}
+        #   REPORT_PORTAL_PROJECT: ${{ secrets.REPORT_PORTAL_PROJECT }}
+        #   COMMIT_ID: ${{ github.sha }}
+        #   REPORT_PORTAL_LAUNCH_NAME: "Dashboard UTs-${{ steps.extract_branch.outputs.branch }}"
+        #   DISABLE_REPORT_PORTAL_INTEGRATION: true

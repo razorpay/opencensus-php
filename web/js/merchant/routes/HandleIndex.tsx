@@ -7,16 +7,20 @@ import { useSplitzService } from 'common/splitz';
 import { User } from 'common/typings';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { matchFullPageView } from 'merchant/routes';
+import { ONE_NAV_MOBILE_PATH } from 'merchant/components/NavigationLayout/constants';
+import { isMobileResolution } from 'common/utils/rzp-utils';
 
 type HandleIndexProps = {
   user: User;
+  isConnectedNavigation: boolean;
 };
 
 const SALES_ASSISTED_ONBOARDING = 'sales_assisted_onboarding';
 
-const HandleIndex = ({ user }: HandleIndexProps) => {
+const HandleIndex = ({ user, isConnectedNavigation }: HandleIndexProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+
   const [searchParams] = useSearchParams();
   const i18 = useI18Service();
   // creating an abstraction of just consuming splitz experiment, rest service should not be accessed via RouteGuard
@@ -24,14 +28,18 @@ const HandleIndex = ({ user }: HandleIndexProps) => {
   const { abExperiments } = splitz;
   const { isPosSalesAgent, isPosEkycAgent } = checkIfPosSalesAgent({ user, abExperiments });
 
+  const isMobile = isMobileResolution();
+
   useEffect(() => {
     const matchView = matchFullPageView(location.pathname, {
       i18,
       splitz: { abExperiments },
     });
+
     if (matchView && matchView.match) {
       return;
     }
+
     if (location.hash) {
       const path = location.hash.replace(/#\/?app\/?/, '') || 'dashboard';
 
@@ -57,8 +65,16 @@ const HandleIndex = ({ user }: HandleIndexProps) => {
       }
       navigate('/partners/submerchants/pos');
     } else if (user.isPartner()) {
+      if (isConnectedNavigation && isMobile) {
+        navigate(ONE_NAV_MOBILE_PATH);
+        return;
+      }
       navigate('/partners');
     } else {
+      if (isConnectedNavigation && isMobile) {
+        navigate(ONE_NAV_MOBILE_PATH);
+        return;
+      }
       navigate('/dashboard');
     }
   }, []);

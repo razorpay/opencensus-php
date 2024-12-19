@@ -1,25 +1,31 @@
 import React, { Suspense, useEffect, useState } from 'react';
+import { AnnouncementIcon, Tooltip, Button } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { compose } from 'redux';
-import { AnnouncementIcon } from '@razorpay/blade/components';
 
 import Loader from 'common/ui/Loader';
 import { trackLoad } from 'common/ui/NotificationsDropdown/ga';
+import { analyticsTrack } from 'common/utils/analytics';
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import lazy from 'merchant/routes/LazyLoader';
 import { pushSlider as fnPushSlider } from 'merchant_common/reducers/multiSlider';
 
 import { getExperimentVersion, getNotificationsReadData } from './common';
-
 import './Icon.styl';
-import { analyticsTrack } from 'common/utils/analytics';
 
 const WhatsNewLazyComponent = lazy(() =>
   import(/* webpackChunkName: "WhatsNewLazyComponent" */ 'common/ui/WhatsNew'),
 );
 
-const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider, isRTUXHomepage }) => {
+const WhatsNewIcon = ({
+  user,
+  showMobileNav,
+  tracking,
+  pushSlider,
+  isRTUXHomepage,
+  isConnectedNavigation,
+}) => {
   const [isOpen, setOpen] = useState(false);
 
   const setUnreadMsgs = () => {
@@ -108,6 +114,14 @@ const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider, isRTUXHomepag
       </>
     );
   };
+
+  if (isConnectedNavigation) {
+    return (
+      <Tooltip content="View Announcements">
+        <Button variant="tertiary" icon={AnnouncementIcon} onClick={handleSliderToggleClick} />
+      </Tooltip>
+    );
+  }
 
   return (
     <div className={classList('whats-new-icon', isOpen && 'whats-new-icon--active')}>

@@ -181,6 +181,7 @@ class HeaderNav extends Component {
       i18: { isConfigTagEnabled },
       splitz,
     } = this.props;
+
     const { isSuccessfullyCouponApplied, mtuOfferCount, isRefreshLoading } = this.state;
 
     const fragmentSpecificProps = {

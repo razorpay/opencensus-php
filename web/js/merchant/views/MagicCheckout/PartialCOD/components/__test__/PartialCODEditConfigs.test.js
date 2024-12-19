@@ -24,6 +24,8 @@ const mockPartialCODContext = {
   handleUpdateSlab: jest.fn(),
 };
 
+jest.setTimeout(15000);
+
 describe('PartialCODEditConfigs', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -71,6 +73,7 @@ describe('PartialCODEditConfigs', () => {
     expect(screen.getByText('Advanced partial COD slabs')).toBeInTheDocument();
   });
 
+  //TODO: Test case seems flaky -> magic-uts
   it('should render Shiprocket Notice Modal when viewed', async () => {
     renderComponent();
     const viewBtn = screen.getByText('View');

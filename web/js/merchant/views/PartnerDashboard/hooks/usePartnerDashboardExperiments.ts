@@ -24,7 +24,7 @@ const isPlatformPartnerInviteFlowEnabled = ({ abExperiments, user }) => {
   );
 };
 
-const isPartnerPlaybookEnabled = ({ abExperiments, user }) => {
+export const isPartnerPlaybookEnabled = ({ abExperiments, user }) => {
   return (
     !user.isPartnerAgentRole &&
     user.isOrgRZP &&
@@ -66,7 +66,7 @@ const isFeatureEnabled = (feature, enabledFeatures) => {
   return enabledFeatures.some((item) => item.feature === feature);
 };
 
-const getIsPosKycEnabled = ({ user }) => {
+export const getIsPosKycEnabled = ({ user }) => {
   const enabledFeatures = filterBy(user.features ?? [], 'value', true);
   return isFeatureEnabled('pos_channel_partnership', enabledFeatures);
 };

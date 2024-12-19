@@ -69,6 +69,7 @@ import { isExperimentEnabled } from 'common/splitz/utils';
 import MagicKonnect from 'merchant/views/MagicKonnect';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import TncUpdateModal from 'merchant/components/TncUpdateModal';
+import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
 import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 
 // eslint-disable-next-line require-await
@@ -646,6 +647,17 @@ const MyDevices = lazy(() =>
   import(/* webpackChunkName: "MyDevices" */ 'merchant/views/MyDevices'),
 );
 
+const ConnectedMobileHome = lazy(() =>
+  import(
+    /* webpackChunkName: "ConnectedMobileHome" */ 'merchant/views/ConnectedHome/ConnectedMobileHome'
+  ),
+);
+const ConnectedNavigationContent = lazy(() =>
+  import(
+    /* webpackChunkName: "ConnectedNavigationContent" */ 'merchant/components/NavigationLayout/NavigationContent/NavigationContent'
+  ),
+);
+
 @withI18Service
 @connect(
   (state) => ({
@@ -901,10 +913,12 @@ class Content extends Component {
     const isDisputesRevampV2Enabled = this.checkIsDisputesRevampV2Enabled();
     const isJkOrg = isJKOfflineMerchant(org, user);
 
+    const isConnectedNavigation = isConnectedNavigationEnabled({ user, abExperiments });
+
     return (
       <Suspense fallback={<Loader />}>
         <Routes location={this.baseLocation}>
-          <Route path="*" element={<HandleIndex />} />
+          <Route path="*" element={<HandleIndex isConnectedNavigation={isConnectedNavigation} />} />
           <Route
             path="dashboard/*"
             element={
@@ -913,6 +927,49 @@ class Content extends Component {
               </RouteGuard>
             }
           />
+
+          {/* ONE NAV ROUTES START: Adding these routes for connected Nav & will be behind splits experiments */}
+          <Route
+            path="home/*"
+            element={
+              <RouteGuard additionalCondition={() => isMobileResolution() && isConnectedNavigation}>
+                <ConnectedMobileHome />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="payroll/*"
+            element={
+              <RouteGuard additionalCondition={() => isConnectedNavigation}>
+                <ConnectedNavigationContent />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="banking/*"
+            element={
+              <RouteGuard additionalCondition={() => isConnectedNavigation}>
+                <ConnectedNavigationContent />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="billme/*"
+            element={
+              <RouteGuard additionalCondition={() => isConnectedNavigation}>
+                <ConnectedNavigationContent />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="rize/*"
+            element={
+              <RouteGuard additionalCondition={() => isConnectedNavigation}>
+                <ConnectedNavigationContent />
+              </RouteGuard>
+            }
+          />
+          {/**** ONE NAV ROUTES END ****/}
 
           <Route
             path="partners/*"
@@ -2650,7 +2707,15 @@ class Content extends Component {
   };
 
   render() {
-    const { mode, user, fullPageView, isWebView, isMobile, org } = this.props;
+    const {
+      mode,
+      user,
+      fullPageView,
+      isWebView,
+      isMobile,
+      org,
+      splitz: { abExperiments },
+    } = this.props;
 
     let DetailView = this.detailView;
     const BaseView = this.baseLocation ? this.getBaseView() : null;
@@ -2703,16 +2768,22 @@ class Content extends Component {
       );
     }
 
+    const isConnectedNavigation = isConnectedNavigationEnabled({ user, abExperiments });
+
     return (
       // to add a new class alognside main-content if we are in the test mode and in m-web
       <main
         class={classList(
           !fullPageView && (!isWebView || (isWebView && isJkOrg)) && 'main-content',
           !fullPageView && !isWebView && this.props.isRTUXHomepage ? 'main-content--rtux' : '',
+          !fullPageView && !isWebView && isConnectedNavigation
+            ? 'main-content--connected-navigation'
+            : '',
           isMobileSearchEnabled &&
             !fullPageView &&
             !isWebView &&
             !isPosSalesAgent &&
+            !isConnectedNavigation &&
             'search-header',
           mode === 'test' && isMobileDevice() ? 'test-mode' : '',
           isWebView && isJkOrg && 'main-content',
