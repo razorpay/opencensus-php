@@ -11,6 +11,12 @@ const campaign1 = CAMPAIGN_HERO_MOCK_RESPONSE.data.campaign_hero_card_data.asset
 const initProps = { queryKey: [], isLoading: false, ...CAMPAIGN_HERO_MOCK_RESPONSE };
 
 describe('Widgets->CampaignHero', () => {
+  beforeAll(() => {
+    const mockIntersectionObserver = jest.fn();
+    mockIntersectionObserver.mockReturnValue({ observe: jest.fn(), unobserve: jest.fn() });
+    window.IntersectionObserver = mockIntersectionObserver;
+  });
+
   const renderApp = (defaultProps = {}) => {
     return render(<CampaignHero {...initProps} {...defaultProps} />);
   };

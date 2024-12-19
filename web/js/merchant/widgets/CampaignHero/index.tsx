@@ -29,6 +29,7 @@ export const CampaignHero = ({
 }: CampaignHeroWidgetProps & CommonWidgetProps) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const [isRetrying, retryHandler] = useRetryWidget(queryKey);
+  const [isOnScreen, setIsOnScreen] = React.useState(false);
   const [width, setWidth] = React.useState(0);
 
   const screen = getUcsAliasFromQueryKey(queryKey) ?? '';
@@ -60,14 +61,20 @@ export const CampaignHero = ({
     const container = ref.current;
     if (!container) return;
 
-    const observer = new ResizeObserver((elements) => {
+    const resizeObserver = new ResizeObserver((elements) => {
       setWidth(elements[0].contentRect.width);
     });
-    observer.observe(container);
+    const screenObserver = new IntersectionObserver((elements) => {
+      setIsOnScreen(elements[0].isIntersecting);
+    });
+
+    resizeObserver.observe(container);
+    screenObserver.observe(container);
 
     // eslint-disable-next-line consistent-return
     return () => {
-      observer.unobserve(container);
+      resizeObserver.unobserve(container);
+      screenObserver.unobserve(container);
     };
   }, [isLoading, isRetrying]);
 
@@ -102,7 +109,7 @@ export const CampaignHero = ({
           <Carousel
             visibleItems="autofit"
             navigationButtonPosition="side"
-            autoPlay
+            autoPlay={isOnScreen}
             onChange={(idx) => _track(idx, 'widget', 'loaded')}
           >
             {campaigns.map(({ templates }, idx) => {
