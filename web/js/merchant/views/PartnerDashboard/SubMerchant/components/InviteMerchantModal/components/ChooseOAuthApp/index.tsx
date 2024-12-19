@@ -182,7 +182,9 @@ const ChooseOAuthApp = ({
         </Box>
       </RadioGroup>
       <ModalFooter>
-        <Button onClick={onNextClick}>Next</Button>
+        <Button isDisabled={!selectedApp} onClick={onNextClick}>
+          Next
+        </Button>
       </ModalFooter>
     </Box>
   );
