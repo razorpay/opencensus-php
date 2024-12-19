@@ -1269,7 +1269,7 @@ class App extends Component {
     const { isPosSalesAgent } = checkIfPosSalesAgent({ user, abExperiments: splitz.abExperiments });
 
     const isSidebarV2 =
-      (user.isOrgRZP || user.isVasTestingMerchant) &&
+      user.isOrgRZP &&
       !user.isPartner() &&
       !user.isSourceRX &&
       !user.isPartnerAgentRole &&

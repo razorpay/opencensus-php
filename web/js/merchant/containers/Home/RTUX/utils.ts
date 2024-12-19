@@ -20,7 +20,7 @@ export const isRTUXHomepageEnabled = ({ user, abExperiments }: RTUXHomepageEnabl
   return (
     isActivated &&
     user.isCountryIndia &&
-    (user.isOrgRZP || user.isVasTestingMerchant) &&
+    user.isOrgRZP &&
     !user.isPartner() &&
     !checkIfPosSalesAgent({ user, abExperiments })?.isPosSalesAgent &&
     isExperimentEnabled(abExperiments.rtux_homepage)

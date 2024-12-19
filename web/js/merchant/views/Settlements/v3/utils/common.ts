@@ -99,7 +99,7 @@ export const isSettlementsV3detailsRevamp = (splitz: SpiltzContextState, user: U
   ];
 
   if (excludedOrgs.some((org) => org.toLowerCase() === user.orgCustomCode?.toLowerCase())) {
-    return false;
+    return user.isParityFeaturesEnabledForHDCF;
   }
 
   const isExcludedSegment = !user.isOrgRZP;

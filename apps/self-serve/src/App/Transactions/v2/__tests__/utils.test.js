@@ -70,7 +70,7 @@ describe('experiments util', () => {
     expect(minorConversionResult).toBe(10000);
   });
 
-  it('should return true if merchant is VAS merchant', () => {
+  it('should return false if merchant is VAS merchant', () => {
     const splitz = { abExperiments: { Transactions_Revamp: { variables: { result: 'on' } } } };
     const user = {
       isOrgRZP: false,
@@ -79,6 +79,6 @@ describe('experiments util', () => {
       isCountryIndia: true,
     };
     const result = isTransactionsV2Enabled(splitz, user);
-    expect(result).toBeTruthy();
+    expect(result).toBeFalsy();
   });
 });

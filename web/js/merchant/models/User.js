@@ -1891,7 +1891,8 @@ export default class User {
     );
   }
 
-  get isVasTestingMerchant() {
+  // VAS testing experiment is re-purposed for HDFC rollout of features
+  get isParityFeaturesEnabledForHDCF() {
     return getSplitzExperimentVariant('enable_testing_for_vas')?.variables?.result === 'on';
   }
 
@@ -1908,11 +1909,16 @@ export default class User {
       ORG_CUSTOM_CODE_MAP.HDFC_GIG,
     ];
 
-    if (
-      excludedOrgs.some((org) => org.toLowerCase() === this.orgCustomCode?.toLowerCase()) ||
-      this.isJnKOmniEnabled
-    ) {
+    if (this.isJnKOmniEnabled) {
       return false;
+    }
+
+    const isHDFCOrg = excludedOrgs.some(
+      (org) => org.toLowerCase() === this.orgCustomCode?.toLowerCase(),
+    );
+
+    if (isHDFCOrg) {
+      return this.isParityFeaturesEnabledForHDCF;
     }
 
     const isExcludedSegmentRampEnabled =
@@ -2006,7 +2012,7 @@ export default class User {
     ];
 
     if (excludedOrgs.some((org) => org.toLowerCase() === this.orgCustomCode?.toLowerCase())) {
-      return false;
+      return this.isParityFeaturesEnabledForHDCF;
     }
 
     const isExcludedSegmentRampEnabled =

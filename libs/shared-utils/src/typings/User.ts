@@ -72,7 +72,7 @@ type Getters = {
   isSubMerchantKycEnabled: boolean;
   isOmniChannelMerchant: boolean;
   isOmniEnabledMerchant: boolean;
-  isVasTestingMerchant: boolean;
+  isParityFeaturesEnabledForHDCF: boolean;
   isRRNSearchEnabled: boolean;
   isPayerNameEnabled: boolean;
 };

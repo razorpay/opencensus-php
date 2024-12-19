@@ -66,6 +66,7 @@ import PaymentOptimizerDetails from './PaymentOptimizerDetails';
 import { getPaymentReferenceNumber } from 'merchant/views/Transactions/v1/utils';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import PaymentProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentProvider';
+import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 
 const PaymentReceipt = lazy(
   () =>
@@ -179,6 +180,11 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
     payee_vpa,
     device_detail,
     upi,
+    status,
+    error_code,
+    error_source,
+    error_step,
+    error_reason,
   } = paymentDetails;
   const { isConfigTagEnabled } = useI18Service();
 
@@ -315,6 +321,36 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     id,
                   )}
                 />
+                {status === 'failed' ? (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow label="Status" value={<PaymentStatusLabel status={status} />} />
+                    {error_code ? (
+                      <>
+                        <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                        <DetailRow label="Error" value={error_code} />
+                      </>
+                    ) : null}
+                    {error_source ? (
+                      <>
+                        <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                        <DetailRow label="Error Source" value={error_source} />
+                      </>
+                    ) : null}
+                    {error_step ? (
+                      <>
+                        <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                        <DetailRow label="Error Step" value={error_step} />
+                      </>
+                    ) : null}
+                    {error_reason ? (
+                      <>
+                        <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                        <DetailRow label="Error Reason" value={error_reason} />
+                      </>
+                    ) : null}
+                  </>
+                ) : null}
                 {isTxnV2ParityFeaturesEnabled ? <PaymentPageDetails id={order_id} /> : null}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow

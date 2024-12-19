@@ -84,7 +84,7 @@ type Getters = {
   isCountryIndia: boolean;
   isCountryMalaysia: boolean;
   isCountrySingapore: boolean;
-  isVasTestingMerchant: boolean;
+  isParityFeaturesEnabledForHDCF: boolean;
   isMultiCouponsEnabled: boolean;
   isAdminOrOwner: boolean;
   isOwner: boolean;

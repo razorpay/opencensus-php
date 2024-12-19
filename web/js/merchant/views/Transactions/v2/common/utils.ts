@@ -218,12 +218,12 @@ export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User):
     ORG_CUSTOM_CODE_MAP.HDFC_GIG,
   ];
 
-  // Omni flagged J&K merchants are excluded as well
-  if (
-    excludedOrgs.some((org) => org.toLowerCase() === user.orgCustomCode?.toLowerCase()) ||
-    user.isJnKOmniEnabled
-  ) {
+  if (user.isJnKOmniEnabled) {
     return false;
+  }
+
+  if (excludedOrgs.some((org) => org.toLowerCase() === user.orgCustomCode?.toLowerCase())) {
+    return user.isParityFeaturesEnabledForHDCF;
   }
 
   const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
