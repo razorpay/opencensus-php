@@ -35,6 +35,7 @@ const KeysAndPluginsSection = ({
   fetchSupportedPlugins,
   showNotification,
   showProvidedChannels = false,
+  switchMode,
 }) => {
   const providedChannels = getProvidedChannels(user);
   const defaultPlatform = getAvailablePlatform(user, { showProvidedChannels });
@@ -61,7 +62,12 @@ const KeysAndPluginsSection = ({
   const options = Object.values(supportedPlugins.items).concat([NO_PLUGIN_OPTION]);
 
   const pluginSteps: JSX.Element[] = [
-    <GenerateKey product={product} selectedPlatform={selectedPlatform} key="generate" />,
+    <GenerateKey
+      product={product}
+      selectedPlatform={selectedPlatform}
+      key="generate"
+      switchMode={switchMode}
+    />,
     <Integrate
       product={product}
       selectedPlugin={selectedPlugin}

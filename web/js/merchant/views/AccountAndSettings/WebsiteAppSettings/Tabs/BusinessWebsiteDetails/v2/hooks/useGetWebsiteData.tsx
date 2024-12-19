@@ -20,9 +20,10 @@ const getWebsiteUpdate = async (mode): Promise<WebsiteUpdateApiData> => {
   }
 };
 
-export const useGetWebsiteUpdate = (mode) =>
+export const useGetWebsiteUpdate = (mode, enabled = true) =>
   useQuery<WebsiteUpdateApiData>(['getWebsiteUpdate'], () => getWebsiteUpdate(mode), {
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     retry: 0,
+    enabled,
   });

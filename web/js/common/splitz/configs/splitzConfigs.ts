@@ -2220,5 +2220,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: ['/onboarding/api-keys'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'show_ftux_V_1Point5',
+          experimentId: {
+            beta: 'PR2RpndGTDzJKE',
+            production: 'PR2XlXjhxUoeDT',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

@@ -119,7 +119,7 @@ const ApiKeysAndPlugins = ({
         )}
         <div className="content">
           <ErrorBoundary resetOnProps>
-            <KeysAndPlugins showProvidedChannels={isFullScreenMode} />
+            <KeysAndPlugins showProvidedChannels={isFullScreenMode} switchMode={switchMode} />
           </ErrorBoundary>
         </div>
       </div>

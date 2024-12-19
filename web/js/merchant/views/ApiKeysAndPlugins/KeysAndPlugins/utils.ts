@@ -72,3 +72,12 @@ export const getAvailablePlugin = ({
 export const getLatestKey = (keys) => {
   return keys && keys.length ? keys?.sort((a, b) => b.created_at - a.created_at)?.[0] : null;
 };
+
+/**
+ * Get hours offset in milliseconds
+ * @param {number} hours - number of hours
+ * @return {number} milliseconds
+ */
+export const getHoursOffset = (hours: number): number => {
+  return hours * 60 * 60 * 1000;
+};

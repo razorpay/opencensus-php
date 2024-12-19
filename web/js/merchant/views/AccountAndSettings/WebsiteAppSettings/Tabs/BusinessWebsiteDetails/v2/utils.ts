@@ -379,7 +379,7 @@ export enum Status {
   Rejected = 'rejected',
 }
 
-type NullableStatus = Status | null;
+export type NullableStatus = Status | null;
 type NullableAnalyticsStatus = WebsiteUpdateAutomationStatus | Status | null;
 
 export function getWebsiteWorkflowStatus({

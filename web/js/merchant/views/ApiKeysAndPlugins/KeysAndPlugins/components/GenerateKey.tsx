@@ -1,31 +1,44 @@
-import React, { useMemo, useState, useReducer } from 'react';
+import React, { useMemo, useState, useReducer, useEffect } from 'react';
+import { connect } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { bindActionCreators } from 'redux';
+
+import Alert from 'common/new-ui/Alert';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
+import Time from 'common/ui/Time';
 import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { useTrigger2Fa } from 'common/ui/TwoFactorVerification/hooks';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-
-import Time from 'common/ui/Time';
-import Alert from 'common/new-ui/Alert';
-import fileDownload from 'common/utils/file-download';
-import ajax from 'merchant/utils/ajax';
 import copyToClipboard from 'common/utils/copyToClipboard';
-import RollKey from 'merchant/views/Settings/Keys/components/RollKey';
+import fileDownload from 'common/utils/file-download';
 import * as KeyActions from 'merchant/reducers/keys';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-
+import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
+import ajax from 'merchant/utils/ajax';
+import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import { useGetWebsiteUpdate } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/hooks/useGetWebsiteData';
+import {
+  Status as WebsiteStatusEnum,
+  getWebsiteWorkflowStatus,
+} from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/utils';
+import {
+  WebsiteApiTimeline,
+  WebsiteApiModeSwitchFooter,
+} from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/components/WebsiteApiTimeline';
+import { INTEGRATION_TITLE } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/constants';
+import {
+  trackCTAClick,
+  trackAsyncResult,
+  trackKeyCopy,
+} from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/events';
 import {
   KeyField,
   MerchantProduct,
   Platform,
 } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/types';
 import { getLatestKey } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/utils';
-import {
-  trackCTAClick,
-  trackAsyncResult,
-  trackKeyCopy,
-} from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/events';
-import { INTEGRATION_TITLE } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/constants';
+import RollKey from 'merchant/views/Settings/Keys/components/RollKey';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 const copyState: Record<KeyField, boolean> = { [KeyField.ID]: false, [KeyField.SECRET]: false };
 
@@ -46,6 +59,7 @@ const copyReducer = (
 export interface GenerateKeyProps {
   selectedPlatform: Platform;
   product: MerchantProduct;
+  switchMode: (mode: string, callback?: () => void) => void;
   user: any;
   keys: any;
   mode: string;
@@ -54,12 +68,16 @@ export interface GenerateKeyProps {
   openModal: any;
   closeModal: any;
   showNotification: any;
+  workflows: Record<string, any>;
+  fetchWorkflowStatus: any;
+  merchantLoginMode: string;
 }
 
 const GenerateKey = ({
   // from parent
   selectedPlatform,
   product,
+  switchMode,
   // state from redux
   user,
   keys: keysState,
@@ -70,7 +88,27 @@ const GenerateKey = ({
   openModal,
   closeModal,
   showNotification,
+  workflows,
+  fetchWorkflowStatus,
+  merchantLoginMode,
 }: GenerateKeyProps) => {
+  const navigate = useNavigate();
+  const splitz = useSplitzService();
+
+  const isFtux1Point5Enabled = isExperimentEnabled(splitz?.abExperiments?.show_ftux_V_1Point5);
+
+  const { data: websiteUpdateData, isLoading: isWebsiteUpdateDataFetching } = useGetWebsiteUpdate(
+    merchantLoginMode,
+    !!isFtux1Point5Enabled,
+  );
+
+  const websiteWorkflowData = workflows?.[WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE];
+
+  const { status: websiteReviewStatus } = getWebsiteWorkflowStatus({
+    businessWebsiteWorkflow: websiteWorkflowData,
+    websiteUpdateData: websiteUpdateData ?? {},
+  });
+
   const [currentKeySecret, setCurrentKeySecret] = useState<string | null>(null);
   const [isKeyGenerating, setIsKeyGenerating] = useState(false);
   const [copied, dispatch] = useReducer(copyReducer, copyState);
@@ -88,7 +126,7 @@ const GenerateKey = ({
   //* For getting the latest generated key
   const latestKey = useMemo(() => getLatestKey(keys), [keys]);
 
-  const downloadKey = (): Promise<Record<string, unknown>> => {
+  const downloadKey = (): Promise<void | Record<string, unknown>> => {
     trackCTAClick('Download Key', { paymentChannel: INTEGRATION_TITLE[selectedPlatform], product });
 
     return ajax({
@@ -222,13 +260,46 @@ const GenerateKey = ({
     }
   };
 
+  const handleNavigateToWebsite = (navigateParams?: Record<string, string>) => {
+    navigate(
+      `/onboarding/business-website-details${
+        navigateParams ? `?${new URLSearchParams(navigateParams).toString()}` : ''
+      }`,
+    );
+  };
+
+  useEffect(() => {
+    if (isFtux1Point5Enabled) {
+      fetchWorkflowStatus?.(WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE);
+    }
+  }, [isFtux1Point5Enabled]);
+
   return (
     <>
       <div className="keys-plugins-step__heading">
-        {latestKey && !currentKeySecret ? <>API key downloaded &#11015;</> : 'Get API key'}
+        {latestKey && !currentKeySecret && !isFtux1Point5Enabled ? (
+          <>API key downloaded &#11015;</>
+        ) : (
+          'Get API key'
+        )}
       </div>
-      <div className="keys-plugins-step__content">
-        {mode.toLowerCase() === 'live' && platformURL && !user?.has_key_access ? (
+      <div
+        className="keys-plugins-step__content"
+        style={{ gap: isFtux1Point5Enabled ? '16px' : '32px' }}
+      >
+        {mode.toLowerCase() === 'live' && isFtux1Point5Enabled && (
+          <WebsiteApiTimeline
+            status={websiteReviewStatus}
+            latestKey={latestKey}
+            handleNavigateToWebsite={handleNavigateToWebsite}
+            loading={websiteWorkflowData?.loading || isWebsiteUpdateDataFetching}
+          />
+        )}
+
+        {mode.toLowerCase() === 'live' &&
+        platformURL &&
+        !user?.has_key_access &&
+        !isFtux1Point5Enabled ? (
           <div>
             <strong>You can generate API keys in Test Mode</strong>
             <br />
@@ -344,11 +415,24 @@ const GenerateKey = ({
                 onGenerateKey(e);
               }
             }}
-            disabled={isKeyGenerating}
+            disabled={
+              isKeyGenerating ||
+              (mode.toLowerCase() === 'live' &&
+                isFtux1Point5Enabled &&
+                (websiteReviewStatus !== WebsiteStatusEnum.Success ||
+                  websiteWorkflowData?.loading ||
+                  isWebsiteUpdateDataFetching))
+            }
           >
             {isKeyGenerating ? 'Generating...' : 'Generate key'}
           </button>
         )}
+
+        {mode.toLowerCase() === 'live' &&
+          isFtux1Point5Enabled &&
+          websiteReviewStatus !== WebsiteStatusEnum.Success &&
+          !websiteWorkflowData?.loading &&
+          !isWebsiteUpdateDataFetching && <WebsiteApiModeSwitchFooter switchMode={switchMode} />}
       </div>
     </>
   );
@@ -360,7 +444,17 @@ export default connect(
     keys: state.keys,
     mode: state.session.modeFormatted,
     merchantId: state.session.user?.current,
+    workflows: state.workflows,
+    merchantLoginMode: state.session.mode,
   }),
   (dispatch) =>
-    bindActionCreators({ ...KeyActions, ...ModalActions, ...NotificationsActions }, dispatch),
+    bindActionCreators(
+      {
+        ...KeyActions,
+        ...ModalActions,
+        ...NotificationsActions,
+        fetchWorkflowStatus: fetchWorkflowStatusReducer,
+      },
+      dispatch,
+    ),
 )(GenerateKey);

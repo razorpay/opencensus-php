@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
 import { Alert, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
 import { Environments, ShowNotificationType, Store, User as UserType } from 'common/typings';
@@ -48,6 +48,7 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
   updateSession,
   showNotification,
 }) => {
+  const location = useLocation();
   const navigate = useNavigate();
 
   const { rejection_reason_message, needs_clarification: needs_clarification_message } =
@@ -133,6 +134,18 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
   const onClickGenerateAPIKeys = useCallback(() => {
     navigate(ROUTES_INFO.API_KEYS);
   }, []);
+
+  useEffect(() => {
+    // If landed on this page with query params for opening modals
+    const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get('clarificationModalVisible') === 'true') {
+      // open needs clarification modal
+      onReplyClick();
+    } else if (queryParams.get('bvsModalVisible') === 'true') {
+      // open bvs website pages update modal
+      onFixMissingPages();
+    }
+  }, [location.search]);
 
   if (status === Status.Success) {
     return (
