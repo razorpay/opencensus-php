@@ -13,13 +13,12 @@ import { BreakupHeader, StyledBox, StyledDivider } from './styled';
 
 const Breakup = ({
   breakupDetails: { items, isBreakupNew, loading, error },
-  user: {
-    merchant: { currency },
-  },
+  user,
 }: {
   breakupDetails: BreakupDetailsInterface;
   user: Required<User>;
 }): JSX.Element | null => {
+  const currency = user.merchant.currency;
   const [collapseState, setCollapseState] = useState<{ [key: string]: boolean }>({
     gross: true,
     deduction: true,
@@ -27,6 +26,7 @@ const Breakup = ({
   const { grossSettlements, deductions, netSettlements } = getBreakUpDetails({
     items,
     isBreakupNew,
+    user,
   });
   const toggleDrawer = (type) =>
     setCollapseState((prevState) => ({ ...prevState, [type]: !prevState[type] }));

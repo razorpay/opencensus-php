@@ -136,13 +136,10 @@ function PaymentMethod({
     if (method === 'wallet') {
       const walletName = titleCase(wallet);
       return (
-        <>
-          Wallet
-          <span style={{ marginLeft: '8px' }}>
-            ( <img src={WalletIcon} alt="wallet-icon" style={{ marginLeft: '4px' }} /> {walletName}{' '}
-            )
-          </span>
-        </>
+        <Box display="flex" alignItems="center">
+          Wallet ( <img src={WalletIcon} alt="wallet-icon" style={{ marginLeft: '4px' }} />{' '}
+          {walletName} )
+        </Box>
       );
     }
 

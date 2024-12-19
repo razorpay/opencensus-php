@@ -1,3 +1,4 @@
+import { User } from 'common/typings';
 import { titleCase } from 'common/utils/rzp-utils';
 import { getOrg } from 'merchant/store';
 import {
@@ -8,7 +9,7 @@ import {
 } from 'merchant/views/Settlements/v3/typings';
 
 // TODO: update this data after getting value from BE.
-const InstrumentMapper = {
+const instrumentMapper = (user: User) => ({
   payment_domestic: {
     displayName: 'Payment',
     tooltipInfo:
@@ -16,7 +17,7 @@ const InstrumentMapper = {
   },
   tax: {
     displayName: 'Tax',
-    tooltipInfo: 'Goods and Service Tax (GST)',
+    tooltipInfo: user.isOrgCurlec ? 'Sales and Service Tax (SST)' : 'Goods and Service Tax (GST)',
   },
   fee: {
     displayName: 'Fee',
@@ -88,25 +89,30 @@ const InstrumentMapper = {
     tooltipInfo:
       'Amount deducted from the settlement as this was deposited in your bank account previously as an on-demand settlement',
   },
-};
+});
 
 const getBreakupComponentWise = ({
   item,
+  user,
 }: {
   item: Pick<BreakupItems, 'amount' | 'component'>;
+  user: User;
 }): BreakupComponentInterface => {
   return {
     id: item.component,
-    name: InstrumentMapper[item.component]?.displayName || titleCase(item.component),
+    name: instrumentMapper(user)[item.component]?.displayName || titleCase(item.component),
     amount: item.amount,
-    tooltipInfo: InstrumentMapper[item.component]?.tooltipInfo,
+    tooltipInfo: instrumentMapper(user)[item.component]?.tooltipInfo,
   };
 };
 
 export const getBreakUpDetails = ({
   items,
   isBreakupNew,
-}: Pick<BreakupDetailsInterface, 'items' | 'isBreakupNew'>): BreakUpDetailsResponse => {
+  user,
+}: Pick<BreakupDetailsInterface, 'items' | 'isBreakupNew'> & {
+  user: User;
+}): BreakUpDetailsResponse => {
   const deductions = {
     tax: 0,
     fee: 0,
@@ -114,7 +120,7 @@ export const getBreakUpDetails = ({
   let netSettlements = 0;
   return items.reduce(
     (accumulator, each, index) => {
-      const entryItem: BreakupComponentInterface = getBreakupComponentWise({ item: each });
+      const entryItem: BreakupComponentInterface = getBreakupComponentWise({ item: each, user });
       if (each.type === 'credit' || each.type === 'debit') {
         if (each.type === 'credit') {
           netSettlements = netSettlements + each.amount;
@@ -147,7 +153,10 @@ export const getBreakUpDetails = ({
         if (isBreakupNew) {
           Object.keys(deductions).forEach((each) => {
             accumulator.deductions.entries.push(
-              getBreakupComponentWise({ item: { component: each, amount: deductions[each] } }),
+              getBreakupComponentWise({
+                item: { component: each, amount: deductions[each] },
+                user,
+              }),
             );
           });
         }

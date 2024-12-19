@@ -73,7 +73,7 @@ describe('Payment Method component', () => {
   describe(`Wallet method`, () => {
     test('should show Wallet payment method', () => {
       render(<App props={walletAppProps} />);
-      expect(screen.getByText(`Wallet`)).toBeInTheDocument();
+      expect(screen.getByText(/wallet \( phonepe \)/i)).toBeInTheDocument();
     });
   });
 

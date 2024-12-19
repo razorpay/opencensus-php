@@ -92,6 +92,7 @@ const SettlementListItem = ({
           const { grossSettlements, deductions, netSettlements } = getBreakUpDetails({
             items: data.items,
             isBreakupNew: isSettlementBreakupNew,
+            user,
           });
           setBreakupInfo({
             grossSettlement: grossSettlements.amount,
