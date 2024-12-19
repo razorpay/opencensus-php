@@ -88,6 +88,6 @@ export const buildFormDataFromMethod = (values: ShippingMethod): Record<Inputs, 
 export const validateInputs = (values) => {
   return Object.entries(values).every((item: any) => {
     if (typeof item[1].value === 'string') item[1].value = item[1].value.trim();
-    return item[1]?.validation(item[1].value);
+    return !item[1]?.validation(item[1].value);
   });
 };

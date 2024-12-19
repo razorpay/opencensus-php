@@ -9,13 +9,14 @@ export type Inputs =
   | 'description'
   | 'fee'
   | 'allow_cod'
+  | 'estimated_delivery_details'
   | 'attribute_rules'
   | 'fee_rules'
   | 'etd';
 
 export type FormInput = {
   value: any;
-  validation: (val) => boolean;
+  validation: (val) => string;
   error: undefined | string;
 };
 
@@ -43,11 +44,11 @@ const FormContextProvider = ({ children }: { children: React.ReactNode }): JSX.E
   }, [selectedMethod?.name]);
 
   const setFormValue = (key: Inputs, value: unknown) => {
-    const isValid = values[key].validation(value);
+    const errorMessage = values[key].validation(value);
     values[key] = {
       ...values[key],
       value,
-      error: isValid ? '' : 'Invalid input',
+      error: errorMessage,
     };
     setValues({ ...values });
   };
