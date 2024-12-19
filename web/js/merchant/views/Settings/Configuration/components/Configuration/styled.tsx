@@ -42,3 +42,10 @@ export const RightChildrenWrapper = styled.div`
   overflow: hidden;
   cursor: pointer;
 `;
+
+export const TitleWrapper = styled.span`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: ${({ theme }: StyledProps) => theme.spacing[2]}px;
+`;

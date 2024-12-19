@@ -3,6 +3,8 @@ import debounce from 'lodash/debounce';
 import { connect } from 'react-redux';
 import { AnyAction, Dispatch, bindActionCreators } from 'redux';
 
+import { useSplitzService } from 'common/splitz';
+
 import { Environments } from 'common/typings';
 import { fetchKeys } from 'merchant/reducers/keys';
 import { toBase64 } from 'merchant/views/PartnerDashboard/SubMerchant/components/utils';
@@ -34,9 +36,11 @@ const CheckoutV2 = ({
     update: (value: Record<string, unknown>) => void;
   }> | null>(null);
 
+  const splitz = useSplitzService();
+
   const init = (node: HTMLIFrameElement) => {
     if (node && values && !updateCheckout.current) {
-      updateCheckout.current = initCheckout(node, values);
+      updateCheckout.current = initCheckout(node, values, splitz?.abExperiments);
     }
   };
 

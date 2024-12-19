@@ -51,6 +51,7 @@ import { openModal } from 'merchant_common/reducers/modals';
 
 import DateRangeTooltip from './DateRangeTooltip';
 import DiwaliReportBanner from './DiwaliReportBanner';
+import FestivalThemeBanner from './FestivalThemeBanner';
 import {
   trackPresetChange,
   trackSettlementsClick,
@@ -59,6 +60,7 @@ import {
   EVENT_CATEGORY_DASHBOARD_HOME,
 } from './ga';
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
+import { Box } from '@razorpay/blade/components';
 
 const TerminalStatus = lazy(() =>
   import(
@@ -298,7 +300,10 @@ class AnalyticsMobile extends Component {
             !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
-          <DiwaliReportBanner isMobileView={true} />
+          <Box display="flex" gap="spacing.4" flexDirection="column">
+            <FestivalThemeBanner isMobileView={true} />
+            <DiwaliReportBanner isMobileView={true} />
+          </Box>
           <ShowWhen
             additionalCondition={() =>
               !isConfigTagEnabled('product_recommendations_kyc.product_recommendation_kyc') &&

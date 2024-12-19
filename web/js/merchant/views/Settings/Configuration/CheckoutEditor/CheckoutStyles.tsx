@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 
 import BrandColor from './CheckoutStyling/BrandColor/BrandColor';
 import ButtonStyle from './CheckoutStyling/ButtonStyle/ButtonStyle';
+import FestivalTheme from './CheckoutStyling/FestivalTheme/FestivalTheme';
 import FontStyle from './CheckoutStyling/FontStyle/FontStyle';
 import SidebarGraphic from './CheckoutStyling/SidebarGraphic/SidebarGraphic';
 import TitleStyle from './CheckoutStyling/TitleStyle/TitleStyle';
@@ -17,6 +18,7 @@ const CheckoutStyles: React.FC<CheckoutStylesProps> = ({ trustedBadge }: Checkou
   const isRTBActive = isRazorpayTrustedBadgeActive(trustedBadge);
   return (
     <>
+      <FestivalTheme />
       <BrandColor />
       {isRTBActive && <RazorpayTrustesBadge isActive={isRTBActive} />}
       <TitleStyle />

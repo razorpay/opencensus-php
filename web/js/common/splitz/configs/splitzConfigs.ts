@@ -2043,6 +2043,22 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: ['/dashboard', '/checkout-settings/*', '/account-settings'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'checkout_festival_theme',
+          experimentId: {
+            beta: 'PXptT3UNWJcYHC',
+            production: 'PV6hoFfucPwsnL',
+          },
+          defaultVariant: {
+            name: 'control',
+            variables: [],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: [
         '/dashboard/*',
         '/settlements/*',

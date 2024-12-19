@@ -198,6 +198,13 @@ export const hasValuesChanged = (
   }
 
   if (
+    values[CHECKOUT_EDITOR_FIELDS.FESTIVAL_THEME] !==
+    merchantCheckoutStyledConfig?.festivities_enabled
+  ) {
+    return true;
+  }
+
+  if (
     values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]?.svg !==
     merchantCheckoutStyledConfig?.sidebar_graphic?.svg
   ) {
@@ -304,6 +311,13 @@ export const createMerchantCheckoutStyledPayloadToSaveConfig = (
       enabled: values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]?.enabled,
       svg: values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]?.svg,
     };
+  }
+
+  if (
+    values[CHECKOUT_EDITOR_FIELDS.FESTIVAL_THEME] !==
+    merchantCheckoutStyledConfig?.festivities_enabled
+  ) {
+    payload.festivities_enabled = values[CHECKOUT_EDITOR_FIELDS.FESTIVAL_THEME];
   }
 
   if (values[CHECKOUT_EDITOR_FIELDS.FONT_FAMILY] !== merchantCheckoutStyledConfig?.text?.font) {

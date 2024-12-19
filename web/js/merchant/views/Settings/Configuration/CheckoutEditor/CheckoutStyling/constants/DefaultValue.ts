@@ -49,6 +49,11 @@ export const SIDEBAR_DEFAULT_VALUE = {
   subTitle: 'Beautify your checkout sidebar with a decorative graphic',
 };
 
+export const FESTIVAL_THEME_DEFAULT_VALUE = {
+  title: 'Festive Theme',
+  subTitle: 'Add cheer to your checkout with festive animations and graphics',
+};
+
 export const SIDEBAR_GRAPHICS_ITEMS = [
   {
     src: graphicOne,

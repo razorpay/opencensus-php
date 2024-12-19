@@ -32,6 +32,7 @@ export type CheckoutEditorContext<Values> = {
   handleRtbEnable: (value: boolean) => void;
   handleBrandNameChange: (value: string) => void;
   handleSaveTitleModal: (setShowEditModal: React.Dispatch<React.SetStateAction<boolean>>) => void;
+  handleFestivalThemeToggle: (value: boolean) => void;
 };
 
 export type AccountLocale = {
@@ -192,6 +193,7 @@ export type CheckoutEditorPayload = {
           font: string;
         };
         wordmark_url?: string;
+        festivities_enabled?: boolean;
       };
     };
   };
@@ -227,6 +229,7 @@ export type MerchantCheckoutStyledConfig = {
     font: string;
   };
   wordmark_url?: string;
+  festivities_enabled?: boolean;
 };
 
 export type MerchantCheckoutBrandConfig = {

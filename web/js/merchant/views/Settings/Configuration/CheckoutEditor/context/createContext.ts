@@ -36,6 +36,7 @@ export const checkoutEditorContext = createContext<
   handleBrandNameChange: noop,
   handleSaveTitleModal: noop,
   handleRtbEnable: noop,
+  handleFestivalThemeToggle: noop,
 });
 
 export const useCheckoutEditor = () => {

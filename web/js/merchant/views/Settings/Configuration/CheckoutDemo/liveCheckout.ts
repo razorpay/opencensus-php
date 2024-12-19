@@ -1,6 +1,8 @@
+import { isExperimentEnabled } from 'common/splitz/utils';
+
 import { AVAILABLE_TITLE_STYLE } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
 
-function getOptionsFromState(state) {
+function getOptionsFromState(state, abExperiments: Record<string, any> = {}) {
   const options: {
     key: string;
     amount: number;
@@ -18,6 +20,7 @@ function getOptionsFromState(state) {
     'theme.font_family'?: {
       heading: string;
     };
+    'theme.festivities_enabled'?: boolean;
     notification_banner?: {
       banner_config?: {
         [key in 'contact' | 'address' | 'payment' | 'shipping_information']?: {
@@ -63,6 +66,13 @@ function getOptionsFromState(state) {
     options['theme.sidebar_graphic'] = state.sidebarGraphic;
   }
 
+  const shouldShowFestivalTheme = isExperimentEnabled(abExperiments?.checkout_festival_theme);
+
+  if (shouldShowFestivalTheme) {
+    const themeEnabled = state.festivalTheme === undefined ? true : state.festivalTheme;
+    options['theme.festivities_enabled'] = themeEnabled || false;
+  }
+
   if (state.titleStyle) {
     options['theme.title_style'] = state.titleStyle;
     if (state.titleStyle === AVAILABLE_TITLE_STYLE.WORDMARK) {
@@ -102,6 +112,7 @@ function getOptionsFromState(state) {
 export function initCheckout(
   parent: HTMLIFrameElement,
   initialState: Record<string, unknown>,
+  abExperiments: Record<string, unknown> = {},
 ): Promise<{
   update: (value: Record<string, unknown>) => void;
 }> {
@@ -122,7 +133,7 @@ export function initCheckout(
 
   const update = (updatedState: Record<string, unknown>) => {
     state = updatedState;
-    const { options } = getOptionsFromState(state);
+    const { options } = getOptionsFromState(state, abExperiments);
     post('update_options', { data: options });
   };
 
@@ -134,7 +145,7 @@ export function initCheckout(
           switch (data.event) {
             case 'load':
               post('open', {
-                options: getOptionsFromState(state).options,
+                options: getOptionsFromState(state, abExperiments).options,
               });
               break;
 

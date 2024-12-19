@@ -7,11 +7,12 @@ export type RightChildrenProps = {
 export type FeatureToggleProps = {
   isChecked: boolean;
   feature: string;
-  title: string;
+  title: string | React.ReactNode;
   subTitle: string;
   toggleHandler?: (isChecked: boolean) => void;
   extraItems?: React.ReactNode;
   blockData?: any;
+  badgeText?: React.ReactNode;
 };
 
 export type LineItemsProps = {

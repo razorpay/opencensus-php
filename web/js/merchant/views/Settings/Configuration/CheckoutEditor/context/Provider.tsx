@@ -171,6 +171,10 @@ const CheckoutEditorProvider = ({
     });
   };
 
+  const handleFestivalThemeToggle = (value: boolean) => {
+    setValue(CHECKOUT_EDITOR_FIELDS.FESTIVAL_THEME, value);
+  };
+
   const handleRectLogoChange = (value: File | null) => {
     setValue(CHECKOUT_EDITOR_FIELDS.LOGO_RECT_RAW, value);
 
@@ -277,6 +281,8 @@ const CheckoutEditorProvider = ({
           [CHECKOUT_EDITOR_FIELDS.BORDER_STYLE]: merchantCheckoutStyledConfig?.button?.shape || '',
           [CHECKOUT_EDITOR_FIELDS.FONT_FAMILY]: merchantCheckoutStyledConfig?.text?.font,
           [CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]: merchantCheckoutStyledConfig?.sidebar_graphic,
+          [CHECKOUT_EDITOR_FIELDS.FESTIVAL_THEME]:
+            merchantCheckoutStyledConfig?.festivities_enabled,
           [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: checkForTitleStyleDefaultValue(
             merchantCheckoutStyledConfig?.title_style,
           ),
@@ -646,6 +652,7 @@ const CheckoutEditorProvider = ({
         handleBrandNameChange,
         handleSaveTitleModal,
         handleRtbEnable,
+        handleFestivalThemeToggle,
       }}
     >
       {children}

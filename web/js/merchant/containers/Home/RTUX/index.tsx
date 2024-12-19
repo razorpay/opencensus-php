@@ -12,6 +12,7 @@ import { getUcsAliasFromQueryKey, getBaseWidget, track } from 'merchant/widgets/
 
 import { ResponsiveWrapper } from './styles';
 import DiwaliReportBanner from '../DiwaliReportBanner';
+import FestivalThemeBanner from '../FestivalThemeBanner';
 
 const RTUX_HOMEPAGE_LAYOUT_KEY = ['rtux-homepage', 'layout'];
 const RTUX_HOMEPAGE_DATA_KEY = ['rtux-homepage', 'data'];
@@ -89,6 +90,7 @@ const RTUXHomepage = (): JSX.Element => {
   return (
     <ResponsiveWrapper>
       <Box display="flex" flexDirection="column" paddingY="spacing.5" gap="spacing.6">
+        <FestivalThemeBanner isRtux={true} />
         <DiwaliReportBanner isRtux={true} />
         {dataSource.components.map((widgetData) => (
           <Fragment key={widgetData.type}>

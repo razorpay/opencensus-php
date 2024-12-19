@@ -97,6 +97,7 @@ import * as NotificationActions from 'merchant_common/reducers/notifications';
 
 import DateRangeTooltip from './DateRangeTooltip';
 import DiwaliReportBanner from './DiwaliReportBanner';
+import FestivalThemeBanner from './FestivalThemeBanner';
 import {
   EVENT_CATEGORY_DASHBOARD_HOME,
   selfServeSettleTracking,
@@ -106,6 +107,7 @@ import {
 } from './ga';
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
 import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { Box } from '@razorpay/blade/components';
 
 const TerminalStatus = lazy(() =>
   import(
@@ -581,7 +583,10 @@ class AnalyticsDesktop extends Component {
               !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
             }`}
           >
-            <DiwaliReportBanner />
+            <Box display="flex" gap="spacing.4" flexDirection="column">
+              <FestivalThemeBanner />
+              <DiwaliReportBanner />
+            </Box>
             {ticketsRaisedByAgents.length && user.isMobileSignupCareActive ? (
               <SupportRequest tickets={ticketsRaisedByAgents} />
             ) : null}

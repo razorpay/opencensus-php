@@ -45,6 +45,7 @@ export const CHECKOUT_EDITOR_FIELDS = {
   SIDEBAR_GRAPHIC: 'sidebarGraphic',
   TITLE_STYLE: 'titleStyle',
   RTB_ENABLED: 'rtb_enabled',
+  FESTIVAL_THEME: 'festivalTheme',
 } as const;
 
 export const CUSTOM_MESSAGE_BANNER_SCREENS = {
@@ -118,6 +119,7 @@ export const CHECKOUT_EDITOR_INITIAL_VALUES: {
   };
   [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: string;
   [CHECKOUT_EDITOR_FIELDS.RTB_ENABLED]: boolean;
+  [CHECKOUT_EDITOR_FIELDS.FESTIVAL_THEME]: boolean;
 } = {
   [CHECKOUT_EDITOR_FIELDS.LOCALE]: {
     id: '',
@@ -153,6 +155,7 @@ export const CHECKOUT_EDITOR_INITIAL_VALUES: {
   },
   [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: AVAILABLE_TITLE_STYLE.LOGO_TEXT,
   [CHECKOUT_EDITOR_FIELDS.RTB_ENABLED]: true,
+  [CHECKOUT_EDITOR_FIELDS.FESTIVAL_THEME]: true,
 };
 
 const CONFIG_INITIAL_STATE: { accountConfig: AccountConfig; locale: AccountLocale } = {
