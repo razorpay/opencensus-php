@@ -37,7 +37,19 @@ jobs:
                 [[ "$item" == *"app/Services/FreshdeskTicketClient.php"* ]] ||
                 [[ "$item" == *"app/Http/Middleware/Workflow.php"* ]] ||
                 [[ "$item" == *"app/Http/Controllers/WorkflowController.php"* ]] ||
-                [[ "$item" == *"app/Services/WorkflowService.php"* ]]; then
+                [[ "$item" == *"app/Services/WorkflowService.php"* ]] ||
+                [[ "$item" == *"app/Models/Merchant/Detail/Core.php"* ]] ||
+                [[ "$item" == *"app/Models/Merchant/Detail/Service.php"* ]] ||
+                [[ "$item" == *"app/Models/Merchant/Detail/NeedsClarification/Core.php"* ]] ||
+                [[ "$item" == *"app/Models/Merchant/Account/Core.php"* ]] ||
+                [[ "$item" == *"app/Models/Merchant/Website/Service.php"* ]] ||
+                [[ "$item" == *"app/Models/Merchant/AutoKyc/Bvs/DocumentStatusUpdater/BaseStatusUpdater.php"* ]] ||
+                [[ "$item" == *"app/Models/Merchant/Escalations/Actions/Handlers/NoDocLimitHandler.php"* ]] ||
+                [[ "$item" == *"app/Models/Merchant/Detail/PennyTesting.php"* ]] ||
+                [[ "$item" == *"app/Models/Partner/SubMerchantBatchUtility.php"* ]] ||
+                [[ "$item" == *"app/Jobs/UpdateMerchantContext.php"* ]] ||
+                [[ "$item" == *"app/Models/Partner/Activation/Core.php"* ]] ||
+                [[ "$item" == *"app/Models/Merchant/Activate.php"* ]]; then
               echo "Regex pattern matched for $item"
               echo "changes_in_cases_folder=true" >> $GITHUB_ENV
               break
