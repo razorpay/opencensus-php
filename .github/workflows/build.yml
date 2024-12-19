@@ -29,13 +29,11 @@ jobs:
           fetch-depth: 3
 
       - name: Install dependencies with caching
-        if: github.ref == 'refs/heads/master'
         uses: ./.github/actions/package-installer
         with:
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build All
-        if: github.ref == 'refs/heads/master'
         #Runs in parellel
         run: pnpm nx run web:production:build
         env:
@@ -43,11 +41,9 @@ jobs:
           VERSION: ${{ github.sha }}
 
       - name: Remove files
-        if: github.ref == 'refs/heads/master'
         run: rm -rf .git
 
       - name: Configure AWS Credentials
-        if: github.ref == 'refs/heads/master'
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
@@ -59,7 +55,6 @@ jobs:
           AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
 
       - name: Web - Push build to Actions Cache
-        if: github.ref == 'refs/heads/master'
         run: |
           tar czf public.tar.gz public
           aws s3 cp public.tar.gz s3://rzp-actions-cache/dashboard-${{ github.sha }}.tar.gz
@@ -69,7 +64,6 @@ jobs:
           AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
 
       - name: Web - Login to Harbor
-        if: github.ref == 'refs/heads/master'
         uses: docker/login-action@v1
         with:
           registry: c.rzp.io
@@ -77,7 +71,6 @@ jobs:
           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
 
       - name: Web - Set up Docker Buildx
-        if: github.ref == 'refs/heads/master'
         id: buildx
         uses: docker/setup-buildx-action@v1
       - uses: razorpay/create-github-app-token@v1
@@ -89,7 +82,6 @@ jobs:
           repositories: "dashboard,razorpay,trace,slack-laravel,spine,oauth-5-laravel,metrics-php,edge-passport-php"
 
       - name: Web - PHP Server Build
-        if: github.ref == 'refs/heads/master'
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -102,99 +94,93 @@ jobs:
             GIT_COMMIT_HASH=${{ github.sha }}
             GIT_USERNAME=rzp
 
-      # build-micro-apps-devstack:
-      #   name: Build Dashboard - MFEs - Devstack
-      #   runs-on: [non-api-premium]
-      #   steps:
-      #     - name: Checkout Codebase
-      #       uses: actions/checkout@v3
-      #       with:
-      #         fetch-depth: 3
+  build-micro-apps-devstack:
+    name: Build Dashboard - MFEs - Devstack
+    runs-on: [non-api-premium]
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 3
 
-      #     # Sets env.AFFECTED
-      #     - name: Get affected projects
-      #       if: github.ref == 'refs/heads/master'
-      #       uses: ./.github/actions/affected-projects
-      #       with:
-      #         NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
-      #         GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+      # Sets env.AFFECTED
+      - name: Get affected projects
+        uses: ./.github/actions/affected-projects
+        with:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
-      #     - name: Check output
-      #       if: github.ref == 'refs/heads/master'
-      #       run: echo ${{ env.AFFECTED }}
+      - name: Check output
+        run: echo ${{ env.AFFECTED }}
 
-      #     - name: Build micro apps
-      #       if: github.ref == 'refs/heads/master'
-      #       run: |
-      #         pnpm nx run-many --target devstack:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
+      - name: Build micro apps
+        run: |
+          pnpm nx run-many --target devstack:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
 
-      #     - name: Remove files
-      #       if: github.ref == 'refs/heads/master'
-      #       run: rm -rf .git
+      - name: Remove files
+        run: rm -rf .git
 
-      #     - name: Configure AWS Credentials
-      #       if: github.ref == 'refs/heads/master'
-      #       uses: aws-actions/configure-aws-credentials@v1
-      #       with:
-      #         aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
-      #         aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
-      #         aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-      #       env:
-      #         AWS_ACCESS_KEY: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
-      #         AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
-      #         AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-
-      #     # Run based on output of affected
-      #     - name: Micro Apps - Push Artifacts for Devstack
-      #       if: github.ref == 'refs/heads/master'
-      #       run: |-
-      #         node .github/scripts/pushToS3.js ${{env.AFFECTED}} ${{env.AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET}}
-      #       env:
-      #         ENVIRONMENT: devstack
-
-      # build-micro-apps-automation:
-      # name: Build Dashboard - MFEs - Automation
-      # runs-on: [non-api-premium]
-      # steps:
-      #   - name: Checkout Codebase
-      #     uses: actions/checkout@v3
-      #     with:
-      #       fetch-depth: 3
-
-      #   # Sets env.AFFECTED
-      #   - name: Get affected projects
-      #     uses: ./.github/actions/affected-projects
-      #     with:
-      #       NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
-      #       GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-
-      #   - name: Check output
-      #     run: echo ${{ env.AFFECTED }}
-
-      #   - name: Build micro apps
-      #     run: |
-      #       pnpm nx run-many --target automation:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
-
-      #   - name: Remove files
-      #     run: rm -rf .git
-
-      #   - name: Configure AWS Credentials
-      #     uses: aws-actions/configure-aws-credentials@v1
-      #     with:
-      #       aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
-      #       aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
-      #       aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-      #     env:
-      #       AWS_ACCESS_KEY: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
-      #       AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
-      #       AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
 
       # Run based on output of affected
-      # - name: Micro Apps - Push Artifacts for Automation
-      #   run: |-
-      #     node .github/scripts/pushToS3.js ${{env.AFFECTED}} ${{env.AWS_STAGE_COMMON_CACHE_BUCKET}}
-      #   env:
-      #     ENVIRONMENT: automation
+      - name: Micro Apps - Push Artifacts for Devstack
+        run: |-
+          node .github/scripts/pushToS3.js ${{env.AFFECTED}} ${{env.AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET}}
+        env:
+          ENVIRONMENT: devstack
+
+  build-micro-apps-automation:
+    name: Build Dashboard - MFEs - Automation
+    runs-on: [non-api-premium]
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 3
+
+      # Sets env.AFFECTED
+      - name: Get affected projects
+        uses: ./.github/actions/affected-projects
+        with:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Check output
+        run: echo ${{ env.AFFECTED }}
+
+      - name: Build micro apps
+        run: |
+          pnpm nx run-many --target automation:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
+
+      - name: Remove files
+        run: rm -rf .git
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+
+      # Run based on output of affected
+      - name: Micro Apps - Push Artifacts for Automation
+        run: |-
+          node .github/scripts/pushToS3.js ${{env.AFFECTED}} ${{env.AWS_STAGE_COMMON_CACHE_BUCKET}}
+        env:
+          ENVIRONMENT: automation
 
   build-micro-apps-production:
     name: Build Prod Dashboard - MFEs - Production
@@ -236,6 +222,7 @@ jobs:
           node .github/scripts/pushToS3.js ${{env.AFFECTED}} ${{env.AWS_PROD_COMMON_CACHE_BUCKET}}
         env:
           ENVIRONMENT: production
+
   workflow_status:
     runs-on: [self-hosted]
     name: Update Status Check
