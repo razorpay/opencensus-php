@@ -1,3 +1,5 @@
+import React from 'react';
+import { connect } from 'react-redux';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
@@ -7,8 +9,8 @@ import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import SettlementBreakupTable from './BreakupTable';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
-export default props => {
-  let { settlement, breakupDetails, isLoading, statusMsg } = props;
+const SettlementDetails = (props) => {
+  let { settlement, breakupDetails, isLoading, statusMsg, user } = props;
 
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -27,36 +29,37 @@ export default props => {
               <Alert type={statusMsg.type} message={statusMsg.message} />
               <EntityDetailRow
                 label="Amount"
-                value={() => <Amount value={settlement.amount} />}
+                value={() => (
+                  <Amount value={settlement.amount} currency={user?.merchant?.currency || 'INR'} />
+                )}
               />
 
               <EntityDetailRow
                 label="Status"
-                value={() => (
-                  <SettlementStatusLabel status={settlement.status} />
-                )}
+                value={() => <SettlementStatusLabel status={settlement.status} />}
               />
 
               <EntityDetailRow
                 label="Created At"
                 value={() => (
-                  <Time
-                    value={settlement.created_at}
-                    format="DD MMM YYYY, hh:mm:ss a"
-                  />
+                  <Time value={settlement.created_at} format="DD MMM YYYY, hh:mm:ss a" />
                 )}
               />
 
               <EntityDetailRow
                 label="Fees"
-                value={() => <Amount value={settlement.fees} />}
+                value={() => (
+                  <Amount value={settlement.fees} currency={user?.merchant?.currency || 'INR'} />
+                )}
               />
 
               <EntityDetailRow label="UTR" value={settlement.utr} />
 
               <EntityDetailRow
                 label="Tax"
-                value={() => <Amount value={settlement.tax} />}
+                value={() => (
+                  <Amount value={settlement.tax} currency={user?.merchant?.currency || 'INR'} />
+                )}
               />
 
               <ListGroupToggler
@@ -75,3 +78,9 @@ export default props => {
     </div>
   );
 };
+
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+export default connect(mapStateToProps)(SettlementDetails);

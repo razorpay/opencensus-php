@@ -1,5 +1,5 @@
 import GenericEntity from './GenericEntity';
-import { getFixedINRAmount } from 'common/utils/rzp-utils';
+import { getMajorAmountFromMinorUnit } from 'common/utils/rzp-utils';
 
 export default class Settlement extends GenericEntity {
   resourceUrl = 'settlements';
@@ -8,17 +8,18 @@ export default class Settlement extends GenericEntity {
     let Klass = this.constructor;
 
     const url = `${this.resourceUrl}/${this.id}/details`;
-    return this.makeGenericAjaxCall({ url }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Klass(item).deserialize()
-      );
+    return this.makeGenericAjaxCall({ url }).then((response) => {
+      response.data.items = response.data.items.map((item) => new Klass(item).deserialize());
       return response;
     });
   }
 
   deserializeProperty(prop, value) {
     if (prop === 'amount') {
-      this.amountInINR = getFixedINRAmount(value);
+      this.amountInMajorUnit = getMajorAmountFromMinorUnit(
+        value,
+        window.rzp_user?.merchant?.currency || 'INR',
+      );
     }
     return super.deserializeProperty(prop, value);
   }

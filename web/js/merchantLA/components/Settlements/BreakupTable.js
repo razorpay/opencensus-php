@@ -1,3 +1,5 @@
+import React from 'react';
+import { connect } from 'react-redux';
 import { titleCase } from 'common/utils/rzp-utils';
 import Amount from 'common/ui/Amount';
 import TableBody from 'common/ui/TableBody';
@@ -20,18 +22,24 @@ function _getOverwrittenKey(title) {
 
 const excludeKeys = ['tax', 'fee'];
 
-const Breakup = ({ breakup }) => {
+const Breakup = ({ breakup, user }) => {
   return (
     <tr>
       <td>{titleCase(_getOverwrittenKey(breakup.component))}</td>
       <td>
-        <Amount value={breakup.amount} />
+        <Amount value={breakup.amount} currency={user?.merchant?.currency || 'INR'} />
       </td>
       <td>{breakup.count}</td>
       <td>{titleCase(breakup.type)}</td>
     </tr>
   );
 };
+
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+const ConnectedBreakup = connect(mapStateToProps)(Breakup);
 
 export default ({ items, loading }) => {
   return (
@@ -48,7 +56,7 @@ export default ({ items, loading }) => {
         <TableBody colSpan={4} isLoading={loading} rows={items}>
           {items.map((breakup, index) =>
             excludeKeys.indexOf(breakup.component) !== -1 ? null : (
-              <Breakup key={`breakup_${index}`} breakup={breakup} />
+              <ConnectedBreakup key={`breakup_${index}`} breakup={breakup} />
             ),
           )}
         </TableBody>

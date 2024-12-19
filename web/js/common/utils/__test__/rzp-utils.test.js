@@ -24,6 +24,7 @@ import {
   getCountryCodes,
   autoPrefixUrls,
   humanize,
+  getMajorAmountFromMinorUnit,
 } from 'common/utils/rzp-utils';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 
@@ -946,5 +947,20 @@ describe('Tests humanize function', () => {
     expect(humanize(null)).toBe('');
     expect(humanize(0)).toBe('');
     expect(humanize(false)).toBe('');
+  });
+});
+
+describe('getMajorAmountFromMinorUnit', () => {
+  const testCases = [
+    { amount: 12345678, currency: 'INR', expected: '123456.78' },
+    { amount: 12345678, currency: 'SGD', expected: '123456.78' },
+    { amount: 12345678, currency: 'MYR', expected: '123456.78' },
+    { amount: 12345678, currency: 'USD', expected: '123456.78' },
+  ];
+
+  test.each(testCases)('$description', ({ amount, currency, expected }) => {
+    expect(getMajorAmountFromMinorUnit(amount, currency)).toBe(expected);
+    expect(convertToMajorUnit).toHaveBeenCalledWith(amount, { currency });
+    expect(analyticsTrack).not.toHaveBeenCalled();
   });
 });

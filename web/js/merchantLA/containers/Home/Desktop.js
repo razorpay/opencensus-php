@@ -14,14 +14,19 @@ import LocalStorageService from 'common/utils/localStorage';
 import KeyMetrics from 'merchantLA/containers/Home/KeyMetrics';
 import Traffic from 'merchantLA/containers/Home/Traffic';
 import RecentActivity from 'merchantLA/containers/Home/RecentActivity';
-import GenericPanel, {
-  PanelBody,
-} from 'merchantLA/components/Home/GenericPanel';
+import GenericPanel, { PanelBody } from 'merchantLA/components/Home/GenericPanel';
 import { showOrHideTour } from 'merchantLA/reducers/session';
 
 import { trackPresetChange, trackSettlementsClick, trackViewTour } from './ga';
 
-@connect(null, { showOrHideTour })
+@connect(
+  (state) => {
+    return {
+      user: state.session.user,
+    };
+  },
+  { showOrHideTour },
+)
 class AnalyticsDesktop extends Component {
   constructor(props) {
     super(props);
@@ -30,9 +35,7 @@ class AnalyticsDesktop extends Component {
 
     this.state = {
       hasNewAnalyticsTour:
-        !isAdmin &&
-        mode === 'live' &&
-        !LocalStorageService.getItem('hide_new_analytics_banner'),
+        !isAdmin && mode === 'live' && !LocalStorageService.getItem('hide_new_analytics_banner'),
       dismissNewAnalyticsBanner: false, // used for transition
     };
 
@@ -65,10 +68,10 @@ class AnalyticsDesktop extends Component {
             },
             () => {
               typeof cb === 'function' && cb();
-            }
+            },
           );
         }, 500); // let the trasition to hide banner complete
-      }
+      },
     );
   }
 
@@ -101,6 +104,7 @@ class AnalyticsDesktop extends Component {
       keymetricsSectionTitle,
       recentActivityTitle,
       trafficSectionTitle,
+      user,
     } = this.props;
 
     const { hasNewAnalyticsTour, dismissNewAnalyticsBanner } = this.state;
@@ -109,31 +113,23 @@ class AnalyticsDesktop extends Component {
 
     return (
       <div className="home-analytics-desktop">
-        <div ref={node => onExtraContentMount(node)} className="extra-content">
+        <div ref={(node) => onExtraContentMount(node)} className="extra-content">
           {!isAdmin && (
             <div>
               {hasNewAnalyticsTour && (
-                <div
-                  className={`v2-tour-banner${
-                    dismissNewAnalyticsBanner ? ' dismiss' : ''
-                  }`}
-                >
+                <div className={`v2-tour-banner${dismissNewAnalyticsBanner ? ' dismiss' : ''}`}>
                   <div className="banner-icon">
                     <i className="i i-loudspeaker" />
                   </div>
                   <div className="banner-content">
                     <Banner cta="View Tour" ctaOnClick={onShowTour}>
                       <span>
-                        Take a quick tour to learn how to use dashboard
-                        analytics effectively.
+                        Take a quick tour to learn how to use dashboard analytics effectively.
                       </span>
                     </Banner>
                   </div>
                   <div className="banner-close">
-                    <a
-                      className="banner-close-icon"
-                      onClick={onHideNewAnalyticsBanner}
-                    >
+                    <a className="banner-close-icon" onClick={onHideNewAnalyticsBanner}>
                       <i className="i i-close" />
                     </a>
                   </div>
@@ -144,10 +140,7 @@ class AnalyticsDesktop extends Component {
         </div>
         <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>
-            <div
-              id="analytics-daterange-picker"
-              className="pull-left date-range-container"
-            >
+            <div id="analytics-daterange-picker" className="pull-left date-range-container">
               <DateRangePicker
                 presets={dateRangePresets}
                 onDatesChange={onDatesChange}
@@ -159,18 +152,18 @@ class AnalyticsDesktop extends Component {
               <Group>
                 <GroupItem>
                   <span className="balance-amount">
-                    Current Balance:{' '}
+                    Current Balance:
                     {!current_balance.loading && (
-                      <Amount value={current_balance.data.balance} />
+                      <Amount
+                        value={current_balance.data.balance}
+                        currency={user?.merchant?.currency || 'INR'}
+                      />
                     )}
                   </span>
                 </GroupItem>
                 <GroupItem>
                   <Link className="pull-right" to="/settlements">
-                    <span
-                      className="text-no-wrap"
-                      onClick={trackSettlementsClick}
-                    >
+                    <span className="text-no-wrap" onClick={trackSettlementsClick}>
                       View Settlements
                     </span>
                   </Link>
@@ -206,9 +199,7 @@ class AnalyticsDesktop extends Component {
             >
               {showGroupingByPtfm && (
                 <div className="traffic-container">
-                  <p className="content-title section-title">
-                    {trafficSectionTitle}
-                  </p>
+                  <p className="content-title section-title">{trafficSectionTitle}</p>
                   <div className="content">
                     <Traffic
                       startDate={startDate}
@@ -222,9 +213,7 @@ class AnalyticsDesktop extends Component {
               )}
               {!isAdmin && (
                 <div className="activity-container">
-                  <p className="content-title section-title">
-                    {recentActivityTitle}
-                  </p>
+                  <p className="content-title section-title">{recentActivityTitle}</p>
                   <div className="content">
                     <RecentActivity
                       sectionTitle={recentActivityTitle}

@@ -293,6 +293,23 @@ export const numberFormatRegex = /(.{1,2})(?=.(..)+(\...)$)/g;
 
 export const getFixedINRAmount = (amount) => (Number(amount) / 100).toFixed(2);
 
+export const getMajorAmountFromMinorUnit = (amount, currency = 'INR') => {
+  try {
+    return convertToMajorUnit(amount, { currency });
+  } catch (error) {
+    analyticsTrack({
+      objectName: ANALYTICS.OBJECT.I18N,
+      actionName: ANALYTICS.ACTION.CURRENCY,
+      screen: ANALYTICS.SCREEN.DASHBOARD,
+      properties: {
+        input: `amount: ${amount}, currency: ${currency}`,
+        error: `${error}`,
+      },
+    });
+    return (Number(amount) / 100).toFixed(2);
+  }
+};
+
 export const getFixedNumber = (value) => {
   if (typeof value === 'number') {
     value = value.toFixed(2);

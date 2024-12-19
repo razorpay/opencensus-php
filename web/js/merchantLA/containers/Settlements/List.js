@@ -114,7 +114,8 @@ class SettlementsListContainer extends ListContainer {
                 <PlaceholderLoader style={{ width: 150 }} />
               ) : (
                 <span class="settlement-balance-amount">
-                  Current Balance: <Amount value={balanceData.data.balance} currency="INR" />
+                  Current Balance:{' '}
+                  <Amount value={balanceData.data.balance} currency={balanceData.data?.currency} />
                 </span>
               )}
             </div>

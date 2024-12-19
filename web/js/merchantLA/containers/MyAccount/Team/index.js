@@ -10,6 +10,11 @@ import NewInvitation from './NewInvitation';
 import Invitation from './Invitation';
 import User from './User';
 
+const DOCS_URL = {
+  IN: 'https://razorpay.com/docs/team-support/',
+  MY: 'https://curlec.com/docs/team-support/',
+};
+
 @connect(
   (state) => {
     return {
@@ -41,7 +46,7 @@ export default class TeamContainer extends Component {
           <div class="btn-toolbar pull-right">
             <DocLink
               class="btn btn-link"
-              href="https://razorpay.com/docs/team-support/"
+              href={DOCS_URL[this.props.merchant?.merchant?.country_code || 'IN']}
               target="_blank"
             >
               Documentation &nbsp;

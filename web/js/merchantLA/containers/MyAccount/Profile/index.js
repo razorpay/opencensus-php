@@ -118,6 +118,7 @@ export default class Profile extends Component {
       ifsc: user.bank_branch_ifsc,
       account_number: user.bank_account_number,
       name: user.bank_account_name,
+      bank_name: user.bank_name,
     };
 
     return (
@@ -146,7 +147,10 @@ export default class Profile extends Component {
             //myRole="owner"
             myRole="linked_account_owner"
           >
-            <BankAccountDetails bankAccount={bankAccount} />
+            <BankAccountDetails
+              bankAccount={bankAccount}
+              isCountryIndia={user.merchant.country_code === 'IN'}
+            />
           </ShowWhen>
         </div>
       </div>
