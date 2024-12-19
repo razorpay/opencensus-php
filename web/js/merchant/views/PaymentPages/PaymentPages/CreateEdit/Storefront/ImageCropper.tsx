@@ -11,9 +11,12 @@ import {
   ToastContainer,
   FullScreenEnterIcon,
   Text,
+  BottomSheet,
+  BottomSheetBody,
+  BottomSheetFooter,
+  BottomSheetHeader,
 } from '@razorpay/blade/components';
 import { CropWrapper, DragWrapperDesktop, DragWrapperMobile } from './styled';
-import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
 
 interface ImageCropperProps {
   imageSrc: string;
@@ -22,6 +25,49 @@ interface ImageCropperProps {
   onApply: () => void;
   isMobile: boolean;
 }
+
+interface RenderFooterButtonsProps {
+  onCancel: () => void;
+  onApply: () => void;
+}
+
+const RenderFooterButtons: React.FC<RenderFooterButtonsProps> = ({ onCancel, onApply }) => (
+  <>
+    <Button variant="tertiary" onClick={onCancel} size="medium" color="primary">
+      Cancel
+    </Button>
+    <Button onClick={onApply}>Apply</Button>
+  </>
+);
+
+interface RenderCropperProps {
+  imageSrc: string;
+  crop: Crop;
+  onCropComplete: (crop: PixelCrop) => void;
+  onCropChange: (crop: Crop) => void;
+  onImageLoaded: (image: HTMLImageElement) => void;
+}
+
+const RenderCropper: React.FC<RenderCropperProps> = ({
+  imageSrc,
+  crop,
+  onCropComplete,
+  onCropChange,
+  onImageLoaded,
+}) => {
+  return (
+    <CropWrapper>
+      <ReactCrop
+        src={imageSrc}
+        crop={crop}
+        ruleOfThirds
+        onImageLoaded={onImageLoaded}
+        onComplete={onCropComplete}
+        onChange={onCropChange}
+      />
+    </CropWrapper>
+  );
+};
 
 const ImageCropper: React.FC<ImageCropperProps> = ({
   imageSrc,
@@ -98,61 +144,68 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
     }
   };
 
-  const renderFooterButtons = () => (
-    <>
-      <Button variant="tertiary" onClick={onCancel} size="medium" color="primary">
-        Cancel
-      </Button>
-      <Button onClick={onApply}>Apply</Button>
-    </>
-  );
-
-  const renderCropper = () => (
-    <CropWrapper>
-      <ReactCrop
-        src={imageSrc}
-        crop={crop}
-        ruleOfThirds
-        onImageLoaded={handleImageLoad}
-        onComplete={handleCropComplete}
-        onChange={handleCropChange}
-      />
-    </CropWrapper>
-  );
-
   if (isMobile) {
     return (
-      <PaymentPagesDrawer
-        showCloseBtn={false}
-        footerButtons={renderFooterButtons()}
-        maskClosable={false}
-        onClose={onCancel}
-        top="0px"
-        hasTransparentBackground={true}
-        isMobileCropper={true}
-      >
-        <ToastContainer />
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          flexDirection="column"
-          height="calc(100vh - 45px - 120px)"
-        >
-          <DragWrapperMobile>
-            <FullScreenEnterIcon color="currentColor" />
-            <Text
-              color="surface.text.staticWhite.normal"
-              variant="body"
-              size="small"
-              weight="regular"
-            >
-              Drag to set the cover
-            </Text>
-          </DragWrapperMobile>
-          {renderCropper()}
-        </Box>
-      </PaymentPagesDrawer>
+      <BottomSheet isOpen={true} onDismiss={onCancel} zIndex={10000} snapPoints={[1, 1, 1]}>
+        <BottomSheetHeader />
+        <BottomSheetBody padding="spacing.0">
+          <ToastContainer />
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            flexDirection="column"
+            height="calc(100vh - 80px)"
+          >
+            <DragWrapperMobile>
+              <FullScreenEnterIcon color="currentColor" />
+              <Text
+                color="surface.text.staticWhite.normal"
+                variant="body"
+                size="small"
+                weight="regular"
+              >
+                Drag to set the cover
+              </Text>
+            </DragWrapperMobile>
+            <RenderCropper
+              imageSrc={imageSrc}
+              crop={crop}
+              onCropComplete={handleCropComplete}
+              onCropChange={handleCropChange}
+              onImageLoaded={handleImageLoad}
+            />
+          </Box>
+        </BottomSheetBody>
+        <BottomSheetFooter>
+          <Box display="flex" alignItems="center" gap="spacing.5">
+            <Box flex={1}>
+              <Button
+                isFullWidth
+                size="medium"
+                type="button"
+                variant="secondary"
+                key="cancel"
+                onClick={onCancel}
+              >
+                Cancel
+              </Button>
+            </Box>
+            <Box flex={1}>
+              <Button
+                isFullWidth
+                size="medium"
+                type="button"
+                variant="primary"
+                key="submit"
+                onClick={onApply}
+              >
+                Save
+              </Button>
+            </Box>
+          </Box>
+        </BottomSheetFooter>
+      </BottomSheet>
     );
   }
 
@@ -171,11 +224,17 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
             Drag to set the cover
           </Text>
         </DragWrapperDesktop>
-        {renderCropper()}
+        <RenderCropper
+          imageSrc={imageSrc}
+          crop={crop}
+          onCropComplete={handleCropComplete}
+          onCropChange={handleCropChange}
+          onImageLoaded={handleImageLoad}
+        />
       </ModalBody>
       <ModalFooter>
         <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
-          {renderFooterButtons()}
+          <RenderFooterButtons onApply={onApply} onCancel={onCancel} />
         </Box>
       </ModalFooter>
     </Modal>

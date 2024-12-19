@@ -105,7 +105,7 @@ const RenderBannerSection = ({
   handleEditImage,
 }) => {
   return (
-    <>
+    <Box height="500px">
       {storefront.entity.settings?.base_config?.banner_feature_enabled && (
         <Box
           display="flex"
@@ -145,16 +145,18 @@ const RenderBannerSection = ({
       <Text size="small" color="surface.text.gray.subtle" marginTop="spacing.3">
         Recommended size: 1024x400 | Format: PNG, JPEG, JPG
       </Text>
-      <BannerList
-        bannerData={bannerData}
-        onReorder={handleReorder}
-        onToggleEnabled={handleToggle}
-        handleDeleteImage={handleDeleteImage}
-        handleReplaceImage={handleReplaceImage}
-        isMobile={isMobile}
-        handleEditImage={handleEditImage}
-      />
-    </>
+      {bannerData.length > 0 && (
+        <BannerList
+          bannerData={bannerData}
+          onReorder={handleReorder}
+          onToggleEnabled={handleToggle}
+          handleDeleteImage={handleDeleteImage}
+          handleReplaceImage={handleReplaceImage}
+          isMobile={isMobile}
+          handleEditImage={handleEditImage}
+        />
+      )}
+    </Box>
   );
 };
 
@@ -365,10 +367,10 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
     <>
       {isMobile ? (
         <BottomSheet
-          zIndex={10000}
-          snapPoints={[0.9, 0.9, 1]}
           isOpen={true}
           onDismiss={handleClose}
+          zIndex={10000}
+          snapPoints={[0.9, 0.9, 0.9]}
         >
           <BottomSheetHeader title="Add store banner" />
           <BottomSheetBody>
@@ -441,10 +443,10 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
       {openDeleteModal &&
         (isMobile ? (
           <BottomSheet
-            zIndex={10000}
-            snapPoints={[0.9, 0.9, 1]}
             isOpen={true}
             onDismiss={handleConfirmCancel}
+            zIndex={10000}
+            snapPoints={[0.9, 0.9, 0.9]}
           >
             <BottomSheetHeader
               title="Confirm Deletion of Image"
