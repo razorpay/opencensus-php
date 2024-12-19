@@ -945,7 +945,9 @@ class Service extends Base\Service
             {
                 // Transaction is not updated for CLS MIDs because transaction does not exist in api hot storage and
                 // the ART dual write updates will flow by the event streaming events to CLS Makeshift.
-                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                //change here hotfix : fetch txn from tiDB & check ref3 enabled
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($payment->getId());
+                if ($txn !== null && $txn->getReference3() === "enabled")
                 {
                     $this->updatePaymentReconData($input, $payment);
                 }
@@ -1042,7 +1044,9 @@ class Service extends Base\Service
             {
                 // Transaction is not updated for CLS MIDs because transaction does not exist in api hot storage and
                 // the ART dual write updates will flow by the event streaming events to CLS Makeshift.
-                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                //change here hotfix : fetch txn from tiDB & check ref3 enabled
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($payment->getId());
+                if ($txn !== null && $txn->getReference3() === "enabled")
                 {
                     $this->updatePaymentReconData($input, $payment);
                 }
@@ -1131,7 +1135,9 @@ class Service extends Base\Service
             {
                 // Transaction is not updated for CLS MIDs because transaction does not exist in api hot storage and
                 // the ART dual write updates will flow by the event streaming events to CLS Makeshift.
-                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                //change here hotfix : fetch txn from tiDB & check ref3 enabled
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($payment->getId());
+                if ($txn !== null && $txn->getReference3() === "enabled")
                 {
                     $this->updatePaymentReconData($input, $payment);
                 }
@@ -1216,7 +1222,9 @@ class Service extends Base\Service
             {
                 // Transaction is not updated for CLS MIDs because transaction does not exist in api hot storage and
                 // the ART dual write updates will flow by the event streaming events to CLS Makeshift.
-                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                //change here hotfix : fetch txn from tiDB & check ref3 enabled
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($payment->getId());
+                if ($txn !== null && $txn->getReference3() === "enabled")
                 {
                     $this->updatePaymentReconData($input, $payment);
                 }
