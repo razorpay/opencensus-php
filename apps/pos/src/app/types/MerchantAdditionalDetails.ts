@@ -8,6 +8,7 @@ export enum MODULAR_ADDITIONAL_DETAILS_FIELDS {
   MANAGER_CASHIER_NAME_FIELD = 'additional_details_cashier_name_field',
   PARTNER_ADDITIONAL_DETAILS_COMPONENT = 'partner_additional_details_component',
   ACQUIRER_PREFERENCE_FIELD = 'additional_details_acquirer_preference_field',
+  DISABLE_PRICING_STEP_FIELD = 'disable_pricing_step_field',
 }
 
 export type FieldRules = {
