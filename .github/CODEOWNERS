@@ -52,6 +52,8 @@ playwright/config/devstack.json                   @razorpay/deploy-leads-dashboa
 playwright/utils/infraE2EUtils.js                 @razorpay/deploy-leads-dashboard
 playwright/utils/copyDependecy.js                 @razorpay/deploy-leads-dashboard
 playwright/utils/removeNpmrc.js                   @razorpay/deploy-leads-dashboard
+# Each change to homepage needs to be reviewed by design team
+web/js/merchant/containers/Home/RTUX/index.tsx    @razorpay/ssab-fe
 
 # Disabled E2Es - Requires PR approval from dashboard deploy leads
 web/e2e/suites/partnerDashboard/pos/partnerAgent/inviteFlows.spec.js     @razorpay/deploy-leads-dashboard
