@@ -81,7 +81,8 @@ export const isPosExperimentEnabled = ({
     isWhitelistedForPos &&
     !isUnregisteredMerchant &&
     !isBlockedForSignUpCampaign &&
-    user.isCountryIndia;
+    user.isCountryIndia &&
+    user.isOrgRZP;
 
   if (user.is_pgos_merchant) {
     return checks;

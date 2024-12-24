@@ -265,6 +265,7 @@ export const MOCK_USER = {
   is_pgos_merchant: true,
   business_type: '1',
   isCountryIndia: true,
+  isOrgRZP: true,
 };
 
 export const MOCK_PRICING_WITH_PRICES: ProductDescriptionPricing[] = [
