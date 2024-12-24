@@ -76,16 +76,15 @@ const NACHFormEkyc: React.FC<NachFormProps> = ({
         value={nachForm[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD]}
       />
       <Box>
-        <Heading marginBottom="spacing.5" size="large">
-          Additional Sales Comment
-        </Heading>
         <TextArea
           isDisabled={isFormDisabled}
           onChange={onNachTextAreaChange}
           placeholder="Add comments here for sales team"
-          label=""
+          label="Additional Sales Comments"
           size="large"
           value={nachForm[NachFormKeyNames.NACH_FORM_COMMENTS_FIELD]}
+          isRequired={true}
+          necessityIndicator={'required'}
         />
       </Box>
       <Box

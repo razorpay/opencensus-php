@@ -38,6 +38,7 @@ interface DevicesListProps {
   isModularLoading: boolean;
   currentDeployingDeviceId?: string;
   handleDeployNow: (device: DeviceType) => void;
+  handleDetailsClick: (device: DeviceType) => void;
   isKycQualified?: boolean;
 }
 
@@ -56,6 +57,7 @@ export const DevicesList = ({
   currentDeployingDeviceId = '',
   isKycQualified,
   handleDeployNow,
+  handleDetailsClick,
 }: DevicesListProps): JSX.Element => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -163,6 +165,7 @@ export const DevicesList = ({
               plan={device.plan_name}
               deviceModelLabel={device.display_label}
               handleDeployNow={() => handleDeployNow(device)}
+              handleDetailsClick={() => handleDetailsClick(device)}
               currentDeployingDeviceId={currentDeployingDeviceId}
               isKycQualified={isKycQualified}
             />

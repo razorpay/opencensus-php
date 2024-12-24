@@ -1,17 +1,13 @@
-import React from 'react';
 import {
-  Box,
-  Link,
-  ChevronRightIcon,
-  Text,
   Badge,
+  Box,
   CheckCircleIcon,
+  ChevronRightIcon,
+  Link,
   Spinner,
+  Text,
 } from '@razorpay/blade/components';
-import { useNavigate, useParams } from 'react-router-dom';
-import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
-import { AvailableComponents } from 'apps/pos/src/app/types/common';
-import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
+import React from 'react';
 import styled from 'styled-components';
 
 interface DeviceCardProps {
@@ -28,6 +24,7 @@ interface DeviceCardProps {
   currentDeployingDeviceId: string;
   isKycQualified?: boolean;
   handleDeployNow: () => void;
+  handleDetailsClick: () => void;
 }
 
 const DeviceCardContainer = styled.div``;
@@ -46,27 +43,8 @@ export const DeviceCard = ({
   vpa,
   isKycQualified,
   handleDeployNow,
+  handleDetailsClick,
 }: DeviceCardProps): JSX.Element => {
-  const { id, step } = useParams();
-  const navigate = useNavigate();
-
-  const handleDetailsClick = () => {
-    trackEvent({
-      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
-      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
-      properties: {
-        label: 'Details',
-        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
-        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.EXPLORE_DEVICE_DEPLOYMENT,
-        section: 'Devices Deployed',
-        subSection: name,
-      },
-    });
-    navigate(
-      `/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}/${step}/${AvailableComponents.DEVICE_DETAILS}?deviceId=${deviceId}`,
-    );
-  };
-
   const handleDeployedDevice = () => {
     if (!isDeployed) return;
     handleDetailsClick();

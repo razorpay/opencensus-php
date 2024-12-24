@@ -1,4 +1,12 @@
-import { ArrowRightIcon, Box, Button, Radio, RadioGroup, Text } from '@razorpay/blade/components';
+import {
+  ArrowRightIcon,
+  Box,
+  Button,
+  Radio,
+  RadioGroup,
+  Text,
+  useToast,
+} from '@razorpay/blade/components';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DEVICE_DEPLOYMENT_FIELDS } from 'apps/pos/src/app/types/DeviceDeployment';
@@ -24,15 +32,23 @@ const LanguageConfiguration = ({
   deviceId,
   handleUpdateModularConfig,
 }: LanguageConfigurationProps): JSX.Element => {
-  const [language, setLanguage] = useState<string>('english');
+  const [language, setLanguage] = useState<string>('');
   const { isMobile } = useScreen();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const handleProceed = () => {
     navigate(-1);
   };
 
   const handleConfirmLanguage = () => {
+    if (!language) {
+      toast.show({
+        content: `Please select a language`,
+        color: 'negative',
+      });
+      return;
+    }
     trackEvent({
       eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
       action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,

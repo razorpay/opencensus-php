@@ -66,7 +66,7 @@ const DeviceDeploymentList = (): JSX.Element | null => {
     }
   };
 
-  const deviceIDSuccessCallback = (device: DeviceType) => {
+  const deployNowSuccessCallback = (device: DeviceType) => {
     const isStickerAndStandee = device?.display_name === DeviceModel.STICKER_AND_STANDEE;
     navigate(
       `/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}/${step}/${
@@ -76,6 +76,24 @@ const DeviceDeploymentList = (): JSX.Element | null => {
       }`,
     );
   };
+
+  const deviceDetailsSuccessCallback = (device: DeviceType) => {
+    navigate(
+      `/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}/${step}/${AvailableComponents.DEVICE_DETAILS}?deviceId=${device.id}`,
+    );
+  };
+
+  const updateModularConfigHelper = (
+    device: DeviceType,
+    onSuccessCallback: (device: DeviceType) => void,
+  ) => {
+    const payload = {
+      [DEVICE_DEPLOYMENT_FIELDS.CURRENT_DEVICE_ID_FIELD]: device.id,
+      [DEVICE_DEPLOYMENT_FIELDS.MODULAR_CALLBACK]: () => onSuccessCallback(device),
+    };
+    updateModularConfig(payload);
+  };
+
   const handleDeployNow = (device: DeviceType) => {
     trackEvent({
       eventName: analyticsTypes.ANALYTICS_EVENTS.LINK,
@@ -90,11 +108,23 @@ const DeviceDeploymentList = (): JSX.Element | null => {
     });
 
     setCurrentDeployingDeviceId(device?.id);
-    const payload = {
-      [DEVICE_DEPLOYMENT_FIELDS.CURRENT_DEVICE_ID_FIELD]: device.id,
-      [DEVICE_DEPLOYMENT_FIELDS.MODULAR_CALLBACK]: () => deviceIDSuccessCallback(device),
-    };
-    updateModularConfig(payload);
+    updateModularConfigHelper(device, deployNowSuccessCallback);
+  };
+
+  const handleDetailsClick = (device: DeviceType) => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Details',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_DEPLOYMENT,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.EXPLORE_DEVICE_DEPLOYMENT,
+        section: 'Devices Deployed',
+        subSection: device.display_name,
+      },
+    });
+
+    updateModularConfigHelper(device, deviceDetailsSuccessCallback);
   };
 
   if (!modularConfig) return null;
@@ -141,6 +171,7 @@ const DeviceDeploymentList = (): JSX.Element | null => {
                 title="Choose Devices to Deploy"
                 devices={filteredDevicesList}
                 handleDeployNow={handleDeployNow}
+                handleDetailsClick={handleDetailsClick}
                 isKycQualified={isKycQualified}
               />
             )}
@@ -153,6 +184,7 @@ const DeviceDeploymentList = (): JSX.Element | null => {
               isAllDevicesDeployed={isAllDevicesDeployed}
               devices={filteredDevicesList}
               handleDeployNow={handleDeployNow}
+              handleDetailsClick={handleDetailsClick}
             />
           </TabPanel>
         </Tabs>
