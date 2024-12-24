@@ -27,7 +27,7 @@ export const getInitialMerchantAdditionalDetails = ({
   if (!additionalDetailsComponent) return null;
   const fields = additionalDetailsComponent.fields;
   const allFieldValues = fields
-    .filter((field) => field.name !== MODULAR_ADDITIONAL_DETAILS_FIELDS.DISABLE_PRICING_STEP_FIELD)
+    .filter((field) => !field.isHidden)
     .reduce((acc, field) => {
       if (!acc[field.name]) {
         acc[field.name] = isStringValue(field) ? field.stringValue : '';
