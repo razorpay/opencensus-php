@@ -7,6 +7,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { QueryKey } from '@tanstack/react-query';
 import { ValueOf } from 'merchant/views/Affordability/AssistedFinancing/type';
+import { ANALYTICS } from 'common/constant';
 
 export const renderWidget = ({
   widget,
@@ -77,7 +78,12 @@ export const ErrorBoundaryFallBackComponent = (props: BoxProps) => (
 
 export const UCS_SERVICE_NAME = 'UCS';
 
-export const track = ({ objectName, actionName, screen, properties }: TrackParameters): void => {
+export const track = ({
+  objectName,
+  actionName,
+  screen = ANALYTICS.SCREEN.DASHBOARD,
+  properties,
+}: TrackParameters): void => {
   analyticsTrack({
     objectName: `${UCS_SERVICE_NAME} ${objectName}`,
     actionName,

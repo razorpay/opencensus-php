@@ -81,7 +81,7 @@ export default class Precondition extends React.Component {
     return (
       <div class="precondition-div">
         <div class="row" style={{ position: 'relative' }}>
-          {this.props.readonly && this.props.precondition.type == 'logical' ? (
+          {this.props.readonly && this.props.precondition?.type == 'logical' ? (
             <div className={`col-xs-${this.props.parent === 'create-rule' ? 1 : 2}`} />
           ) : null}
           <div

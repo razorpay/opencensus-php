@@ -9,6 +9,7 @@ import getMobileDetect from 'common/utils/mobileDetect';
 import { isMobileDevice } from 'merchant/components/Home/data';
 
 import { titleCase, getCommonAnalyticsProperties } from './rzp-utils';
+import { ANALYTICS } from 'common/constant';
 
 let source = null;
 
@@ -167,7 +168,7 @@ export function extractExceptionProps(event) {
 export const analyticsTrack = ({
   objectName,
   actionName,
-  screen,
+  screen = ANALYTICS.SCREEN.DASHBOARD,
   properties = {},
   toLumberjack = true, // Send all events to LJ by default
   toCleverTap = false,

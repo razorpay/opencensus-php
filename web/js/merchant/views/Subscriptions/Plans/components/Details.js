@@ -43,14 +43,14 @@ export default function PlanDetails({ plan, isLoading, statusMsg, subscriptions 
           <div class="SliderPanel__Body">
             <div class="panel-body">
               <Alert type={statusMsg.type} message={statusMsg.message} />
-              <EntityDetailRow label="Plan Name" value={plan.item.name} />
+              <EntityDetailRow label="Plan Name" value={plan.item?.name} />
 
               <EntityDetailRow
                 label="Plan Description"
                 value={
-                  plan.item.description
+                  plan.item?.description
                     ? () => {
-                        return <span>{plan.item.description}</span>;
+                        return <span>{plan.item?.description}</span>;
                       }
                     : null
                 }
@@ -58,7 +58,9 @@ export default function PlanDetails({ plan, isLoading, statusMsg, subscriptions 
 
               <EntityDetailRow
                 label="Billing Amount"
-                value={() => <Amount currency={plan.item.currency} value={plan.item.amount} />}
+                value={() => (
+                  <Amount currency={plan.item?.currency} value={plan.item?.amount ?? 0} />
+                )}
               />
 
               <EntityDetailRow

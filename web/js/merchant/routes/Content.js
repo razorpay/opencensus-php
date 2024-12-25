@@ -858,7 +858,7 @@ class Content extends Component {
         if (window.rzpTicketSystem.addEventListener) {
           window.rzpTicketSystem.addEventListener('modal-close', onModalClose);
         }
-        window.rzpTicketSystem.openModal(actionHash, {
+        window.rzpTicketSystem.openModal?.(actionHash, {
           chat: false,
           call: false,
         });

@@ -118,11 +118,11 @@ class NewInvitation extends Component {
             failureReason: err?.errors[0],
             role: body?.role,
             ...getCommonAnalyticsProperties(window.rzp_user),
-          },
+        },
         });
         this.props.showNotification({
           type: 'error',
-          message: err.errors,
+          message: err?.errors,
         });
       });
   };

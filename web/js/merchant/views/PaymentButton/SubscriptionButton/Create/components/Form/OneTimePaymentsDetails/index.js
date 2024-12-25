@@ -87,7 +87,7 @@ export default class OneTimePaymentsDetails extends React.Component {
     fields.items.forEach((field, index) => {
       items.push(
         <EditableDisplayField
-          key={field.item.name}
+          key={field.item?.name}
           indexInOrder={index}
           field={field}
           currency={currency}

@@ -392,7 +392,7 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
   const shouldShowEsignFlow =
     data.activation_form_milestone === 'L2' &&
     ekycRequiredforBusinessType.includes(parseInt(data.business_type, 10)) &&
-    data.stakeholder.aadhaar_esign_status === 'verified';
+    data.stakeholder?.aadhaar_esign_status === 'verified';
 
   const shouldShowAddressProofField = !(
     shouldShowEsignFlow &&

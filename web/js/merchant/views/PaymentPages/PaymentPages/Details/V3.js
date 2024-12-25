@@ -534,7 +534,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                     {paymentPageEntity?.payment_page_items?.map((pi, ix) => (
                       <div className="table" key={ix}>
                         <div>
-                          <b>{pi.item.name}</b>
+                          <b>{pi.item?.name ?? '--'}</b>
                         </div>
                         <div>
                           <div className="title">Revenue</div>
@@ -545,7 +545,10 @@ export default class PaymentPagesV3Entity extends React.Component {
                         </div>
                         <div>
                           <div className="title">Price</div>
-                          <Amount value={pi.item.amount} currency={paymentPageEntity.currency} />
+                          <Amount
+                            value={pi.item?.amount ?? 0}
+                            currency={paymentPageEntity.currency}
+                          />
                         </div>
                         <div className="item-details-units">
                           <div className="title">Units Sold</div>

@@ -7,6 +7,7 @@ import { getMode } from 'common/services/mode';
 import { getCookie, setCookie } from 'common/utils/cookies';
 import getMobileDetect from 'common/utils/mobileDetect';
 import store from 'merchant/store';
+import { ANALYTICS } from 'common/constant';
 
 /* Delimiters are space / underscore */
 export const titleCase = (sentence) => {
@@ -126,7 +127,7 @@ const throwAnalyticsException = (errorMessage: string) => {
 export const analyticsTrack = ({
   objectName,
   actionName,
-  screen,
+  screen = ANALYTICS.SCREEN.DASHBOARD,
   properties = {},
   eventAction = '',
   activationType = 'kyc',

@@ -49,8 +49,8 @@ export function custumTooltip(tooltipModel) {
   const tooltipCaret = tooltipEl.querySelector('.tooltip-caret');
 
   // Set caret Position
-  tooltipCaret.classList.remove('top', 'bottom', 'center', 'left', 'right');
-  tooltipCaret.classList.add('left');
+  tooltipCaret?.classList.remove('top', 'bottom', 'center', 'left', 'right');
+  tooltipCaret?.classList.add('left');
 
   // Set Text
   if (body) {
@@ -126,13 +126,14 @@ export function custumTooltip(tooltipModel) {
   // Correcting overflow of tooltip on extreme bottom side
   if (tooltipBottom > this._chart.height) {
     offsetY = caretY - height - caretPadding - defaultCaretPadding;
-    tooltipCaret.classList.add('bottom');
+    tooltipCaret?.classList.add('bottom');
   } else {
-    tooltipCaret.classList.add('top');
+    tooltipCaret?.classList.add('top');
   }
 
   // Adjusting the position of caret on tooltip
-  tooltipCaret.style.left = `${tooltipCaretOffsetX - tooltipCaret.offsetWidth / 1.5}px`;
+  if (tooltipCaret)
+    tooltipCaret.style.left = `${tooltipCaretOffsetX - tooltipCaret.offsetWidth / 1.5}px`;
 
   // Display, position, and set styles for font
   tooltipEl.style.opacity = 1;

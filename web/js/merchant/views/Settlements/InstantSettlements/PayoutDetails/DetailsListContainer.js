@@ -9,7 +9,7 @@ const PayoutDetailsContainer = ({ instantSettlement }) => {
   const [status, setStatus] = useState('');
   const [payoutId, setPayoutID] = useState('');
 
-  const [items, setItems] = useState(instantSettlement.ondemand_payouts.items);
+  const [items, setItems] = useState(instantSettlement.ondemand_payouts?.items || []);
 
   const handleFilterApply = () => {
     trackIS.clickCTAISSearchPayoutDetails();

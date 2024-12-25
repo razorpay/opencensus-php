@@ -17,14 +17,14 @@ export default class WidgetPreview extends React.Component {
     const currencySymbol = getCurrency(currency).symbol;
 
     const amount = field.plan_id
-      ? field.item.amount
+      ? field.item?.amount
       : i18CurrencyConversionFromCommonUnitToMinorUnit(field.item.amount, currency);
 
     return (
       <label class="item-label">
         <div class="item">
-          <div class="item-title">{field.item.name}</div>
-          {field.item.description && <div class="item-description">{field.item.description}</div>}
+          <div class="item-title">{field.item?.name ?? '--'}</div>
+          {field.item?.description && <div class="item-description">{field.item.description}</div>}
 
           <div class="item-details">
             {amount ? (
