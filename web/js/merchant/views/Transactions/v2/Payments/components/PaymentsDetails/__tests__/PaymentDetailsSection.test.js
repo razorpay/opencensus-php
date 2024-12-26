@@ -7,8 +7,19 @@ import store from 'merchant/store';
 import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 import PaymentDetailsSection from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentDetailsSection';
 import { happyFlowProps } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/fixtures/PaymentDetailsSection';
-import { render, screen, fireEvent, waitFor } from 'test-utils';
+import { fireEvent, render, screen, userEvent, waitFor } from 'test-utils';
 import { useStore } from 'shell/commonStore';
+import { fetchBouncememo } from 'merchant/views/Transactions/v1/Payments/BounceMemo.types';
+
+const bounceMemoExperimentMock = {
+  abExperiments: {
+    bounce_memo_single_transaction: {
+      variables: {
+        result: 'on',
+      },
+    },
+  },
+};
 
 jest.mock('common/hooks/useMobile', () => ({
   ...jest.requireActual('common/hooks/useMobile'),
@@ -24,6 +35,15 @@ jest.mock(
   'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentTransfers',
   () => () => <div>Payment Transfers</div>,
 );
+
+jest.mock('merchant/views/Transactions/v1/Payments/BounceMemo.types', () => ({
+  ...jest.requireActual('merchant/views/Transactions/v1/Payments/BounceMemo.types'),
+  fetchBouncememo: jest.fn(),
+}));
+
+jest.mock('common/splitz/hooks/useSplitzService', () => ({
+  useSplitzService: () => bounceMemoExperimentMock,
+}));
 
 const mockIsConfigTagEnabled = jest.fn();
 jest.mock('common/i18', () => ({
@@ -157,6 +177,33 @@ describe('Payment Details Section component', () => {
       expect(
         screen.getByText(`${happyFlowProps.paymentDetails.upi.payer_name}`),
       ).toBeInTheDocument();
+    });
+
+    test('should render failed transaction memo row with download button', () => {
+      const conditionForBounceMemo = { method: 'nach', error_reason: 'insufficient_funds' };
+      const props = {
+        ...happyFlowProps,
+        paymentDetails: { ...happyFlowProps.paymentDetails, ...conditionForBounceMemo },
+        user: { id: '1234' },
+      };
+      render(<App props={props} />);
+      expect(screen.getByText('Failed Transaction Memo')).toBeInTheDocument();
+      expect(screen.getByText('Download')).toBeInTheDocument();
+    });
+
+    test('should call fetchBouncememo if clicked on download', async () => {
+      const conditionForBounceMemo = { method: 'nach', error_reason: 'insufficient_funds' };
+      const props = {
+        ...happyFlowProps,
+        paymentDetails: { ...happyFlowProps.paymentDetails, ...conditionForBounceMemo },
+        user: { id: '1234' },
+      };
+      render(<App props={props} />);
+      const downloadBtn = screen.getByText('Download');
+      userEvent.click(downloadBtn);
+      await waitFor(() => {
+        expect(fetchBouncememo).toHaveBeenCalledTimes(1);
+      });
     });
   });
 

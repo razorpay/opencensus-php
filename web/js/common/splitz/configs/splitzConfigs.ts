@@ -730,6 +730,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'bounce_memo_single_transaction',
+        experimentId: {
+          beta: 'PVTQ7xIFOcS6du',
+          production: 'PVTRp1XskQOm9p',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

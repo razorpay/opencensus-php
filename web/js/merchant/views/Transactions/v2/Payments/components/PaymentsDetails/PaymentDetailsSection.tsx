@@ -1,6 +1,7 @@
 import React, { lazy, useEffect, useState } from 'react';
 import {
   Box,
+  Button,
   Card,
   CardBody,
   ChevronDownIcon,
@@ -56,7 +57,13 @@ import {
   SectionHeader,
 } from './styled';
 import { IPaymentDetails, ApplicationDetails, TooltipKeys } from './types';
-import { imageDownload, isChargeSlipForPosEnabled, isPosTransaction, onCopy } from './utils';
+import {
+  imageDownload,
+  isBounceMemoSingleTransactionEnabled,
+  isChargeSlipForPosEnabled,
+  isPosTransaction,
+  onCopy,
+} from './utils';
 
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { PaymentFeeBreakdown } from 'merchant/views/Transactions/v1/Payments/components/PaymentFee';
@@ -67,6 +74,14 @@ import { getPaymentReferenceNumber } from 'merchant/views/Transactions/v1/utils'
 import { isOrgFeatureExist } from 'merchant/models/User';
 import PaymentProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentProvider';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
+import {
+  ERROR_CODE_FOR_BOUNCE_MEMO,
+  FALLBACK_ERROR_FOR_BOUNCE_MEMO,
+  METHODS_FOR_BOUNCE_MEMO,
+} from './constants';
+import pdfCreation from 'merchant/views/Transactions/v1/Payments/components/PdfCreation';
+import { fetchBouncememo } from 'merchant/views/Transactions/v1/Payments/BounceMemo.types';
+import { useMutation } from '@tanstack/react-query';
 
 const PaymentReceipt = lazy(
   () =>
@@ -219,6 +234,8 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
 
   const bankReferenceNumber = bankTransfer?.details?.bank_reference;
 
+  const isBounceMemoDownloadEnabled = isBounceMemoSingleTransactionEnabled(splitz);
+
   const onDownloadClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
@@ -280,6 +297,44 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
     return false;
   };
 
+  const isFailedDownloadMemoAllowed = Boolean(
+    // isOpen is responsible for open and close of Details dropdown
+    isOpen &&
+      isBounceMemoDownloadEnabled &&
+      error_reason &&
+      ERROR_CODE_FOR_BOUNCE_MEMO.includes(error_reason) &&
+      METHODS_FOR_BOUNCE_MEMO.includes(method),
+  );
+
+  const fetchBounceMemoParams = {
+    paymentID: id,
+    merchantId: user.id,
+  };
+  const { mutate: handleBounceMemoDownload, isLoading: isBounceMemoDownloading } = useMutation({
+    mutationFn: (params: typeof fetchBounceMemoParams) => fetchBouncememo(params),
+    onSuccess: (response) => {
+      if (response?.data?.data) {
+        pdfCreation(response.data.data, fetchBounceMemoParams.merchantId, 'singlePage');
+      } else if (response?.data?.error?.description) {
+        showNotification({
+          type: 'error',
+          message: response.data.error.description,
+        });
+      } else {
+        showNotification({
+          type: 'error',
+          message: FALLBACK_ERROR_FOR_BOUNCE_MEMO,
+        });
+      }
+    },
+    onError: () => {
+      showNotification({
+        type: 'error',
+        message: FALLBACK_ERROR_FOR_BOUNCE_MEMO,
+      });
+    },
+  });
+
   return (
     <Box testID="payment-details-section">
       <SectionHeader enableBorderBottomRadius={!isOpen}>
@@ -307,7 +362,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
         )}
       </SectionHeader>
       {isOpen && (
-        <CardWrapper enableBorderBottomRadius>
+        <CardWrapper enableBorderBottomRadius={!isFailedDownloadMemoAllowed}>
           <Card padding="spacing.5" elevation="none">
             <CardBody>
               <RowsWrapper>
@@ -741,6 +796,43 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
           </Card>
         </CardWrapper>
       )}
+      {/* Do not add below this, this is supposed to be the last element */}
+      {isFailedDownloadMemoAllowed && (
+        <CardWrapper enableBorderBottomRadius>
+          <Card padding="spacing.5" elevation="none">
+            <CardBody>
+              <RowsWrapper>
+                <RowWrapper>
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="semibold"
+                    color="surface.text.gray.subtle"
+                    alignSelf={isMobile ? 'start' : 'center'}
+                  >
+                    Failed Transaction Memo
+                  </Text>
+                  <Box
+                    display="flex"
+                    gap="spacing.4"
+                    alignItems="flex-end"
+                    paddingTop={isMobile ? 'spacing.3' : 'spacing.0'}
+                  >
+                    <Button
+                      onClick={() => handleBounceMemoDownload(fetchBounceMemoParams)}
+                      isLoading={isBounceMemoDownloading}
+                      variant="secondary"
+                    >
+                      Download
+                    </Button>
+                  </Box>
+                </RowWrapper>
+              </RowsWrapper>
+            </CardBody>
+          </Card>
+        </CardWrapper>
+      )}
+      {/* Do not add below this, this is supposed to be the last element */}
     </Box>
   );
 };

@@ -1,3 +1,5 @@
+import { PAYMENT_METHODS } from 'merchant/views/Subscriptions/constants';
+
 export const getTooltipContent = (organizationName = 'Razorpay') => ({
   created: `Customer payment details have been sent to ${organizationName}. The payment amount has not been processed yet`,
   authorized: `This is amount that was deducted from the customer(s) account after successful authentication. It’ll be added to your ${organizationName} balance after being captured`,
@@ -61,3 +63,19 @@ export const cardNetworkLogoMap = {
   'Diners Club': { name: 'dinersclub-logo.png' },
   'American Express': { name: 'amex-logo.png', widthToken: '8' },
 };
+
+export const ERROR_CODE_FOR_BOUNCE_MEMO = [
+  'insufficient_funds',
+  'transaction_limit_exceeded',
+  'payment_cancelled',
+  'payment_failed',
+  'bank_account_invalid',
+  'debit_instrument_blocked',
+  'transaction_limit_exceeded',
+  'mandate_not_active',
+];
+
+export const FALLBACK_ERROR_FOR_BOUNCE_MEMO =
+  'Unable to fetch Bounce memo information at this moment, please try again later.';
+
+export const METHODS_FOR_BOUNCE_MEMO = [PAYMENT_METHODS.NACH, PAYMENT_METHODS.EMANDATE];

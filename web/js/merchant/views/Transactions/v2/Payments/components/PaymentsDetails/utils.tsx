@@ -537,6 +537,14 @@ export const isChargeSlipForPosEnabled = (splitz: SpiltzContextState): boolean =
   return isExperimentEnabled(abExperiments.pos_chargeslip);
 };
 
+export const isBounceMemoSingleTransactionEnabled = (splitz: SpiltzContextState): boolean => {
+  const { abExperiments } = splitz || {
+    abExperiments: { bounce_memo_single_transaction: undefined },
+  };
+  if (!abExperiments?.bounce_memo_single_transaction) return false;
+  return isExperimentEnabled(abExperiments.bounce_memo_single_transaction);
+};
+
 export const getIsQuestionsApplicable = ({ status, method }: IPaymentDetails) => {
   const whiteListedMethods = ['upi', 'card'];
   return status === 'failed' && whiteListedMethods.includes(method);

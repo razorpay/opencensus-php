@@ -169,8 +169,10 @@ function createPdfTable(response, merchantId, pdfPage) {
 
       // Check which pdfPage to process
       if (pdfPage === 'singlePage') {
-        // Save PDF for single page
-        Doc.save('Payment_transaction_summary.pdf');
+        // Redirect page
+        const blob = Doc.output('blob');
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
       } else if (pdfPage === 'routePage') {
         // Generate base64 string for route page
         const base64String = Doc.output('datauristring'); // Generate base64 data URL
