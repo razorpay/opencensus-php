@@ -4424,4 +4424,9 @@ class Entity extends Base\PublicEntity
     public function getFeaturesAttribute() {
         return parent::getRelationValue('features');
     }
+
+    public function getPrimaryBalanceAttribute()
+    {
+        return parent::getRelationValue('primaryBalance');
+    }
 }
