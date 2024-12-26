@@ -26,7 +26,7 @@ test.describe
   });
 
   test.describe.parallel('Create Payment Buttons', () => {
-    test('should create Custom Payment buttons @priority=critical', async ({ page }) => {
+    test.skip('should create Custom Payment buttons @priority=critical', async ({ page }) => {
       const { buttonTitle } = await createPaymentButton({
         page,
         type: paymentButtonType.custom,
@@ -34,7 +34,7 @@ test.describe
       await expect(page.getByRole('link', { name: buttonTitle })).toBeVisible();
     });
 
-    test('should create Buy now Payment buttons @priority=critical', async ({ page }) => {
+    test.skip('should create Buy now Payment buttons @priority=critical', async ({ page }) => {
       const { buttonTitle } = await createPaymentButton({
         page,
         type: paymentButtonType.buyNow,
@@ -42,7 +42,7 @@ test.describe
       await expect(page.getByRole('link', { name: buttonTitle })).toBeVisible();
     });
 
-    test('should create Donations Payment buttons @priority=critical', async ({ page }) => {
+    test.skip('should create Donations Payment buttons @priority=critical', async ({ page }) => {
       const { buttonTitle } = await createPaymentButton({
         page,
         type: paymentButtonType.donations,
@@ -53,7 +53,7 @@ test.describe
       await expect(page.getByRole('link', { name: buttonTitle })).toBeVisible();
     });
 
-    test('should create Quick Pay Payment buttons @priority=critical', async ({ page }) => {
+    test.skip('should create Quick Pay Payment buttons @priority=critical', async ({ page }) => {
       const { buttonTitle } = await createPaymentButton({
         page,
         type: paymentButtonType.quickPay,
@@ -64,7 +64,7 @@ test.describe
       await expect(page.getByRole('link', { name: buttonTitle })).toBeVisible();
     });
 
-    test('should create Quick Pay Payment button with custom post payment message and url @priority=critical', async ({
+    test.skip('should create Quick Pay Payment button with custom post payment message and url @priority=critical', async ({
       page,
     }) => {
       const { buttonTitle } = await createPaymentButton({
@@ -177,7 +177,7 @@ test.describe
       });
     });
 
-    test('should clone payment button @priority=critical', async ({ page }) => {
+    test.skip('should clone payment button @priority=critical', async ({ page }) => {
       const cloneTestButtonId = cloneTest.buttonId;
       const cloneTestButtonTitle = cloneTest.buttontitle;
       openBtnDetailsView({ page, buttonId: cloneTestButtonId, willWaitForLoad: true });

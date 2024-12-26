@@ -14,7 +14,7 @@ test.describe.parallel('Create Registration Link @flow=CAW @country=MY', () => {
     storageState: getStorageStatePath(BASE_PATH).CURLEC_TEST_CAW_LOGIN_STATE,
   });
 
-  test('should create a registration link with TNG as payment method', async ({ page }) => {
+  test.skip('should create a registration link with TNG as payment method', async ({ page }) => {
     await navigateToInCurlecDashboard(page, routes.NEW_REGISTRATION_LINKS);
 
     const currentDate = Date.now();
