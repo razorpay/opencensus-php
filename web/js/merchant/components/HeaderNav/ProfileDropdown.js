@@ -236,6 +236,7 @@ class ProfileDropdown extends Component {
       splitz,
       onSwitchMerchant,
       isConnectedNavigation = false,
+      org,
     } = this.props;
     const { badgeStatus } = trustedBadge || {};
     const isRTBEnabled = badgeStatus === STATUS.YES_ELIGIBLE_LIVE;
@@ -439,55 +440,57 @@ class ProfileDropdown extends Component {
                         <div className="media-body">Switch Merchant</div>
                       </div>
                     )}
-                    <ShowWhen
-                      additionalCondition={(userData) =>
-                        !!showGSTModal &&
-                        userData.isAllowedView('profile_gst') &&
-                        !isConfigTagEnabled('account.gst')
-                      }
-                    >
-                      <div className="media media-action" onClick={showGSTModal}>
-                        <div className="media-body">GST Details</div>
-                      </div>
-                    </ShowWhen>
-                    <ShowWhen
-                      additionalCondition={(userData) =>
-                        userData.isOrgAllowedFunctionality('external_links') &&
-                        !isConfigTagEnabled('documentation.documentation')
-                      }
-                    >
-                      <div className="media media-action">
+                    <ShowWhen additionalCondition={(user) => !isJKOfflineMerchant(org, user)}>
+                      <ShowWhen
+                        additionalCondition={(userData) =>
+                          !!showGSTModal &&
+                          userData.isAllowedView('profile_gst') &&
+                          !isConfigTagEnabled('account.gst')
+                        }
+                      >
+                        <div className="media media-action" onClick={showGSTModal}>
+                          <div className="media-body">GST Details</div>
+                        </div>
+                      </ShowWhen>
+                      <ShowWhen
+                        additionalCondition={(userData) =>
+                          userData.isOrgAllowedFunctionality('external_links') &&
+                          !isConfigTagEnabled('documentation.documentation')
+                        }
+                      >
+                        <div className="media media-action">
+                          <div className="media-body">
+                            <a
+                              target="_blank"
+                              rel="noreferrer noopener"
+                              onClick={() => {
+                                analyticsTrack({
+                                  objectName: 'documentation',
+                                  actionName: 'clicked',
+                                  screen: 'home page',
+                                  properties: {
+                                    location: 'top navigation',
+                                    ...getCommonAnalyticsProperties(window.rzp_user),
+                                  },
+                                });
+                              }}
+                              href="https://razorpay.com/docs"
+                            >
+                              Documentation
+                            </a>
+                          </div>
+                        </div>
+                      </ShowWhen>
+                      {/* Test Mode and Live Mode Button Action added for m-web only */}
+                      <div
+                        className={`media media-action ${mode === 'live' ? 'test-go' : 'live-go'}`}
+                        onClick={() => onSwitchMode(mode === 'live' ? 'test' : 'live')}
+                      >
                         <div className="media-body">
-                          <a
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            onClick={() => {
-                              analyticsTrack({
-                                objectName: 'documentation',
-                                actionName: 'clicked',
-                                screen: 'home page',
-                                properties: {
-                                  location: 'top navigation',
-                                  ...getCommonAnalyticsProperties(window.rzp_user),
-                                },
-                              });
-                            }}
-                            href="https://razorpay.com/docs"
-                          >
-                            Documentation
-                          </a>
+                          Enable {mode === 'live' ? 'Test' : 'Live'} Mode
                         </div>
                       </div>
                     </ShowWhen>
-                    {/* Test Mode and Live Mode Button Action added for m-web only */}
-                    <div
-                      className={`media media-action ${mode === 'live' ? 'test-go' : 'live-go'}`}
-                      onClick={() => onSwitchMode(mode === 'live' ? 'test' : 'live')}
-                    >
-                      <div className="media-body">
-                        Enable {mode === 'live' ? 'Test' : 'Live'} Mode
-                      </div>
-                    </div>
                   </React.Fragment>
                 )}
                 {user.isRazorxAnnouncementEnabled && (
@@ -574,25 +577,27 @@ class ProfileDropdown extends Component {
                     </button>
                   </div>
                 </div>
-                <ShowWhen
-                  additionalCondition={(user) =>
-                    user.role === rolesList.OWNER &&
-                    user.partner_type === null &&
-                    !isOrgFeatureExist('hide_razorpay_text_link') &&
-                    !user.isCountrySingapore
-                  }
-                >
-                  <div className="media loggedin-as">
-                    <div className="media-body">
-                      <p className="small-txt">
-                        Partner with us and start earning on every referral
-                      </p>
+                <ShowWhen additionalCondition={(user) => !isJKOfflineMerchant(org, user)}>
+                  <ShowWhen
+                    additionalCondition={(user) =>
+                      user.role === rolesList.OWNER &&
+                      user.partner_type === null &&
+                      !isOrgFeatureExist('hide_razorpay_text_link') &&
+                      !user.isCountrySingapore
+                    }
+                  >
+                    <div className="media loggedin-as">
+                      <div className="media-body">
+                        <p className="small-txt">
+                          Partner with us and start earning on every referral
+                        </p>
 
-                      <a className="partner-link" onClick={this.showPartnerIntent}>
-                        <strong>Explore Partner Program</strong>{' '}
-                      </a>
+                        <a className="partner-link" onClick={this.showPartnerIntent}>
+                          <strong>Explore Partner Program</strong>{' '}
+                        </a>
+                      </div>
                     </div>
-                  </div>
+                  </ShowWhen>
                 </ShowWhen>
               </React.Fragment>
             )}

@@ -31,8 +31,9 @@ import BusinessDetails from 'merchant/views/AccountAndSettings/BusinessSettings/
 import ActivationDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/ActivationDetails';
 import BusinessWebsiteDetails from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails';
 import { useI18Service } from 'common/i18';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 
-const MerchantDetails = ({ user, openModal, closeModal, tracking }) => {
+const MerchantDetails = ({ user, openModal, closeModal, tracking, org }) => {
   const openNeedsClarificationModal = (data) => {
     analyticsTrack({
       objectName: 'needs clarification respond',
@@ -77,9 +78,11 @@ const MerchantDetails = ({ user, openModal, closeModal, tracking }) => {
         <AccountDetails isFlowRevamped={false} page="Profile" />
       </IntoView>
 
-      <BusinessDetails isFlowRevamped={false} />
+      <ShowWhen additionalCondition={(user) => !isJKOfflineMerchant(org, user)}>
+        <BusinessDetails isFlowRevamped={false} />
 
-      <ActivationDetails isFlowRevamped={false} />
+        <ActivationDetails isFlowRevamped={false} />
+      </ShowWhen>
 
       {user.isActivated && (
         <IntoView
@@ -98,15 +101,19 @@ const MerchantDetails = ({ user, openModal, closeModal, tracking }) => {
 
       <BrandName />
 
-      <EditTransactionLimit transactionType="domestic" replyHandler={openNeedsClarificationModal} />
-
-      <ShowWhen additionalCondition={() => !isConfigTagEnabled('settings.international')}>
+      <ShowWhen additionalCondition={(user) => !isJKOfflineMerchant(org, user)}>
         <EditTransactionLimit
-          transactionType="international"
+          transactionType="domestic"
           replyHandler={openNeedsClarificationModal}
         />
-      </ShowWhen>
 
+        <ShowWhen additionalCondition={() => !isConfigTagEnabled('settings.international')}>
+          <EditTransactionLimit
+            transactionType="international"
+            replyHandler={openNeedsClarificationModal}
+          />
+        </ShowWhen>
+      </ShowWhen>
       {user.canGenerateTnCPage && !user.business_website && !user.isAccepted && (
         <DetailRow
           label="Terms and Conditions Page"
@@ -150,6 +157,7 @@ const MerchantDetails = ({ user, openModal, closeModal, tracking }) => {
 export default connect(
   (state) => ({
     workflows: state.workflows,
+    org: state.session.org,
   }),
   {
     openModal: fnOpenModal,

@@ -66,6 +66,7 @@ import {
 } from 'merchant/views/Account/Profile/components/BankAccountDetailsChangeSteps';
 import { shouldShowFIRCSection } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { Modules } from 'common/constant/enums';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 
 const FIRCSection = lazy(() =>
   import(
@@ -597,6 +598,7 @@ class Profile extends Component {
       profile,
       settlement_amount,
       i18: { isConfigTagEnabled },
+      org,
     } = this.props;
     const { bankAccount } = profile;
     const invitations = user.user.invitations;
@@ -656,17 +658,20 @@ class Profile extends Component {
           <IntoView hashedWith={SUPPORT_DETAILS}>
             <SupportDetails />
           </IntoView>
-          <ShowWhen
-            additionalCondition={(_user) =>
-              _user.isAllowedView('profile_gst') &&
-              !_user.isUnregisteredBusiness &&
-              !isConfigTagEnabled('account.gst')
-            }
-          >
-            <IntoView hashedWith={[UPDATE_GSTIN, NC_UPDATE_GSTIN, RR_UPDATE_GSTIN]}>
-              <Gst />
-            </IntoView>
+          <ShowWhen additionalCondition={(user) => !isJKOfflineMerchant(org, user)}>
+            <ShowWhen
+              additionalCondition={(_user) =>
+                _user.isAllowedView('profile_gst') &&
+                !_user.isUnregisteredBusiness &&
+                !isConfigTagEnabled('account.gst')
+              }
+            >
+              <IntoView hashedWith={[UPDATE_GSTIN, NC_UPDATE_GSTIN, RR_UPDATE_GSTIN]}>
+                <Gst />
+              </IntoView>
+            </ShowWhen>
           </ShowWhen>
+
           <ShowWhen
             additionalCondition={(_user) =>
               bankAccount &&
@@ -720,19 +725,21 @@ class Profile extends Component {
               onRejectClick={this.rejectInvitation}
             />
           ) : null}
+          <ShowWhen additionalCondition={(user) => !isJKOfflineMerchant(org, user)}>
+            <ShowWhen
+              additionalCondition={(user) =>
+                !isConfigTagEnabled('onboarding.onboarding') &&
+                !user.isMerchantRestricted &&
+                !hasMerchant
+              }
+            >
+              <UpgradeMerchantForm />
+            </ShowWhen>
 
-          <ShowWhen
-            additionalCondition={(user) =>
-              !isConfigTagEnabled('onboarding.onboarding') &&
-              !user.isMerchantRestricted &&
-              !hasMerchant
-            }
-          >
-            <UpgradeMerchantForm />
+            <IntoView hashedWith={SETTELEMENT_CYCLE}>
+              <SettlementDetails />
+            </IntoView>
           </ShowWhen>
-          <IntoView hashedWith={SETTELEMENT_CYCLE}>
-            <SettlementDetails />
-          </IntoView>
 
           <ShowWhen additionalCondition={shouldShowFIRCSection}>
             <SuspenseWithLoader>
@@ -753,6 +760,7 @@ const mapStateToProps = (state) => {
     profile: state.profile,
     config: state.config.config,
     settlement_amount: state.home.settlement_amount,
+    org: state.session.org,
   };
 };
 
