@@ -4,6 +4,21 @@ import { LEAF_LIST_TESTS } from 'merchant/views/Settings/PaymentMethods/componen
 import { render, screen } from 'test-utils';
 
 jest.mock('common/splitz', () => ({
+  withSplitzService: (Component) => (props) =>
+    (
+      <Component
+        {...props}
+        splitz={{
+          abExperiments: {
+            pos_sales_agent: {
+              variables: {
+                result: 'off',
+              },
+            },
+          },
+        }}
+      />
+    ),
   useSplitzService: jest.fn(() => ({
     abExperiments: {
       recurring_instrument_requester: {

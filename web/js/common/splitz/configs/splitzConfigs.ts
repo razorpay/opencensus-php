@@ -1749,6 +1749,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'enable_web_scrapper',
+          experimentId: {
+            beta: 'P9GJoqWO6FhUSm',
+            production: 'P9FTxfH5Fa7yEE',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

@@ -3,6 +3,8 @@ import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
 import { bindActionCreators } from 'redux';
 
+import { withSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -51,6 +53,7 @@ import MissingInfoModal from 'merchant/views/Settings/PaymentMethods/components/
 import ConfirmBoxContext from 'merchant/views/Settings/PaymentMethods/components/ConfimBoxContent';
 import { getDisabledInstruments } from 'merchant/views/Settings/PaymentMethods/utils';
 import { displayName, getListClass } from './utils';
+import ScrapperModal from 'merchant/views/Settings/PaymentMethods/components/ScrapperModal';
 
 class LeafListItem extends React.Component {
   static contextTypes = {
@@ -59,6 +62,7 @@ class LeafListItem extends React.Component {
   state = {
     loading: false,
     isImageLoaded: false,
+    isOpen: false,
   };
 
   tracker = (objectName, actionName, screen, properties) => {
@@ -369,6 +373,33 @@ class LeafListItem extends React.Component {
       .catch(() => {});
   };
 
+  showScrapperModal = (isSuccessful = false) => {
+    this.setState((state) => {
+      return {
+        ...state,
+        isOpen: !state.isOpen,
+        loading: isSuccessful,
+      };
+    });
+    if (isSuccessful) {
+      const { instrument, leafInstrument } = this.props;
+      this.createRequestAction(instrument, leafInstrument, instrument.path);
+    }
+  };
+
+  handleScrapperModal = () => {
+    const { instrument, leafInstrument } = this.props;
+
+    if (instrument.collect_info) {
+      this.tracker('instrument', 'requested', 'web scrapper', {
+        instrumentName: instrument.name,
+        method: leafInstrument.name,
+      });
+      this.showScrapperModal();
+    } else {
+      this.handleCreateRequest();
+    }
+  };
   handleRequest = () => {
     const { instrument } = this.props;
 
@@ -380,8 +411,11 @@ class LeafListItem extends React.Component {
   };
 
   render() {
-    const { instrument, intermediateInstrument, instrumentsTat, user } = this.props;
+    const { instrument, intermediateInstrument, instrumentsTat, user, leafInstrument, splitz } =
+      this.props;
+    const { abExperiments } = splitz ?? { abExperiments: { enable_web_scrapper: undefined } };
 
+    const isWebScrapperEnabled = isExperimentEnabled(abExperiments.enable_web_scrapper);
     const isAffordabilityOnboardingActive = user.isShowSegregatedCreditEmi;
 
     // If affordability Onboarding experiment only then we need to show the credit emi changes
@@ -407,6 +441,14 @@ class LeafListItem extends React.Component {
       instrument.status === GREYED || disabledInstruments.includes(instrument.name) || !user.live;
     return (
       <li className={getListClass({ status: instrument.status, path: instrument.path, user })}>
+        <ScrapperModal
+          isOpen={this.state.isOpen}
+          handleModal={this.showScrapperModal}
+          createRequestAction={() =>
+            this.createRequestAction(instrument, leafInstrument, instrument.path)
+          }
+          props={this.props}
+        />
         <div>
           {instrument.slug === 'credit' && isAffordabilityOnboardingActive ? (
             <div className="icon">{getPaymentMethodIcon('card')}</div>
@@ -516,7 +558,7 @@ class LeafListItem extends React.Component {
                     testID="pm-request-cta"
                     isDisabled={isInstrumentDisabled}
                     isLoading={this.state.loading}
-                    onClick={this.handleRequest}
+                    onClick={isWebScrapperEnabled ? this.handleScrapperModal : this.handleRequest}
                   >
                     Request
                   </Button>
@@ -638,4 +680,6 @@ const mapDispatchToProps = (dispatch) => {
   );
 };
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(LeafListItem));
+export default withRouter(
+  withSplitzService(connect(mapStateToProps, mapDispatchToProps)(LeafListItem)),
+);

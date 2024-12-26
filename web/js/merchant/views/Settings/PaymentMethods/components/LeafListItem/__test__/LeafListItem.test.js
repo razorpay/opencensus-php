@@ -5,6 +5,27 @@ import { deepCopy } from 'common/utils/immutable';
 
 import LeafListItem from 'merchant/views/Settings/PaymentMethods/components/LeafListItem';
 
+jest.mock('common/splitz', () => ({
+  withSplitzService: (Component) => (props) =>
+    (
+      <Component
+        {...props}
+        splitz={{
+          abExperiments: {
+            enable_web_scrapper: {
+              variables: {
+                result: 'off',
+              },
+            },
+          },
+        }}
+      />
+    ),
+  useSplitzService: () => ({
+    abExperiments: {},
+  }),
+}));
+
 const state = {
   session: {
     user: {

@@ -29,6 +29,33 @@ jest.mock(
   }),
 );
 
+jest.mock('common/splitz', () => ({
+  withSplitzService: (Component) => (props) =>
+    (
+      <Component
+        {...props}
+        splitz={{
+          abExperiments: {
+            enable_web_scrapper: {
+              variables: {
+                result: 'off',
+              },
+            },
+          },
+        }}
+      />
+    ),
+  useSplitzService: jest.fn(() => ({
+    abExperiments: {
+      showIntlMethodEnablement: {
+        variables: {
+          result: 'off',
+        },
+      },
+    },
+  })),
+}));
+
 jest.mock('merchant/views/Settings/PaymentMethods/components/LocalWireTransfer', () => ({
   __esModule: true,
   default: ({ leafList }) => (
@@ -83,18 +110,6 @@ jest.mock('merchant/views/AccountAndSettings/PaymentMethods/components/Section',
         {children}
       </>
     ),
-}));
-
-jest.mock('common/splitz', () => ({
-  useSplitzService: jest.fn(() => ({
-    abExperiments: {
-      showIntlMethodEnablement: {
-        variables: {
-          result: 'off',
-        },
-      },
-    },
-  })),
 }));
 
 jest.mock('merchant/views/AccountAndSettings/PaymentMethods/utils', () => ({
