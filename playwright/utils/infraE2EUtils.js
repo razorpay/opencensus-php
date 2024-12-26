@@ -1,8 +1,22 @@
+/* eslint-disable object-property-newline */
 // Original taken from: web/node_modules/@razorpay/universe-test/src/configs/e2e.web/infraUtils.js
 // removed all external package dependencies
 const fs = require('fs');
 const path = require('path');
 // const { execSync } = require('child_process');
+const base_dependencies = [
+  { namespace: 'edge', service_name: 'edge-base' },
+  { namespace: 'frontend-graphql', service_name: 'frontend-graphql-base' },
+  { namespace: 'ufh', service_name: 'ufh-base' },
+  { namespace: 'wallet', service_name: 'wallet-base' },
+  // { namespace: 'splitz', service_name: 'splitz-base' },
+  { namespace: 'gcoms', service_name: 'gcoms-base' },
+  { namespace: 'asv', service_name: 'asv-web-base' },
+  // can add multiple pod name dependencies in a namespace
+  // { namespace: 'partnerships', service_name: 'partnerships-test-base' },
+  // { namespace: 'partnerships', service_name: 'partnerships-live-base' },
+  // { namespace: 'ui-config-service', service_name: 'ui-config-service-base' },
+];
 
 async function triggerJob(payload) {
   const url = process.env.JOB_URL;
@@ -220,6 +234,8 @@ async function devstackDeploy() {
     pull_request_number: pullNumber,
     self,
     dependencies,
+    skip_check_base_deployment_status: 'false', // set to "true" in case base pod check to be skipped
+    base_dependencies,
   };
 
   await triggerJob(payload);
