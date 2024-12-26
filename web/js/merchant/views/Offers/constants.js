@@ -279,7 +279,6 @@ export const PAYER_ACCOUNT_TYPES_OPTIONS = {
   ALL: 'ALL',
   BANK_ACCCOUNT: 'bank_account',
   CREDIT_CARD: 'credit_card',
-  PPIWALLET: 'ppiwallet',
   WALLET: 'wallet',
 };
 
@@ -300,5 +299,4 @@ export const PAYER_ACCOUNT_TYPES_DISPLAY = [
   { label: 'Bank Account on UPI', name: PAYER_ACCOUNT_TYPES_OPTIONS.BANK_ACCCOUNT },
   { label: 'Credit Card on UPI', name: PAYER_ACCOUNT_TYPES_OPTIONS.CREDIT_CARD },
   { label: 'Wallet on UPI', name: PAYER_ACCOUNT_TYPES_OPTIONS.WALLET },
-  { label: 'PPI Wallet on UPI', name: PAYER_ACCOUNT_TYPES_OPTIONS.PPIWALLET },
 ];
