@@ -2294,5 +2294,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: ['/subscriptions/settings'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'sihub_whitelist',
+          experimentId: {
+            beta: 'PZ0A6VVGb2YpkD',
+            production: 'PZ05jhrki1xpqv',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

@@ -81,7 +81,17 @@ const getMaxAmount = (methodName) => (settings) => {
   return paymentMethod.max_amount;
 };
 
-const isSubsciptionsToggleAllowed = (splitz) => {
+const isSihubWhitelisted = (splitz) => {
+  const { abExperiments } = splitz || { abExperiments: { sihub_whitelist: undefined } };
+  if (!abExperiments?.sihub_whitelist) return false;
+  // This experiment contains list of merchant who are NOT whitelisted. Which is why we are returning the opposite of the experiment.
+  return !isExperimentEnabled(abExperiments.sihub_whitelist);
+};
+
+const isSubsciptionsToggleAllowed = (splitz, methodName) => {
+  // Assumption here is that whitelisted merchants will have card method enabled all the time which means the Alert will not be visible in cards.
+  // @jhavive made sure about this.
+  if (methodName === PAYMENT_METHODS.CARD) return isSihubWhitelisted(splitz);
   const { abExperiments } = splitz || { abExperiments: { subscriptions_toggle: undefined } };
   if (!abExperiments?.subscriptions_toggle) return false;
   return isExperimentEnabled(abExperiments.subscriptions_toggle);
@@ -452,7 +462,7 @@ const ToggleCard = ({
   history,
 }) => {
   const splitz = useSplitzService();
-  const canToggleSubscriptions = isSubsciptionsToggleAllowed(splitz);
+  const canToggleSubscriptions = isSubsciptionsToggleAllowed(splitz, methodName);
 
   const showToggle = canToggleSubscriptions && methodEnabled;
   const showRedirectionAlert = canToggleSubscriptions && !methodEnabled;
