@@ -146,4 +146,5 @@ export const Image = styled.img`
 export const ProductName = styled.div`
   font-weight: 500;
   font-size: 14px;
+  cursor: pointer;
 `;

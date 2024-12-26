@@ -20,16 +20,22 @@ import {
   ProductList,
   ItemWrapper,
 } from 'merchant/views/MagicCheckout/CouponEngine/styles/AddProductModal';
+import { Alert } from '@razorpay/blade/components';
 
 // helpers imports
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { ITEM_SELECTION_RESTRICTIONS } from 'merchant/views/MagicCheckout/CouponEngine/constants';
 
 interface AddCollectionModalProps {
   closeModal: () => void;
   handleDiscountedItems: (selectedCollection: any) => void;
   showNotification: (notification: any) => void;
   dashboardView: string;
+  widgetName: string;
+  couponName: string;
+  discountedItems: Array<object>;
 }
 
 const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
@@ -37,14 +43,23 @@ const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
   handleDiscountedItems,
   showNotification,
   dashboardView,
+  widgetName,
+  couponName,
+  discountedItems,
 }) => {
   const [apiData, setApiData] = useState<any[]>([]);
   const [formattedDataForRadioButton, setFormattedDataForRadioButton] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [selectedCollections, setSelectedCollections] = useState<any[]>([]);
+  const [selectedCollections, setSelectedCollections] = useState<any[]>(discountedItems ?? []);
   const [nextPageCursor, setNextPageCursor] = useState<string>('');
   const [hasMore, setHasMore] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const maxSelectableCollectionsCount =
+    ITEM_SELECTION_RESTRICTIONS[couponName]?.[widgetName]?.collections;
+  const shouldEnforceSelectionRestriction =
+    !isNaN(maxSelectableCollectionsCount) &&
+    selectedCollections?.length >= maxSelectableCollectionsCount;
 
   const handleConfirm = () => {
     handleDiscountedItems(selectedCollections);
@@ -139,6 +154,14 @@ const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
             <i className="i i-close" />
           </div>
         </ModalHeader>
+        {maxSelectableCollectionsCount ? (
+          <Alert
+            isDismissible={false}
+            color="information"
+            description={`Maximum ${maxSelectableCollectionsCount} selections allowed`}
+            marginY="spacing.2"
+          />
+        ) : null}
         <div>
           <SearchBox>
             <SearchInput
@@ -151,21 +174,30 @@ const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
             />
           </SearchBox>
           <ProductList className="scroll" onScroll={handleScroll}>
-            {formattedDataForRadioButton.map((collection: any) => (
-              <ItemWrapper key={collection.value}>
-                <CollectionWrapper>
-                  <Input.Check
-                    autoRender
-                    checked={selectedCollections.some((item) => item.id === collection.value)}
-                    onChange={() => {
-                      handleVariantCheckboxChange(collection.value);
-                    }}
-                  />
-                  <div>{collection.label}</div>
-                </CollectionWrapper>
-                <hr />
-              </ItemWrapper>
-            ))}
+            {formattedDataForRadioButton.map((collection: any) => {
+              const isCurrentCollectionSelected = selectedCollections.some(
+                (selectedCollection) => selectedCollection.id === collection.value,
+              );
+              const shouldDisableSelection =
+                shouldEnforceSelectionRestriction && !isCurrentCollectionSelected;
+
+              return (
+                <ItemWrapper key={collection.value}>
+                  <CollectionWrapper>
+                    <Input.Check
+                      autoRender
+                      checked={isCurrentCollectionSelected}
+                      disabled={shouldDisableSelection}
+                      onChange={() => {
+                        handleVariantCheckboxChange(collection.value);
+                      }}
+                    />
+                    <div>{collection.label}</div>
+                  </CollectionWrapper>
+                  <hr />
+                </ItemWrapper>
+              );
+            })}
             {isLoading && <Loader />}
           </ProductList>
         </div>

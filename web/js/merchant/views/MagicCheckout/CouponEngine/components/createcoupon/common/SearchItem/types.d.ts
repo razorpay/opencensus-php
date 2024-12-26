@@ -22,4 +22,7 @@ export interface SearchItemProps {
   product: Product;
   selectedProducts: { [key: string]: SelectedProduct };
   setSelectedProducts: (value: any) => void;
+  shouldDisableProductCheckbox: boolean;
+  shouldDisableVariantCheckbox: boolean;
+  isFreebieCoupon: boolean;
 }

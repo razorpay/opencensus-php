@@ -18,7 +18,7 @@ interface MinimumRequirementWidgetProps {
 }
 
 const MinimumRequirementWidget: React.FC<MinimumRequirementWidgetProps> = ({ couponName }) => {
-  const stateObject = ['buyx_gety', 'bulk_order'].includes(couponName)
+  const stateObject = ['buyx_gety', 'bulk_order', 'freebie_item'].includes(couponName)
     ? 'productsPurchased'
     : 'discountDetails';
   const { widgetsData, setWidgetsData } = useContext(ModalContext);

@@ -1,8 +1,10 @@
 import React, { useContext } from 'react';
+import { useParams } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import lazy from 'merchant/routes/LazyLoader';
 
+import { Alert } from '@razorpay/blade/components';
 import Input from 'common/new-ui/Input';
 import DataTable from 'common/ui/Table/DataTable';
 import {
@@ -21,11 +23,13 @@ import {
   DottedButtonWrapper,
   DottedButton,
   RemoveIcon,
-  AddCollectionsCta,
+  AddItemsCta,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CreateCouponFormStyles';
 import { openModal } from 'merchant_common/reducers/modals';
 import { validateDiscountItems } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponFormValidators';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+
+import { ITEM_SELECTION_RESTRICTIONS } from 'merchant/views/MagicCheckout/CouponEngine/constants';
 
 const DiscountedItemModal = lazy(() =>
   import(
@@ -35,6 +39,16 @@ const DiscountedItemModal = lazy(() =>
 
 const AddCollectionProductComponent = ({ openModal, stateObject = 'discountDetails' }) => {
   const { widgetsData, setWidgetsData, errorStates, setErrorStates } = useContext(ModalContext);
+  const { couponName } = useParams();
+
+  //Check if Discount is applicable to products or collections
+  const discountApplicableTo = widgetsData[stateObject].discountApplicableTo;
+
+  const maxSelectableItemsCount =
+    ITEM_SELECTION_RESTRICTIONS[couponName]?.[stateObject]?.[discountApplicableTo];
+  const isItemSelectionRestrictionEnabled =
+    !isNaN(maxSelectableItemsCount) &&
+    widgetsData[stateObject]?.discountedItemsList?.length >= maxSelectableItemsCount;
 
   const handleDiscountedItems = (data) => {
     let selectedItemsList = [];
@@ -52,20 +66,16 @@ const AddCollectionProductComponent = ({ openModal, stateObject = 'discountDetai
           )
         : data.map((collection) => collection.id);
 
-    const updatedDiscountedItemsList = [
-      ...widgetsData[stateObject].discountedItemsList,
-      ...newData,
-    ];
+    const updatedDiscountedItemsList = [...newData];
+
+    const updatedDisplayList = [...selectedItemsList];
 
     setWidgetsData({
       ...widgetsData,
       [stateObject]: {
         ...widgetsData[stateObject],
         discountedItemsList: updatedDiscountedItemsList,
-        discountedItemsDisplayList: [
-          ...widgetsData[stateObject].discountedItemsDisplayList,
-          ...selectedItemsList,
-        ],
+        discountedItemsDisplayList: updatedDisplayList,
       },
     });
 
@@ -86,6 +96,9 @@ const AddCollectionProductComponent = ({ openModal, stateObject = 'discountDetai
           <DiscountedItemModal
             modalType={widgetsData[stateObject].discountApplicableTo}
             handleDiscountedItems={handleDiscountedItems}
+            widgetName={stateObject}
+            couponName={couponName}
+            discountedItems={widgetsData[stateObject].discountedItemsDisplayList}
           />
         </SuspenseWithLoader>
       ),
@@ -96,34 +109,42 @@ const AddCollectionProductComponent = ({ openModal, stateObject = 'discountDetai
     <FormGroup>
       <div className="form-label">Applies to</div>
       <div className="form-input max-width-100">
-        <div className="mb-12">
-          <Input.Radio
-            autoRender
-            key={widgetsData[stateObject].discountApplicableTo}
-            options={[
-              {
-                label: 'Products',
-                value: 'products',
-              },
-              {
-                label: 'Collections',
-                value: 'collections',
-              },
-            ]}
-            defaultValue={widgetsData[stateObject].discountApplicableTo}
-            onChange={(e) => {
-              setWidgetsData({
-                ...widgetsData,
-                [stateObject]: {
-                  ...widgetsData[stateObject],
-                  discountedItemsList: [],
-                  discountApplicableTo: e.target.value,
-                  discountedItemsDisplayList: [],
+        {isNaN(maxSelectableItemsCount) && (
+          <div className="mb-12">
+            <Input.Radio
+              autoRender
+              key={widgetsData[stateObject].discountApplicableTo}
+              options={[
+                {
+                  label: 'Products',
+                  value: 'products',
                 },
-              });
-            }}
+                {
+                  label: 'Collections',
+                  value: 'collections',
+                },
+              ]}
+              defaultValue={widgetsData[stateObject].discountApplicableTo}
+              onChange={(e) => {
+                setWidgetsData({
+                  ...widgetsData,
+                  [stateObject]: {
+                    ...widgetsData[stateObject],
+                    discountedItemsList: [],
+                    discountApplicableTo: e.target.value,
+                    discountedItemsDisplayList: [],
+                  },
+                });
+              }}
+            />
+          </div>
+        )}
+        {!isNaN(maxSelectableItemsCount) && (
+          <Alert
+            isDismissible={false}
+            description={`Maximum ${maxSelectableItemsCount} items allowed`}
           />
-        </div>
+        )}
         <DottedButtonWrapper>
           {/** Intentioally added this check because of the data coming in case of shopify from synced coupons */}
           {widgetsData[stateObject].discountedItemsDisplayList.length > 0 &&
@@ -177,19 +198,11 @@ const AddCollectionProductComponent = ({ openModal, stateObject = 'discountDetai
                       </div>
                     ),
                   )}
-                  <div
-                    style={{
-                      color: '#0B70E7',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      fontWeight: 600,
-                      padding: '16px 0 0',
-                      width: 'fit-content',
-                    }}
-                    onClick={openAddItemsModal}
-                  >
-                    <i className="i i-plus" style={{ marginRight: '4px' }} /> Add Products
-                  </div>
+                  {!isItemSelectionRestrictionEnabled && (
+                    <AddItemsCta onClick={openAddItemsModal}>
+                      <i className="i i-plus" /> Add Products
+                    </AddItemsCta>
+                  )}
                 </div>
               ) : (
                 <div>
@@ -204,9 +217,11 @@ const AddCollectionProductComponent = ({ openModal, stateObject = 'discountDetai
                       ]}
                     />
                   </TableWrapper>
-                  <AddCollectionsCta onClick={openAddItemsModal}>
-                    <i className="i i-plus" /> Add Collections
-                  </AddCollectionsCta>
+                  {!isItemSelectionRestrictionEnabled && (
+                    <AddItemsCta onClick={openAddItemsModal}>
+                      <i className="i i-plus" /> Add Collections
+                    </AddItemsCta>
+                  )}
                 </div>
               )}
             </div>

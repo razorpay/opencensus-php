@@ -49,4 +49,11 @@ export const widgetMappings = {
     UsageRestrictionWidget,
     CombineCouponsWidget,
   ],
+  freebie_item: [
+    ProductsPurchasedWidget,
+    DiscountOfferedWidget,
+    CouponValidityWidget,
+    CouponEligibilityWidget,
+    UsageRestrictionWidget,
+  ],
 };

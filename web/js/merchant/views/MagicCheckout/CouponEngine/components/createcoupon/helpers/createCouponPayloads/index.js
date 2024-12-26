@@ -3,6 +3,7 @@ import { createBuyXGetYPayload } from 'merchant/views/MagicCheckout/CouponEngine
 import { createCartDiscountPayload } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponPayloads/createCartDiscountPayload';
 import { createProductDiscountPayload } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponPayloads/createProductDiscountPayload';
 import { createFreeShippingCouponPayload } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponPayloads/createFreeShippingPayload';
+import { createFreebieItemPayload } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponPayloads/createFreebieItemPayload';
 
 export {
   createBulkDiscountPayload,
@@ -10,4 +11,5 @@ export {
   createBuyXGetYPayload,
   createProductDiscountPayload,
   createFreeShippingCouponPayload,
+  createFreebieItemPayload,
 };

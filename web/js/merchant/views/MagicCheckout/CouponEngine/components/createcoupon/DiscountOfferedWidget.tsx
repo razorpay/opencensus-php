@@ -9,6 +9,7 @@ import {
   InputIcon,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CreateCouponFormStyles';
 import MaxQuantityWidget from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/MaxQuantityWidget';
+import { Alert } from '@razorpay/blade/components';
 
 // context imports
 import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
@@ -18,8 +19,13 @@ import { validateDiscountDetails } from 'merchant/views/MagicCheckout/CouponEngi
 import { onWheelPreventChange } from 'merchant/views/MagicCheckout/helper';
 import { classList } from 'common/utils/rzp-utils';
 import { DiscountTypes } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/constants';
+import { COUPON_NAMES } from 'merchant/views/MagicCheckout/CouponEngine/constants';
 
-const AccordionBody: React.FC = () => {
+type DiscountOfferedWidgetProps = {
+  couponName: string;
+};
+
+const AccordionBody: React.FC<DiscountOfferedWidgetProps> = ({ couponName }) => {
   const { widgetsData, setWidgetsData, setErrorStates, errorStates } = useContext(ModalContext);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>, name: string) => {
@@ -50,110 +56,95 @@ const AccordionBody: React.FC = () => {
     }
   };
 
+  const isMonetaryDiscount = widgetsData.discountOffered.discountType === 'monetary-discount';
+  const isFixedAmountDiscount = widgetsData.discountOffered.discountSubType === 'fixedAmount';
+
   return (
     <div>
-      <FormGroup>
-        <div className="form-label">Additional Products Offered</div>
-        <div className="form-input">
-          <Input
-            name="productsOfferedQty"
-            type="number"
-            required
-            className="w-200"
-            addonAfter={<span> Qty </span>}
-            defaultValue={widgetsData.discountOffered.productsOffered}
-            value={widgetsData.discountOffered.productsOffered}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              setWidgetsData({
-                ...widgetsData,
-                discountOffered: {
-                  ...widgetsData.discountOffered,
-                  productsOffered: e.target.value,
-                },
-              });
-            }}
-            onWheel={onWheelPreventChange}
-          />
-        </div>
-      </FormGroup>
-      <AddCollectionProductComponent stateObject="discountOffered" />
-      <FormGroup>
-        <div className="form-label"> Discount type</div>
-        <div className="form-input">
-          <div className="mb-12">
-            <Input.Radio
-              key={widgetsData.discountOffered.discountType}
-              autoRender
-              defaultValue={widgetsData.discountOffered.discountType}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, 'discountType')}
-              name="discountType"
-              options={[
-                {
-                  label: 'Monetary discount',
-                  value: 'monetary-discount',
-                },
-                {
-                  label: 'Free',
-                  value: 'free',
-                },
-              ]}
+      {couponName !== COUPON_NAMES.FREEBIE_ITEM && (
+        <FormGroup>
+          <div className="form-label">Additional Products Offered</div>
+          <div className="form-input">
+            <Input
+              name="productsOfferedQty"
+              type="number"
+              required
+              className="w-200"
+              addonAfter={<span> Qty </span>}
+              defaultValue={widgetsData.discountOffered.productsOffered}
+              value={widgetsData.discountOffered.productsOffered}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                setWidgetsData({
+                  ...widgetsData,
+                  discountOffered: {
+                    ...widgetsData.discountOffered,
+                    productsOffered: e.target.value,
+                  },
+                });
+              }}
+              onWheel={onWheelPreventChange}
             />
           </div>
-          {widgetsData.discountOffered.discountType === 'monetary-discount' ? (
-            <div className="form-input" style={{ marginLeft: '16px' }}>
-              <div className="mb-12">
-                <Input.Radio
-                  key={widgetsData.discountOffered.discountSubType}
-                  autoRender
-                  defaultValue={widgetsData.discountOffered.discountSubType}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    handleInputChange(e, 'discountSubType');
-                  }}
-                  name="discountSubType"
-                  options={DiscountTypes}
-                />
-              </div>
-              <div className="mb-4">
-                <label className="discount-amount-label">
-                  {widgetsData.discountOffered.discountSubType === 'fixedAmount'
-                    ? 'Discount amount'
-                    : 'Discount percentage'}
-                </label>
-                {widgetsData.discountOffered.discountSubType === 'fixedAmount' ? (
-                  <Input
-                    name="fixedDiscount"
-                    type="number"
-                    addonBefore={<InputIcon className="i-rupee" />}
-                    className={classList(
-                      'w-200',
-                      errorStates.discountOffered.discountValue ? 'error-field' : '',
-                    )}
-                    defaultValue={widgetsData.discountOffered.discountValue}
-                    value={widgetsData.discountOffered.discountValue}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                      handleInputChange(e, 'discountValue')
-                    }
-                    onBlur={(e: ChangeEvent<HTMLInputElement>) => {
-                      validateDiscountDetails({
-                        amountType: widgetsData.discountOffered.discountSubType,
-                        inputValue: e.target.value,
-                        setErrorStates,
-                        couponName: 'buyx_gety',
-                      });
+        </FormGroup>
+      )}
+      <AddCollectionProductComponent stateObject="discountOffered" />
+      {couponName === COUPON_NAMES.FREEBIE_ITEM ? (
+        <Alert
+          isDismissible={false}
+          description="Free item is automatically added to the cart when purchase requirements are met"
+        />
+      ) : (
+        <FormGroup>
+          <div className="form-label"> Discount type</div>
+          <div className="form-input">
+            <div className="mb-12">
+              <Input.Radio
+                key={widgetsData.discountOffered.discountType}
+                defaultValue={widgetsData.discountOffered.discountType}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  handleInputChange(e, 'discountType')
+                }
+                name="discountType"
+                options={[
+                  {
+                    label: 'Monetary discount',
+                    value: 'monetary-discount',
+                  },
+                  {
+                    label: 'Free',
+                    value: 'free',
+                  },
+                ]}
+                autoRender
+              />
+            </div>
+            {isMonetaryDiscount ? (
+              <div className="form-input" style={{ marginLeft: '16px' }}>
+                <div className="mb-12">
+                  <Input.Radio
+                    key={widgetsData.discountOffered.discountSubType}
+                    autoRender
+                    defaultValue={widgetsData.discountOffered.discountSubType}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      handleInputChange(e, 'discountSubType');
                     }}
-                    min="0"
-                    onWheel={onWheelPreventChange}
+                    name="discountSubType"
+                    options={DiscountTypes}
                   />
-                ) : (
-                  <div>
+                </div>
+                <div className="mb-4">
+                  <label className="discount-amount-label">
+                    {isFixedAmountDiscount ? 'Discount amount' : 'Discount percentage'}
+                  </label>
+                  {isFixedAmountDiscount ? (
                     <Input
-                      name="percentageDiscount"
+                      name="fixedDiscount"
                       type="number"
+                      addonBefore={<InputIcon className="i-rupee" />}
                       className={classList(
                         'w-200',
                         errorStates.discountOffered.discountValue ? 'error-field' : '',
                       )}
-                      addonAfter={<InputIcon className="i-offer3" />}
                       defaultValue={widgetsData.discountOffered.discountValue}
                       value={widgetsData.discountOffered.discountValue}
                       onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -167,23 +158,50 @@ const AccordionBody: React.FC = () => {
                           couponName: 'buyx_gety',
                         });
                       }}
-                      onWheel={onWheelPreventChange}
                       min="0"
-                      max="100"
+                      onWheel={onWheelPreventChange}
                     />
-                  </div>
-                )}
-                <p className="error-message">{errorStates.discountOffered.discountValue}</p>
+                  ) : (
+                    <div>
+                      <Input
+                        name="percentageDiscount"
+                        type="number"
+                        className={classList(
+                          'w-200',
+                          errorStates.discountOffered.discountValue ? 'error-field' : '',
+                        )}
+                        addonAfter={<InputIcon className="i-offer3" />}
+                        defaultValue={widgetsData.discountOffered.discountValue}
+                        value={widgetsData.discountOffered.discountValue}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                          handleInputChange(e, 'discountValue')
+                        }
+                        onBlur={(e: ChangeEvent<HTMLInputElement>) => {
+                          validateDiscountDetails({
+                            amountType: widgetsData.discountOffered.discountSubType,
+                            inputValue: e.target.value,
+                            setErrorStates,
+                            couponName: 'buyx_gety',
+                          });
+                        }}
+                        onWheel={onWheelPreventChange}
+                        min="0"
+                        max="100"
+                      />
+                    </div>
+                  )}
+                  <p className="error-message">{errorStates.discountOffered.discountValue}</p>
+                </div>
               </div>
-            </div>
-          ) : null}
-        </div>
-      </FormGroup>
+            ) : null}
+          </div>
+        </FormGroup>
+      )}
     </div>
   );
 };
 
-const DiscountOfferedWidget: React.FC = () => {
+const DiscountOfferedWidget: React.FC<DiscountOfferedWidgetProps> = ({ couponName }) => {
   const { widgetsData, errorStates } = useContext(ModalContext);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -202,7 +220,7 @@ const DiscountOfferedWidget: React.FC = () => {
       <Accordion
         open={isOpen}
         header={<div>Discount Offered</div>}
-        body={<AccordionBody />}
+        body={<AccordionBody couponName={couponName} />}
         footer={
           widgetsData.productsPurchased.minimumType === 'min_qty' ? (
             <MaxQuantityWidget dataKey="discountOffered" />

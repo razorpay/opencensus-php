@@ -16,6 +16,7 @@ import {
 } from 'merchant/views/MagicCheckout/CouponEngine/components/CreateCouponModal/CreateCouponModalStyles';
 
 // helpers and constants
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 import {
   COUPON_NAMES,
   getAvailableCouponTypes,
@@ -25,6 +26,8 @@ import { closeModal } from 'merchant_common/reducers/modals';
 const CreateCouponModal = ({ closeModal, isRcodEnabled }) => {
   const navigate = useNavigate();
   const { abExperiments } = useSplitzService();
+
+  const isFreebieCouponEXPEnabled = useMagicExperiment('freebie_coupon');
 
   const navigateToCreateCouponForm = (type: string) => {
     navigate(addFPVSupportToPath(`/magic/coupons/create/${type}`));
@@ -40,6 +43,10 @@ const CreateCouponModal = ({ closeModal, isRcodEnabled }) => {
       ? [COUPON_NAMES.FREE_SHIPPING, COUPON_NAMES.BULK_ORDER]
       : [COUPON_NAMES.BULK_ORDER]
     : [];
+
+  if (!isFreebieCouponEXPEnabled || !isRcodEnabled) {
+    excludedCoupons.push(COUPON_NAMES.FREEBIE_ITEM);
+  }
   const AVAILABLE_COUPON_TYPES = getAvailableCouponTypes(excludedCoupons);
 
   return (

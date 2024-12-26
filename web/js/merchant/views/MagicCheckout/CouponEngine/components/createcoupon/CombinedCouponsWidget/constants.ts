@@ -32,4 +32,5 @@ export const COUPON_KEYS = {
   bulk_order: 'bulk_order',
   buyx_gety: 'buyx_gety',
   amount_off_order: 'amount_off_order',
+  freebie_item: 'freebie_item',
 };

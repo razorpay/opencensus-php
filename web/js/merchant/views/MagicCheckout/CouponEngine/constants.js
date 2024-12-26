@@ -66,6 +66,7 @@ export const COUPON_NAMES = {
   BUYX_GETY: 'buyx_gety',
   BULK_ORDER: 'bulk_order',
   FREE_SHIPPING: 'free_shipping',
+  FREEBIE_ITEM: 'freebie_item',
 };
 
 export const COUPON_TYPES = [
@@ -75,6 +76,7 @@ export const COUPON_TYPES = [
   { label: 'Buy X Get Y', name: 'buyx_gety' },
   { label: 'Bulk Order', name: 'bulk_order' },
   { label: 'Free Shipping', name: 'free_shipping' },
+  { label: 'Freebie Item', name: COUPON_NAMES.FREEBIE_ITEM },
 ];
 
 //todo: remove it post 100% rollout
@@ -147,6 +149,12 @@ export const AVAILABLE_COUPON_TYPES = [
     id: 5,
     type: 'free_shipping',
   },
+  {
+    couponName: 'Freebie Item',
+    couponDesc: 'Free products based on customer’s purchase',
+    id: 6,
+    type: COUPON_NAMES.FREEBIE_ITEM,
+  },
 ];
 
 //todo: remove it post 100% rollout
@@ -205,3 +213,11 @@ export const MINIMUM_PURCHASE_REQUIREMENTS = [
   { label: 'Minimum quantity of items', name: 'min_qty' },
   { label: 'Minimum purchase amount (₹)', name: 'min_order_value' },
 ];
+
+export const ITEM_SELECTION_RESTRICTIONS = {
+  [COUPON_NAMES.FREEBIE_ITEM]: {
+    discountOffered: {
+      products: 1, // Represents product variants
+    },
+  },
+};

@@ -25,6 +25,7 @@ import { listCoupons } from 'merchant/views/MagicCheckout/CouponEngine/api';
 // helper imports
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 
 // type imports
 import { GenericCouponsProps, CheckedItem } from 'merchant/views/MagicCheckout/CouponEngine/types';
@@ -40,6 +41,7 @@ const GenericCoupons: React.FC<GenericCouponsProps> = ({
   const [checkedIds, setCheckedIds] = useState<CheckedItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState(initialFilters);
+  const isFreebieCouponExpEnabled = useMagicExperiment('freebie_coupon');
   const {
     setAllCouponsList,
     allCouponsList,
@@ -58,6 +60,9 @@ const GenericCoupons: React.FC<GenericCouponsProps> = ({
        * For MagicX , Free shipping coupon type and bulk order discount is not available
        */
       const excludedCouponsForMagicX = [COUPON_NAMES.FREE_SHIPPING, COUPON_NAMES.BULK_ORDER];
+      if (!isFreebieCouponExpEnabled || !isRcodEnabled) {
+        excludedCouponsForMagicX.push(COUPON_NAMES.FREEBIE_ITEM);
+      }
       const couponsList = isRcodEnabled
         ? coupons?.filter((coupon) => !excludedCouponsForMagicX.includes(coupon.type))
         : coupons;

@@ -291,11 +291,19 @@ const generateFieldsToValidate = (couponName) => {
   const fieldMappingForDiscountedItemsList = {
     amount_off_products: 'discountDetails',
     buyx_gety: 'productsPurchased',
+    freebie_item: 'productsPurchased',
     bulk_order: 'productsPurchased',
   };
 
   // adding a validation for discountedItemsList
-  const couponsWithDiscountedItemsList = ['amount_off_products', 'bulk_order', 'buyx_gety'];
+  const couponsWithDiscountedItemsList = [
+    'amount_off_products',
+    'bulk_order',
+    'buyx_gety',
+    'freebie_item',
+  ];
+
+  const couponsWithDiscountOfferedList = ['buyx_gety', 'freebie_item'];
 
   if (couponsWithDiscountedItemsList.includes(couponName)) {
     specificValidators = {
@@ -307,8 +315,8 @@ const generateFieldsToValidate = (couponName) => {
     };
   }
 
-  // adding validation for discountOffered in case of buyx_gety
-  if (couponName === 'buyx_gety') {
+  // adding validation for discountOffered in case of buyx_gety, freebie coupons
+  if (couponsWithDiscountOfferedList.includes(couponName)) {
     specificValidators = {
       ...specificValidators,
       discountOfferedList: {
@@ -323,6 +331,15 @@ const generateFieldsToValidate = (couponName) => {
     delete commonFields.discountValue;
     return {
       ...commonFields,
+    };
+  }
+
+  // In case of freebie , discount value is always hard-coded during payload creation and hence validation is not required
+  if (couponName === 'freebie_item') {
+    delete commonFields.discountValue;
+    return {
+      ...commonFields,
+      ...specificValidators,
     };
   }
 
@@ -427,7 +444,7 @@ export const globalValidator = async ({
       );
     }
 
-    if (fieldName === 'usageRestrictions') {
+    if (fieldName === 'usageRestriction') {
       promises.push(
         validator({
           usageRestriction: widgetsData?.usageRestriction,

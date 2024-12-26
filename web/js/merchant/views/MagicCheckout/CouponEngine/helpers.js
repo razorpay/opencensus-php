@@ -9,6 +9,7 @@ import {
   createBuyXGetYPayload,
   createBulkDiscountPayload,
   createFreeShippingCouponPayload,
+  createFreebieItemPayload,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponPayloads';
 // constant imports
 import {
@@ -108,14 +109,16 @@ export const createApiData = (couponName, data) => {
       return createBulkDiscountPayload(data);
     case 'free_shipping':
       return createFreeShippingCouponPayload(data);
+    case COUPON_NAMES.FREEBIE_ITEM:
+      return createFreebieItemPayload(data);
     default:
       return null;
   }
 };
 
 export const getMinReqWidgetOptions = (couponName) => {
-  if (couponName === COUPON_NAMES.BUYX_GETY) {
-    // in case of bxgy we dont want to show no min req
+  if ([COUPON_NAMES.BUYX_GETY, COUPON_NAMES.FREEBIE_ITEM].includes(couponName)) {
+    // in case of bxgy and freebie coupons, we dont want to show no min req
     return MINIMUM_PURCHASE_REQUIREMENTS.filter((item) => item.name !== 'no_min_qty');
   }
 

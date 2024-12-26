@@ -6,6 +6,7 @@ jest.mock('common/splitz', () => ({
   useSplitzService: () => ({
     abExperiments: {
       magic_free_shipping_coupon: { variables: { result: 'on' } },
+      freebie_coupon: { variables: { result: 'on' } },
     },
   }),
   withSplitzService: jest.fn(),
@@ -49,5 +50,15 @@ describe('coupon Modal', () => {
     expect(screen.queryByText('Free shipping')).not.toBeInTheDocument();
     //Other coupon options should be rendered
     expect(screen.getByText('Amount discounted on orders')).toBeInTheDocument();
+    //Freebie Item Coupon should be rendered for MagicX
+    expect(screen.queryByText('Freebie Item')).toBeInTheDocument();
+  });
+
+  test('Should not render Freebie Item Coupon Option for Magic Checkout', () => {
+    render(<CreateCouponModal />);
+    expect(screen.queryByText('Freebie Item')).not.toBeInTheDocument();
+    //Other coupon options should be rendered
+    expect(screen.getByText('Amount discounted on orders')).toBeInTheDocument();
+    expect(screen.queryByText('Free shipping')).toBeInTheDocument();
   });
 });

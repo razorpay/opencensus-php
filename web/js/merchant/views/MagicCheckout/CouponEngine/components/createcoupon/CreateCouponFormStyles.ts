@@ -457,13 +457,13 @@ export const InputIcon = styled.i`
   font-size: 10px !important;
 `;
 
-export const AddCollectionsCta = styled.div`
+export const AddItemsCta = styled.div`
   color: #0b70e7;
   font-size: 14px;
   cursor: pointer;
   font-weight: 600;
   width: fit-content;
-
+  padding: 16px 0 0;
   i {
     font-size: 16px;
     margin-right: 4px;

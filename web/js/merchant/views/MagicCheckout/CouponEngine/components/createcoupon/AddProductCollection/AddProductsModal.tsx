@@ -13,6 +13,7 @@ import {
   SearchBox,
   SearchInput,
 } from 'merchant/views/MagicCheckout/CouponEngine/styles/AddProductModal';
+import { Alert } from '@razorpay/blade/components';
 
 // api imports
 import { getProducts } from 'merchant/views/MagicCheckout/CouponEngine/api';
@@ -20,23 +21,54 @@ import { getProducts } from 'merchant/views/MagicCheckout/CouponEngine/api';
 // helpers imports
 import { closeModal } from 'merchant_common/reducers/modals';
 
+import { ITEM_SELECTION_RESTRICTIONS } from 'merchant/views/MagicCheckout/CouponEngine/constants';
+
+import { SelectedProduct } from '../common/SearchItem/types';
+
 interface AddProductsProps {
   closeModal: () => void;
   handleDiscountedItems: (selectedProducts: any) => void;
   dashboardView: string;
+  widgetName: string;
+  couponName: string;
+  discountedItems: Array<SelectedProduct>;
 }
 
 const AddProducts: React.FC<AddProductsProps> = ({
   closeModal,
   handleDiscountedItems,
   dashboardView,
+  widgetName,
+  couponName,
+  discountedItems,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedProducts, setSelectedProducts] = useState<Record<string, any>>({});
+  const isFreebieCoupon = couponName === 'freebie_item';
+
+  const prefillSavedSelections = () => {
+    const selectedProducts = {};
+    discountedItems?.forEach((discountedItem) => {
+      selectedProducts[discountedItem?.product_id] = discountedItem;
+    });
+    return selectedProducts;
+  };
+
+  const [selectedProducts, setSelectedProducts] = useState<{ [key: string]: SelectedProduct }>(
+    prefillSavedSelections(),
+  );
+
+  const maxSelectableProductVariants =
+    ITEM_SELECTION_RESTRICTIONS[couponName]?.[widgetName]?.products;
+
+  const shouldEnforceVariantSelectionRestriction =
+    !isNaN(maxSelectableProductVariants) &&
+    Object.values(selectedProducts)?.reduce((totalVariantsCount, currentProduct) => {
+      return totalVariantsCount + (currentProduct?.variants?.length ?? 0);
+    }, 0) >= maxSelectableProductVariants;
 
   const fetchProductsData = async () => {
     try {
@@ -95,6 +127,14 @@ const AddProducts: React.FC<AddProductsProps> = ({
             <i className="i i-close" />
           </div>
         </ModalHeader>
+        {maxSelectableProductVariants ? (
+          <Alert
+            description={`Maximum ${maxSelectableProductVariants} variant selections allowed`}
+            isDismissible={false}
+            color="information"
+            marginY="spacing.2"
+          />
+        ) : null}
         <SearchBox>
           <SearchInput
             type="text"
@@ -107,14 +147,19 @@ const AddProducts: React.FC<AddProductsProps> = ({
         </SearchBox>
 
         <ProductList className="scroll" onScroll={handleScroll}>
-          {data.map((item) => (
-            <SearchItem
-              product={item}
-              key={item.id}
-              selectedProducts={selectedProducts}
-              setSelectedProducts={setSelectedProducts}
-            />
-          ))}
+          {data.map((item) => {
+            return (
+              <SearchItem
+                product={item}
+                key={item.id}
+                selectedProducts={selectedProducts}
+                setSelectedProducts={setSelectedProducts}
+                shouldDisableProductCheckbox={!!(maxSelectableProductVariants && isFreebieCoupon)}
+                shouldDisableVariantCheckbox={shouldEnforceVariantSelectionRestriction}
+                isFreebieCoupon={isFreebieCoupon}
+              />
+            );
+          })}
 
           {isLoading && <Loader />}
         </ProductList>

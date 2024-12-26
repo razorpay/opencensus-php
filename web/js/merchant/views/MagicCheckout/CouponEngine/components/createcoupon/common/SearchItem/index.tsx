@@ -16,9 +16,12 @@ const SearchItem: React.FC<SearchItemProps> = ({
   product,
   selectedProducts,
   setSelectedProducts,
+  shouldDisableProductCheckbox,
+  shouldDisableVariantCheckbox,
+  isFreebieCoupon,
 }) => {
-  const { id, image_url, name, variants } = product;
-  const [shouldShowVariantDetails, setShouldShowVariantDetails] = useState(false);
+  const { id, image_url: imageURL, name, variants } = product;
+  const [shouldShowVariantDetails, setShouldShowVariantDetails] = useState(isFreebieCoupon);
   const [isSelectAllChecked, setSelectAllChecked] = useState(false);
 
   useEffect(() => {
@@ -51,7 +54,7 @@ const SearchItem: React.FC<SearchItemProps> = ({
         newSelectedProducts[id] = {
           product_id: id,
           product_name: name,
-          product_image_url: image_url,
+          product_image_url: imageURL,
           variants: [variantId],
         };
       }
@@ -66,7 +69,7 @@ const SearchItem: React.FC<SearchItemProps> = ({
         newSelectedProducts[id] = {
           product_id: id,
           product_name: name,
-          product_image_url: image_url,
+          product_image_url: imageURL,
           variants: variants.map((variant) => variant.id),
         };
       } else {
@@ -82,12 +85,17 @@ const SearchItem: React.FC<SearchItemProps> = ({
     <ItemWrapper>
       <ItemContainer>
         <div className="display-flex gap--12">
-          <Input.Check autoRender checked={isSelectAllChecked} onChange={handleSelectAllToggle} />
+          <Input.Check
+            autoRender
+            checked={isSelectAllChecked}
+            onChange={handleSelectAllToggle}
+            disabled={shouldDisableProductCheckbox}
+          />
           <div
             onClick={() => setShouldShowVariantDetails(!shouldShowVariantDetails)}
             className="display-flex gap--12 align-center"
           >
-            <Image src={image_url} alt={name} />
+            <Image src={imageURL} alt={name} />
             <ProductName>{name}</ProductName>
           </div>
         </div>
@@ -96,25 +104,31 @@ const SearchItem: React.FC<SearchItemProps> = ({
       <hr />
       {shouldShowVariantDetails && (
         <VariantContainer>
-          {product.variants.map((variant) => (
-            <div key={variant.id}>
-              <div className="display-flex gap--12">
-                <Input.Check
-                  autoRender
-                  checked={selectedProducts[id]?.variants.includes(variant.id)}
-                  onChange={() => handleVariantCheckboxChange(variant.id)}
-                />
-                <div className="display-flex gap--12 align-center">
-                  <Image src={image_url} alt={name} />
-                  <ProductName>
-                    {variant.title}
-                    {variant.sku ? ` | ${variant.sku}` : ''}
-                  </ProductName>
+          {product.variants.map((variant) => {
+            const isVariantAlreadySelected = selectedProducts?.[id]?.variants?.includes(variant.id);
+            const shouldDisableCheckbox = shouldDisableVariantCheckbox && !isVariantAlreadySelected;
+
+            return (
+              <div key={variant.id}>
+                <div className="display-flex gap--12">
+                  <Input.Check
+                    autoRender
+                    checked={isVariantAlreadySelected}
+                    onChange={() => handleVariantCheckboxChange(variant.id)}
+                    disabled={shouldDisableCheckbox}
+                  />
+                  <div className="display-flex gap--12 align-center">
+                    <Image src={imageURL} alt={name} />
+                    <ProductName>
+                      {variant.title}
+                      {variant.sku ? ` | ${variant.sku}` : ''}
+                    </ProductName>
+                  </div>
                 </div>
+                <hr />
               </div>
-              <hr />
-            </div>
-          ))}
+            );
+          })}
         </VariantContainer>
       )}
     </ItemWrapper>

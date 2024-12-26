@@ -5,6 +5,9 @@ import { useSplitzService } from 'common/splitz';
 import Input from 'common/new-ui/Input';
 import ListFilter from 'merchant/components/ListFilter';
 
+// helpers
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+
 // constants imports
 import {
   COUPON_STATUS,
@@ -56,6 +59,7 @@ const CouponFilters: React.FC<CouponFiltersProps> = ({
   isRcodEnabled,
 }) => {
   const [formData, setFormData] = useState<FormData>(initialFiltersState);
+  const isFreebieCouponEXPEnabled = useMagicExperiment('freebie_coupon');
   const { abExperiments } = useSplitzService();
   /**
    * For MagicX , Free shipping coupon and bulk discount coupon type is not available
@@ -65,6 +69,10 @@ const CouponFilters: React.FC<CouponFiltersProps> = ({
       ? [COUPON_NAMES.FREE_SHIPPING, COUPON_NAMES.BULK_ORDER]
       : [COUPON_NAMES.BULK_ORDER]
     : [];
+
+  if (!isFreebieCouponEXPEnabled || !isRcodEnabled) {
+    excludedCouponTypes.push(COUPON_NAMES.FREEBIE_ITEM);
+  }
 
   const COUPON_TYPES = getCouponTypesList(excludedCouponTypes);
 
