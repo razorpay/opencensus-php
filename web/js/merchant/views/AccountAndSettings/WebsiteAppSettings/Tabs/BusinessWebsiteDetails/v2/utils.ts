@@ -334,7 +334,7 @@ export const getWebsitePolicyPagesSubmitPayload = ({
     },
     {
       is_shipping_page_required:
-        formState[WebsitePolicyPages.SHIPPING].radioValue !== PolicyPagesSelection.NA,
+        formState[WebsitePolicyPages.SHIPPING]?.radioValue !== PolicyPagesSelection.NA,
     },
   );
 
