@@ -26,6 +26,13 @@ const OPTIONS = [
 const DeliveryIn = (): JSX.Element => {
   const { values, setValue } = useFormContext();
 
+  React.useEffect(() => {
+    // set default value for units if not exist
+    if (!values.estimated_delivery_details.value.unit) {
+      setETDValue('unit', 'days');
+    }
+  }, []);
+
   const setETDValue = useCallback(
     (key: string, value: string | number) => {
       setValue('estimated_delivery_details', {

@@ -75,6 +75,15 @@ export const convertFormDataToPayload = (formData: ShippingMethod): ShippingMeth
       },
     );
   }
+  // handle empty ETD
+  if (
+    !payload.estimated_delivery_details ||
+    isNaN(+payload.estimated_delivery_details.min_timeframe) ||
+    isNaN(+payload.estimated_delivery_details.max_timeframe) ||
+    !payload.estimated_delivery_details.unit
+  ) {
+    delete payload.estimated_delivery_details;
+  }
   //we have to update shopify metafields only for magicX
   payload.app_type = 'sopc';
   return payload;
