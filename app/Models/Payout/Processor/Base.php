@@ -15,6 +15,8 @@ use RZP\Constants\Mode;
 use RZP\Models\Workflow;
 use RZP\Models\Contact;
 use RZP\Constants\Timezone;
+use RZP\Http\RequestHeader;
+use RZP\Models\IdempotencyKey;
 use RZP\Models\SubVirtualAccount;
 use RZP\Exception\LogicException;
 use RZP\Models\Feature\Constants;
@@ -74,6 +76,7 @@ use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Models\PayoutMeta\Core as PayoutMetaCore;
 use RZP\Models\Payout\PayoutsIntermediateTransactions;
 use RZP\Models\BankingAccountStatement\Details as BASD;
+use RZP\Services\PayoutService\DuplicatePayoutEvaluate;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Metric as FundTransferMetric;
 use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
@@ -86,6 +89,7 @@ use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+use RZP\Models\Payout\BulkIdempotencyKey\Repository as bulkIdempotencyKeyRepository;
 
 
 /**
@@ -189,6 +193,16 @@ class Base extends BaseCore
     protected $payoutShieldEvaluateServiceClient;
 
     /**
+     * @var DuplicatePayoutEvaluate
+     */
+    protected $duplicatePayoutEvaluateClient;
+
+    /**
+     * @var bool
+     */
+    protected bool $duplicatePayoutEvaluateTakeAction = false;
+
+    /**
      * @var int
      */
     protected $payoutServiceMutexTTL = 120;
@@ -225,6 +239,11 @@ class Base extends BaseCore
     const META                    = 'meta';
     const SOURCE_IP               = 'source_ip';
 
+    const HASH_KEY                = 'hash_key';
+    const PAYOUT_SOURCE           = 'payout_source';
+    const PAYOUT_TYPE             = 'payout_type';
+    const DUPLICATE_PAYOUT_EVALUATE_FETCH_LIMIT = 1000;
+
     public function __construct()
     {
         parent::__construct();
@@ -234,6 +253,8 @@ class Base extends BaseCore
         $this->payoutCreateServiceClient = $this->app[PayoutServiceCreate::PAYOUT_SERVICE_CREATE];
 
         $this->payoutShieldEvaluateServiceClient = $this->app[PayoutServiceShieldEvaluate::PAYOUT_SERVICE_SHIELD_EVALUATE];
+
+        $this->duplicatePayoutEvaluateClient = $this->app[DuplicatePayoutEvaluate::DUPLICATE_PAYOUT_EVALUATE];
     }
 
     /**
@@ -285,6 +306,22 @@ class Base extends BaseCore
         if (is_null($payoutViaMicroservice) === false)
         {
             return $payoutViaMicroservice;
+        }
+
+        // Validate if payout is a potential duplicate
+        $isExperimentEnabledForDuplicatePayoutEvaluate = $this->fetchDuplicatePayoutEvaluateSplitzExperiment(
+            $this->merchant->getId(),
+            $input);
+
+        if ($isExperimentEnabledForDuplicatePayoutEvaluate === true)
+        {
+            $startTime = millitime();
+
+            $this->evaluateDuplicatePayout($input);
+
+            $this->trace->histogram(
+                \RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_TIME_TAKEN,
+                millitime() - $startTime);
         }
 
         $payoutEntityCreateAndProcessStartTime = millitime();
@@ -2549,6 +2586,446 @@ class Base extends BaseCore
         return $payout;
     }
 
+    protected function evaluateDuplicatePayout(array $input): void
+    {
+        try {
+            $this->trace->info(
+                TraceCode::DUPLICATE_PAYOUT_EVALUATE_STARTED,
+                [
+                    'input' => $input,
+                ]);
+
+            // Create request body
+            $request = $this->createRequestBodyForDuplicatePreventionEvaluate($input);
+
+            // Make call to PS
+            $response = $this->duplicatePayoutEvaluateClient->duplicatePayoutEvaluateViaMicroservice($request);
+
+            // Do error handling
+            if (isset($response[self::HASH_KEY]) === true)
+            {
+                $this->app['request']->merge(['duplicate_payout_evaluate_hash_key' => $response[self::HASH_KEY]]);
+
+                return;
+            }
+
+        } catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::DUPLICATE_PAYOUT_EVALUATE_EXCEPTION);
+
+            // Throw error if when duplicate payout is detected.
+            if ((($e instanceof Exception\BadRequestException) === true) &&
+                ($e->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT_CREATION_ATTEMPT_NO_PAYOUT_ID_FOUND_IN_RESPONSE))
+            {
+                $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_HASH_LAG_OCCURRED);
+
+                [$foundDuplicate, $errorDescription] = $this->handleHashUpdateLagForDuplicatePayoutEvaluate($input);
+
+                if ($foundDuplicate === true)
+                {
+                    $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_FOUND_PAYOUT);
+
+                    if ($this->duplicatePayoutEvaluateTakeAction === true)
+                    {
+
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT_CREATION_ATTEMPT,
+                            null,
+                            null,
+                            $errorDescription
+                        );
+                    }
+                } else {
+                    $this->trace->info(
+                        TraceCode::DUPLICATE_PAYOUT_EVALUATE_HASH_LAG_HANDLING_COULD_NOT_FOUND_PAYOUT,
+                        [
+                            Payout\Entity::MERCHANT_ID   => $this->merchant->getId(),
+                            Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
+                            Payout\Entity::PAYOUT_TYPE   => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+                        ]);
+
+                    $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_NO_CONCRETE_DECISION, [
+                        'error' => 'due_to_hash_update_lag'
+                    ]);
+                }
+
+                return;
+            }
+
+            // Throw error if when duplicate payout is detected.
+            if ((($e instanceof Exception\BadRequestException) === true) &&
+                ($e->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT_CREATION_ATTEMPT))
+            {
+                $this->trace->info(
+                    TraceCode::DUPLICATE_PAYOUT_EVALUATE_FOUND_DUPLICATE,
+                    [
+                        Payout\Entity::MERCHANT_ID   => $this->merchant->getId(),
+                        Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
+                        Payout\Entity::PAYOUT_TYPE   => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+                    ]);
+
+                $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_FOUND_PAYOUT);
+
+                if ($this->duplicatePayoutEvaluateTakeAction === true)
+                {
+                    throw $e;
+                }
+            }
+
+            $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_NO_CONCRETE_DECISION, [
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    protected function handleHashUpdateLagForDuplicatePayoutEvaluate(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::DUPLICATE_PAYOUT_EVALUATE_HASH_LAG_HANDLING_STARTED);
+
+        /*
+         *  Fetch payouts for merchant in last x duration.
+         *  Since we do not have exact configuration for each merchant, we use default look back period
+         *  to find out the duplicate payout id.
+        */
+        $merchantId = $this->merchant->getId();
+
+        $mode = $input[Payout\Entity::MODE];
+
+        $purpose = $input[Payout\Entity::PURPOSE];
+
+        $amount = (int) ($input[Payout\Entity::AMOUNT]);
+
+        $referenceId = $input[Payout\Entity::REFERENCE_ID];
+
+        $notes = $input[Payout\Entity::NOTES];
+
+        $jsonEncodeNotes = json_encode($notes);
+
+        $narration = $input[Payout\Entity::NARRATION];
+
+        $userId = null;
+
+        // User id
+        if (empty($this->app['basicauth']->getUser()) === false)
+        {
+            $userId = $this->app['basicauth']->getUser()->getId();
+        }
+
+        $payoutSource = $this->getPayoutSourceForDuplicatePreventionEvaluate($input);
+
+        $lastXDuration = 3600;
+
+        switch ($payoutSource)
+        {
+            case Payout\Entity::DASHBOARD:
+                $lastXDuration = 60;
+        }
+
+        $payouts = $this->repo->payout->fetchBulkForDuplicatePayoutEvaluation(
+            $merchantId,
+            $mode,
+            $purpose,
+            self::DUPLICATE_PAYOUT_EVALUATE_FETCH_LIMIT,
+            $lastXDuration);
+
+        $this->trace->info(
+            TraceCode::DUPLICATE_PAYOUT_EVALUATE_HASH_LAG_HANDLING_CHECKING_PAYOUTS_COUNT,
+            [
+                'count'           => count($payouts),
+                'last_x_duration' => $lastXDuration,
+            ]);
+
+        // Push metric if max payouts count are fetched.
+        if (count($payouts) === self::DUPLICATE_PAYOUT_EVALUATE_FETCH_LIMIT)
+        {
+            $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_HASH_LAG_HANDLING_MAX_PAYOUT_COUNT_FETCHED);
+        }
+
+        foreach ($payouts as $payout) {
+            $this->trace->info(
+                TraceCode::DUPLICATE_PAYOUT_EVALUATE_HASH_LAG_HANDLING_CHECKING_PAYOUT,
+                [
+                    'payout_id'                    => $payout->getId(),
+                    'input_amount'                 => $amount,
+                    'input_narration'              => $narration,
+                    'input_reference_id'           => $referenceId,
+                    'input_user_id'                => $userId,
+                    'input_notes'                  => $jsonEncodeNotes,
+                    'matching_payout_amount'       => $payout->getAmount(),
+                    'matching_payout_narration'    => $payout->getNarration(),
+                    'matching_payout_reference_id' => $payout->getReferenceId(),
+                    'matching_payout_user_id'      => $payout->getUserId(),
+                    'matching_payout_notes'        => json_encode($payout->toArray()['notes']),
+                ]);
+
+            if (($amount !== $payout->getAmount()) ||
+                ($referenceId !== $payout->getReferenceId()) ||
+                ($userId !== $payout->getUserId()))
+            {
+                continue;
+            }
+
+            // Check narration
+            if ((empty($narration) === false) &&
+                ($narration !== $payout->getNarration()))
+            {
+                continue;
+            }
+
+            // Check notes
+            if (((empty($notes) === false) ||
+                    (empty($payout->toArray()['notes']) === false)) &&
+                ($jsonEncodeNotes !== json_encode($payout->toArray()['notes'])))
+            {
+                continue;
+            }
+
+            /*
+             * Fund account details matching
+             * Fetch account details from input
+            */
+            $accountDetailsFromInput = [];
+
+            $this->getAccountDetailsForDuplicatePreventionEvaluate($input, $accountDetailsFromInput);
+
+            if (isset($accountDetailsFromInput[Payout\Entity::ACCOUNT_TYPE]) === false)
+            {
+                continue;
+            }
+
+            $foundSameDetailFundAccount = $this->validateAccountDetailsForHashUpdateLagHandling($accountDetailsFromInput, $payout);
+
+            if ($foundSameDetailFundAccount === false)
+            {
+                continue;
+            }
+
+            $this->trace->info(
+                TraceCode::DUPLICATE_PAYOUT_EVALUATE_HASH_LAG_HANDLING_FOUND_PAYOUT,
+                [
+                    Payout\Entity::PAYOUT_ID     => $payout->getId(),
+                    Payout\Entity::MERCHANT_ID   => $this->merchant->getId(),
+                    Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
+                    Payout\Entity::PAYOUT_TYPE   => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+                ]);
+
+            // Get payout id & update in exception description
+            $errorDescription = PublicErrorDescription::DUPLICATE_PAYOUT_CREATION_ATTEMPT;
+
+            $errorDescription = str_replace(['<payout_id>', '<custom_interval>'], [$payout->getId(), $lastXDuration], $errorDescription);
+
+            return [true, $errorDescription];
+        }
+
+        return [false, null];
+    }
+
+    protected function validateAccountDetailsForHashUpdateLagHandling(
+        array $accountDetailsFromInput,
+        Entity $payout): bool
+    {
+        // Fetch fund account details from payout entity
+        $accountDetailsFromPayout = $payout->fundAccount->getAccountDetails($payout->fundAccount->getAccountType());
+
+        $this->trace->info(
+            TraceCode::DUPLICATE_PAYOUT_EVALUATE_HASH_LAG_HANDLING_CHECKING_PAYOUT_FUND_DETAILS,
+            [
+                'account_details_from_payout' => $accountDetailsFromPayout,
+                'account_details_from_input'  => $accountDetailsFromInput,
+            ]);
+
+        switch ($accountDetailsFromInput[Payout\Entity::ACCOUNT_TYPE])
+        {
+            case FundAccount\Entity::BANK_ACCOUNT:
+                if (($accountDetailsFromInput[FundAccount\Entity::BANK_ACCOUNT][Payout\Entity::ACCOUNT_NUMBER] === $accountDetailsFromPayout[Payout\Entity::ACCOUNT_NUMBER]) &&
+                    ($accountDetailsFromInput[FundAccount\Entity::BANK_ACCOUNT][Payout\Entity::IFSC] === $accountDetailsFromPayout[Payout\Entity::IFSC]) &&
+                    ($accountDetailsFromInput[FundAccount\Entity::BANK_ACCOUNT][Payout\Entity::NAME] === $accountDetailsFromPayout[Payout\Entity::NAME]))
+                {
+                    return true;
+                }
+
+                break;
+
+            case FundAccount\Entity::VPA:
+                if (($accountDetailsFromInput[FundAccount\Entity::VPA][Vpa\Entity::USERNAME] === $accountDetailsFromPayout[Vpa\Entity::USERNAME]) &&
+                    ($accountDetailsFromInput[FundAccount\Entity::VPA][Vpa\Entity::HANDLE] === $accountDetailsFromPayout[Vpa\Entity::HANDLE]))
+                {
+                    return true;
+                }
+
+                break;
+
+            case FundAccount\Entity::WALLET:
+                if (($accountDetailsFromInput[FundAccount\Entity::WALLET][WalletAccount\Entity::PROVIDER] === $accountDetailsFromPayout[WalletAccount\Entity::PROVIDER]) &&
+                    ($accountDetailsFromInput[FundAccount\Entity::WALLET][WalletAccount\Entity::PHONE] === $accountDetailsFromPayout[WalletAccount\Entity::PHONE]))
+                {
+                    return true;
+                }
+
+                break;
+        }
+
+        return false;
+    }
+
+    protected function createRequestBodyForDuplicatePreventionEvaluate(array $input): array
+    {
+        $requestBody = [
+            Payout\Entity::MODE            => $input[Payout\Entity::MODE],
+            Payout\Entity::AMOUNT          => (int) $input[Payout\Entity::AMOUNT],
+            Payout\Entity::MERCHANT_ID     => $this->merchant->getId(),
+            Payout\Entity::IDEMPOTENCY_KEY => $this->getIKeyForDuplicatePreventionEvaluate($input),// Get ikey. Won't be used for internal services/dashboard for evaluation
+            Payout\Entity::REFERENCE_ID    => $input[Payout\Entity::REFERENCE_ID] ?? null,
+            Payout\Entity::NARRATION       => $input[Payout\Entity::NARRATION] ?? null,
+            Payout\Entity::PURPOSE         => $input[Payout\Entity::PURPOSE],
+            Payout\Entity::PAYOUT_SOURCE   => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
+            Payout\Entity::PAYOUT_TYPE     => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+        ];
+
+        if (empty($input[Payout\Entity::NOTES]) === false)
+        {
+            $requestBody[Payout\Entity::NOTES] = $input[Payout\Entity::NOTES];
+        }
+
+        // User id
+        if (empty($this->app['basicauth']->getUser()) === false)
+        {
+            $requestBody[Payout\Entity::USER_ID] = $this->app['basicauth']->getUser()->getId();
+        }
+
+        // TODO: Session id
+
+        // Fetch account details
+        $this->getAccountDetailsForDuplicatePreventionEvaluate($input, $requestBody);
+
+        return $requestBody;
+    }
+
+    protected function getIKeyForDuplicatePreventionEvaluate(array $input): string
+    {
+        if (isset($input[Payout\Entity::BATCH_ID]) === true)
+        {
+            return $input[Payout\Entity::IDEMPOTENCY_KEY];
+        }
+
+        $idempotencyKeyId = $this->app['basicauth']->getIdempotencyKeyId();
+
+        if (empty($idempotencyKeyId) === false)
+        {
+            $fetchInput = [
+                IdempotencyKey\Entity::SOURCE_TYPE => \RZP\Constants\Entity::PAYOUT,
+                IdempotencyKey\Entity::ID          => $idempotencyKeyId,
+            ];
+
+            /** @var IdempotencyKey\Entity $idempotencyKeyEntity */
+            $idempotencyKeyEntity = $this->repo->idempotency_key->fetch($fetchInput, $this->merchant->getId())->first();
+
+            return $idempotencyKeyEntity->getIdempotencyKey();
+        }
+
+        return "";
+    }
+
+    protected function getPayoutSourceForDuplicatePreventionEvaluate(array $input): string
+    {
+        // If payout initiated by internal service
+        $sourceDetails = [];
+
+        if (empty($input[Payout\Entity::SOURCE_DETAILS]) === false)
+        {
+            $sourceDetails = $input[Payout\Entity::SOURCE_DETAILS];
+        }
+
+        foreach ($sourceDetails as $source) {
+            if (isset($source['source_type'])) {
+                return strtolower($source['source_type']);
+            }
+        }
+
+        if (isset($input[Payout\Entity::ORIGIN]) === true)
+        {
+            return $input[Payout\Entity::ORIGIN];
+        }
+
+        return 'api';
+    }
+
+    protected function getAccountDetailsForDuplicatePreventionEvaluate(array $input, array & $requestBody): void
+    {
+        if (isset($input[Payout\Entity::FUND_ACCOUNT]) === true)
+        {
+            $accountType = $input[Payout\Entity::FUND_ACCOUNT][Payout\Entity::ACCOUNT_TYPE];
+
+            $requestBody[Payout\Entity::ACCOUNT_TYPE] = $accountType;
+
+            $requestBody[$accountType] = $input[Payout\Entity::FUND_ACCOUNT][$accountType];
+
+            return;
+        }
+
+        [$fetchFundAccountInfoSuccess, $fundAccountInfo, $fundAccount] =
+            (new FundAccount\Core)->fetchFundAccountForPayoutServiceProcessing($this->merchant->getId(), $input);
+
+        if ($fetchFundAccountInfoSuccess === false) {
+            return;
+        }
+
+        if (empty($fundAccountInfo[FundAccount\Entity::BANK_ACCOUNT]) === false)
+        {
+            $bankAccountExtraInfo = $fundAccountInfo[FundAccount\Entity::BANK_ACCOUNT];
+
+            $requestBody[Payout\Entity::ACCOUNT_TYPE] = FundAccount\Entity::BANK_ACCOUNT;
+
+            $requestBody[FundAccount\Entity::BANK_ACCOUNT] = [
+                BankAccount\Entity::NAME            => $bankAccountExtraInfo[BankAccount\Entity::NAME],
+                BankAccount\Entity::IFSC            => $bankAccountExtraInfo[BankAccount\Entity::IFSC],
+                BankAccount\Entity::ACCOUNT_NUMBER  => $bankAccountExtraInfo[BankAccount\Entity::ACCOUNT_NUMBER],
+            ];
+        }
+
+        if (empty($fundAccountInfo[FundAccount\Entity::CARD]) === false)
+        {
+            $cardExtraInfo = $fundAccountInfo[FundAccount\Entity::CARD];
+
+            $requestBody[Payout\Entity::ACCOUNT_TYPE] = FundAccount\Entity::CARD;
+
+            $requestBody[FundAccount\Entity::CARD] = [
+                Card\Entity::LAST4         => $cardExtraInfo[Card\Entity::LAST4],
+                Card\Entity::ISSUER        => $cardExtraInfo[Card\Entity::ISSUER],
+                Card\Entity::NETWORK       => $cardExtraInfo[Card\Entity::NETWORK],
+            ];
+        }
+
+        if (empty($fundAccountInfo[FundAccount\Entity::VPA]) === false)
+        {
+            $vpaExtraInfo = $fundAccountInfo[FundAccount\Entity::VPA];
+
+            $requestBody[Payout\Entity::ACCOUNT_TYPE] = FundAccount\Entity::VPA;
+
+            $requestBody[FundAccount\Entity::VPA] = [
+                Vpa\Entity::USERNAME  => $vpaExtraInfo[Vpa\Entity::USERNAME],
+                Vpa\Entity::HANDLE    => $vpaExtraInfo[Vpa\Entity::HANDLE],
+            ];
+        }
+
+        if (empty($fundAccountInfo[FundAccount\Entity::WALLET]) === false)
+        {
+            $walletExtraInfo = $fundAccountInfo[FundAccount\Entity::WALLET];
+
+            $requestBody[Payout\Entity::ACCOUNT_TYPE] = FundAccount\Entity::WALLET;
+
+            $requestBody[FundAccount\Entity::WALLET] = [
+                WalletAccount\Entity::PHONE    => $walletExtraInfo[WalletAccount\Entity::PHONE],
+                WalletAccount\Entity::PROVIDER => $walletExtraInfo[WalletAccount\Entity::PROVIDER],
+            ];
+        }
+
+        return;
+    }
+
     /**
      * Create Payout will drive the payout cycle for merchant/customer.
      *
@@ -2646,7 +3123,63 @@ class Base extends BaseCore
 
         $this->app['request']->merge([$payoutIDContextKey => $payout->getId()]);
 
+        // Push payout id update in redis hash in PS for duplicate payout evaluation
+        $this->pushPayoutIdToPSForDuplicatePayoutEvaluate($input ,$payout);
+
         return $payout;
+    }
+
+    public function pushPayoutIdToPSForDuplicatePayoutEvaluate(array $input, Entity $payout): void
+    {
+        $app = App::getFacadeRoot();
+
+        try {
+            $hashKey = $this->app['request']->input('duplicate_payout_evaluate_hash_key', null);
+
+            if ($hashKey === null)
+            {
+                return;
+            }
+
+            $this->trace->info(
+                TraceCode::DUPLICATE_PAYOUT_EVALUATE_HASH_PUSH_STARTED,
+                [
+                    'payout_id' => $payout->getId(),
+                    'hash_key'  => $hashKey,
+                ]);
+
+            $eventPayload = [
+                self::HASH_KEY               => $hashKey,
+                Payout\Entity::PAYOUT_ID     => $payout->getId(),
+                Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
+                Payout\Entity::PAYOUT_TYPE   => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+                Payout\Entity::MERCHANT_ID   => $payout->getMerchantId(),
+            ];
+
+            $queueName = $app['config']->get('queue.ps_generic_processing.' . Mode::LIVE);
+
+            $app['queue']->connection('sqs')->pushRaw(json_encode([
+                'process_type' => 'duplicate_payout_prevention_hash_update',
+                'payload'      => $eventPayload,
+            ]), $queueName);
+
+            $this->trace->info(
+                TraceCode::DUPLICATE_PAYOUT_EVALUATE_HASH_PUSHED,
+                [
+                    'payload' => $eventPayload
+                ]);
+        }
+        catch (\Throwable $exception)
+        {
+            $app['trace']->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::DUPLICATE_PAYOUT_EVALUATE_HASH_PUSH_EXCEPTION,
+                [
+                    'payout_id' => $payout->getPublicId(),
+                ]
+            );
+        }
     }
 
     public function validateSubAccountPayoutAndSetPayoutType(Entity $payout)
@@ -2912,6 +3445,8 @@ class Base extends BaseCore
         {
             return;
         }
+
+        (new Payout\Core)->checkIfPayoutsBlockedOnLite($this->balance, $this->merchant);
 
         if ($this->merchant->isFeatureEnabled(Feature::BLOCK_VA_PAYOUTS) === true)
         {
@@ -5031,5 +5566,63 @@ class Base extends BaseCore
 
             return [false, null, null, null];
         }
+    }
+
+    public function fetchDuplicatePayoutEvaluateSplitzExperiment(string $merchantID, array $input): bool
+    {
+        try {
+            $source = $this->getPayoutSourceForDuplicatePreventionEvaluate($input);
+
+            $type = (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk';
+
+            $experimentID =$this->app['config']->get('app.duplicate_payout_evaluate_splitz_experiment_id');
+
+            $properties = [
+                "id" => UniqueIdEntity::generateUniqueId(),
+                "experiment_id" => $experimentID,
+                'request_data'  => json_encode([
+                    'merchant_id' => $merchantID,
+                    'source'      => $source,
+                    'type'        => $type,
+                ])
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(
+                TraceCode::DUPLICATE_PAYOUT_EVALUATE_SPLITZ_RESPONSE,
+                [
+                    'properties' => $properties,
+                    'response'      => $response,
+                ]);
+
+            $variables = $response['response']['variant']['variables'];
+
+            foreach ($variables as $variable) {
+                if ($variable['key'] == "result")
+                {
+                    $value = json_decode($variable['value'], true);
+
+                    if ($value['action'] === true)
+                    {
+                        $this->duplicatePayoutEvaluateTakeAction = true;
+                    }
+
+                    if ($value['enable'] === 'on')
+                    {
+                        return true;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::DUPLICATE_PAYOUT_EVALUATE_SPLITZ_EXPERIMENT_FETCH_FAILED, [
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+
+        return false;
     }
 }

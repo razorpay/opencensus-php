@@ -292,6 +292,8 @@ class Entity extends Base\PublicEntity
     const CONTACT = 'contact';
     const PAYOUT  = 'payout';
     const IFSC    = 'ifsc';
+
+    const NAME    = 'name';
     const CARD    = 'card';
     const NUMBER  = 'number';
 
@@ -333,6 +335,8 @@ class Entity extends Base\PublicEntity
     // Fee credit related constants
     const BANKING    = 'banking';
     const FEE_CREDIT = 'fee_credit';
+
+    const CUSTOM_INTERVAL = 'custom_interval';
 
     const SCHEDULED_PAYOUTS_SUMMARY = [
         self::TODAY,
@@ -439,6 +443,10 @@ class Entity extends Base\PublicEntity
     const HARVESTER_RESPONSE            = 'harvester_response';
 
     const TIME_RANGE_LIST               = 'time_range_list';
+
+    const PAYOUT_SOURCE                 = "payout_source";
+
+    const PAYOUT_TYPE                   = "payout_type";
 
     const PAYOUTS_SUMMARY_ALLOWED_MODES = [
         PayoutMode::IMPS,

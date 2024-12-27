@@ -16,11 +16,15 @@ use RZP\Models\BharatQr;
 use RZP\Models\CardMandate;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Environment;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Account;
 use RZP\Exception\LogicException;
 use RZP\Models\BankAccount\Entity;
 use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\Admin\ConfigKey as AdminConfig;
+use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 
 class TerminalProcessor extends Base\Core
@@ -281,17 +285,24 @@ class TerminalProcessor extends Base\Core
         return $this->repo->terminal->find($terminalId);
     }
 
-    public function getTerminalForBankTransfer(BankTransfer\Entity $bankTransfer, bool $log = false): Terminal\Entity
+    public function getTerminalForBankTransfer(BankTransfer\Entity $bankTransfer, bool $log = false, $isCollectxBankTransferPayment = false): Terminal\Entity
     {
         $gateway = Payment\Gateway::$bankTransferProviderGateway[$bankTransfer->getGateway()];
 
         $merchantId = $bankTransfer->getMerchantId();
 
-        $terminalMerchantIds = [$merchantId, Account::SHARED_ACCOUNT];
+        // For collectx payments, only merchant's terminals should be picked
+        if ($isCollectxBankTransferPayment === true)
+        {
+            $terminalMerchantIds = [$merchantId];
+        }
+        else {
+            $terminalMerchantIds = [$merchantId, Account::SHARED_ACCOUNT];
+        }
 
         $terminals = $this->repo->terminal->getAllBankTransferTerminals($gateway, $terminalMerchantIds);
 
-        return $this->getTerminalForBankAccount($gateway, $terminals, $bankTransfer->getPayeeAccount(), $log);
+        return $this->getTerminalForBankAccount($gateway, $terminals, $bankTransfer->getPayeeAccount(), $log, $isCollectxBankTransferPayment);
     }
 
     public function getTerminalForQrBankTransfer(Entity $bankAccount, $provider, bool $log = false): Terminal\Entity
@@ -305,11 +316,11 @@ class TerminalProcessor extends Base\Core
         return $this->getTerminalForBankAccount($gateway, $terminals, $bankAccount->getAccountNumber(), $log);
     }
 
-    private function getTerminalForBankAccount($gateway, $terminals, $virtualBankAccount, $log)
+    private function getTerminalForBankAccount($gateway, $terminals, $virtualBankAccount, $log, $isCollectxBankTransfer = false)
     {
         try
         {
-            return $this->selectTerminalForBankAccount($terminals, $virtualBankAccount, $log);
+            return $this->selectTerminalForBankAccount($terminals, $virtualBankAccount, $log, $gateway, $isCollectxBankTransfer);
         }
         catch (LogicException $ex)
         {
@@ -318,7 +329,8 @@ class TerminalProcessor extends Base\Core
             // transfer is to be refunded. In order to refund successfully, we are just
             // returning a shared bank transfer terminal for that particular gateway.
             //
-            if ($ex->getMessage() === 'No terminal found for bank transfer.')
+            if ($ex->getMessage() === 'No terminal found for bank transfer.'
+                    && $isCollectxBankTransfer === false)
             {
                 $this->trace->traceException($ex);
 
@@ -389,12 +401,17 @@ class TerminalProcessor extends Base\Core
         return $terminals->last();
     }
 
-    protected function selectTerminalForBankAccount(Base\PublicCollection $allTerminals, string $accountNumber, bool $log = false): Terminal\Entity
+    protected function selectTerminalForBankAccount(
+        Base\PublicCollection $allTerminals,
+        string $accountNumber,
+        bool $log = false,
+        string $gateway = "",
+        bool $isCollectxBankTransfer = false): Terminal\Entity
     {
-        $matchingPrefixTerminals = $allTerminals->filter(function (Terminal\Entity $terminal) use ($accountNumber)
+        $matchingPrefixTerminals = $allTerminals->filter(function (Terminal\Entity $terminal) use ($accountNumber, $gateway, $isCollectxBankTransfer)
         {
             // We will filter the terminals which could possibly be used to make this account number.
-            return $this->isTerminalValid($terminal, $accountNumber);
+            return $this->isTerminalValid($terminal, $accountNumber, $gateway, $isCollectxBankTransfer);
         });
 
         if ($log === true)
@@ -467,11 +484,67 @@ class TerminalProcessor extends Base\Core
         return $selectedTerminals->first();
     }
 
-    protected function isTerminalValid(Terminal\Entity $terminal, string $accountNumber)
+    protected function isTerminalValid(Terminal\Entity $terminal, string $accountNumber, string $gateway = "", bool $isCollectxBankTransfer = false)
     {
         $prefix = Provider::getRoot($terminal) . Provider::getHandle($terminal);
 
+        $merchant = $terminal->merchant;
+
+        if ($merchant != null &&
+            $gateway === Gateway::BT_RBL &&
+            $isCollectxBankTransfer === true &&
+            $merchant->isFeatureEnabled(FeatureConstants::COLLECTX_ENABLED) === true) {
+
+            return $this->isTerminalValidForRBLCollectx($merchant->getId(), Provider::getRoot($terminal));
+        }
+
         return (substr($accountNumber, 0, strlen($prefix)) === $prefix);
+    }
+
+    /*
+     TODO: Update logic when new VAs creation is permitted for RBL merchants.
+
+     Migrated VAs Check
+     - For all VAs migrated to SC2.0, a terminal is created with a dummy series.
+     - Since existing VAs numbers do not share the same prefix, apply a different check for these VAs.
+     - Filter terminals by inspecting the value stored in the Redis key and the terminal series.
+
+    New VAs Check
+     - The check for new VAs will be the same; filter terminals having a series that matches the prefix present in the VA number.
+    */
+    protected function isTerminalValidForRBLCollectx(string $merchantID, string $root): bool
+    {
+        try
+        {
+            $config = (new AdminService)->getConfigKey(
+                ['key' => AdminConfig::COLLECTX_SERIES_PREFIX]);
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->info(
+                TraceCode::COLLECTX_REDIS_GET_FAILURE, [
+                    'merchant_id' => $merchantID
+                ]
+            );
+
+            return false;
+        }
+
+        if (empty($config) === true)
+        {
+            return false;
+        }
+
+        if (array_key_exists($merchantID, $config) === true)
+        {
+            $prefix = $config[$merchantID];
+
+            if ($prefix === $root) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function getTerminalSelectionOptions()

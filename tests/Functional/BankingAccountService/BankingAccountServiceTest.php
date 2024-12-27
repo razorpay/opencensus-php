@@ -38,6 +38,7 @@ use RZP\Mail\BankingAccount\Activation\AccountOpeningWebhookDataAmbiguity;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\DocketMail\DocketMail;
 use RZP\Services\BankingAccountService as BasService;
+use RZP\Tests\Traits\MocksSplitz;
 
 class BankingAccountServiceTest extends TestCase
 {
@@ -46,6 +47,7 @@ class BankingAccountServiceTest extends TestCase
     use MocksDiagTrait;
     use RequestResponseFlowTrait;
     use FeeRecoveryTrait;
+    use MocksSplitz;
 
     protected $config;
 
@@ -77,16 +79,9 @@ class BankingAccountServiceTest extends TestCase
 
         // ledger shadow experiment is NOT enabled
         $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === Merchant\RazorxTreatment::MANDATE_IDEMPOTENCY_KEY_EXPERIMENT_NEW)
-                    {
-                        return 'on';
-                    }else{
-                        return 'control';
-                    }
-                }));
+            ->willReturn('control');
+
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]]);
 
         $this->mockLedgerSns(0);
 

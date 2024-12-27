@@ -56,9 +56,6 @@ class ChargeCollections
     const TENANT            = 'tenant';
     const X_DASHBOARD_USER_ID = 'X-Dashboard-User-id';
     const X_PRICING_DECOMP_PHASE = 'X-Pricing-Decomp-Phase';
-
-    const X_PRICING_WORKFLOW_ACTION = 'X-Pricing-Workflow-Action';
-
     const DEFAULT_REQUEST_TIMEOUT   = 60;
 
     // Charge Collections APIs
@@ -82,6 +79,7 @@ class ChargeCollections
     static $sensitiveFieldsForOrgPricing = ['category', 'sub_category', 'mcc', 'payment_method', 'method_type', 'payment_network', 'issuer_bank',
                                             'payment_feature', 'amount_range_min', 'amount_range_max', 'international', 'fixed_rate', 'percent_rate',
                                             'workflow_id', 'admin_id', 'active'];
+    const MdrPrefix = 'v1/mdr';
 
 
     const CHARGE_PAYOUT_STATUS = 'v1/charge_payout_status';
@@ -219,12 +217,12 @@ class ChargeCollections
     /**
      * Function used to set headers for the request
      */
-    protected function setHeaders(array $headers)
+    protected function setHeaders(array $headers, $baseUrl)
     {
         $this->headers[self::ACCEPT]        = 'application/json';
         $this->headers[self::CONTENT_TYPE]  = 'application/json';
         $this->headers[self::X_TASK_ID]     = $this->app['request']->getTaskId();
-        $this->headers[self::X_PASSPORT_JWT_V1] = $this->auth->getPassportJwt($this->baseUrl);
+        $this->headers[self::X_PASSPORT_JWT_V1] = $this->auth->getPassportJwt($baseUrl);
         $this->headers['X-User-Id'] = $this->merchantId;
 
         if(isset($headers[self::TENANT]) === true)
@@ -247,11 +245,6 @@ class ChargeCollections
         if (isset($headers[self::X_PRICING_DECOMP_PHASE]) === true)
         {
             $this->headers[self::X_PRICING_DECOMP_PHASE] = $headers[self::X_PRICING_DECOMP_PHASE];
-        }
-
-        if (isset($headers[self::X_PRICING_WORKFLOW_ACTION]) === true)
-        {
-            $this->headers[self::X_PRICING_WORKFLOW_ACTION] = $headers[self::X_PRICING_WORKFLOW_ACTION];
         }
 
         // Adds rzp-context-dev-serve header
@@ -429,7 +422,15 @@ class ChargeCollections
      */
     protected function generateRequest(string $endpoint, string $method, array $data, array $headers): array
     {
-        $url = $this->baseUrl . $endpoint;
+        $baseUrl = $this->baseUrl;
+        $key = $this->key;
+        $secret = $this->secret;
+        if(str_starts_with($endpoint, self::MdrPrefix)) {
+            $baseUrl = $this->config['base_url'][Mode::LIVE];
+            $key = $this->config['charge_collections_username'][Mode::LIVE];
+            $secret = $this->config['charge_collections_password'][Mode::LIVE];
+        }
+        $url = $baseUrl . $endpoint;
 
         // json encode if data is must, else ignore
         if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
@@ -440,12 +441,12 @@ class ChargeCollections
         $options = [
             'timeout' => $this->requestTimeout,
             'auth'    => [
-                $this->key,
-                $this->secret
+                $key,
+                $secret
             ],
         ];
 
-        $this->setHeaders($headers);
+        $this->setHeaders($headers, $baseUrl);
 
         return [
             'url'       => $url,

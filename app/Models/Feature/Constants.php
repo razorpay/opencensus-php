@@ -615,6 +615,11 @@ class Constants
      */
     const NEW_BANKING_ERROR             = 'new_banking_error';
 
+     /**
+     * Org feature flag to send banking mail vai stork
+     */
+    const ENABLE_STORK_EMAIL= 'enable_stork_email';
+
     /**
      * Feature flag to control customizations in merchant onboarding emails
      * https://razorpay.atlassian.net/browse/BP-2547
@@ -2096,6 +2101,11 @@ class Constants
      */
     const OMNI_ENABLED = 'omni_enabled';
 
+    /**
+     * Feature flag used to identify omni single stack merchants.
+     */
+    const OMNI_SINGLE_STACK = 'omni_single_stack';
+
     /** Feature flag to identify merchants who have split settlement feature enabled*/
     const SPLIT_SETTLEMENTS_ENABLED = "split_settlements_enabled";
 
@@ -2397,6 +2407,11 @@ class Constants
     const HIDE_RZPBRAND_ON_CHECKOUT = 'hide_rzpbrand_on_checkout';
 
     const BETA_LA_CREATE_ENABLE = 'beta_la_create_enable';
+
+    /**
+     * This feature allows merchant to capture payment partially.
+     */
+    const ALLOW_PARTIAL_CAPTURE = 'allow_partial_capture';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -3240,6 +3255,7 @@ class Constants
         self::KYC_BLOCK_OCR_FOR_VAS                  => true,
         self::ONE_CC_TAX_INCLUSION                   => true,
         self::OMNI_ENABLED                           => true,
+        self::OMNI_SINGLE_STACK                      => true,
         self::SPLIT_SETTLEMENTS_ENABLED              => true,
         self::DEBIT_CARD_VALIDATION                  => true,
         self::REMOVE_RAZORPAY_BRANDING               => true,
@@ -3278,6 +3294,7 @@ class Constants
         self::OTC_MERCHANT_CHALLAN                   => true,
         self::EXTERNAL_PA_VAS                        =>  true,
         self::AMAZON_GC_VALIDATIONS                  => true,
+        self::ENABLE_STORK_EMAIL                    => true,
         self::CUSTOM_ONBOARDING_EMAILS               => true,
         self::VAS_LINK_WALLETS                       => true,
         self::HIDE_SETTLEMENT_TIME                   => true,
@@ -3331,7 +3348,8 @@ class Constants
         self::OG_SMS_VENDOR_CONFIG_TRAI    => true,
         self::ME_SMS_VENDOR_CONFIG_TRAI    => true,
         self::BETA_LA_CREATE_ENABLE        => true,
-        self::PAYOUTS_BLOCKED_ON_LITE      => true
+        self::PAYOUTS_BLOCKED_ON_LITE      => true,
+        self::ALLOW_PARTIAL_CAPTURE => true,
     ];
 
     // Entity type constants
@@ -4675,6 +4693,11 @@ class Constants
             'display_name'  => 'Omni Enabled',
             'documentation' => 'Omni Enabled Merchant',
         ],
+        self::OMNI_SINGLE_STACK => [
+            'feature'       => self::OMNI_SINGLE_STACK,
+            'display_name'  => 'Omni Single Stack Enabled',
+            'documentation' => 'Omni Single Stack Enabled Merchant',
+        ],
         self::SPLIT_SETTLEMENTS_ENABLED => [
             'feature'       => self::SPLIT_SETTLEMENTS_ENABLED,
             'display_name'  => 'Split Settlement Enabled',
@@ -4867,6 +4890,11 @@ class Constants
             'feature'       => self::BETA_LA_CREATE_ENABLE,
             'display_name'  => 'Beta Linked Account Enable',
             'documentation' => '',
+        ],
+        self::ALLOW_PARTIAL_CAPTURE => [
+            'feature' => self::ALLOW_PARTIAL_CAPTURE,
+            'display_name' => "Feature flag for merchants to capture payment partially",
+            'documentation' => "",
         ],
     ];
 

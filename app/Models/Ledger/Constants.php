@@ -221,6 +221,7 @@ class Constants
 
     const REGISTER_EVENT_FOR_LEDGER_TRANSACTION                 = 'register_event_for_ledger_transaction';
     const REGISTER_EVENT_FOR_MULTI_MERCHANT_LEDGER_TRANSACTION  = 'register_event_for_multi_merchant_ledger_transaction';
+    const ORDERS_PAYMENT_PARITY_EVENT                           = 'order_payments_parity_event';
     const KAFKA_MESSAGE_TASK_NAME                               = 'task_name';
     const KAFKA_MESSAGE_DATA                                    = 'data';
     const CREATE_LEDGER_JOURNAL_EVENT                           = 'create-ledger-journal-event';

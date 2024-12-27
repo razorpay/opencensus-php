@@ -1076,53 +1076,29 @@ class Core extends Base\Core
     {
         $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
 
-        $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForODS($merchant);
-
         $bucketCore = new Bucket\Core;
 
-        if ($isExpEnabled === true)
+        if ($transactorEvent === LedgerConstants::LEDGER_ONDEMAND_SETTLEMENT_PROCESSED)
         {
-            if (($transactorEvent === LedgerConstants::LEDGER_ONDEMAND_SETTLEMENT_PROCESSED))
+            $virtualPaymentTransaction = $this->transformJournalResponseToTransactionEntity($journal);
+
+            $status = $bucketCore->shouldProcessViaNewService($virtualPaymentTransaction->getMerchantId());
+
+            if ($status === true)
             {
-                $virtualPaymentTransaction = $this->transformJournalResponseToTransactionEntity($journal);
+                $bucketCore->publishForSettlement($virtualPaymentTransaction);
+            }
+        } else if ($transactorEvent === LedgerConstants::LEDGER_ONDEMAND_SETTLEMENT_REVERSED) {
 
-                $status = $bucketCore->shouldProcessViaNewService($virtualPaymentTransaction->getMerchantId());
+            $virtualPaymentTransaction = $this->transformJournalResponseToTransactionEntityForReversal($journal);
 
-                if ($status === true)
-                {
-                    $bucketCore->publishForSettlement($virtualPaymentTransaction);
-                }
-            }else if(($transactorEvent === LedgerConstants::LEDGER_ONDEMAND_SETTLEMENT_REVERSED)) {
+            $status = $bucketCore->shouldProcessViaNewService($virtualPaymentTransaction->getMerchantId());
 
-                $virtualPaymentTransaction = $this->transformJournalResponseToTransactionEntityForReversal($journal);
-
-                $status = $bucketCore->shouldProcessViaNewService($virtualPaymentTransaction->getMerchantId());
-
-                if ($status === true)
-                {
-                    $bucketCore->publishForSettlement($virtualPaymentTransaction);
-                }
+            if ($status === true)
+            {
+                $bucketCore->publishForSettlement($virtualPaymentTransaction);
             }
         }
-    }
-
-    public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForODS($merchant): bool
-    {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ODS,
-            $this->mode ?? Mode::LIVE
-        );
-
-        $isExperimentEnabled = ($variant === 'on');
-
-        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK_FOR_ODS,
-            [
-                'merchant'               => $merchant->getId(),
-                'isExperimentEnabled'    => $isExperimentEnabled,
-            ]);
-
-        return $isExperimentEnabled;
     }
 
     public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForLoc($merchant): bool

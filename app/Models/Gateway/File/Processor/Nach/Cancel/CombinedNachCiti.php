@@ -29,10 +29,11 @@ class CombinedNachCiti extends Base
     const EXTENSION = FileStore\Format::ZIP;
     const FILE_TYPE = FileStore\Type::CITI_NACH_COMBINED_CANCEL;
     const S3_PATH   = 'citi/nach/input_file/';
-    const FILE_NAME = 'MMS-CANCEL-CITI-CITI137268-{$date}-{$count}-INP';
-    const ZIP_FILE  = 'RAZORP_CANCELLATION_{$utilityCode}_{$date}';
+    const FILE_NAME = 'MMS-CANCEL-CITI-CITI136763-{$date}-API{$count}-INP';
+    const ZIP_FILE  = 'RAZORP_CANCELLATION_{$utilityCode}_{$date}-{$countZipFile}';
     const STEP      = 'cancel';
 
+    
     protected $fileStore = [];
     protected $mailData  = [];
 
@@ -52,9 +53,11 @@ class CombinedNachCiti extends Base
                 {
                     $count = str_pad(++$count, 6, '0', STR_PAD_LEFT);
 
+                    $countZipFile = ++$countZipFile;
+
                     $fileName = strtr(self::FILE_NAME, ['{$date}' => $date, '{$count}' => $count]);
 
-                    $dirName = strtr(self::ZIP_FILE, ['{$utilityCode}' => $key, '{$date}' => $date]);
+                    $dirName = strtr(self::ZIP_FILE, ['{$utilityCode}' => $key, '{$date}' => $date, '{$countZipFile}' => $countZipFile]);
 
                     $xmlFilePath = $dirName . DIRECTORY_SEPARATOR . $fileName . '.xml';
 

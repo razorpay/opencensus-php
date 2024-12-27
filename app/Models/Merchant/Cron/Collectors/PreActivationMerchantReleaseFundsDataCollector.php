@@ -39,18 +39,18 @@ class PreActivationMerchantReleaseFundsDataCollector extends DbDataCollector
 
         $startDate = Carbon::today(Timezone::IST)->subDays(120)->getTimestamp();
 
-        $endDate = Carbon::createFromTimestamp($startDate)->subDays(120)->getTimestamp();
+        $endDate = Carbon::createFromTimestamp($startDate)->subDays(1)->getTimestamp();
 
         // We are processing data in batches for merchants upto 16 months old, we are processing in batches of 4 months
         // hence ran the loop 4 time and everytime 4 months will get incremented in the max and min rejection date
 
-        for ($i = 0; $i < 4; $i++)
+        for ($i = 0; $i < 480; $i++)
         {
             $result = $this->getMerchantIdsInBatches($merchantState, $startDate, $endDate);
 
             $startDate = $endDate;
 
-            $endDate = Carbon::createFromTimestamp($endDate)->subDays(120)->getTimestamp();
+            $endDate = Carbon::createFromTimestamp($endDate)->subDays(1)->getTimestamp();
 
             $finalMerchantIdList = array_merge($finalMerchantIdList, $result);
         }

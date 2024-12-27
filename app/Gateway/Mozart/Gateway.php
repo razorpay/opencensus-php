@@ -1831,8 +1831,12 @@ class Gateway extends Base\Gateway
                 $dataArray = json_decode($input['gateway']['payload'],true);
                 if (isset($dataArray['pgMerchantId']) === true)
                 {
-                    $variant = $this->app->razorx->getTreatment($dataArray['pgMerchantId'], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
-                    if (strtolower($variant) === 'on')
+
+                    $merchantVpaHandle = $this->getMerchantVpaHandleFromEncryptedInputForUpiYesbank($dataArray);
+
+                    //The below check has been changed from "if ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK experiment's result is ON TO if merchant's vpa handle is @ypbiz"
+
+                    if ($merchantVpaHandle === 'ypbiz')
                     {
                         $inputBody =$input['gateway']['payload'];
 
@@ -1864,6 +1868,14 @@ class Gateway extends Base\Gateway
         return $mozartRequest;
     }
 
+    public function getMerchantVpaHandleFromEncryptedInputForUpiYesbank($dataArray)
+    {
+        $params = ['gateway_merchant_id' => $dataArray['pgMerchantId']];
+        $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData('upi_yesbank', $params);
+        $merchantVpa = $terminal?->getVpa();
+        $merchantVpaHandle = (explode("@", $merchantVpa));
+        return $merchantVpaHandle[1];
+    }
     protected function addMozartTimeoutIfApplicable($input, &$mozartRequest)
     {
         $gateway = $this->getGateway($input);
@@ -2017,24 +2029,32 @@ class Gateway extends Base\Gateway
             if ($this->action === Action::PRE_PROCESS and isset($input['gateway']['payload']) === true)
             {
                 $dataArray = json_decode($input['gateway']['payload'],true);
+
                 if (isset($dataArray['pgMerchantId']) === true)
                 {
-                    $variant = $this->app->razorx->getTreatment($dataArray['pgMerchantId'], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
-                    if (strtolower($variant) === 'on')
+                    $merchantVpaHandle = $this->getMerchantVpaHandleFromEncryptedInputForUpiYesbank($dataArray);
+                    //The below check has been changed from "if ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK experiment's result is ON TO if merchant's vpa handle is @ypbiz"
+
+                    if ($merchantVpaHandle === 'ypbiz')
                     {
                        return  $baseUrl . 'upiPayments' . '/' .  $gateway . '/v3/' . $this->action;
                     }
+
                 }
 
             }
             else
             {
-                $variant = 'control';
+                $merchantVpaHandle = '';
+
                 if (isset($input['terminal']['gateway_merchant_id']) === true)
                 {
-                    $variant = $this->app->razorx->getTreatment($input['terminal']['gateway_merchant_id'], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
+                    $dataArray['pgMerchantId'] = $input['terminal']['gateway_merchant_id'];
+                    $merchantVpaHandle = $this->getMerchantVpaHandleFromEncryptedInputForUpiYesbank($dataArray);
                 }
-                if (strtolower($variant) === 'on')
+
+                //The below check has been changed from "if ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK experiment's result is ON TO if merchant's vpa handle is @ypbiz"
+                if ($merchantVpaHandle === 'ypbiz')
                 {
                     if ($this->action === Action::INTENT_QR)
                     {

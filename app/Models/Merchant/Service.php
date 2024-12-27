@@ -4404,6 +4404,20 @@ class Service extends Base\Service
         return (new Methods\Core)->editMethods($input, $merchant);
     }
 
+    public function editAllMerchantMethods($mid, $input)
+    {
+        $this->trace->info(
+            TraceCode::METHODS_DUAL_WRITE,
+            [
+                'input'         => $input,
+                'merchant_id'   => $mid
+            ]);
+
+        $merchant =  $this->repo->merchant->findOrFailPublic($mid);
+
+        return (new Methods\Core)->editAllMethods($input, $merchant);
+    }
+
     public function patchMerchantBeneficiaryCode()
     {
         $data = (new BankAccount\Core)->updateBeneficiaryCodes();
@@ -12959,6 +12973,11 @@ class Service extends Base\Service
         $updatedAtTo = ($input[Constants::END_TIMESTAMP] ?? Carbon::now()->getTimestamp());
 
         $merchantsCollection = $this->repo->merchant->getMerchantsForSettlementsEventsCron($cronLastRunAt, $updatedAtTo);
+        $this->app['trace']->info(TraceCode::DEBUG_LOGGING_MERCHANT_SETTLEMENT_CRON, [
+            'merchant_ids before filter' => $merchantsCollection->pluck('id')->toArray(),
+            'cronLastRunAt' => $cronLastRunAt,
+            'updatedAtTo' => $updatedAtTo,
+        ]);
 
         $merchantsCollection = $merchantsCollection->filter(function ($merchant)
         {

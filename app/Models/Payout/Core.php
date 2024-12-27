@@ -60,6 +60,7 @@ use RZP\Services\PayoutService;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Base\PublicEntity;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Models\Currency\Currency;
@@ -499,6 +500,7 @@ class Core extends Base\Core
 
         return $payout;
     }
+
 
     /**
      * Creates a payout entity and triggers an ICICI OTP creation request via FTS
@@ -10134,6 +10136,26 @@ class Core extends Base\Core
         );
     }
 
+    public function checkIfPayoutsBlockedOnLite(Merchant\Balance\Entity $balance = null, Merchant\Entity $merchant = null)
+    {
+        if (($merchant->isFeatureEnabled(Feature\Constants::PAYOUTS_BLOCKED_ON_LITE) === true) and
+            ($balance->isAccountTypeShared() === true))
+        {
+            $this->trace->error(TraceCode::PAYOUTS_BLOCKED_ON_LITE,
+                [
+                    'balance_id'  => $balance->getId(),
+                    'merchant_id' => $balance->getMerchantId()
+                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'API payouts are not available for this account'
+            );
+        }
+    }
+
     public function fetchMerchantAccountDetailsAndValidate(
         $merchantId, $channel, $destinationChannel, $destinationType)
     {
@@ -12035,7 +12057,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function trackPayoutPropertiesEvent(Entity $payout)
+    public function trackPayoutPropertiesEvent(Entity $payout, array $payoutRequestInput = [])
     {
         $auth = $this->app['basicauth'];
         if (empty($auth)) {
@@ -12093,10 +12115,15 @@ class Core extends Base\Core
             'request_data' => json_encode(['merchant_id' => $merchantId])
         ];
 
-        $beneHash = null;
-        if($this->isSplitzExperimentEnable($properties,'enable', TraceCode::PAYOUT_PROPERTIES_EVENT_SPLITZ_ERROR)){
+        // Pushing Payouts Properties Event for Payouts created through API Monolith only,
+        // As Events PS Payouts are already handled in PS Microservice
+        if ($this->isSplitzExperimentEnable($properties, 'enable', TraceCode::PAYOUT_PROPERTIES_EVENT_SPLITZ_ERROR)) {
 
-             $beneHash = $this->getBeneficiaryHash($payoutId);
+            if ($payout->getIsPayoutService() == false) {
+
+                $this->triggerPayoutPropertiesEventViaMicroservice($payout, $payoutRequestInput);
+            }
+
         }
 
         $eventAttributes = [
@@ -12105,8 +12132,7 @@ class Core extends Base\Core
             'user_id'           => $userId,
             'user_role'         => $role,
             'app_name'          => $internalApp,
-            'auth_type'         => $authType,
-            'beneficiary_hash'  => $beneHash,
+            'auth_type' => $authType
         ];
 
         $this->app['diag']->trackPayoutPropertiesEvent(
@@ -12223,5 +12249,91 @@ class Core extends Base\Core
             PayoutConstants::AMOUNT                  => $payout->getAmount(),
             PayoutConstants::BALANCE_ID              => $payout->getBalanceId(),
         ];
-}
+    }
+
+    public function triggerPayoutPropertiesEventViaMicroservice(Entity $payout, array $payoutRequestInput)
+    {
+
+        try {
+
+            $eventPayload = $this->getPayoutsPropertiesEventPayload($payout, $payoutRequestInput);
+
+            $app = App::getFacadeRoot();
+
+            $queueName = $app['config']->get('queue.payout_usage_event_processing.' . Constants\Mode::LIVE);
+
+            $app['queue']->connection('sqs')->pushRaw(json_encode([
+                "entity_id" => $payout->getPublicId(),
+                "entity_type" => Entity::PAYOUT,
+                "payload" => $eventPayload,
+                "process_type" => PayoutConstants::PROCESS_TYPE_KAFKA_EVENT_VIA_PS
+            ]), $queueName);
+
+        } catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::PAYOUT_PROPERTIES_EVENT_FAILED, [
+                'payout_id' => $payout->getId(),
+                'error' => $e->getMessage()
+            ]);
+        }
+
+    }
+
+    public function getPayoutsPropertiesEventPayload(Entity $payout, array $input)
+    {
+        $fundAccountId = PublicEntity::stripDefaultSign($input[Entity::FUND_ACCOUNT_ID]);
+
+        $requestBody = [
+            Entity::PURPOSE => $input[Entity::PURPOSE],
+            Entity::AMOUNT => (int)$input[Entity::AMOUNT],
+            Entity::CURRENCY => $input[Entity::CURRENCY],
+            Entity::QUEUE_IF_LOW_BALANCE => (boolean)($input[Entity::QUEUE_IF_LOW_BALANCE] ?? false),
+            Entity::ACCOUNT_NUMBER => $payout->balance->getAccountNumber(),
+            Entity::REFERENCE_ID => $input[Entity::REFERENCE_ID] ?? null,
+            Entity::NARRATION => $input[Entity::NARRATION] ?? null,
+            Entity::FUND_ACCOUNT_ID => $fundAccountId,
+            Entity::MERCHANT_ID => $payout->getMerchantId(),
+            Entity::FEE_TYPE => $input[Entity::FEE_TYPE] ?? null,
+        ];
+
+        if (empty($input[Entity::SOURCE_DETAILS]) === false) {
+            $requestBody[Entity::SOURCE_DETAILS] = $input[Entity::SOURCE_DETAILS];
+        }
+        if (empty($input[Entity::NOTES]) === false) {
+            $requestBody[Entity::NOTES] = $input[Entity::NOTES];
+        }
+        if (isset($input[Entity::SCHEDULED_AT]) === true) {
+            $requestBody[Entity::SCHEDULED_AT] = $input[Entity::SCHEDULED_AT];
+        }
+        if (isset($input[Entity::MODE]) === true) {
+            $requestBody[Entity::MODE] = $input[Entity::MODE];
+        }
+        if (isset($input[Entity::ORIGIN]) === true) {
+            $requestBody[Entity::ORIGIN] = $input[Entity::ORIGIN];
+        }
+
+        [$fetchFundAccountInfoSuccess, $fundAccountInfo, $fundAccount] =
+            (new FundAccount\Core)->fetchFundAccountForPayoutServiceProcessing($this->merchant->getId(), $input);
+
+        $extraInfo = [
+            Entity::FUND_ACCOUNT_INFO => [
+                Entity::FETCH_FUND_ACCOUNT_INFO_SUCCESS => $fetchFundAccountInfoSuccess,
+                Entity::FUND_ACCOUNT => $fundAccountInfo
+            ],
+        ];
+
+        $requestBody[Entity::EXTRA_INFO] = [];
+
+        (new \RZP\Services\PayoutService\Create)->addFundAccountExtraInfoInRequestBody($requestBody,
+            $extraInfo[Entity::FUND_ACCOUNT_INFO]);
+
+        $eventPayload = [
+            Entity::PAYOUT => $payout,
+            Entity::EXTRA_INFO => $requestBody
+        ];
+
+        return $eventPayload;
+
+    }
+
 }

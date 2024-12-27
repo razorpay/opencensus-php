@@ -28,6 +28,10 @@ class Entity extends Base\PublicEntity
     const TYPE                = 'type';
     const BLOCK               = 'block';
     const IS_LOW_COST_OFFER   = 'is_low_cost_offer';
+    const IS_NO_COST_EMI      = 'is_no_cost_emi';
+    const TENURE_DISCOUNT_MAP = 'tenure_discount_map';
+    const OFFER               = 'offer';
+    const MERCHANT_METHODS    = 'merchant_methods';
     const HAS_IINS            = 'has_iins';
     /**
      * Flag to denote if offer needs to be displayed on checkout always or
@@ -121,6 +125,8 @@ class Entity extends Base\PublicEntity
     // This parameter stores the intent of the customer to save the card for
     // tokenization when payment was initiated.
     protected bool $isCardSaved = false;
+
+    protected bool $offerCreateExpValue = false;
 
     protected $entity      = 'offer';
 
@@ -553,6 +559,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRODUCT_TYPE);
     }
 
+    public function getOfferCreateExpValue()
+    {
+        return $this->offerCreateExpValue;
+    }
+
     public function isCardSaved()
     {
         return ($this->isCardSaved === true);
@@ -590,6 +601,11 @@ class Entity extends Base\PublicEntity
     public function setMerchantId(string $merchantId)
     {
         $this->setAttribute(self::MERCHANT_ID, $merchantId);
+    }
+
+    public function setOfferCreateExpValue(bool $experimentValue)
+    {
+        $this->offerCreateExpValue = $experimentValue;
     }
 
     public function setUpiApps(array $upiApps)

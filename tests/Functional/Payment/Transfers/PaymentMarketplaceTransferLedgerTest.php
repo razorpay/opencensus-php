@@ -2041,6 +2041,81 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         return $transferId;
     }
 
+    public function testReverseshadowMismatchOnboardingCaseForPartner()
+    {
+        $sourceMID = '10000000000000';
+        $destnMID = '10000000000001';
+
+        $this->assertNotNull($this->payment);
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], $destnMID);
+
+        $oldDestnMarketBalance = $this->getAccountBalance($destnMID);
+        $this->assertEquals(0, $oldDestnMarketBalance);
+
+        $oldSourceMarketBalance = $this->getAccountBalance($sourceMID);
+        $this->assertGreaterThanOrEqual($this->payment['amount'],$oldSourceMarketBalance);
+
+        // create transfer
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 50000,
+            'currency'=> 'INR',
+        ];
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API, 'on');
+
+        $content = $this->transferPayment($this->payment['id'], $transfers);
+
+        $this->assertNotNull($content);
+
+        $this->assertEquals($transfers[0]["amount"], $content['items'][0]["amount"]);
+
+        $publicTransferId = $content['items'][0]['id'];
+
+        $transferId =  str_replace('trf_', '', $publicTransferId);
+
+        $transfer = $this->getDbEntity('transfer', ['id'=>$transferId]);
+        $this->assertNotNull($transfer, 'transfer entity does nit exist');
+        $this->assertNull($transfer['transaction_id'], 'transfer txn created in sync');
+
+        $transferPayment = $this->getDbEntity('payment',['transfer_id' => $transferId ] );
+        $this->assertNull($transferPayment, 'dummy payment entity does not exist');
+
+
+        // fetch transfer again to check if txn id associated
+        $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
+        $this->assertNotNull($transfer, 'transfer not found');
+
+        $this->assertNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
+        $this->assertEquals('pending', $transfer['status'], 'transfer settlement status not marked pending');
+
+        // fetch source_payment again to check if amount_transferred updated
+        $sourcePayment = $this->getDbEntity('payment', ['id' => str_replace('pay_', '', $this->payment['id'])]);
+
+        $this->assertNotNull($sourcePayment, 'source payment should not be created');
+
+        // fetch transfer payment again to check if txn id associated
+        $transferPayment = $this->getDbEntity('payment',['transfer_id' => $transferId ] );
+        $this->assertNull($transferPayment, 'dummy payment entity should not exist');
+
+        // fetch transfer txn
+        $transferTxn = $this->getDbEntity('transaction', ['type' => 'transfer', 'entity_id' => $transferId]);
+        $this->assertNull($transferTxn, 'transfer_txn should not be found');
+
+        // fetch transfer_payment txn
+        $transferPaymentTxn = $this->getDbEntity('transaction', ['type' => 'payment', 'entity_id' => $transferPayment['id']]);
+        $this->assertNull($transferPaymentTxn, 'transfer_payment_txn not found');
+
+        // fetch  outbox entry
+        $ledgerOutboxEntities = $this->getTrashedDbEntities('ledger_outbox', ['payload_name' => $publicTransferId.'-'.'transfer_processed']);
+        $this->assertEquals( $ledgerOutboxEntities->count(), 0,'outbox entry should not be created');
+
+
+        return $transferId;
+    }
+
     public function testFullPaymentTransferReverseShadowKafkaAckSuccessWithDualWriteExpOn()
     {
         $sourceMID = '10000000000000';

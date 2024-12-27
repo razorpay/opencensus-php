@@ -398,6 +398,12 @@ final class RazorxTreatment
 
     const COLLECTX_AXIS_PAYMENT_TRANSFER_RAMP_UP = "collectx_axis_payment_transfer_ramp_up";
 
+    // this experiment is to disable webhooks for collectx merchants
+    const COLLECTX_DISABLE_WEBHOOKS = "collectx_disable_webhooks";
+
+    const COLLECTX_RBL_MERCHANTS_VA_CREATION_BLOCK = "collectx_rbl_merchants_va_creation_block";
+    const COLLECTX_RBL_PAYMENT_TRANSFER_RAMP_UP = "collectx_rbl_payment_transfer_ramp_up";
+
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
     const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED = 'system_based_needs_clarification_not_matched';
@@ -921,8 +927,6 @@ final class RazorxTreatment
     const DISABLE_QR_CODE_ON_DEMAND_CLOSE = 'disable_qr_code_on_demand_close';
 
     const QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS = 'qr_gateway_unrecognised_payment_process';
-
-    const ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK = 'enable_yes_bank_terminal_for_6_0_stack';
 
     // If true, it will select Optimizer mandate hub for card recurring payments.
     const ALLOW_OPTIMIZER_CARD_MANDATE_HUB = 'allow_optimizer_card_mandate_hub';

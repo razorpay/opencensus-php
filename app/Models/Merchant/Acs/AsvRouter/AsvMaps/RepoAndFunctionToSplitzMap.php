@@ -212,7 +212,8 @@ final class RepoAndFunctionToSplitzMap
         "fetchPendingOrderTransfersCount",
         "fetchAutoKycPassMerchants",
         "fetchMerchantIdsByOrgId",
-        "getLiveMerchantCount"
+        "getLiveMerchantCount",
+        "getCurrentAccountActivatedMerchants",
     );
 
     public const ROUTE_WRITE_FLOW_TO_ASV = SplitzConstant::SPLITZ_SEND_WRITE_TO_ASV;

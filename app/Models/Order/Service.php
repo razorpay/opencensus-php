@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use ApiResponse;
+use RZP\Models\Currency;
 use RZP\Http\RequestHeader;
 use RZP\Models\Base;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -17,6 +18,9 @@ use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Flow;
+use RZP\Models\Payment\Status;
+use RZP\Models\Payment\PaymentMeta;
 use RZP\Services\RazorXClient;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
@@ -25,6 +29,8 @@ use RZP\Models\BankAccount;
 use RZP\Base\ConnectionType;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Jobs\OrderPaymentsParity;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Offer;
 use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -792,13 +798,132 @@ class Service extends Base\Service
 
             $res = $apiPayments->merge($rearchPayments);
 
-            return $res->toArrayPublic();
+            $response = $res->toArrayPublic();
+
+            if ($this->checkSplitzForOrderPaymentsParity() === true)
+            {
+                $this->pushPaymentsOrderForParity($response, ["order_id" => $orderId]);
+            }
+
+            return $response;
 
         }
 
         $payments = $this->repo->payment->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
-        return $payments->toArrayPublic();
+        $response = $payments->toArrayPublic();
+
+        if ($this->checkSplitzForOrderPaymentsParity() === true)
+        {
+            $this->pushPaymentsOrderForParity($response, $input);
+        }
+
+        return $response;
+    }
+
+    public function checkSplitzForOrderPaymentsParity(): bool
+    {
+        try
+        {
+            $properties = [
+                "id" => UniqueIdEntity::generateUniqueId(),
+                "experiment_id" => $this->app['config']->get('app.order_payments_parity_producer'),
+            ];
+
+            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'allow');
+
+            return $variant;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::ORDER_PAYMENTS_PARITY_SPLITZ_FAILURE, [
+                "error" => $ex->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    public function pushPaymentsOrderForParity($payments, $input)
+    {
+        try
+        {
+            $microtime = microtime(true);
+
+            // Convert seconds to milliseconds
+            $milliseconds = round($microtime * 1000);
+
+            OrderPaymentsParity::dispatchNow($this->mode, $input, $payments, $milliseconds);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::ORDER_PAYMENTS_PARITY_EXCEPTION,
+                [
+                    "message" => $ex->getMessage()
+                ]);
+        }
+    }
+
+    public function fetchInternalPaymentsFor(string $id, array $input)
+    {
+        try
+        {
+            $orderId = Entity::verifyIdAndSilentlyStripSign($id);
+
+            $apiPayments = $this->repo->payment->fetchInternalPaymentsForOrderId($orderId, $input['merchant_id']);
+
+            $responseList = []; // Initialize an array to hold all responses
+
+            // Iterate through each payment
+            foreach ($apiPayments as &$payment) {
+                $response = $payment->toArray();
+
+                if ($payment->isMethodCardOrEmi() === true)
+                {
+                    // Fetch card details for the current payment
+                    $response['card'] = $this->repo->card->fetchForPayment($payment);
+                }
+
+                $discount = $payment->getDiscountIfApplicable($payment);
+
+                if (isset($discount) === true)
+                {
+                    $response['discount'] = $discount;
+                }
+
+                $upiMetadata = $payment->getUpiMetadata();
+
+                if (isset($upiMetadata) === true and $upiMetadata->getFlow() === Flow::IN_APP)
+                {
+                    $response['upi_metadata'] = $upiMetadata;
+                }
+
+                $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
+
+                if (isset($paymentMeta) === true)
+                {
+                    $response['payment_meta'] = $paymentMeta;
+                }
+
+                $responseList[] = $response;
+            }
+
+            return $responseList;
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->count(Metric::INTERNAL_ORDER_PAYMENTS_FETCH_ERROR);
+
+            $this->trace->error(TraceCode::INTERNAL_ORDER_PAYMENTS_FETCH_ERROR, [
+                'orderId' => $orderId,
+                'merchant_id' => $input['merchant_id'],
+                'error' => $ex->getMessage(),
+            ]);
+        }
+        return null;
     }
 
     public function fetchLineItemsFor(string $id): array

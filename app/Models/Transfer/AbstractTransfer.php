@@ -335,6 +335,8 @@ abstract class AbstractTransfer
             );
 
             (new Metric())->pushTransferMerchantsOnboardingMismatchMetrics($reverseShadowEnabledForParent,$reverseShadowEnabledForLinkedAccount);
+            // note child is on CLS, and parent isnt. Hence incorrect processing via API shouldnt happen here
+            return ;
         }
 
         if (($transfer->isFailed() === true) and

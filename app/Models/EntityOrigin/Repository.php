@@ -2,6 +2,7 @@
 
 namespace RZP\Models\EntityOrigin;
 
+use DB;
 use RZP\Base\ConnectionType;
 use RZP\Constants;
 use RZP\Models\Base\Repository as BaseRepository;
@@ -34,10 +35,14 @@ class Repository extends BaseRepository
             {
                 $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
 
-                return  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
-                             ->where(Entity::ENTITY_TYPE, $entityType)
-                             ->where(Entity::ENTITY_ID, $entityId)
-                             ->first();
+                $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+                if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+                    $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
+                }
+
+                return  $query->where(Entity::ENTITY_TYPE, $entityType)
+                              ->where(Entity::ENTITY_ID, $entityId)
+                              ->first();
             });
         }
 
@@ -58,10 +63,14 @@ class Repository extends BaseRepository
             {
                 $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
 
-                return  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
-                    ->where(Entity::ENTITY_TYPE, $entityType)
-                    ->where(Entity::ENTITY_ID, $entityId)
-                    ->first();
+                $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+                if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+                    $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
+                }
+
+                return  $query->where(Entity::ENTITY_TYPE, $entityType)
+                              ->where(Entity::ENTITY_ID, $entityId)
+                              ->first();
             });
         }
 

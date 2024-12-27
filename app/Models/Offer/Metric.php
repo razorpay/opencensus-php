@@ -18,7 +18,10 @@ final class Metric
 
     const OFFERS_ENGINE_FETCH_BY_ID_RESPONSE_NIL          = 'offers_engine_fetch_by_id_response_nil';
 
+    const OFFERS_ENGINE_FETCH_BY_ID_INVALID_RESPONSE          = 'offers_engine_fetch_by_id_invalid_response';
+
     const OFFERS_ENGINE_FETCH_BY_ID_FAIL          = 'offers_engine_fetch_by_id_fail';
+    const OFFERS_ENGINE_AGGREGATE_FETCH_BY_ID_FAIL          = 'offers_engine_aggregate_fetch_by_id_fail';
 
     const OFFERS_ENGINE_FETCH_SUBSCRIPTION_OFFER_BY_ID_FAIL          = 'offers_engine_fetch_subscription_offer_by_id_fail';
 
@@ -30,6 +33,8 @@ final class Metric
     const OFFERS_ENGINE_API_FALLBACK_COUNTER          = 'offers_engine_api_fallback_counter';
 
     const OFFERS_ENGINE_FETCH_OFFERS_FAIL_FOR_PAYMENTS          = 'offers_engine_fetch_offers_fail_for_payments';
+
+    const OFFERS_FETCH_MISMATCH_PAYMENT_FLOW          = 'offers_fetch_mismatch_payment_flow';
 
     const OFFERS_ENGINE_FETCH_DEFAULT_OFFERS_FAIL          = 'offers_engine_fetch_default_offers_fail';
 

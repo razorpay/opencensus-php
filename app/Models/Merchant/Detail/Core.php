@@ -4852,6 +4852,18 @@ class Core extends Base\Core
         return $allowedNextActivationStatusMap;
     }
 
+    public function getActivationStatusMappingWithNCAutomation(string $merchantId): array
+    {
+        $allowedNextActivationStatusesMap = ((new Validator())->checkIfKQUStateExperimentEnabled($merchantId) === true) ? Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_KQU : Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING;
+
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $allowedNextActivationStatusesMap[Status::NEEDS_CLARIFICATION] = [Status::UNDER_REVIEW];
+        }
+
+        return $allowedNextActivationStatusesMap;
+    }
+
     public function shouldTriggerActivatedWebhook(string $merchantId, string $newStatus = null) : bool
     {
         if($newStatus === Status::ACTIVATED) {
@@ -7338,14 +7350,6 @@ class Core extends Base\Core
             return Status::ACTIVATED;
         }
 
-        $excludeActivationStatusList = [
-            Status::NEEDS_CLARIFICATION,
-            Status::ACTIVATED,
-            Status::REJECTED
-        ];
-
-        $currentActivationStatus = $merchantDetails->getActivationStatus();
-
         //For scenarios where we don't have category/sub-cat of a merchant, setting activation flow as blacklist by default.
         $currentActivationFlow = ActivationFlow::BLACKLIST;
 
@@ -7364,14 +7368,7 @@ class Core extends Base\Core
 
         $isImpersonated = $this->dedupeCore->isMerchantImpersonated($merchantDetails->merchant);
 
-        $eligibleForAMP = (
-            $isActivationFlowEligible === true and
-            $isImpersonated === false and
-            $this->hasRiskTags($merchantDetails->merchant) === false and
-            in_array($currentActivationStatus, $excludeActivationStatusList) === false and
-            (new ClarificationDetailCore)->getNcCount($merchantDetails->merchant) === 0
-            // Merchant should not go in AMP from NC or UR if already been in NC
-        );
+        $eligibleForAMP = $this->isEligibleForActivation($merchantDetails, $isActivationFlowEligible, $isImpersonated);
 
         $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
             'merchant_id'               => $merchantDetails->getId(),
@@ -7455,7 +7452,6 @@ class Core extends Base\Core
             {
                 $this->trace->traceException($ex, Logger::ERROR, TraceCode::MERCHANT_EDIT_BUSINESS_DETAILS_FAILED);
             }
-
             if (in_array($splitzVariant, [Constants::SPLITZ_LIVE, Constants::SPLITZ_KQU]) === true)
             {
                 if (($activationStatusAutomation === Status::ACTIVATED_MCC_PENDING) and
@@ -7504,7 +7500,7 @@ class Core extends Base\Core
         }
 
         //This checks automation activation exclusion logic in PGOS
-        if ($this->isEligibleForAutomationActivation() === false)
+        if ($this->isEligibleForAutomationActivation($merchantId) === false)
         {
             return Status::ACTIVATED_MCC_PENDING;
         }
@@ -12539,7 +12535,7 @@ class Core extends Base\Core
         }
     }
 
-    public function isEligibleForAutomationActivation()
+    public function isEligibleForAutomationActivation(string $merchantId = null)
     {
         $app = App::getFacadeRoot();
 
@@ -12552,15 +12548,20 @@ class Core extends Base\Core
 
         $pgosPayload = [];
 
+        $merchant = $this->merchant;
+        if ( empty($merchant) === true){
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
+
         $proxyForSubMerchant = false;
-        $partnerIds = (new AccessMapCore)->getPartnerIds($this->merchant->getId());
+        $partnerIds = (new AccessMapCore)->getPartnerIds($merchant->getId());
         if ( count($partnerIds) > 0 && (new Merchant\Core())->isOnboardingApiBmcEnabled($partnerIds[0], 'subm_auto_activation') === true )
         {
             $proxyForSubMerchant = true;
         }
 
         $response = $this->pgosProxyController->handlePGOSProxyRequests('get_merchant_eligibility_for_automation_activation',
-            $pgosPayload, $this->merchant, $proxyForSubMerchant);
+            $pgosPayload, $merchant, $proxyForSubMerchant);
 
         if (is_null($response) === true)
         {
@@ -13933,5 +13934,30 @@ class Core extends Base\Core
 
         return [$type, $format];
     }
+
+    private function isEligibleForActivation(Entity $merchantDetails, bool $isActivationFlowEligible, bool $isImpersonated): bool
+    {
+        $currentActivationStatus = $merchantDetails->getActivationStatus();
+        $splitzResult = $this->getSplitzResponse($merchantDetails->getMerchantId(), 'nc_automation_activation_exp_id');
+
+        if ($splitzResult === 'variables' && $currentActivationStatus === Status::NEEDS_CLARIFICATION
+            && (new Merchant\Core())->isRegularMerchant($merchantDetails->merchant) === true) {
+            return $isActivationFlowEligible && $isImpersonated === false;
+        }
+        $excludeActivationStatusList = [
+            Status::NEEDS_CLARIFICATION,
+            Status::ACTIVATED,
+            Status::REJECTED
+        ];
+        $ncCount = (new ClarificationDetailCore)->getNcCount($merchantDetails->merchant);
+        return (
+            $isActivationFlowEligible === true &&
+            $isImpersonated === false &&
+            $this->hasRiskTags($merchantDetails->merchant) === false &&
+            in_array($currentActivationStatus, $excludeActivationStatusList) === false &&
+            $ncCount === 0
+        );
+    }
+
 }
 

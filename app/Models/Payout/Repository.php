@@ -2010,6 +2010,26 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchBulkForDuplicatePayoutEvaluation(
+        string $merchantId,
+        string $mode,
+        string $purpose,
+        int $limit,
+        int $lookBackPeriod = 0)
+    {
+        $createdAtGreaterThan = Carbon::now(Timezone::IST)->subSeconds($lookBackPeriod)->getTimestamp();
+        $payoutCreatedAt      =       $this->dbColumn(Entity::CREATED_AT);
+
+        return $this->newQuery()
+            ->where(Entity::CREATED_AT, '>=', $createdAtGreaterThan)
+            ->merchantId($merchantId)
+            ->where(Entity::MODE, '=', $mode)
+            ->where(Entity::PURPOSE, '=', $purpose)
+            ->orderBy($payoutCreatedAt, 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
     protected function addQueryParamReversedFrom($query, $params)
     {
         $reversedFrom  = $params[Entity::REVERSED_FROM];

@@ -1976,17 +1976,6 @@ return [
         'url'      => env('AUTHZ_XPLATFORM_ADMIN_BASE_URL')
     ],
 
-    'authzOmniPlatformAdmin' => [
-        'auth' => [
-            'username' => env('AUTHZ_OMNI_ADMIN_USER'),
-            'password' => env('AUTHZ_OMNI_ADMIN_SECRET'),
-        ],
-        'service_id'        =>  env('AUTHZ_OMNI_ADMIN_SERVICE_ID'),
-        'resource_group_id' => env('AUTHZ_OMNI_ADMIN_RESOURCE_GROUP_ID'),
-        'mock'              => env('AUTHZ_OMNI_ADMIN_MOCK', false),
-        'url'               => env('AUTHZ_OMNI_ADMIN_BASE_URL')
-    ],
-
     'optimizer_core_service' => [
         'url'           => env('APP_OPTIMIZER_CORE_SERVICE_URL'),
         'username'      => 'api',
@@ -2082,18 +2071,19 @@ return [
     ],
 
     'offers_engine' => [
-        'mock'                    => env('OFFERS_ENGINE_MOCK', false),
-        'offers_engine_username'  => [
-            'test'      => env('OFFERS_ENGINE_TEST_USERNAME'),
-            'live'      => env('OFFERS_ENGINE_LIVE_USERNAME'),
+        'mock'                   => env('OFFERS_ENGINE_MOCK', false),
+        'secret'                 => env('OFFERS_ENGINE_SECRET'),
+        'offers_engine_username' => [
+            'test' => env('OFFERS_ENGINE_TEST_USERNAME'),
+            'live' => env('OFFERS_ENGINE_LIVE_USERNAME'),
         ],
-        'offers_engine_password'  => [
-            'test'      => env('OFFERS_ENGINE_TEST_PASSWORD'),
-            'live'      => env('OFFERS_ENGINE_LIVE_PASSWORD'),
+        'offers_engine_password' => [
+            'test' => env('OFFERS_ENGINE_TEST_PASSWORD'),
+            'live' => env('OFFERS_ENGINE_LIVE_PASSWORD'),
         ],
-        'base_url'  => [
-            'test'  => env('OFFERS_ENGINE_TEST_URL'),
-            'live'  => env('OFFERS_ENGINE_LIVE_URL'),
+        'base_url'               => [
+            'test' => env('OFFERS_ENGINE_TEST_URL'),
+            'live' => env('OFFERS_ENGINE_LIVE_URL'),
         ]
     ],
 
@@ -2152,5 +2142,15 @@ return [
 
         // Secret used by Route microservice to call API
         'secret' => env('ROUTE_API_SECRET'),
+    ],
+
+    'cms' => [
+        'live_url'      => env('CMS_LIVE_BASE_URL'),
+        'live_username' => env('CMS_LIVE_USERNAME'),
+        'live_password' => env('CMS_LIVE_PASSWORD'),
+
+        'test_url'      => env('CMS_TEST_BASE_URL'),
+        'test_username' => env('CMS_TEST_USERNAME'),
+        'test_password' => env('CMS_TEST_PASSWORD'),
     ],
 ];

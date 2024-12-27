@@ -6,6 +6,7 @@ use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer\Service as Transfers;
 use RZP\Exception\SettlementIdUpdateException;
+use RZP\Models\Transfer\Metric as TransferMetric;
 
 class TransferRecon extends Job
 {
@@ -22,9 +23,9 @@ class TransferRecon extends Job
      */
     public $timeout = 900;
 
-    const RETRY_INTERVAL = 300;
+    const RETRY_INTERVAL = 600;
 
-    const MAX_RETRY_ATTEMPT = 3;
+    const MAX_RETRY_ATTEMPT = 30;
 
     public function __construct($txnIds, string $mode)
     {
@@ -45,6 +46,8 @@ class TransferRecon extends Job
             if (isset($this->txnIds['transaction_ids']) === true)
             {
                 (new Transfers())->updateTransfersWithSettlementId($this->txnIds['transaction_ids']);
+
+                (new TransferMetric())->pushTransferSettlementIdUpdateMetrics(true);
             }
             else if (isset($this->txnIds['settlement_id']) === true)
             {
@@ -99,6 +102,8 @@ class TransferRecon extends Job
                 [
                     'transaction_ids'    => $this->txnIds
                 ]);
+
+            (new TransferMetric())->pushTransferSettlementIdUpdateMetrics(false);
 
             $this->delete();
         }

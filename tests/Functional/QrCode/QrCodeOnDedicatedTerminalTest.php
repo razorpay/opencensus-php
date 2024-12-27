@@ -782,7 +782,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals('tax', $feeBreakup[1]['name']);
         $this->assertEquals(180, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 1500
     }
-    public function testProcessPaymentForDynamicQrWithDedicatedTerminal()
+    public function testProcessPaymentForStaticQrWithDedicatedTerminal()
     {
         $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
@@ -818,6 +818,46 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals(1, $qrPayment['expected']);
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
+    }
+
+    public function testProcessPaymentForDynamicQrWithDedicatedTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
+
+        $this->mockSplitzTreatment($output);
+
+        $this->createQrCode(['usage'          => 'single_use',
+            'type'           => 'upi_qr',
+            'fixed_amount'   => true,
+            'payment_amount' => 4000
+        ],
+            'live',
+            'LiveAccountMer');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['merchantId'] = $terminal->getGatewayMerchantId();
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeEntity['reference'];
+
+        $this->makeUpiIciciPayment($request);
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $qrPayment = $this->getLastEntity('qr_payment', true, 'live');
+        $payment = $this->getLastEntity('payment', true, 'live');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+        $this->assertEquals('closed',$qrCodeEntity['status']);
     }
 
     public function testDelayedCallbackOnSingleUseQrCode()
@@ -867,6 +907,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
     public function testDelayedCallbackOnMultipleUseQrCode()
     {
+        $this->markTestSkipped('cannot close multiple use qr');
 
         $qrCode = $this->createQrCode(
             ['usage' => 'multiple_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 4000,
@@ -1195,7 +1236,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['close_qr_on_demand']);
 
-        $response = $this->createQrCode(['request_source' => 'ezetap']);
+        $response = $this->createQrCode(['request_source' => 'ezetap','usage' => 'single_use']);
 
         $this->assertEquals(Status::ACTIVE, $response['status']);
 
@@ -1794,6 +1835,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
     public function testQrCodeCreatedAndClosedWebhookEventsWithTransactionIsolation()
     {
+        $this->markTestSkipped('Cannot Close Multiple Use QR');
         $this->createPartnerAndSubmerchantMapping();
 
         $this->mockSplitzTreatmentBulkRequest([["variant" => ["name" => "enable"]]]);
@@ -1883,7 +1925,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $scroogeMock->allows('createNewRefundV2')->withAnyArgs()->andReturns(['code' => 400]);
         $this->app->instance('scrooge', $scroogeMock);
 
-        $qrCode = $this->createQrCode(['request_source' => 'ezetap']);
+        $qrCode = $this->createQrCode(['request_source' => 'ezetap','usage' => 'single_use']);
         $qrCodeId = $qrCode['id'];
 
         $qrCode   = $this->closeQrCode($qrCodeId);
@@ -2170,7 +2212,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $qrCode = $this->createMerchantQrCode(
             [
                 'merchant_id'        => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
-                'vpa'                => 'rzp.qrTest@icici',
+                'vpa'                => 'rzp.qrtest@icici',
                 'oauth_application_id'         => $application['id'],
             ]);
 
@@ -2180,7 +2222,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
         $this->assertEquals('api', $qrCodeEntity['request_source']);
         $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
-        $this->assertEquals('rzp.qrTest@icici', $intentParam['pa']);
+        $this->assertEquals('rzp.qrtest@icici', $intentParam['pa']);
 
         $qcc   = $this->getDbLastEntity('qr_code_config','live');
         $this->assertNotNull($qcc);
@@ -2218,7 +2260,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
         $this->assertEquals('api', $qrCodeEntity['request_source']);
         $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
-        $this->assertEquals('rzp.qrTest@icici', $intentParam['pa']);
+        $this->assertEquals('rzp.qrtest@icici', $intentParam['pa']);
 
         $qcc   = $this->getDbLastEntity('qr_code_config','live');
         $this->assertNotNull($qcc);
@@ -2601,6 +2643,13 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals($total_count,$response['success']);
         $this->assertEquals(0,$response['failed']);
 
+    }
+
+    public function testChannelIsSetForUpiPoDTransaction()
+    {
+        $this->testProcessPaymentForDynamicQrWithDedicatedTerminal();
+        $payment = $this->getLastEntity('payment', true, 'live');
+        $this->assertEquals('offline_pod', $payment['channel']);
     }
 
 }

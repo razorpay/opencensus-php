@@ -4,18 +4,17 @@ namespace RZP\Models\Key;
 
 use App;
 use Exception;
+use RZP\Constants\Mode;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Pricing;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 
 class Repository extends Base\Repository
 {
-    const ROUTE_NAMES = array('merchant_fetch_keys');
-
-
 
     use CacheQueries;
 
@@ -49,13 +48,8 @@ class Repository extends Base\Repository
             $query->notExpired();
         }
         $apiDBKeys = $query->get();
-
-        if (in_array($routeName, static::ROUTE_NAMES)) {
-            $resolvedKeys = $this->getKeysForMerchantV2($apiDBKeys, $routeName, $merchantId, $mode, $expired);
-            return $resolvedKeys;
-        }
-
-        return $apiDBKeys;
+        $this->logKeysRepoCall($mode, $routeName, 'getKeysForMerchant');
+        return $this->getKeysForMerchantV2($apiDBKeys, $routeName, $merchantId, $mode, $expired);
     }
 
     /**
@@ -79,6 +73,9 @@ class Repository extends Base\Repository
 
     public function getFirstActiveKeyForMerchant(string $merchantId)
     {
+        $mode = $this->app['rzp.mode'];
+        $routeName = $this->app['request.ctx']->getRoute();
+        $this->logKeysRepoCall($mode, $routeName, 'getFirstActiveKeyForMerchant');
         return $this->newQuery()
                     ->merchantId($merchantId)
                     ->notExpired()
@@ -94,6 +91,9 @@ class Repository extends Base\Repository
      */
     public function getActiveKeysForMerchants(array $merchantIds): ?Base\PublicCollection
     {
+        $mode = $this->app['rzp.mode'];
+        $routeName = $this->app['request.ctx']->getRoute();
+        $this->logKeysRepoCall($mode, $routeName, 'getActiveKeysForMerchants');
         return $this->newQuery()
             ->whereIn(Entity::MERCHANT_ID, $merchantIds)
             ->notExpired()
@@ -106,6 +106,9 @@ class Repository extends Base\Repository
      */
     public function getLatestActiveKeyForMerchant(string $merchantId)
     {
+        $mode = $this->app['rzp.mode'];
+        $routeName = $this->app['request.ctx']->getRoute();
+        $this->logKeysRepoCall($mode, $routeName, 'getLatestActiveKeyForMerchant');
         return $this->newQuery()
                     ->merchantId($merchantId)
                     ->notExpired()
@@ -120,6 +123,9 @@ class Repository extends Base\Repository
 
     public function findByMerchantIdAndKeyId($merchantId, $keyId)
     {
+        $mode = $this->app['rzp.mode'];
+        $routeName = $this->app['request.ctx']->getRoute();
+        $this->logKeysRepoCall($mode, $routeName, 'findByMerchantIdAndKeyId');
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::ID, '=', $keyId)
@@ -129,11 +135,20 @@ class Repository extends Base\Repository
     public function getKeysForMerchantForLiveAndTestMode($merchantId, $mode, $expired = false)
     {
         $query = $this->newQueryWithConnection($mode)->merchantId($merchantId);
-
+        $routeName = $this->app['request.ctx']->getRoute();
+        $this->logKeysRepoCall($mode, $routeName, 'getKeysForMerchantForLiveAndTestMode');
         if ($expired === false) {
             $query->notExpired();
         }
 
         return $query->get();
+    }
+
+    public function logKeysRepoCall($mode, $routeName, $functionName) {
+        try {
+            $this->trace->count(Metric::CREDCASE_KEY_READ_ROUTE_COUNT, ['route' => $routeName, 'function' => $functionName, 'mode' => $mode]);
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::API_KEY_TRACE_ERROR, ['exception' => $e, 'route' => $routeName, 'function' => $functionName, 'mode' => $mode]);
+        }
     }
 }

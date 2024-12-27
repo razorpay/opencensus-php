@@ -350,7 +350,14 @@ class Core extends Base\Core
      */
     public function registerWithOtp(array $input): ?array
     {
-        $this->getUserEntity()->getValidator()->validateInput('signupOtp', $input);
+        $origin  = $this->app['request']->header(RequestHeader::X_REQUEST_ORIGIN) ?? "";
+
+        if ($this->isUnifiedRequest($origin)) {
+            $this->getUserEntity()->getValidator()->validateInput('signupOtpWithCaptcha', $input);
+        }
+        else {
+            $this->getUserEntity()->getValidator()->validateInput('signupOtp', $input);
+        }
 
         // if by any change both email and contact number are present, prefer email
         if (isset($input[Entity::EMAIL]))
@@ -361,6 +368,17 @@ class Core extends Base\Core
         {
             return $this->sendSignupOtpViaSms($input);
         }
+    }
+
+    public function isUnifiedRequest($origin): bool
+    {
+        foreach (Constants::UNIFIED_ORIGINS as $unified_origin) {
+            if ($origin == $unified_origin) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function sendOtpSalesforce(array $input): ?array
@@ -1746,16 +1764,6 @@ class Core extends Base\Core
             'THROW_SMS_EXCEPTION_IN_STORK' => true,
         ];
 
-        if($user !== null) {
-            $userDeviceDetail = $this->repo->user_device_detail->fetchByUserId($user->getUserId());
-
-            if (empty($userDeviceDetail) === false && empty($userDeviceDetail->signup_campaign) === false && $userDeviceDetail->isAssistedOnboardedMerchant()) {
-                $payload['source'] = 'api.user.login_otp_assisted';
-                $payload['append_source_to_context'] = true;   // adding source to stork context for custom rate limit
-            }
-        }
-
-
         if($this->app['razorx']->getTreatment($receiver , Constants::UPDATE_LOGIN_SIGNUP_TEMPLATE_RAZORX_EXP , Mode::LIVE) === 'on')
         {
             $autoReadOtpText = $origin_value.' #'.$otp['otp'];
@@ -1780,6 +1788,15 @@ class Core extends Base\Core
                 ],
                 'THROW_SMS_EXCEPTION_IN_STORK' => true,
             ];
+        }
+
+        if($user !== null) {
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByUserId($user->getUserId());
+
+            if (empty($userDeviceDetail) === false && empty($userDeviceDetail->signup_campaign) === false && $userDeviceDetail->isAssistedOnboardedMerchant()) {
+                $payload['source'] = 'api.user.login_otp_assisted';
+                $payload['append_source_to_context'] = true;   // adding source to stork context for custom rate limit
+            }
         }
 
         return $payload;
@@ -4301,8 +4318,6 @@ class Core extends Base\Core
             $response[Entity::SETTINGS]    = $settings;
         }
 
-        $merchantsUnique = $this->populateUserPermissionsForPosAndPg($merchantsUnique);
-
         $response[Entity::MERCHANTS]   = $merchantsUnique;
 
         return $response;
@@ -4409,66 +4424,6 @@ class Core extends Base\Core
         );
     }
 
-    private function populateUserPermissionsForPosAndPg($merchants)
-    {
-
-        $splitzVariant = Merchant\Utility::splitzBulkEvaluate($merchants, $this->app['config']->get('app.pg_pos_rbac_splitz_experiment_id'));
-
-        foreach ($merchants as &$merchant) {
-            $orgIds = [];
-            $authzPolicies = [];
-
-            if (!in_array($merchant[Entity::PRODUCT], Constants::OMNI_PRODUCTS)) {
-                continue;
-            }
-
-            $merchantId = $merchant[Entity::ID];
-
-            if (empty($splitzVariant) || (isset($splitzVariant[$merchantId]) && $splitzVariant[$merchantId] === false)) {
-                $merchant[Constants::PERMISSIONS] = [];
-                continue;
-            }
-
-            $merchantEntity = $this->repo->merchant->findOrFailPublic($merchantId);
-            $posActivationStatus = (new Merchant\Detail\Core())
-                ->fetchMerchantPosActivationStatus($merchantEntity->merchantDetail);
-            $activationStatus = $merchantEntity->merchantDetail->getActivationStatus();
-
-            if (in_array($posActivationStatus, Constants::POS_ACTIVATION_STATUSES, true) ||
-                $merchantEntity->isFeatureEnabled(Constants::OMNI_ENABLED)) {
-                $orgIds[] = Constants::RAZORPAY_ORG . "::" . Constants::AUTHZ_POS_PRODUCT . "::" . Constants::AUTHZ_MERCHANT_DASHBOARD_SUB_PRODUCT;
-            }
-
-            if (in_array($activationStatus, Constants::ACTIVATED_STATUSES, true)) {
-                $orgIds[] = Constants::RAZORPAY_ORG . "::" . Constants::AUTHZ_PG_PRODUCT . "::" . Constants::AUTHZ_MERCHANT_DASHBOARD_SUB_PRODUCT;
-            }
-
-            try {
-                $authzPolicies = (new \RZP\Models\AuthzAdminOmni\Service())->adminAPIListPermissionGroup(
-                    $merchant[Entity::ROLE],
-                    $orgIds,
-                    Constants::ROLE_OWNER_ID,
-                    true
-                );
-            } catch (\Exception $exception) {
-                $this->trace->count(Metric::AUTHZ_POLICY_LIST_REQUEST_FAILED, [
-                    'error' => $exception->getMessage(),
-                    'role' => $merchant[Entity::ROLE],
-                    'organizatin_id' => $orgIds
-                ]);
-
-                $this->trace->error(TraceCode::AUTHZ_POLICY_LIST_ERROR, [
-                    'error' => $exception->getMessage(),
-                    'route_name' => $this->app['api.route']->getCurrentRouteName(),
-                ]);
-
-                $merchant[Constants::PERMISSIONS] = [];
-            }
-
-            $merchant[Constants::PERMISSIONS] = $authzPolicies;
-        }
-        return $merchants;
-    }
     /**
      * Appends banking specific details in serialized unique list of merchants where applies.
      * @param array $merchants

@@ -43,6 +43,15 @@ class Service extends Base\Service
         return $offer;
     }
 
+    public function fetchOfferCreateInfo(array $input)
+    {
+        (new Validator)->validateInput("fetch_offer_create_info", $input);
+
+        $this->trace->info(TraceCode::FETCH_OFFER_CREATE_INFO_REQUEST, $input);
+
+        return $this->core->fetchOfferCreateInfo($input);
+    }
+
     public function createBulk(array $input)
     {
         (new Validator)->validateInput('create_bulk', $input);

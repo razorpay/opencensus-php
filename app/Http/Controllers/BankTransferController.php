@@ -36,20 +36,31 @@ class BankTransferController extends Controller
             Entity::GATEWAY         => Provider::YESBANK,
         ]);
 
-        $isCollectXYesbankCallback = $this->service()->checkForYesBankCollectxCallback($input);
+        try {
 
-        $provider = null;
+            $isCollectXYesbankCallback = $this->service()->checkForYesBankCollectxCallback($input);
 
-        if ($isCollectXYesbankCallback === true) {
-            $provider = Provider::YESBANK;
+            $provider = null;
+
+            if ($isCollectXYesbankCallback === true) {
+                $provider = Provider::YESBANK;
+            }
+
+            $response = $this->service()->saveRequestAndProcess($input, $provider, false, $input);
+
+            $this->trace->info(TraceCode::BANK_TRANSFER_YES_BANK_VA_RESPONSE, [
+                Entity::GATEWAY => Provider::YESBANK,
+                "response" => $response
+            ]);
         }
+        catch (\Throwable $e) {
 
-        $response = $this->service()->saveRequestAndProcess($input, $provider, false, $input);
-
-        $this->trace->info(TraceCode::BANK_TRANSFER_YES_BANK_VA_RESPONSE, [
-            Entity::GATEWAY         => Provider::YESBANK,
-            "response"              => $response
-        ]);
+            return ApiResponse::json(
+                [
+                    'validateResponse' => [
+                            'decision' => 'reject']
+                ]);
+        }
 
         return ApiResponse::json($response);
     }
@@ -220,6 +231,12 @@ class BankTransferController extends Controller
             else
             {
                 $response = $this->service()->saveRequestAndProcess($inputList['input'], $provider, false, Request::all());
+
+                if (array_key_exists("isCollectXResponse", $response) === true && $response['valid'] === false)
+                {
+                    return ApiResponse::json(['Status' => 'Failure.'], 400);
+                }
+
                 /*
                  * Commenting this as RBL doesn't have check on their end to restrict retry count.
                  * In case the response is not 200, the retry is infinite.

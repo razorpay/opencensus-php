@@ -7,6 +7,7 @@ use RZP\Models\Card\IIN\Service as IINService;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Mode;
 use RZP\Http\Request\Requests;
+use RZP\Models\Card\TokenisedIIN\Service;
 use RZP\Trace\TraceCode;
 use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Error;
@@ -102,6 +103,29 @@ class BinService
         ]);
 
         return [];
+    }
+
+    public function fetchTokenIINEntityFromBinService($iin, $readMode)
+    {
+        // expand=true helps in fetching flows as well
+        $url = 'iins/' . $iin . '?expand=false&tokenised=true';
+
+        // To be removed later, once made non-mandatory field in bin services
+        $namespace = 'RZP/IN/DEBIT';
+
+        $entity = $this->sendRequest($url, Requests::GET, null, $namespace, BinService::FETCH_IIN);
+
+        if(isset($entity) && !empty($entity) && isset($entity['iin']))
+        {
+            return (new Service())->adaptBinServiceEntityToApiTokenisedIINEntity($entity);
+        }
+
+        $this->trace->info(TraceCode::BIN_SERVICE_IIN_NOT_FOUND, [
+            'iin'       => $iin,
+            'read_mode' => $readMode
+        ]);
+
+        return null;
     }
 
     public function sendRequest($url, $method, $data = null, $namespace = null, $action = null)

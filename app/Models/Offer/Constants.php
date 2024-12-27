@@ -157,11 +157,14 @@ final class Constants
 
     const CREATE_OFFER_DUAL_WRITE_EXP = 'app.offers_engine_dual_write_experiment_id';
 
-    const OFFERS_ENGINE_FETCH_EXP = 'app.offers_engine_fetch_offers_exp_id';
+    const OFFERS_ENGINE_FETCH_EXP              = 'app.offers_engine_fetch_offers_exp_id';
+    const OFFERS_ENGINE_ADMIN_FETCH_OFFERS_EXP = 'app.offers_engine_admin_fetch_offers_exp_id';
 
     const OFFERS_ENGINE_VALIDATE_OFFER_EXP = 'app.offers_engine_validate_offer_exp_id';
 
     const OFFERS_ENGINE_REVERSE_SHADOW_EXP = 'app.offers_engine_reverse_shadow_exp_id';
+
+    const OFFER_CREATE_READS_MIGRATION_EXP = 'app.offers_engine_create_read_migration_exp_id';
 
     const OFFERS_ENGINE_FIND_BY_PUBLIC_ID_MIGRATION_EXP = 'app.offers_engine_find_by_public_id_migration_exp_id';
 

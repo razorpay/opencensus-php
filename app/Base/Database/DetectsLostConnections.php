@@ -63,6 +63,12 @@ trait DetectsLostConnections
             'SSL: Operation timed out',
             'Reason: Server is in script upgrade mode. Only administrator can connect at this time.',
             'Unknown $curl_error_code: 77',
+            'There is already an active transaction',
+            'DB query failed to execute successfully',
+            'SQLSTATE[HY000]: General error: 1205 Lock wait timeout exceeded',
+            'SQLSTATE[HY000]: General error: 2006 MySQL server has gone away',
+            'SQLSTATE[HY000]: General error: 2002 Can\'t connect to MySQL server',
+
         ]);
     }
 }

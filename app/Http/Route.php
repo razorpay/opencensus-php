@@ -526,6 +526,8 @@ class Route
         'merchant_put_payment_methods'             => ['put',      'merchants/{mid}/methods',                        'MerchantController@putMethods'                                     ],
         'merchant_methods_edit'                    => ['put',      'merchant/methods',                               'MerchantController@editMethods'                                    ],
         'merchant_methods_edit_internal'           => ['patch',    'merchants/{mid}/methods',                        'MerchantController@editMerchantMethods'                            ],
+        'internal_merchant_methods_edit'           => ['patch',    'internal/merchants/{mid}/methods',               'MerchantController@editMerchantMethods'                            ],
+        'merchant_edit_all_methods_internal'       => ['post',     'merchants/{mid}/all/methods',                    'MerchantController@editAllMerchantMethods'                         ],
         'merchant_fetch_methods'                   => ['get',      'merchant/methods',                               'MerchantController@getPaymentMethods'                              ],
         'merchant_fetch_methods_internal'          => ['get',      'merchant/methods/{id}',                          'MerchantController@getPaymentMethodsById'                          ],
         'merchant_fetch_all_methods_internal'      => ['get',      'merchant/methods/all/{id}',                      'MerchantController@getAllPaymentMethodsById'                       ],
@@ -829,6 +831,7 @@ class Route
         'close_qr_codes_bulk'                      => ['post',     'payments/qr_codes/close/bulk',                   'QrCodeController@closeQrCodesBulk'                              ],
         'qr_code_create'                           => ['post',     'payments/qr_codes',                              'QrCodeController@create'                                           ],
         'qr_code_merchant_create'                  => ['post',     'payments/merchant/qr_codes',                     'QrCodeController@createQrForMerchant'                              ],
+        'internal_qr_code_merchant_create'         => ['post',     'internal/payments/merchant/qr_codes',            'QrCodeController@createQrForMerchant'                              ],
         'set_qr_code_device'                       => ['put',      'payments/qr_codes/device/map',                    'QrCodeController@setDeviceIdForQr'                              ],
         'qr_code_device_id_unmap'                       => ['put',      'payments/qr_codes/device/unmap',                    'QrCodeController@unMapDeviceIdForQr'                              ],
         'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
@@ -1381,6 +1384,7 @@ class Route
         'order_fetch_by_id_internal_admin'         => ['get',      'orders_internal_admin/{id}',                     'OrderController@fetchOrderDetailByIdAdmin'                         ],
         'order_fetch_internal_checkout'            => ['post',     'internal/orders/checkout',                       'OrderController@fetchOrderDetailsForCheckout'                      ],
         'order_payments'                           => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
+        'internal_order_payments'                  => ['get',      'internal/orders/{id}/payments',                  'OrderController@fetchInternalPayments'                             ],
         'order_refund_multiple_authorized'         => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'order_edit'                               => ['patch',    'orders/{id}',                                    'OrderController@update'                                            ],
         'internal_order_update'                    => ['patch',    'internal/orders/{id}',                           'OrderController@internalOrderUpdate'                               ],
@@ -1635,6 +1639,7 @@ class Route
         'hosted_subscription_button_details'       => ['get',      'subscription_buttons/{x_entity_id}/button_details',       'PaymentLinkController@getHostedButtonDetails'             ],
         'subscription_button_create_subscription'  => ['post',     'subscription_buttons/{x_entity_id}/create_subscription',  'PaymentLinkController@createSubscription'                 ],
 
+        // Payment Handle Routes
         'payment_handle_precreate'                 => ['post',     'precreate_payment_handle',                                'PaymentLinkController@precreatePaymentHandle'             ],
         "payment_handle_create"                    => ['post',     'payment_handle',                                          'PaymentLinkController@createPaymentHandle'                ],
         'payment_handle_update_old'                => ['patch',    'payment_handle/{id}',                                     'PaymentLinkController@updatePaymentHandle'                ],
@@ -1883,6 +1888,7 @@ class Route
         'mailgun_webhook'                          => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'setcronjob_webhook'                       => ['post',     'setcronjob/callback',                            'AdminController@postSetCronJobCallback'                            ],
         'offer_create'                             => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
+        'fetch_offer_create_info'                  => ['post',     'offers/creation-info',                           'OfferController@fetchOfferCreateInfo'                              ],
         'offer_create_bulk'                        => ['post',     'offers/bulk',                                    'OfferController@createOfferBulk'                                   ],
         'offer_update'                             => ['patch',    'offers/{id}',                                    'OfferController@updateOffer'                                       ],
         'offer_fetch_multiple'                     => ['get',      'offers',                                         'OfferController@fetchOffers'                                       ],
@@ -2727,6 +2733,7 @@ class Route
         'user_oauth_register'                      => ['post',     'users/oauth-register',                           'UserController@oAuthSignup'                                        ],
         'user_create'                              => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_create_internal'                     => ['post',     'users/internal',                                 'UserController@createUser'                                         ],
+        'internal_user_create'                     => ['post',     'internal/users',                                 'UserController@createUser'                                         ],
         'user_create_proxy'                        => ['post',     'users_proxy',                                    'UserController@createUser'                                         ],
         'user_login'                               => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'check_user_exists'                        => ['post',     'users/exists',                                   'UserController@checkUserExists'                                    ],
@@ -2775,6 +2782,7 @@ class Route
         'user_all_roles'                           => ['get',      'users/{id}/roles/{merchant_id}',                 'UserController@getUserRoles'                                       ],
         'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
         'user_fetch_by_verified_contact_internal'  => ['post',     'users_internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
+        'user_internal_fetch_by_verified_contact'  => ['post',     'users/internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
         'user_edit_internal'                       => ['patch',    'users_internal/{id}',                            'UserController@editUserInternal'                                   ],
 
         //b2b flow
@@ -3566,10 +3574,12 @@ class Route
         'feature_get_all'                          => ['get',      'feature/{entityType}/{entityId}',                'FeatureController@getFeatures'                                     ],
         'feature_get_all_internal'                 => ['get',      'feature/{entityType}/{entityId}/internal',       'FeatureController@getFeatures'                                     ],
         'internal_feature_get_all'                 => ['get',      'internal/feature/{entityType}/{entityId}',       'FeatureController@getFeatures'                                     ],
+        'internal_get_all_features'                => ['get',      'internal/features/{entityType}/{entityId}',      'FeatureController@getFeatures'                                     ],
         'feature_get_status'                       => ['get',      'feature/{entityType}/{entityId}/{featureName}',  'FeatureController@getFeatureStatus'                                ],
         'feature_bulk_assign'                      => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                      => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'internal_feature_bulk_assign'             => ['post',     'internal/features/assign',                       'FeatureController@multiAssignFeature'                              ],
+        'feature_bulk_assign_internal'             => ['post',     'features/assign/internal',                       'FeatureController@multiAssignFeature'                              ],
         'internal_feature_bulk_remove'             => ['post',     'internal/features/remove',                       'FeatureController@multiRemoveFeature'                              ],
         'internal_feature_bulk_fetch'              => ['post',     'internal/features/bulk_fetch',                   'FeatureController@bulkFetchFeatures'                               ],
         'feature_delete_entity'                    => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
@@ -5338,6 +5348,7 @@ class Route
 
 
     public static $private = [
+        'internal_order_payments',
         'collect_info_merchant_details_patch',
         'payouts_merchant_smart_routing_summary',
         'mock_bvs_validation_event',
@@ -5773,10 +5784,12 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'internal_order_payments',
         'internal_fd_fetch_ticket',
         'internal_create_workflow',
         'internal_workflow_observer_data_update',
         'get_permissions_admin',
+        'fetch_offer_create_info',
         'customer_fetch_addresses_by_contact',
         'internal_merchant_get_tags',
         'rupay_push_token',
@@ -5789,6 +5802,7 @@ class Route
         'missing_transaction_create',
         'merchant_create_terminal_internal_app',
         'user_create_internal',
+        'internal_user_create',
         'user_roles_mapping_bulk_internal',
         'merchant_method_add_internal',
         'merchant_live_enable_internal',
@@ -5869,11 +5883,14 @@ class Route
         'internal_merchants_fetch_by_params',
         'salesforce_details_internal',
         'internal_feature_bulk_assign',
+        'feature_bulk_assign_internal',
         'internal_feature_bulk_remove',
         'internal_feature_bulk_fetch',
         'internal_feature_get_all',
+        'internal_get_all_features',
         'banking_account_beneficiary_fetch',
         'user_fetch_by_verified_contact_internal',
+        'user_internal_fetch_by_verified_contact',
         'merchant_risk_alerts_foh_workflow_trigger_nc',
         'buy_pricing_assign_bulk',
         'external_bvs_validation_request',
@@ -6365,6 +6382,7 @@ class Route
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
         'merchant_methods_edit_internal',
+        'internal_merchant_methods_edit',
         'refund_create_batch_service',
         'methods_update_merchants_internal',
         'fetch_partner_referral_batch',
@@ -6823,6 +6841,8 @@ class Route
 
         'merchant_fetch_all_methods_internal',
 
+        'merchant_edit_all_methods_internal',
+
         'terminal_sync_internal',
 
         'terminal_compare_and_sync_internal',
@@ -6918,6 +6938,7 @@ class Route
         'settlement_ondemand_create_internal',
         'user_create_merchant_internal',
         'internal_payment_update_b2b_invoice',
+        'internal_qr_code_merchant_create'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -7467,6 +7488,8 @@ class Route
         'payment_page_save_receipt_for_payment',
         'payment_page_get_pending_payments',
         'payment_page_get_batches',
+
+        // payment handle routes
         'payment_handle_precreate',
         'payment_handle_create',
         'payment_handle_update_old',
@@ -17474,6 +17497,29 @@ class Route
             'order_fetch_by_id_internal',
             'order_fetch_by_id',
             'user_fetch_internal',
+            'merchant_features_fetch',
+            'internal_feature_get_all',
+            // Payment Page Routes
+            'payment_page_get',
+            'payment_page_get_details',
+            'payment_page_get_payments',
+            'payment_page_list',
+            'payment_page_create',
+            'payment_page_update',
+            'payment_page_notify',
+            'payment_page_expire_cron',
+            'payment_page_deactivate',
+            'payment_page_activate',
+            'payment_page_slug_exists',
+            'payment_page_item_update',
+            'payment_page_set_merchant_details',
+            'payment_page_fetch_merchant_details',
+            'payment_page_set_receipt_details',
+            'payment_page_get_invoice_details',
+            'payment_page_send_receipt',
+            'payment_page_save_receipt_for_payment',
+            'fetch_order_line_items',
+            'fetch_product_details_for_order',
         ],
 
         'ucs' => [
@@ -17957,6 +18003,10 @@ class Route
             'payment_fetch_by_id_internal'
         ],
 
+        'offers_engine' => [
+            'fetch_offer_create_info'
+        ],
+
         'terminals_service' => [
             'merchant_update_miq',
             'pricing_update_miq',
@@ -17994,6 +18044,7 @@ class Route
 
         'payment_methods' => [
             'merchant_fetch_all_methods_internal',
+            'merchant_edit_all_methods_internal',
         ],
 
         'pos_app' => [
@@ -18009,7 +18060,9 @@ class Route
             'methods_update_merchants_internal',
             'merchant_live_enable_internal',
             'create_merchant_balance_entities_internal',
-            'setl_service_migration_internal'
+            'setl_service_migration_internal',
+            'internal_merchant_details_fetch',
+            'payment_fetch_by_id_internal'
         ],
 
         'spinnaker' => [
@@ -18095,6 +18148,7 @@ class Route
         ],
 
         'pg_router' => [
+            'internal_order_payments',
             'internal_merchant_fetch',
             'internal_currency_rates_update',
             'api_entity_fetch',
@@ -18269,12 +18323,13 @@ class Route
             'internal_fd_create_ticket_graphql',
             'internal_fd_add_note_graphql',
             'internal_fetch_merchant_ids',
-            'user_fetch_by_verified_contact_internal',
+            'user_internal_fetch_by_verified_contact',
             'user_create_merchant_internal',
-            'user_create_internal',
-            'internal_feature_bulk_assign',
-            'merchant_methods_edit_internal',
-            'internal_feature_get_all'
+            'internal_user_create',
+            'feature_bulk_assign_internal',
+            'internal_merchant_methods_edit',
+            'internal_get_all_features',
+            'internal_qr_code_merchant_create'
         ],
 
         'disputes' => [
@@ -18694,6 +18749,7 @@ class Route
         'payment_create_private_json',
         'payment_create_private_json_internal',
         'payment_create_checkout',
+        'payment_create_recurring'
     ];
 
     protected static $nbRearchRoutes = [
@@ -18972,7 +19028,7 @@ class Route
         'payout_create_with_otp' => [
             IdempotencyKey\Entity::SOURCE_TYPE                        => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY                         => RequestHeader::X_PAYOUT_IDEMPOTENCY,
-            IdempotencyKey\Constants::IKEY_MANDATORY                  => false,
+            IdempotencyKey\Constants::IKEY_MANDATORY                  => true,
         ],
         'payout_create_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
@@ -18983,7 +19039,7 @@ class Route
         'payout_create_2FA_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
-            IdempotencyKey\Constants::IKEY_MANDATORY => false,
+            IdempotencyKey\Constants::IKEY_MANDATORY => true,
         ],
         'payouts_batch_create' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUTS_BATCH,
@@ -18993,7 +19049,7 @@ class Route
         'payout_create_on_internal_contact' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
-            IdempotencyKey\Constants::IKEY_MANDATORY => false,
+            IdempotencyKey\Constants::IKEY_MANDATORY => true,
         ],
         'transfer_create' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::TRANSFER,
@@ -19008,7 +19064,7 @@ class Route
         'composite_payout_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
-            IdempotencyKey\Constants::IKEY_MANDATORY => false,
+            IdempotencyKey\Constants::IKEY_MANDATORY => true,
         ],
         'settlement_ondemand_create_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::SETTLEMENT_ONDEMAND,

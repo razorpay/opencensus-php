@@ -157,6 +157,15 @@ class OrderController extends Controller
         return ApiResponse::json($payments);
     }
 
+    public function fetchInternalPayments($id)
+    {
+        $input = Request::all();
+
+        $payments = $this->service()->fetchInternalPaymentsFor($id, $input);
+
+        return ApiResponse::json($payments);
+    }
+
     public function fetchLineItems($id)
     {
         $lineItems = $this->service()->fetchLineItemsFor($id);

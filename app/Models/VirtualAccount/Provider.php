@@ -165,6 +165,16 @@ class Provider
         self::AXIS_RTPL,
     ];
 
+    const COLLECTX_UPI_PROVIDERS = [
+        self::YESBANK
+    ];
+
+    const COLLECTX_BANK_TRANSFER_PROVIDER = [
+        self::YESBANK,
+        self::RBL,
+        self::AXIS
+    ];
+
     public static function getIFSC(bool $useCommonIfsc = false): array
     {
         $ifsc = self::IFSC;

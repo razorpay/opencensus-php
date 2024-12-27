@@ -153,4 +153,5 @@ class Constants
     const CMS_REF_NO              = "cms_ref_no";
     const AMOUNT                  = 'amount';
     const BALANCE_ID              = 'balance_id';
+    const PROCESS_TYPE_KAFKA_EVENT_VIA_PS = "kafka_event_via_ps";
 }

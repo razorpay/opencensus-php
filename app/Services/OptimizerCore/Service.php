@@ -11,6 +11,7 @@ class Service
 
     protected $app;
     const FETCH_MERCHANT_GATEWAY_DATA              = 'fetch_merchant_gateway_data';
+    const FETCH_PROVIDER = 'fetch_provider';
     const PATH                                  = 'path';
     const OPTIMIZER_PROVIDER_GATEWAY_DATA_CACHE_PREFIX = 'PROVIDER_GATEWAY_DATA:';
     const OPTIMIZER_PROVIDER_GATEWAY_DATA_CACHE_VALIDITY_SECONDS   = 900; // 5 minutes
@@ -19,6 +20,9 @@ class Service
         self::FETCH_MERCHANT_GATEWAY_DATA  =>   [
             self::PATH   => '/v1/merchant_gateway_data/',
         ],
+        self::FETCH_PROVIDER  => [
+            self::PATH   => '/v1/provider/'
+        ]
     ];
 
     public function __construct($app = null)
@@ -136,5 +140,45 @@ class Service
         $cachedParams['merchant_id'] = $merchantID;
 
         return self::OPTIMIZER_PROVIDER_GATEWAY_DATA_CACHE_PREFIX . (md5(json_encode($cachedParams)));
+    }
+
+    /**
+     * fetchProviders
+     * Gets providers for payment in optimizer core service
+     *
+     * @param $paymentID
+     *
+     * @return array ["providers" => []]
+     */
+    public function fetchProviders($paymentID): array
+    {
+
+        try
+        {
+            $params = self::PARAMS[self::FETCH_PROVIDER];
+
+            $response = $this->app['optimizer_core_service_client']->sendRequest($params[self::PATH].$paymentID, array(), Requests::GET);
+
+            $this->app['trace']->info(TraceCode::OPTIMIZER_FETCH_PROVIDER_RESPONSE,
+                [
+                    'payment_id' => $paymentID,
+                    'provider' => $response
+                ]
+            );
+
+            return $response;
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->error(TraceCode::OPTIMIZER_FETCH_PROVIDER_ERROR,
+                [
+                    'type'    => get_class($e),
+                    'message' => $e->getMessage(),
+                    'code'    => $e->getCode(),
+                    'trace'   => $e->getTraceAsString(),
+                ]
+            );
+        }
+        return [];
     }
 }

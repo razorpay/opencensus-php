@@ -10,13 +10,15 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Base;
+use Ramsey\Uuid\Uuid;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Card;
-
+use RZP\Error\ErrorCode;
+use RZP\Models\LedgerOutbox;
 use RZP\Models\Payment\Status;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
@@ -26,9 +28,13 @@ use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
 use RZP\Gateway\Wallet\Freecharge;
+use RZP\Exception\BadRequestException;
+use RZP\Services\Ledger as LedgerService;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Base\Traits\ExternalScroogeRepo;
@@ -1276,5 +1282,196 @@ class Repository extends Base\Repository
         }
 
         return parent::findManyWithRelations($ids, $relations, $columns, $useWarehouse);
+    }
+
+    public function checkForDSRefund(array $refund, array $nonPosPids): bool
+    {
+        return  (($refund[Entity::SETTLED_BY] !== 'Razorpay' and (isset($nonPosPids[$refund[Entity::PAYMENT_ID]]) === true)) === true);
+    }
+
+    public function checkMerchantForPGLedgerEnabled($merchant, $refund): void
+    {
+        if($merchant === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND,
+                Entity::MERCHANT_ID,
+                [
+                    Entity::MERCHANT_ID => $refund[Entity::MERCHANT_ID]
+                ]);
+        }
+        else if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            throw new Exception\LogicException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+                Entity::MERCHANT_ID,
+                [
+                    Entity::MERCHANT_ID => $refund[Entity::MERCHANT_ID],
+                ]);
+        }
+    }
+
+    public function fetchLedgerJournalDetails(array $refund): array
+    {
+        try
+        {
+            $ledgerInput = [
+                Ledger\Base::TRANSACTOR_ID => Refund\Entity::getSignedId($refund[Entity::ID]),
+                Ledger\Base::MERCHANT_ID => $refund[Entity::MERCHANT_ID],
+                Ledger\Base::TRANSACTOR_EVENT => LedgerConstants::REFUND_PROCESSED
+            ];
+
+            $requestHeaders = [
+                Ledger\Base::LEDGER_TENANT_HEADER       => LedgerConstants::TENANT_PG,
+                Ledger\Base::IDEMPOTENCY_KEY_HEADER     => Uuid::uuid1()
+            ];
+
+            $ledgerResponse = (new Ledger\Base)->fetchJournalByTransactor($ledgerInput, $requestHeaders);
+
+            if(isset($ledgerResponse[LedgerService::RESPONSE_BODY]) === false)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_REFUND_JOURNAL_NOT_FOUND_ERROR,
+                    Constants::REFUND_ID,
+                    [
+                        Constants::REFUND_ID => $refund[Entity::ID],
+                    ]);
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            // Trace exception
+            $this->trace->traceException($ex);
+            throw $ex;
+        }
+
+        return $ledgerResponse;
+    }
+
+    public function isRefundProcessable(array $fundAccountTypes, array $refund): bool
+    {
+        //Process refunds only if fund_account_type is merchant_balance or merchant_refund_credits
+        if(in_array(LedgerConstants::MERCHANT_REFUND_CREDITS, $fundAccountTypes, true) === true)
+        {
+            // Process refunds if terminal type is DS with refund.
+            $terminalType =  $refund[Refund\Constants::META][Terminal\Type::DIRECT_SETTLEMENT_WITH_REFUND] ?? null;
+
+            if($terminalType !== null)
+            {
+                return $terminalType;
+            }
+
+            $terminal = $this->repo->terminal->getById($refund[Entity::TERMINAL_ID]);
+
+            if($terminal === null)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_TERMINAL_ID,
+                    Entity::TERMINAL_ID,
+                    [
+                        Entity::TERMINAL_ID => $refund[Entity::TERMINAL_ID]
+                    ]);
+            }
+
+            return $terminal->isDirectSettlementWithRefund();
+        }
+
+        return (in_array(LedgerConstants::MERCHANT_BALANCE, $fundAccountTypes, true) === true);
+    }
+
+    public function formatRefundDetails(array $refund): array
+    {
+        return [
+            Entity::AMOUNT          => $refund[Entity::AMOUNT],
+            Entity::GATEWAY         => $refund[Entity::GATEWAY],
+            Entity::ID              => $refund[Entity::ID],
+            Entity::MERCHANT_ID     => $refund[Entity::MERCHANT_ID],
+            Entity::PROCESSED_AT    => $refund[Entity::PROCESSED_AT],
+            Entity::PAYMENT_ID      => $refund[Entity::PAYMENT_ID],
+            Entity::SETTLED_BY      => $refund[Entity::SETTLED_BY],
+            Entity::STATUS          => $refund[Entity::STATUS],
+            Entity::TERMINAL_ID     => $refund[Entity::TERMINAL_ID],
+        ];
+    }
+
+    public function fetchAggregatedRefundsForMethodsBetweenTimePeriodForMerchantIds($input, $from, $to, $methods): array
+    {
+        // Fetch the refunds from the scrooge.
+        $refundsFromScrooge = $this->fetchRefundsListForMerchantIds($input, $from, $to, $methods , Refund\Status::PROCESSED);
+
+        //Cutoff timestamp for refunds.
+        $lastProcessedTimeForRefunds = 0;
+
+        $refundList = [];
+
+        $skippedRefundIds = [];
+
+        $dataRefunds = [];
+
+        $paymentIds = array_values(array_column($refundsFromScrooge, Entity::PAYMENT_ID));
+
+        //Fetch non pos payments ids for refunds
+        $nonPosPids = $this->repo->payment->fetchNonPosPaymentsByIds($paymentIds);
+
+        foreach($refundsFromScrooge as $refund)
+        {
+            try
+            {
+                if($this->checkForDSRefund($refund, $nonPosPids) === false)
+                {
+                    $skippedRefundIds[] = $refund[Entity::ID];
+                    continue;
+                }
+
+                // Fetch the merchant from merchant_id
+                $merchant = $this->repo->merchant->findOrFail($refund[Entity::MERCHANT_ID]);
+
+                //Checking merchant is on boarded on CLS.
+                $this->checkMerchantForPGLedgerEnabled($merchant, $refund);
+
+                $ledgerResponse = $this->fetchLedgerJournalDetails($refund);
+
+                $fundAccountTypes = (new LedgerOutbox\Core())->fetchFundAccountTypeForDebitFromJournal($ledgerResponse[LedgerService::RESPONSE_BODY]);
+
+                if($fundAccountTypes === null)
+                {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_EXPECTED_FUND_ACCOUNT_TYPE_NOT_PRESENT,
+                        LedgerConstants::JOURNAL_ID,
+                        [
+                            LedgerConstants::JOURNAL_ID      => $ledgerResponse[LedgerConstants::JOURNAL_ID],
+                        ]);
+                }
+
+                if($this->isRefundProcessable($fundAccountTypes, $refund) === false)
+                {
+                    $skippedRefundIds[] = $refund[Entity::ID];
+                    continue;
+                }
+
+                // Add scrooge refund data to the refunds list
+                $refundList[] = $this->formatRefundDetails($refund);
+
+            }
+            catch (\Throwable $ex)
+            {
+                // Trace exception and continue
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::SCROOGE_ENTITY_FETCH_FAILURE,
+                    [
+                        Refund\Constants::REFUND_ID     => $refund[Entity::ID],
+                        Refund\Constants::MERCHANT_ID   => $refund[Entity::MERCHANT_ID],
+                    ]
+                );
+
+                $skippedRefundIds [] = $refund[Entity::ID];
+            }
+        }
+
+        foreach($refundList as $refund)
+        {
+            $dataRefunds[$refund[Entity::MERCHANT_ID]] [] = $refund;
+
+            $lastProcessedTimeForRefunds = max($lastProcessedTimeForRefunds, $refund[Entity::PROCESSED_AT]);
+        }
+
+        return [$dataRefunds, $skippedRefundIds, $lastProcessedTimeForRefunds];
     }
 }

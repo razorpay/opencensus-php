@@ -1306,7 +1306,7 @@ class Terminal extends Base
             'gateway'                   => 'upi_icici',
             'gateway_merchant_id'       => '1357900',
             'gateway_terminal_id'       => 'nodal account upi icici',
-            'gateway_merchant_id2'      => 'rzp.qrTest@icici',
+            'gateway_merchant_id2'      => 'rzp.qrtest@icici',
             'gateway_terminal_password' => 'razorpay_password',
             'upi'                       => true,
             'tpv'                       => 2,
@@ -1329,7 +1329,7 @@ class Terminal extends Base
             'merchant_id'               => 'LiveAccountMer',
             'gateway'                   => 'upi_jkbank',
             'gateway_merchant_id'       => '1357901',
-            'vpa'                       => 'rzp.qrTest@jkb',
+            'vpa'                       => 'rzp.qrtest@jkb',
             'upi'                       => true,
             'type'                      => [
                 Type::PAY               => '1',

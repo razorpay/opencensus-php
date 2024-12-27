@@ -6,6 +6,7 @@ namespace RZP\Jobs\Kafka;
 use App;
 use Database\Connection;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use RZP\Base\Database\Connectors\MySqlConnector;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -16,9 +17,10 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Service;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ExtraFieldsException;
-use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Exception\BadRequestValidationFailureException;
 use Illuminate\Database\UniqueConstraintViolationException;
+use \PDOException;
+use RZP\Exception\DbQueryException;
 
 class PgosCdcEventsJob extends Job
 {
@@ -71,7 +73,9 @@ class PgosCdcEventsJob extends Job
 
         try
         {
-            $pgosCdcEventsProcessingAttempt = $this->incrementKafkaMessageProcessingAttempt($merchantId, self::PGOS_CDC_EVENTS_PROCESSING_ATTEMPT_COUNT);
+            $redisKey = $merchantId . "_" . $this->payload['ts'] . "_" . $this->payload['xid'];
+
+            $pgosCdcEventsProcessingAttempt = $this->incrementKafkaMessageProcessingAttempt($redisKey, self::PGOS_CDC_EVENTS_PROCESSING_ATTEMPT_COUNT);
 
             (new Service)->savePGOSDataToAPI($this->payload);
         }
@@ -96,14 +100,15 @@ class PgosCdcEventsJob extends Job
             }
 
         }
-        catch (QueryException $e)
+        catch (QueryException| PDOException| DbQueryException $e)
         {
             //Continue to retry the same message in this case, increasing the consumer lag to trigger an alert
             $this->trace->error(TraceCode::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
                 'code'      => $e->getCode(),
                 'message'   => $e->getMessage(),
                 'payload'   => $this->payload,
-                'attempt'   => $pgosCdcEventsProcessingAttempt
+                'attempt'   => $pgosCdcEventsProcessingAttempt,
+                'retry'     => true,
             ]);
 
             if ($isMetricExperimentEnabled) {
@@ -132,28 +137,14 @@ class PgosCdcEventsJob extends Job
             }
 
             if ($causedByLostConnectionAtleastOnce) {
+                $this->trace->error(TraceCode::EXCEPTION_CAUSED_BY_LOST_DB_CONNECTION, [
+                    'code'      => $e->getCode(),
+                    'message'   => $e->getMessage(),
+                    'caused_by_lost_connection'  => true,
+                    'reloaded_connections'       => array_keys(DB::getConnections())
+                ]);
                 throw $e;
             }
-        }
-        catch (DbQueryException $e)
-        {
-            //Not propagating the error post this, we don't want to re-attempt here
-            $this->trace->error(TraceCode::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
-                'code'      => $e->getCode(),
-                'message'   => $e->getMessage(),
-                'payload'   => $this->payload,
-                'attempt'   => $this->attempts()
-            ]);
-
-            if ($isMetricExperimentEnabled) {
-                $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
-                    'level'           => self::ERROR,
-                    'code'            => $e->getCode(),
-                    'attempt'         => $this->attempts(),
-                    'retry'           => false
-                ]);
-            }
-
         }
         catch (\Throwable $e)
         {

@@ -5132,7 +5132,11 @@ class Service extends Base\Service
 
             $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
 
-            if ($merchant->isFeatureEnabled(Feature\Constants::CLS_ONBOARDING_INPROGRESS) === true)
+            $featureCore = new Feature\Core();
+
+            $clsOnboardingStatus = $featureCore->isLedgerOnboardingFeaturesInAPI($merchant->getId());
+
+            if ($clsOnboardingStatus === true)
             {
                 $input = [
                     'payment_id'  => $payment->getId(),
@@ -7811,6 +7815,17 @@ class Service extends Base\Service
         {
             return true;
         }
+        //add ledger-outbox event check here to avoid double gateway_captured request via force auth
+        $transactorId = $payment->getPublicId();
+        $transactorEvent =  LedgerConstants::GATEWAY_CAPTURED;
+        $payloadName = sprintf("%s-%s", $transactorId, $transactorEvent);
+        $gatewayCaptureOutboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadNameWithTrashed($payloadName);
+
+        if (count($gatewayCaptureOutboxEntries) > 0)
+        {
+            return true;
+        }
+
 
         try
         {

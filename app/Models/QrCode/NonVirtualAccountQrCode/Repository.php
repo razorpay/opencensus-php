@@ -96,4 +96,12 @@ class Repository extends QrCode\Repository
             ->where(Entity::REFERENCE, $TrId)
             ?->first();
     }
+
+    public function findByMerchantAndDeviceId(string $merchantId, string $deviceId)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::DEVICE_ID, $deviceId)
+            ?->get();
+    }
 }

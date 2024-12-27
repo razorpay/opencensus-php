@@ -244,6 +244,82 @@ return [
         ]
     ],
 
+    'testBankTransferRblCollectx' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'R',
+                        'amount'                    => '2',
+                        'UTRNumber'                 => 'CMS480098890',
+                        'senderIFSC'                => 'ICIC0000104',
+                        'senderAccountNumber'       => '9876543210123456789',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => '00010469876543210',
+                        'creditDate'                => '13-10-2016 1929',
+                        'creditAccountNumber'       => '1234567890',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testBankTransferRblCollectxUpi' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'IMPS',
+                        'amount'                    => '2',
+                        'UTRNumber'                 => 'UPI/006713070094/UPI/BALJEETKUMA@OKSBI',
+                        'senderIFSC'                => '',
+                        'senderAccountNumber'       => '',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'SBI294559d909324c4b9d29b930a39d27dd',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => '00010469876543210',
+                        'creditDate'                => '13-10-2016 1929',
+                        'creditAccountNumber'       => '1234567890',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testBankTransferRblUnexpected' => [
         'request' => [
             'url'     => '/ecollect/validate/rbl/test',
@@ -2822,6 +2898,43 @@ return [
                 'Stts_flg' => 'S',
                 'Err_cd'   => '000',
                 'message'  => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testYesbankUpiValidationCallbackForCollectx_WithClosedVirtualAccount' => [
+        'request' => [
+            'url'     => '/ecollect/validate',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_AXIS_SECRET',
+            ],
+            'content' => [
+                "validate" => [
+                    'attempt_no'            => 1,
+                    'bene_account_ifsc'     => 'YESB0CMSNOC',
+                    'bene_account_no'       => 'RZPAYX.7167293864603',
+                    'bene_full_name'        => 'RZPX Pvt Ltd',
+                    'customer_code'         => 'RZPAYX',
+                    'rmtr_account_ifsc'     => 'UTIB0001082',
+                    'rmtr_account_no'       => '910910910910910',
+                    'rmtr_account_type'     => '10',
+                    'rmtr_full_name'        => 'UJJWAL ANAND',
+                    'rmtr_to_bene_note'     => 'Transfer Note',
+                    'transfer_amt'          => 7,
+                    'transfer_ccy'          => 'INR',
+                    'transfer_timestamp'     => '2024-07-08 17:30:00',
+                    'transfer_type'         => 'UPI',
+                    'transfer_unique_no'    => '420702039708',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "validateResponse" => [
+                    "decision"=> "reject"
+                ]
             ],
             'status_code' => 200,
         ]

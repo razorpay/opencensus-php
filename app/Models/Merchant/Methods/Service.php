@@ -137,13 +137,13 @@ class Service extends Base\Service
         ];
     }
 
-    public function getAllPaymentMethodsById($merchant): Entity
-    {   
-        if (!is_array($merchant)) {
-            $merchant = [$merchant];
+    public function getAllPaymentMethodsById($merchantId): Entity
+    {
+        if (!is_array($merchantId)) {
+            $merchantId = [$merchantId];
         }
 
-        $methods = $this->repo->methods->fetchMethodsBasedOnMerchantIds($merchant);
+        $methods = $this->repo->methods->fetchAllMethodsBasedOnMerchantIds($merchantId);
 
         $method = $methods->first();
 

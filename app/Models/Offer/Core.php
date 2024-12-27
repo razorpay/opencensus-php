@@ -18,6 +18,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order\ProductType;
@@ -515,6 +516,40 @@ class Core extends Base\Core
         $offers = $this->repo->offer->fetchSharedOffers();
 
         return $offers;
+    }
+    /**
+     * Fetches two things mainly for create validation flow in offers engine
+     * 1. Merchant Methods -> in case offer.payment_method is non-empty
+     * 2. EMI Payback plan -> in case where it is no cost emi offer
+    */
+    public function fetchOfferCreateInfo(array $input)
+    {
+        $response          = array();
+        $tenureDiscountMap = [];
+        $merchantId        = $input[Entity::MERCHANT_ID];
+        $offer             = $input[Entity::OFFER];
+
+        if (empty($offer[Entity::PAYMENT_METHOD]) === false)
+        {
+            $merchant                           = $this->repo->merchant->findOrFailPublic($merchantId);
+            $response[Entity::MERCHANT_METHODS] = $merchant->methods;
+        }
+        if ($offer[Entity::IS_NO_COST_EMI])
+        {
+            $emiPlans = $this->repo->emi_plan->fetchByParams($offer[Entity::EMI_DURATIONS],
+                                                             $offer[Entity::ISSUER],
+                                                             $offer[Entity::PAYMENT_NETWORK],
+                                                             $offer[Entity::PAYMENT_METHOD_TYPE]);
+
+            foreach ($emiPlans as $emiPlan)
+            {
+                $tenureDiscountMap[$emiPlan[Emi\Entity::DURATION]] = $emiPlan[Emi\Entity::MERCHANT_PAYBACK];
+            }
+            $response[Entity::TENURE_DISCOUNT_MAP] = $tenureDiscountMap;
+        }
+        $this->trace->info(TraceCode::FETCH_OFFER_CREATE_INFO_RESPONSE, $response);
+
+        return $response;
     }
 
     /**
@@ -1073,15 +1108,23 @@ class Core extends Base\Core
 
         $this->setPaymentMethodTypeForDebitCardIssuers($input);
 
+        $offerCreateReadsMigrationExpResult = $this->shouldRouteToOffersEngineForCreation(
+            $merchant->getMerchantId(), Constants::OFFER_CREATE_READS_MIGRATION_EXP);
+
         $offer = new Entity;
+
+        $offer->setOfferCreateExpValue($offerCreateReadsMigrationExpResult);
 
         $offer->merchant()->associate($merchant);
 
         $offer = $offer->build($input);
 
-        $this->validateMerchant($merchant, $input);
+        if ($offerCreateReadsMigrationExpResult === false)
+        {
+            $this->validateMerchant($merchant, $input);
 
-        $this->checkConflictingOffers($offer);
+            $this->checkConflictingOffers($offer);
+        }
 
         $this->repo->transaction(
           function () use (&$offer, $merchant, $subscriptionInput, $input)
@@ -1132,10 +1175,55 @@ class Core extends Base\Core
          $this->env === 'func' or $this->env === 'availability' or
          $this->env === 'perf' or $this->env === 'perf2'))
         {
-            return false;
+            return (bool) ConfigKey::get(ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED, false);
         }
 
         return true;
+    }
+
+    public function shouldRouteToOffersEngineForCreation(string $merchantId, $experiment): bool
+    {
+        if (app()->runningUnitTests() === true)
+        {
+            return (bool) ConfigKey::get(ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED, false);
+        }
+        if (
+            ($this->env === 'bvt' or $this->env === 'automation' or
+             $this->env === 'func' or $this->env === 'availability' or
+             $this->env === 'perf' or $this->env === 'perf2'))
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                "id"            => $merchantId,
+                "experiment_id" => $this->app['config']->get($experiment),
+                "request_data"  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === 'variant_on';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
+                [
+                    'msg' => $e->getMessage()
+                ]);
+
+        }
+
+        return false;
     }
 
     public function shouldRouteToOffersEngineForPayments(string $merchantId, $experiment, $throwError = false): bool

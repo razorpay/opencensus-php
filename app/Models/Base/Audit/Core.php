@@ -11,9 +11,9 @@ use RZP\Constants\Entity as CommonEntity;
 
 class Core extends Base\Core
 {
-    const DATA_LAKE_ENTITY_AUDIT_QUERY  = "select audit.changelog,info.meta,audit.timestamp as modified_at,audit.created_date from hive.realtime_entity_meta.audit audit inner join hive.realtime_hudi_api.audit_info info on info.id = audit.audit_id where audit.service='api' and audit.entity_type = '%s' and audit.producer_created_date<='%s' and audit.entity_id='%s' and audit.timestamp < %s limit %s";
+    const DATA_LAKE_ENTITY_AUDIT_QUERY  = "select audit.changelog,info.meta,audit.timestamp as modified_at,audit.created_date from hive.realtime_entity_meta.audit audit inner join hive.realtime_hudi_api.audit_info info on info.id = audit.audit_id where audit.service in ('api', 'prod_account_service') and audit.entity_type = '%s' and audit.producer_created_date<='%s' and audit.entity_id='%s' and audit.timestamp < %s limit %s";
 
-    const DATA_LAKE_AUDIT_QUERY = "select audit.timestamp as timestamp, audit.entity_type as category, audit.op_type as action, audit.old_data as old_value, audit.changelog as new_value, info.meta from hive.realtime_entity_meta.audit audit inner join hive.realtime_hudi_api.audit_info info on info.id = audit.audit_id where audit.service = 'api' and audit.entity_id in ('%s') and audit.entity_type in ('%s') and audit.timestamp between %s and %s order by audit.timestamp desc";
+    const DATA_LAKE_AUDIT_QUERY = "select audit.timestamp as timestamp, audit.entity_type as category, audit.op_type as action, audit.old_data as old_value, audit.changelog as new_value, info.meta from hive.realtime_entity_meta.audit audit inner join hive.realtime_hudi_api.audit_info info on info.id = audit.audit_id where audit.service in ('api', 'prod_account_service') and audit.entity_id in ('%s') and audit.entity_type in ('%s') and audit.timestamp between %s and %s order by audit.timestamp desc";
 
     const MERCHANT_AUDIT_ENTITIES = ['merchants', 'merchant_business_details',
                                      'stakeholders', 'merchant_details',

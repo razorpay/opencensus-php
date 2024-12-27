@@ -729,7 +729,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
         if (empty($activationStatus) === false)
         {
-            $allowedNextActivationStatuses = ((new Validator())->checkIfKQUStateExperimentEnabled($this->merchant->getId()) === true) ? Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_KQU[$activationStatus] : Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$activationStatus];
+            $allowedNextActivationStatusMap = (new Core())->getActivationStatusMappingWithNCAutomation($this->merchant->getId());
+            $allowedNextActivationStatuses = $allowedNextActivationStatusMap[$activationStatus];
         }
 
         $merchantOnboardingProxyController = new MerchantOnboardingProxyController();

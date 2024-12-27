@@ -330,7 +330,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REARCH_PCP_PAYMENT_SERVICE        = 8;
     const EMANDATE_PAYMENT_SERVICE          = 9;
 
-    const REARCH_PAYMENT_SERVICES           = [self::REARCH_CARD_PAYMENT_SERVICE, self::REARCH_UPI_PAYMENT_SERVICE, self::REARCH_PCP_PAYMENT_SERVICE,self::NB_PLUS_SERVICE_PAYMENTS];
+    const REARCH_OPTIMISER_PAYMENT_SERVICE  = 100;
+
+    const REARCH_PAYMENT_SERVICES           = [self::REARCH_CARD_PAYMENT_SERVICE, self::REARCH_UPI_PAYMENT_SERVICE, self::REARCH_PCP_PAYMENT_SERVICE,self::NB_PLUS_SERVICE_PAYMENTS, self::REARCH_OPTIMISER_PAYMENT_SERVICE];
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
     const HOSTED_TIME_FORMAT                = 'j M Y';
@@ -2273,7 +2275,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return (new Dictionary($acquirerData));
     }
 
-    protected function getDiscountIfApplicable()
+    public function getDiscountIfApplicable()
     {
         if (($this->isAppCred() === true) and
             ($this->discount !== null))
@@ -3166,11 +3168,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isCollectXPayment()
     {
         try {
-            // TODO: UPI check to be removed later once collectx fix is live
             if ($this->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true &&
-                $this->getAttribute(Entity::REFERENCE14) === Constant::COLLECTX &&
-                $this->getAttribute(Entity::METHOD) == self::UPI) {
-
+                ($this->getAttribute(Entity::REFERENCE14) === Constant::COLLECTX) &&
+                (($this->getAttribute(Entity::METHOD) == Payment\Method::UPI) ||
+                    ($this->getAttribute(Entity::METHOD) === Payment\Method::BANK_TRANSFER)))
+            {
                 return true;
             }
         }
@@ -5332,7 +5334,40 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $this->setUpiIfApplicable($attributes);
 
+        $this->setChannelIfUpiPoDTransaction($attributes);
+
         return $attributes;
+    }
+
+    public function setChannelIfUpiPoDTransaction(array &$attributes)
+    {
+        if (!($this->receiver instanceof QrV2\Entity) or
+            $this->receiver?->getUsageType()  !== QrV2\UsageType::SINGLE_USE)
+        {
+	            return;
+        }
+
+        $analytics = $this->analytics;
+
+        if (isset($analytics))
+        {
+            $isLibraryInvalid =
+                (
+                    empty($analytics[Payment\Analytics\Entity::LIBRARY]) or
+                    ($analytics[Payment\Analytics\Entity::LIBRARY] !== Metadata::LIBRARY_VALUES[Metadata::CHECKOUTJS] and
+                     $analytics[Payment\Analytics\Entity::LIBRARY] !== Metadata::LIBRARY_VALUES[Metadata::HOSTED])
+                );
+
+            $isDeviceInvalid =
+                (empty($analytics[Payment\Analytics\Entity::DEVICE]) or
+                ($analytics[Payment\Analytics\Entity::DEVICE] !== Metadata::DEVICE_VALUES[Metadata::DESKTOP]));
+
+
+            if ($isLibraryInvalid && $isDeviceInvalid)
+            {
+                $attributes['channel'] = 'offline_pod';
+            }
+        }
     }
 
     public function toArrayRecon()
@@ -5843,6 +5878,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function getOffer()
     {
+        $offerNotFoundInOE = false;
+
         if ((new Offer\Core())->shouldRouteToOffersEngineForPayments(
                 $this->getMerchantId(), Offer\Constants::OFFERS_ENGINE_FETCH_EXP) === true)
         {
@@ -5866,7 +5903,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
                 // fetches normal offers from OE and limited offers from API db.
                 // The assumption here is that payment is always associated with one offer_id
-                $offerEntity = $offersEngineRepo->findByIdAndMerchantId($offerIds[0], $this->getMerchantId());
+                $offerEntity = $offersEngineRepo->findByIdAndMerchantId(
+                    $offerIds[0], $this->getMerchantId(), null, true);
 
                 $offersCollection = new Base\PublicCollection();
 
@@ -5883,20 +5921,42 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
             catch (\Throwable $ex)
             {
+                if ($ex->getCode() === ErrorCode::BAD_REQUEST_EXTERNAL_OFFER_NOT_FOUND)
+                {
+                    $offerNotFoundInOE = true;
+                }
+
                 app('trace')->count(
                     Offer\Metric::OFFERS_ENGINE_FETCH_OFFERS_FAIL_FOR_PAYMENTS, [
                     'route' => app('api.route')->getCurrentRouteName(),
                 ]);
 
                 app('trace')->traceException($ex, Trace::ERROR, TraceCode::PAYMENT_OFFER_NOT_FOUND, [
-                    'data' => $ex->getMessage(),
-                    'id'   => $this->getId(),
+                    'data'                  => $ex->getMessage(),
+                    'id'                    => $this->getId(),
+                    'offer_not_found_in_oe' => $offerNotFoundInOE,
                 ]);
             }
         }
 
         // Keeping fallback on API DB for now.
-        return $this->offers()->first();
+        $response = $this->offers()->first();
+
+        if (($response !== null) and
+            ($offerNotFoundInOE === true))
+        {
+            app('trace')->count(
+                Offer\Metric::OFFERS_FETCH_MISMATCH_PAYMENT_FLOW, [
+                'route' => app('api.route')->getCurrentRouteName(),
+            ]);
+
+            app('trace')->info(TraceCode::OFFERS_FETCH_MISMATCH_PAYMENT_FLOW, [
+                'payment_id'   => $this->getId(),
+                'api_response' => $response,
+            ]);
+        }
+
+        return $response;
     }
 
     /**

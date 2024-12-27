@@ -21,7 +21,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function addPlanRule(Plan $plan, array $input, string $ruleOrgId = null, $rampPhase = ''): Entity
+    public function addPlanRule(Plan $plan, array $input, string $ruleOrgId = null): Entity
     {
         $this->trace->info(TraceCode::PRICING_PLAN_RULE_ADD_ATTEMPT,
             $this->redactSensitiveInfoFromLogs($input));
@@ -48,11 +48,9 @@ class Core extends Base\Core
 
         $rule->setAuditAction(Action::CREATE_PRICING_PLAN_RULE);
 
-        if ($rampPhase != CCRouter::REVERSE_SHADOW && $rampPhase != CCRouter::ENABLE){
-            $this->app['workflow']
-                ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
-                ->handle((new \stdClass), $rule);
-        }
+        $this->app['workflow']
+            ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
+            ->handle((new \stdClass), $rule);
 
         $this->repo->saveOrFail($rule);
 
@@ -101,7 +99,7 @@ class Core extends Base\Core
      * Duplicate the existing rule, update its properties from input and create it as a new rule.
      * Soft delete the previous rule.
      */
-    public function editPlanRule(String $planId, String $ruleId, array $input, String $orgId = null, $rampPhase = ''): Entity
+    public function editPlanRule(String $planId, String $ruleId, array $input, String $orgId = null): Entity
     {
         $this->trace->info(
             TraceCode::PRICING_PLAN_RULE_UPDATE_ATTEMPT,
@@ -134,11 +132,10 @@ class Core extends Base\Core
 
         $newRule->setAuditAction(Action::CREATE_UPDATE_PRICING_PLAN_RULE);
 
-        if ($rampPhase != CCRouter::REVERSE_SHADOW && $rampPhase != CCRouter::ENABLE){
-            $this->app['workflow']
-                ->setEntityAndId($rule->getEntity(), $planId)
-                ->handle($rule, $newRule);
-        }
+        $this->app['workflow']
+            ->setEntityAndId($rule->getEntity(), $planId)
+            ->handle($rule, $newRule);
+
 
         $newRule = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($rule, $newRule, $orgId)
         {

@@ -121,6 +121,18 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function fetchAllMethodsBasedOnMerchantIds($merchantIds)
+    {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
+        return $this->newQuery()
+            ->whereIn(Entity::MERCHANT_ID,$merchantIds)
+            ->get();
+    }
+
     public function fetchMethodsBasedOnMethodName($method,$from,$count)
     {
         $metricData = [
@@ -353,6 +365,16 @@ class Repository extends Base\Repository
         }
         $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         return $methods;
+    }
+
+    public function methodsDualWrite($entity, array $options = array()) {
+        $this->trace->info(TraceCode::METHODS_DUAL_WRITE, [
+            'data' => $entity,
+            'options' => $options,
+        ]);
+
+        //TODO: saveOrFail implementation is required for dualwrite flow and existing write flow for proxy call
+        $this->saveOrFail($entity, $options);
     }
 
 }

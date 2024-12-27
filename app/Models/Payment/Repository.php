@@ -336,6 +336,21 @@ EOT;
             ->get();
     }
 
+    public function fetchNonPosPaymentsByIds(array $paymentIds)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->selectRaw(
+                Payment\Entity::TERMINAL_ID . ',' .  Payment\Entity::ID
+            )
+            ->where(function ($query) {
+                $query->whereNull(Payment\Entity::RECEIVER_TYPE)
+                    ->orWhere(Payment\Entity::RECEIVER_TYPE, '!=', 'pos');
+            })
+            ->whereIn(Payment\Entity::ID, $paymentIds)
+            ->pluck(Payment\Entity::TERMINAL_ID, Payment\Entity::ID)
+            ->toArray();
+    }
+
     public function fetchPendingCapturePaymentsBetweenTimestamps($from, $to, $limit = 100)
     {
         $query = $this->newQuery();
@@ -2690,6 +2705,21 @@ EOT;
         return $allPayments;
     }
 
+    public function fetchInternalPaymentsForOrderId($orderId, $merchantId = '')
+    {
+
+        $paymentOrderQuery = $this->newQuery()->where(Payment\Entity::ORDER_ID, '=', $orderId);
+
+        if (empty($merchantId) === false)
+        {
+            $paymentOrderQuery = $paymentOrderQuery->where(Payment\Entity::MERCHANT_ID, '=', $merchantId);
+        }
+
+        $payments = $paymentOrderQuery->get();
+
+        return $payments;
+    }
+
     public function fetchPaymentsWithCardForOrderId($orderId)
     {
         $payments = $this->newQuery()
@@ -3395,12 +3425,12 @@ EOT;
             ];
 
             $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
             if ($variant === true)
             {
                 $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
                 $payment = $this->newQueryWithConnection($connectionType)
+                    ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"))
                     ->where(Entity::TRANSFER_ID, $transferId)
                     ->with($relations)
                     ->firstOrFailPublic();
@@ -4527,8 +4557,8 @@ GROUP BY
         END = '%s'
     ";
 
-        $startDate =  Carbon::createFromTimestamp($start)->format('d-m-Y');
-        $endDate = Carbon::createFromTimestamp($end)->format('d-m-Y');
+        $startDate =  Carbon::createFromTimestamp($start, Timezone::IST)->format('d-m-Y');
+        $endDate = Carbon::createFromTimestamp($end, Timezone::IST)->format('d-m-Y');
 
         $dataLakeQuery = sprintf($query, $parentMerchantId, $merchantId, $startDate, $endDate, $filterType);
 
@@ -4539,7 +4569,21 @@ GROUP BY
             "DL_QUERY_RESULT" => $results,
         ]);
 
-        return !empty($results) ? $results[0]:[];
+        if (!empty($results)) {
+            // Round the fee, tax, and total_amount to the nearest rupee
+            $results[0]['fee'] = (int) round((float)$results[0]['fee']);
+            $results[0]['tax'] = (int) round((float)$results[0]['tax']);
+            $results[0]['total_amount'] = (int) round((float)$results[0]['total_amount']);
+
+            // Convert to paise
+            $results[0]['fee'] = $results[0]['fee'] * 100;
+            $results[0]['tax'] = $results[0]['tax'] * 100;
+            $results[0]['total_amount'] = $results[0]['total_amount'] * 100;
+
+            return $results[0];
+        }
+        return [];
+
     }
 
     /**
@@ -4763,7 +4807,10 @@ GROUP BY
 
         if ($variant === true)
         {
-            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)->where(Entity::GATEWAY, $gateway)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)
+                ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"))
+                ->where(Entity::GATEWAY, $gateway)
+                ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
         }
         else
         {
@@ -4830,11 +4877,15 @@ GROUP BY
 
         if ($variant === true)
         {
-            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)
+                        ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"))
+                        ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
+                        ->find($id);
         }
         else
         {
-            $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaLiveConnection())->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+            $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaLiveConnection())
+                        ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
         }
 
         if (($obj !== null) and
@@ -5454,6 +5505,7 @@ GROUP BY
         $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
         $payment = $this->newQueryWithConnection($connectionType)
+            ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"))
             ->where(Entity::TOKEN_ID, $tokenId)
             ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
             ->where(Entity::MERCHANT_ID, $merchantId)
@@ -5561,55 +5613,82 @@ GROUP BY
     {
         $connectionType = $this->getSplitzStatusAndReturnConnectionForHarvesterMigration(true);
 
-        return $this->newQueryWithConnection($connectionType)
-            ->select($this->dbColumn('*'))
-            ->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
-            ->WhereNotNull(Payment\Entity::TOKEN_ID)
-            ->where(Payment\Entity::METHOD, Payment\Method::NACH)
-            ->limit(5);
+        $query = $this->newQueryWithConnection($connectionType);
+        if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
+        }else{
+            $query = $query->select($this->dbColumn('*'));
+        }
+
+        return $query->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
+                     ->WhereNotNull(Payment\Entity::TOKEN_ID)
+                     ->where(Payment\Entity::METHOD, Payment\Method::NACH)
+                     ->limit(5);
     }
 
     public function fetchPaymentCountByTokenForCardInRange($tokenId, $start, $end)
     {
         $connectionType = $this->getSplitzStatusAndReturnConnectionForHarvesterMigration(true);
 
-        return $this->newQueryWithConnection($connectionType)
-            ->select($this->dbColumn('*'))
-            ->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
-            ->where(Payment\Entity::METHOD, '=', Method::CARD)
-            ->where(Payment\Entity::RECURRING_TYPE, '=', 'auto')
-            ->where(Payment\Entity::CREATED_AT, '>', $start)
-            ->where(Payment\Entity::CREATED_AT, '<', $end)
-            ->where(Payment\Entity::STATUS, '!=', 'failed')
-            ->count();
+        if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+        }
+
+        $query = $this->newQueryWithConnection($connectionType);
+        if ($connectionType === ConnectionType::DATA_WAREHOUSE_ADMIN){
+            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ *"));
+        }else{
+            $query = $query->select($this->dbColumn('*'));
+        }
+
+        return $query->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
+                     ->where(Payment\Entity::METHOD, '=', Method::CARD)
+                     ->where(Payment\Entity::RECURRING_TYPE, '=', 'auto')
+                     ->where(Payment\Entity::CREATED_AT, '>', $start)
+                     ->where(Payment\Entity::CREATED_AT, '<', $end)
+                     ->where(Payment\Entity::STATUS, '!=', 'failed')
+                     ->count();
     }
 
     public function fetchPaymentCountByTokenForUpiInRange($tokenId, $start, $end)
     {
         $connectionType = $this->getSplitzStatusAndReturnConnectionForHarvesterMigration(true);
+        if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+        }
 
-        return $this->newQueryWithConnection($connectionType)
-            ->select($this->dbColumn('*'))
-            ->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
-            ->where(Payment\Entity::METHOD, '=', Method::UPI)
-            ->where(Payment\Entity::RECURRING_TYPE, '=', 'auto')
-            ->where(Payment\Entity::CREATED_AT, '>', $start)
-            ->where(Payment\Entity::CREATED_AT, '<', $end)
-            ->where(Payment\Entity::STATUS, '=', 'created')
-            ->count();
+        $query = $this->newQueryWithConnection($connectionType);
+        if ($connectionType === ConnectionType::DATA_WAREHOUSE_ADMIN){
+            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ *"));
+        }else{
+            $query = $query->select($this->dbColumn('*'));
+        }
+
+        return $query->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
+                     ->where(Payment\Entity::METHOD, '=', Method::UPI)
+                     ->where(Payment\Entity::RECURRING_TYPE, '=', 'auto')
+                     ->where(Payment\Entity::CREATED_AT, '>', $start)
+                     ->where(Payment\Entity::CREATED_AT, '<', $end)
+                     ->where(Payment\Entity::STATUS, '=', 'created')
+                     ->count();
     }
 
     public function fetchNonFailedPaymentCountByOrder($orderId)
     {
         $connectionType = $this->getSplitzStatusAndReturnConnectionForHarvesterMigration();
 
-        return $this->newQueryWithConnection($connectionType)
-            ->select($this->dbColumn('*'))
-            ->where(Payment\Entity::ORDER_ID, '=', $orderId)
-            ->where(Payment\Entity::METHOD, '=', Method::UPI)
-            ->where(Payment\Entity::RECURRING_TYPE, '=', 'auto')
-            ->where(Payment\Entity::STATUS, '!=', 'failed')
-            ->count();
+        $query = $this->newQueryWithConnection($connectionType);
+        if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
+            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
+        }else{
+            $query = $query->select($this->dbColumn('*'));
+        }
+
+        return $query->where(Payment\Entity::ORDER_ID, '=', $orderId)
+                     ->where(Payment\Entity::METHOD, '=', Method::UPI)
+                     ->where(Payment\Entity::RECURRING_TYPE, '=', 'auto')
+                     ->where(Payment\Entity::STATUS, '!=', 'failed')
+                     ->count();
     }
 
     public function getDualWriteMismatchPayments(int $from, int $to): array
@@ -5869,9 +5948,18 @@ GROUP BY
             ->find($id);
     }
 
-    public function findNonRearchPaymentsFromDataWarehouse($id)
+    public function findNonRearchPaymentsFromDataWarehouseLive($id)
     {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+        return $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)
+            ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"))
+            ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
+            ->find($id);
+    }
+
+    public function findNonRearchPaymentsFromDataWarehouseTest($id)
+    {
+        return $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_MERCHANT_TEST)
+            ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"))
             ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
             ->find($id);
     }
@@ -5950,5 +6038,13 @@ GROUP BY
                 throw new InvalidArgumentException('Merchant Id is required for fetch query');
             }
         }
+    }
+    public function getPaymentsByIds($paymentIds, $from, $to)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+            ->whereIn(Entity::ID, $paymentIds)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->get()
+            ->toArray();
     }
 }

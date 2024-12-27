@@ -68,6 +68,35 @@ return [
         ]
     ],
 
+    'testCustomGefuFileWithExcludingthePOSTransactionsPositiveScenario' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/IUXvshap3Hbzos/send_gifu_file',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'status'  => 'mocked',
+                'bucket'  => 'test'
+            ]
+        ]
+    ],
+    'testCustomGefuFileWithExcludingthePOSTransactionsNegativeScenario' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/IUXvshap3Hbzos/send_gifu_file',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'status'  => 'mocked',
+                'bucket'  => 'test'
+            ]
+        ]
+    ],
+
     'testCustomGefuFileWithNonDsAndDsTransactionsCreation' => [
         'request' => [
             'method'  => 'POST',
@@ -128,7 +157,22 @@ return [
         ]
     ],
 
-    'testGefuFileCreationWithGatewayTerminalIdPrefix190' => [
+    'testGefuFileCreationWithDSRefunds' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/IUXvshap3Hbzos/send_gifu_file',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'status'  => 'mocked',
+                'bucket'  => 'test'
+            ]
+        ]
+    ],
+
+    'testGefuFileCreationWithPosPaymentsAndCardTid' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/IUXvshap3Hbzos/send_gifu_file',

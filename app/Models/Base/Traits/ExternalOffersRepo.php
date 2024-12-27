@@ -25,7 +25,8 @@ trait ExternalOffersRepo
 
     protected $entityName;
 
-    public function findByIdAndMerchantId($id, $merchantId, string $connectionType = null)
+    public function findByIdAndMerchantId(
+        $id, $merchantId, string $connectionType = null, $throwExceptionIfNotFoundInOE = false)
     {
         if ($this->fetchFromOE($merchantId) === true)
         {
@@ -36,38 +37,8 @@ trait ExternalOffersRepo
 
                 // fetch offer from API if it has limits
                 return $this->fetchOffersWithLimitsFromAPI([$offer])[0];
-            } catch (\Exception $e)
-            {
-                $this->trace->count(
-                    Metric::OFFERS_ENGINE_FETCH_BY_ID_FAIL, [
-                        'route' => app('api.route')->getCurrentRouteName(),
-                    ]);
-
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::OFFERS_ENGINE_FETCH_BY_ID_FAIL, [
-                ]);
             }
-        }
-        // if experiment is false or exception caught, calls parent repo function but the offer response does not change
-        return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
-    }
-
-    public function findByPublicIdAndMerchantId($id, $merchantId, string $connectionType = null)
-    {
-        $id = OfferEntity::verifyIdAndSilentlyStripSign($id);
-
-        if ($this->fetchFromOEFindByPublicIdMigration($merchantId) === true)
-        {
-            try
-            {
-                // add prefix to id
-                $offer = $this->fetchExternalEntity('offer_' . $id, $merchantId);
-
-                // fetch offer from API if it has limits
-                return $this->fetchOffersWithLimitsFromAPI([$offer])[0];
-            } catch (\Throwable $e)
+            catch (\Exception $offerEngineException)
             {
                 $this->trace->count(
                     Metric::OFFERS_ENGINE_FETCH_BY_ID_FAIL, [
@@ -75,14 +46,64 @@ trait ExternalOffersRepo
                 ]);
 
                 $this->trace->traceException(
-                    $e,
+                    $offerEngineException,
                     Trace::ERROR,
                     TraceCode::OFFERS_ENGINE_FETCH_BY_ID_FAIL, [
+                    ]);
+
+                if (($offerEngineException->getCode() === ErrorCode::BAD_REQUEST_EXTERNAL_OFFER_NOT_FOUND) and
+                    ($throwExceptionIfNotFoundInOE === true))
+                {
+                    throw $offerEngineException;
+                }
+            }
+        }
+
+        // if experiment is false or exception caught, calls parent repo function but the offer response does not change
+        return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
+    }
+
+    public function findById($id, string $connectionType = null)
+    {
+        if ($this->fetchByIdFromOE($id) === true)
+        {
+            try
+            {
+                // add prefix to id
+                $offer = $this->fetchAdminExternalEntityById('offer_' . $id);
+
+                // fetch offer from API if it has limits
+                return $this->fetchOffersWithLimitsFromAPI([$offer])[0];
+            } catch (\Throwable $e)
+            {
+                $this->trace->count(
+                    Metric::OFFERS_ENGINE_AGGREGATE_FETCH_BY_ID_FAIL, [
+                    'route' => app('api.route')->getCurrentRouteName(),
+                ]);
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::OFFERS_ENGINE_AGGREGATE_FETCH_BY_ID_FAIL, [
                     ]);
             }
         }
         // if experiment is false or exception caught, calls parent repo function but the offer response does not change
-        return parent::findOrFail($id, ['*'], $connectionType);
+        return $this->findOrFail($id, ['*'], $connectionType);
+    }
+
+    public function findByPublicId($publicId, string $connectionType = null)
+    {
+        $id = OfferEntity::verifyIdAndStripSign($publicId);
+
+        return $this->findById($id, $connectionType);
+    }
+
+    public function findByPublicIdAndMerchantId($id, $merchantId, string $connectionType = null)
+    {
+        $id = OfferEntity::verifyIdAndSilentlyStripSign($id);
+
+        return $this->findByIdAndMerchantId($id, $merchantId, $connectionType);
     }
 
     public function findByIdAndMerchant(
@@ -401,6 +422,37 @@ trait ExternalOffersRepo
             ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY, null, $data);
     }
 
+    private function fetchAdminExternalEntityById($id, $input = [])
+    {
+        $class = Entity::getExternalRepoSingleton($this->entity);
+
+        try
+        {
+            return $class->fetchAdminOfferById($id, $input);
+
+        } catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                [
+                    'data' => $e->getMessage()
+                ]);
+        }
+
+        $data = [
+            'model' => 'offer',
+            'attributes' => [
+                'id' => $id,
+                'input' => $input,
+            ],
+            'operation' => 'findById'
+        ];
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY, null, $data);
+    }
+
     private function validateExternalFetchEnabled()
     {
         if (app()->runningUnitTests() === true) {
@@ -414,13 +466,15 @@ trait ExternalOffersRepo
     private function fetchFromOE(string $merchantId): bool
     {
         return ($this->validateExternalFetchEnabled() === true)
-        && ($this->core->shouldRouteToOffersEngine($merchantId, Constants::OFFERS_ENGINE_FETCH_EXP) === true);
+        && ($this->core->shouldRouteToOffersEngine(
+            $merchantId, Constants::OFFERS_ENGINE_FETCH_EXP) === true);
     }
 
-    private function fetchFromOEFindByPublicIdMigration(string $merchantId): bool
+    private function fetchByIdFromOE(string $id): bool
     {
         return ($this->validateExternalFetchEnabled() === true)
-               && ($this->core->shouldRouteToOffersEngineForPayments($merchantId, Constants::OFFERS_ENGINE_FIND_BY_PUBLIC_ID_MIGRATION_EXP) === true);
+               && ($this->core->shouldRouteToOffersEngineForPayments(
+                    $id, Constants::OFFERS_ENGINE_ADMIN_FETCH_OFFERS_EXP) === true);
     }
 
     private function fetchRemainingFromAPI(array $offerIds, $offerEngineOffers)
@@ -513,5 +567,46 @@ trait ExternalOffersRepo
             );
         }
     }
-}
 
+    private function fetchExternalEntity($id, $merchantId, $input = [])
+    {
+        $class = Entity::getexternalRepoSingleton($this->entity);
+
+        try
+        {
+            $entity = $class->fetch($this->entity, $id, $merchantId, $input);
+
+            if (empty($entity) === false)
+            {
+                $entity->setExternal(true);
+
+                return $entity;
+            }
+
+        }
+        catch (\Throwable $e)
+        {
+            App::getFacadeRoot()['trace']->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_FETCH_REQUEST_FAILURE,
+                [
+                    'data' => $e->getMessage()
+                ]);
+
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_EXTERNAL_OFFER_NOT_FOUND)
+            {
+                throw $e;
+            }
+        }
+
+        $data = [
+            'model'      => $this->entityName,
+            'attributes' => $id,
+            'operation'  => 'find'
+        ];
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+}

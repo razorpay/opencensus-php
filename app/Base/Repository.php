@@ -171,6 +171,16 @@ class Repository extends \Razorpay\Spine\Repository
         return $query->findOrFailPublic($id, $columns);
     }
 
+    public function findOrFailArchivedPublic($id, $columns = ['*'], string $connectionType = null)
+    {
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ " . implode(', ', $columns)));
+
+        return $query->findOrFailPublic($id);
+    }
+
     public function findOrFailPublicWithRelations(
         string $id,
         array $relations = [],
@@ -624,6 +634,16 @@ class Repository extends \Razorpay\Spine\Repository
         return $query->find($id, $columns);
     }
 
+    public function findArchived($id, $columns = array('*'), string $connectionType = null)
+    {
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ " . implode(', ', $columns)));
+
+        return $query->find($id);
+    }
+
     /**
      * Overwriting this here, as we want to reuse the find method overridden
      * in certain repository classes (required for query caching). We want to execute find and throw exception
@@ -637,6 +657,13 @@ class Repository extends \Razorpay\Spine\Repository
     public function findOrFail($id, $columns = array('*'), string $connectionType = null)
     {
         if ( ! is_null($model = $this->find($id, $columns, $connectionType))) return $model;
+
+        $this->processDbQueryFailure('find', array('id' => $id, 'columns' => $columns));
+    }
+
+    public function findArchivedOrFail($id, $columns = array('*'), string $connectionType = null)
+    {
+        if ( ! is_null($model = $this->findArchived($id, $columns, $connectionType))) return $model;
 
         $this->processDbQueryFailure('find', array('id' => $id, 'columns' => $columns));
     }

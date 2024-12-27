@@ -41,7 +41,8 @@ class Service extends Base\Service
         'capital_cards_client',
         'loc',
         'magic_checkout_service',
-        'payment_links'
+        'payment_links',
+        'pgos'
     ];
 
     public function addFeatures(

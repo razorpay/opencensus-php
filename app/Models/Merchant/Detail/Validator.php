@@ -1267,8 +1267,7 @@ class Validator extends Base\Validator
 
     public function validateActivationStatus(array $input)
     {
-        $validActivationStatuses = ($this->checkIfKQUStateExperimentEnabled($this->entity->merchant->getId()) === true) ?
-            array_keys(Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_KQU) : array_keys(Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING);
+        $validActivationStatuses =  array_keys((new Core())->getActivationStatusMappingWithNCAutomation($this->entity->merchant->getId()));
 
         $merchantOnboardingProxyController = new MerchantOnboardingProxyController();
 
@@ -1331,7 +1330,8 @@ class Validator extends Base\Validator
             return Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_LINKED_ACCOUNT[$currentStatus];
         }
 
-        $allowedNextActivationStatus = ($this->checkIfKQUStateExperimentEnabled($this->entity->merchant->getId()) === true) ? Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_KQU[$currentStatus] : Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$currentStatus];
+        $allowedNextActivationStatusMap = (new Core())->getActivationStatusMappingWithNCAutomation($this->entity->merchant->getId());
+        $allowedNextActivationStatus = $allowedNextActivationStatusMap[$currentStatus];
 
         $merchantOnboardingProxyController = new MerchantOnboardingProxyController();
 

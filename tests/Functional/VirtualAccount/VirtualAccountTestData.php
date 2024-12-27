@@ -23,7 +23,7 @@ return [
         ],
     ],
 
-    'testCreateVirtualAccountForCollectWithReceiverBankAccount' => [
+    'testCreateVirtualAccountForCollectxWithReceiverBankAccount' => [
         'request' => [
             'url' => '/virtual_accounts',
             'method' => 'post',
@@ -50,7 +50,7 @@ return [
         ]
     ],
 
-    'testCreateVirtualAccountForCollectWithReceiverVpa' => [
+    'testCreateVirtualAccountForCollectxWithReceiverVpa' => [
         'request' => [
             'url' => '/virtual_accounts',
             'method' => 'post',
@@ -75,6 +75,30 @@ return [
                 ],
             ],
         ]
+    ],
+
+    'testCreateVirtualAccountForCollectx_RblMigratedMerchantVACreationBlock' => [
+        'request' => [
+            'url' => '/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'description'     => 'VA for CollectX test',
+                'receivers'   => [
+                    'types' => [
+                        'bank_account',
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VA_CREATION_BLOCKED_FOR_RBL_MERCHANTS
+        ],
     ],
 
     'testCreateVirtualAccountForBankingWithVPAReceiver' => [

@@ -5425,10 +5425,10 @@ class Service extends Base\Service
             case DetailConstants::SAVE_MERCHANT_DETAILS_FOR_ACTIVATION:
                 unset($input["action"]);
                 $subMerchant = $this->repo->merchant->findOrFail($merchantId);
-                if (empty($this->app['basicauth']->getMerchant()) === true)
-                {
-                    $this->app['basicauth']->setMerchant($subMerchant);
-                }
+                $this->merchant = $subMerchant;
+                $this->trace->info(TraceCode::SAVE_MERCHANT_DETAILS_FOR_ACTIVATION, [
+                    'merchant_id'          => $merchantId
+                ]);
                 return $this->saveMerchantDetailsForActivation($input);
             default:
                 $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);

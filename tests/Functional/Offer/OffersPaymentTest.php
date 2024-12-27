@@ -2,13 +2,19 @@
 
 namespace RZP\Tests\Functional\Offer;
 
+use Mockery;
 use Carbon\Carbon;
-use phpDocumentor\Reflection\Types\This;
-use RZP\Error\PublicErrorDescription;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Models\Order\Entity;
-use RZP\Tests\Functional\Order\OrderTest;
+use RZP\Error\ErrorCode;
+use RZP\Http\Request\Requests;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Admin\Service as AdminService;
+use RZP\Services\OffersEngine as OffersEngine;
+use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OffersPaymentTest extends TestCase
@@ -68,7 +74,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -126,7 +132,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(500000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(25900, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -292,7 +298,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -330,7 +336,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
     }
@@ -363,7 +369,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
     }
@@ -398,7 +404,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
     }
@@ -433,7 +439,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
     }
@@ -466,7 +472,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
     }
@@ -501,7 +507,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
     }
@@ -537,7 +543,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -574,7 +580,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
 
@@ -732,7 +738,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -789,7 +795,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -843,7 +849,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -883,7 +889,7 @@ class OffersPaymentTest extends TestCase
         $order = $this->getLastEntity('order', true);
         $this->assertEquals(100000, $order['amount']);
 
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
 
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
@@ -905,7 +911,7 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals($order['status'], 'paid');
 
         $discount = $this->getLastEntity('discount', true);
-        $offer = $this->getLastEntity('offer', true);
+        $offer = $this->getLastEntity('offer');
         $this->assertEquals(100000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
         $this->assertEquals($order['id'], $discount['order_id']);
@@ -1144,4 +1150,78 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals('100000', $payment['amount']);
     }
 
+    public function testExternalFetchErrorPropagationPaymentSuccess()
+    {
+        $this->markTestSkipped("marking this as skipped due to concurrency issues with config keys.")
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => true,
+                ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED        => true,
+            ]);
+
+        $this->mockCardVaultWithCryptogram();
+
+        $offer = $this->fixtures->create('offer');
+
+        $order = $this->fixtures->order->createWithOffers($offer, ['amount' => 100000]);
+
+        $payment = $this->fixtures->create('payment', [
+            PaymentEntity::ORDER_ID => $order->getId(),
+        ]);
+
+        $this->fixtures->create('entity_offer', [
+            'entity_id'   => $payment->getId(),
+            'entity_type' => 'payment',
+            'offer_id'    => $offer->getId(),
+        ]);
+
+        $offersEngineMock = Mockery::mock('RZP\Services\OffersEngine', [$this->app])
+                                   ->makePartial()
+                                   ->shouldAllowMockingProtectedMethods();
+
+        $offersEngineMock->shouldReceive('sendRequest')
+                         ->andReturnUsing(
+                             function(string $endpoint,
+                                      string $method,
+                                      array  $data = [],
+                                      bool   $throwExceptionOnFailure = true,
+                                      int    $timeout = 60
+                             ) use ($offer) {
+
+                                 self::assertEquals('v1/offers/' . $offer->getPublicId() . '?publisher_id=rzp.merchant.10000000000000', $endpoint);
+                                 self::assertEquals("GET", $method);
+                                 self::assertEmpty($data);
+                                 self::assertTrue($throwExceptionOnFailure);
+
+                                 $response = [
+                                     "code"    => 3,
+                                     "message" => "BAD_REQUEST_ENTITY_NOT_FOUND",
+                                     "details" => [
+                                         [
+                                             "@type"       => "type.googleapis.com/offers_engine.error.v1.Error",
+                                             "code"        => "BAD_REQUEST_ERROR",
+                                             "description" => "The requested entity does not exist",
+                                             "source"      => "client",
+                                             "reason"      => "validation_error"
+                                         ]
+                                     ]
+                                 ];
+
+                                 return (new OffersEngine($this->app))->checkAndParseError($response, 400, $throwExceptionOnFailure);
+                             }
+                         )->times(1);
+
+        $this->app['offers_engine'] = $offersEngineMock;
+
+        $response = $payment->getOffer();
+
+        $this->assertEquals($offer->getId(), $response['id']);
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => false,
+                ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED        => false,
+            ]);
+    }
 }

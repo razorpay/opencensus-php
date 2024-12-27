@@ -822,6 +822,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceShieldEvaluate();
 
+        $this->registerDuplicatePayoutEvaluateClient();
+
         $this->registerPayoutServiceWorkflow();
 
         $this->registerPayoutServiceGet();
@@ -895,8 +897,6 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerAuthzXPlatformEnforcerClient();
 
         $this->registerAuthzXPlatformAdminClient();
-
-        $this->registerAuthzOmniPlatformAdminClient();
 
         $this->registerPartnerships();
 
@@ -1659,40 +1659,6 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
-    protected function registerAuthzOmniPlatformAdminClient()
-    {
-        $this->app->singleton('authzOmniPlatformAdmin', function($app)
-        {
-            $config = $app['config']->get('applications.authzOmniPlatformAdmin');
-
-            $mock = $config['mock'];
-
-            if ($mock === true)
-            {
-                return new Mock\AuthzAdminClient();
-            }
-
-            $client = new Client([
-                'base_uri' => $config['url'],
-                'timeout'  => self::AUTHZ_CLIENT_TIMEOUT_SEC,
-                'auth'     => [
-                    $config['auth']['username'],
-                    $config['auth']['password'],
-                ],
-            ]);
-
-            $configuration = new AdminConfiguration;
-
-            $configuration->setUsername($config['auth']['username']);
-
-            $configuration->setPassword($config['auth']['password']);
-
-            $configuration->setHost($config['url']);
-
-            return new AdminAPIApi($client, $configuration);
-        });
-    }
-
     protected function registerShield()
     {
         $this->app->singleton('shield.service', function($app)
@@ -2027,6 +1993,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\Shield::PAYOUT_SERVICE_SHIELD_EVALUATE, function($app)
         {
             return new PayoutService\Shield($app);
+        });
+    }
+
+    protected function registerDuplicatePayoutEvaluateClient()
+    {
+        $this->app->singleton(PayoutService\DuplicatePayoutEvaluate::DUPLICATE_PAYOUT_EVALUATE, function($app)
+        {
+            return new PayoutService\DuplicatePayoutEvaluate($app);
         });
     }
 

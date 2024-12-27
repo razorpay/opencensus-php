@@ -563,6 +563,8 @@ class Processor
 
     const ENABLE_REARCH_EMI_PAYMENTS_FLOW = 'enable_rearch_emi_payments_flow';
 
+    const ENABLE_REARCH_CARD_RECURRING_FLOW = 'enable_rearch_card_recurring_flow';
+
     const CAPTURE_VERIFY_METRO_TOPIC        = 'rearch-capture-verify';
 
     const SODEXO = 'sodexo';
@@ -1334,6 +1336,73 @@ class Processor
         return false;
     }
 
+    private function evaluateSplitzExperimentForCardRecurringRearchMerchant($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.enable_rearch_card_recurring_flow'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant === 'enable') {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateSplitzExperimentForCardRecurringRearchHub($merchant, $cardMandate)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.enable_rearch_card_recurring_flow_hub'),
+                'request_data'  => json_encode(
+                    [
+                        'mandate_hub' => $cardMandate->getMandateHub(),
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant === 'enable') {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR
+            );
+        }
+        return false;
+    }
+
     private function isOpgspImportMerchant(): bool
     {
         return $this->merchant->isOpgspImportEnabled();
@@ -1408,7 +1477,7 @@ class Processor
              * Rearch criteria
              * 1. Route should be payment/create/ajax
              * 2. Method should be card
-             * 3. Non recurring payment
+             * 3. Non recurring payment except card subsequent
              * 4. Regular card payment
              * 5. Merchant shouldn't be fee bearer
              * 6. Capture queue should be implemented in the second ramp
@@ -1443,7 +1512,8 @@ class Processor
                 (empty($input[Payment\Entity::METHOD]) === true) or
                 (($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD) and
                 ($input[Payment\Entity::METHOD] !== Payment\METHOD::EMI)) or
-                (empty($input[Payment\Entity::RECURRING]) === false) or
+                ((empty($input[Payment\Entity::RECURRING]) === false) and
+                    ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD))  or
                 (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false) or
                 (empty($input[Payment\Entity::INVOICE_ID]) === false) or
                 (empty($input[Payment\Entity::TOKEN_ID]) === false) or
@@ -1673,7 +1743,7 @@ class Processor
                 {
 
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "other_apps",
+                        'reason' => $order->getProductType(),
                         'merchant_id' => $merchant->getId(),
                     ]);
                     return false;
@@ -1706,6 +1776,129 @@ class Processor
                    return false;
                }
             }
+
+            if ($input[Payment\Entity::METHOD] == Payment\METHOD::CARD and (empty($input[Payment\Entity::RECURRING]) === false))
+            {
+                if ($currentRouteName != 'payment_create_recurring')
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "route_not_ramped",
+                        'route_name' => $currentRouteName,
+                        'merchant_id' => $merchant->getId(),
+                        'flow' => 'card_recurring',
+                    ]);
+                    return false;
+                }
+
+                if($this->inputCurrencyNotINR($input)){
+                    return false;
+                }
+
+                $result = $this->evaluateSplitzExperimentForCardRecurringRearchMerchant($merchant);
+                if ($result === false) {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "merchant_splitz_experiment",
+                        'merchant_id' => $merchant->getId(),
+                        'flow' => 'card_recurring',
+                    ]);
+                    return false;
+                }
+
+                $tokenId = $input[Payment\Entity::TOKEN];
+                $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
+                $card = $this->repo->card->fetchForToken($token);
+                //check if card is not null
+                if(empty($card) === true)
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "token_card_empty",
+                        'merchant_id' => $merchant->getId(),
+                        'flow' => 'card_recurring',
+                    ]);
+
+                    return false;
+                }
+                if ($card->isInternational() === true)
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "international_card",
+                        'merchant_id' => $merchant->getId(),
+                        'flow' => 'card_recurring',
+                    ]);
+                    return false;
+                }
+
+                // Check card mandate created date and mandate hub for ramp up
+                $cardMandate = $token->cardMandate;
+                $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                    'createdAt' => $cardMandate->getCreatedAt(),
+                    'merchant_id' => $merchant->getId(),
+                    'flow' => 'card_recurring',
+                ]);
+                if($cardMandate === null or $cardMandate->getCreatedAt() > 1733920200)
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "card_mandate_not_migrated",
+                        'merchant_id' => $merchant->getId(),
+                        'card_mandate_id' => $cardMandate->getId(),
+                        'flow' => 'card_recurring',
+                    ]);
+                    return false;
+                }
+                $result = $this->evaluateSplitzExperimentForCardRecurringRearchHub($merchant, $cardMandate);
+                if ($result === false) {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "hub_splitz_experiment",
+                        'merchant_id' => $merchant->getId(),
+                        'flow' => 'card_recurring',
+                    ]);
+                    return false;
+                }
+
+                $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                    'recurring_card_log' => $card->getId(),
+                    'merchant_id' => $merchant->getId(),
+                ]);
+
+                $cardInput = [
+                    Card\Entity::NAME                   => Card\Entity::DUMMY_NAME,
+                    Card\Entity::NUMBER                 => Card\Entity::DUMMY_CARD_NUMBER,
+                    Card\Entity::COUNTRY                => $card->getCountry(),
+                    Card\Entity::ISSUER                 => $card->getIssuer(),
+                    Card\Entity::TYPE                   => $card->getType(),
+                    Card\Entity::NETWORK                => $card->getNetwork(),
+                    Card\Entity::SUBTYPE                => $card->getSubType(),
+                    Card\Entity::CATEGORY               => $card->getCategory(),
+                    Card\Entity::INTERNATIONAL          => $card->isInternational(),
+                    Card\Entity::EXPIRY_MONTH           => $card->getTokenExpiryMonth(),
+                    Card\Entity::EXPIRY_YEAR            => $card->getTokenExpiryYear(),
+                    Card\Entity::CVV                    => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
+                    Card\Entity::VAULT_TOKEN            => $card->getVaultToken(),
+                    Card\Entity::TOKEN_IIN              => $card->getTokenIin(),
+                    Card\Entity::LAST4                  => $card->getLast4(),
+                    Card\Entity::TOKENISED              => true,
+                    Card\Entity::REWARD                 => $input['card']['reward']
+                ];
+                $input[Payment\Entity::CARD] = $cardInput;
+                $input[Payment\Entity::API_VAULT] = $card->getVault();
+                $recurringToken = [
+                    Token\Entity::CARD_MANDATE_ID => $token->getCardMandateId(),
+                    Token\Entity::ENTITY_ID => $token->getEntityId(),
+                    Token\Entity::ENTITY_TYPE => $token->getEntityType(),
+                    Token\Entity::TERMINAL_ID => $token->getTerminalId(),
+                    Token\Entity::CARD_ID => $token->getCardId(),
+                    Token\Entity::RECURRING_STATUS => $token->getRecurringStatus(),
+                    Token\Entity::RECURRING_FAILURE_REASON => $token->getRecurringFailureReason(),
+                    Token\Entity::CONFIRMED_AT => $token->getConfirmedAt(),
+                    Token\Entity::MAX_AMOUNT => $token->getMaxAmount(),
+                    Token\Entity::EXPIRED_AT => $token->getExpiredAt(),
+                    Token\Entity::TOKEN => $token->getToken(),
+                ];
+                $input["recurring_token"] = $recurringToken;
+
+                return true;
+            }
+
 
             if ((Arr::get($input, Payment\Entity::METHOD) === Payment\METHOD::CARD) &&
                 (Arr::get($input, Payment\Entity::PROVIDER) === self::SODEXO)
@@ -1831,6 +2024,7 @@ class Processor
                             }
                             if ($card->getVault() === Card\Vault::PROVIDERS || $card->getVault() === Card\Vault::AXIS)
                             {
+                                $networkToken = (new TokenCore())->fetchToken($token, false);
                                 // Adding this check to route issuer or dual token payments on rearch.
                                 // In this case we would fetch cryptogram on the CPS service & this is how it should be for all network tokenised payments
                                 $issuer_result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_ISSUER_AND_DUAL_TOKEN_PAYMENTS_VIA_PGROUTER, $this->mode);
@@ -1860,6 +2054,25 @@ class Processor
                                     $input[Payment\Entity::API_VAULT] = $card->getVault();   // We are passing API_VALUT key to CPS to send it to router so that it can provide us terminals acc.
                                     // explicitly adding token_id in token since for global customer we add token instead of token_id
                                     $input[Payment\Entity::TOKEN] = $token->getId();
+
+                                    //Iterating over fetched token array to extract trid and token reference number for hdfc_issuer payments
+                                    foreach ($networkToken as $index => $element) {
+                                        if (isset($element['provider_name']) && $element['provider_name'] == 'hdfc') {
+                                            $tokenisedTerminalId = $element[E::TOKENISED_TERMINAL_ID] ?? '';
+                                            $tokenisedTerminal = $this->app['terminals_service']->fetchTerminalById($tokenisedTerminalId);
+
+
+                                            assertTrue(empty($tokenisedTerminal) === false); //trid is needed for hdfc issuer token
+
+                                            $trid = !empty($tokenisedTerminal) ? $tokenisedTerminal[E::GATEWAY_MERCHANT_ID] : '';
+                                            $trn = $element[E::PROVIDER_DATA][E::TOKEN_REFERENCE_NUMBER] ?? '';
+
+                                            $cardInput[E::TOKEN_REFERENCE_NUMBER ]=  $trn;
+                                            $cardInput[E::TOKEN_REFERENCE_ID ]= $trid;
+
+                                        }
+                                    }
+                                    $input[Payment\Entity::CARD] = $cardInput;
                                     $this->trace->info(
                                         TraceCode::DUAL_TOKENISATION_REARCH,
                                         [
@@ -2014,6 +2227,7 @@ class Processor
             if((in_array($iin->getNetworkCode(), $supportedNetworks, true) === false)){
                 $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                     'reason' => "network_not_supported",
+                    'network' => $iin->getNetworkCode(),
                     'merchant_id' => $merchant->getId(),
                 ]);
                 return false;
@@ -2145,6 +2359,25 @@ class Processor
 
             if ($merchant->isFeatureEnabled('raas') === true)
             {
+                $apiBypassPaymentId = $this->app['request']->header(RequestHeader::X_API_BYPASS_PAYMENT_ID);
+
+                $allowed = $this->isOptimizerProxyHostValid();
+
+                if ($input[Payment\Entity::METHOD] === Payment\METHOD::CARD and
+                    empty($apiBypassPaymentId) === false and $allowed === true and
+                    $this->enableOptimizerCardPaymentFetchProviderCall($merchant->getId())
+                )
+                {
+                    $optimizerProviders = $this->app['optimizer_core_service']->fetchProviders($apiBypassPaymentId);
+                    if(isset($optimizerProviders['providers']) and sizeof($optimizerProviders['providers']) !== 0 and
+                        isset($optimizerProviders['providers'][0]['provider_name']) and
+                        $optimizerProviders['providers'][0]['provider_name'] === 'razorpay'
+                    )
+                    {
+                        return true;
+                    }
+                }
+
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::RAAS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
                 if ($result !== 'on') {
@@ -4426,8 +4659,36 @@ class Processor
         }
     }
 
+    protected function isCollectxWebhookDisableExperimentEnabled(string $merchantID): bool
+    {
+        try
+        {
+            $properties = [
+                "id" => $merchantID,
+                "experiment_name" => RazorxTreatment::COLLECTX_DISABLE_WEBHOOKS,
+                'request_data' => json_encode(['id' => $merchantID])
+            ];
+
+            return (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($properties, 'enable') === true;
+        }
+        catch(\Throwable $ex)
+        {
+            return false;
+        }
+    }
+
     public function eventPaymentCreated()
     {
+        // TODO: Remove this check once rbl penny testing is done for collectx
+        $merchantID = $this->payment->getMerchantId();
+
+        if ($merchantID !== null &&
+            $this->payment[Payment\Entity::REFERENCE14] === 'collectx' &&
+            $this->isCollectxWebhookDisableExperimentEnabled($merchantID) === true)
+        {
+            return;
+        }
+
         // the scenario where same payment id gets generated in live and test mode is not handled currently.
         $cacheKey = 'EVENT_PAYMENT_CREATED_FIRED_'.$this->payment->getPublicId();
 
@@ -10180,6 +10441,28 @@ class Processor
         }
     }
 
+    // Check for host in header to avoid hackers
+    protected function isOptimizerProxyHostValid(): bool
+    {
+        $requestHost = $this->app['request']->header('Host');
+
+        $allowed = false;
+
+        // Only allowed in lower envs.
+        // And in prod with correct host. This is to avoid hackers using this header to change payment ID
+
+        if(app()->isEnvironmentProduction() === false)
+        {
+            $allowed = true;
+        }
+        else if(app()->isEnvironmentProduction() === true &&
+            ($requestHost === "prod-api-int.razorpay.com" || $requestHost === "api-dark-int.razorpay.com"))
+        {
+            $allowed = true;
+        }
+        return $allowed;
+    }
+
     /**
      * When customer is fee-bearer, the amount received from checkout is
      * inclusive of fees. (Fees is not received from checkout when
@@ -14034,6 +14317,42 @@ class Processor
         }
 
         return $outputArray;
+    }
+
+    /*
+     * enableOptimizerCardPaymentFetchProviderCall determines whether we can make fetch provider call for
+     * optimizer card payment routing through payments-card service
+     */
+    private function enableOptimizerCardPaymentFetchProviderCall($merchantID): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $this->app['config']->get('app.optimizer_card_payment_fetch_provider_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantID]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::OPTIMIZER_CARD_PAYMENT_FETCH_PROVIDER_SPLITZ_RESULT, [
+                'merchant_id' => $merchantID,
+                'variant' => $variant,
+            ]);
+
+            return $variant === 'variant_on';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::OPTIMIZER_CARD_PAYMENT_FETCH_PROVIDER_SPLITZ_ERROR);
+        }
+
+        return false;
     }
 
 }

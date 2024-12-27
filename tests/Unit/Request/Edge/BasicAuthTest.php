@@ -178,6 +178,7 @@ class BasicAuthTest extends TestCase
                               'hasLoginPermission'              => true,
                               'hasEditPermission'               => false,
                               'hasNonActivatedEditPermission'   => false,
+                              'hasActivatedEditPermission'      => false,
                           ]);
 
         $mock->expects($this->once())
@@ -233,6 +234,7 @@ class BasicAuthTest extends TestCase
                               'hasLoginPermission'              => true,
                               'hasEditPermission'               => false,
                               'hasNonActivatedEditPermission'   => true,
+                              'hasActivatedEditPermission'      => false,
                           ]);
 
         $mock->expects($this->exactly(2))
@@ -246,6 +248,75 @@ class BasicAuthTest extends TestCase
         $mock->expects($this->once())
              ->method('wasMerchantEverActivated')
              ->willReturn(false);
+
+        $this->merchantRepoMock
+            ->shouldReceive('getMerchantUserMapping')
+            ->andReturn($merchantUserMapping);
+
+        $mock->expects($this->exactly(2))
+             ->method('isProductBanking')
+             ->willReturn(false);
+
+        $mock->init();
+        $authClas = KeyAuthCreds::class;
+        $authCreds = new $authClas($this->app);
+        $authCreds->creds['key_id'] = '1000000razorpay';
+        $mock->setAuthCreds($authCreds);
+
+        $mock->setUserRole('user_id');
+
+        $role = $mock->getUserRole();
+
+        self::assertEquals(Role::OWNER, $role);
+
+    }
+
+    public function testSetUserRoleIsActivatedEditWhenAdminLoggedInAsMerchant()
+    {
+        $this->repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
+        $this->merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
+        $merchantUserMapping =  new MerchantUserEntity();
+
+        $merchantUserMapping->setAttribute(MerchantUserEntity::ROLE, Role::OWNER);
+
+        $mock = $this->getMockBuilder(BasicAuth::class)
+                     ->setConstructorArgs([$this->app])
+                     ->onlyMethods(['isAdminLoggedInAsMerchantOnDashboard', 'getAdminIdHeader','isProxyAuth','isProductBanking','getAdminPermissions','wasMerchantEverActivated', 'getUserRoleFromEntity'])
+                     ->getMock();
+        $this->app->instance('repo', $this->repoMock);
+
+        $this->repoMock->shouldReceive('driver')->
+        with('merchant')->andReturn($this->merchantRepoMock);
+
+        $mock->expects($this->exactly(2))
+             ->method('isAdminLoggedInAsMerchantOnDashboard')
+             ->willReturn(true);
+
+        $mock->expects($this->exactly(1))
+             ->method('getUserRoleFromEntity')
+             ->willReturn(Role::OWNER);
+
+        $mock->expects($this->once())
+             ->method('getAdminPermissions')
+             ->willReturn([
+                              'hasReadPermission'               => true,
+                              'hasLoginPermission'              => true,
+                              'hasEditPermission'               => false,
+                              'hasNonActivatedEditPermission'   => false,
+                              'hasActivatedEditPermission'      => true,
+                          ]);
+
+        $mock->expects($this->exactly(2))
+             ->method('isProxyAuth')
+             ->willReturn(true);
+
+        $mock->expects($this->once())
+             ->method('getAdminIdHeader')
+             ->willReturn('admi_1234567890123');
+
+        $mock->expects($this->once())
+             ->method('wasMerchantEverActivated')
+             ->willReturn(true);
 
         $this->merchantRepoMock
             ->shouldReceive('getMerchantUserMapping')
@@ -304,6 +375,7 @@ class BasicAuthTest extends TestCase
                               'hasLoginPermission'              => true,
                               'hasEditPermission'               => false,
                               'hasNonActivatedEditPermission'   => true,
+                              'hasActivatedEditPermission'      => false,
                           ]);
 
         $mock->expects($this->exactly(2))

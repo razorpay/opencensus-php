@@ -320,8 +320,7 @@ class Core extends QrCode\Core
 
     public function close($qrCode, $closeReason)
     {
-        if (($this->generator->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->merchant->getId()) === true) and
-            ($qrCode->getUsageType() === UsageType::MULTIPLE_USE))
+        if ($qrCode->getUsageType() === UsageType::MULTIPLE_USE)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CLOSE_STATIC_QR_CODE_FAILURE);
         }
@@ -551,7 +550,7 @@ class Core extends QrCode\Core
 //            return null;
 //        }
 
-        $vpa = $input['vpa'];
+        $vpa = strtolower($input['vpa']);
         $gateway = $this->fetchGatewayFromVpa($vpa);
 
         $terminalDetails = [
@@ -588,7 +587,7 @@ class Core extends QrCode\Core
 
     public function fetchGatewayFromVpa(string $vpa): ?string
     {
-        $vpaSplit = explode("@", $vpa);
+        $vpaSplit = explode("@", strtolower($vpa));
         $gateway = null;
 
         if (isset($vpaSplit[1])) {

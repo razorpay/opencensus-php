@@ -66,6 +66,19 @@ class Validator extends Base\Validator
         Entity::UPI                 => 'sometimes|array',
     ];
 
+    protected static $adminFetchMultipleRules = [
+        Entity::MERCHANT_ID => 'sometimes|unsigned_id',
+        'page'              => 'required|int|min:1|max:1000',
+        'page_size'         => 'required|int|min:1|max:50'
+    ];
+
+    protected static $adminFetchRules = [
+        'offer_id'          => 'required|unsigned_id',
+        Entity::MERCHANT_ID => 'sometimes|unsigned_id',
+        'page'              => 'required|int|in:1',
+        'page_size'         => 'required|int|in:1'
+    ];
+
     protected static $createBulkRules = [
         'offer'          => 'associative_array',
         'merchant_ids'   => 'array',
@@ -146,6 +159,18 @@ class Validator extends Base\Validator
         'card.token'                    => 'sometimes',
         'offers'                        => 'required|array',
         'order_id'                      => 'required|string',
+    ];
+
+    protected static $fetchOfferCreateInfoRules = [
+        'merchant_id'               => 'required|unsigned_id',
+        'offer'                     => 'required|array',
+        'offer.emi_durations'       => 'array',
+        'offer.emi_durations.*'     => 'integer',
+        'offer.is_no_cost_emi'      => 'required|boolean',
+        'offer.issuer'              => 'sometimes|string',
+        'offer.payment_network'     => 'sometimes|string',
+        'offer.payment_method'      => 'sometimes|string',
+        'offer.payment_method_type' => 'sometimes|string',
     ];
 
     protected static $allowedPspApps = [
@@ -609,7 +634,8 @@ class Validator extends Base\Validator
 
     protected function validateMerchantCategory(array $input)
     {
-        if ($this->entity->merchant === null){
+        if ($this->entity->merchant === null or
+            $this->entity->getOfferCreateExpValue() === true){
             return null;
         }
 
@@ -624,7 +650,9 @@ class Validator extends Base\Validator
 
     protected function validateOfferFeatureBlock(array $input)
     {
-        if ($this->entity->merchant === null){
+        if (($this->entity->merchant === null) or
+            ($this->entity->getOfferCreateExpValue() === true))
+        {
             return null;
         }
         $hasBlockingFeature = $this->entity->merchant->isFeatureEnabled(Constants::BLOCK_OFFER_CREATION);

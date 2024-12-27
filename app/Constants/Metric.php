@@ -183,6 +183,18 @@ class Metric
 
     const APPROVED_PAYOUT_PROCESSOR_QUEUE_FAILURE_COUNT = 'approved_payout_processor_queue_failure_count';
 
+    const DUPLICATE_PAYOUT_EVAlUATE_NO_CONCRETE_DECISION = 'duplicate_payout_evaluate_no_concrete_decision';
+
+    const DUPLICATE_PAYOUT_EVAlUATE_FOUND_PAYOUT         = 'duplicate_payout_evaluate_found_payout';
+
+    const DUPLICATE_PAYOUT_EVAlUATE_HASH_LAG_OCCURRED = 'duplicate_payout_evaluate_hash_lag_occurred';
+
+    const DUPLICATE_PAYOUT_EVAlUATE_HASH_LAG_HANDLING_MAX_PAYOUT_COUNT_FETCHED = 'duplicate_payout_evaluate_hash_lag_handling_max_payout_count_fetched';
+
+    const DUPLICATE_PAYOUT_EVAlUATE_PS_CALL_DURATION = 'duplicate_payout_evaluate_ps_call_duration';
+
+    const DUPLICATE_PAYOUT_EVAlUATE_TIME_TAKEN = 'duplicate_payout_evaluate_time_taken';
+
     // Order Outbox
     const ORDER_OUTBOX_SOFT_DELETE_FAILURE                  = 'order_outbox_soft_delete_failure';
     const ORDER_OUTBOX_CRON_RETRY_FAILURE                   = 'order_outbox_cron_retry_failure';
@@ -256,6 +268,9 @@ class Metric
     const KAFKA_TRANSFER_REVERSAL_API_TXN_PUSH_SUCCESS          = 'kafka_transfer_reversal_api_txn_push_success';
     const KAFKA_TRANSFER_REVERSAL_API_TXN_PUSH_FAILURE          = 'kafka_transfer_reversal_api_txn_push_failure';
     const PG_LEDGER_KAFKA_PUSH_FAILURE                          = 'pg_ledger_kafka_push_failure';
+    const API_DECOMP_PARITY                                     = "api_decomp_parity";
+    const PAYMENTS_FETCH_RESPONSE_SIZE                          = "payments_fetch_response_size";
+    const API_DECOMP_PARITY_PUSH_FAILURE                        = "api_decomp_parity_push_failure";
     const PG_LEDGER_OUTBOX_CRON_RETRIES_EXHAUSTED               = 'pg_ledger_outbox_cron_retries_exhausted';
     const PG_LEDGER_KAFKA_ACKNOWLEDGMENT_RECEIVED_FROM_PG       = 'pg_ledger_kafka_acknowledgement_received_from_pg';
     const PG_LEDGER_KAFKA_ACKNOWLEDGMENT_RECEIVED_FROM_LEDGER   = 'pg_ledger_kafka_acknowledgement_received_from_ledger';
@@ -306,10 +321,12 @@ class Metric
     const API_DECOMP_ENTITY_FETCH                               = 'api_decomp_entity_fetch';
     const API_DECOMP_PARAMETERS                                 = 'api_decomp_parameters';
     const API_DECOMP_AUTH_DISTRIBUTION                          = 'api_decomp_auth_distribution';
+    const INTERNAL_ORDER_PAYMENTS_FETCH_ERROR                   = 'internal_order_payments_fetch_error';
 
     const CREDCASE_READ_COUNT_MISMATCH = 'credcase_read_count_mismatch';
 
     const CREDCASE_READ_RESPONSE_MISMATCH = 'credcase_read_response_mismatch';
+    const CREDCASE_KEY_READ_ROUTE_COUNT = 'credcase_key_read_count';
 
     const CREDCASE_REQUEST_FAILED = 'credcase_request_failed';
     const CREDCASE_REQUEST_LATENCY_MS = 'credcase_request_latency_milliseconds.histogram';

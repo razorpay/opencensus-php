@@ -124,6 +124,306 @@ return [
             ],
         ],
     ],
+    'testCreatePayoutWithDuplicatePayoutEvaluateTriggeredForUpiAndActionDisabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'fund_account' => [
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'  => 'test@ybl',
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'UPI',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+    'testCreatePayoutWithDuplicatePayoutEvaluateTriggeredForUpi' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'fund_account' => [
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'  => 'test@ybl',
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
+                    'description' => 'Similar request pay123 in progress. Retry after 100 or use a unique identifier.',
+                ],
+            ],
+            'status_code' => 409,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT_CREATION_ATTEMPT,
+        ],
+    ],
+    'testCreatePayoutWithDuplicatePayoutEvaluateTriggeredForBank' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account' => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'account_number'  => '12345',
+                        'ifsc'            => 'SBIN0005943',
+                        'name'            => 'Shashi',
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
+                    'description' => 'Similar request pay123 in progress. Retry after 100 or use a unique identifier.',
+                ],
+            ],
+            'status_code' => 409,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT_CREATION_ATTEMPT,
+        ],
+    ],
+    'testCreatePayoutWithDuplicatePayoutEvaluateTriggeredForCard' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'NEFT',
+                'fund_account' => [
+                    "account_type"  => "card",
+                    'card' => [
+                        'last4'     =>  '1111',
+                        "number"    => "340169570990137",
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
+                    'description' => 'Similar request pay123 in progress. Retry after 100 or use a unique identifier.',
+                ],
+            ],
+            'status_code' => 409,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT_CREATION_ATTEMPT,
+        ],
+    ],
+    'testCreatePayoutWithDuplicatePayoutEvaluateAndHandleHashUpdateLagForBank' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'reference_id'    => 'reference_id',
+                'fund_account' => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'account_number'  => '12345',
+                        'ifsc'            => 'SBIN0005943',
+                        'name'            => 'Shashi',
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
+                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 or use a unique identifier.',
+                ],
+            ],
+            'status_code' => 409,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT_CREATION_ATTEMPT,
+        ],
+    ],
+    'testCreatePayoutWithDuplicatePayoutEvaluateAndHandleHashUpdateLagForUpi' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'reference_id'    => 'reference_id',
+                'fund_account' => [
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'  => 'test@ybl',
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
+                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 or use a unique identifier.',
+                ],
+            ],
+            'status_code' => 409,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT_CREATION_ATTEMPT,
+        ],
+    ],
+    'testCreatePayoutWithDuplicatePayoutEvaluateAndHandleHashUpdateLagForWallet' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'amazonpay',
+                'reference_id'    => 'reference_id',
+                'fund_account' => [
+                    "account_type"  => "wallet",
+                    'wallet' => [
+                        'phone'             => '+919832478134',
+                        'email'             => 'sample@example.com',
+                        'provider'          => 'amazonpay'
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
+                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 or use a unique identifier.',
+                ],
+            ],
+            'status_code' => 409,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT_CREATION_ATTEMPT,
+        ],
+    ],
     'testCreatePayoutMY' => [
         'request'  => [
             'method'  => 'POST',
@@ -25096,28 +25396,8 @@ return [
                 'result' => false
             ],
             [
-                'route' => 'payout_create_internal',
-                'feature_flag_enabled' => false,
-                'result' => false
-            ],
-            [
-                'route' => 'payout_create_internal',
-                'feature_flag_enabled' => true,
-                'result' => true
-            ],
-            [
-                'route' => 'payout_create_2FA_internal',
-                'feature_flag_enabled' => true,
-                'result' => false
-            ],
-            [
                 'route' => 'payouts_batch_create',
-                'feature_flag_enabled' => true,
-                'result' => false
-            ],
-            [
-                'route' => 'payout_create_on_internal_contact',
-                'feature_flag_enabled' => true,
+                'feature_flag_enabled' => false,
                 'result' => false
             ],
             [
@@ -25130,9 +25410,149 @@ return [
                 'feature_flag_enabled' => true,
                 'result' => false
             ],
+        ]
+    ],
+    'testMiddlewareIdempotencyKeyMandatoryCheckInternal' => [
+        'scenarios' => [
+            [
+                'route' => 'payout_create_internal',
+                'app_name' => 'xpayroll',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'control'
+                                ],[
+                                    'key' => 'vendor_payments',
+                                    'value'=> 'on'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'result' => false
+            ],
+            [
+                'route' => 'payout_create_internal',
+                'app_name' => 'xpayroll',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'on'
+                                ],[
+                                    'key' => 'vendor_payments',
+                                    'value'=> 'on'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'result' => true
+            ],
+            [
+                'route' => 'payout_create_internal',
+                'app_name' => 'xpayroll',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => null
+                    ]
+                ],
+                'result' => false
+            ],
+            [
+                'route' => 'payout_create_2FA_internal',
+                'app_name' => 'vendor_payments',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'control'
+                                ],[
+                                    'key' => 'vendor_payments',
+                                    'value'=> 'on'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'result' => true
+            ],
+            [
+                'route' => 'payout_create_2FA_internal',
+                'app_name' => 'vendor_payments',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'on'
+                                ],[
+                                    'key' => 'vendor_payments',
+                                    'value'=> 'control'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'result' => false
+            ],
+            [
+                'route' => 'settlement_ondemand_create_internal',
+                'app_name' => 'xpayroll',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'on'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'result' => false
+            ],
             [
                 'route' => 'composite_payout_internal',
-                'feature_flag_enabled' => true,
+                'app_name' => 'xpayroll',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'on'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'result' => true
+            ],
+            [
+                'route' => 'composite_payout_internal',
+                'app_name' => 'xpayroll',
+                'splitz_response' => [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    'key' => 'xpayroll',
+                                    'value'=> 'control'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
                 'result' => false
             ],
         ]

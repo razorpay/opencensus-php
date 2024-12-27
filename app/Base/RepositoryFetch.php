@@ -2,6 +2,7 @@
 
 namespace RZP\Base;
 
+use DB;
 use Illuminate\Container\Container;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -423,7 +424,10 @@ trait RepositoryFetch
 
     public function printApiDecompLog()
     {
-        if ($this->app['api.route']->getCurrentRouteName() === 'order_payments' || $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_by_id' || $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_multiple')
+        if ($this->app['api.route']->getCurrentRouteName() === 'order_payments' ||
+            $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_by_id' ||
+            $this->app['api.route']->getCurrentRouteName() === 'payment_fetch_multiple' ||
+            $this->app['api.route']->getCurrentRouteName() === 'offer_fetch_multiple')
         {
             return true;
         }
@@ -1019,30 +1023,37 @@ trait RepositoryFetch
             $query = $query->whereIn('phase', $phases);
         }
 
-            if($this->entity == 'dispute') {
-                $disputePaymentIdColumn = $this->repo->dispute->dbColumn(\RZP\Models\Dispute\Entity::PAYMENT_ID);
-                $disputeEvidenceDisputeIdColumn = $this->repo->dispute_evidence_document->dbColumn('dispute_id');
-                $paymentIdColumn = $this->repo->payment->dbColumn(Payment::ID);
-                $paymentInternationalColumn = $this->repo->payment->dbColumn(Payment::INTERNATIONAL);
-                $query = $query->from('disputes')
-                    ->addSelect('disputes.*')
-                    ->addSelect($paymentInternationalColumn . ' as international')  // Add international field from payments
-                    ->leftJoin(Table::PAYMENT, $disputePaymentIdColumn, '=', $paymentIdColumn);
-                if (isset($params['international'])) {
+        if($this->entity == 'dispute') {
+            $disputePaymentIdColumn = $this->repo->dispute->dbColumn(\RZP\Models\Dispute\Entity::PAYMENT_ID);
+            $disputeEvidenceDisputeIdColumn = $this->repo->dispute_evidence_document->dbColumn('dispute_id');
+            $paymentIdColumn = $this->repo->payment->dbColumn(Payment::ID);
+            $paymentInternationalColumn = $this->repo->payment->dbColumn(Payment::INTERNATIONAL);
+            $query = $query->from('disputes')
+                ->addSelect('disputes.*')
+                ->addSelect($paymentInternationalColumn . ' as international')  // Add international field from payments
+                ->leftJoin(Table::PAYMENT, $disputePaymentIdColumn, '=', $paymentIdColumn);
+            if (isset($params['international'])) {
+                if ($params['international'] == 0) {
+                    // Add condition to include NULL values for international
+                    $query = $query->where(function ($subQuery) use ($paymentInternationalColumn) {
+                        $subQuery->where($paymentInternationalColumn, '=', 0)
+                            ->orWhereNull($paymentInternationalColumn);
+                    });
+                } else {
                     $query = $query->where($paymentInternationalColumn, '=', $params['international']);
                 }
             }
-            else if ($this->entity == 'dispute_evidence_document')  {
-                $query = $query->addSelect('dispute_evidence_document.*');
-            }
+        }
+        else if ($this->entity == 'dispute_evidence_document')  {
+            $query = $query->addSelect('dispute_evidence_document.*');
+        }
 
         foreach ($params as $key => $value) {
             if (in_array($key, ['phase'])) {
                 continue;
             }
-            if (in_array($key, ['international'])) {
-                $func = 'addqueryparam'.studly_case('international');
-                $this->$func($query, $params);
+            if (in_array($key, ['international']) and $this->entity == 'dispute') {
+                continue;
             }
             // Dynamically call specific addQueryParam methods if they exist
             $func = 'addQueryParam' . studly_case($key);
@@ -1400,6 +1411,15 @@ trait RepositoryFetch
         return $this->findOrFailPublic($id, ['*'], $connectionType);
     }
 
+    public function findArchivedByPublicId($id,string $connectionType = null)
+    {
+        $entityClass = $this->getEntityClass();
+
+        $id = $entityClass::verifyIdAndStripSign($id);
+
+        return $this->findOrFailArchivedPublic($id, ['*'], $connectionType);
+    }
+
     public function findByPublicIdAndMerchant(
         string $id,
         Merchant\Entity $merchant,
@@ -1411,6 +1431,19 @@ trait RepositoryFetch
         $entity::verifyIdAndStripSign($id);
 
         return $this->findByIdAndMerchant($id, $merchant, $params, $connectionType);
+    }
+
+    public function findArchivedByPublicIdAndMerchant(
+        string $id,
+        Merchant\Entity $merchant,
+        array $params = [],
+        string $connectionType = null): PublicEntity
+    {
+        $entityClass = $this->getEntityClass();
+
+        $entityClass::verifyIdAndStripSign($id);
+
+        return $this->findArchivedByIdAndMerchant($id, $merchant, $params, $connectionType);
     }
 
     public function findManyByPublicIdsAndMerchant(
@@ -1472,10 +1505,68 @@ trait RepositoryFetch
         return $entity;
     }
 
+
+    /**
+     * Finds entity against given id and merchant.
+     *
+     * @param string          $id
+     * @param Merchant\Entity $merchant
+     * @param array           $params
+     *
+     * @return PublicEntity
+     */
+    public function findArchivedByIdAndMerchant(
+        string $id,
+        Merchant\Entity $merchant,
+        array $params = [],
+        string $connectionType = null): PublicEntity
+    {
+        if ($merchant->isFeatureEnabled(Constants::MERCHANT_ROUTE_WA_INFRA))
+        {
+            $query = $this->getQueryForFindWithParams($params, Connection::RX_WHATSAPP_LIVE);
+        }
+        else
+        {
+            $query = (empty($connectionType) === true) ?
+                $this->getQueryForFindWithParams($params) :
+                $this->getQueryForFindWithParams($params, $this->getConnectionFromType($connectionType));
+        }
+
+        $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
+
+        $entity = $query->merchantId($merchant->getId())
+                        ->findOrFailPublic($id);
+
+        //
+        // Most of the entities can be filtered on Merchant ID. They have the
+        // merchant() relation. But a few entities do not have this relation defined
+        // and we have overridden scopeMerchantId() to filter on different column.
+        // Eg: Merchant\Account\Entity applies the filter on column: parent_id.
+        // Merchant\Account\Entity does not have merchant() relation defined. So skip it.
+        //
+        if (method_exists($entity, 'merchant') === true)
+        {
+            $entity->merchant()->associate($merchant);
+        }
+
+        return $entity;
+    }
+
     public function findByIdAndMerchantId($id, $merchantId, string $connectionType = null)
     {
         $query = (empty($connectionType) === true) ?
             $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query->merchantId($merchantId)
+                     ->findOrFailPublic($id);
+    }
+
+    public function findArchivedByIdAndMerchantId($id, $merchantId, string $connectionType = null)
+    {
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
 
         return $query->merchantId($merchantId)
                      ->findOrFailPublic($id);
@@ -1538,6 +1629,36 @@ trait RepositoryFetch
                 ]);
             }
         }
+
+        return $entity;
+    }
+
+    /**
+     * Along with Id, other allowed parameter can also be passed
+     * Like: deleted
+     * Custom handling for warehouse databases
+     *
+     * @param string $id
+     * @param array $params
+     * @param string|null $connectionType
+     *
+     * @return PublicEntity
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function findOrFailArchivedByPublicIdWithParams(
+        string $id,
+        array  $params,
+        string $connectionType = null) : PublicEntity
+    {
+        $query = $this->getQueryForFindWithParams($params, $connectionType);
+
+        $entity = $this->getEntityClass();
+
+        $entity::silentlyStripSign($id);
+
+        $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
+
+        $entity = $query->findOrFailPublic($id);
 
         return $entity;
     }

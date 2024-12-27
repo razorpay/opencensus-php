@@ -353,3 +353,12 @@ app/Models/Customer/CustomerConsent1cc                   @razorpay/cdp
 app/Models/Customer/Account                              @razorpay/cdp
 tests/Unit/Customer/                                     @razorpay/cdp
 tests/Functional/Customer/                               @razorpay/cdp
+
+
+app/Models/Merchant/Detail/Core.php                      @razorpay/pg-onboarding-service
+app/Models/Merchant/Detail/Service.php                   @razorpay/pg-onboarding-service
+app/Models/Merchant/Activate.php                         @razorpay/pg-onboarding-service
+app/Models/Merchant/Detail/Validator.php                 @razorpay/pg-onboarding-service
+app/Models/Merchant/Detail/NeedsClarification            @razorpay/pg-onboarding-service
+app/Models/Merchant/Detail/DeDupe                        @razorpay/pg-onboarding-service
+app/Models/Merchant/Detail/Transformers                  @razorpay/pg-onboarding-service

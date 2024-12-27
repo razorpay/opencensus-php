@@ -13247,6 +13247,34 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testRegisterWithOtpWithUslOriginWithCaptcha()
+    {
+
+        $this->ba->appAuth();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock, 'sms.user.signup_otp_v2', '8766776665', []);
+
+        $this->startTest();
+    }
+
+    public function testRegisterWithOtpWithUslOriginWithoutCaptcha()
+    {
+
+        $this->ba->appAuth();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock, 'sms.user.signup_otp_v2', '8766776665', []);
+
+        $this->startTest();
+    }
+
     public function testMobileVerifyOtpForLoginWithNewSmsTemplate()
     {
 
@@ -16152,7 +16180,7 @@ class UserTest extends TestCase
     public function testAssignUserToMerchantFailsForNonexistentUserEmail()
     {
         $posSalesAdminMid = 'NBmMve28Nvwq43';
-        
+
         $ezetapMerchantId = 'NBmMve28Nvwq11';
         $merchantId = 'NBmMve28Nvwq44';
         $merchantAttributes = [

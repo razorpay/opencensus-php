@@ -500,7 +500,7 @@ trait ReverseShadowTrait
     }
 
 
-    protected function createJournalInLedger(array $journalPayload, bool $isBulkJournalRequest = false, bool $isMultipleJournalRequest = false, $isAdjustmentLedgerEntryOnly = false) : array
+    public function createJournalInLedger(array $journalPayload, bool $isBulkJournalRequest = false, bool $isMultipleJournalRequest = false, $isAdjustmentLedgerEntryOnly = false) : array
     {
         $app = App::getFacadeRoot();
 
@@ -753,7 +753,8 @@ trait ReverseShadowTrait
             return $payload[Constants::API_TXN_ID];
         }
 
-        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
+        //change connection here fetchBySourceAndAssociateMerchantForConnectionType
+        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchantForConnectionType($payment, null);
 
         if (isset($txn) === true)
         {
@@ -821,6 +822,31 @@ trait ReverseShadowTrait
             }
         }
         return $searchResults;
+    }
+
+    public function fetchFundAccountTypeForDebitFromJournal($journalResponse): ?array
+    {
+        $fundAccountTypes = [];
+
+        if(isset($journalResponse[Constants::LEDGER_ENTRY]) === false)
+        {
+            return null;
+        }
+
+        foreach ($journalResponse[Constants::LEDGER_ENTRY] as $ledgerEntry)
+        {
+            if ((isset($ledgerEntry[Constants::TYPE]) === true) and
+                ($ledgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_DEBIT))
+            {
+                if ((isset($ledgerEntry[Constants::ACCOUNT_ENTITIES]) === true) and
+                    (isset($ledgerEntry[Constants::ACCOUNT_ENTITIES][Constants::FUND_ACCOUNT_TYPE]) === true))
+                {
+                    $fundAccountTypes [] = $ledgerEntry[Constants::ACCOUNT_ENTITIES][Constants::FUND_ACCOUNT_TYPE][0];
+                }
+            }
+        }
+
+        return (empty($fundAccountTypes) === false) ? $fundAccountTypes : null ;
     }
 
     public function fetchMerchantBalanceOnly($merchant){

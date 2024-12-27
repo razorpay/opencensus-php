@@ -1120,6 +1120,13 @@ class Processor extends Base\Core
             ];
         }
 
+        if($this->linked_account){
+            return [
+                Entity::TAX    => $feeDetails['tax'],
+                Entity::AMOUNT => $feeDetails['fee']-$feeDetails['tax'],
+            ];
+        }
+
         $details = $feeDetails->getAttributes();
 
         $fees = $details['fee'];

@@ -731,17 +731,31 @@ class Service extends Base\Service
         {
             $urlKey = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $input[Constants::FD_INSTANCE]);
         }
+        // if responder_id is passed in query parameter then no need to fetch responder_id by making extra call to FD
+        if (empty($input[Constants::RESPONDER_ID]) === true) {
+            $freshdeskTicketResponse = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId,$urlKey);
 
-        $freshdeskTicketResponse = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId,$urlKey);
+            $this->validateTicketResponse($freshdeskTicketResponse, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
 
-        $this->validateTicketResponse($freshdeskTicketResponse, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+            $responderID = $freshdeskTicketResponse[Constants::RESPONDER_ID];
 
-        $responderID = $freshdeskTicketResponse[Constants::RESPONDER_ID];
+            if (empty($responderID) === true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_ASSIGNED);
+            }
+            $this->trace->info(TraceCode::FRESHDESK_REQUEST_WITH_TICKET_ID, [
+                'responder_id'                           => $responderID,
+                'ticket_id'                              => $ticketId,
+            ]);
 
-        if (empty($responderID) === true)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_ASSIGNED);
+        } else {
+            $responderID = (int)$input[Constants::RESPONDER_ID];
+            $this->trace->info(TraceCode::FRESHDESK_REQUEST_WITH_RESPONDER_ID, [
+                'responder_id'                           => $responderID,
+                'ticket_id'                              => $ticketId,
+            ]);
         }
+
 
         $agentDetail = $this->app[Constants::FRESHDESK_CLIENT]->fetchAgentById($responderID, $urlKey);
 

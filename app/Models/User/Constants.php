@@ -50,11 +50,6 @@ class Constants
     const MERCHANT_ID = 'merchant_id';
     const USER_ID = 'user_id';
 
-    const FEATURE = 'feature';
-    const GROUP = 'group';
-    const OMNI_ENABLED ='omni_enabled';
-    const RBAC_PG_POS_RBAC_SPLITZ_EXPERIMENT = 'rbac_pg_pos_rbac_splitz_experiment';
-
 
     const METHOD                = 'method';
     const MEDIUM                = 'medium';
@@ -570,33 +565,6 @@ class Constants
         "https://accounts.razorpay.com"
     ];
     const PARTNER_REFERRAL_CODE = 'partner_referral_code';
-    const RAZORPAY_ORG = '100000razorpay';
-    const AUTHZ_POS_PRODUCT = 'pos';
-    const AUTHZ_PG_PRODUCT = 'pg';
 
-    const AUTHZ_MERCHANT_DASHBOARD_SUB_PRODUCT = 'merchant_dashboard';
-    const ROLE_OWNER_ID = "100000razorpay";
-
-    const ACTIVATED_STATUSES = [
-        'instantly_activated',
-        'activated',
-        'activated_kyc_pending',
-        'under_review',
-        'needs_clarification',
-        'kyc_qualified_unactivated',
-        'activated_mcc_pending',
-    ];
-
-    const POS_ACTIVATION_STATUSES = [
-        'kyc_qualified_stb',
-        'activated',
-        'needs_clarification',
-        'under_review',
-    ];
-
-    const OMNI_PRODUCTS = [
-        'primary',
-        'pos',
-    ];
 
 }

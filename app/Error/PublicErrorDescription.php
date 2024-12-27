@@ -1851,9 +1851,14 @@ class PublicErrorDescription
     const BAD_REQUEST_OWNER_GSTIN_MISMATCH    = 'The given GSTIN does not belong to the Owner PAN provided. Please provide a different GSTIN';
     const BAD_REQUEST_BUSINESS_GSTIN_MISMATCH = 'The given GSTIN does not belong to the Business PAN provided. Please provide a different GSTIN';
     const BAD_REQUEST_SUSPICIOUS_TRANSACTION  = 'Transaction blocked. Please reach out to support.';
+
+    const DUPLICATE_PAYOUT_CREATION_ATTEMPT  = 'Similar request <payout_id> in progress. Retry after <custom_interval> or use a unique identifier.';
+
     const SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE = 'Your Razorpay merchant account creation is in progress. Please retry the action after sometime.';
 
     // custom terminal procurement
     const BAD_REQUEST_INVALID_VPA                                                   = 'VPA provided is not valid';
     const BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER                               = 'Partner does not have access to this feature';
+
+    const BAD_REQUEST_VA_CREATION_BLOCKED_FOR_RBL_MERCHANTS = "Virtual Account Creation is currently blocked for RBL Merchants.";
 }

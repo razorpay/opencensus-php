@@ -188,7 +188,6 @@ class SmartCollect
 
             throw $e;
         }
-
         return $response;
     }
 

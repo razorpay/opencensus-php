@@ -679,7 +679,7 @@ class Service extends Base\Service
             }
         }
 
-        $this->core->trackPayoutPropertiesEvent($payout);
+        $this->core->trackPayoutPropertiesEvent($payout, $input);
 
         $responseTime = microtime(true);
 
@@ -821,7 +821,7 @@ class Service extends Base\Service
         {
             $payout = $this->postCreationProcessingForCompositePayout($payout);
         }
-        $this->core->trackPayoutPropertiesEvent($payout);
+        $this->core->trackPayoutPropertiesEvent($payout, $input);
 
         $responseTime = microtime(true);
 
@@ -1677,7 +1677,7 @@ class Service extends Base\Service
 
             $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
 
-            $this->core->trackPayoutPropertiesEvent($payout);
+            $this->core->trackPayoutPropertiesEvent($payout, $input);
 
             if ($payout->getIsPayoutService() === true)
             {
@@ -1714,7 +1714,7 @@ class Service extends Base\Service
 
         $payout = $this->core->createPayoutAndTriggerIciciOtp($input, $this->merchant, $balance);
 
-        $this->core->trackPayoutPropertiesEvent($payout);
+        $this->core->trackPayoutPropertiesEvent($payout, $input);
 
         return $payout->toArrayPublic();
     }
@@ -2990,7 +2990,7 @@ class Service extends Base\Service
 
         $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
 
-        $this->core->trackPayoutPropertiesEvent($payout);
+        $this->core->trackPayoutPropertiesEvent($payout, $item);
 
         $payoutBatch->push($payoutArr);
     }
@@ -4911,7 +4911,7 @@ class Service extends Base\Service
             $payout = $this->handleExceptionAndFindEntity($exception, 'payout', $payoutMetadata);
         }
 
-        $this->core->trackPayoutPropertiesEvent($payout);
+        $this->core->trackPayoutPropertiesEvent($payout, $input);
 
         $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
             'step'              => 'composite_payout_creation',
@@ -5051,25 +5051,6 @@ class Service extends Base\Service
         return $this->core->updatePayoutEntry($payoutId, $input);
     }
 
-    protected function checkIfPayoutsBlockedOnLite(Merchant\Balance\Entity $balance = null)
-    {
-        if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_BLOCKED_ON_LITE) === true)
-        {
-            $this->trace->error(TraceCode::PAYOUTS_BLOCKED_ON_LITE,
-                [
-                    'balance_id'  => $balance->getId(),
-                    'merchant_id' => $balance->getMerchantId()
-                ]);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR,
-                null,
-                null,
-                'API payouts are not available for this account'
-            );
-        }
-    }
-
     protected function checkIfPayoutIsAllowed(bool $isCompositePayout, array $input, bool $internal = false, Merchant\Balance\Entity $balance = null)
     {
         $payoutMode = $input[Payout\Entity::MODE] ?? null;
@@ -5079,7 +5060,7 @@ class Service extends Base\Service
             $balance = $this->repo->balance->findByPublicIdAndMerchant($input[Payout\Entity::BALANCE_ID], $this->merchant);
         }
 
-        $this->checkIfPayoutsBlockedOnLite($balance);
+        $this->core->checkIfPayoutsBlockedOnLite($balance, $this->merchant);
 
         $this->checkIfDirectAccountIsActive($balance);
 

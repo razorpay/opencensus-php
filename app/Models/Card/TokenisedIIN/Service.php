@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Card\TokenisedIIN;
 
+use RZP\Constants\Environment;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\BinService;
@@ -384,6 +385,130 @@ class Service extends Base\Service
             return true;
         }
         return false;
+    }
+
+    public function shouldReadBinServiceInPrimaryMode($tokenIIN)
+    {
+        if (Environment::isTestingEnvironment($this->app['env']) === true ||
+            Environment::isEnvironmentQA($this->app['env']) === true ||
+            Environment::isEnvironmentItf($this->app['env']) === true)
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $tokenIIN,
+            'experiment_id' => $this->app['config']->get('app.read_token_iin_bin_service_primary'),
+            'request_data' => json_encode([
+                "bin" => $tokenIIN
+            ]),
+        ];
+
+        return $this->checkIfSplitzExperimentIsEnabled($properties);
+    }
+
+    public function shouldReadFromBinServiceInShadowMode($tokenIIN)
+    {
+        if (Environment::isTestingEnvironment($this->app['env']) === true ||
+            Environment::isEnvironmentQA($this->app['env']) === true ||
+            Environment::isEnvironmentItf($this->app['env']) === true)
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $tokenIIN,
+            'experiment_id' => $this->app['config']->get('app.read_token_iin_bin_service_shadow'),
+            'request_data' => json_encode([
+                "bin" => $tokenIIN
+            ]),
+        ];
+
+        return $this->checkIfSplitzExperimentIsEnabled($properties);
+    }
+
+    public function checkIfSplitzExperimentIsEnabled($properties): bool
+    {
+
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === 'enable')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $id = $properties['id'] ?? null;
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, ['id' => $id]);
+        }
+
+        return false;
+    }
+
+
+
+    public function adaptBinServiceEntityToApiTokenisedIINEntity($binServiceEntity)
+    {
+        $rangeMin = $binServiceEntity['rangeMin'];
+        $rangeMax = $binServiceEntity['rangeMax'];
+
+        $rangeMin = str_pad($rangeMin, 21, '0');
+
+        $rangeMax = str_pad($rangeMax, 21, '9');
+
+        $reverseOffset = 0;
+
+        while ($reverseOffset < 21 &&
+            $rangeMin[20 - $reverseOffset] === '0' &&
+            $rangeMax[20 - $reverseOffset] === '9') {
+            $reverseOffset++;
+        }
+
+        $tokenIINLength = min(max(21 - $reverseOffset, 6), 9);
+        $lowRange = substr($rangeMin, 0, $tokenIINLength);
+        $highRange = substr($rangeMax, 0, $tokenIINLength);
+        $iin = substr($binServiceEntity["mappedIin"], 0, 6);
+
+        return [
+            "iin" => $iin,
+            "low_range" => $lowRange,
+            "high_range" => $highRange,
+            "token_iin_length" => $tokenIINLength,
+        ];
+    }
+
+    public function compareBinServiceEntityAndApiServiceEntity($repoTokenisedIINEntity, $adaptedBinServiceResponse, $extraTraceData)
+    {
+        foreach (Constants::COMPARISON_FIELDS_TOKENISED_IIN_SHADOW_RAMP as $field)
+        {
+            $apiServiceEntityValue = "";
+            $binServiceEntityValue = "";
+
+            if (isset($repoTokenisedIINEntity[$field])){
+                $apiServiceEntityValue = $repoTokenisedIINEntity[$field];
+            }
+
+            if (isset($adaptedBinServiceResponse[$field])){
+                $binServiceEntityValue = $adaptedBinServiceResponse[$field];
+            }
+
+            if ($apiServiceEntityValue !== $binServiceEntityValue)
+            {
+                $this->trace->info(TraceCode::API_BIN_SERVICE_TOKEN_IIN_DATA_MISMATCH, [
+                    'field'                 => $field,
+                    'token_iin'             => $extraTraceData['iin'],
+                    'method'                => $extraTraceData['method_name'],
+                    'apiServiceEntityValue' => $apiServiceEntityValue,
+                    'binServiceEntityValue' => $binServiceEntityValue,
+                ]);
+            }
+        }
+
     }
 
 }

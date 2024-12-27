@@ -659,6 +659,7 @@ class Error extends Support\Fluent
                 break;
             case ErrorCode::BAD_REQUEST_ENTITY_ALREADY_EXISTS:
             case ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS:
+            case ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT_CREATION_ATTEMPT:
             case ErrorCode::BAD_REQUEST_CONFLICT_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY:
                 $httpStatusCode = 409;
                 break;
