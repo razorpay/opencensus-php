@@ -47,7 +47,7 @@ export const DETAILED_PRICING: DetailedPricingModel[] = [
       },
       {
         name: 'Other segments',
-        value: '1.85%',
+        value: '1.75%',
       },
       {
         name: 'International Card/Corp cards/Amex/Diners',
