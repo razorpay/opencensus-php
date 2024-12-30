@@ -34,7 +34,7 @@ describe('<AddedBrandInfo/>', () => {
     expect(screen.getByText(/YU12/i)).toBeInTheDocument();
     expect(screen.getByText(/OP23/i)).toBeInTheDocument();
     expect(screen.getByText(/KO11/i)).toBeInTheDocument();
-    expect(screen.getByText(/Pending manual validation/i)).toBeInTheDocument();
+    expect(screen.getByText(/Pending/i)).toBeInTheDocument();
   });
   test('should call add new brand handler when clicked', async () => {
     render(<AddedBrandInfo {...props} />);

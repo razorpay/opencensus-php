@@ -1,15 +1,18 @@
 import React from 'react';
 import {
+  AlertTriangleIcon,
   Badge,
-  BadgeProps,
   Box,
+  CheckCircleIcon,
   ClockIcon,
   IconButton,
+  IconComponent,
   Text,
   TrashIcon,
 } from '@razorpay/blade/components';
 import { BRAND_EMI_VERIFICATION_STATUS_ENUM } from 'apps/pos/src/app/types/modular';
 import { Brand } from 'apps/pos/src/app/utils/paymentsAndServices';
+import { FeedbackColors } from 'apps/pos/src/app/types/AgreementSigning';
 
 interface BrandInfoCard {
   brand: Brand;
@@ -17,6 +20,42 @@ interface BrandInfoCard {
   isFormDisabled: boolean;
   removeBrandHandler: (brandName: string) => void;
 }
+
+const getBadgeDetails = (
+  status: BRAND_EMI_VERIFICATION_STATUS_ENUM,
+): {
+  badgeText: string;
+  color: FeedbackColors;
+  icon?: IconComponent;
+} => {
+  switch (status) {
+    case BRAND_EMI_VERIFICATION_STATUS_ENUM.VERIFIED:
+      return {
+        badgeText: 'Validated',
+        color: 'positive',
+        icon: CheckCircleIcon,
+      };
+    case BRAND_EMI_VERIFICATION_STATUS_ENUM.FAILED:
+      return {
+        badgeText: 'Failed',
+        color: 'negative',
+        icon: AlertTriangleIcon,
+      };
+    case BRAND_EMI_VERIFICATION_STATUS_ENUM.PENDING:
+      return {
+        badgeText: 'Pending',
+        color: 'notice',
+        icon: ClockIcon,
+      };
+    default:
+      return {
+        badgeText: 'Unknown status',
+        color: 'neutral',
+        icon: undefined,
+      };
+  }
+};
+
 const BrandInfoCard = ({
   isUpdateModularLoading,
   removeBrandHandler,
@@ -25,16 +64,7 @@ const BrandInfoCard = ({
 }: BrandInfoCard) => {
   if (!brand) return null;
 
-  const badgeColorMap: Record<BRAND_EMI_VERIFICATION_STATUS_ENUM, BadgeProps['color']> = {
-    [BRAND_EMI_VERIFICATION_STATUS_ENUM.VERIFIED]: 'positive',
-    [BRAND_EMI_VERIFICATION_STATUS_ENUM.FAILED]: 'negative',
-    [BRAND_EMI_VERIFICATION_STATUS_ENUM.PENDING]: 'notice',
-  };
-  const badgeTextMap = {
-    [BRAND_EMI_VERIFICATION_STATUS_ENUM.VERIFIED]: 'Validated',
-    [BRAND_EMI_VERIFICATION_STATUS_ENUM.FAILED]: 'Failed',
-    [BRAND_EMI_VERIFICATION_STATUS_ENUM.PENDING]: 'Pending manual validation',
-  };
+  const badgeDetails = getBadgeDetails(brand.verificationStatus);
   return (
     <Box
       borderRadius="medium"
@@ -47,8 +77,8 @@ const BrandInfoCard = ({
         alignItems="center"
         marginBottom="spacing.6"
       >
-        <Badge color={badgeColorMap[brand.verificationStatus]} size="large" icon={ClockIcon}>
-          {badgeTextMap[brand.verificationStatus]}
+        <Badge color={badgeDetails.color} size="large" icon={badgeDetails.icon}>
+          {badgeDetails.badgeText}
         </Badge>
         <IconButton
           size="large"
