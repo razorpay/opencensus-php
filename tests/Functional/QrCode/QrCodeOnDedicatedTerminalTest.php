@@ -2571,9 +2571,10 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
     public function testSetDeviceIdForPayment()
     {
         $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
-        $this->mockSplitzTreatment($output);
+        $this->setMockSplitzTreatment([
+            'M25grFTOPZEGQS' => 'on'
+        ]);
 
         $this->createQrCode(
             [
@@ -2618,5 +2619,4 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals($rrn, $payment['reference16']);
         $this->assertEquals('testi12',$payment['device_id']);
     }
-
 }

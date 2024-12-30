@@ -669,6 +669,7 @@ class Route
         'terminal_update_bulk'                     => ['patch',    'terminals/bulk',                                 'TerminalController@updateTerminalsBulk',                           ],
         'enable_terminals_online_tag_bulk'         => ['post',     'payments/terminal/enable_onlinetag/bulk',        'TerminalController@enableBulkTerminalsOnline',                     ],
         'disable_terminals_online_tag_bulk'        => ['post',     'payments/terminal/disable_onlinetag/bulk',       'TerminalController@disableBulkTerminalsOnline',                    ],
+        'create_qr_for_single_stack'               => ['post',     'payments/terminal/qr_codes/device/create',       'QrCodeController@createTerminalAndMapQrToDevice'                           ],
         'terminal_add_merchant'                    => ['put',      'terminals/{id}/merchants/{mid}',                 'TerminalController@addMerchant'                                    ],
         'terminal_remove_merchant'                 => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
         'terminal_reassign_merchant'               => ['put',      'terminals/{id}/reassign',                        'TerminalController@reassignMerchant'                               ],
@@ -6938,7 +6939,8 @@ class Route
         'settlement_ondemand_create_internal',
         'user_create_merchant_internal',
         'internal_payment_update_b2b_invoice',
-        'internal_qr_code_merchant_create'
+        'internal_qr_code_merchant_create',
+        'create_qr_for_single_stack',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -17480,6 +17482,7 @@ class Route
             'payment_refund',
             'payment_fetch_refunds',
             'payment_fetch_refund_by_id',
+            'create_qr_for_single_stack'
         ],
 
         'billme' => [

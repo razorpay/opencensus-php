@@ -47,6 +47,15 @@ class QrCodeController extends Controller
         return ApiResponse::json($entity);
     }
 
+    public function createTerminalAndMapQrToDevice()
+    {
+        $input = Request::all();
+
+        $response = (new NonVAQrCodeService())->createTerminalAndMapQrToDevice($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function createForCheckout()
     {
         $input = Request::all();

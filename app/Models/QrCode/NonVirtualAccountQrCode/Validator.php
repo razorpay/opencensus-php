@@ -34,6 +34,13 @@ class Validator extends QrCode\Validator
         Entity::QR_STRING      => 'sometimes_if:request_source,ezetap',
     ];
 
+    protected static $createQrForSingleStackRules = [
+        Entity::VPA            => 'required|string',
+        Entity::DEVICE_ID      => 'required|string',
+        Entity::QR_STRING      => 'required|string',
+        Entity::MERCHANT_ID    => 'required|string',
+    ];
+
     protected static $createForCheckoutRules = [
         Entity::CLOSE_BY       => 'filled|epoch|custom',
         Entity::CUSTOMER_ID    => 'filled|string',

@@ -120,6 +120,63 @@ class Service extends QrCode\Service
         return $qrCode->toArrayPublic();
     }
 
+    public function createTerminalAndMapQrToDevice(array $input):array
+    {
+        $response = [];
+
+        try
+        {
+            (new Validator())->validateInput('createQrForSingleStack',$input);
+
+            $this->setMerchantContextForQrCreate($input);
+
+            $terminal = (new Core())->createTerminalForSingleStack($input);
+
+            $inputArray = (new Core())->createQrCodeInputForSingleStack($input);
+
+            $qrCode = $this->createQrForMerchant($inputArray);
+
+            $inputArray = (new Core())->createRequestForAddingDeviceIdToQr($input,$qrCode);
+
+            $setDeviceResponse = $this->setDeviceIdForQr($inputArray);
+
+            if(empty($setDeviceResponse['error']) === false)
+            {
+                $response =  [
+                    'status' => 'FAILED',
+                    'error' => [
+                        'error_code' => $setDeviceResponse['error']['code'],
+                        'description' => $setDeviceResponse['error']['description']
+                    ],
+                ];
+            }
+            else
+            {
+                $response = [
+                    'status' => 'SUCCESS',
+                    'error' => 'null',
+                ];
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            //which error code to be thrown here?
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::CREATE_TERMINAL_AND_MAPPING_DEVICE_FAILED, $input);
+
+            $response = [
+                'status' => 'FAILED',
+                'error'  => [
+                    'error_code' => $ex->getCode(),
+                    'description' => $ex->getMessage()
+                ]
+            ];
+        }
+
+
+        return $response;
+
+    }
+
     public function createQrForMerchant($input)
     {
         $startTimeMs = microtime(true) * 1000;

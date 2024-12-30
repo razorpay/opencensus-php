@@ -61,6 +61,20 @@ trait NonVirtualAccountQrCodeTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    public function createQrForSingleStack(array $input = [], array $headers = [])
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/terminal/qr_codes/device/create',
+            'content' => $input,
+            'headers' => $headers,
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     private function createMerchantQrCode(array $input = [], array $headers = [])
     {
         $this->ba->appAuth();
@@ -1408,5 +1422,4 @@ trait NonVirtualAccountQrCodeTrait
 
         return $this->makeRequestAndGetContent($request);
     }
-
 }
