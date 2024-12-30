@@ -18580,6 +18580,7 @@ class Route
             'internal_create_customer_global_address',
             'feature_add_internal',
             'customer_fetch_addresses_by_contact',
+            'merchant_fetch_methods_internal',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',
