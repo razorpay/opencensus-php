@@ -255,9 +255,9 @@ class UpiPaymentServiceActionUnexpectedPreprocessTest extends UpiPaymentServiceT
     {
         $this->qrRelatedSetup();
 
-        $this->setMockRazorxTreatment(
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on'
             ]
         );
 
@@ -345,12 +345,7 @@ class UpiPaymentServiceActionUnexpectedPreprocessTest extends UpiPaymentServiceT
             ]
         );
 
-        $this->getDedicatedTerminalSplitzResponseForVariantON();
-
-
         //WARN: Remember to mock Mozart in each test, or else we shall start making network calls!!
-        //$this->config['applications.mozart.mock'] = false;
-
         $this->config['gateway.mock_upi_mozart'] = true;
     }
 }

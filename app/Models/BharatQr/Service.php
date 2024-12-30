@@ -626,6 +626,56 @@ class Service extends Base\Service
         return $staticQrId;
     }
 
+    /**
+     * Function to check If Qr Gateway Unrecognized Payment Process via Splitz for Gateway
+     * @param string $gateway
+     * @return bool
+     */
+    public function checkIfQrGatewayUnrecognizedPaymentProcess(string $gateway): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $gateway,
+                'experiment_id' => $this->app->config->get('app.qr_gateway_unrecognised_payment_process'),
+                'request_data'  => json_encode(['gateway' => $gateway]),
+            ];
+            $response   = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'gateway'   => $gateway,
+                '$response'     => $response
+            ]);
+
+            if ($response['response']['variant'] !== null)
+            {
+                $variables = $response['response']['variant']['variables'] ?? [];
+
+                foreach ($variables as $variable)
+                {
+                    $key   = $variable['key'] ?? '';
+                    $value = $variable['value'] ?? '';
+                    if ($key === 'result' && $value === 'on')
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS_ERROR
+            );
+        }
+
+        return false;
+    }
+
     public function findQrCodeIdFromQrCodeConfig($terminal)
     {
         if ($terminal === null)
@@ -635,12 +685,7 @@ class Service extends Base\Service
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-        $gatewayVariant = $this->app->razorx->getTreatment($terminal->getGateway(),
-                                                           RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS,
-                                                           $mode);
-
-        if (strtolower($gatewayVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
-        {
+        if ($this->checkIfQrGatewayUnrecognizedPaymentProcess($terminal->getGateway()) === false) {
             return null;
         }
 

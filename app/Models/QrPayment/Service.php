@@ -592,12 +592,31 @@ class Service extends Base\Service
             return [null, null];
         }
 
-        $qrVariant = strtolower(
-                $this->app->razorx->getTreatment(
-                    $gateway,
-                    RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
-                    $this->mode ?? Mode::LIVE
-                )) === RazorxTreatment::RAZORX_VARIANT_ON;
+
+        $properties = [
+            'id'            => $gateway,
+            'experiment_id' => $this->app->config->get('app.qr_code_create_refactor_gateway'),
+            'request_data'  => json_encode(['gateway' => $gateway]),
+        ];
+        $response   = $this->app['splitzService']->evaluateRequest($properties);
+
+        $this->app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'experiment_id' => $properties['experiment_id'],
+            'gateway'   => $gateway,
+            '$response'     => $response
+        ]);
+
+        $qrVariant = false; // Default value
+        $variables = $response['response']['variant']['variables'] ?? [];
+        foreach ($variables as $variable) {
+            $key = $variable['key'] ?? '';
+            $value = $variable['value'] ?? '';
+            if ($key === 'result' && $value === 'on') {
+                $qrVariant = true;
+                break; // Stop looping once the condition is met
+            }
+        }
+
 
         if ($qrVariant === false)
         {

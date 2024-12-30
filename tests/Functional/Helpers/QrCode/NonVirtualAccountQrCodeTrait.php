@@ -18,6 +18,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity;
 use RZP\Models\Order\Entity as OrderEntity;
 
+
 trait NonVirtualAccountQrCodeTrait
 {
     private function createQrCode(array $input = [], $mode = 'test', $merchantId = '10000000000000', array $headers = [])
@@ -643,6 +644,50 @@ trait NonVirtualAccountQrCodeTrait
                               }));
     }
 
+    /**
+     * @throws \Exception
+     */
+    protected function setMockSplitzTreatment(array $Experiments = [])
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+       $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+           ->andReturnUsing(function ($input) use ($Experiments) {
+                if (array_key_exists($input['experiment_id'], $Experiments) === true)
+                {
+                    $result = ($Experiments[$input['experiment_id']] ?? null) === 'on' ? 'on' : 'off';
+                    return [
+                        "response" => [
+                            "variant" => [
+                                "variables" => [
+                                    [
+                                        "key" => "result",
+                                        "value" => $result
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ];
+                }
+
+                return [
+                     "response" => [
+                          "variant" => [
+                            "variables" => [
+                                 [
+                                      "key" => "result",
+                                      "value" => "off"
+                                 ]
+                            ]
+                          ]
+                     ]
+                ];
+           });
+    }
+
     protected function mockSplitzTreatment($output)
     {
         $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
@@ -791,7 +836,7 @@ trait NonVirtualAccountQrCodeTrait
 
     protected function getDedicatedTerminalSplitzResponseForVariantON()
     {
-        $this->mockSplitzTreatment([
+         $this->mockSplitzTreatment([
             "response" => [
                 "variant" => [
                     "variables" => [
@@ -1227,6 +1272,22 @@ trait NonVirtualAccountQrCodeTrait
         $this->splitzMock
             ->shouldReceive('bulkCallsToSplitz')
             ->andReturn($output);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn([
+                            "response" => [
+                                "variant" => [
+                                    "variables" => [
+                                        [
+                                            "key"   => "result",
+                                            "value" => 'off',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ]
+            );
     }
 
     public function mockRemindersRequestForStatusCheck(&$count = 0, $fail = false, &$disableCount = 0)

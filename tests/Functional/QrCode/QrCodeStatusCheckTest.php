@@ -2853,5 +2853,4 @@ class QrCodeStatusCheckTest extends TestCase
         $this->assertNull($qrPaymentRequest);
         $this->assertNull($upi);
     }
-
 }

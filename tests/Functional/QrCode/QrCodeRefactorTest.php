@@ -65,11 +65,11 @@ class QrCodeRefactorTest extends TestCase
 
         $this->getDedicatedTerminalSplitzResponseForVariantON();
 
-        // Mock razorx to return 'on' for qr code create refactor experiment
-        $this->setMockRazorxTreatment(
+        // Mock Splitz to return 'on' for qr code create refactor experiment
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'on',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'on',
             ]
         );
 
@@ -949,10 +949,10 @@ class QrCodeRefactorTest extends TestCase
                 }
             );
 
-        $this->setMockRazorxTreatment(
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'on',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on',
             ]
         );
 
@@ -1049,11 +1049,12 @@ class QrCodeRefactorTest extends TestCase
                    ]
         );
 
-        $this->setMockRazorxTreatment(
+
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'on',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_GATEWAY => 'on',
-                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'on',
+                $this->config->get('app.qr_gateway_unrecognised_payment_process') => 'on',
             ]
         );
 
@@ -1158,7 +1159,12 @@ class QrCodeRefactorTest extends TestCase
             );
 
         $this->mockRemindersRequestForStatusCheck();
-        $this->mockSplitzTreatmentForStatusCheck();
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on',
+            ]
+        );
 
         $qrCode = $this->createQrCode(
             [
@@ -1316,10 +1322,10 @@ class QrCodeRefactorTest extends TestCase
                 }
             );
 
-        $this->setMockRazorxTreatment(
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on'
             ]
         );
 
@@ -1447,10 +1453,10 @@ class QrCodeRefactorTest extends TestCase
                 }
             );
 
-        $this->setMockRazorxTreatment(
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on',
             ]
         );
 
@@ -1581,10 +1587,10 @@ class QrCodeRefactorTest extends TestCase
                 }
             );
 
-        $this->setMockRazorxTreatment(
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on',
             ]
         );
 
@@ -1715,10 +1721,11 @@ class QrCodeRefactorTest extends TestCase
                 }
             );
 
-        $this->setMockRazorxTreatment(
+
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on',
             ]
         );
 
@@ -1796,7 +1803,12 @@ class QrCodeRefactorTest extends TestCase
             );
 
         $this->mockRemindersRequestForStatusCheck();
-        $this->mockSplitzTreatmentForStatusCheck();
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on',
+            ]
+        );
 
         $qrCode = $this->createQrCode(
             [
@@ -1905,7 +1917,12 @@ class QrCodeRefactorTest extends TestCase
             );
 
         $this->mockRemindersRequestForStatusCheck();
-        $this->mockSplitzTreatmentForStatusCheck();
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on',
+            ]
+        );
 
         $qrCode = $this->createQrCode(
             [
@@ -2058,10 +2075,10 @@ class QrCodeRefactorTest extends TestCase
                 }
             );
 
-        $this->setMockRazorxTreatment(
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on',
             ]
         );
 
@@ -2296,10 +2313,11 @@ class QrCodeRefactorTest extends TestCase
                 }
             );
 
-        $this->setMockRazorxTreatment(
+
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on',
             ]
         );
 
@@ -2469,10 +2487,10 @@ class QrCodeRefactorTest extends TestCase
                 }
             );
 
-        $this->setMockRazorxTreatment(
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on',
             ]
         );
 
@@ -2561,10 +2579,10 @@ class QrCodeRefactorTest extends TestCase
                 }
             );
 
-        $this->setMockRazorxTreatment(
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on',
             ]
         );
 
@@ -2594,10 +2612,10 @@ class QrCodeRefactorTest extends TestCase
         $this->config['applications.ezetap-notification.mock'] = true;
         $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
         $this->getDedicatedTerminalSplitzResponseForVariantON();
-        $this->setMockRazorxTreatment(
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'on',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'on',
             ]
         );
         $this->fixtures->create('terminal:dedicated_upi_jk_terminal');
@@ -2632,10 +2650,10 @@ class QrCodeRefactorTest extends TestCase
         $this->config['applications.ezetap-notification.mock'] = true;
         $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
         $this->getDedicatedTerminalSplitzResponseForVariantON();
-        $this->setMockRazorxTreatment(
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'on',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'on',
             ]
         );
         $this->fixtures->create('terminal:dedicated_upi_jk_terminal');

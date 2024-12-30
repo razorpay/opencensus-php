@@ -924,9 +924,6 @@ final class RazorxTreatment
 
     const CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER  = "card_subscriptions_international_handler";
 
-    const DISABLE_QR_CODE_ON_DEMAND_CLOSE = 'disable_qr_code_on_demand_close';
-
-    const QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS = 'qr_gateway_unrecognised_payment_process';
 
     // If true, it will select Optimizer mandate hub for card recurring payments.
     const ALLOW_OPTIMIZER_CARD_MANDATE_HUB = 'allow_optimizer_card_mandate_hub';
@@ -1038,7 +1035,7 @@ final class RazorxTreatment
      */
     const ENABLE_STANDARD_CHECKOUT_MERCHANTS_ON_PUSH_TOKEN_PROVISIONING = 'enable_standard_checkout_merchants_on_push_token_provisioning';
 
-    const QR_PAYMENT_PROCESS_RETRY = 'qr_payment_process_retry';
+
 
     /**
      * Razorx flag to skip callback for upi_icici BT(Beneficiary Timeout) cases

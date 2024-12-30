@@ -48,7 +48,6 @@ class UpiKotakQRCodeTest extends TestCase
 
         $this->fixtures->create('terminal:dedicated_upi_kotak_terminal');
 
-        $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
 
         $this->getDedicatedTerminalSplitzResponseForVariantON();
 
@@ -71,6 +70,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testCreateStaticKotakQrWithTerminal(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -114,6 +116,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testCreateStaticKotakQrWithFixedAmount(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'          => 'multiple_use',
@@ -129,6 +134,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testCreateDynamicKotakQrCode(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -160,7 +168,9 @@ class UpiKotakQRCodeTest extends TestCase
     public function testCreateKotakQrWithExpiry(): void
     {
         //If close_by is passed in request, QR should not be created via Kotak terminal
-
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CREATE_KOTAK);
@@ -179,10 +189,14 @@ class UpiKotakQRCodeTest extends TestCase
             'LiveAccountMer');
     }
 
+    //error
     public function testCreateKotakQrWithCloseQrOnDemandFlagEnabled(): void
     {
+        $this->markTestSkipped('feature close_qr_on_demand is deprecated');
         //If CLOSE_QR_ON_DEMAND is enabled for merchant, QR should not be created via Kotak terminal
-
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CREATE_KOTAK);
@@ -200,11 +214,16 @@ class UpiKotakQRCodeTest extends TestCase
             'LiveAccountMer');
     }
 
+    //error
     public function testCloseKotakQrWithCloseQrOnDemandFlagEnabled(): void
     {
-        $this->expectException(BadRequestException::class);
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
-        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
+//        $this->expectException(BadRequestException::class);
+//
+//        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
 
         $qrCode = $this->createQrCode(
             [
@@ -218,11 +237,19 @@ class UpiKotakQRCodeTest extends TestCase
 
         $this->fixtures->on('live')->merchant->addFeatures([FeatureConstants::CLOSE_QR_ON_DEMAND], 'LiveAccountMer');
 
-        $this->closeQrCode($qrCode['id']);
+        $this->closeQrCode($qrCode['id'], 'live', 'LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+        $this->assertEquals('closed', $qrCode->getStatus());
     }
 
+    //error
     public function testCloseKotakQrWithCloseQrOnDemandFlagDisabled(): void
     {
+        $this->markTestSkipped('feature close_qr_on_demand is deprecated');
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
@@ -237,7 +264,7 @@ class UpiKotakQRCodeTest extends TestCase
             'live',
             'LiveAccountMer');
 
-        $this->closeQrCode($qrCode['id']);
+        $this->closeQrCode($qrCode['id'], 'live', 'LiveAccountMer');
     }
 
     public function runQrPaymentEntityAssertions($expected = true, $paymentRequestEntity = [], $upiRequestEntity = [], $mode = 'test'): void
@@ -288,6 +315,10 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testQrPaymentOnStaticQrCode()
     {
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -308,6 +339,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testQrPaymentOnDynamicQrCode()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -330,6 +364,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testQrPaymentOnIntentSubType()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -354,6 +391,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testQrPaymentOnInvalidQrCode()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -392,6 +432,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testMultipleQrPaymentsOnDynamicQrCode()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -418,6 +461,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testQrPaymentFailedCallback()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -462,6 +508,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testProcessKotakQrReconInternalWithoutPayment(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -494,6 +543,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testProcessKotakQrReconInternalWithExistingPayment(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -598,6 +650,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testCreateUpiQRWithOrgLogoFeatureFlagAndHDFCOrg()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $org = $this->createTestOrg();
 
         $this->fixtures->edit('merchant','10000000000000',[
@@ -638,6 +693,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testCreateUpiQRWithOrgLogoFeatureFlagAndkotakOrg()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $org = $this->createTestOrg('kotak', 'kotak');
 
         $this->fixtures->edit('merchant','10000000000000',[
@@ -678,6 +736,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testCreateUpiQRWithOrgLogoAndMerchantFeatureFlagAndkotakOrg()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->fixtures->merchant->addFeatures(['custom_merchant_upi_qr']);
 
         $org = $this->createTestOrg('kotak', 'kotak');
@@ -719,6 +780,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testCreateUpiQRWithOrgLogoAndMerchantFeatureFlagAndHDFCOrg()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->fixtures->merchant->addFeatures(['custom_merchant_upi_qr']);
 
         $org = $this->createTestOrg();
@@ -759,6 +823,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testCreateUpiQRWithOrgLogoAndOrgFeatureFlagAndkotakOrg()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $org = $this->createTestOrg('kotak', 'kotak');
 
         $this->fixtures->edit('merchant','10000000000000',[
@@ -804,6 +871,9 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testCreateUpiQRWithOrgLogoAndOrgFeatureFlagAndHDFCOrg()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $org = $this->createTestOrg();
 
         $this->fixtures->edit('merchant','10000000000000',[

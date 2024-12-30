@@ -9212,23 +9212,50 @@ class Service extends Base\Service
         $input['experiments']['otp_unification_acs_page'] = $otpUnificationAcsPageVariant;
     }
 
-    private function shouldCreateQrPaymentFromUnexpectedUpiPayment(string $gateway)
+
+    /**
+     * @param string $gateway
+     * @return bool
+     */
+    private function shouldCreateQrPaymentFromUnexpectedUpiPayment(string $gateway): bool
     {
-        $variant = $this->app->razorx->getTreatment($gateway, Merchant\RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE, Mode::LIVE);
+        try{
+            $properties = [
+                'id'            => $gateway,
+                'experiment_id' => $this->app->config->get('app.recon_unexpected_qr_payment_via_upi_route'),
+                'request_data'  => json_encode(['gateway' => $gateway]),
+            ];
+            $response   = $this->app['splitzService']->evaluateRequest($properties);
 
-        $this->trace->info(
-            TraceCode::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE,
-            [
-                'gateway'           => $gateway,
-                'variant'           => $variant
-            ]
-        );
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'gateway'   => $gateway,
+                '$response'     => $response
+            ]);
 
-        if (strtolower($variant) === 'on')
+            if ($response['response']['variant'] !== null)
+            {
+                $variables = $response['response']['variant']['variables'] ?? [];
+
+                foreach ($variables as $variable)
+                {
+                    $key   = $variable['key'] ?? '';
+                    $value = $variable['value'] ?? '';
+                    if ($key === 'result' && $value === 'on')
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (\Throwable $e)
         {
-            return true;
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE_ERROR
+            );
         }
-
         return false;
     }
 

@@ -971,15 +971,6 @@ class Service extends QrCode\Service
         $this->trace->info(TraceCode::QR_CODE_CLOSE_REQUEST, ['id' => $id]);
 
         $errorMessage = null;
-
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE, $this->mode);
-
-        if ((strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
-            and ($this->merchant->isFeatureEnabled(FeatureConstants::CLOSE_QR_ON_DEMAND) === false))
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
-        }
-
         try
         {
             $qrCode = (new Repository())->findByPublicIdAndMerchant($id, $this->merchant);
@@ -989,12 +980,12 @@ class Service extends QrCode\Service
                 return $qrCode->toArrayPublic();
             }
 
-            if ((strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON) and
-                (((str_contains($qrCode['qr_string'], '@icici') === true) or
-                  ($qrCode->isRazorpayPosQrCode()===true))===false))
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
-            }
+//             (Comment from Pullak) Commented this section of code to re-enable closing of DQRs for everybody, discussed with Product
+//            if ((((str_contains($qrCode['qr_string'], '@icici') === true) or
+//                  ($qrCode->isRazorpayPosQrCode()===true))===false))
+//            {
+//                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
+//            }
 
             $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODES_CLOSE_QR_CODE], function () use ($qrCode, $closeReason) {
                 return (new Core)->close($qrCode, $closeReason);

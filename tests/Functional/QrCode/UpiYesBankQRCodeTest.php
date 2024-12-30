@@ -76,6 +76,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateStaticQrWithTerminal() :void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -88,6 +91,10 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateStaticQrWithTerminalForYesbank60(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
         $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
         $this->createQrCode(
             [
@@ -101,6 +108,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateStaticQrWithAmount() :void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -115,6 +125,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testPaymentForStaticQrCode(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -140,6 +153,10 @@ class UpiYesBankQRCodeTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'contact_email' => 'test@razorpay.com', 'contact_mobile' => '9876543210']);
 
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $this->createQrCode(
             [
@@ -172,6 +189,10 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -198,6 +219,10 @@ class UpiYesBankQRCodeTest extends TestCase
         ]);
 
         $this->fixtures->merchant->addFeatures([FeatureConstants::OMNI_ENABLED]);
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $this->createQrCode(
             [
@@ -230,6 +255,10 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([FeatureConstants::OMNI_ENABLED]);
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -261,6 +290,10 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([FeatureConstants::OMNI_ENABLED]);
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -288,6 +321,10 @@ class UpiYesBankQRCodeTest extends TestCase
         $merchant = $this->fixtures->create('merchant', [
             'activated' => true
         ]);
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $this->createQrCode(
             [
@@ -331,6 +368,11 @@ class UpiYesBankQRCodeTest extends TestCase
     public function testPaymentForStaticQrCodeForYesbank60(): void
     {
         $this->fixtures->terminal->edit('100YesDedTrmnl',['vpa'=>'testvpa@ypbiz']);
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -350,6 +392,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testPaymentOnDynamicQrCode() :void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -370,6 +415,9 @@ class UpiYesBankQRCodeTest extends TestCase
     {
         $this->fixtures->terminal->edit('100YesDedTrmnl',['vpa'=>'testvpa@ypbiz']);
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -391,6 +439,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testQrPaymentOnIntentSubType() :void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -428,6 +479,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testPaymentForClosedQrCode(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -457,6 +511,10 @@ class UpiYesBankQRCodeTest extends TestCase
     public function testPaymentForClosedQrCodeForYesbank60(): void
     {
         $this->fixtures->terminal->edit('100YesDedTrmnl',['vpa'=>'testvpa@ypbiz']);
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $this->createQrCode(
             [
@@ -528,7 +586,9 @@ class UpiYesBankQRCodeTest extends TestCase
     public function testPaymentForUnsuccessfulStatusCallback(): void
     {
         //Note: Callbacks with failed status are not processed but qr_payment_request entity is saved in DB
-
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -562,6 +622,10 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->fixtures->terminal->edit('100YesDedTrmnl',['vpa'=>'testvpa@ypbiz']);
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -592,6 +656,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testMultiplePaymentsForStaticQR(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -608,6 +675,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateDynamicQrCode() :void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -623,6 +693,10 @@ class UpiYesBankQRCodeTest extends TestCase
     public function testCreateDynamicQrCodeForYesbank60(): void
     {
         $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $this->createQrCode(
             [
@@ -680,6 +754,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->fixtures->create('terminal:live_dedicated_upi_yesbank_terminal');
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -694,6 +771,9 @@ class UpiYesBankQRCodeTest extends TestCase
     //It tests Qr payment fetch flow done via internal flow for Yes bank qr codes whose payment is not received by razorpay
     public function testProcessYesBankQrReconInternalWithoutPayment(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -724,6 +804,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testProcessYesBankQrReconInternal(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -825,11 +908,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateQrWithCloseOnDemandEnabled(): void
     {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON
-            ]);
-
+        $this->markTestSkipped('feature close_qr_on_demand has been deprecated');
         $this->expectException(BadRequestException::class);
         $this->expectExceptionMessage("Your current configuration does not support QR creation. Contact support for further assistance");
 
@@ -876,6 +955,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testRemarksPassedDuringPaymentOnQrCode() :void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -902,6 +984,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testProcessYesbankQrPaymentInternalWithPayerAccountType()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -934,6 +1019,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testProcessYesbankQrPaymentInternalWithInvalidPayerAccountType()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -967,6 +1055,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testProcessYesbankQrPaymentInternalWithNullPayerAccountType()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -999,6 +1090,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testProcessYesbankQrPaymentInternalWithEmptyPayerAccountType()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'single_use',
@@ -1031,8 +1125,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateQrWithOnDemandFeatureFlagEnabledAndCloseQrOnDemandForYesBank()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
-
+        $this->markTestSkipped('feature close_qr_on_demand has been deprecated');
         $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
@@ -1052,7 +1145,9 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateSingleUseQrCodeWithServerErrorException() // Testing exception handling for QR Creation with yesbank dedicated terminal
     {
-        $this->getDedicatedTerminalSplitzResponseForVariantON();
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $this->expectExceptionMessage('QrCode creation failed due to error at bank or wallet gateway');
         $this->expectException(BadRequestException::class);

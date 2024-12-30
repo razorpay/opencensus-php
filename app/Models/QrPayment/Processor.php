@@ -856,14 +856,6 @@ class Processor extends Base\Core
                                'qr_payment' => $qrPayment->getId()
                            ]);
 
-        $variant = $this->app->razorx->getTreatment($this->qrCode->merchant->getId(),
-                                                    RazorxTreatment::QR_PAYMENT_PROCESS_RETRY,
-                                                    $this->mode);
-
-        if (strtolower($variant) !== RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            throw $ex;
-        }
 
         if ($this->causedByLostConnection($ex) === false)
         {

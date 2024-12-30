@@ -1161,6 +1161,16 @@ return array(
 
     'reversal_read_experiment' => env('REVERSAL_READ_EXPERIMENT_ID'),
 
+    'qr_gateway_unrecognised_payment_process'  =>   env('QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS'),
+
+    'recon_unexpected_qr_payment_via_upi_route'  =>   env('RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE'),
+
+    'qr_code_create_refactor_gateway'  =>   env('QR_CODE_CREATE_REFACTOR_GATEWAY'),
+
+    'qr_payment_refactor_gateway'  =>   env('QR_PAYMENT_REFACTOR_GATEWAY'),
+
+    'qr_payment_refactor_existing_gateway'  =>   env('QR_PAYMENT_REFACTOR_EXISTING_GATEWAY'),
+
     'ezetap_device_notification_gateway_enabled' => env('EZETAP_DEVICE_NOTIFICATION_GATEWAY_ENABLED'),
 
     'fulcrum_recurring_initial_experiment' => env('FULCRUM_RECURRING_INITIAL_PAYMENT_EXP_ID'),

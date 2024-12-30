@@ -53,13 +53,14 @@ class UpiRzpApbQRCodeTest extends TestCase
             ]
         );
 
-        $this->getDedicatedTerminalSplitzResponseForVariantON();
+//        $this->getDedicatedTerminalSplitzResponseForVariantON();
 
         // Mock razorx to return 'on' for qr code create refactor experiment
-        $this->setMockRazorxTreatment(
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on',
             ]
         );
 
@@ -549,7 +550,6 @@ class UpiRzpApbQRCodeTest extends TestCase
     public function testQrStatusCheckViaRefactorFlowForUpiRzpapb()
     {
         $this->mockRemindersRequestForStatusCheck();
-        $this->mockSplitzTreatmentForStatusCheck();
 
         $qrCode = $this->createQrCode(
             [
@@ -652,7 +652,6 @@ class UpiRzpApbQRCodeTest extends TestCase
     public function testQrStatusCheckViaRefactorFlowForUpiRzpapbWhenPaymentExists()
     {
         $this->mockRemindersRequestForStatusCheck();
-        $this->mockSplitzTreatmentForStatusCheck();
 
         $this->testCreateQrPaymentViaRefactorFlowForUpiRzpApb();
 

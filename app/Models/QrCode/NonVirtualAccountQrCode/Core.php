@@ -32,6 +32,7 @@ use RZP\Models\QrPayment\Service as QrPaymentService;
 use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\QrCodeConfig\Service as QrCodeConfigService;
+use RZP\Models\BharatQr\Service as BharatQrService;
 
 class Core extends QrCode\Core
 {
@@ -238,6 +239,8 @@ class Core extends QrCode\Core
         return $parts['scheme'] . '://' . $parts['host'] . $parts['path'] . '?' . $parts['query'];
     }
 
+
+
     public function addStaticQRinQRCodeConfig($qrCode, $inputTerminal = null)
     {
 
@@ -252,10 +255,8 @@ class Core extends QrCode\Core
             return null;
         }
 
-        $gatewayVariant = $this->app->razorx->getTreatment($gateway, RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS, $this->mode);
 
-        if (strtolower($gatewayVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
-        {
+        if ((new BharatQrService())->checkIfQrGatewayUnrecognizedPaymentProcess($gateway) === false) {
             return null;
         }
 

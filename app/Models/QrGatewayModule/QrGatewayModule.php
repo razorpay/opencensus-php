@@ -15,6 +15,7 @@ use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Gateway\Upi\Base\IntentParams as IntentParams;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVaQrCodeEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\InvoiceDetails as InvoiceDetails;
+use RZP\Trace\TraceCode;
 
 /**
  * This class is to be used by all QR Code and QR Payment related operations to communicate with Mozart.
@@ -310,18 +311,36 @@ class QrGatewayModule
         {
             $app = App::getFacadeRoot();
 
-            // Fetch the variant value from the experiment
-            $qrVariant = $app['razorx']->getTreatment(
-                $gateway,
-                RazorxTreatment::QR_PAYMENT_REFACTOR_GATEWAY,
-                $mode
-            );
+            $properties = [
+                'id'            => $gateway,
+                'experiment_id' => $app->config->get('app.qr_payment_refactor_gateway'),
+                'request_data'  => json_encode(['gateway' => $gateway]),
+            ];
+            $response   = $app['splitzService']->evaluateRequest($properties);
+
+            $app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'gateway'   => $gateway,
+                '$response'     => $response
+            ]);
+
+            $qrVariant='off';
+            $variables = $response['response']['variant']['variables'] ?? [];
+            foreach ($variables as $variable) {
+                $key = $variable['key'] ?? '';
+                $value = $variable['value'] ?? '';
+                if($key=='result' && $value=='on') {
+                    $qrVariant = 'on';
+                    break;
+                }
+            }
+
 
             // Set the cache for a TTL of 3 mins
             Cache::set(self::QR_GATEWAY_CACHE_PREFIX . $gateway, strtolower($qrVariant), 180);
         }
 
-        return (strtolower($qrVariant) === RazorxTreatment::RAZORX_VARIANT_ON);
+        return strtolower($qrVariant) === 'on';
     }
 
     public static function checkIfOldGatewayProcessedThroughNewQrPaymentProcessingFlow(string $gateway, $mode = Mode::LIVE)
@@ -334,17 +353,34 @@ class QrGatewayModule
         {
             $app = App::getFacadeRoot();
 
-            // Fetch the variant value from the experiment
-            $qrVariant = $app['razorx']->getTreatment(
-                $gateway,
-                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY,
-                $mode
-            );
+            $properties = [
+                'id'            => $gateway,
+                'experiment_id' => $app->config->get('app.qr_payment_refactor_existing_gateway'),
+                'request_data'  => json_encode(['gateway' => $gateway]),
+            ];
+            $response   = $app['splitzService']->evaluateRequest($properties);
+
+            $app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'gateway'   => $gateway,
+                '$response'     => $response
+            ]);
+
+            $qrVariant='off';
+            $variables = $response['response']['variant']['variables'] ?? [];
+            foreach ($variables as $variable) {
+                $key = $variable['key'] ?? '';
+                $value = $variable['value'] ?? '';
+                if($key=='result' && $value=='on') {
+                    $qrVariant = 'on';
+                    break;
+                }
+            }
 
             // Set the cache for a TTL of 3 mins
             Cache::set(self::QR_EXISTING_GATEWAY_CACHE_PREFIX . $gateway, strtolower($qrVariant), 180);
         }
 
-        return (strtolower($qrVariant) === RazorxTreatment::RAZORX_VARIANT_ON);
+        return strtolower($qrVariant) === 'on';
     }
 }

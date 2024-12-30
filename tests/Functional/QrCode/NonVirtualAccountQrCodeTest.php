@@ -2727,9 +2727,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessPaymentOnStaticQrWithoutTransactionReference(): void
     {
-        $this->setMockRazorxTreatment(
+
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON
+                $this->config->get('app.qr_gateway_unrecognised_payment_process') => 'on',
             ]
         );
         $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
