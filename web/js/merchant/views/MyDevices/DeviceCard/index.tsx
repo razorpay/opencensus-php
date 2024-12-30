@@ -16,6 +16,8 @@ import DeviceStats from '../components/DeviceStats';
 import DeviceStatusBadge from '../components/DeviceStatusBadge';
 import { useDeviceLanguage } from '../hooks';
 import DeviceImageSource from '../image.png';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const DeviceCard = ({ device, key }) => {
   const { mutate: updateDeviceLanguage } = useDeviceLanguage();
@@ -26,6 +28,17 @@ const DeviceCard = ({ device, key }) => {
       id,
       settings: {
         deviceLanguagePref: language,
+      },
+    });
+
+    analyticsTrack({
+      objectName: 'My Devices',
+      actionName: 'clicked',
+      screen: 'My Devices',
+      properties: {
+        event_name: 'my_devices_select_lang',
+        language,
+        ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
       },
     });
   };
@@ -70,7 +83,11 @@ const DeviceCard = ({ device, key }) => {
         <Heading color="surface.text.gray.normal" size="2xlarge">
           J&K Soundbox
         </Heading>
-        <Text size="large" color="surface.text.gray.normal" weight="semibold">
+        <Text
+          size={isMobile ? 'small' : 'large'}
+          color="surface.text.gray.normal"
+          weight="semibold"
+        >
           {device.id}
         </Text>
         <DeviceStatusBadge isActive={device.status === 'Active'} />

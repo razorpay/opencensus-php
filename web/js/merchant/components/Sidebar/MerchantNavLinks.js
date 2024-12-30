@@ -47,9 +47,8 @@ function MerchantNavLinks(props) {
   const showMagicKonnectTab = abExperiments?.magic_konnect?.variables?.result === 'on';
   const isMagicXPublicappCodEnabled =
     abExperiments?.magicx_publicapp_cod?.variables?.result === 'on';
-
+  const showMyDevicesTab = abExperiments?.my_devices?.variables?.result === 'on';
   const isOmniJkFlow = isJKOfflineMerchant(org, user);
-
   useEffect(() => {
     //set recommend product to localstorage.
     if (user.isProductRecommendationEnabled) {
@@ -113,17 +112,13 @@ function MerchantNavLinks(props) {
           currentUser.isAllowedMultiple('payments orders refunds')
         }
       />
-      {/**
-        * Commenting out for now as the feature is not yet ready but will be enabled soon.
-        * NOTE: FE functionality is already developed just hiding till the BE is ready
-          <MainNavLink
-            label="My Devices"
-            icon="i i-pos text-success"
-            to="/my-devices"
-            isNew
-            additionalCondition={() => isOmniJkFlow}
-          />
-       */}
+      <MainNavLink
+        label="My Devices"
+        icon="i i-pos text-success"
+        to="/my-devices"
+        isNew
+        additionalCondition={() => isOmniJkFlow && showMyDevicesTab}
+      />
 
       <ShowWhen additionalCondition={() => !isOmniJkFlow}>
         <MainNavLink

@@ -69,7 +69,9 @@ describe('My Devicesw', () => {
   test('Should render device details if devices present', async () => {
     (useFetchDevices as jest.Mock).mockReturnValue({
       data: {
-        device_data: MOCK_DEVICE,
+        data: {
+          items: MOCK_DEVICE,
+        },
       },
       isLoading: false,
     });

@@ -3,10 +3,10 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 
-import { FETCH_DEVICE_ROUTE, UPDATE_DEVICE_ROUTE } from '../constants';
+import { FETCH_DEVICE_ROUTE, getUpdateDeviceRoute } from '../constants';
 
 interface UPDATE_DEVICE_PAYLOAD {
-  id: string;
+  id?: string;
   settings: {
     deviceLanguagePref: string;
   };
@@ -25,9 +25,9 @@ const getDevices = async () => {
 const updateDeviceLanguage = async (payload) => {
   try {
     return await merchantFetch({
-      absUrl: UPDATE_DEVICE_ROUTE,
-      method: 'POST',
-      data: payload,
+      absUrl: getUpdateDeviceRoute(payload.id),
+      method: 'PATCH',
+      data: payload.settings,
     });
   } catch (e: any) {
     throw new Error(e);

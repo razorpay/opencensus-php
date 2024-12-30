@@ -233,6 +233,17 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'my_devices',
+        experimentId: {
+          beta: 'Pbn7oLhLvDUZ60',
+          production: 'Pbnj08lfKulLxf',
+        },
+        defaultVariant: {
+          name: 'control',
+          variables: [],
+        },
+      },
+      {
         uniqueHashKey: 'partnerships_for_pos',
         experimentId: {
           beta: 'N3FXsNXuhB2qSf',

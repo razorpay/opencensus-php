@@ -896,7 +896,7 @@ class Content extends Component {
     const { abExperiments } = splitz;
     const extraConfig = { isConfigTagEnabled, abExperiments };
 
-    const { STREAKS_REWARDS_GROWTH, export_payments_v2 } = abExperiments;
+    const { STREAKS_REWARDS_GROWTH, export_payments_v2, my_devices } = abExperiments;
 
     if (fullPageView) return fullPageView;
 
@@ -2647,7 +2647,7 @@ class Content extends Component {
           <Route
             path="my-devices/*"
             element={
-              <RouteGuard additionalCondition={() => isJkOrg}>
+              <RouteGuard additionalCondition={() => isJkOrg && isExperimentActive(my_devices)}>
                 <MyDevices />
               </RouteGuard>
             }
