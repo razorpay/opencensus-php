@@ -868,7 +868,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
             $merchantCore = new Core();
 
             // Check for POS Sub-merchants
-            if ($merchantCore->isPOSSubMerchant($merchant))
+            if ($merchantCore->isRegularSubmerchant($merchant))
             {
                 return true;
             }

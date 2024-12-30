@@ -1000,7 +1000,7 @@ class Service extends Base\Service
         if ($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING AND $countryCode === 'IN')
         {
 
-            if ($merchantCore->isPOSSubMerchant($merchant))
+            if ($merchantCore->isRegularSubmerchant($merchant))
             {
                 $shouldOnboardViaPGOS = true;
             }
