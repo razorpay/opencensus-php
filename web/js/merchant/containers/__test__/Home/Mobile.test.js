@@ -13,6 +13,11 @@ jest.mock('common/i18', () => ({
   }),
 }));
 
+jest.mock('shell/commonStore', () => ({
+  ...jest.requireActual('shell/commonStore'),
+  useStore: (cb) => cb({ session: { user: {} } }),
+}));
+
 const defaultProps = {
   showInstantActivation: false,
   ondemand_restrictions: {

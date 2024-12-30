@@ -108,6 +108,11 @@ jest.mock('merchant/views/EcosystemDowntimes', () => ({
   },
 }));
 
+jest.mock('shell/commonStore', () => ({
+  ...jest.requireActual('shell/commonStore'),
+  useStore: (cb) => cb({ session: { user: {} } }),
+}));
+
 window.rzpQ = {
   onbr: () => ({
     success: (name, obj) => {

@@ -61,10 +61,17 @@ import {
 } from './ga';
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
 import { Box } from '@razorpay/blade/components';
+import { isEligibleForReKyc } from 'merchant/components/ReKycStatusAlerts/utils';
 
 const TerminalStatus = lazy(() =>
   import(
     /* webpackChunkName: 'terminal-status-banner' */ 'merchant/components/Announcements/TerminalStatus'
+  ),
+);
+
+const ReKycStatusBanner = lazy(() =>
+  import(/* webpackChunkName: 'rekycStatusBanner' */ 'merchant/components/ReKycStatusAlerts').then(
+    (module) => ({ default: module.ReKycStatusBanner }),
   ),
 );
 
@@ -278,6 +285,7 @@ class AnalyticsMobile extends Component {
     let carouselItem = [];
     if (banner_carousel_items.length) carouselItem = [...banner_carousel_items];
     const isJkOrg = isJKOfflineMerchant(this.props.org, this.props.user);
+    const shouldShowReKycBanner = isEligibleForReKyc(this.props.splitz, user);
 
     return (
       <div className="home-analytics-mobile">
@@ -301,6 +309,11 @@ class AnalyticsMobile extends Component {
           }`}
         >
           <Box display="flex" gap="spacing.4" flexDirection="column">
+            {shouldShowReKycBanner ? (
+              <Suspense fallback={null}>
+                <ReKycStatusBanner />
+              </Suspense>
+            ) : null}
             <FestivalThemeBanner isMobileView={true} />
             <DiwaliReportBanner isMobileView={true} />
           </Box>

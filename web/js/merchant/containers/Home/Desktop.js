@@ -51,6 +51,7 @@ import EasterEgg from 'merchant/components/EasterEgg';
 import DedupeModal from 'merchant/components/Home/DedupeModal';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
+import { isEligibleForReKyc } from 'merchant/components/ReKycStatusAlerts/utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import CreditPullModal from 'merchant/containers/CreditPullModal';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
@@ -112,6 +113,12 @@ import { Box } from '@razorpay/blade/components';
 const TerminalStatus = lazy(() =>
   import(
     /* webpackChunkName: 'terminal-status-banner' */ 'merchant/components/Announcements/TerminalStatus'
+  ),
+);
+
+const ReKycStatusBanner = lazy(() =>
+  import(/* webpackChunkName: 'rekycStatusBanner' */ 'merchant/components/ReKycStatusAlerts').then(
+    (module) => ({ default: module.ReKycStatusBanner }),
   ),
 );
 
@@ -534,6 +541,7 @@ class AnalyticsDesktop extends Component {
     };
 
     const isJKOmniFlow = isJKOfflineMerchant(org, user);
+    const shouldShowReKycBanner = isEligibleForReKyc(splitz, user);
 
     const goToNCOnEasy = () => {
       analyticsTrack({
@@ -584,6 +592,11 @@ class AnalyticsDesktop extends Component {
             }`}
           >
             <Box display="flex" gap="spacing.4" flexDirection="column">
+              {shouldShowReKycBanner ? (
+                <Suspense fallback={null}>
+                  <ReKycStatusBanner />
+                </Suspense>
+              ) : null}
               <FestivalThemeBanner />
               <DiwaliReportBanner />
             </Box>

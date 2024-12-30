@@ -1,12 +1,16 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, Suspense, useEffect } from 'react';
 import { Box } from '@razorpay/blade/components';
+import { useStore } from 'shell/commonStore';
 
 import { FullPageLoader, FullPageLoaderCenterToMainContent } from 'common/components/Loader';
+import { useSplitzService } from 'common/splitz';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import { isEligibleForReKyc } from 'merchant/components/ReKycStatusAlerts/utils';
 import { useUCSDataQuery } from 'merchant/containers/Home/RTUX/hooks/useUCSDataQuery';
 import { useUCSLayoutQuery } from 'merchant/containers/Home/RTUX/hooks/useUCSLayoutQuery';
+import lazy from 'merchant/routes/LazyLoader';
 import { ErrorState } from 'merchant/widgets/common/ErrorState';
 import { getUcsAliasFromQueryKey, getBaseWidget, track } from 'merchant/widgets/utils';
 
@@ -17,19 +21,27 @@ import FestivalThemeBanner from '../FestivalThemeBanner';
 const RTUX_HOMEPAGE_LAYOUT_KEY = ['rtux-homepage', 'layout'];
 const RTUX_HOMEPAGE_DATA_KEY = ['rtux-homepage', 'data'];
 
+const ReKycStatusBanner = lazy(() =>
+  import(/* webpackChunkName: 'rekycStatusBanner' */ 'merchant/components/ReKycStatusAlerts').then(
+    (module) => ({ default: module.ReKycStatusBanner }),
+  ),
+);
+
 const RTUXHomepage = (): JSX.Element => {
   const {
     data: layoutData,
     isFetching: isFetchingLayout,
     isError: isErrorLayout,
   } = useUCSLayoutQuery(RTUX_HOMEPAGE_LAYOUT_KEY, { alias: 'home_page' });
-
+  const user = useStore((state) => state.session.user);
+  const splitz = useSplitzService();
   const { data, isFetching, isError, refetch, error } = useUCSDataQuery(RTUX_HOMEPAGE_DATA_KEY, {
     alias: 'home_page',
   });
   const screen = getUcsAliasFromQueryKey(RTUX_HOMEPAGE_DATA_KEY) ?? '';
   // home page widget doesn't has a type or id
   const widgetId = `merchantDashboard.${screen}`;
+  const shouldShowReKycBanner = isEligibleForReKyc(splitz, user);
 
   const retryHandler = () => {
     if (isError) refetch();
@@ -90,6 +102,11 @@ const RTUXHomepage = (): JSX.Element => {
   return (
     <ResponsiveWrapper>
       <Box display="flex" flexDirection="column" paddingY="spacing.5" gap="spacing.6">
+        {shouldShowReKycBanner ? (
+          <Suspense fallback={null}>
+            <ReKycStatusBanner isRtux={true} />
+          </Suspense>
+        ) : null}
         <FestivalThemeBanner isRtux={true} />
         <DiwaliReportBanner isRtux={true} />
         {dataSource.components.map((widgetData) => (

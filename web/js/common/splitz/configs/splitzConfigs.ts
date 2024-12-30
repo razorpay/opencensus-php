@@ -1211,6 +1211,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'enable_manual_rekyc',
+          experimentId: {
+            beta: 'PWDQ67wDXLfhLD',
+            production: 'PWDYrJnxHXgUVV',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

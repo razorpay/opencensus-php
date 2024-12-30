@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unsafe */
-import React, { Component } from 'react';
+import React, { Component, Suspense } from 'react';
 import { Box, Button, MenuIcon, RefreshIcon, Spinner, Text } from '@razorpay/blade/components';
 import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
 import { connect } from 'react-redux';
@@ -39,10 +39,17 @@ import ProfileDropdown from './ProfileDropdown';
 import StatusDetails from './StatusDetails';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import UniversalSearch from './UniversalSearch';
+import { isEligibleForReKyc } from '../ReKycStatusAlerts/utils';
 import { isJKOfflineMerchant } from '../Sidebar/helpers';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
+);
+
+const ReKycStatusModal = lazyLoader(() =>
+  import(/* webpackChunkName: 'reKycStatusModal' */ 'merchant/components/ReKycStatusAlerts').then(
+    (module) => ({ default: module.ReKycStatusModal }),
+  ),
 );
 
 // number of times to show MTU offer
@@ -207,6 +214,7 @@ class HeaderNav extends Component {
     });
 
     const isJKOrg = isJKOfflineMerchant(org, user);
+    const shouldShowReKycModal = isEligibleForReKyc(splitz, user);
 
     return (
       <div className="nav-wrapper">
@@ -429,6 +437,11 @@ class HeaderNav extends Component {
               />
             )}
           </React.Fragment>
+        ) : null}
+        {shouldShowReKycModal ? (
+          <Suspense fallback={null}>
+            <ReKycStatusModal />
+          </Suspense>
         ) : null}
       </div>
     );

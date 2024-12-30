@@ -170,6 +170,13 @@ type UserProperties = {
   isLRSEducationFlow: boolean;
   orgCustomCode: string;
   isJnKOmniEnabled: boolean;
+  rekyc_status: string;
+  manual_rekyc: {
+    status: {
+      created_at: string;
+      rekyc_status: string;
+    }[];
+  };
 };
 
 // as user properties are not available initially
