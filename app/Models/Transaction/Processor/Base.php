@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Models\Feature;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
@@ -1096,6 +1097,8 @@ abstract class Base extends BaseCore
         $amount = $this->txn->getCredits();
 
         $merchantId = $this->merchantBalance->merchant->getId();
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $reverseShadowMerchant = $merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW);
 
         $refundCreditsThreshold = $this->merchantBalance->merchant->getRefundCreditsThreshold();
 
@@ -1118,7 +1121,14 @@ abstract class Base extends BaseCore
         }
         else
         {
-            $refundCredits = $this->merchantBalance->getRefundCredits();
+            if ($reverseShadowMerchant)
+            {
+                $refundCredits = $this->repo->credits->getMerchantCreditsOfType($merchant->getId(), Credits\Type::REFUND);
+            }
+            else
+            {
+                $refundCredits = $this->merchantBalance->getRefundCredits();
+            }
         }
 
         $data = [
@@ -1147,9 +1157,16 @@ abstract class Base extends BaseCore
                 $data);
         }
 
-        $this->merchantBalance->subtractRefundCredits($amount, $negativeLimit);
+        if ($reverseShadowMerchant === false)
+        {
+            $this->merchantBalance->subtractRefundCredits($amount, $negativeLimit);
 
-        $newCredits = $this->merchantBalance->getRefundCredits();
+            $newCredits = $this->merchantBalance->getRefundCredits();
+        }
+        else
+        {
+            $newCredits = $refundCredits - $amount;
+        }
 
         $this->trace->info(TraceCode::MERCHANT_REFUND_CREDITS_DATA,
             [
@@ -1158,6 +1175,7 @@ abstract class Base extends BaseCore
                 'new_credits' => $newCredits,
                 'old_credits' => $refundCredits,
                 'method'      => 'updateRefundCredits',
+                'reverse_shadow' => $reverseShadowMerchant,
             ]);
 
         (new Balance\NegativeReserveBalanceMailers())->sendNegativeBalanceMailIfApplicable(

@@ -459,9 +459,16 @@ class Core extends Base\Core
             }
             else
             {
-                $balance = $merchant->getBalanceByTypeOrFail($balanceType);
+                if ($merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW))
+                {
+                    $refundCredits = $this->repo->credits->getMerchantCreditsOfType($merchant->getId(), Credits\Type::REFUND);
+                }
+                else
+                {
+                    $balance = $merchant->getBalanceByTypeOrFail($balanceType);
 
-                $refundCredits = $balance->getRefundCredits();
+                    $refundCredits = $balance->getRefundCredits();
+                }
             }
         }
 
