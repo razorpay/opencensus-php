@@ -5282,7 +5282,7 @@ GROUP BY
 
           unset($payment['_transaction_updated_at']);
 
-          unset($payment['device_id']);
+//          unset($payment['device_id']);
 
           parent::saveOrFail($payment, $options);
 

@@ -2568,4 +2568,55 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals('offline_pod', $payment['channel']);
     }
 
+    public function testSetDeviceIdForPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
+
+        $this->mockSplitzTreatment($output);
+
+        $this->createQrCode(
+            [
+                'usage'        => 'multiple_use',
+                'type'         => 'upi_qr',
+            ],
+            'live',
+            'LiveAccountMer');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $this->updateDeviceIdForQrCode(
+            [
+                'identifier'=>[
+                    'trId'=>null,
+                    'qr_code_id'  => $qrCodeEntity['id'],
+                    'merchant_id' => 'LiveAccountMer',
+                ],
+                'device_id'   => 'testi12',
+            ]);
+
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['merchantId'] = $terminal->getGatewayMerchantId();
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeEntity['reference'];
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true, 'live');
+        $payment = $this->getLastEntity('payment', true, 'live');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+        $this->assertEquals('testi12',$payment['device_id']);
+    }
+
 }

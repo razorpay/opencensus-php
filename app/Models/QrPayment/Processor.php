@@ -396,6 +396,11 @@ class Processor extends Base\Core
             $paymentArray[Payment\Entity::ORDER_ID] = $order->getPublicId();
         }
 
+        if($this->qrCode->getDeviceId() !== null and $qrPayment->isExpected() === true)
+        {
+            $paymentArray[Payment\Entity::DeviceId] = $this->qrCode->getDeviceId();
+        }
+
         // TODO: find a better method to do this. This is done in order to bypass validation
         if ($this->gatewayInput[Entity::METHOD] === Payment\Method::CARD)
         {
