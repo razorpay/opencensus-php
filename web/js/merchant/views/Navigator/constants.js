@@ -112,6 +112,8 @@ export const SKIP_VALIDATION_KEYS = [
 
 export const SKIP_PAYTM_AUTO_DEBIT_VALIDATION_KEYS = ['CLIENT_KEY', 'CLIENT_SECRET']; // These fields are only required if the wallet auto debit is enabled on paytm
 
+export const SKIP_PHONEPE_CARD_VALIDATION_KEYS = ['Encryption certificate', 'Encryption key id']; // These fields are only required if the card payment method is enabled on phonepe
+
 export const TPV_OPTIONS = {
   0: 'Non TPV',
   1: 'TPV Only',
@@ -131,6 +133,7 @@ export const HAS_UPI_FEATURES = [
   'payu',
   'pinelabs',
   'ingenico',
+  'phonepe',
 ];
 
 export const HAS_NETBANKING_FEATURES = [
@@ -147,6 +150,7 @@ export const HAS_NETBANKING_FEATURES = [
   'payu',
   'ingenico',
   'atom',
+  'phonepe',
 ];
 
 export const ACCOUNT_TYPE_OPTIONS = [

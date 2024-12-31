@@ -20,6 +20,7 @@ import {
   INSTANT_PROVIDER_UNSUPPORTED_METHODS,
   SKIP_VALIDATION_KEYS,
   SKIP_PAYTM_AUTO_DEBIT_VALIDATION_KEYS,
+  SKIP_PHONEPE_CARD_VALIDATION_KEYS,
   WALLET_AUTO_DEBIT_KEY,
   PROVIDER_KEYS,
   SEAMLESS_PROVIDERS,
@@ -539,6 +540,8 @@ class AddProvider extends React.Component {
       return true;
     }
 
+    const isCardEnabled = provider?.Gateway_details?.['Payment Methods'].indexOf('card') !== -1;
+
     for (const key of Object.keys(providers[selectedProviderWithAcquirer])) {
       const value = provider?.Gateway_details?.[key];
 
@@ -555,8 +558,13 @@ class AddProvider extends React.Component {
           paytmAutoDebitEnabled = true;
         }
         // Paytm wallet auto debit not enabled then no need to check for the fields which are only required for wallet auto debit
+        // Phonepe card not enabled then no need to check for the fields which are only required for card payment method
       } else if (
         !(!paytmAutoDebitEnabled && SKIP_PAYTM_AUTO_DEBIT_VALIDATION_KEYS.includes(key)) &&
+        !(
+          !(selectedProviderWithAcquirer === 'phonepe' && isCardEnabled) &&
+          SKIP_PHONEPE_CARD_VALIDATION_KEYS.includes(key)
+        ) &&
         !SKIP_VALIDATION_KEYS.includes(key) &&
         !value
       ) {
