@@ -854,6 +854,8 @@ return array(
 
     'vpa_validation' => env('VPA_VALIDATION'),
 
+    'manual_rekyc' => env('MANUAL_REKYC_EXP_ID'),
+
     'remove_ngo_business_type' => env('REMOVE_NGO_BUSINESS_TYPE'),
 
     'enable_unverified_email_check_for_easy_onboarding' => env('ENABLE_UNVERIFIED_EMAIL_CHECK_FOR_EASY_ONBOARDING_EXP_ID'),

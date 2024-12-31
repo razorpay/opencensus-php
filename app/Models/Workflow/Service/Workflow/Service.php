@@ -130,6 +130,11 @@ class Service extends Base\Service
         if (array_key_exists($input['permission_name'],ActionConstants::PERMISSION_VS_CONTROLLER) == false){
             throw new Exception\BadRequestValidationFailureException("no approval controller defined");
         }
+        
+        $oldValue = array_get($input, 'input_old', null);
+        $tagsValue = array_get($input, 'tags', ['AES_CREATED']);
+        $newValue =  array_get($input, 'input', null);
+        
         try
         {
             $this->app['workflow']
@@ -141,8 +146,8 @@ class Service extends Base\Service
                 ->setWorkflowMaker($admin)
                 ->setWorkflowMakerType(MakerType::ADMIN)
                 ->setEntityAndId(E::MERCHANT, $input['entity_id'])
-                ->setTags(['AES_CREATED'])
-                ->handle(null, $input['input']);
+                ->setTags($tagsValue)
+                ->handle($oldValue, $newValue);
         }
         catch (Exception\EarlyWorkflowResponse $e)
         {

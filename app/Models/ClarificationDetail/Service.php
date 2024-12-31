@@ -69,7 +69,11 @@ class Service extends Base\Service
 
             $shouldMerchantOnboardViaPGOS = $pgosNCProxyController->shouldMerchantOnboardViaPGOS($merchantId);
 
-            if ($shouldMerchantOnboardViaPGOS === true) {
+            $service = new Merchant\Service();
+
+            $isEligibleForRekycExperiment = $service->isEligibleForRekycExperiment($merchantId);
+
+            if ($shouldMerchantOnboardViaPGOS === true || $isEligibleForRekycExperiment === true) {
 
                 if ($onboardingType === Constants::POS_ONBOARDING_TYPE) {
                     $pgosInput[DEConstants::ONBOARDING_TYPE] = $onboardingType;
@@ -81,6 +85,13 @@ class Service extends Base\Service
 
                 foreach ($pgosInput[DEntity::CLARIFICATION_REASONS] as &$clarificationReason)
                 {
+                    if ($clarificationReason[Constants::GROUP_NAME] === DEConstants::UBO_DECLARATION)
+                    {
+                        // handling this payload creation explicitly for rekyc merchants
+                        $this->buildUBOPayload($clarificationReason);
+                        continue;
+                    }
+
                     if(isset($clarificationReason[Constants::FIELD_DETAILS]) === true)
                     {
                         foreach ($clarificationReason[Constants::FIELD_DETAILS] as $key => $value)
@@ -218,7 +229,11 @@ class Service extends Base\Service
 
             $shouldMerchantOnboardViaPGOS = $pgosNCProxyController->shouldMerchantOnboardViaPGOS($merchantId);
 
-            if ($shouldMerchantOnboardViaPGOS === true) {
+            $service = new Merchant\Service();
+
+            $isEligibleForRekycExperiment = $service->isEligibleForRekycExperiment($merchantId);
+
+            if ($shouldMerchantOnboardViaPGOS === true || $isEligibleForRekycExperiment === true) {
 
                 if ($isAdminRouteRequest === true)
                 {
@@ -268,7 +283,11 @@ class Service extends Base\Service
 
             $shouldMerchantOnboardViaPGOS = $pgosNCProxyController->shouldMerchantOnboardViaPGOS($merchantId);
 
-            if ($shouldMerchantOnboardViaPGOS === true) {
+            $service = new Merchant\Service();
+
+            $isEligibleForRekycExperiment = $service->isEligibleForRekycExperiment($merchantId);
+
+            if ($shouldMerchantOnboardViaPGOS === true || $isEligibleForRekycExperiment === true) {
 
                 $onboardingType = $input[DEConstants::ONBOARDING_TYPE];
                 unset($input[DEConstants::ONBOARDING_TYPE]);
@@ -287,6 +306,13 @@ class Service extends Base\Service
 
                 foreach ($input as $groupName => $details)
                 {
+                    // NC on 'ubo_declaration' is only introduced for Rekyc flow,  merchants do not have 'ubo_declaration' value
+                    // Hence we can't validate it using validateFieldsData function (which will start throwing error).
+                    if ($groupName === DEConstants::UBO_DECLARATION)
+                    {
+                        continue;
+                    }
+
                     $this->validateFieldsData($merchantId, $groupName, $details);
                 }
 
@@ -612,7 +638,6 @@ class Service extends Base\Service
 
         return ["nc_revamp_enabled" => $this->isEligibleForRevampNC($merchantId)];
     }
-
     public function updateClarificationDetails($merchantId,$status)
     {
         if ($status === Status::UNDER_REVIEW)
@@ -671,6 +696,47 @@ class Service extends Base\Service
 
                 $this->repo->clarification_detail->saveOrFail($clarification);
 
+            }
+        }
+    }
+
+    /**
+     * buildUBOPayload updates UBO-related fields in the clarification reason if they are empty.
+     *
+     * This function checks each key in the `FIELD_DETAILS` section of the clarification reason. If the value is empty,
+     * it sets default values:
+     * - For `DECLARE_UBO`, it sets "NOT_AVAILABLE".
+     * - For UBO shareholder fields (`NAME`, `ADDRESS`, `COUNTRY`, `OWNERSHIP`), it sets an array with "NOT_AVAILABLE".
+     *
+     * This is done to handle the issue of passing nil values to PGOS via proto. The logic at PGOS expects some value instead of nil
+     *
+     * @param array &$clarificationReason The clarification reason array to be updated.
+     * @return void
+     */
+    public function buildUBOPayload(&$clarificationReason)
+    {
+        if(isset($clarificationReason[Constants::FIELD_DETAILS]) === true)
+        {
+            foreach ($clarificationReason[Constants::FIELD_DETAILS] as $key => $value)
+            {
+                if(empty($value) === true)
+                {
+                    switch ($key)
+                    {
+                        case DEConstants::DECLARE_UBO:
+                            $clarificationReason[Constants::FIELD_DETAILS][$key] = "NOT_AVAILABLE";
+                            break;
+
+                            // following fields are string arrays in proto, hence passing ["NOT_AVAILABLE"], when no value from UI
+                        case DEConstants::UBO_SHAREHOLDER_NAME:
+                        case DEConstants::UBO_SHAREHOLDER_ADDRESS:
+                        case DEConstants::UBO_SHAREHOLDER_COUNTRY:
+                        case DEConstants::UBO_SHAREHOLDER_OWNERSHIP:
+                            $clarificationReason[Constants::FIELD_DETAILS][$key] = ["NOT_AVAILABLE"];
+                            break;
+
+                    }
+                }
             }
         }
     }

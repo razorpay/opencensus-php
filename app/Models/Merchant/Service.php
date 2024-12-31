@@ -207,6 +207,10 @@ use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluato
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AccountSDKWrapper;
 use RZP\Models\DeviceDetail\Entity as DeviceDetailEntity;
 use RZP\Models\DeviceDetail;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use Google\Protobuf\Struct;
+use Google\Protobuf\Value;
+use Google\Protobuf\ListValue;
 
 class Service extends Base\Service
 {
@@ -2137,6 +2141,75 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    public function isEligibleForRekycExperiment(string $merchantId): bool{
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            =>  $merchantId,
+                'experiment_id' =>  $this->app['config']->get('app.manual_rekyc'),
+            ],
+            'variables'
+        );
+        return $isExpEnabled;
+    }
+
+    public function isRekycMerchant(string $merchantId, mixed $activationStatus): bool
+    {
+        $isExpEnabled = $this->isEligibleForRekycExperiment($merchantId);
+        return $isExpEnabled && $activationStatus === Detail\Status::ACTIVATED;
+    }
+
+    public function getLatestRekycStatus(mixed $details){
+        $latestStatus = null;
+        $maxTimestamp = PHP_INT_MIN;
+
+        $statuses = $details[DetailConstants::MANUAL_REKYC][DetailConstants::STATUS];
+        foreach ($statuses as $item) {
+            if ($item[DetailConstants::CREATED_AT] > $maxTimestamp) {
+                $maxTimestamp = $item[DetailConstants::CREATED_AT];
+                $latestStatus = $item[DetailConstants::REKYC_STATUS];
+            }
+        }
+        return $latestStatus;
+    }
+    public function isValidTransitionForRekyc(mixed $details, string $nextStatus){
+        $latestStatus = $this->getLatestRekycStatus($details);
+        return (in_array($nextStatus, Merchant\Detail\Status::ALLOWED_NEXT_REKYC_STATUSES_MAPPING[$latestStatus], true) === true);
+    }
+
+    public function transitionToNextRekycStatus(string $merchantId, mixed $details, string $nextStatus){
+        $fieldListForAsv = ["account.additional_detail.details"];
+        $timestamp = time();
+
+        $newEntry = new Struct();
+        $newEntry->setFields([
+            DetailConstants::REKYC_STATUS => (new Value())->setStringValue($nextStatus),
+            DetailConstants::CREATED_AT => (new Value())->setStringValue($timestamp),
+        ]);
+
+        $manualRekycList = new ListValue();
+        $statuses = $details[DetailConstants::MANUAL_REKYC][DetailConstants::STATUS];
+        foreach ($statuses as $item) {
+            $entry = new Struct();
+            $entry->setFields([
+                DetailConstants::REKYC_STATUS => (new Value())->setStringValue($item[DetailConstants::REKYC_STATUS]),
+                DetailConstants::CREATED_AT => (new Value())->setStringValue($item[DetailConstants::CREATED_AT]),
+            ]);
+            $manualRekycList->getValues()[] = (new Value())->setStructValue($entry);
+        }
+        $manualRekycList->getValues()[] = (new Value())->setStructValue($newEntry);
+
+        $detailConstants = new Struct();
+        $detailConstants->setFields([
+            DetailConstants::MANUAL_REKYC => (new Value())->setStructValue(
+                (new Struct())->setFields([
+                    DetailConstants::STATUS => (new Value())->setListValue($manualRekycList)
+                ])
+            )
+        ]);
+
+       return (new AccountSDKWrapper())->saveAccountAdditionalDetailWithDetails($merchantId, $detailConstants, $fieldListForAsv);
     }
 
     protected function invalidatePreviousRequestForEmailUpdate($merchant, $currentOwnerUser)

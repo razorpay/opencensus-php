@@ -51,6 +51,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREATE_MERCHANT_CONSENT_DETAILS           = 'CREATE_MERCHANT_CONSENT_DETAILS';
     const CREATE_MERCHANT_CONSENTS                  = 'CREATE_MERCHANT_CONSENTS';
     const CREATE_MERCHANT_CONSENTS_EXPT             = 'CREATE_MERCHANT_CONSENTS_EXPT';
+    const POST_MERCHANT_REKYC_UPDATE                =  'POST_MERCHANT_REKYC_UPDATE';
     const PGOS_CREATE_MERCHANT_CONSENTS_RESPONSE    = 'PGOS_CREATE_MERCHANT_CONSENTS_RESPONSE';
     const FETCH_MERCHANT_CONSENTS                   = 'FETCH_MERCHANT_CONSENTS';
     const FETCH_MERCHANT_CONSENTS_RESPONSE          = 'FETCH_MERCHANT_CONSENTS_RESPONSE';
@@ -137,6 +138,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const COI_EXPERIMENT                                        = 'COI_EXPERIMENT';
 
     const TRUST_SOCIETY_NGO_EXPERIMENT                          = 'TRUST_SOCIETY_NGO_EXPERIMENT';
+    const MANUAL_REKYC_STATUS                                   = 'MANUAL_REKYC_STATUS';
 
     const CREDITS_EXPIRE_REQUEST                                = 'CREDITS_EXPIRE_REQUEST';
     const QR_PAYMENT_ES_DEBUG                                   = 'QR_PAYMENT_ES_DEBUG';

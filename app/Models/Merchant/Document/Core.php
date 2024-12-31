@@ -220,6 +220,14 @@ class Core extends Base\Core
 
         (new Validator())->validateDocumentTypeAndFileType($rule, $input);
 
+        $service = new Merchant\Service();
+        $isRekycMerchant = $service->isRekycMerchant($merchant->getMerchantId(), $merchantDetails->getActivationStatus());
+
+        // unlock the form for the rekyc case
+        if($isRekycMerchant) {
+            $merchantDetails->setLocked(false);
+        }
+
         $validateLock = $this->shouldValidateLock($input, $validateLock);
 
         if ($validateLock === true)
@@ -253,7 +261,8 @@ class Core extends Base\Core
 
             $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
 
-            if ($shouldMerchantOnboardViaPGOS === true)
+            // or if rekyc merchant onboard via PGOS
+            if ($shouldMerchantOnboardViaPGOS === true || $isRekycMerchant)
             {
                 $payload = [
                     "document_type"      => $documentType,
@@ -274,6 +283,11 @@ class Core extends Base\Core
                     'merchant_id' => $merchantId,
                     'response'    => $response,
                 ]);
+
+                // lock again for the rekyc case
+                if ($isRekycMerchant){
+                    $merchantDetails->setLocked(true);
+                }
 
                 return $response['activation_response'];
             }
@@ -829,8 +843,12 @@ class Core extends Base\Core
             // merchants who are not completely activated
             // or offline eligible merchant with offline not activated yet
 
-            if (($merchant->getService() === Merchant\Constants::PGOS and $merchant->merchantDetail->getActivationStatus() != Detail\Status::ACTIVATED) or
-                (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant))
+            $service = new Merchant\Service();
+            $activationStatus = $merchant->merchantDetail->getActivationStatus();
+            $isRekycMerchant = $service->isRekycMerchant($data[Entity::MERCHANT_ID],$activationStatus);
+
+            if (($merchant->getService() === Merchant\Constants::PGOS and $activationStatus != Detail\Status::ACTIVATED) or
+                (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant) or $isRekycMerchant)
             {
                 $document = $this->repo->merchant_document->findDocumentByFileStoreId($data[Entity::FILE_STORE_ID]);
 

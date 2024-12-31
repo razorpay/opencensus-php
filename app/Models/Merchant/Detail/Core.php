@@ -17,6 +17,7 @@ use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
+use RZP\Models\Workflow\Service\Workflow\Service as MakerCheckerWorkflowService;
 use RZP\Models\User;
 use RZP\Constants\Mode;
 use RZP\Base\ConnectionType;
@@ -56,6 +57,7 @@ use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Services\KafkaProducer;
 use RZP\Models\SimilarWeb\SimilarWebRequest;
 use RZP\Models\SimilarWeb\SimilarWebService;
+use RZP\Services\WorkflowService;
 use RZP\Trace\Tracer;
 use RZP\Models\State;
 use RZP\Models\Coupon;
@@ -3042,8 +3044,70 @@ class Core extends Base\Core
      */
     public function patchMerchantDetails(Merchant\Entity $merchant, array $input): Entity
     {
-        // skip call to pgos  to update merchant details if merchant is activated
         $activationStatus = $merchant->merchantDetail->getActivationStatus();
+
+        $merchantId = $merchant->getMerchantId();
+        $service = new Merchant\Service();
+        $isRekycMerchant = $service->isRekycMerchant($merchantId, $activationStatus);
+        $nextStatus =  $input[DetailConstants::REKYC_STATUS];
+
+        if ($isRekycMerchant && $nextStatus!=null)
+        {
+            $details = $service->getAdditionalDetailsFromASV($merchantId);
+
+            $manualRekyc = $details[DetailConstants::MANUAL_REKYC] ?? null;
+            $status = $manualRekyc[DetailConstants::STATUS] ?? null;
+            // error handling for rekyc status
+            if ($details!=null && $manualRekyc!=null && is_array($status) && count($status)>0) {
+                $isValidTransition =  $service->isValidTransitionForRekyc($details, $nextStatus);
+                if(!$isValidTransition){
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_STATUS_TRANSITION, null, [
+                        'error' => 'Invalid state transition'
+                    ]);
+                }
+            }
+            else{
+                // handle transition to non-NC case if no previous state is present
+                if($nextStatus !== Status::NEEDS_CLARIFICATION){
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_STATUS_TRANSITION, null, [
+                        'error' => 'Invalid state transition. Please move the merchant to Needs Clarification state first.'
+                    ]);
+                }
+            }
+
+            // transition to next state and exit
+            $allowedNextStatusesWithoutWorkflow = [Status::NEEDS_CLARIFICATION,Status::UNDER_REVIEW];
+            if (in_array($nextStatus, $allowedNextStatusesWithoutWorkflow))
+            {
+                $service->transitionToNextRekycStatus($merchantId, $details, $nextStatus);
+            }
+            else{
+                // Create an instance of the WorkflowService class
+                $workflowService = new MakerCheckerWorkflowService();
+                $latestStatus = $service->getLatestRekycStatus($details);
+
+                $workflowInput = [
+                    "permission_name" =>  DetailConstants::MERCHANT_REKYC_UPDATE,
+                    "route_name" =>  DetailConstants::MERCHANT_DETAILS_PATCH,
+                    "entity_name" => DetailConstants::MERCHANT,
+                    "entity_id"=> $merchantId,
+                    "admin_id" => $this->app['basicauth']->getAdmin()->getPublicId(),
+                    "input" =>  [
+                         "rekyc_status"=> $nextStatus,
+                    ],
+                    "input_old" => [
+                        "rekyc_status"=> $latestStatus,
+                    ],
+                    "tags" => [DetailConstants::REKYC_UPDATE_TAG]
+                ];
+
+                // Call the createWorkflow method
+                $workflowService->createWorkflow($workflowInput);
+            }
+            return $merchant->getMerchantDetail();
+        }
+
+        // route request to PGOS update merchant details if merchant is not activated
         if ($activationStatus !== Detail\Status::ACTIVATED)
         {
             // check if merchant has onboarded via PGOS
@@ -6551,6 +6615,13 @@ class Core extends Base\Core
             $response[Constants::ALLOWED_NEXT_POS_ACTIVATION_STATUS]  = Status::ALLOWED_NEXT_POS_ACTIVATION_STATUSES_MAPPING[$merchantPosStatus];
             $response["pos_activation_flow"]                          = $this->fetchPosActivationFlow($merchant);
             $response["is_pgos_merchant"]                             = $this->isPGOSMerchant($merchant);
+
+            $rekycStatus = $this->getRekycStatus($merchantDetails->getMerchantId());
+            $additionalDetailsFromASV =  (new Merchant\Service())->getAdditionalDetailsFromASV($merchantDetails->getMerchantId());
+
+            $response[DEConstants::REKYC_STATUS]                      = $rekycStatus;
+            $response[DEConstants::ALLOWED_NEXT_REKYC_STATUSES]       = $this->getAllowedNextRekycStatus($rekycStatus);
+            $response[DEConstants::MANUAL_REKYC]                      = $additionalDetailsFromASV[DEConstants::MANUAL_REKYC] ?? null;
 
             if (empty($merchantDetails->getKycClarificationReasons()) === false)
             {
@@ -13542,6 +13613,18 @@ class Core extends Base\Core
         return $posActivationFlow;
     }
 
+    public function getAllowedNextRekycStatus($rekycStatus)
+    {
+        $allowedNextRekycStatuses = [];
+
+        if (empty($rekycStatus) === false)
+        {
+            $allowedNextRekycStatuses = Status::ALLOWED_NEXT_REKYC_STATUSES_MAPPING[$rekycStatus];
+        }
+
+        return $allowedNextRekycStatuses;
+    }
+
     public function isPGOSMerchant(Merchant\Entity $merchant): bool
     {
         $shouldMerchantOnboardViaPGOS = false;
@@ -13556,6 +13639,39 @@ class Core extends Base\Core
         }
 
         return  $shouldMerchantOnboardViaPGOS;
+    }
+
+    public function getRekycStatus($merchantId)
+    {
+        $rekycStatus = null;
+        $service = new Merchant\Service();
+
+        $isExpEnabled = $service->isEligibleForRekycExperiment($merchantId);
+
+        if($isExpEnabled === false)
+        {
+            return $rekycStatus;
+        }
+
+        $additionalDetails = (new Merchant\Service())->getAdditionalDetailsFromASV($merchantId);
+
+        if (isset($additionalDetails[DEConstants::MANUAL_REKYC]) &&
+            is_array($additionalDetails[DEConstants::MANUAL_REKYC]['status']) &&
+            !empty($additionalDetails[DEConstants::MANUAL_REKYC]['status']))
+        {
+            // sort in descending order of submitted_at
+            usort($additionalDetails[DEConstants::MANUAL_REKYC]['status'], function($a, $b) {
+                return $b[Entity::CREATED_AT] - $a[Entity::CREATED_AT];
+            });
+
+            $rekycStatus = $additionalDetails[DEConstants::MANUAL_REKYC]['status'][0][DEConstants::REKYC_STATUS];
+        }
+
+        $this->app['trace']->info(TraceCode::MANUAL_REKYC_STATUS,[
+            "rekycStatus" => $rekycStatus,
+        ]);
+
+        return $rekycStatus;
     }
 
     public function fetchAllVCIPEntity($input)
@@ -13607,15 +13723,37 @@ class Core extends Base\Core
     public function createVCIPEntity($input)
     {
         $actorDetails = $this->getActorDetails();
-
-        $merchantDetails = $this->repo->merchant_detail->getByMerchantId($input['merchant_id']);
+        $merchantId = $input['merchant_id'];
+        $merchantDetails = $this->repo->merchant_detail->getByMerchantId($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         if ($merchantDetails->getPromoterPanName() == null)
         {
-            throw new \Exception("Promoter Pan Name is missing");
+           throw new \Exception("Promoter Pan Name is missing");
         }
 
-        $bvsInput = [
+        $activationStatus = $merchantDetails->getActivationStatus();
+        $service = new Merchant\Service();
+        $merchantId = $input['merchant_id'];
+        $isRekycMerchant = $service->isRekycMerchant($merchantId,$activationStatus);
+
+        if($isRekycMerchant) {
+            $details = $service->getAdditionalDetailsFromASV($merchantId);
+
+            $latestStatus = $service->getLatestRekycStatus($details);
+
+            if($latestStatus != Status::EDD_PENDING) {
+                $service->transitionToNextRekycStatus($merchantId, $details, Status::EDD_PENDING);
+            }
+
+            $payload = [
+                "actor_details" => $actorDetails,
+                "merchant_id"   => $input['merchant_id'],
+            ];
+            $result = $this->pgosProxyController->handlePGOSProxyRequests('get_vcip_link', $payload, $merchant, true);
+            return $result['data'];
+        }
+            $bvsInput = [
             'type'          => DetailConstants::VKYC,
             'metadata'      => [
                 'platform'      => 'pg',

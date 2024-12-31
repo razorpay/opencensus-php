@@ -56,7 +56,6 @@ class KafkaMessageProcessor
     const PARTNERSHIPS_OUTBOX_EVENTS                = "api_outbox_partnerships";
     const API_KAFKA_CONSUMER_BVS_VIDEO_KYC_EVENTS   = "api-bvs-video-kyc-result-events";
 
-
     const ASV_MERCHANT_UPDATE_EVENTS = 'asv-merchant-update-events';
 
     const ES_SYNC_EVENTS = 'es-sync';

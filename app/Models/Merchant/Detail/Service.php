@@ -660,6 +660,25 @@ class Service extends Base\Service
     }
 
     /**
+     * Updates the merchant's re-KYC status upon maker-checker workflow approval.
+     *
+     * @param array $input The input data containing the re-KYC status.
+     * @return void
+     * @throws BadRequestValidationFailureException
+     * @throws Exception\ServerErrorException
+     * @throws BadRequestException
+     */
+    public function postMerchantReKycUpdate(array $input)
+    {
+        $service = new Merchant\Service();
+        $merchantId = $this->merchant->getMerchantId();
+
+        $details = $service->getAdditionalDetailsFromASV($merchantId);
+        $service->transitionToNextRekycStatus($merchantId, $details, $input['rekyc_status']);
+    }
+
+
+    /**
      * @throws BadRequestValidationFailureException
      * @throws Exception\ServerErrorException
      * @throws BadRequestException
