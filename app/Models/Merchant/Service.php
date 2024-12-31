@@ -166,7 +166,7 @@ use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Detail\Status as MerchantStatus;
-use RZP\Constants\{HyperTrace, Mode, Product, Entity as CE, Environment};
+use RZP\Constants\{Country, HyperTrace, Mode, Product, Entity as CE, Environment};
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
@@ -7956,13 +7956,15 @@ class Service extends Base\Service
                     'input'     => $input,
                 ]);
 
+            $newUserModularOnboardigUser = $newUser;
             if (!$enableDashboardAccess){
-                $newUser = $this->createUser($subMerchant, $subMerchant->getEmail(), $product);
+                $newUserModularOnboardigUser = $this->createUser($subMerchant, $subMerchant->getEmail(), $product);
             }
+
             $signupCampaign = DeviceDetailConstants::COUNTRY_SIGNUP_CAMPAIGN_MAPPING[$subMerchant->getCountry()] ?? DeviceDetailConstants::I18N_MY_LINKED_ACCOUNT_SIGNUP;
             $deviceDetailInput = [
                 DeviceDetailEntity::MERCHANT_ID => $subMerchant->getId(),
-                DeviceDetailEntity::USER_ID => $newUser->getId(),
+                DeviceDetailEntity::USER_ID => $newUserModularOnboardigUser->getId(),
                 DeviceDetailEntity::SIGNUP_CAMPAIGN => $signupCampaign,
             ];
 
@@ -7970,7 +7972,7 @@ class Service extends Base\Service
 
             $input['product'] =  DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::PRODUCT] ?? DeviceDetailConstants::CURLEC_LINKED_ACCOUNT_ONBOARDING;
             $input['workflow_type'] = DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::WORKFLOW_TYPE] ?? DeviceDetailConstants::MODULAR_ONBOARDING;
-            (new User\Service())->handlePGOSOnboarding($subMerchant, $signupCampaign, $subMerchant->getCountry(), $input, $newUser);
+            (new User\Service())->handlePGOSOnboarding($subMerchant, $signupCampaign, $subMerchant->getCountry(), $input, $newUserModularOnboardigUser);
             $this->trace->info(
                 TraceCode::LINKED_ACCOUNT_MODULAR_ONBOARDING,
                 [
@@ -8796,6 +8798,13 @@ class Service extends Base\Service
             }
 
             [$newUser, $createdNew] = $this->createAdditionalUserOrFetchIfApplicable($merchant, $parentMerchant);
+
+            // irrespective of dashboard access given or not user is always created of malaysia merchants.
+            // user password token is present if user was given dashboard access .
+            // $createdNew will be set true if user was not provided dashboard access when account got created
+            if(!(new MerchantDetailCore())->isSubmittedViaProductConfigApi() and  Country::matches($merchant->getCountry(), Country::MY) and $newUser->getPasswordResetToken() == null){
+                $createdNew = true;
+            }
 
             if (empty($newUser) === false)
             {
