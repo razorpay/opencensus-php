@@ -24,7 +24,7 @@ class Status
     const ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING = [
         self::INSTANTLY_ACTIVATED       => [self::UNDER_REVIEW, self::ACTIVATED, self::ACTIVATED_MCC_PENDING],
         self::UNDER_REVIEW              => [self::NEEDS_CLARIFICATION, self::ACTIVATED, self::REJECTED, self::ACTIVATED_MCC_PENDING, self::ACTIVATED_KYC_PENDING],
-        self::NEEDS_CLARIFICATION       => [self::UNDER_REVIEW, self::ACTIVATED],
+        self::NEEDS_CLARIFICATION       => [self::UNDER_REVIEW, self::ACTIVATED, self::ACTIVATED_MCC_PENDING],
         self::REJECTED                  => [self::UNDER_REVIEW],
         self::ACTIVATED_MCC_PENDING     => [self::NEEDS_CLARIFICATION, self::ACTIVATED],
         self::ACTIVATED_KYC_PENDING     => [self::NEEDS_CLARIFICATION, self::UNDER_REVIEW],
@@ -48,7 +48,7 @@ class Status
     const ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_KQU = [
         self::INSTANTLY_ACTIVATED       => [self::UNDER_REVIEW, self::ACTIVATED, self::ACTIVATED_MCC_PENDING],
         self::UNDER_REVIEW              => [self::NEEDS_CLARIFICATION, self::ACTIVATED, self::REJECTED, self::ACTIVATED_MCC_PENDING, self::ACTIVATED_KYC_PENDING, self::KYC_QUALIFIED_UNACTIVATED],
-        self::NEEDS_CLARIFICATION       => [self::UNDER_REVIEW, self::ACTIVATED],
+        self::NEEDS_CLARIFICATION       => [self::UNDER_REVIEW, self::ACTIVATED, self::ACTIVATED_MCC_PENDING],
         self::REJECTED                  => [self::UNDER_REVIEW],
         self::ACTIVATED_MCC_PENDING     => [self::NEEDS_CLARIFICATION, self::KYC_QUALIFIED_UNACTIVATED, self::ACTIVATED],
         self::ACTIVATED_KYC_PENDING     => [self::NEEDS_CLARIFICATION, self::UNDER_REVIEW],
