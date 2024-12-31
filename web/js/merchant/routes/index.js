@@ -1,6 +1,9 @@
 import { isMobileResolution } from 'common/utils/rzp-utils';
 import store from 'merchant/store';
-import { getProvidedChannels } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/utils';
+import {
+  getIntentChannels,
+  getProvidedChannels,
+} from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/utils';
 import { isIntegrationAuditEnabled } from 'merchant/views/Optimizer/AddProvider/utils';
 import { isPartnershipsForPosEnabled } from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
@@ -11,6 +14,7 @@ import {
 } from 'merchant_common/routes';
 
 import lazy from './LazyLoader';
+
 const InstantSettlementDetails = lazy(() =>
   import(
     /* webpackChunkName: "InstantSettlementDetails" */ 'merchant/views/Settlements/InstantSettlements/InstantSettlementDetails'
@@ -751,7 +755,9 @@ const fullPageViewsMap = {
   '/onboarding/api-keys': {
     component: () => <ApiKeysAndPlugins isFullScreenMode={true} />,
     additionalCondition: (user) =>
-      !!getProvidedChannels(user).length &&
+      // Either an user channel has been verified or user has intent of Website channel (as in FTUX1.5)
+      (!!getProvidedChannels(user).length ||
+        !!getIntentChannels(user, ['business_website'])?.length) &&
       (user.isFtuxEnabled ||
         ((user.isProductLedOnboardingRZP || user.isApiKeysRevampEnabled) && user.activated)),
   },

@@ -1727,7 +1727,7 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
-      routesToMatch: ['website-app-settings/business-website-details'],
+      routesToMatch: ['website-app-settings/business-website-details', '/onboarding/api-keys'],
       abExperiments: [
         {
           uniqueHashKey: 'business_website_revamp',

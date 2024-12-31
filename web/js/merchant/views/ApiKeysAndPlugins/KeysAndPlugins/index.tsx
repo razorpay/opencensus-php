@@ -20,6 +20,8 @@ import { INTEGRATION_TITLE, NO_PLUGIN_OPTION, PLATFORM_TITLE } from './constants
 import { trackCTAClick, trackPluginSelect } from './events';
 import { Platform } from './types';
 import { getAvailablePlatform, getAvailablePlugin, getProvidedChannels } from './utils';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const KeysAndPluginsSection = ({
   // state from redux
@@ -37,6 +39,11 @@ const KeysAndPluginsSection = ({
   showProvidedChannels = false,
   switchMode,
 }) => {
+  const splitz = useSplitzService();
+
+  const isFtux1Point5Enabled =
+    isExperimentEnabled(splitz?.abExperiments?.business_website_v2_automation) &&
+    isExperimentEnabled(splitz?.abExperiments?.show_ftux_V_1Point5);
   const providedChannels = getProvidedChannels(user);
   const defaultPlatform = getAvailablePlatform(user, { showProvidedChannels });
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>(defaultPlatform as Platform);
@@ -183,7 +190,7 @@ const KeysAndPluginsSection = ({
           )}
         </div>
 
-        {!!platformURL ? (
+        {!!platformURL || (isFtux1Point5Enabled && isWebsitePlatform) ? (
           pluginSteps.map((component, index, steps) => (
             <Step step={index + 1} borderBottom={index !== steps.length - 1} key={index}>
               {component}

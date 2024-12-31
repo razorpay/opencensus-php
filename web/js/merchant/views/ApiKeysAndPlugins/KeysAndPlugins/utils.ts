@@ -81,3 +81,18 @@ export const getLatestKey = (keys) => {
 export const getHoursOffset = (hours: number): number => {
   return hours * 60 * 60 * 1000;
 };
+
+/**
+ * Get channels selected as intent by the merchant during onboarding
+ * @param {*} user - session user
+ * @param {Platform[]} platformsAvailable - platforms to search on
+ * @return {Platform[]} list of provided channels
+ */
+export const getIntentChannels = (
+  user,
+  platformsAvailable = Object.values(Platform),
+): Platform[] => {
+  const merchantChannels = user?.merchant_business_detail?.website_details;
+
+  return platformsAvailable.filter((channel) => merchantChannels?.[PLATFORM_CHECK_MAP[channel]]);
+};

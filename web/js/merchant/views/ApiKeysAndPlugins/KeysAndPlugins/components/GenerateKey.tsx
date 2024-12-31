@@ -95,7 +95,12 @@ const GenerateKey = ({
   const navigate = useNavigate();
   const splitz = useSplitzService();
 
-  const isFtux1Point5Enabled = isExperimentEnabled(splitz?.abExperiments?.show_ftux_V_1Point5);
+  const isFtux1Point5Enabled =
+    isExperimentEnabled(splitz?.abExperiments?.business_website_v2_automation) &&
+    isExperimentEnabled(splitz?.abExperiments?.show_ftux_V_1Point5);
+
+  const isWebsiteTimelineVisible =
+    isFtux1Point5Enabled && mode.toLowerCase() === 'live' && selectedPlatform === Platform.WEBSITE;
 
   const { data: websiteUpdateData, isLoading: isWebsiteUpdateDataFetching } = useGetWebsiteUpdate(
     merchantLoginMode,
@@ -277,7 +282,7 @@ const GenerateKey = ({
   return (
     <>
       <div className="keys-plugins-step__heading">
-        {latestKey && !currentKeySecret && !isFtux1Point5Enabled ? (
+        {latestKey && !currentKeySecret && !isWebsiteTimelineVisible ? (
           <>API key downloaded &#11015;</>
         ) : (
           'Get API key'
@@ -285,9 +290,9 @@ const GenerateKey = ({
       </div>
       <div
         className="keys-plugins-step__content"
-        style={{ gap: isFtux1Point5Enabled ? '16px' : '32px' }}
+        style={{ gap: isWebsiteTimelineVisible ? '16px' : '32px' }}
       >
-        {mode.toLowerCase() === 'live' && isFtux1Point5Enabled && (
+        {isWebsiteTimelineVisible && (
           <WebsiteApiTimeline
             status={websiteReviewStatus}
             latestKey={latestKey}
@@ -428,8 +433,7 @@ const GenerateKey = ({
           </button>
         )}
 
-        {mode.toLowerCase() === 'live' &&
-          isFtux1Point5Enabled &&
+        {isWebsiteTimelineVisible &&
           websiteReviewStatus !== WebsiteStatusEnum.Success &&
           !websiteWorkflowData?.loading &&
           !isWebsiteUpdateDataFetching && <WebsiteApiModeSwitchFooter switchMode={switchMode} />}
