@@ -614,6 +614,7 @@ class Route
 
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'merchant_balance_fetch'                   => ['get',      'balances',                                       'MerchantController@getAccountBalances'                             ],
+        'merchant_balance_fetch_v2'                => ['get',      'balances',                                       'MerchantControllerV2@getAccountBalances'                             ],
         'merchant_primary_balance_fetch'           => ['get',      'primary_balance',                                'MerchantController@getPrimaryBalance'                              ],
         'internal_balance_fetch_by_merchant_id'    => ['get',      'internal_merchants/{id}/balance',                'MerchantController@getBalanceByMerchantId'                         ],
         'internal_balance_fetch_by_merchant_id_old'=> ['get',      'balances/{id}',                                  'MerchantController@getBalanceByMerchantId'                         ],
@@ -5370,6 +5371,7 @@ class Route
         'payout_validate',
         'user_otp_create',
         'merchant_balance_fetch',
+        'merchant_balance_fetch_v2',
         'activated_banking_accounts_list',
         'payment_page_get_payments',
         'qr_code_fetch_multiple',
@@ -10098,6 +10100,7 @@ class Route
         'setl_merchant_config_get_admin'           => Permission::VIEW_ALL_ENTITY,
         'balance_fetch'                            => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_balance_fetch'                   => Permission::VIEW_MERCHANT_BALANCE,
+        'merchant_balance_fetch_v2'                => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_balance_fetch_admin'             => Permission::VIEW_MERCHANT_BALANCE,
         'feature_get_multiple'                     => Permission::VIEW_MERCHANT_FEATURES,
         'merchant_actions'                         => Permission::MERCHANT_ACTIONS,
@@ -11575,6 +11578,7 @@ class Route
         'capital_marketplace_service'                  => '*',
         // common routes between banking and admin dashboard
         'merchant_balance_fetch'                       => Permission::VIEW_MERCHANT_BALANCE,
+        'merchant_balance_fetch_v2'                    => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_balance_fetch_by_id'                 => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_edit_config'                         => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_activation_details'                  => Permission::MERCHANT_ONBOARDING,
@@ -19910,6 +19914,7 @@ class Route
         'onboarding_webhook_delete',
         'app_fetch_tokens_v2',
         'app_delete_tokens_v2',
+        'merchant_balance_fetch_v2',
     ];
 
     // Routes for header X_DASHBOARD_USER_2FA_VERIFIED should be true

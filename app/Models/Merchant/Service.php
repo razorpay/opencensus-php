@@ -2807,170 +2807,15 @@ class Service extends Base\Service
 
         $balance = $this->repo->balance->fetch($input, $merchantId)->toArrayPublic();
 
-        foreach ($balance['items'] as &$b)
-        {
-            // Only call ledger when balance is of type 'banking and account_type 'shared'.
-            if (($b[Balance\Entity::TYPE] === Balance\Type::BANKING) &&
-                ($b[Balance\Entity::ACCOUNT_TYPE] === Balance\AccountType::SHARED))
-            {
+        $this->updateResponseForSharedBankingBalance($balance);
 
-                // Only call ledger when "ledger_journal_reads" is enabled on the merchant.
-                if($this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
-                {
-
-                    $bankingAccount = $this->merchant->sharedBankingBalance->bankingAccount;
-
-                    $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant, $bankingAccount->getPublicId());
-
-                    if ((empty($ledgerResponse) === false) &&
-                        (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE]) === false) &&
-                        (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE]) === false))
-                    {
-                        $b[Balance\Entity::BALANCE] = (int) $ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE];
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        foreach ($balance['items'] as &$b)
-        {
-            if(($b[Balance\Entity::TYPE] === Balance\Type::BANKING) &&
-               ($b[Balance\Entity::ACCOUNT_TYPE] === Balance\AccountType::DIRECT))
-            {
-                $variant = $this->app['razorx']->getTreatment($merchantId,
-                                                              Experiment::SYNC_CALL_FOR_FRESH_BALANCE, $app['rzp.mode'] ?? Mode::LIVE);
-
-                $this->trace->info(TraceCode::SYNC_CALL_FOR_FRESH_BALANCE_VARIANT_STATUS,
-                                    [
-                                       'variant_status' => $variant,
-                                    ]);
-
-                $dimension = [
-                    ConstantMetric::LABEL_RZP_INTERNAL_APP_NAME => app('request.ctx')->getInternalAppName() ?? ConstantMetric::LABEL_NONE_VALUE,
-                    Balance\Entity::CHANNEL             => $b[Balance\Entity::CHANNEL],
-                    Merchant\Entity::MERCHANT_ID        => $merchantId,
-                ];
-
-                // if cached is false and variant is on and balance last fetched is beyond recency threshold (10 sec)
-                // then only , we make sync call for balance fetch
-                if (($cached === 'false') and ($variant === 'on'))
-                {
-                    $thresholdTimestamp = Carbon::now(Timezone::IST)->subSeconds(10)->getTimestamp();
-
-                    if (($b[Balance\Entity::LAST_FETCHED_AT] === null) or
-                        ($b[Balance\Entity::LAST_FETCHED_AT] <= $thresholdTimestamp))
-                    {
-                        $inputArray = [
-                            Balance\Entity::CHANNEL     => $b[Balance\Entity::CHANNEL],
-                            Balance\Entity::MERCHANT_ID => $merchantId,
-                        ];
-
-                        $startTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
-
-                        $startTime = millitime();
-
-                        $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_SYNC_CALL_STARTED,
-                                           [
-                                               'input'                  => $input,
-                                               'thresholdTimestamp'  => $thresholdTimestamp,
-                                               'last_fetched_at'     => $b[Balance\Entity::LAST_FETCHED_AT],
-                                               'start_time'          => $startTimeStamp,
-                                           ]);
-
-                        $basDetails = (new \RZP\Models\BankingAccount\Core())->fetchAndUpdateGatewayBalanceWrapper($inputArray);
-
-                        $timeTaken = millitime() - $startTime;
-
-                        if(empty($basDetails) === false)
-                        {
-                            $b[Balance\Entity::BALANCE] = $basDetails->getGatewayBalance();
-                            $b[Balance\Entity::LAST_FETCHED_AT] = $basDetails->getBalanceLastFetchedAt();
-
-                            if ($basDetails->getBalanceLastFetchedAt() < $startTimeStamp)
-                            {
-                                $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_SYNC_CALL_UNSUCCESSFUL,
-                                                   [
-                                                       'balance'         => $basDetails->getGatewayBalance(),
-                                                       'last_fetched_at' => $basDetails->getBalanceLastFetchedAt(),
-                                                       'merchant_id'     => $merchantId,
-                                                   ]);
-
-                                $b[Balance\Entity::ERROR_INFO] = 'balance_fetch_sync_call_was_not_successful';
-
-                                $this->trace->count(Metric::BALANCE_FETCH_REQUEST_SYNC_CALL_UNSUCCESSFUL_COUNT, $dimension);
-                            }
-
-                            else
-                            {
-                                $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_SYNC_CALL_SUCCESSFUL,
-                                                   [
-                                                       'balance'         => $basDetails->getGatewayBalance(),
-                                                       'last_fetched_at' => $basDetails->getBalanceLastFetchedAt(),
-                                                       'merchant_id'     => $merchantId,
-                                                   ]);
-
-                                $this->trace->count(Metric::BALANCE_FETCH_REQUEST_SYNC_CALL_SUCCESSFUL_COUNT, $dimension);
-                            }
-                        }
-
-                        $this->trace->histogram(Metric::BALANCE_FETCH_REQUEST_SYNC_CALL_LATENCY, $timeTaken, $dimension);
-                    }
-
-                    else
-                    {
-                        $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_SYNC_CALL_WITHIN_RECENCY_THRESHOLD,
-                                           [
-                                               'balance'         => $b[Balance\Entity::BALANCE],
-                                               'last_fetched_at' => $b[Balance\Entity::LAST_FETCHED_AT],
-                                               'threshold'       => $thresholdTimestamp,
-                                               'merchant_id'     => $merchantId,
-                                           ]);
-
-                        $this->trace->count(Metric::BALANCE_FETCH_REQUEST_SYNC_CALL_WITHIN_RECENCY_THRESHOLD_COUNT, $dimension);
-                    }
-
-                }
-            }
-
-            // Todo:: RX Wallet Payout Use Case: Refresh Balance within 5 mins use case
-        }
+        $this->updateResponseForDirectBankingBalance($balance, $merchantId, $app['rzp.mode'] ?? Mode::LIVE, $cached, $input);
 
         $shouldFetchCardDetails = ((isset($input[Balance\Entity::ACCOUNT_TYPE]) === true) and
                                    (is_array($input[Balance\Entity::ACCOUNT_TYPE]) === true) and
                                    (in_array(Balance\AccountType::CORP_CARD, $input[Balance\Entity::ACCOUNT_TYPE], true) === true));
 
-        foreach ($balance['items'] as $index => &$balanceEntity)
-        {
-            if (($balanceEntity[Balance\Entity::TYPE] === Balance\Type::BANKING) and
-                ($balanceEntity[Balance\Entity::ACCOUNT_TYPE] === Balance\AccountType::CORP_CARD))
-            {
-                // If account_type is corp_card and it is part of input, fetch card details from capital-cards service
-                if ($shouldFetchCardDetails === true)
-                {
-                    $response = $this->app[CapitalCardsClient::CAPITAL_CARDS_CLIENT]->getCorpCardAccountDetails(
-                        ['balance_id' => $balanceEntity[Balance\Entity::ID]]);
-
-                    // If no records are found in the capital-cards service , remove corp_card balance from response
-                    if (empty($response) === true)
-                    {
-                        unset($balance[Base\PublicCollection::ITEMS][$index]);
-                        $balance[Base\PublicCollection::COUNT]--;
-                    }
-                    else
-                    {
-                        $balanceEntity[Balance\Entity::CORP_CARD_DETAILS] = $response;
-                    }
-                }
-                else
-                {
-                    // return corp_card balance in response only if explicitly asked for
-                    unset($balance[Base\PublicCollection::ITEMS][$index]);
-                    $balance[Base\PublicCollection::COUNT]--;
-                }
-            }
-        }
+        $this->updateResponseForCorpCardBankingBalance($balance, $shouldFetchCardDetails);
 
         $balance[Base\PublicCollection::ITEMS] = array_values($balance[Base\PublicCollection::ITEMS]);
 
@@ -2985,6 +2830,68 @@ class Service extends Base\Service
         $this->trackBalanceEvent( $input);
 
         return $balance;
+    }
+
+    public function fetchAccountBalancesV2(array $input)
+    {
+        $this->merchant->getValidator()->validateInput(Validator::FETCH_ACCOUNT_BALANCES_V2, $input);
+
+        $merchantId = $this->merchant->getId();
+
+        $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_V2,
+                           [
+                               'input'       => $input,
+                               'merchant_id' => $merchantId,
+                           ]);
+
+        // v2 balance API is only supported for banking balance currently
+        $input['type'] = Balance\Type::BANKING;
+
+        if (isset($input['account_type']) == true)
+        {
+            $input['account_type'] = array(array_pull($input, 'account_type'));
+        }
+
+        if (isset($input['bank']) == true)
+        {
+            $input['channel'] = array_pull($input, 'bank');
+        }
+
+        $balances = $this->repo->balance->fetch($input, $merchantId)->toArrayPublic();
+
+        $this->updateResponseForSharedBankingBalance($balances);
+
+        $this->updateResponseForDirectBankingBalance($balances, $merchantId, $app['rzp.mode'] ?? Mode::LIVE, true, $input);
+
+        $balances[Base\PublicCollection::ITEMS] = array_values($balances[Base\PublicCollection::ITEMS]);
+
+        foreach ($balances[Base\PublicCollection::ITEMS] as $index => &$balance)
+        {
+            foreach ($balance as $key => $value)
+            {
+                if (in_array($key, Constants::BALANCE_FETCH_V2_RESPONSE_FIELDS) == false)
+                {
+                    unset($balance[$key]);
+                }
+                if (array_key_exists($key, Constants::BALANCE_FETCH_V2_RESPONSE_KEY_MAPPING))
+                {
+                    $balance[Constants::BALANCE_FETCH_V2_RESPONSE_KEY_MAPPING[$key]] = $value;
+                    unset($balance[$key]);
+                }
+            }
+
+            $balance[Balance\Entity::ENTITY]            = 'balance';
+            $balance[Balance\Entity::ACCOUNT_NUMBER]    = mask_except_last4($balance[Balance\Entity::ACCOUNT_NUMBER]);
+            $balance[Balance\Entity::AVAILABLE_BALANCE] = $balance[Balance\Entity::BALANCE];
+        }
+
+        $this->trace->info(TraceCode::BALANCE_FETCH_RESPONSE_V2,
+                           [
+                               'count'       => sizeof($balances[Base\PublicCollection::ITEMS]),
+                               'merchant_id' => $merchantId
+                           ]);
+
+        return $balances;
     }
 
     public function updateLockedBalance(array $input, string $balanceId)
@@ -14195,6 +14102,182 @@ class Service extends Base\Service
         }
 
         return ["status" => "success"];
+    }
+
+    private function updateResponseForSharedBankingBalance(&$balances)
+    {
+        foreach ($balances['items'] as &$b)
+        {
+            // Only call ledger when balance is of type 'banking and account_type 'shared'.
+            if (($b[Balance\Entity::TYPE] === Balance\Type::BANKING) &&
+                ($b[Balance\Entity::ACCOUNT_TYPE] === Balance\AccountType::SHARED))
+            {
+
+                // Only call ledger when "ledger_journal_reads" is enabled on the merchant.
+                if ($this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
+                {
+
+                    $bankingAccount = $this->merchant->sharedBankingBalance->bankingAccount;
+
+                    $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant, $bankingAccount->getPublicId());
+
+                    if ((empty($ledgerResponse) === false) &&
+                        (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE]) === false) &&
+                        (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE]) === false))
+                    {
+                        $b[Balance\Entity::BALANCE] = (int) $ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE];
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
+
+    private function updateResponseForDirectBankingBalance(&$balances, $merchantId, $mode, string $cached, array $input)
+    {
+        foreach ($balances['items'] as &$b)
+        {
+            if (($b[Balance\Entity::TYPE] === Balance\Type::BANKING) &&
+                ($b[Balance\Entity::ACCOUNT_TYPE] === Balance\AccountType::DIRECT))
+            {
+                $variant = $this->app['razorx']->getTreatment($merchantId,
+                                                              Experiment::SYNC_CALL_FOR_FRESH_BALANCE, $mode);
+
+                $this->trace->info(TraceCode::SYNC_CALL_FOR_FRESH_BALANCE_VARIANT_STATUS,
+                                   [
+                                       'variant_status' => $variant,
+                                   ]);
+
+                $dimension = [
+                    ConstantMetric::LABEL_RZP_INTERNAL_APP_NAME => app('request.ctx')->getInternalAppName() ?? ConstantMetric::LABEL_NONE_VALUE,
+                    Balance\Entity::CHANNEL                     => $b[Balance\Entity::CHANNEL],
+                    Merchant\Entity::MERCHANT_ID                => $merchantId,
+                ];
+
+                // if cached is false and variant is on and balance last fetched is beyond recency threshold (10 sec)
+                // then only , we make sync call for balance fetch
+                if (($cached === 'false') and ($variant === 'on'))
+                {
+                    $thresholdTimestamp = Carbon::now(Timezone::IST)->subSeconds(10)->getTimestamp();
+
+                    if (($b[Balance\Entity::LAST_FETCHED_AT] === null) or
+                        ($b[Balance\Entity::LAST_FETCHED_AT] <= $thresholdTimestamp))
+                    {
+                        $inputArray = [
+                            Balance\Entity::CHANNEL     => $b[Balance\Entity::CHANNEL],
+                            Balance\Entity::MERCHANT_ID => $merchantId,
+                        ];
+
+                        $startTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+                        $startTime = millitime();
+
+                        $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_SYNC_CALL_STARTED,
+                                           [
+                                               'input'              => $input,
+                                               'thresholdTimestamp' => $thresholdTimestamp,
+                                               'last_fetched_at'    => $b[Balance\Entity::LAST_FETCHED_AT],
+                                               'start_time'         => $startTimeStamp,
+                                           ]);
+
+                        $basDetails = (new \RZP\Models\BankingAccount\Core())->fetchAndUpdateGatewayBalanceWrapper($inputArray);
+
+                        $timeTaken = millitime() - $startTime;
+
+                        if (empty($basDetails) === false)
+                        {
+                            $b[Balance\Entity::BALANCE]         = $basDetails->getGatewayBalance();
+                            $b[Balance\Entity::LAST_FETCHED_AT] = $basDetails->getBalanceLastFetchedAt();
+
+                            if ($basDetails->getBalanceLastFetchedAt() < $startTimeStamp)
+                            {
+                                $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_SYNC_CALL_UNSUCCESSFUL,
+                                                   [
+                                                       'balance'         => $basDetails->getGatewayBalance(),
+                                                       'last_fetched_at' => $basDetails->getBalanceLastFetchedAt(),
+                                                       'merchant_id'     => $merchantId,
+                                                   ]);
+
+                                $b[Balance\Entity::ERROR_INFO] = 'balance_fetch_sync_call_was_not_successful';
+
+                                $this->trace->count(Metric::BALANCE_FETCH_REQUEST_SYNC_CALL_UNSUCCESSFUL_COUNT, $dimension);
+                            }
+
+                            else
+                            {
+                                $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_SYNC_CALL_SUCCESSFUL,
+                                                   [
+                                                       'balance'         => $basDetails->getGatewayBalance(),
+                                                       'last_fetched_at' => $basDetails->getBalanceLastFetchedAt(),
+                                                       'merchant_id'     => $merchantId,
+                                                   ]);
+
+                                $this->trace->count(Metric::BALANCE_FETCH_REQUEST_SYNC_CALL_SUCCESSFUL_COUNT, $dimension);
+                            }
+                        }
+
+                        $this->trace->histogram(Metric::BALANCE_FETCH_REQUEST_SYNC_CALL_LATENCY, $timeTaken, $dimension);
+                    }
+
+                    else
+                    {
+                        $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_SYNC_CALL_WITHIN_RECENCY_THRESHOLD,
+                                           [
+                                               'balance'         => $b[Balance\Entity::BALANCE],
+                                               'last_fetched_at' => $b[Balance\Entity::LAST_FETCHED_AT],
+                                               'threshold'       => $thresholdTimestamp,
+                                               'merchant_id'     => $merchantId,
+                                           ]);
+
+                        $this->trace->count(Metric::BALANCE_FETCH_REQUEST_SYNC_CALL_WITHIN_RECENCY_THRESHOLD_COUNT, $dimension);
+                    }
+
+                }
+            }
+
+            // Todo:: RX Wallet Payout Use Case: Refresh Balance within 5 mins use case
+        }
+    }
+
+    /**
+     * @param array $balance
+     * @param bool  $shouldFetchCardDetails
+     *
+     * @return array
+     */
+    private function updateResponseForCorpCardBankingBalance(array &$balances, bool $shouldFetchCardDetails)
+    {
+        foreach ($balances['items'] as $index => &$balanceEntity)
+        {
+            if (($balanceEntity[Balance\Entity::TYPE] === Balance\Type::BANKING) and
+                ($balanceEntity[Balance\Entity::ACCOUNT_TYPE] === Balance\AccountType::CORP_CARD))
+            {
+                // If account_type is corp_card and it is part of input, fetch card details from capital-cards service
+                if ($shouldFetchCardDetails === true)
+                {
+                    $response = $this->app[CapitalCardsClient::CAPITAL_CARDS_CLIENT]->getCorpCardAccountDetails(
+                        ['balance_id' => $balanceEntity[Balance\Entity::ID]]);
+
+                    // If no records are found in the capital-cards service , remove corp_card balance from response
+                    if (empty($response) === true)
+                    {
+                        unset($balances[Base\PublicCollection::ITEMS][$index]);
+                        $balances[Base\PublicCollection::COUNT]--;
+                    }
+                    else
+                    {
+                        $balanceEntity[Balance\Entity::CORP_CARD_DETAILS] = $response;
+                    }
+                }
+                else
+                {
+                    // return corp_card balance in response only if explicitly asked for
+                    unset($balances[Base\PublicCollection::ITEMS][$index]);
+                    $balances[Base\PublicCollection::COUNT]--;
+                }
+            }
+        }
     }
 
 }
