@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box } from '@razorpay/blade/components';
-import DigitalBillsRouter from '../bootstrap/Route/DigitalBillsRouter';
+
+import DigitalBillsRouter from '@apps/digital-bills/src/bootstrap/Route/DigitalBillsRouter';
 
 const App = (): React.ReactElement => {
   return (

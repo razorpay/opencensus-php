@@ -10,6 +10,8 @@ module.exports = {
   transformIgnorePatterns: [
     '/node_modules/(?!(?:.pnpm/)?(@commander|@razorpay|copy-anything|is-what|@table-library)).*/',
   ],
+  setupFilesAfterEnv: ['<rootDir>/utils/testing/jest-setup.js'],
+  coverageDirectory: 'coverage',
   moduleNameMapper: {
     // Since jest doesn't know how to resolve these static assets, we mock them
     '\\.(css|styl)$': `${nodeModulesRootDir}/../jest-styleMock.js`,
@@ -23,7 +25,7 @@ module.exports = {
     '^shell/Transactions/v1/DownloadSwiftCopy': `${nodeModulesRootDir}/../web/js/merchant/views/Transactions/v1/Payments/components/PaymentDownloadSwiftCopy/DownloadSwiftCopy`,
     '^shell/SpiltzServiceContext': `${nodeModulesRootDir}/../web/js/common/splitz/context/SplitzContextProvider`,
     '^shell/I18Context': `${nodeModulesRootDir}/../web/js/common/i18/I18ServiceProvider`,
-    '^apps/digital-bills/src(/.*)$': '<rootDir>/$1',
+    '^@apps/digital-bills/src(/.*)$': '<rootDir>/$1',
     '^@dashboard/shared-utils/(.*)': `${nodeModulesRootDir}/../libs/shared-utils/src/$1`,
     '^@dashboard/shared-utils$': `${nodeModulesRootDir}/../libs/shared-utils/src/index`,
     '^@dashboard/shared-ui(.*)$': `${nodeModulesRootDir}/../libs/shared-ui/src$1`,
@@ -60,4 +62,5 @@ module.exports = {
     __DEPLOYMENT_TYPE__: 'default',
   },
   modulePathIgnorePatterns: ['.*e2e.*'],
+  testTimeout: 30000,
 };

@@ -136,7 +136,7 @@ module.exports = {
       ...config.resolve.alias,
       '@dashboard/shared-ui': path.resolve(__dirname, '../../libs/shared-ui/src'),
       '@dashboard/shared-utils': path.resolve(__dirname, '../../libs/shared-utils/src'),
-      'apps/digital-bills': path.resolve(__dirname),
+      '@apps/digital-bills': path.resolve(__dirname),
     };
 
     return config;

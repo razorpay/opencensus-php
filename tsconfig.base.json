@@ -40,7 +40,8 @@
         "./web/js/merchant/views/Transactions/v1/Payments/components/PaymentDownloadSwiftCopy/DownloadSwiftCopy"
       ],
       "shell/I18Context": ["./web/js/common/i18/I18ServiceProvider"],
-      "shell/SpiltzServiceContext": ["./web/js/common/splitz/context/SplitzContextProvider"]
+      "shell/SpiltzServiceContext": ["./web/js/common/splitz/context/SplitzContextProvider"],
+      "@apps/*": ["./apps/*"]
     }
   },
   "extends": "@razorpay/universe-cli/tsconfig.json",
