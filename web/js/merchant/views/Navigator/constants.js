@@ -128,6 +128,9 @@ export const HAS_UPI_FEATURES = [
   'easebuzz_optimizer',
   'zaakpay',
   'cashfree',
+  'payu',
+  'pinelabs',
+  'ingenico',
 ];
 
 export const HAS_NETBANKING_FEATURES = [
@@ -141,6 +144,9 @@ export const HAS_NETBANKING_FEATURES = [
   'easebuzz_optimizer',
   'zaakpay',
   'cashfree',
+  'payu',
+  'ingenico',
+  'atom',
 ];
 
 export const ACCOUNT_TYPE_OPTIONS = [
