@@ -2195,7 +2195,7 @@ class BasicAuth
 
     public function isAesApp(): bool
     {
-        return ($this->getInternalApp() === 'admin-experience-service');
+        return (($this->getInternalApp() === 'admin-experience-service') || ($this->getInternalApp() === 'aes_service'));
     }
 
     public function isCrossBorderApp(): bool
