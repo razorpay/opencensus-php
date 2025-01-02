@@ -95,6 +95,7 @@ const LineItems: React.FC<LineItemsProps> = ({
                   variant="primary"
                   color="positive"
                   icon={ThumbsUpIcon}
+                  aria-label="Thumbs Up"
                   onClick={() => {
                     setSubmittedFeedbackType('positive');
                   }}
@@ -103,6 +104,7 @@ const LineItems: React.FC<LineItemsProps> = ({
                   variant="primary"
                   color="negative"
                   icon={ThumbsDownIcon}
+                  aria-label="Thumbs Down"
                   onClick={() => {
                     setSubmittedFeedbackType('negative');
                   }}

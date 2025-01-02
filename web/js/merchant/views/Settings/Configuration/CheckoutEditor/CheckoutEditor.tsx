@@ -249,7 +249,7 @@ const CheckoutFeatures = ({
             />
           )}
           {showStyling && <CheckoutStyles trustedBadge={trustedBadge} />}
-          {!suggestion && <Suggestion />}
+          {!suggestion && showFeatures && <Suggestion />}
           <ConfigControls />
           <ConfigFooter />
         </Box>
@@ -296,7 +296,7 @@ export default connect((state) => {
       features: state.config?.features,
     },
     suggestion: state.config?.suggestion,
-    blocks: state.config?.blocks?.data.dashboard_blocks,
+    blocks: state.config?.blocks?.data?.dashboard_blocks,
     merchantCheckoutStyledConfig: state.config?.checkoutStylingConfig?.data,
     accountLocale: state.config?.locale,
     merchantCheckoutConfig: state.config?.checkoutConfig?.data?.checkout_configuration,
