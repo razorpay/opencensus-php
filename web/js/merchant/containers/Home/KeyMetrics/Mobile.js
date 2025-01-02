@@ -4,20 +4,23 @@ import { Link } from 'react-router-dom';
 
 import Change from 'common/ui/Change';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import { i18HumanReadableCurrency, i18HumanReadableNumerals } from 'common/utils/numerals';
+import {
+  i18HumanReadableCurrency,
+  i18HumanReadableNumerals,
+  i18nifyHumanReadable,
+} from 'common/utils/numerals';
 import {
   isDefined,
-  getFormattedAmountNew,
   getFixedNumber,
   getPercentage,
   i18CurrencyConversionFromMinorUnitToCommonUnit,
   titleCase,
 } from 'common/utils/rzp-utils';
 import Tooltip from 'merchant/components/Home/Tooltip';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 
 import { TABS_FOR_JK_ORG, tabsMeta } from './data';
 import { trackGoToLinks } from './ga';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 
 const Tab = ({
   value,
@@ -41,9 +44,15 @@ const Tab = ({
   const currentMerchantCurrency = user.merchant.currency;
 
   if (!isDefined(percent)) {
-    formattedValue = isCurrency
-      ? getFormattedAmountNew(value, true, currentMerchantCurrency)
-      : getFormattedAmountNew(value, false, currentMerchantCurrency);
+    if (isCurrency) {
+      const convertedAmount = i18CurrencyConversionFromMinorUnitToCommonUnit(
+        value,
+        currentMerchantCurrency,
+      );
+      formattedValue = i18nifyHumanReadable(convertedAmount, currentMerchantCurrency);
+    } else {
+      formattedValue = i18nifyHumanReadable(value);
+    }
   } else {
     formattedValue = `${getFixedNumber(percent)}%`;
   }
