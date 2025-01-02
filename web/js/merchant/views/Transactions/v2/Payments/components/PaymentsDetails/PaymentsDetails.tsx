@@ -282,7 +282,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
               paymentIdRefundDetails={paymentIdRefundDetails}
               applicationDetails={applicationDetails}
             />
-            {!isDesktop && !isConfigTagEnabled('refunds.refund') ? (
+            {!isDesktop && !isConfigTagEnabled('refunds.refund') && !user.isJnKOmniEnabled ? (
               <Box>
                 <Button
                   isFullWidth
@@ -307,7 +307,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
               shouldShowOptimizerDetails={shouldShowOptimizerDetails}
               terminalProviders={terminalProviders}
             />
-            {!isConfigTagEnabled('refunds.refund') && (
+            {!isConfigTagEnabled('refunds.refund') && !user.isJnKOmniEnabled && (
               <PaymentRefundDetails
                 paymentDetails={paymentIdDetails}
                 paymentIdRefundDetails={paymentIdRefundDetails}

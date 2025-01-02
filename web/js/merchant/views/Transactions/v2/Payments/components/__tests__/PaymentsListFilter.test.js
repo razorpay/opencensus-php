@@ -198,4 +198,23 @@ describe('PaymentsListFilter', () => {
       });
     });
   });
+
+  describe('Filters for J&K Omni enabled merchants', () => {
+    test('should not render All filters', () => {
+      renderApp(
+        {},
+        {
+          session: {
+            user: {
+              isJnKOmniEnabled: true,
+            },
+          },
+        },
+      );
+      const extraFiltersButton = screen.queryByRole('button', { name: 'All Filters' });
+      expect(extraFiltersButton).toBeNull();
+      const dropdownTrigger = screen.getByRole('button', { name: 'Payment method: All' });
+      expect(dropdownTrigger).toBeInTheDocument();
+    });
+  });
 });

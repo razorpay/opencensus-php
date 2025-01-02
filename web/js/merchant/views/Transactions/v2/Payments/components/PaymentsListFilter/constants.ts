@@ -77,13 +77,18 @@ export const statusOptions = [
 ];
 
 export const searchByOptionsMap = {
-  email: 'Email',
-  contact: 'Mobile number',
-  order_id: 'Order ID',
   id: 'Payment ID',
-  notes: 'Notes',
-  ...(user?.isRRNSearchEnabled ? { rrn: 'Payment Reference Number' } : null),
+  ...(user.isJnKOmniEnabled
+    ? {}
+    : {
+        email: 'Email',
+        contact: 'Mobile number',
+        order_id: 'Order ID',
+        notes: 'Notes',
+      }),
+  ...(user?.isRRNSearchEnabled || user.isJnKOmniEnabled ? { rrn: 'Payment Reference Number' } : {}),
 };
+
 export const searchBySectionOptions = generateOptions(searchByOptionsMap);
 export const searchBySectionName = 'Search by';
 export const searchByOptions = [

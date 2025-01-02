@@ -111,6 +111,7 @@ class PaymentsList extends ListContainer {
         pos_activation_status,
         isOmniEnabledMerchant,
         isCustomTransactionTabView,
+        isJnKOmniEnabled,
       },
       orgName,
       terminalProviders,
@@ -160,6 +161,7 @@ class PaymentsList extends ListContainer {
           shouldShowCustomTransactionTabView={isCustomTransactionTabView}
           shouldDisplayOptimizerColumn={shouldDisplayOptimizerColumn}
           isOmniView={isOmniView}
+          isJnKOmniEnabled={isJnKOmniEnabled}
           onRowClick={({ id, rowData }) =>
             handleDetailsClick({
               navigate,

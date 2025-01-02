@@ -92,3 +92,21 @@ export interface AllOptions {
   countryCodeOptions: Options;
   paymentChannelOptions: Options;
 }
+
+export interface OptionsType {
+  isMobile: boolean;
+  isOrgCurlec: boolean;
+  isJnKOmniEnabled: boolean;
+}
+
+export interface MobileColumns {
+  isJnKOmniEnabled?: boolean;
+}
+
+export interface DesktopColumns {
+  isOmniView: boolean;
+  shouldShowCustomTransactionTabView: boolean;
+  selectedColumnsList: string[];
+  shouldDisplayOptimizerColumn: boolean;
+  isJnKOmniEnabled: boolean;
+}

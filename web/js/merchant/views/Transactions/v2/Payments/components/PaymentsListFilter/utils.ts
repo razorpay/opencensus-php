@@ -24,6 +24,7 @@ import {
   DefaultMethodAndOption,
   DefaultStatusAndOptions,
   DefaultValuesAndOptions,
+  OptionsType,
 } from './types';
 import { getUser } from 'merchant/store';
 import { getDialCodeByCountryCode } from '@razorpay/i18nify-js/phoneNumber';
@@ -93,14 +94,28 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
 };
 
 const curlecPaymentMethods = ['all', 'card', 'wallet', 'fpx', 'paylater'];
+const jnkPaymentMethods = ['upi'];
 
-export const getOptions = (isMobile: boolean, isOrgCurlec = false): AllOptions => {
+export const getOptions = (
+  { isMobile, isOrgCurlec, isJnKOmniEnabled }: OptionsType = {
+    isMobile: false,
+    isOrgCurlec: false,
+    isJnKOmniEnabled: false,
+  },
+): AllOptions => {
   let paymentMethodOptions = paymentMethodSectionOptions;
   if (isOrgCurlec) {
     paymentMethodOptions = paymentMethodSectionOptions.filter(({ value }) =>
       curlecPaymentMethods.includes(value),
     );
   }
+
+  if (isJnKOmniEnabled) {
+    paymentMethodOptions = paymentMethodSectionOptions.filter(({ value }) =>
+      jnkPaymentMethods.includes(value),
+    );
+  }
+
   if (isMobile) {
     return {
       paymentDurationOptions: paymentDurationSectionOptions,

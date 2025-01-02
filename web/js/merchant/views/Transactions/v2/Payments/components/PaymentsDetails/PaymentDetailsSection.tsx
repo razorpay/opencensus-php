@@ -542,7 +542,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     <DetailRow label="Gateway" value={paymentDetails.gateway_provider} />
                   </>
                 )}
-                {isTxnFeeBreakupEnabled ? (
+                {isTxnFeeBreakupEnabled && !user.isJnKOmniEnabled ? (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                     <DetailRow
@@ -588,15 +588,19 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     <DetailRow label="Payer Name" value={upi?.payer_name || '--'} />
                   </>
                 )}
-                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <DetailRow
-                  label="Fee bearer"
-                  value={
-                    fee_bearer === 'platform'
-                      ? `You pay the ${orgName} platform fee`
-                      : 'The customer has paid the fees for this payment'
-                  }
-                />
+                {!user.isJnKOmniEnabled && (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow
+                      label="Fee bearer"
+                      value={
+                        fee_bearer === 'platform'
+                          ? `You pay the ${orgName} platform fee`
+                          : 'The customer has paid the fees for this payment'
+                      }
+                    />
+                  </>
+                )}
                 {isTxnV2ParityFeaturesEnabled && isOrgFeatureExist('vas_merchant') ? (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />

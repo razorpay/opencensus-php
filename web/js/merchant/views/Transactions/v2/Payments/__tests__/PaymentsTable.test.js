@@ -44,6 +44,18 @@ describe('PaymentsTable', () => {
     });
   });
 
+  test('Should render correct columns for desktop for JNK org with omni enabled flag', () => {
+    const items = mockFetchPaymentItems();
+    renderApp({ items, isJnKOmniEnabled: true });
+    ['Payment ID', 'Bank RRN', 'Amount', 'Payer VPA', 'Status', 'Actions'].forEach((column) => {
+      expect(
+        screen.getByRole('columnheader', {
+          name: column,
+        }),
+      ).toBeInTheDocument();
+    });
+  });
+
   describe('source channel', () => {
     test('should show source channel when user is omni', () => {
       const items = mockFetchPaymentItems();

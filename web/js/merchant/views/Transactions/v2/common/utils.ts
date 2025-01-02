@@ -218,15 +218,16 @@ export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User):
     ORG_CUSTOM_CODE_MAP.HDFC_GIG,
   ];
 
-  if (user.isJnKOmniEnabled) {
-    return false;
-  }
-
   if (excludedOrgs.some((org) => org.toLowerCase() === user.orgCustomCode?.toLowerCase())) {
     return user.isParityFeaturesEnabledForHDCF;
   }
 
   const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
+
+  // Todo: Remove experiment check once enabled 100%
+  if (user.isJnKOmniEnabled) {
+    return isExperimentEnabled(abExperiments?.enable_trxn_v2_for_JK_omni_merchants);
+  }
 
   if (!abExperiments?.Transactions_Revamp) return false;
 

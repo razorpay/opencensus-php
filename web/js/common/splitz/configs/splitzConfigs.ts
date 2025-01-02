@@ -757,6 +757,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'enable_trxn_v2_for_JK_omni_merchants',
+        experimentId: {
+          beta: 'Pc7dMi2j0TG8Wr',
+          production: 'PcBRdh07FrBDtZ',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

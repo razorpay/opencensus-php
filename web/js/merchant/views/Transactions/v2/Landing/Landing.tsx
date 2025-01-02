@@ -66,7 +66,7 @@ export const LandingContainer = ({ children }) => {
           </StyledTabItem>
         </ShowWhen>
 
-        <ShowWhen additionalCondition={(usr) => usr.isAllowedView(ORDERS)}>
+        <ShowWhen additionalCondition={(usr) => usr.isAllowedView(ORDERS) && !usr.isJnKOmniEnabled}>
           <StyledTabItem to={ORDERS_ROUTE} onClick={trackTransactionsTabClick(ORDERS_ROUTE)}>
             Orders
           </StyledTabItem>

@@ -6,7 +6,7 @@ import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constant
 import { StyledTable } from 'merchant/views/Transactions/v2/common/styled';
 
 import EmptyComponent from './EmptyComponent';
-import { mobileColumns, getDesktopColumns } from './columns';
+import { getMobileColumns, getDesktopColumns } from './columns';
 import { PaymentsTableProps } from './types';
 
 const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
@@ -16,17 +16,21 @@ const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
     shouldShowCustomTransactionTabView,
     selectedColumnsList,
     shouldDisplayOptimizerColumn,
+    isJnKOmniEnabled,
   } = props;
   const isMobile = useMobile(mobileBreakoints);
 
   const columns = isMobile
-    ? mobileColumns
-    : getDesktopColumns(
+    ? getMobileColumns({
+        isJnKOmniEnabled,
+      })
+    : getDesktopColumns({
         isOmniView,
         shouldShowCustomTransactionTabView,
         selectedColumnsList,
         shouldDisplayOptimizerColumn,
-      );
+        isJnKOmniEnabled,
+      });
 
   return (
     <StyledTable loading={isLoading}>

@@ -249,7 +249,9 @@ function PaymentDetailsTimeline({
             <Spinner accessibilityLabel="timeline-loader" />
           </Box>
         )}
-        {!isIssueRefundDisabled(paymentIdDetails, user) && !isConfigTagEnabled('refunds.refund') ? (
+        {!isIssueRefundDisabled(paymentIdDetails, user) &&
+        !user.isJnKOmniEnabled &&
+        !isConfigTagEnabled('refunds.refund') ? (
           <>
             <Divider dividerStyle="dashed" />
             <Box display="flex" flexDirection="row" padding="12px" marginLeft="-16px" width="100%">

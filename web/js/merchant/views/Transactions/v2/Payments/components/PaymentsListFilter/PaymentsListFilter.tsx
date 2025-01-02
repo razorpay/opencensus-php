@@ -89,6 +89,7 @@ const PaymentsListFilter = ({
   const splitz = useSplitzService();
   const isProviderSelectorForV2 = isPaymentV2ParityFeatureEnabled(splitz, user);
   const isCurlecMerchant = user.isOrgCurlec;
+  const isJnKOmniEnabled = user.isJnKOmniEnabled;
 
   const {
     defaultPaymentDuration,
@@ -119,7 +120,11 @@ const PaymentsListFilter = ({
   const isMediumDesktopAndMobile = useMobile(mobileBreakoints);
   const defaultFocusedInput = useRef<'startDate' | null>(null);
   const { paymentDurationOptions, paymentMethodOptions, statusOptions, searchByOptions } =
-    getOptions(isMobile, isCurlecMerchant);
+    getOptions({
+      isMobile,
+      isOrgCurlec: isCurlecMerchant,
+      isJnKOmniEnabled: isJnKOmniEnabled || false,
+    });
   const numberOfMonths = isMediumDesktopAndMobile
     ? MOBILE_CALENDAR_NUMBER_OF_MONTHS
     : DESKTOP_CALENDAR_NUMBER_OF_MONTHS;
@@ -292,11 +297,10 @@ const PaymentsListFilter = ({
               bottomSheetTitle={statusSectionName}
             />
           ) : null}
-
           {isOmniChannelMerchant ? (
             <Divider marginRight="spacing.3" marginLeft="spacing.3" orientation="vertical" />
           ) : null}
-          {isOmniChannelMerchant ? (
+          {isOmniChannelMerchant && !isJnKOmniEnabled ? (
             <Box>
               <Button
                 isDisabled={loading}

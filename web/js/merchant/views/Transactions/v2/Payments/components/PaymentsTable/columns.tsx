@@ -32,6 +32,10 @@ import { getPaymentStatusVariantMap } from './constants';
 import { getPaymentMethod, getSourceChannelType } from './utils';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import { getUser } from 'merchant/store';
+import {
+  DesktopColumns,
+  MobileColumns,
+} from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/types';
 
 const { FAILED_PAYMENTS, PAYMENTS } = TransactionsEntityRoute;
 
@@ -105,6 +109,22 @@ export const bankRRN = {
           {getPaymentMethod(item)}
         </Text>
       </div>
+    );
+  },
+};
+
+export const payerVPA = {
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Payer VPA
+    </Text>
+  ),
+  value: (item: Item): JSX.Element => {
+    const { vpa } = item;
+    return (
+      <Box>
+        <Text testID="payer-vpa">{vpa || '--'}</Text>
+      </Box>
     );
   },
 };
@@ -338,6 +358,19 @@ export const generateDynamicComponentV2 = (columnName: string) => ({
 });
 
 export const mobileColumns = [mobileAmount, status, actions];
+const jnkMobileColumns = [mobileAmount, bankRRN, status, actions];
+
+export const getMobileColumns = (
+  { isJnKOmniEnabled }: MobileColumns = {
+    isJnKOmniEnabled: false,
+  },
+) => {
+  if (isJnKOmniEnabled) {
+    return jnkMobileColumns;
+  }
+  return mobileColumns;
+};
+
 export const desktopColumns = [
   paymentId,
   bankRRN,
@@ -347,6 +380,8 @@ export const desktopColumns = [
   status,
   actions,
 ];
+
+const jnkDesktopColumns = [paymentId, bankRRN, amount, payerVPA, createdOn, status, actions];
 
 export const failedPaymentDesktopColumns = [
   amount,
@@ -359,14 +394,19 @@ export const failedPaymentDesktopColumns = [
   actions,
 ];
 
-export const getDesktopColumns = (
-  isOmniView: boolean,
-  shouldShowCustomTransactionTabView: boolean,
-  selectedColumnsList: string[],
-  shouldDisplayOptimizerColumn: boolean,
-) => {
+export const getDesktopColumns = ({
+  isOmniView,
+  shouldShowCustomTransactionTabView,
+  selectedColumnsList,
+  shouldDisplayOptimizerColumn,
+  isJnKOmniEnabled,
+}: DesktopColumns) => {
   const isFailedPaymentView = window.location.pathname.includes(FAILED_PAYMENTS);
   let updatedDesktopColumns = isFailedPaymentView ? failedPaymentDesktopColumns : desktopColumns;
+
+  if (isJnKOmniEnabled) {
+    return jnkDesktopColumns;
+  }
 
   if (isOmniView) {
     updatedDesktopColumns = updatedDesktopColumns.map((column) =>

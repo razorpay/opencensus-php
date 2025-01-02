@@ -33,7 +33,11 @@ const ExtraFiltersModal = ({ handleSearch, closeModal }: ExtraFiltersModalProps)
   const [channel, setChannel] = useState(defaultChannelValue);
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const isMobile = useMobile();
-  const { paymentMethodOptions, paymentChannelOptions } = getOptions(isMobile);
+  const { paymentMethodOptions, paymentChannelOptions } = getOptions({
+    isMobile,
+    isOrgCurlec: false,
+    isJnKOmniEnabled: false,
+  });
   const { pathname } = useLocation();
 
   const dismissModal = () => {
