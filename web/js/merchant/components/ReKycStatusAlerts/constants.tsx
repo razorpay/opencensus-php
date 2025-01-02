@@ -7,6 +7,7 @@ import { Strong } from './styled';
 import { getParamsFromUser, onClickRedirectNC, onClickRedirectVKYC } from './utils';
 
 const REKYC_DEADLINE = '31st Jan, 2025';
+const REKYC_DEADLINE_SHORT = '31st Jan';
 
 export const REKYC_STATUS_OPTIONS = {
   UNDER_REVIEW: 'under_review',
@@ -30,7 +31,7 @@ export const getModalContent = (user: User): ModalContent | null => {
     case REKYC_STATUS_OPTIONS.NEEDS_CLARIFICATION:
       if (ncCount > 1) {
         return {
-          title: `Update your KYC by ${REKYC_DEADLINE}`,
+          title: `Update your KYC by ${REKYC_DEADLINE_SHORT}`,
           description: canPerformActions ? (
             <>
               One or more documents or details that you provided seem to be incorrect. Please make
@@ -50,7 +51,7 @@ export const getModalContent = (user: User): ModalContent | null => {
         };
       }
       return {
-        title: `Update your KYC by ${REKYC_DEADLINE}`,
+        title: `Update your KYC by ${REKYC_DEADLINE_SHORT}`,
         description: canPerformActions ? (
           <>
             RBI requires every Razorpay merchant to undergo KYC. Please update your KYC by{' '}
@@ -69,7 +70,7 @@ export const getModalContent = (user: User): ModalContent | null => {
       };
     case REKYC_STATUS_OPTIONS.EDD_PENDING:
       return {
-        title: `Update Video KYC by ${REKYC_DEADLINE}`,
+        title: `Update Video KYC by ${REKYC_DEADLINE_SHORT}`,
         description: (
           <>
             Update Video KYC before <Strong>{REKYC_DEADLINE}</Strong>. Please request the{' '}
