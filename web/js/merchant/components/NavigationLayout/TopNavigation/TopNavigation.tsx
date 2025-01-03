@@ -43,6 +43,8 @@ import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 import lazyLoader from 'merchant/routes/LazyLoader';
 import { productConfigMap } from 'merchant/views/ConnectedHome/config';
 import EcosystemDowntimes from 'merchant/views/EcosystemDowntimes';
+import { TopNavigationSkeleton } from 'merchant/components/NavigationLayout/NavigationContent/Skeleton/Skeleton';
+import ExploreItem from 'merchant/components/NavigationLayout/TopNavigation/components/ExploreItem';
 
 import RazorpayLogo from './RazorpayLogo';
 import isPaymentsPath from './utils/isPaymentsPath';
@@ -55,38 +57,6 @@ import { useNavigationLayoutContext } from '../context';
 const WhatsNew = lazyLoader(
   () => import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
 );
-
-const ExploreItem = ({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: IconComponent;
-  title?: string;
-  description: string;
-}): React.ReactElement => {
-  return (
-    <Box display="flex" gap="spacing.4" maxWidth="300px">
-      <Box
-        borderRadius="medium"
-        padding="spacing.5"
-        backgroundColor="surface.background.gray.subtle"
-        display="flex"
-        alignSelf="start"
-      >
-        <Icon color="interactive.icon.neutral.subtle" size="medium" />
-      </Box>
-      <Box>
-        <Text color="surface.text.gray.subtle" size="medium" weight="semibold">
-          {title}
-        </Text>
-        <Text size="small" color="surface.text.gray.muted">
-          {description}
-        </Text>
-      </Box>
-    </Box>
-  );
-};
 
 export const RZP_LOGO_URL_DARK = 'https://cdn.razorpay.com/logo.svg';
 
@@ -258,7 +228,7 @@ const TopNavigation = ({
     connectedProductsListItems.length === 0 ||
     !selectedProduct.product
   )
-    return null; // show a loading state here
+    return <TopNavigationSkeleton />;
 
   const handleProductItemClick = (productItem) => {
     const { datum: componentData } = productItem;
@@ -400,14 +370,7 @@ const TopNavigation = ({
                     />
 
                     <MenuOverlay>
-                      <MenuHeader
-                        title="Products for you"
-                        trailing={
-                          <Badge emphasis="subtle" color="notice">
-                            Recommended
-                          </Badge>
-                        }
-                      />
+                      <MenuHeader title="Products for you" />
                       {overflowingItems.map((item) => {
                         return (
                           <MenuItem

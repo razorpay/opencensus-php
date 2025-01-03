@@ -103,7 +103,9 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
 
       {isExpanded ? (
         <Slider
-          overlayCustomClass="ecosystem-downtime-overlay"
+          overlayCustomClass={`ecosystem-downtime-overlay ${
+            isConnectedNavigation ? 'connectednav-announcement' : ''
+          }`}
           checkIfOutsideClickDisabled={isDowntimeDetailsExits}
           onClose={onOutSideClick}
         >

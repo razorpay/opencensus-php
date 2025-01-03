@@ -662,7 +662,10 @@ class WhatsNewOld extends Component {
           </div>
         </div>
         {isOpenSlider1 ? (
-          <Slider closeButtonClass="announcement-title">
+          <Slider
+            overlayCustomClass={isConnectedNavigation ? 'connectednav-announcement' : ''}
+            closeButtonClass="announcement-title"
+          >
             <GrowthAssetEB shouldShowDefaultFb>
               <div className="content-wrapper content-sm txn-details whats-new-old">
                 <div className="panel panel-default SliderPanel">

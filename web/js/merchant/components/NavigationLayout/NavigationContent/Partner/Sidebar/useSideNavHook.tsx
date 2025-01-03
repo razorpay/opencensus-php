@@ -34,6 +34,7 @@ function filterListNavItems(dataItems, { abExperiments }) {
             title: product.title,
             href: product.href,
             icon: product.bladeIcon,
+            routeRegex: product.routeRegex, // currently there are no regex based routing for partners, added to maintain the same consistency as that is present in payments side nav items
           });
         }
         return acc;

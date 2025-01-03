@@ -29,6 +29,7 @@ const PARTNER_SIDE_NAV_ITEMS = [
     to: '/partners',
     end: true,
     type: 'partner',
+    routeRegex: undefined,
     additionalCondition: (user) => user.isPartnershipFUX,
   },
   {
@@ -38,6 +39,7 @@ const PARTNER_SIDE_NAV_ITEMS = [
     icon: 'i i-account-balance text-success',
     bladeIcon: BankAccountVerificationIcon,
     to: '/partners/submerchants',
+    routeRegex: '^/partners/submerchants/.*$',
     end: true,
     additionalCondition: (user) => user.isAllowedView('submerchants'),
   },
@@ -48,6 +50,7 @@ const PARTNER_SIDE_NAV_ITEMS = [
     icon: 'i i-settings text-warning',
     bladeIcon: UsersIcon,
     to: '/partners/manage-team',
+    routeRegex: undefined,
     isNew: true,
     end: true,
     additionalCondition: (user, { abExperiments }) =>
@@ -62,6 +65,7 @@ const PARTNER_SIDE_NAV_ITEMS = [
     icon: 'i i-settings text-warning',
     bladeIcon: UserPlusIcon,
     to: '/partners/pos-ekyc-team',
+    routeRegex: undefined,
     isNew: true,
     end: true,
     additionalCondition: (user) => getIsPosKycEnabled({ user }),
@@ -73,6 +77,7 @@ const PARTNER_SIDE_NAV_ITEMS = [
     icon: 'i i-partner-playbook text-notice',
     bladeIcon: FileTextIcon,
     to: '/partners/playbook',
+    routeRegex: undefined,
     isNew: true,
     end: true,
     additionalCondition: (user, { abExperiments }) =>
@@ -85,6 +90,7 @@ const PARTNER_SIDE_NAV_ITEMS = [
     icon: 'i i-earnings text-primary',
     bladeIcon: CoinsIcon,
     to: '/partners/earnings/daily',
+    routeRegex: '^/partners/earnings/[^/]+$',
     end: true,
     additionalCondition: (user) => user.isAllowedView('earnings') && user.isHavingPartnerConfigs,
   },
@@ -93,6 +99,7 @@ const PARTNER_SIDE_NAV_ITEMS = [
     title: 'Subventions',
     href: '/partners/subventions/daily',
     icon: 'i i-earnings text-warning',
+    routeRegex: '^/partners/subventions/[^/]+$',
     bladeIcon: SidebarIcon,
     to: '/partners/subventions/daily',
     end: true,
@@ -104,6 +111,7 @@ const PARTNER_SIDE_NAV_ITEMS = [
     href: '/partners/settings',
     icon: 'i i-settings text-warning',
     bladeIcon: SettingsIcon,
+    routeRegex: undefined,
     to: '/partners/settings',
     end: true,
     additionalCondition: (user) =>
@@ -116,6 +124,7 @@ const PARTNER_SIDE_NAV_ITEMS = [
     icon: 'i i-settings text-warning',
     bladeIcon: AppStoreIcon,
     to: '/partners/applications',
+    routeRegex: '^/partners/applications/[^/]+$',
     end: true,
     additionalCondition: (user) =>
       user.isAllowedView('partner_applications') && user.isPartner('pure_platform'),
@@ -127,6 +136,7 @@ const PARTNER_SIDE_NAV_ITEMS = [
     icon: 'i i-books text-danger',
     bladeIcon: ReportsIcon,
     to: '/partners/reports',
+    routeRegex: '^/partners/reports/[^/]+$',
     isPending: false,
     additionalCondition: (user) =>
       user.isAllowedView('partner_reports') &&
@@ -143,6 +153,7 @@ const PARTNER_SIDE_NAV_FOOTER_ITEMS = [
     icon: 'i i-settings text-warning',
     to: '/partners/accounts-settings',
     additionalCondition: () => true,
+    routeRegex: undefined,
     end: true,
   },
 ];
@@ -162,6 +173,7 @@ const PARTNER_SIDE_NAV_POS_SALES_ITEM = [
       });
       return isPosSalesAgent;
     },
+    routeRegex: undefined,
     end: true,
   },
 ];

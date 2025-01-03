@@ -19,7 +19,7 @@ import UniversalSearch from '../HeaderNav/UniversalSearch';
 const DashboardBackground = styled.div(() => {
   return {
     height: '100vh',
-    background: 'radial-gradient(94.74% 64.44% at 29.03% 15.17%, #FFFFFF 0%, #90A5BB 100%)',
+    background: '#E3EAF3',
   };
 });
 

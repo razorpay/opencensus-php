@@ -13,6 +13,7 @@ export type SideNavSectionList = {
     href: string;
     icon: IconComponent;
     title: string;
+    routeRegex: string | undefined;
   }>;
 };
 

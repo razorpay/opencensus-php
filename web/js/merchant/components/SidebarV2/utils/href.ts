@@ -45,6 +45,7 @@ export const ROUTE_REG = {
   gcms_reports: /^\/gcms\/reports/,
   reconciliations: /^\/reconciliations/,
   assisted_financing: /^\/(assisted-financing)/,
+  reports: /^\/reports(\/(downloads|schedules))?/,
 };
 
 export const BASE_ROUTES = {

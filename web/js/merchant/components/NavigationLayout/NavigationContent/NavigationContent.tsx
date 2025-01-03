@@ -118,7 +118,7 @@ const MicroFrontendLoader: React.FC<{ renderFullPageView?: boolean } & Record<st
   }
 
   return (
-    <Suspense fallback={<Spinner accessibilityLabel="nav-component" />}>
+    <Suspense fallback={<Skeleton />}>
       <Component {...props} {...componentProps} />
     </Suspense>
   );

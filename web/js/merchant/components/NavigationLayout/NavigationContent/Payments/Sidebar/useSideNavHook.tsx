@@ -14,7 +14,7 @@ import { useLocation } from 'react-router-dom';
 import { useSplitzService } from 'common/splitz';
 import { useI18Service } from 'common/i18';
 import { useStore } from 'shell/commonStore';
-import { initializeRoutes } from 'merchant/components/SidebarV2/utils/href';
+import { initializeRoutes, ROUTE_REG } from 'merchant/components/SidebarV2/utils/href';
 import SidebarFooter from './components/SidebarFooter';
 import ActivationProgress from './components/ActivationProgress';
 
@@ -102,6 +102,7 @@ function transformDataWithRoutes(data, routes, { user, abExperiments, isConfigTa
             href: PRODUCTS_DATA[product.product_id]?.getRef
               ? PRODUCTS_DATA[product.product_id]?.getRef({ user, routes })
               : routes[product.product_id],
+            routeRegex: ROUTE_REG[product.product_id],
             icon: PRODUCTS_DATA[product.product_id].bladeIcon,
           });
         }

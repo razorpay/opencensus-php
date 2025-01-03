@@ -101,7 +101,6 @@ const ConnectedMobileHome = () => {
 
   return (
     <Box
-      height={'100vh'}
       paddingRight="8px"
       paddingLeft="8px"
       paddingTop="32px"

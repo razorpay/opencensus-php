@@ -18,6 +18,7 @@ interface ProductOptions {
   title: string;
   icon?: React.ReactNode;
   href?: string;
+  routeRegex?: string;
   items?: Array<ProductOptions>;
 }
 
@@ -35,10 +36,24 @@ const MAX_VISIBLE_SECTION_ITEMS = 3; //maxVisibleItems
   Note: Sidebar will be part of shell
  */
 
-export const isItemActive = (item: any, pathname): boolean => {
-  if (item.href && matchPath({ path: `${item.href}/*`, exact: false }, pathname)) {
+export const isItemActive = (item: any, pathname: string): boolean => {
+  //Check for routeRegex match first
+  if (item.routeRegex) {
+    const regex = new RegExp(item.routeRegex);
+    if (regex.test(pathname)) {
+      return true;
+    }
+  }
+
+  //Check for exact href match
+  if (item.href && matchPath({ path: item.href, exact: true }, pathname)) {
     return true;
   }
+  // Fallback to loose href match
+  if (item.href && matchPath({ path: item.href, exact: false }, pathname)) {
+    return true;
+  }
+
   if (item.items) {
     return item.items.some((child: any) => isItemActive(child, pathname));
   }
@@ -49,10 +64,11 @@ export const NavItem: React.FC<{
   title: string;
   icon: IconComponent;
   href: string;
+  routeRegex?: string;
   items?: Array<any>;
-}> = ({ title, icon, href, items }) => {
+}> = ({ title, icon, href, items, routeRegex }) => {
   const location = useLocation();
-  const active = isItemActive({ href, items }, location.pathname);
+  const active = isItemActive({ href, routeRegex, items, icon }, location.pathname);
 
   //Currently we have only single level of nesting
   if (items) {

@@ -32,6 +32,7 @@ import { fetchPaymentHandle } from 'merchant/reducers/paymentHandle';
 import PaymentHandleModal from 'merchant/containers/Home/ProductOnboardingCard/partials/PaymentHandleModal';
 import { Link } from 'react-router-dom';
 import { useBreakpoint } from '@razorpay/blade/utils';
+import Shimmer from 'common/components/Shimmer';
 
 const DropDownSlug = ({
   handleInfo,
@@ -109,6 +110,7 @@ const DropDownSlug = ({
           display="flex"
           alignItems="center"
           justifyContent="space-between"
+          width={isMobile ? 'auto' : '350px'}
         >
           <Link to={PAYMENT_HANDLE_URL}>
             <Box display="flex" alignItems="center">
@@ -136,6 +138,23 @@ const DropDownSlug = ({
               onClick={(event) => openPHShareModal(event)}
             />
           </Box>
+        </Box>
+      );
+    } else if (handleInfo?.loading) {
+      return (
+        <Box
+          marginX={isMobile ? 'spacing.0' : 'spacing.4'}
+          padding="spacing.3"
+          borderRadius="medium"
+          borderColor="surface.border.gray.muted"
+          borderWidth="thinner"
+          marginY="spacing.3"
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          width={isMobile ? 'auto' : '350px'}
+        >
+          <Shimmer width="100%" height="28px" variant="rounded" borderRadius="4px" />
         </Box>
       );
     }
