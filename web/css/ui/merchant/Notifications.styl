@@ -1,3 +1,5 @@
+/* stylelint-disable */
+
 .Notifications {
   position: fixed;
   top: 50px;
@@ -7,11 +9,13 @@
   width: 35%;
   min-width: 300px;
   max-width: 450px;
+  pointer-events: none;
 }
 
 .Notification {
   padding: 10px 25px 10px 20px;
   opacity: 0;
+  pointer-events: none;
   margin-top: -10px;
   margin-bottom: 10px;
   transition: all 0.25s ease-in-out;
@@ -38,6 +42,7 @@
 
 .Notification__show {
   opacity: 1;
+  pointer-events: auto;
   margin-top: 0;
 }
 
