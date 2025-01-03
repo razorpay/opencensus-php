@@ -79,10 +79,10 @@ export const CampaignHero = ({
   }, [isLoading, isRetrying]);
 
   useEffect(() => {
-    if (!isLoading || !isRetrying) {
+    if ((!isLoading || !isRetrying) && (campaigns.length >= 1 || error)) {
       _track(0, 'widget', error ? 'error' : 'loaded');
     }
-  }, [error, isLoading, isRetrying]);
+  }, [campaigns.length, error, isLoading, isRetrying]);
 
   if (!error && campaigns.length === 0 && (!isLoading || !isRetrying)) return null;
 
