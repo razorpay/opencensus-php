@@ -99,7 +99,7 @@ class CybersourceGatewayTest extends TestCase
                 'number'    => '4000000000000002',
                 'name'              => 'Harshil',
                 'expiry_month'      => '12',
-                'expiry_year'       => '2024',
+                'expiry_year'       => '2034',
                 'cvv'               => '566',
             ]
         ];
@@ -540,7 +540,7 @@ class CybersourceGatewayTest extends TestCase
                 'number'    => '4000000000000002',
                 'name'              => 'Harshil',
                 'expiry_month'      => '12',
-                'expiry_year'       => '2024',
+                'expiry_year'       => '2034',
                 'cvv'               => '566',
             ]
         ];

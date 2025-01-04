@@ -1242,7 +1242,7 @@ class TokenisationTest extends TestCase
                                 'token_number' => '4044649165235890',
                                 'cryptogram_value' => 'test',
                                 'token_expiry_month' => 12,
-                                'token_expiry_year' => 2024,
+                                'token_expiry_year' => 2034,
                             ],
                         ]
                     ];
@@ -1540,7 +1540,7 @@ class TokenisationTest extends TestCase
         $this->assertEquals('2099', $tokenCard['expiry_year']);
         $this->assertEquals('12', $tokenCard['expiry_month']);
         $this->assertEquals('3335', $tokenCard['last4']);
-        $this->assertEquals('2024', $paymentCard['token_expiry_year']);
+        $this->assertEquals('2034', $paymentCard['token_expiry_year']);
         $this->assertEquals('12', $tokenCard['token_expiry_month']);
         $this->assertEquals('5890', $paymentCard['token_last4']);
 
@@ -1548,7 +1548,7 @@ class TokenisationTest extends TestCase
         $this->assertEquals('9999', $paymentCard['expiry_year']);
         $this->assertEquals('0', $paymentCard['expiry_month']);
         $this->assertEquals('3335', $paymentCard['last4']);
-        $this->assertEquals('2024', $paymentCard['token_expiry_year']);
+        $this->assertEquals('2034', $paymentCard['token_expiry_year']);
         $this->assertEquals('12', $paymentCard['token_expiry_month']);
         $this->assertEquals('5890', $paymentCard['token_last4']);
         $this->assertEquals('credit', $paymentCard['type']);
@@ -1620,7 +1620,7 @@ class TokenisationTest extends TestCase
         $this->assertEquals('2099', $tokenCard['expiry_year']);
         $this->assertEquals('12', $tokenCard['expiry_month']);
         $this->assertEquals('3335', $tokenCard['last4']);
-        $this->assertEquals('2024', $paymentCard['token_expiry_year']);
+        $this->assertEquals('2034', $paymentCard['token_expiry_year']);
         $this->assertEquals('12', $tokenCard['token_expiry_month']);
         $this->assertEquals('5890', $paymentCard['token_last4']);
 
@@ -1628,7 +1628,7 @@ class TokenisationTest extends TestCase
         $this->assertEquals('9999', $paymentCard['expiry_year']);
         $this->assertEquals('0', $paymentCard['expiry_month']);
         $this->assertEquals('3335', $paymentCard['last4']);
-        $this->assertEquals('2024', $paymentCard['token_expiry_year']);
+        $this->assertEquals('2034', $paymentCard['token_expiry_year']);
         $this->assertEquals('12', $paymentCard['token_expiry_month']);
         $this->assertEquals('5890', $paymentCard['token_last4']);
         $this->assertEquals('credit', $paymentCard['type']);
@@ -1758,7 +1758,7 @@ class TokenisationTest extends TestCase
         $this->assertEquals("passed", $payment2['two_factor_auth']);
         $this->assertNotNull($payment2['token_id']);
         $this->assertNull($paymentCard['trivia']);
-        $this->assertEquals('2024', $paymentCard['expiry_year']);
+        $this->assertEquals('2034', $paymentCard['expiry_year']);
         $this->assertEquals('12', $paymentCard['expiry_month']);
         $this->assertEquals('3335', $paymentCard['last4']);
         $this->assertNull($paymentCard['token_expiry_year']);
@@ -1899,7 +1899,7 @@ class TokenisationTest extends TestCase
         $this->assertEquals("passed", $payment2['two_factor_auth']);
         $this->assertNotNull($payment2['token_id']);
         $this->assertNull($paymentCard['trivia']);
-        $this->assertEquals('2024', $paymentCard['expiry_year']);
+        $this->assertEquals('2034', $paymentCard['expiry_year']);
         $this->assertEquals('12', $paymentCard['expiry_month']);
         $this->assertEquals('credit', $paymentCard['type']);
         $this->assertNull($paymentCard['token_iin']);
@@ -1971,7 +1971,7 @@ class TokenisationTest extends TestCase
         $this->assertEquals("passed", $payment2['two_factor_auth']);
         $this->assertNotNull($payment2['token_id']);
         $this->assertNull($paymentCard['trivia']);
-        $this->assertEquals('2024', $paymentCard['expiry_year']);
+        $this->assertEquals('2034', $paymentCard['expiry_year']);
         $this->assertEquals('12', $paymentCard['expiry_month']);
         $this->assertEquals('credit', $paymentCard['type']);
         $this->assertNull($paymentCard['token_iin']);
@@ -2141,7 +2141,7 @@ class TokenisationTest extends TestCase
         $payment['card'] = array(
             'name'              => 'Harshil',
             'expiry_month'      => '12',
-            'expiry_year'       => '2024',
+            'expiry_year'       => '2034',
             'cvv'               => '566'
         );
 

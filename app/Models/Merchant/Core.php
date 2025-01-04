@@ -9502,7 +9502,27 @@ class Core extends Base\Core
      *
      * @return bool
      */
+    public function isPOSSubMerchant(Entity $merchant): bool
+    {
+        if ($this->isRegularSubmerchant($merchant) === false)
+        {
+            return false;
+        }
 
+        if ($merchant->isTagAddedBasedOnPrefix(Constants::POS_PARTNERSHIP_TAG_PREFIX) === false)
+        {
+            return false;
+        }
+
+        $partnerId = (new AccessMapCore())->getIdOfReferringPartner($merchant);
+
+        if ($partnerId === null)
+        {
+            return false;
+        }
+
+        return (new Partner\Core())->isPOSEnabledForPartner($partnerId);
+    }
 
     public function isRegularMerchant(Entity $merchant): bool
     {
