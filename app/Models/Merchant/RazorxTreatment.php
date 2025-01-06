@@ -406,8 +406,6 @@ final class RazorxTreatment
 
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
-    const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED = 'system_based_needs_clarification_not_matched';
-
     // to a/b test between offer tile vs subtext for cred
     const CRED_OFFER_SUBTEXT = 'cred_offer_subtext';
     // controls %age of the mail to be sent via stork
