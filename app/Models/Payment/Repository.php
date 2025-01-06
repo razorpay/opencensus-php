@@ -5195,9 +5195,8 @@ GROUP BY
     {
         $properties = [
             "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
+            "experiment_id" => $this->app['config']->get('app.splitz_merchant_transacted_harvester_query_experiment_id'),
         ];
-
         $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
 
         try
@@ -5205,6 +5204,7 @@ GROUP BY
             if ($variant === true)
             {
                 $result = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+                    ->select(DB::raw("/*+ MAX_EXECUTION_TIME(180000) */ *"))
                     ->from(\DB::raw('`payments`'))
                     ->where(Entity::MERCHANT_ID, "=", $merchantId)
                     ->where(Entity::BASE_AMOUNT, ">", 0)
