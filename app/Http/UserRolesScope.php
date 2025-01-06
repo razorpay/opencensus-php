@@ -1442,6 +1442,7 @@ class UserRolesScope
             'b2b_invoice_show_address'                            => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE, Role::OPERATIONS, Role::ADMIN_READONLY],
             'state_fetch_internal'                                => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE, Role::OPERATIONS, Role::ADMIN_READONLY],
             'create_international_virtual_accounts'               => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
+            'toggle_international_virtual_account'                => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
             'fetch_balance_international_virtual_account'         => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE, Role::ADMIN_READONLY],
             'payout_international_virtual_account'                => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
             'fetch_all_payouts_international_virtual_account'     => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE, Role::ADMIN_READONLY],

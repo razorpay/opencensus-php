@@ -7,6 +7,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Models\BankTransfer\Service;
 use RZP\Error\PublicErrorDescription;
 use RZP\Trace\TraceCode;
+use RZP\Exception\BadRequestException;
 
 return [
     'testCreateAccountForCurrencyCloud' => [
@@ -16,6 +17,20 @@ return [
           'content' => [
           ],
       ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testCreateAccountForCurrencyCloudForAllCurrenciesAtOnce' => [
+        'request' => [
+            'url' => '/international/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
         'response' => [
             'content' => [
 
@@ -36,6 +51,49 @@ return [
             ]
         ]
     ],
+
+    'testCreateAccountForCurrencyCloudPricingPlanForSingleCurrencyApartFromSwift' => [
+        'request' => [
+            'url' => '/international/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testCreateAccountForCurrencyCloudPricingPlanForEnablingAllCurrencies' => [
+        'request' => [
+            'url' => '/international/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testCreateAccountForCurrencyCloudPricingPlanForEnablingSingleCurrency' => [
+        'request' => [
+            'url' => '/international/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
 
     'testCreateAccountForCurrencyCloudPricingPlanMultipleMerchant' => [
         'request' => [
@@ -429,5 +487,61 @@ return [
 
             ]
         ]
-    ]
+    ],
+
+    'testToggleInternationalVirtualAccountForMerchantForInvalidAction' => [
+        'request' => [
+            'url' => '/international/virtual_account/toggle',
+            'method' => 'post',
+            'content' => [
+                'action' => "random",
+            ],
+        ],
+        'response' => [],
+    ],
+
+    'testToggleInternationalVirtualAccountForMerchantForDisableAction' => [
+        'request' => [
+            'url' => '/international/virtual_account/toggle',
+            'method' => 'post',
+            'content' => [
+                'action' => "deactivate",
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testToggleInternationalVirtualAccountForMerchantForEnableAction' => [
+        'request' => [
+            'url' => '/international/virtual_account/toggle',
+            'method' => 'post',
+            'content' => [
+                'action' => "activate",
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testToggleInternationalVirtualAccountForMerchantForEnableActionForEnabledAccount' => [
+        'request' => [
+            'url' => '/international/virtual_account/toggle',
+            'method' => 'post',
+            'content' => [
+                'action' => "activate",
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
 ];

@@ -2804,6 +2804,7 @@ class Route
         'settlement_cron_for_b2b_payments'     => ['post',     'b2b/payments/settlement',                           'BankTransferController@settlementFromCurrencyCloud'                               ],
 
         'capture_pacb_bank_transfer_payments'  => ['post',     'pacb/bank-transfer/capture',                         'BankTransferController@captureCronForPACBBankTransferPayments'                   ],
+        'toggle_international_virtual_account'              => ['post',     'international/virtual_account/toggle',   'BankTransferController@toggleInternationalVirtualAccountForMerchant'          ],
 
 
         //Global Bank account solution
@@ -8318,6 +8319,7 @@ class Route
         'org_admin_update',
         'org_admin_get',
         'org_admin_get_multiple',
+        'toggle_international_virtual_account',
     ];
 
     // These will run on internal auth with the assurance
@@ -14239,6 +14241,7 @@ class Route
             'pos_fetch_device_order',
             'pos_fetch_all_device_orders',
             'pos_fetch_latest_order',
+            'toggle_international_virtual_account',
         ],
 
         'admin_dashboard' => [

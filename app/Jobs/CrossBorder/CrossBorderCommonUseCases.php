@@ -38,6 +38,7 @@ use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
 use RZP\Models\Merchant\InternationalIntegration\Service as MIIService;
 use RZP\Models\Settlement\Processor\OPGSPImportICICI\Processor as OpgspIciciProcessor;
 use RZP\Models\Merchant\InternationalIntegration\Service as MerchantInternationalIntegrationService;
+use RZP\Models\BankTransfer\Service as BankTransferService;
 
 
 class CrossBorderCommonUseCases extends Job
@@ -86,6 +87,8 @@ class CrossBorderCommonUseCases extends Job
     const CAPTURE_PACB_BANK_TRANSFER_PAYMENT = 'capture_pacb_bank_transfer_payment';
 
     const CREATE_FOREX_CHARGES = 'create_forex_charges';
+
+    const CREATE_INTERNATIONAL_VIRTUAL_ACCOUNT_INTERNALLY = 'CREATE_INTERNATIONAL_VIRTUAL_ACCOUNT_INTERNALLY';
 
     const SEND_OPGSP_INVOICES_ZIP = 'SEND_OPGSP_INVOICES_ZIP';
     /**
@@ -193,6 +196,9 @@ class CrossBorderCommonUseCases extends Job
                     break;
                 case self::SEND_OPGSP_INVOICES_ZIP:
                     $this->sendZippedInvoices();
+                    break;
+                case self::CREATE_INTERNATIONAL_VIRTUAL_ACCOUNT_INTERNALLY:
+                    $this->createInternationalVirtualAccountAsync();
                     break;
                 default:
                     $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_INVALID_ACTION,[
@@ -662,6 +668,28 @@ class CrossBorderCommonUseCases extends Job
     protected function sendZippedInvoices()
     {
         (new OpgspIciciProcessor())->sendOpgspImportZippedInvoices($this->payload);
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    protected function createInternationalVirtualAccountAsync(): void
+    {
+        $merchantId = $this->payload['merchant_id'];
+
+        try {
+            (new BankTransferService())->createInternationalVirtualAccountInternally($merchantId);
+        } catch (\Throwable $ex) {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::ACTIVATE_INTERNATIONAL_VA_INTERNALLY_FAILED,
+                [
+                    'merchant_id' => $merchantId,
+                    'error_message' => $ex->getMessage(),
+                ]);
+        }
+
     }
 
     protected function zipFIRS()

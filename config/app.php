@@ -1243,5 +1243,7 @@ return array(
 
     'mandate_payouts_ikey_internal_experiment_id' => env('MANDATE_PAYOUTS_IKEY_INTERNAL_EXPERIMENT_ID'),
 
-    'enable_payout_ikey_required_feature_flag_experiment_id' => env('ENABLE_PAYOUT_IKEY_REQUIRED_FEATURE_FLAG_EXPERIMENT_ID')
+    'enable_payout_ikey_required_feature_flag_experiment_id' => env('ENABLE_PAYOUT_IKEY_REQUIRED_FEATURE_FLAG_EXPERIMENT_ID'),
+
+    'enable_intl_va_async' => env('ENABLE_INTERNATIONAL_VIRTUAL_ACCOUNT_ASYNC')
 );

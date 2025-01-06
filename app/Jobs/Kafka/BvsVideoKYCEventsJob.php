@@ -12,6 +12,8 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstants;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
+use RZP\Models\BankTransfer\Service as BankTransferService;
 
 class BvsVideoKYCEventsJob extends Job
 {
@@ -87,6 +89,11 @@ class BvsVideoKYCEventsJob extends Job
 
                 $response = $merchantDetailsCore->updateEDDStatus($requestPayload);
 
+                /*
+                 *  Activate money saver account post vcip activation
+                 */
+                $this->activateVirtualActivationInternally($merchantID, $eddStatus);
+
                 $this->sendPACBVkycWebhhok($eddStatus);
                 $this->trace->info(TraceCode::BVS_VIDEO_KYC_EVENTS_UPDATE_EDD_STATUS_PROCESSED, [
                     "response" => $response,
@@ -161,4 +168,51 @@ class BvsVideoKYCEventsJob extends Job
 
         return Mode::LIVE;
     }
+
+
+    private function activateVirtualActivationInternally(string $merchantID, string $eddStatus): void
+    {
+        $merchant = $this->repo->merchant->find($merchantID);
+        $activationStatus = $merchant->merchantDetail->getActivationStatus();
+        $bankTransferService = new BankTransferService();
+        try {
+            if ($activationStatus === Status::ACTIVATED and $eddStatus === MerchantDetailsConstants::VERIFIED) {
+
+                $this->trace->info(TraceCode::ACTIVATE_INTERNATIONAL_VA_INTERNALLY, [
+                    'merchantId' => $merchantID,
+                    'vkyc_status' => $eddStatus,
+                ]);
+
+                $experimentEnabled = $bankTransferService->isAsyncInternationalVirtualAccountActivationEnabled($merchantID);
+
+                if ($experimentEnabled === true) {
+                    $payload = [
+                        'action' => CrossBorderCommonUseCases::CREATE_INTERNATIONAL_VIRTUAL_ACCOUNT_INTERNALLY,
+                        'merchant_id' => $merchantID,
+                        'mode' =>  Mode::LIVE,
+                    ];
+                    CrossBorderCommonUseCases::dispatch($payload)->delay(rand(300, 600));
+                }
+            }
+
+            if ($eddStatus === MerchantDetailsConstants::FAILED) {
+                $this->trace->error(TraceCode::ACTIVATE_INTERNATIONAL_VA_INTERNALLY_FAILED,
+                    [
+                        'merchantId' => $merchantID,
+                        'vkyc_status' => $eddStatus,
+                    ]);
+                return;
+            }
+
+        } catch (\Throwable $e) {
+            $this->trace->error(TraceCode::ACTIVATE_INTERNATIONAL_VA_INTERNALLY_FAILED,
+                [
+                    'merchantId' => $merchantID,
+                    'vkyc_status' => $eddStatus,
+                    'error' => $e->getMessage()
+                ]);
+        }
+
+    }
+
 }
