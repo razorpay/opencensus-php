@@ -1178,18 +1178,22 @@ abstract class Base extends BaseCore
                 'reverse_shadow' => $reverseShadowMerchant,
             ]);
 
-        (new Balance\NegativeReserveBalanceMailers())->sendNegativeBalanceMailIfApplicable(
-                                                        $this->merchantBalance->merchant,
-                                                        $refundCredits,
-                                                        $newCredits,
-                                                        $negativeLimit,
-                                                        'refund credits',
-                                                        $this->txn->getType());
+        if($reverseShadowMerchant === false) {
+            (new Balance\NegativeReserveBalanceMailers())->sendNegativeBalanceMailIfApplicable(
+                $this->merchantBalance->merchant,
+                $refundCredits,
+                $newCredits,
+                $negativeLimit,
+                'refund credits',
+                $this->txn->getType());
+        }
+
         //create a credit transaction for the same
         $this->createCreditTransaction($amount, Credits\Type::REFUND);
 
         // only check for credit threshold if it's not null
-        if ($refundCreditsThreshold !== null)
+
+        if ($refundCreditsThreshold !== null && $reverseShadowMerchant === false)
         {
             $this->sendRefundCreditAlertIfNeeded(
                 $amount, $refundCredits, $refundCreditsThreshold, $this->merchantBalance->merchant);

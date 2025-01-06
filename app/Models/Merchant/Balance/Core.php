@@ -754,8 +754,13 @@ class Core extends Base\Core
             $maxNegativeAllowed = $this->getMaximumNegativeAllowedForBalanceType($merchantBalance->merchant,
                                                                                     $balanceType, $txnType);
 
-            (new NegativeReserveBalanceMailers)->sendNegativeBalanceMailIfApplicable($merchantBalance->merchant,
-                $oldBalance, $newBalance, $maxNegativeAllowed, $balanceSource, $txnType);
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+            $reverseShadowMerchant = $merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW);
+
+            if ($reverseShadowMerchant === false){
+                (new NegativeReserveBalanceMailers)->sendNegativeBalanceMailIfApplicable($merchantBalance->merchant,
+                    $oldBalance, $newBalance, $maxNegativeAllowed, $balanceSource, $txnType);
+            }
         }
     }
 }
