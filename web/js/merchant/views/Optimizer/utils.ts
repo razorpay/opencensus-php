@@ -805,7 +805,7 @@ export const PARAMETERS: Parameter[] = [
   {
     name: 'Recurring',
     value: '$payment.recurring',
-    description: 'Card Recurring',
+    description: 'Card & UPI Recurring',
     id: 10,
     values: [
       {
