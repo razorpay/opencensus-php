@@ -1109,11 +1109,13 @@ return array(
 
     'alt_id-fallback_api' => env('ALT_ID_FALLBACK_API'),
 
-    'route_rearch_exp_id' => env('ROUTE_REARCH_EXP_ID'),
+    'direct_transfer_rearch_exp_id' => env('DIRECT_TRANSFER_REARCH_EXP_ID'),
 
-    'transfer_balance_config_balance_id_harvester_experiment' => env('TRANSFER_BALANCE_CONFIG_BALANCE_ID_EXP_ID'),
+    'payment_transfer_rearch_exp_id' => env('PAYMENT_TRANSFER_REARCH_EXP_ID'),
 
     'route_tidb_fetch_exp_id' => env('ROUTE_TIDB_FETCH_EXP_ID'),
+
+    'transfer_balance_config_balance_id_harvester_experiment' => env('TRANSFER_BALANCE_CONFIG_BALANCE_ID_EXP_ID'),
 
     'order_transfer_idempotency_exp_id' => env('ORDER_TRANSFER_IDEMPOTENCY_EXP_ID'),
 

@@ -43,6 +43,22 @@ class Api extends Base
         return $this->sendRequest(Constant::DIRECT_TRANSFER_ENDPOINT, Requests::POST, $input);
     }
 
+    public function createPaymentTransfer(string $paymentId, array $input) : array
+    {
+        if ((new Config())->shouldCreateNewPassportToken())
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $endpoint = sprintf(Constant::PAYMENT_TRANSFER_ENDPOINT, $paymentId);
+
+        return $this->sendRequest($endpoint, Requests::POST, $input);
+    }
+
     /**
      * To fetch a transfer by ID from Route microservice
      * @return array

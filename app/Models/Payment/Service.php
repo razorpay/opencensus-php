@@ -1780,6 +1780,21 @@ class Service extends Base\Service
             $this->auth->setMerchant($this->merchant);
         }
 
+        if ((new Transfer\Service())->isPaymentTransferRearchExpEnabled($id, $this->merchant->getId(), $input))
+        {
+            $resp = $this->app['route']->createPaymentTransfer($id, $input);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_TRANSFER_RESPONSE_VIA_ROUTE_SERVICE,
+                [
+                    'input'      => $input,
+                    'response'   => $resp,
+                ]
+            );
+
+            return $resp;
+        }
+
         try
         {
             $transfers = $this->getNewProcessor()->transfer($id, $input);

@@ -258,11 +258,12 @@ class Base
             $description = $errorBody['description'];
 
             $publicError = str_replace(' ', '', ucwords(strtolower(str_replace('_', ' ', $errorCode))));
-            if ($publicError != ErrorCode::SERVER_ERROR)
+            if ($publicError === 'ServerError')
             {
-                $publicError = str_replace('Error', '', $publicError);
+                throw new Exception\ServerErrorException($description, ErrorCode::SERVER_ERROR);
             }
 
+            $publicError = str_replace('Error', '', $publicError);
             $class = 'RZP\Exception' . '\\' . $publicError . 'Exception';
             $args = [constant(ErrorCode::class . '::' . $errorCode), null, null, $description];
 
