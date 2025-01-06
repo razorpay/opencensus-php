@@ -2744,6 +2744,13 @@ class Core extends Base\Core
 
         $parentId = $merchant->getReferrer();
 
+        $isHandleNullSelfCaseEnabled = $this->isHandleNullSelfCaseExpEnabled($merchant->getId());
+
+        if($isHandleNullSelfCaseEnabled === true)
+        {
+            $merchantDetails = $merchant->merchantDetail;
+        }
+
         if (empty($parentId) === false)
         {
             $parent = $this->repo->merchant->findForWrite($parentId);
@@ -2784,6 +2791,7 @@ class Core extends Base\Core
                 $this->notify($merchant);
                 $newEmail = $pgosResponse["activation_response"]["contact_email"];
                 $merchant->edit(['email' => $newEmail], $operation);
+
                 $this->editEmailInMailingList($oldEmail, $newEmail, $merchant);
                 return $merchant;
             }
@@ -2803,6 +2811,13 @@ class Core extends Base\Core
         {
             $merchant->edit($input, $operation);
             $this->saveAndNotify($merchant);
+
+            if($isHandleNullSelfCaseEnabled === true)
+            {
+                $merchantDetails->edit(['contact_email' => $input['email']]);
+                $this->repo->saveOrFail($merchantDetails);
+            }
+
             $newEmail = $merchant->getEmail();
             $this->editEmailInMailingList($oldEmail, $newEmail, $merchant);
             return $merchant;
@@ -4060,6 +4075,13 @@ class Core extends Base\Core
         return $processed;
     }
 
+    public function isHandleNullSelfCaseExpEnabled($merchantId):bool
+    {
+        $splitzResponse = (new Detail\Core())->getSplitzResponse($merchantId, 'handling_null_self_user');
+
+        return $splitzResponse === 'variant';
+    }
+
     /**
      * This handles 3 possible cases when changing user email.
      * 1. There exists a team member with the new email
@@ -4078,6 +4100,8 @@ class Core extends Base\Core
      */
     public function changeMerchantUsersEmail(Entity $merchant, ?string $originalEmail, string $newEmail, string $product)
     {
+        $isHandleNullSelfCaseEnabled = $this->isHandleNullSelfCaseExpEnabled($merchant->getId());
+
         $merchantUsersCount = $merchant->users()->where(Entity::PRODUCT, $product)->count();
 
         if ($merchantUsersCount === 0)
@@ -4092,7 +4116,14 @@ class Core extends Base\Core
 
         $existingUser = $this->repo->user->getUserFromEmail($newEmail);
 
-        $selfUser = $this->repo->user->getUserFromEmail($originalEmail);
+        if($isHandleNullSelfCaseEnabled === true)
+        {
+            $selfUser = !empty($originalEmail) ? $this->repo->user->getUserFromEmail($originalEmail) : null;
+        }
+        else
+        {
+            $selfUser = $this->repo->user->getUserFromEmail($originalEmail);
+        }
 
         $oldOwner = $merchant->primaryOwner($product);
 
@@ -4142,6 +4173,18 @@ class Core extends Base\Core
             ];
 
             (new User\Core)->edit($selfUser, $userData, 'edit_email_for_merchant');
+        }
+        elseif (empty($selfUser) === true)
+        {
+            // if old email is null in the workflow, then self user will also be null. Therefore, update the email of old owner user
+            if($isHandleNullSelfCaseEnabled === true)
+            {
+                $userData = [
+                    'email' => $newEmail,
+                ];
+
+                (new User\Core)->edit($oldOwner, $userData, 'edit_email_for_merchant');
+            }
         }
     }
 

@@ -21869,4 +21869,50 @@ The same has been enabled for the account.
 
         $this->startTest();
     }
+
+    public function testEditMerchantEmailWhenOldEmailIsNull()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        $merchant = $this->createMerchant([
+            'email' => null
+        ]);
+
+        $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant([
+            'merchant_id'   => $merchant['id'],
+            'contact_email' => $merchant['email'],
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant(
+            $merchant['id'],
+            [
+                'email' => $merchant['email']
+            ]
+        );
+
+        $this->fixtures->user->createUserMerchantMapping(
+            [
+                'user_id'       => $user['id'],
+                'merchant_id'   => $merchant['id'],
+                'role'          => 'owner'
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = (new Merchant\Repository())->findOrFail($merchant['id']);
+
+        $this->assertEquals('newEmail@test.com', $merchant->getEmail());
+
+        $this->assertEquals('newEmail@test.com', $merchant->primaryOwner('primary')->getEmail());
+
+        $this->assertEquals('newEmail@test.com', $merchant->primaryOwner('banking')->getEmail());
+
+        $updatedMerchantDetail = (new Merchant\Detail\Repository())->getByMerchantId($merchant['id']);
+
+        $this->assertEquals('newEmail@test.com', $updatedMerchantDetail->getContactEmail());
+
+    }
 }
