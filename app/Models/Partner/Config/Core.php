@@ -44,6 +44,7 @@ class Core extends Base\Core
             $config->entity()->associate($subMerchant);
             $config->origin()->associate($application);
         }
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
 
         $this->repo->saveOrFail($config);
 
@@ -190,6 +191,7 @@ class Core extends Base\Core
             $config->entity()->associate($subMerchant);
             $config->origin()->associate($partner);
         }
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
 
         $this->repo->saveOrFail($config);
         // cascade partner level config created to all the apps
@@ -242,6 +244,8 @@ class Core extends Base\Core
         $validator->validateSettleToPartner($partner, $input, $submerchant);
 
         $validator->validatePaymentMethodsForPartnerType($partner, $input);
+
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
 
         $this->repo->saveOrFail($config);
 
@@ -466,6 +470,7 @@ class Core extends Base\Core
         {
 
             $config->edit($attribute, 'edit');
+            $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
 
             $this->repo->saveOrFail($config);
 
@@ -593,6 +598,7 @@ class Core extends Base\Core
                 $config->setEntityId($appId);
             }
         }
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
 
         $this->repo->saveOrFailCollection($configs);
     }

@@ -45,9 +45,6 @@ class Repository extends Base\Repository
             [$redirectToApi,$response]=$this->fetchPartnerConfigOnFilter($partnershipsRequest,__FUNCTION__,true);
             if($redirectToApi===false)
             {
-                $this->trace->info(TraceCode::PARTNERSHIPS_RESPONSE,[
-                    "partnerships"=>$response,
-                ]);
                 return $response;
             }
         }
@@ -346,5 +343,4 @@ class Repository extends Base\Repository
         }
         return [$redirectFlag, $response];
     }
-
 }

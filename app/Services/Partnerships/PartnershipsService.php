@@ -122,11 +122,12 @@ class PartnershipsService extends Base\Service
     const GET_PARTNER_CONFIG_LIST   = '/twirp/rzp.commissions.partner_config.v1.PartnerConfigAPI/List';
 
     const GET_SUBMERCHANT_COUNT = "/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/GetSubMerchantCount";
+    const FETCH_SUBMERCHANT_IDS_LINKED_TO_PARTNER = "/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/FetchSubMerchantIDsLinkedOnlyToAPartner";
     const GET_MAPPING_BY_APPLICATION_TYPE = "/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/GetMappingsByApplicationType";
 
     const GET_MERCHANT_AFFILIATED_PARTNER="/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/GetAffiliatedPartnerMerchantBySubmerchant";
 
-    const GET_SUB_MERCHANT_REFERRED_BY_PARTNER = "/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/GetSubMerchantReferredByPartner";
+    const GET_SUB_MERCHANT_REFERRED_BY_PARTNER = "/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/GetAccessMapBySubMerchantIdAppTypeAndPartnerId";
 
     const ACTIVATED = 'ACTIVATED';
 
@@ -418,7 +419,7 @@ class PartnershipsService extends Base\Service
                 ]
             );
         }
-        return $response['submerchant_count'];
+        return $response['count'];
     }
 
 
@@ -450,7 +451,16 @@ class PartnershipsService extends Base\Service
         if(empty($response['merchant_access_maps'])){
           return null;
         }
-        return $this->convertMerchantAccessPartnershipApiResponseToEntity($response['merchant_access_maps']);
+        return $this->convertMerchantAccessMapWithAppTypeAndApplicationIdToEntities($response['merchant_access_maps']);
+    }
+
+    public function fetchSubmerchantIdsLinkedToPartner($input,$function=null)
+    {
+        $response = $this->fetchPartnershipsResponse($input,self::FETCH_SUBMERCHANT_IDS_LINKED_TO_PARTNER,$function);
+        if (empty($response) || empty($response["merchant_ids"])) {
+            return [];
+        }
+        return $response["merchant_ids"];
     }
 
 
@@ -830,7 +840,7 @@ class PartnershipsService extends Base\Service
             'experiment_id' => $this->app['config']->get('app.prts_switch_over_partnerships_exp_id'),
         ];
         $response=Cache::remember($this->getPartnershipsSwitchOverCacheKey($merchantId,$functionName),
-            2,
+            5,
             function () use ($properties) {
             return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable',TraceCode::SWITCH_OVER_PARTNERSHIPS_SPLITZ_EXPERIMENT);
         });
@@ -1309,9 +1319,28 @@ class PartnershipsService extends Base\Service
         $merchantAccessMap->forceFill($merchantWithAccessMapResponse["merchant_access_map"]);
         if(!empty($merchantWithAccessMapResponse["merchant"])){
             $merchant=new MerchantEntity();
-            $merchant->forceFill($merchantWithAccessMapResponse["merchant"]);
-            $merchantAccessMap->setRelation('entityOwner',$merchantWithAccessMapResponse["merchant"]);
+            $merchant->setRawAttributes($merchantWithAccessMapResponse["merchant"]);
+            $merchantAccessMap->setRelation('entityOwner',$merchant);
         }
+        return $merchantAccessMap;
+    }
+
+    private function convertMerchantAccessMapWithAppTypeAndApplicationIdToEntities(array $merchantAccessMapWithApplicationResponse)
+    {
+        if (empty($merchantAccessMapWithApplicationResponse))
+        {
+            return [];
+        }
+        return array_map(function ($response) {
+            return $this->convertMerchantAccessMapWithAppTypeAndApplicationIdToEntity($response);
+        },$merchantAccessMapWithApplicationResponse);
+    }
+
+    private function convertMerchantAccessMapWithAppTypeAndApplicationIdToEntity(array $merchantAccessMapWithApplicationResponse): MerchantAccessMapEntity
+    {
+        $merchantAccessMap=new MerchantAccessMapEntity();
+        $merchantAccessMap->forceFill($merchantAccessMapWithApplicationResponse["merchant_access_map"]);
+        $merchantAccessMap->forceFill($merchantAccessMapWithApplicationResponse);
         return $merchantAccessMap;
     }
 }
