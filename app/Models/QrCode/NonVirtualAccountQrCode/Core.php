@@ -316,7 +316,7 @@ class Core extends QrCode\Core
 
         // Rebuild the URL with updated query
         $parts['query'] = http_build_query($queryParams);
-        return $parts['scheme'] . '://' . $parts['host'] . $parts['path'] . '?' . $parts['query'];
+        return urldecode($parts['scheme'] . '://' . $parts['host'] . $parts['path'] . '?' . $parts['query']);
     }
 
 
