@@ -87,6 +87,11 @@ class VerificationDetailTransformer extends Base\Transformer
             [
                 "column"   => 'metadata.bvs_validation_id'
             ]
+        ],
+        'metadata.verification_detail_reset' => [
+            [
+                "column"   => 'metadata.verification_detail_reset'
+            ]
         ]
     ];
 
@@ -125,7 +130,8 @@ class VerificationDetailTransformer extends Base\Transformer
         "incorrect_details" => "incorrect_details",
         "not_matched"       => "not_matched",
         "failed"            => "failed",
-        "captured"          => "initiated"
+        "captured"          => "initiated",
+        "staled"            => ""
     ];
 
     public function __construct()
