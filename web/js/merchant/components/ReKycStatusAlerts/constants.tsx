@@ -73,8 +73,9 @@ export const getModalContent = (user: User): ModalContent | null => {
         title: `Update Video KYC by ${REKYC_DEADLINE_SHORT}`,
         description: (
           <>
-            Update Video KYC before <Strong>{REKYC_DEADLINE}</Strong>. Please request the{' '}
-            <Strong>authorized signatory</Strong> to do the Video KYC to ensure smooth operations.
+            Update Video KYC before <Strong>{REKYC_DEADLINE}</Strong> (between 10 AM and 7 PM).
+            Please request the <Strong>authorized signatory</Strong> to do the Video KYC to ensure
+            smooth operations.
           </>
         ),
         action: {
@@ -163,8 +164,9 @@ export const getBannerContent = (user: User): BannerContent | null => {
       return {
         description: (
           <Text>
-            <Strong>Important!</Strong> Update Video KYC before <Strong>{REKYC_DEADLINE}</Strong>.
-            Please request the <Strong>authorized signatory</Strong> to update this.
+            <Strong>Important!</Strong> Update Video KYC before <Strong>{REKYC_DEADLINE}</Strong>{' '}
+            (between 10 AM and 7 PM). Please request the <Strong>authorized signatory</Strong> to
+            update this.
           </Text>
         ),
         importance: 'notice',
@@ -197,7 +199,8 @@ export const getBannerContent = (user: User): BannerContent | null => {
       return {
         description: (
           <Text>
-            <Strong>Great news!</Strong> Your Video KYC has been approved 🎉.
+            <Strong>Great news!</Strong> Your Video KYC has been approved and your KYC has been
+            completed. Thank you! 🎉
           </Text>
         ),
         importance: 'positive',
