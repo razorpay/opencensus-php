@@ -150,6 +150,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'pos_payment_link',
+        experimentId: {
+          beta: 'PbAS6OJf62NkqW',
+          production: 'PcF5ZZMY4akO8j',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'pos_onboarding',
         experimentId: {
           beta: 'MVPjQVuTnq6nHb',
