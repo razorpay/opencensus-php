@@ -8834,7 +8834,7 @@ class Core extends Base\Core
         }
         else
         {
-            // ICICI, Axis, Yes Bank, RBL Migration (CAs implemented in BAS)
+            // ICICI, Axis, Yes Bank, RBL Migration(CAs implemented in BAS)
             $repo = new BalanceRepo();
 
             $balance = Tracer::inspan(['name' => HyperTrace::MERCHANT_CORE_GET_BALANCE_BY_MERCHANT_ID_CHANNELS_AND_ACCOUNT_TYPE], function () use ($repo, $merchant)
