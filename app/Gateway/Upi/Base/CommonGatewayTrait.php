@@ -44,6 +44,7 @@ trait CommonGatewayTrait
     public static $qrCodePaymentGateways = [
         Payment\Gateway::UPI_KOTAK,
         Payment\Gateway::UPI_AIRTEL,
+        Payment\Gateway::UPI_ICICI,
     ];
 
     /**
@@ -220,11 +221,6 @@ trait CommonGatewayTrait
 
     private function isPreProcessRampedUpFully(string $gateway): bool
     {
-        if($this->env === 'testing' || (app()->isEnvironmentQA() === true))
-        {
-            return false;
-        }
-
         $gateways = [
             Payment\Gateway::UPI_SBI,
             Payment\Gateway::UPI_KOTAK,
@@ -1019,20 +1015,16 @@ trait CommonGatewayTrait
                 QrGatewayResponseParams::PAYEE_VPA             => $this->getPayeeVpa($inputFields, $gateway),
             ];
 
+            if(empty($inputFields['payment'][Payment\Entity::PAYER_ACCOUNT_TYPE]) === false)
+            {
+                $qrData[QrGatewayResponseParams::PAYER_ACCOUNT_TYPE] = $inputFields['payment'][Payment\Entity::PAYER_ACCOUNT_TYPE];
+            }
+
             if (($gateway === Payment\Gateway::UPI_AIRTEL) and
                 (isset($qrData[QrGatewayResponseParams::GATEWAY_MERCHANT_ID]) === false))
             {
                 unset($qrData[QrGatewayResponseParams::GATEWAY_MERCHANT_ID]);
             }
-
-            /* NOTE: payer_account_type to be figured out later, as Kotak has not provided any details
-            $payerAccountType = $this->getInternalPayerAccountType($inputFields);
-
-            if (isset($payerAccountType) === true)
-            {
-                $qrData[QrGatewayResponseParams::PAYER_ACCOUNT_TYPE] = $payerAccountType;
-            }
-            */
 
             $transactionTime = null;
 
@@ -1069,7 +1061,20 @@ trait CommonGatewayTrait
             }
             else if(empty($inputFields['upi']['gateway_timestamp']) === false)
             {
-                $qrData[QrGatewayResponseParams::TRANSACTION_TIME] = $inputFields['upi']['gateway_timestamp'];
+                if($gateway === Payment\Gateway::UPI_ICICI)
+                {
+                    $transactionTime = Carbon::createFromFormat("YmdHis", $inputFields['upi']['gateway_timestamp'],
+                        Timezone::IST);
+
+                    if ($transactionTime !== false)
+                    {
+                        $qrData[QrGatewayResponseParams::TRANSACTION_TIME] = $transactionTime->getTimestamp();
+                    }
+                }
+                else
+                {
+                    $qrData[QrGatewayResponseParams::TRANSACTION_TIME] = $inputFields['upi']['gateway_timestamp'];
+                }
             }
 
             if (isset($input['data']['meta']) === true)
@@ -1104,6 +1109,7 @@ trait CommonGatewayTrait
         //TODO: For the far future, make sure to have a proper length check for merchantReference string
         // This is to avoid any complication due to the ref. string containing the prefix or suffix itself.
         // Though this is very rare, better be safe than sorry.
+        // Also handle for $inputFields['data']['meta']['qrCodeId']
 
         //For APB static QR where merchant reference is random value, static QR id to be used will be set in meta qrCodeId field.
         if ((isset($inputFields) === true) and

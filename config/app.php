@@ -624,6 +624,8 @@ return array(
 
     'dedicated_terminal_qr_code_splitz_experiment_id' => env('DEDICATED_TERMINAL_QR_CODE_SPLITZ_EXPERIMENT_ID'),
 
+    'holygrail_icici_flow'  => env('HOLYGRAIL_ICICI_FLOW'),
+
     'enable_ezetap_notification_splitz_experiment_id' => env('ENABLE_EZETAP_NOTIFICATION_SPLITZ_EXPERIMENT_ID'),
 
     'qr_code_status_check_splitz_experiment_id' => env('QR_CODE_STATUS_CHECK_SPLITZ_EXPERIMENT_ID'),

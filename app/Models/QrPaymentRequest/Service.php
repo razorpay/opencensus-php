@@ -202,8 +202,16 @@ class Service extends Base\Service
                         $input = json_decode($input, true);
                     }
 
-                    $merchantRef                            = $input[ICICIFields::MERCHANT_TRAN_ID];
-                    $request[Entity::TRANSACTION_REFERENCE] = (string) $input[ICICIFields::BANK_RRN];
+                    if(isset($input['data']['upi']))
+                    {
+                        $merchantRef                            = $input['data']['upi'][Fields::MERCHANT_REFERENCE];
+                        $request[Entity::TRANSACTION_REFERENCE] = $input['data']['upi'][Fields::NPCI_REFERENCE_ID];
+                    }
+                    else
+                    {
+                        $merchantRef                            = $input[ICICIFields::MERCHANT_TRAN_ID];
+                        $request[Entity::TRANSACTION_REFERENCE] = (string) $input[ICICIFields::BANK_RRN];
+                    }
 
                     break;
                 }

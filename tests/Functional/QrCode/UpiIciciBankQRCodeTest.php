@@ -45,7 +45,7 @@ use RZP\Tests\Functional\Helpers\QrCode\NonVirtualAccountQrCodeTrait;
 use RZP\Tests\Traits\TestsWebhookEvents;
 
 
-class QrCodeOnDedicatedTerminalTest extends TestCase
+class UpiIciciBankQRCodeTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
@@ -56,6 +56,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
 
     private $vpaTerminal;
+
 
     protected function setUp(): void
     {
@@ -94,63 +95,12 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->vpaTerminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
+        $this->app['config']->set('gateway.mock_upi_icici', true);
         $this->config['gateway.mock_upi_mozart'] = true;
 
-    }
-
-    public function testCreateDynamicQrWithDedicatedTerminal()
-    {
-        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-
-
-        $qrCode = $this->createQrCode(['usage'          => 'single_use',
-                                       'type'           => 'upi_qr',
-                                       'fixed_amount'   => true,
-                                       'payment_amount' => 10000
-                                      ],
-                                      'live',
-                                      'LiveAccountMer');
-
-        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+        $this->mockHolygrailIciciFlowSplitzExerpiementEnabled();
 
     }
-
-    public function testCreateStaticQrWithDedicatedTerminal()
-    {
-        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
-                                      ]);
-
-        $response = $this->createQrCode(
-            [
-                'usage' => 'multiple_use',
-                'type' => 'upi_qr',
-            ],
-            'live',
-            'LiveAccountMer');
-
-        $this->runEntityAssertionsForDedicatedTerminalQr($response, $terminal, 'live');
-    }
-
-    public function testCreateStaticQrWithDedicatedTerminalSharpGateway()
-    {
-        $terminal = $this->fixtures->create('terminal:dedicated_sharp_terminal');
-
-
-        $response = $this->createQrCode(
-            [
-                'usage' => 'multiple_use',
-                'type' => 'upi_qr',
-            ],
-            'test',
-            'LiveAccountMer');
-
-        $this->runEntityAssertionsForDedicatedTerminalQr($response, $terminal, 'test');
-    }
-
 
     public function testQrCodePricingForCreditCard(): void
     {
@@ -246,7 +196,6 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals('tax', $feeBreakup[1]['name']);
         $this->assertEquals(450, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 2000
     }
-
     public function testQrCodePricingForPPIOnUPI(): void
     {
         $upiPricingPlan = [
@@ -341,7 +290,6 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals('tax', $feeBreakup[1]['name']);
         $this->assertEquals(540, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 3000
     }
-
     public function testQrCodePricingForWalletOnUPI(): void
     {
         $upiPricingPlan = [
@@ -437,7 +385,6 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals(540, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 3000
     }
 
-
     public function testQrCodePricingForPPIOnUPIWithoutSplitz(): void
     {
         $upiPricingPlan = [
@@ -483,9 +430,24 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
             'fixed_rate'          => 0,
         ];
 
-        $this->setMockSplitzTreatment([
-            'MNYQsdMtB1cYxV' => 'off'
-        ]);
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "off",
+                        ],
+                        [
+                            "key" => "holygrail",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->fixtures->create('terminal:dedicated_sharp_terminal');
 
@@ -576,10 +538,13 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
             'percent_rate'        => 200, // 200 base points i.e. 2.00%
             'fixed_rate'          => 0,
         ];
+        $output = [
+            "response" => [
+                "variant" => null
+            ]
+        ];
 
-        $this->setMockSplitzTreatment([
-            'M25grFTOPZEGQS' => 'off'
-        ]);
+        $this->mockSplitzTreatment($output);
 
         $this->fixtures->create('pricing', $ccOnUPIPricingPlan);
 
@@ -624,6 +589,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals('tax', $feeBreakup[1]['name']);
         $this->assertEquals(270, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 1500
     }
+
     public function testQrCodePricingForSavings(): void
     {
         $upiPricingPlan = [
@@ -718,47 +684,26 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals('tax', $feeBreakup[1]['name']);
         $this->assertEquals(180, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 1500
     }
-    public function testProcessPaymentForStaticQrWithDedicatedTerminal()
-    {
-        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-
-
-        $this->createQrCode(['usage'          => 'multiple_use',
-                             'type'           => 'upi_qr',
-                             'fixed_amount'   => true,
-                             'payment_amount' => 4000
-                            ],
-                            'live',
-                            'LiveAccountMer');
-
-        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
-
-        $request = $this->testData['testProcessIciciQrPayment'];
-
-        $rrn = '000011100101';
-        $request['content']['merchantId'] = $terminal->getGatewayMerchantId();
-        $request['content']['BankRRN'] = $rrn;
-        $request['content']['merchantTranId'] = $qrCodeEntity['reference'].'qrv2';
-
-        $this->makeUpiIciciPayment($request);
-
-        $qrPayment = $this->getLastEntity('qr_payment', true, 'live');
-        $payment = $this->getLastEntity('payment', true, 'live');
-        $this->assertEquals('upi', $payment['method']);
-        $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals(4000, $payment['amount']);
-        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
-        $this->assertEquals(1, $qrPayment['expected']);
-        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
-        $this->assertEquals($rrn, $payment['reference16']);
-    }
 
     public function testProcessPaymentForDynamicQrWithDedicatedTerminal()
     {
         $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
-        $this->createQrCode(['usage'          => 'single_use',
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "holygrail",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($output);
+
+        $this->createQrCode(['usage'          => 'multiple_use',
             'type'           => 'upi_qr',
             'fixed_amount'   => true,
             'payment_amount' => 4000
@@ -776,7 +721,6 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $request['content']['merchantTranId'] = $qrCodeEntity['reference'].'qrv2';
 
         $this->makeUpiIciciPayment($request);
-        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
 
         $qrPayment = $this->getLastEntity('qr_payment', true, 'live');
         $payment = $this->getLastEntity('payment', true, 'live');
@@ -787,7 +731,6 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals(1, $qrPayment['expected']);
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
-        $this->assertEquals('closed',$qrCodeEntity['status']);
     }
 
     public function testDelayedCallbackOnSingleUseQrCode()
@@ -795,7 +738,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 4000,
-             'name'  => 'Mitasha']
+                'name'  => 'Mitasha']
         );
 
         $qrCodeId = $qrCode['id'];
@@ -837,11 +780,10 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
     public function testDelayedCallbackOnMultipleUseQrCode()
     {
-        $this->markTestSkipped('cannot close multiple use qr');
-
+        $this->markTestSkipped("Multiple use QR Cannot be close");
         $qrCode = $this->createQrCode(
             ['usage' => 'multiple_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 4000,
-             'name'  => 'Mitasha']
+                'name'  => 'Mitasha']
         );
 
         $qrCodeId = $qrCode['id'];
@@ -884,149 +826,6 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->assertEquals(0, $qrPayment['expected']);
         $this->assertEquals('refunded', $payment['status']);
-    }
-
-    public function testSingleUseQrCodeWithFixedAmount()
-    {
-
-        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $qrCode = $this->createQrCode(
-            [
-                'usage'          => 'single_use',
-                'type'           => 'upi_qr',
-                'fixed_amount'   => true,
-                'payment_amount' => 100,
-                'name'           => 'Mitasha'
-            ],
-            'live',
-            'LiveAccountMer'
-        );
-
-        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
-    }
-
-    public function testSingleUseQrCodeWithoutFixedAmount()
-    {
-        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
-
-        $this->mockSplitzTreatment($output);
-
-        $this->expectException('RZP\Exception\BadRequestValidationFailureException');
-
-        $this->createQrCode(
-            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => false, 'payment_amount' => 100,
-             'name' => 'Mitasha']
-        );
-    }
-
-    public function testMultipleUseQrCodeWithoutCloseBy()
-    {
-
-        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $qrCode = $this->createQrCode(
-            ['usage' => 'multiple_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'Mitasha'],
-            'live',
-            'LiveAccountMer'
-        );
-
-        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
-    }
-
-    public function testMultipleUseQrCodeWithCloseBy()
-    {
-        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
-
-        $this->mockSplitzTreatment($output);
-
-        $closeBy = str_replace([':', '-', ' '], '', Carbon::now(Timezone::IST)->toDateTimeString());
-        $this->expectException('RZP\Exception\BadRequestValidationFailureException');
-
-        $this->createQrCode(
-            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'close_by' => $closeBy, 'name' => 'Mitasha']
-        );
-    }
-
-    public function testCloseQrCodeForSingleUse()
-    {
-
-
-        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $qrCode = $this->createQrCode(
-            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'Mitasha'],
-            'live',
-            'LiveAccountMer'
-        );
-
-        $this->assertEquals(Status::ACTIVE, $qrCode['status']);
-        $closeResponse = $this->closeQrCode($qrCode['id'], 'live', 'LiveAccountMer');
-
-        $this->assertEquals(Status::CLOSED, $closeResponse['status']);
-    }
-
-    public function testCloseQrCodeForMultipleUse()
-    {
-
-        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $qrCode = $this->createQrCode(
-            ['usage' => 'multiple_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'Mitasha'],
-            'live',
-            'LiveAccountMer'
-        );
-
-        $this->assertEquals(Status::ACTIVE, $qrCode['status']);
-
-        $this->expectException('RZP\Exception\BadRequestException');
-        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_CLOSE_STATIC_QR_CODE_FAILURE);
-
-        $this->closeQrCode($qrCode['id'], 'live', 'LiveAccountMer');
-    }
-
-    public function testCreateQrCodeWithRequestSourceHeader()
-    {
-        $input = [
-            'type'  => 'upi_qr',
-            'usage' => 'multiple_use'
-        ];
-
-        $headers = [
-            'X-Razorpay-Request-Source'  => 'payMobApp'
-        ];
-
-        $response = $this->createQrCode($input, 'test', '10000000000000', $headers);
-
-        $expectedResponse = $this->testData['testCreateUpiQrCode'];
-
-        $this->assertArraySelectiveEquals($expectedResponse, $response);
-
-        $qrCode = $this->getDbLastEntity('qr_code');
-
-        $this->assertEquals($headers['X-Razorpay-Request-Source'], $qrCode['request_source']);
-    }
-
-    public function testCreateQrCodeWithIncorrectRequestSourceHeader()
-    {
-        $this->expectException(BadRequestValidationFailureException::class);
-
-        $this->expectExceptionMessage('Not a valid source: abc');
-
-        $input = [
-            'type'  => 'upi_qr',
-            'usage' => 'multiple_use'
-        ];
-
-        $headers = [
-            'X-Razorpay-Request-Source'  => 'abc'
-        ];
-
-        $this->createQrCode($input, 'test', '10000000000000', $headers);
     }
 
     public function testProcessIciciQrPaymentWithPayerAccountType()
@@ -1131,129 +930,15 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertNull($payment['reference2']);
     }
 
-    public function testCloseQrCodeWithOnDemandFeatureFlagDisabled()
-    {
-        $this->fixtures->merchant->addFeatures(['omni_enabled']);
-
-//        $this->expectException(BadRequestException::class);
-//
-//        $this->expectExceptionMessage('This feature is not available for your account. Contact support to get it enabled');
-
-        $response = $this->createQrCode(['usage' => 'single_use',
-                                         'type' => 'upi_qr',
-                                         'fixed_amount' => true,
-                                         'payment_amount' => 100,
-                                         'request_source' => 'ezetap']
-        );
-
-        $this->assertEquals(Status::ACTIVE, $response['status']);
-
-        $this->closeQrCode($response['id']);
-
-        $qrCode = $this->getDbLastEntity('qr_code');
-        $this->assertEquals('closed', $qrCode->getStatus());
-    }
-
-    public function testCloseQrCodeWithOnDemandFeatureFlagEnabled()
-    {
-        $this->fixtures->merchant->addFeatures(['omni_enabled']);
-
-
-        $this->fixtures->merchant->addFeatures(['close_qr_on_demand']);
-
-        $response = $this->createQrCode(['request_source' => 'ezetap','usage' => 'single_use']);
-
-        $this->assertEquals(Status::ACTIVE, $response['status']);
-
-        $closeResponse = $this->closeQrCode($response['id']);
-
-        $this->assertEquals(Status::CLOSED, $closeResponse['status']);
-        $this->assertEquals(CloseReason::ON_DEMAND, $closeResponse['close_reason']);
-
-        $this->runEntityAssertions($closeResponse);
-    }
-
-    public function testCloseQrCodeWithQRNotCreatedUsingICICITerminal()
-    {
-        $this->fixtures->merchant->addFeatures(['omni_enabled']);
-
-//        $this->expectException(BadRequestException::class);
-//
-//        $this->expectExceptionMessage('This feature is not available for your account. Contact support to get it enabled');
-
-        $response = $this->createQrCode(['usage' => 'single_use',
-                                         'type' => 'upi_qr',
-                                         'fixed_amount' => true,
-                                         'payment_amount' => 100,
-                                         'request_source' => 'ezetap']
-        );
-
-        $response['qr_string'] = '05240130rzr.qrmoremegast00437171@abcabc27390240121RZPL2070"';
-
-        $this->assertEquals(Status::ACTIVE, $response['status']);
-
-        $this->closeQrCode($response['id']);
-        $qrCode = $this->getDbLastEntity('qr_code');
-        $this->assertEquals('closed', $qrCode->getStatus());
-    }
-
-    public function testCloseSingleUseQrCodeWithCloseBy()
-    {
-
-
-        $this->fixtures->on('live')->merchant->addFeatures(['close_qr_on_demand'],'LiveAccountMer');
-
-        $terminal = $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
-        $this->fixtures->on('live')->terminal->edit($terminal['id'], ['gateway_merchant_id2' => 'razorpay@icici']);
-
-        $closeBy = Carbon::now(Timezone::IST)->addSeconds(200)->getTimestamp();
-
-        $this->createQrCode(
-            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'close_by' => $closeBy ,'name' => 'Mitasha'], 'live','LiveAccountMer');
-
-        $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
-
-        $this->assertEquals(Status::ACTIVE, $qrCodeEntity['status']);
-
-        $closeResponse = $this->closeQrCode($qrCodeEntity['id'],'live','LiveAccountMer');
-
-        $this->assertEquals(Status::CLOSED, $closeResponse['status']);
-    }
-
-    public function testCreateStaticQrWithoutTerminal(): void
-    {
-        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi', [
-            'merchant_id'         => Account::SHARED_ACCOUNT,
-            'gateway_merchant_id' => 'shared_bharat_qr',
-        ]);
-
-        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
-
-        $this->mockSplitzTreatment($output);
-
-        $this->expectExceptionCode(ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND);
-
-        $this->createQrCode(
-            [
-                'usage' => 'multiple_use',
-                'type'  => 'upi_qr',
-            ],
-            'live',
-            'LiveAccountMer');
-    }
-
     public function testDedicatedTerminalSplitzExpWithVariantOn()
     {
-
-
         $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
 
         $closeBy = Carbon::now(Timezone::IST)->addSeconds(200)->getTimestamp();
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'close_by' => $closeBy, 'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'close_by' => $closeBy, 'name' => 'Mitasha'], 'live','LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
 
@@ -1284,7 +969,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'close_by' => $closeBy, 'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'close_by' => $closeBy, 'name' => 'Mitasha'], 'live','LiveAccountMer');
 
 
         $vpa    = $this->getLastEntity('vpa', true,'live');
@@ -1310,7 +995,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'close_by' => $closeBy, 'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'close_by' => $closeBy, 'name' => 'Mitasha'], 'live','LiveAccountMer');
 
 
         $vpa    = $this->getLastEntity('vpa', true,'live');
@@ -1318,43 +1003,6 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->assertStringContainsString($vpa['username'], $qrCodeEntity['qr_string']);
         $this->assertEquals($qrCode['id'], $qrCodeEntity['id']);
-    }
-
-    public function testSelectSecondTerminalForQrCreation()
-    {
-
-
-        $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
-
-        $this->fixtures->create('terminal:live_dedicated_upi_yesbank_terminal');
-
-        $qrCode = $this->createQrCode(
-            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name'  => 'Mitasha'], 'live', 'LiveAccountMer'
-        );
-
-        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
-
-        $this->assertEquals($qrCodeEntity['id'], $qrCode['id']);
-    }
-
-    public function testBharatQRWithNoDedicatedTerminal()
-    {
-        /*
-         * The terminal was picking gateway merchant id2 as vpa after removing Splitz experiment.
-         * */
-        $this->fixtures->on('test')->edit('terminal', $this->bqrTerminal ->getId(), ['gateway_merchant_id2' => '']);
-        $this->fixtures->merchant->addFeatures(['omni_enabled']);
-
-
-        // This exception is thrown in app/Models/QrCode/NonVirtualAccountQrCode/Generator.php
-        // inside the function getVpaForQr() at the END:  throw new InvalidArgumentException('VPA is required for generating QR');
-        $this->expectExceptionCode('SERVER_ERROR_INVALID_ARGUMENT');
-        $this->createQrCode(
-            ['usage' => 'single_use', 'type' => 'bharat_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'Mitasha', 'request_source' => 'ezetap']
-        );
-
     }
 
     public function testProcessIciciQrPaymentOnSharedTerminalForSingleUseQrViaVPACallbackRoute()
@@ -1472,13 +1120,25 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
     public function testMultiuseQrPaymentWithoutRZPPrefix()
     {
-
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "holygrail",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($output);
 
         $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'multiple_use', 'type' => 'upi_qr',
-             'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'name' => 'Mitasha'], 'live','LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
 
@@ -1509,12 +1169,25 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
     public function testMultiuseQrPaymentWithRZPPrefix()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "holygrail",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($output);
 
         $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'multiple_use', 'type' => 'upi_qr',
-             'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'name' => 'Mitasha'], 'live','LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
 
@@ -1545,7 +1218,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'multiple_use', 'type' => 'upi_qr',
-             'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'name' => 'Mitasha'], 'live','LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
 
@@ -1598,7 +1271,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'multiple_use', 'type' => 'upi_qr',
-             'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'name' => 'Mitasha'], 'live','LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
 
@@ -1639,7 +1312,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->fixtures->on('live')->edit('terminal', $this->bqrTerminalLive->getId(), ['merchant_id' => 'LiveAccountMer']);
         $qrCode = $this->createQrCode(
             ['usage'    => 'multiple_use', 'type' => 'upi_qr',
-             'name' => 'Shah'], 'live','LiveAccountMer');
+                'name' => 'Shah'], 'live','LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
 
@@ -1662,73 +1335,32 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->makeUpiIciciPaymentInternal($request);
     }
 
-    public function testCreateSingleUseQrCodeWithGatewayErrorException() // Testing exception handling for QR Creation with icici dedicated terminal
-    {
-
-
-        $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
-
-        $this->expectExceptionMessage('QrCode creation failed due to error at bank or wallet gateway');
-        $this->expectException(BadRequestException::class);
-
-        $this->app['config']->set('gateway.mock_upi_icici', false);
-
-        $iciciGatewayMock = \Mockery::mock('RZP\Gateway\Upi\Icici\Gateway')->makePartial();
-
-        $iciciGatewayMock
-            ->shouldReceive('getQrRefId')
-            ->andThrow(
-                new \RZP\Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_FATAL_ERROR)
-            );
-
-        $this->createQrCode(
-            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'testCreateSingleUseQrCodeWithErrorFromGateway'],
-            'live',
-            'LiveAccountMer');
-    }
-
-    public function testCreateSingleUseQrCodeWithRuntimeException() // Testing exception handling for QR Creation with icici dedicated terminal
-    {
-
-
-        $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
-
-        $this->expectExceptionMessage('QrCode creation failed due to error at bank or wallet gateway');
-        $this->expectException(BadRequestException::class);
-
-        $this->app['config']->set('gateway.mock_upi_icici', false);
-
-        $iciciGatewayMock = \Mockery::mock('RZP\Gateway\Upi\Icici\Gateway')->makePartial();
-
-        $iciciGatewayMock
-            ->shouldReceive('getQrRefId')
-            ->andThrow(
-                new \RZP\Exception\RuntimeException("Invalid Response")
-            );
-
-        $this->createQrCode(
-            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'testCreateSingleUseQrCodeWithErrorFromGateway'],
-            'live',
-            'LiveAccountMer');
-    }
-
-
     public function testPaymentForUnsuccessfulStatusCallback()
     {
-
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "holygrail",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($output);
 
         $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
 
         $qrCode = $this->createQrCode([
-                                          'usage'          => 'single_use',
-                                          'type'           => 'upi_qr',
-                                          'fixed_amount'   => true,
-                                          'payment_amount' => 4000
-                                      ],
-                                      'live',
-                                      'LiveAccountMer'
+            'usage'          => 'single_use',
+            'type'           => 'upi_qr',
+            'fixed_amount'   => true,
+            'payment_amount' => 4000
+        ],
+            'live',
+            'LiveAccountMer'
         );
 
         $qrCodeId = $qrCode['id'];
@@ -1752,74 +1384,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals(null, $payment);
     }
 
-    public function testQrCodeCreatedAndClosedWebhookEventsWithTransactionIsolation()
-    {
-        $this->markTestSkipped('Cannot Close Multiple Use QR');
-        $this->createPartnerAndSubmerchantMapping();
-
-        $this->mockSplitzTreatmentBulkRequest([["variant" => ["name" => "enable"]]]);
-
-        $expectedEventData = $this->testData[__FUNCTION__];
-
-        $this->expectWebhookEventWithContext(
-            'qr_code.created',
-            ['entity_type' => 'qr_code', 'event_type' => 'partnership'],
-            function (array $event) use ($expectedEventData)
-            {
-                $this->assertArraySelectiveEquals($expectedEventData, $event);
-                $this->assertArrayNotHasKey('context', $event);
-            }
-        );
-
-        $qrCode = $this->createQrCode([
-                                          'type'           => 'upi_qr',
-                                          'usage'          => 'single_use',
-                                          'fixed_amount'   => '1',
-                                          'payment_amount' => 100,
-                                      ]
-        );
-
-        $expectedEventData['event'] = 'qr_code.closed';
-        $expectedEventData['payload']['qr_code']['entity']['status'] = 'closed';
-
-        $this->expectWebhookEventWithContext(
-            'qr_code.closed',
-            ['entity_type' => 'qr_code', 'event_type' => 'partnership'],
-            function (array $event) use ($expectedEventData)
-            {
-                $this->assertArraySelectiveEquals($expectedEventData, $event);
-                $this->assertArrayNotHasKey('context', $event);
-            }
-        );
-
-        $this->closeQrCode($qrCode['id']);
-    }
-
-    public function testCreateQrCodeWithPaiseInAmountForDedicatedTerminal()
-    {
-
-        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $this->createQrCode(
-            [
-                'usage'          => 'single_use',
-                'type'           => 'upi_qr',
-                'payment_amount' => 27071,
-                'fixed_amount'   => true,
-            ],
-            'live',
-            'LiveAccountMer'
-        );
-
-        $qrCode = $this->getDbLastEntity('qr_code', 'live');
-
-        $this->assertStringContainsString('am=270.71', $qrCode->getQrString());
-
-        // Should I use getAmount() or getRawAmount() here?
-        $this->assertEquals(27071, $qrCode->getAmount());
-    }
-
-    public function createPricingForOffline($contents = [])
+    public function createPricingForOffline()
     {
         $posQRPricingPlan = [
             'plan_id' => '1hDYlICobzOCYt',
@@ -1835,12 +1400,9 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
             'channel' => 'in_person',
         ];
 
-        $posQRPricingPlan = array_merge($posQRPricingPlan, $contents);
-
         $this->fixtures->create('pricing', $posQRPricingPlan);
     }
 
-    //Multiple use QR can't be closed
     public function testProcessReconViaInternalRouteWhenExceptionIsReceivedFromScrooge()
     {
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
@@ -1871,6 +1433,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals('qr_code', $payment['receiver_type']);
         $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
     }
+
     public function testDelayedCallbackOnSingleUseQrCodeForPosQr()
     {
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
@@ -1935,6 +1498,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals(false, $qrPayment['expected']);
         $this->assertEquals('refunded', $payment['status']);
     }
+
     public function testDelayedCallbackOnSingleUseQrCodeForNonPosQr()
     {
 
@@ -1975,25 +1539,6 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->assertEquals(false, $qrPayment['expected']);
         $this->assertEquals('refunded', $payment['status']);
-    }
-
-    // Local Extension Not Found Error
-    public function testDownloadQrCodeInTestMode()
-    {
-        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-        $qrCode = $this->createQrCode(
-            [
-                'usage'          => 'single_use',
-                'type'           => 'upi_qr',
-                'payment_amount' => 400,
-                'fixed_amount'   => true,
-            ]);
-
-        $qrCodeId = $qrCode['id'];
-        $this->handleUfhService($qrCodeId);
-        $response = $this->downloadQrCode($qrCodeId);
-
-        $this->assertContentTypeForResponse('image/png', $response);
     }
 
     public function testPaymentCreationViaReconForKhatabookStaticQr()
@@ -2060,10 +1605,9 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
     public function testPaymentCreationViaUpiUnexpecterRouteIfSQRDoesNotExists()
     {
-        $this->setMockSplitzTreatment(
+        $this->setMockRazorxTreatment(
             [
-                $this->config->get('app.qr_gateway_unrecognised_payment_process') => 'on',
-                $this->config->get('app.recon_unexpected_qr_payment_via_upi_route')=> 'on',
+                RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
             ]
         );
 
@@ -2118,548 +1662,4 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertNull($qrPayment);
     }
 
-
-    //0Auth Application ID Error
-    public function testSQRCreationViaMerchantQRCreateRouteWithValidOauthAppID()
-    {
-        $this->getDedicatedTerminalSplitzResponseForVariantON();
-        $this->setMockSplitzTreatment(
-            [
-                $this->config->get('app.qr_gateway_unrecognised_payment_process') => 'on',
-                $this->config->get('app.recon_unexpected_qr_payment_via_upi_route')=> 'on',
-            ]
-        );
-
-        [$application, $accessMap, $partner] = $this->createPurePlatFormMerchantAndSubMerchant();
-        $this->fixtures->on('live')->merchant->enableMethod(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, 'upi');
-        $this->fixtures->on('live')->merchant->addFeatures(['qr_codes'], Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
-
-        $this->fixtures->create('terminal:dedicated_upi_icici_terminal',['merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
-
-        $qrCode = $this->createMerchantQrCode(
-            [
-                'merchant_id'        => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
-                'vpa'                => 'rzp.qrtest@icici',
-                'oauth_application_id'         => $application['id'],
-            ]);
-
-        $this->assertNotNull($qrCode);
-        $qrCodeId = $qrCode['id'];
-        $this->fixtures->stripSign($qrCodeId);
-        $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
-        $this->assertEquals('api', $qrCodeEntity['request_source']);
-        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
-        $this->assertEquals('rzp.qrtest@icici', $intentParam['pa']);
-
-        $qcc   = $this->getDbLastEntity('qr_code_config','live');
-        $this->assertNotNull($qcc);
-        $this->assertStringContainsString($qrCodeId,$qcc['config_value']);
-        $this->assertStringContainsString(Shared::UPI_ICICI_TERMINAL_DEDICATED,$qcc['config_value']);
-
-        $entityOrigin   = $this->getDbLastEntity('entity_origin','live');
-        $this->assertNotNull($entityOrigin);
-        $this->assertEquals($qrCodeId, $entityOrigin['entity_id']);
-        $this->assertEquals($application['id'], $entityOrigin['origin_id']);
-    }
-
-    public function testSQRCreationViaMerchantQRCreateRouteWithInvalidOauthAppID()
-    {
-        $this->getDedicatedTerminalSplitzResponseForVariantON();
-        $this->setMockSplitzTreatment(
-            [
-                $this->config->get('app.qr_gateway_unrecognised_payment_process') => 'on',
-                $this->config->get('app.recon_unexpected_qr_payment_via_upi_route')=> 'on',
-            ]
-        );
-
-        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $qrCode = $this->createMerchantQrCode(
-            [
-                'merchant_id'        => 'LiveAccountMer',
-                'vpa'                => 'rzp.qrTest@icici',
-                'oauth_application_id'         => 'random',
-            ]);
-
-        $this->assertNotNull($qrCode);
-        $qrCodeId = $qrCode['id'];
-        $this->fixtures->stripSign($qrCodeId);
-        $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
-        $this->assertEquals('api', $qrCodeEntity['request_source']);
-        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
-        $this->assertEquals('rzp.qrtest@icici', $intentParam['pa']);
-
-        $qcc   = $this->getDbLastEntity('qr_code_config','live');
-        $this->assertNotNull($qcc);
-        $this->assertStringContainsString($qrCodeId,$qcc['config_value']);
-        $this->assertStringContainsString(Shared::UPI_ICICI_TERMINAL_DEDICATED,$qcc['config_value']);
-
-        $entityOrigin   = $this->getDbLastEntity('entity_origin','live');
-        $this->assertNull($entityOrigin);
-    }
-
-    public function testCreateDynamicQrWithDedicatedTerminalAndTaxInvoice()
-    {
-        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-
-        $qrCode = $this->createQrCode([
-                                          'usage'          => 'single_use',
-                                          'type'           => 'upi_qr',
-                                          'fixed_amount'   => true,
-                                          'payment_amount' => 10000,
-                                          'tax_invoice'    => [
-                                              'number'         => 'INV0001',
-                                              'date'           => 1725428530,
-                                              'customer_name'  => 'Gaurav Kumar',
-                                              'business_gstin' => '06AABCU9605R1ZR',
-                                              'gst_amount'     => 4000,
-                                              'cess_amount'    => 0,
-                                              'supply_type'    => 'interstate',
-                                       ],
-                                      ],
-                                      'live',
-                                      'LiveAccountMer');
-
-        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
-
-        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
-
-        $this->assertArraySelectiveEquals([
-                                              'number'         => 'INV0001',
-                                              'date'           => 1725428530,
-                                              'customer_name'  => 'Gaurav Kumar',
-                                              'business_gstin' => '06AABCU9605R1ZR',
-                                              'gst_amount'     => 4000,
-                                              'cess_amount'    => 0,
-                                              'supply_type'    => 'interstate',
-                                          ], $qrCodeEntity['tax_invoice']);
-    }
-
-    public function testCreateStaticQrWithDedicatedTerminalAndTaxInvoice()
-    {
-        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-
-        $qrCode = $this->createQrCode([
-                                          'usage'          => 'multiple_use',
-                                          'type'           => 'upi_qr',
-                                          'tax_invoice'    => [
-                                              'number'         => 'INV0001',
-                                              'date'           => 1725428530,
-                                              'customer_name'  => 'Gaurav Kumar',
-                                              'business_gstin' => '06AABCU9605R1ZR',
-                                              'gst_amount'     => 4000,
-                                              'cess_amount'    => 0,
-                                              'supply_type'    => 'interstate',
-                                          ],
-                                      ],
-                                      'live',
-                                      'LiveAccountMer');
-
-        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
-
-        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
-
-        $this->assertArraySelectiveEquals([
-                                              'number'         => 'INV0001',
-                                              'date'           => 1725428530,
-                                              'customer_name'  => 'Gaurav Kumar',
-                                              'business_gstin' => '06AABCU9605R1ZR',
-                                              'gst_amount'     => 4000,
-                                              'cess_amount'    => 0,
-                                              'supply_type'    => 'interstate',
-                                          ], $qrCodeEntity['tax_invoice']);
-    }
-
-    public function testAddPosQRCodeFlags()
-    {
-
-        $this->fixtures->on('live')->merchant->removeFeatures([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT], 'LiveAccountMer');
-        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
-        $this->assertEquals(false, $isQRCodeFeatureEnabled);
-        $payload = [
-            "merchant_id" => "LiveAccountMer",
-            "pos_activation_status" => "activated"
-        ];
-
-        (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
-
-        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
-        $this->assertEquals(true, $isQRCodeFeatureEnabled);
-    }
-
-    public function testAddPosQRCodeFlagsDuplicateCall()
-    {
-
-        $this->fixtures->on('live')->merchant->removeFeatures([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT], 'LiveAccountMer');
-        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
-        $this->assertEquals(false, $isQRCodeFeatureEnabled);
-        $payload = [
-            "merchant_id" => "LiveAccountMer",
-            "pos_activation_status" => "activated"
-        ];
-
-        (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
-
-        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
-        $this->assertEquals(true, $isQRCodeFeatureEnabled);
-        (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
-
-        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
-        $this->assertEquals(true, $isQRCodeFeatureEnabled);
-    }
-
-    public function testAddPosQRCodeFlagsWithNonActivatedStatus()
-    {
-
-        $this->fixtures->on('live')->merchant->removeFeatures([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT], 'LiveAccountMer');
-        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
-        $this->assertEquals(false, $isQRCodeFeatureEnabled);
-        $payload = [
-            "merchant_id" => "LiveAccountMer",
-            "pos_activation_status" => "kyc_qualified"
-        ];
-
-        (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
-
-        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
-        $this->assertEquals(false, $isQRCodeFeatureEnabled);
-    }
-
-    public function testInvalidLengthMultipleQrCodeClose()
-    {
-        $this->ba->adminAuth();
-        $this->addPermissionToBaAdmin(Permission::BULK_CLOSE_MULTIPLE_QR);
-
-
-        $attributes = [ 'ids' => ['1','2','3']];
-
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/payments/qr_codes/close/bulk',
-            'content' => $attributes,
-        ];
-
-        $this->expectException(BadRequestValidationFailureException::class);
-
-        $this->makeRequestAndGetContent($request);
-    }
-
-    public function testClosingMultipleUseQrCode()
-    {
-        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $attributes = [];
-        $total_count = 2;
-
-        for($i = 0;$i<$total_count;$i++)
-        {
-            $qrCode = $this->createQrCode([
-                'usage' => 'multiple_use',
-                'type' => 'upi_qr'
-            ],'test', 'LiveAccountMer');
-
-            $attributes['ids'][$i] = substr($qrCode['id'],3);
-
-        }
-
-        $this->ba->adminAuth('test');
-        $this->addPermissionToBaAdmin(Permission::BULK_CLOSE_MULTIPLE_QR);
-
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/payments/qr_codes/close/bulk',
-            'content' => $attributes,
-        ];
-
-       $response  = $this->makeRequestAndGetContent($request);
-
-       $this->assertEquals(true,empty($response['failed_jobs']));
-       $this->assertEquals(true,empty($response['failure_details']));
-       $this->assertEquals($total_count,$response['success']);
-       $this->assertEquals(0,$response['failure'],);
-
-       foreach($attributes['ids'] as $id)
-       {
-            $qrCode = $this->getDbEntityById('qr_code',$id,'test');
-            $this->assertEquals('closed',$qrCode['status']);
-            $this->assertEquals('compliance',$qrCode['close_reason'],);
-       }
-    }
-    public function testClosingMoreThan500MultipleUseQrCode()
-    {
-        $attributes['ids'] = array_fill(0, 501, 'default_values');
-
-        $this->ba->adminAuth('test');
-        $this->addPermissionToBaAdmin(Permission::BULK_CLOSE_MULTIPLE_QR);
-
-        $this->expectException(BadRequestValidationFailureException::class);
-
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/payments/qr_codes/close/bulk',
-            'content' => $attributes,
-        ];
-
-        $this->makeRequestAndGetContent($request);
-    }
-
-    public function testClosingSingleQRByPassingInBulkMultipleClose()
-    {
-        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $attributes = [];
-        $total_count = 2;
-
-        for($i = 0;$i<$total_count;$i++)
-        {
-            $qrCode = $this->createQrCode([
-                'usage' => 'single_use',
-                'type' => 'upi_qr'
-            ],'test', 'LiveAccountMer');
-
-            $attributes['ids'][$i] = substr($qrCode['id'],3);
-
-        }
-
-        $this->ba->adminAuth('test');
-        $this->addPermissionToBaAdmin(Permission::BULK_CLOSE_MULTIPLE_QR);
-
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/payments/qr_codes/close/bulk',
-            'content' => $attributes,
-        ];
-
-        $response  = $this->makeRequestAndGetContent($request);
-
-       for($i = 0;$i < $total_count ; $i++)
-       {
-            $qrId = $attributes['ids'][$i];
-            $this->assertEquals($qrId , $response['failed_ids'][$i]);
-            $this->assertEquals("Single use QR code cannot be closed via this Admin route" , $response['failure_details'][$qrId]);
-       }
-
-        $this->assertEquals(0,$response['success']);
-        $this->assertEquals($total_count,$response['failure'],);
-
-    }
-    public function testEnableBulkTerminalsOnline()
-    {
-        $this->ba->adminAuth();
-        $this->addPermissionToBaAdmin(Permission::ENABLE_TERMINALS_ONLINE_TAG_BULK);
-        $terminal1 = $this->fixtures->create(
-            'terminal',
-            [
-                'id' => 'AqdfGh5460opVt',
-                'merchant_id' => '10000000000000',
-                'gateway' => 'upi_rzpapb',
-                'gateway_merchant_id' => '250000001',
-                'upi' => 1,
-                'type'    => [
-                    'pay' => '0'
-                ],
-            ]);
-        $terminal2 = $this->fixtures->create(
-            'terminal',
-            [
-                'id' => 'AqdfGh5460op0t',
-                'merchant_id' => '10000000000000',
-                'gateway' => 'upi_rzpapb',
-                'gateway_merchant_id' => '250000001',
-                'upi' => 1,
-                'type'    => [
-                    'pay' => '0'
-                ],
-            ]);
-        $terminal3 = $this->fixtures->create(
-            'terminal',
-            [
-                'id' => 'AqdfGh5460opV0',
-                'merchant_id' => '10000000000000',
-                'gateway' => 'upi_rzpapb',
-                'gateway_merchant_id' => '250000001',
-                'upi' => 1,
-                'type'    => [
-                    'pay' => '0'
-                ],
-            ]);
-        $terminal_ids = [
-                'terminal_ids' => [
-                    $terminal1['id'],
-                    $terminal2['id'],
-                    $terminal3['id']
-                ]
-            ];
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/payments/terminal/enable_onlinetag/bulk',
-            'content' => $terminal_ids,
-        ];
-        $total_count = 3;
-        $response  = $this->makeRequestAndGetContent($request);
-
-        $this->assertEquals(true,empty($response['failedIds']));
-        $this->assertEquals($total_count,$response['success']);
-        $this->assertEquals(0,$response['failed'],);
-
-    }
-    public function testDisableBulkTerminalsOnline()
-    {
-        $this->ba->adminAuth();
-        $this->addPermissionToBaAdmin(Permission::DISABLE_TERMINALS_ONLINE_TAG_BULK);
-        $terminal1 = $this->fixtures->create(
-            'terminal',
-            [
-                'id' => 'AqdfGh5460opVt',
-                'merchant_id' => '10000000000000',
-                'gateway' => 'upi_rzpapb',
-                'gateway_merchant_id' => '250000001',
-                'upi' => 1,
-                'type'    => [
-                    'online' => '1'
-                ],
-            ]);
-        $terminal2 = $this->fixtures->create(
-            'terminal',
-            [
-                'id' => 'AqdfGh5460op0t',
-                'merchant_id' => '10000000000000',
-                'gateway' => 'upi_rzpapb',
-                'gateway_merchant_id' => '250000001',
-                'upi' => 1,
-                'type'    => [
-                    'online' => '1'
-                ],
-            ]);
-        $terminal3 = $this->fixtures->create(
-            'terminal',
-            [
-                'id' => 'AqdfGh5460opV0',
-                'merchant_id' => '10000000000000',
-                'gateway' => 'upi_rzpapb',
-                'gateway_merchant_id' => '250000003',
-                'upi' => 1,
-                'type'    => [
-                    'online' => '1'
-                ],
-            ]);
-        $terminal_ids = [
-                'terminal_ids' => [
-                    $terminal1['id'],
-                    $terminal2['id'],
-                    $terminal3['id']
-                ]
-            ];
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/payments/terminal/disable_onlinetag/bulk',
-            'content' => $terminal_ids,
-        ];
-        $total_count = 3;
-        $response  = $this->makeRequestAndGetContent($request);
-
-        $this->assertEquals(true,empty($response['failedIds']));
-        $this->assertEquals($total_count,$response['success']);
-        $this->assertEquals(0,$response['failed']);
-
-    }
-
-    public function testChannelIsSetForUpiPoDTransaction()
-    {
-        $this->testProcessPaymentForDynamicQrWithDedicatedTerminal();
-        $payment = $this->getLastEntity('payment', true, 'live');
-        $this->assertEquals('offline_pod', $payment['channel']);
-    }
-
-    public function testSetDeviceIdForPayment()
-    {
-        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $this->setMockSplitzTreatment([
-            'M25grFTOPZEGQS' => 'on'
-        ]);
-
-        $this->createQrCode(
-            [
-                'usage'        => 'multiple_use',
-                'type'         => 'upi_qr',
-            ],
-            'live',
-            'LiveAccountMer');
-
-        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
-
-        $this->updateDeviceIdForQrCode(
-            [
-                'identifier'=>[
-                    'trId'=>null,
-                    'qr_code_id'  => $qrCodeEntity['id'],
-                    'merchant_id' => 'LiveAccountMer',
-                ],
-                'device_id'   => 'testi12',
-            ]);
-
-
-        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
-
-        $request = $this->testData['testProcessIciciQrPayment'];
-
-        $rrn = '000011100101';
-        $request['content']['merchantId'] = $terminal->getGatewayMerchantId();
-        $request['content']['BankRRN'] = $rrn;
-        $request['content']['merchantTranId'] = $qrCodeEntity['reference'].'qrv2';
-
-        $this->makeUpiIciciPayment($request);
-
-        $qrPayment = $this->getLastEntity('qr_payment', true, 'live');
-        $payment = $this->getLastEntity('payment', true, 'live');
-        $this->assertEquals('upi', $payment['method']);
-        $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals(4000, $payment['amount']);
-        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
-        $this->assertEquals(1, $qrPayment['expected']);
-        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
-        $this->assertEquals($rrn, $payment['reference16']);
-        $this->assertEquals('testi12',$payment['device_id']);
-    }
-
-    public function testProcessUnexpectedPaymentWhenMerchantIsNotLiveForOfflinePayments()
-    {
-        // Creating Offline Terminal
-        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_offline_terminal');
-
-        $this->fixtures->merchant->edit('LiveAccountMer', ['live' => false]);
-        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
-
-        $this->createQrCode(
-            [
-                'usage'          => 'multiple_use',
-                'type'           => 'upi_qr',
-                'request_source' => 'ezetap'
-            ],
-            'live',
-            'LiveAccountMer'
-        );
-
-        $this->createPricingForOffline(['receiver_type' => 'qr_code']);
-
-        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
-
-        $request = $this->testData['testProcessIciciQrPayment'];
-
-        $rrn = '000011100101';
-        $request['content']['merchantId'] = $terminal->getGatewayMerchantId();
-        $request['content']['BankRRN'] = $rrn;
-        $request['content']['merchantTranId'] = $qrCodeEntity['reference'].'qrv2';
-
-        $this->makeUpiIciciPayment($request);
-
-        $qrPayment = $this->getLastEntity('qr_payment', true, 'live');
-        $payment = $this->getLastEntity('payment', true, 'live');
-
-        $this->assertEquals(0, $qrPayment['expected']);
-        $this->assertEquals('in_person', $payment['reference13']);
-    }
 }

@@ -884,4 +884,14 @@ final class RequestContext
             $this->paymentMethodV2 = $data['method'];
         }
     }
+
+    public function setHolygrailIciciFlow($splitzResultBool)
+    {
+        $this->holygrailIciciFlow = $splitzResultBool;
+    }
+
+    public function getHolygrailIciciFlow()
+    {
+        return empty($this->holygrailIciciFlow) === true ? false : $this->holygrailIciciFlow;
+    }
 }

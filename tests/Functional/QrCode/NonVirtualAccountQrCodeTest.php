@@ -86,6 +86,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
 
         $this->vpaTerminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+
+        $this->config['gateway.mock_upi_mozart'] = true;
     }
 
     public function testCreateBharatQrCode()
@@ -2499,7 +2501,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $request = $this->testData['testProcessIciciQrPayment'];
         $request['content']['merchantId'] = $terminal->getGatewayMerchantId();
-        $request['content']['merchantTranId'] = $qrCode['reference'];
+        $request['content']['merchantTranId'] = $qrCode['reference'].'qrv2';
 
         $this->makeUpiIciciPayment($request);
         $qrPayment = $this->getDbLastEntity('qr_payment');
@@ -2727,12 +2729,13 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessPaymentOnStaticQrWithoutTransactionReference(): void
     {
-
         $this->setMockSplitzTreatment(
             [
                 $this->config->get('app.qr_gateway_unrecognised_payment_process') => 'on',
+
             ]
         );
+
         $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
         $this->createQrCode(

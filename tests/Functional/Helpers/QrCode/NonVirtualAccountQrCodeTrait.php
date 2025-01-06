@@ -713,6 +713,24 @@ trait NonVirtualAccountQrCodeTrait
             ->andReturn($output);
     }
 
+    protected function mockHolygrailIciciFlowSplitzExerpiementEnabled()
+    {
+        $output = [
+            'response' => [
+                'variant' => [
+                    'variables' => [
+                        [
+                            'key' => 'holygrail',
+                            'value' => 'on'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+    }
+
     protected function mockSplitzTreatmentForStatusCheck($qrStatusCheckOutput = 'on', $dedicatedTerminalOutput = 'on')
     {
         $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
@@ -732,6 +750,10 @@ trait NonVirtualAccountQrCodeTrait
                                     [
                                         "key" => "result",
                                         "value" => $qrStatusCheckOutput,
+                                    ],
+                                    [
+                                        "key" => "holygrail",
+                                        "value" => "on",
                                     ]
                                 ]
                             ]
@@ -748,6 +770,10 @@ trait NonVirtualAccountQrCodeTrait
                                     [
                                         "key" => "result",
                                         "value" => $dedicatedTerminalOutput,
+                                    ],
+                                    [
+                                        "key" => "holygrail",
+                                        "value" => "on",
                                     ]
                                 ]
                             ]
@@ -763,7 +789,11 @@ trait NonVirtualAccountQrCodeTrait
                             "variables" => [
                                 [
                                     "key" => "result",
-                                    "value" => "off"
+                                    "value" => "off",
+                                ],
+                                [
+                                    "key" => "holygrail",
+                                    "value" => "on",
                                 ]
                             ]
                         ]
@@ -848,6 +878,23 @@ trait NonVirtualAccountQrCodeTrait
         return $output;
     }
 
+    protected function getHolygrailIciciFlowSplitzResponseForOnVaiant()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "holygrail",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        return $output;
+    }
+
     protected function getDedicatedTerminalSplitzResponseForVariantON()
     {
          $this->mockSplitzTreatment([
@@ -908,8 +955,29 @@ trait NonVirtualAccountQrCodeTrait
                             'terminalId'        => '5411',
                         ]
                     ]
-                ]
-            ]
+                ],
+                'upi' => [
+                    'vpa' => 'razorpay@icici',
+                    'status_code' => '0',
+                    'npci_reference_id' => $rrn,
+                    'merchant_reference' => str_after($qrCodeId, 'qr_') . 'qrv2',
+                    'gateway_payment_id' => '235291019373',
+                    'gateway_amount' => 26553,
+                ],
+                'payment' => [
+                    'currency' => 'INR',
+                    'amount_authorized' => '4000',
+                    'payer_account_type' => 'credit_card',
+                ],
+                'terminal' => [
+                    'gateway_merchant_id' => '403343',
+                    'gateway' => 'upi_icici'
+                ],
+                'version' => 'v2'
+            ],
+            'error' => null,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'success' => true,
         ];
         if (empty($rrn) === false)
         {

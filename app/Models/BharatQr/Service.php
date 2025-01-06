@@ -215,7 +215,12 @@ class Service extends Base\Service
             $gatewayClass->setGatewayParams($input, $this->mode, $terminal);
         }
 
-        if (in_array($gateway, MozartGateway::$qrCodePaymentGateways, true) === false)
+        /*
+         * Because recon has not been migrated to mozart holygrail format for upi_icici
+         * we have set upi_icici clause in the if condition below
+        */
+        if (in_array($gateway, MozartGateway::$qrCodePaymentGateways, true) === false ||
+            ($gateway === Payment\Gateway::UPI_ICICI ))
         {
             $gatewayResponse = $gatewayClass->preProcessServerCallback($input, true);
         }
@@ -394,7 +399,7 @@ class Service extends Base\Service
         return $paymentId;
     }
 
-    private function isNonVAQrCodePayment($gatewayResponse)
+    public function isNonVAQrCodePayment($gatewayResponse)
     {
         $tr = $this->getTrFieldForGateway($gatewayResponse);
 
@@ -411,6 +416,11 @@ class Service extends Base\Service
 
     private function getTrFieldForGateway($gatewayResponse)
     {
+        if(empty( $gatewayResponse['callback_data']['data']['upi']['merchant_reference']) === false)
+        {
+            return $gatewayResponse['callback_data']['data']['upi']['merchant_reference'];
+        }
+
         switch ($gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY])
         {
             case Gateway::UPI_ICICI:
