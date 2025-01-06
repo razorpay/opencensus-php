@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Card,
@@ -14,6 +14,8 @@ import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 
 import BrandsTableContainer from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer';
 import TerminalsTableContainer from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/TerminalsTableContainer';
+import { useBrandsTablePayloadStore } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/stores/brandsTablePayloadStore';
+import { useTerminalsTablePayloadStore } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/TerminalsTableContainer/stores/terminalsTablePayloadStore';
 import Breadcrumbs, {
   BreadCrumbType,
 } from 'merchant/views/BillMeSettings/common/components/Breadcrumbs';
@@ -30,6 +32,16 @@ const PAGE_BREADCRUMBS: BreadCrumbType[] = [
 ];
 
 const BrandsAndTerminals = (): React.ReactElement => {
+  const { resetBrandsPayloadFilters } = useBrandsTablePayloadStore();
+  const { resetTerminalsPayloadFilters } = useTerminalsTablePayloadStore();
+
+  useEffect(() => {
+    return () => {
+      resetBrandsPayloadFilters();
+      resetTerminalsPayloadFilters();
+    };
+  }, []);
+
   return (
     <Card padding="spacing.0" backgroundColor="surface.background.gray.moderate">
       <CardBody>

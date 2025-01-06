@@ -632,6 +632,9 @@ const PosMerchantAgreement = lazy(() =>
 const BillMeSettings = lazy(() =>
   import(/* webpackChunkName: "BillMeSettings" */ 'merchant/views/BillMeSettings'),
 );
+const StoreSettings = lazy(() =>
+  import(/* webpackChunkName: "StoreSettings" */ 'merchant/views/StoreSettings'),
+);
 const CreateReport = lazy(() =>
   import(
     /* webpackChunkName: "CreateReport" */ 'merchant/views/Reconciliations/Dashboard/CreateReport'
@@ -2641,6 +2644,14 @@ class Content extends Component {
             element={
               <RouteGuard additionalCondition={() => isBillMeMerchant({ abExperiments })}>
                 <BillMeSettings />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="store-settings/*"
+            element={
+              <RouteGuard additionalCondition={() => isBillMeMerchant({ abExperiments })}>
+                <StoreSettings />
               </RouteGuard>
             }
           />

@@ -50,7 +50,9 @@ export enum ROUTES_INFO {
   EXPORTER_REWARDS = '/international-settings/exporter-rewards',
   WHATSAPP_ACCOUNT_SETUP = '/payments-and-refunds-settings/whatsapp-account-setup',
   BILLME_SETTINGS = '/billme-settings/brands-and-terminals',
-  STORE_SETTINGS = '/digital-billing-settings/stores-list',
+  STORE_SETTINGS = '/store-settings/stores-list',
+  STORE_CREATE = '/store-settings/store-create',
+  STORE_DETAILS = '/store-settings/stores-list/:storeId',
 }
 
 export type OldAndNewRouteMapInterface = {

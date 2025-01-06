@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Box } from '@razorpay/blade/components';
+import { Box, ToastContainer } from '@razorpay/blade/components';
 import { Route, Routes } from 'react-router-dom';
 
 import Loader from 'common/components/Loader';
@@ -9,7 +9,10 @@ import lazy from 'merchant/routes/LazyLoader';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 
 const BrandsAndTerminals = lazy(
-  () => import(/* webpackChunkName: "BrandsAndTerminals" */ './BrandsAndTerminals'),
+  () =>
+    import(
+      /* webpackChunkName: "BrandsAndTerminals" */ 'merchant/views/BillMeSettings/BrandsAndTerminals'
+    ),
 );
 
 const BillMeSettings = (): React.ReactElement => {
@@ -19,6 +22,7 @@ const BillMeSettings = (): React.ReactElement => {
 
   return (
     <Box paddingX="spacing.8" paddingY="spacing.7">
+      <ToastContainer />
       <ErrorBoundary resetOnProps>
         <Suspense fallback={<Loader />}>
           <Box>
