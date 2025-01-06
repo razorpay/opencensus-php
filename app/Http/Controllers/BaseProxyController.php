@@ -150,7 +150,7 @@ abstract class BaseProxyController extends Controller
             'X-Request-ID'     => Request::getTaskId(),
             'X-IP-Address'     => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
             'X-Org-Id'         => optional($this->ba->getMerchant())->getOrgId() ?? '',
-            'X-Merchant-Country' => optional($this->ba->getMerchant())->getCountry() ?? '',
+            'X-Merchant-Country' => optional($this->ba->getMerchant())->getCountry() ?? ($body['country_code'] ?? ''),
             'X-Admin-id'       => optional($this->ba->getAdmin())->getId() ?? '',
             'X-Product'        => $body['product'] ?? ''
         ];

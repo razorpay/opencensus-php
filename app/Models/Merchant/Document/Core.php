@@ -270,6 +270,7 @@ class Core extends Base\Core
                     "merchant_id"        => $merchantId,
                     "original_file_name" => $fileAttributes[$documentType]['original_file_name'],
                     "size"               => $size ? (int) ($size) : 0,
+                    "product"            => $input["product"] ?? '',
                 ];
 
                 $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_REQUEST, [

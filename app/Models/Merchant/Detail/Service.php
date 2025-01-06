@@ -565,6 +565,7 @@ class Service extends Base\Service
                     DEConstants::MERCHANT_ID => $merchantId,
                     User\Entity::EMAIL       => $email,
                     DEConstants::USER_ID     => $user->getId(),
+                    User\Entity::PRODUCT     => $input[User\Entity::PRODUCT] ?? '',
                 ];
 
                 $response = $this->pgosProxyController->handlePGOSProxyRequests('send_otp', $body, $merchant);
