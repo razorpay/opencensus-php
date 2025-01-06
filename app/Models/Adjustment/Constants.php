@@ -16,6 +16,7 @@ class Constants
     ];
 
     const PLATFORM_TRANSFER_TDS_ADJUSTMENT = 'platform_transfer_tds_adjustment';
+    const CUSTOMER_WALLET_PAYOUT_ADJUSTMENT = 'customer_wallet_payout_adjustment';
 
     public static function getAdjustmentCreateRequestTraceCode(string $source)
     {

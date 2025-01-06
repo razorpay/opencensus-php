@@ -127,6 +127,6 @@ class CustomerWalletPayout extends Base
         ];
 
         // Create merchant adjustment.
-        (new Adjustment\Core)->createAdjustmentForSource($adjustmentData, $payout);
+        (new Adjustment\Core)->createAdjustmentForSource($adjustmentData, $payout, Adjustment\Constants::CUSTOMER_WALLET_PAYOUT_ADJUSTMENT);
     }
 }
