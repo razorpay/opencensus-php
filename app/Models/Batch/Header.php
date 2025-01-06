@@ -1267,6 +1267,52 @@ class Header
     const BUSINESS_REGISTERED_PIN  = Detail\Entity::BUSINESS_REGISTERED_PIN;
     const SEND_ACTIVATION_EMAIL    = 'send_activation_email';
 
+    // OTC headers
+    const CLIENT = 'CLIENT';
+    const ARRANGEMENT = 'ARRANGEMENT';
+    const DEPSLIPNUM = 'DEPSLIPNUM';
+    const BATCHNUM = 'BATCHNUM';
+    const SCHNO = 'SCHNO';
+    const CLGLOC = 'CLGLOC';
+    const PICKUPLOC = 'PICKUPLOC';
+    const PICKUPPOINT = 'PICKUPPOINT';
+    const DRAWEEBANK = 'DRAWEEBANK';
+    const INSTNUM = 'INSTNUM';
+    const INSTAMT = 'INSTAMT';
+    const INSTDATE = 'INSTDATE';
+    const DEPDATE = 'DEPDATE';
+    const DRAWERCODE = 'DRAWERCODE';
+    const DRAWERDES = 'DRAWERDES';
+    const VALUE_DATE = 'VALUE_DATE';
+    const RETURNRES = 'RETURNRES';
+    const ACTIVATIONDATE = 'ACTIVATIONDATE';
+    const VALDATE = 'VALDATE';
+    const INTERNALINSTNMBR = 'INTERNALINSTNMBR';
+    const MICRCODE = 'MICRCODE';
+    const ENTRYREJRMKS = 'ENTRYREJRMKS';
+    const DEPOSITBRANCH = 'DEPOSITBRANCH';
+    const E1 = 'E1';
+    const E2 = 'E2';
+    const E3 = 'E3';
+    const E4 = 'E4';
+    const E5 = 'E5';
+    const E6 = 'E6';
+    const E7 = 'E7';
+    const E8 = 'E8';
+    const E9 = 'E9';
+    const E10 = 'E10';
+    const E11 = 'E11';
+    const E12 = 'E12';
+    const E13 = 'E13';
+    const E14 = 'E14';
+    const E15 = 'E15';
+    const E16 = 'E16';
+    const E17 = 'E17';
+    const E18 = 'E18';
+    const E19 = 'E19';
+    const E20 = 'E20';
+    const E21 = 'E21';
+
     // RBL CA Activation
     const RZP_REF_NO                            = 'RZP Ref No';
     const COMMENT                               = 'Comment';
@@ -6554,6 +6600,57 @@ class Header
             ],
         ],
 
+        Type::OTC_PAYMENT_CREDIT => [
+            self::INPUT => [
+                self::CLIENT,
+                self::PRODUCT,
+                self::ARRANGEMENT,
+                self::DEPSLIPNUM,
+                self::BATCHNUM,
+                self::SCHNO,
+                self::CLGLOC,
+                self::PICKUPLOC,
+                self::PICKUPPOINT,
+                self::DRAWEEBANK,
+                self::INSTNUM,
+                self::INSTAMT,
+                self::INSTDATE,
+                self::DEPDATE,
+                self::DRAWERCODE,
+                self::DRAWERDES,
+                self::VALUE_DATE,
+                self::STATUS,
+                self::RETURNRES,
+                self::ACTIVATIONDATE,
+                self::VALDATE,
+                self::INTERNALINSTNMBR,
+                self::MICRCODE,
+                self::ENTRYREJRMKS,
+                self::DEPOSITBRANCH,
+                self::E1,
+                self::E2,
+                self::E3,
+                self::E4,
+                self::E5,
+                self::E6,
+                self::E7,
+                self::E8,
+                self::E9,
+                self::E10,
+                self::E11,
+                self::E12,
+                self::E13,
+                self::E14,
+                self::E15,
+                self::E16,
+                self::E17,
+                self::E18,
+                self::E19,
+                self::E20,
+                self::E21,
+            ]
+        ]
+
     ];
 
     /**
@@ -6618,11 +6715,6 @@ class Header
             return;
         }
 
-        // Header validation is not possible for otc_payment_Credit batch
-        if ($type === Type::OTC_PAYMENT_CREDIT)
-        {
-           $expectedHeaders[0] = 'CLIENT|PRODUCT|ARRANGEMENT|DEPSLIPNUM|BATCHNUM|SCHNO|CLGLOC|PICKUPLOC|PICKUPPOINT|DRAWEEBANK|INSTNUM|INSTAMT|INSTDATE|DEPDATE|DRAWERCODE|DRAWERDES|LIQDATE|LIQTYPE|RETURNRES|ACTIVATIONDATE|VALDATE|INTERNALINSTNMBR|MICRCODE|ENTRYREJRMKS|DEPOSITBRANCH|E1|E2|E3|E4|E5|E6|E7|E8|E9|E10|E11|E12|E13|E14|E15|E16|E17|E18|E19|E20|E21';
-        }
 
         if ($orgId !== null)
         {
