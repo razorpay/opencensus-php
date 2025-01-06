@@ -78,16 +78,14 @@ abstract class Base extends BaseProcessor
             BaseReconciliate::RECONCILED_AT => $time,
         ];
 
-        $merchant = $entity->merchant;
+        $transaction = $entity->transaction;
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        if ($transaction !== null && $transaction->getReference3() === "enabled")
         {
             (new SubReconciliate())->sendPaymentReconNFCDataToCLS($entity, $data);
 
             return;
         }
-
-        $transaction = $entity->transaction;
 
         if ($transaction->isReconciled() === true)
         {
