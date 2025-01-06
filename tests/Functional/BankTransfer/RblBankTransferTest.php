@@ -754,6 +754,9 @@ class RblBankTransferTest extends TestCase
                 'account_number'   => '1234567890',
             ]);
 
+        // adding minimum fee credit balance for collectx payment check
+        $this->fixtures->create('credits', ['merchant_id' => $merchantID, 'value' => 500 , 'type' => 'fee']);
+
         // creating terminal for the merchant
         if (in_array('bank_account', $receivers)) {
             $bankTransferTerminalAttributes = [
@@ -1377,7 +1380,7 @@ class RblBankTransferTest extends TestCase
         $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
 
         $this->assertFalse($bankTransferRequest['is_created']);
-        
+
         $this->assertNotNull($bankTransferRequest['payee_account']);
     }
 

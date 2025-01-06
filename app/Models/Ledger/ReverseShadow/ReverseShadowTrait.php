@@ -209,7 +209,7 @@ trait ReverseShadowTrait
         return $response['body']['accounts'];
     }
 
-    private function getMerchantAccountBalancesMap($merchantAccountBalancesList): array
+    public function getMerchantAccountBalancesMap($merchantAccountBalancesList): array
     {
         $accountBalances = [];
         $now = time();

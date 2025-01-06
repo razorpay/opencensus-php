@@ -140,7 +140,7 @@ class Validator extends Base\Validator
     {
         // We currently aren't getting the actual payer_ifsc for IMPS payments.
         if ((strlen($input[Entity::PAYER_IFSC]) !== self::IFSC_LENGTH) and
-            (in_array($input[Entity::MODE], self::MODES_WITHOUT_IFSC, true) === false))
+            (in_array(strtolower($input[Entity::MODE]), self::MODES_WITHOUT_IFSC, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'IFSC is of invalid length',

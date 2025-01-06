@@ -125,4 +125,33 @@ class PaymentCreateTestForCollectX extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['status'],'created');
     }
+
+    public function testCreateNetbankingPaymentAndCapturedForCollectXEnabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+        $paymentArray = $this->getDefaultNetbankingPaymentArray();
+
+        $paymentArray['amount'] = '1000000';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments',
+            'content' => $paymentArray
+        ];
+
+        $response = $this->makeRequestParent($request);
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['status'],'created');
+
+        $this->doAuthPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('captured', $payment['status']);
+    }
 }

@@ -401,6 +401,9 @@ final class RazorxTreatment
     // this experiment is to disable webhooks for collectx merchants
     const COLLECTX_DISABLE_WEBHOOKS = "collectx_disable_webhooks";
 
+    // this experiment is to enable webhooks via worker flow
+    const COLLECTX_WORKER_FLOW = "collectx_worker_flow";
+
     const COLLECTX_RBL_MERCHANTS_VA_CREATION_BLOCK = "collectx_rbl_merchants_va_creation_block";
     const COLLECTX_RBL_PAYMENT_TRANSFER_RAMP_UP = "collectx_rbl_payment_transfer_ramp_up";
 

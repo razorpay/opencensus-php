@@ -2643,7 +2643,7 @@ class Base extends BaseCore
                         [
                             Payout\Entity::MERCHANT_ID   => $this->merchant->getId(),
                             Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
-                            Payout\Entity::PAYOUT_TYPE   => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+                            Payout\Entity::PAYOUT_TYPE   => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
                         ]);
 
                     $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_NO_CONCRETE_DECISION, [
@@ -2663,7 +2663,7 @@ class Base extends BaseCore
                     [
                         Payout\Entity::MERCHANT_ID   => $this->merchant->getId(),
                         Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
-                        Payout\Entity::PAYOUT_TYPE   => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+                        Payout\Entity::PAYOUT_TYPE   => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
                     ]);
 
                 $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_FOUND_PAYOUT);
@@ -2672,6 +2672,8 @@ class Base extends BaseCore
                 {
                     throw $e;
                 }
+
+                return;
             }
 
             $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_NO_CONCRETE_DECISION, [
@@ -2809,7 +2811,7 @@ class Base extends BaseCore
                     Payout\Entity::PAYOUT_ID     => $payout->getId(),
                     Payout\Entity::MERCHANT_ID   => $this->merchant->getId(),
                     Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
-                    Payout\Entity::PAYOUT_TYPE   => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+                    Payout\Entity::PAYOUT_TYPE   => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
                 ]);
 
             // Get payout id & update in exception description
@@ -2882,7 +2884,7 @@ class Base extends BaseCore
             Payout\Entity::NARRATION       => $input[Payout\Entity::NARRATION] ?? null,
             Payout\Entity::PURPOSE         => $input[Payout\Entity::PURPOSE],
             Payout\Entity::PAYOUT_SOURCE   => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
-            Payout\Entity::PAYOUT_TYPE     => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+            Payout\Entity::PAYOUT_TYPE     => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
         ];
 
         if (empty($input[Payout\Entity::NOTES]) === false)
@@ -2906,7 +2908,7 @@ class Base extends BaseCore
 
     protected function getIKeyForDuplicatePreventionEvaluate(array $input): string
     {
-        if (isset($input[Payout\Entity::BATCH_ID]) === true)
+        if (isset($this->batchId) === true)
         {
             return $input[Payout\Entity::IDEMPOTENCY_KEY];
         }
@@ -3152,7 +3154,7 @@ class Base extends BaseCore
                 self::HASH_KEY               => $hashKey,
                 Payout\Entity::PAYOUT_ID     => $payout->getId(),
                 Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
-                Payout\Entity::PAYOUT_TYPE   => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+                Payout\Entity::PAYOUT_TYPE   => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
                 Payout\Entity::MERCHANT_ID   => $payout->getMerchantId(),
             ];
 
@@ -5573,7 +5575,7 @@ class Base extends BaseCore
         try {
             $source = $this->getPayoutSourceForDuplicatePreventionEvaluate($input);
 
-            $type = (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk';
+            $type = (isset($this->batchId) === false) ? 'single' : 'bulk';
 
             $experimentID =$this->app['config']->get('app.duplicate_payout_evaluate_splitz_experiment_id');
 

@@ -29,6 +29,7 @@ class Entity extends Base\PublicEntity
     const MONTHLY_USAGE     = 'monthly_usage';
     const MAX_BALANCE       = 'max_balance';
     const LAST_LOADED_AT    = 'last_loaded_at';
+    const FEE_CREDITS       = 'fee_credits';
 
     protected $entity = 'customer_balance';
 
@@ -144,6 +145,11 @@ class Entity extends Base\PublicEntity
     public function getBalance()
     {
         return $this->getAttribute(self::BALANCE);
+    }
+
+    public function getFeeCredits()
+    {
+        return $this->getAttribute(self::FEE_CREDITS);
     }
 
     public function getMaxbalance()

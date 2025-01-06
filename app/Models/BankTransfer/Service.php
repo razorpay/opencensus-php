@@ -11,6 +11,7 @@ use RZP\Constants\Environment;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
+use RZP\Jobs\ProcessCollectxTransfer;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\Account;
@@ -40,6 +41,7 @@ use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\UpiTransfer;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\Credits;
 use RZP\Exception\LogicException;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\UniqueIdEntity;
@@ -54,15 +56,18 @@ use RZP\Jobs\BankTransferCreateProcess;
 use RZP\Models\Payment\Processor\Notify;
 use function GuzzleHttp\default_ca_bundle;
 use RZP\Models\Pricing\Entity as PricingEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\InternationalIntegration;
 use RZP\Models\Pricing\Service as PricingService;
 use RZP\Models\Payment\Processor\IntlBankTransfer;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\BankTransfer\Mode as BankTransferModes;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankTransfer\Metric as BankTransferMetrics;
 use RZP\Models\Workflow\Service\Builder as WorkflowBuilder;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
+use RZP\Models\Ledger\ReverseShadow\Payments as CLSPayments;
 use RZP\Models\VirtualAccount\Entity as VirtualAccountEntity;
 use RZP\Models\BankTransfer\Constants as BankTransferConstants;
 use RZP\Models\BankTransfer\Processor as BankTransferProcessor;
@@ -101,6 +106,7 @@ class Service extends Base\Service
     const TRANSFER_TYPE_IMPS = "IMPS";
     const TRANSFER_TYPE_FT = "FT";
     const TRANSFER_TYPE_IFT = "IFT";
+    const COLLECTX_DEFAULT_FEE_CREDITS_THRESHOLD = 50000;
 
     const STATUS = "status";
 
@@ -205,7 +211,16 @@ class Service extends Base\Service
                 "provider"  => $provider
             ]);
 
+            // Flow to worker flow if experiment is enabled for the merchant, else usual flow
+            $checkForWorkerFlow = $this->isExperimentEnabledForCollectXWorkerFlow($input, $provider, $requestPayload);
+            if ($checkForWorkerFlow['enabled'] === true)
+            {
+                return $this->handleCollectXCallbackWorkerFlow($input, $provider, $requestPayload, $checkForWorkerFlow['merchant_id']);
+            }
+
             return $this->handleCollectXCallback($input, $provider, $requestPayload);
+
+
         }
 
         if ($input['gateway'] === Gateway::YESBANK || strpos($input['input']['payee_ifsc'], "YESB") === 0 )
@@ -503,6 +518,314 @@ class Service extends Base\Service
         return $bankAccount->source;
     }
 
+    protected function incrementCollectxCallbackMetric(array $formattedInput, string $provider): void
+    {
+        $transferMethod = $formattedInput[Entity::MODE];
+
+        $this->trace->count(BankTransferMetrics::COLLECTX_BANK_CALLBACK_COUNT, [
+            'provider'          => $provider,
+            'transfer_method'   => $transferMethod === self::TRANSFER_TYPE_UPI ? Constants\Entity::UPI_TRANSFER : Constants\Entity::BANK_TRANSFER,
+            'request_type'      => $formattedInput[Entity::REQUEST_TYPE],
+        ]);
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    protected function performCollectxValidations(array $input, string $provider, string $merchantId): void
+    {
+        $mode = $input[Entity::MODE];
+
+        // Each method inside would raise exceptions if anything fails
+        // Exceptions to be handled at the caller
+        switch($mode){
+            case self::TRANSFER_TYPE_UPI:
+                $this->validateDuplicateUpiRequest($input, $provider);
+                $this->checkForUnexpectedUpiTransferPayments($input, $provider);
+                $this->checkForAvailableBalanceAndFeeCredits($merchantId);
+                break;
+            case self::TRANSFER_TYPE_IMPS:
+            case self::TRANSFER_TYPE_NEFT:
+            case self::TRANSFER_TYPE_RTGS:
+            case self::TRANSFER_TYPE_FT:
+            case self::TRANSFER_TYPE_IFT:
+                $this->validateDuplicateRequest($input, null, true);
+                $this->checkForUnexpectedBankTransferPayments($input, $provider);
+                $this->checkForAvailableBalanceAndFeeCredits($merchantId);
+                break;
+        }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    // Only intended to be used for CollectX Payments
+    protected function checkForAvailableBalanceAndFeeCredits(string $merchantId): bool
+    {
+        $availableBalance = $this->getAvailableBalanceForMerchantWithFeeCredits($merchantId);
+
+        if ($availableBalance < self::COLLECTX_DEFAULT_FEE_CREDITS_THRESHOLD)
+        {
+            $ex = new Exception\BadRequestValidationFailureException(
+                ErrorCode::COLLECTX_FEE_CREDITS_BELOW_THRESHOLD,
+                $merchantId
+            );
+
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::COLLECTX_FEE_CREDITS_BELOW_THRESHOLD,
+                [
+                    'merchant_id' => $merchantId,
+                    'error_code' => $ex->getCode(),
+                    'error_message' => $ex->getMessage()
+                ]);
+
+            throw $ex;
+        }
+
+        return true;
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    // Only intended to be used for CollectX Payments
+    protected function getAvailableBalanceForMerchantWithFeeCredits(string $merchantID):int
+    {
+        /** @var MerchantEntity $merchant */
+        $merchant = $this->repo->merchant->getMerchant($merchantID);
+
+        $isMerchantOnCLS = $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
+
+        if($isMerchantOnCLS)
+        {
+            return $this->getAvailableBalanceForCLSMerchant($merchant);
+        }
+
+        return $this->getAvailableBalanceForAPIMerchant($merchant);
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    // Only intended to be used for CollectX Payments
+    protected function getAvailableBalanceForCLSMerchant(MerchantEntity $merchant): int
+    {
+        $ledgerService = $this->app['ledger'];
+
+        $merchantAccountsList = (new CLSPayments\Core())->getMerchantAccounts($ledgerService, $merchant->getId());
+
+        $merchantAccountBalances = (new CLSPayments\Core())->getMerchantAccountBalancesMap($merchantAccountsList);
+
+        $merchantBalance = $merchantAccountBalances[LedgerConstants::MERCHANT_BALANCE];
+
+        $merchantFeeCredits = $merchantAccountBalances[LedgerConstants::MERCHANT_FEE_CREDITS];
+
+        $this->trace->info(TraceCode::COLLECTX_CREDITS_BALANCE_DEBUG, [
+            "merchant_id" => $merchant->getId(),
+            "merchant_on_cls" => true,
+            "balance" => $merchantBalance,
+            "fee_credits" => $merchantFeeCredits,
+        ]);
+
+        return $merchantBalance + $merchantFeeCredits;
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    // Only intended to be used for CollectX Payments
+    protected function getAvailableBalanceForAPIMerchant(MerchantEntity $merchant): int
+    {
+        /** @var \RZP\Models\Customer\Balance\Entity $balance */
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(),
+            Merchant\Balance\Type::PRIMARY);
+
+        if ($balance === null)
+        {
+            $ex = new Exception\BadRequestValidationFailureException(
+                ErrorCode::COLLECTX_PRIMARY_BALANCE_UNAVAILABLE_FOR_FEE_CREDITS,
+                $merchant->getId()
+            );
+
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::COLLECTX_PRIMARY_BALANCE_UNAVAILABLE_FOR_FEE_CREDITS, [
+                    "merchant_id" => $merchant->getId()
+                ]
+            );
+        }
+
+        /** @var MerchantEntity $merchant */
+        $merchant = $this->repo->merchant->getMerchant($merchant->getId());
+
+        $merchantBalance = $balance->getBalance();
+
+        $creditsArray = $this->repo->credits->getTypeAggregatedNonRefundMerchantCreditsWithoutActiveDBTransaction($merchant);
+
+        if (empty($creditsArray) || isset($creditsArray[Credits\Type::FEE]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::COLLECTX_FEE_CREDITS_UNAVAILABLE_FOR_API_MERCHANT,
+                $merchant->getId()
+            );
+        }
+
+        $feeCredits = $creditsArray[Credits\Type::FEE] ?? 0;
+
+        $this->trace->info(TraceCode::COLLECTX_CREDITS_BALANCE_DEBUG, [
+            "merchant_id" => $merchant->getId(),
+            "merchant_on_cls" => false,
+            "balance" => $merchantBalance,
+            "fee_credits" => $feeCredits,
+        ]);
+
+        return $merchantBalance + $feeCredits;
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    // Only intended to be used for CollectX Payments
+    protected function validateDuplicateUpiRequest(array $input, string $provider): void
+    {
+        $providerReferenceId = $input['transaction_id'];
+
+        // Use provider to get provider code when live with more than just Yesbank for UPI
+        $payeeVpa = $input["payee_account"] . "@" . ProviderCode::YESBANKLTD;
+
+        $amount = $input["amount"] * 100;
+
+        $upiTransferEntity = $this->repo->upi_transfer->findByProviderReferenceIdAndPayeeVpaAndAmount(
+            $providerReferenceId,
+            $payeeVpa,
+            $amount);
+
+        if ($upiTransferEntity !== null) {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::COLLECTX_DUPLICATE_UPI_TRANSFER_REQUEST,
+                $input
+            );
+        }
+    }
+
+    protected function checkForAxisValidationCallback(array $input, string $provider) : bool
+    {
+        // Checking if this is a validation callback for Axis
+        if ($provider === Provider::AXIS &&
+            $input[Entity::REQUEST_TYPE] === self::VALIDATION_CALLBACK) {
+            return true;
+        }
+        return false;
+    }
+
+    protected function pushToCollectXWorker(array $input, string $provider)
+    {
+        $this->trace->info(
+            TraceCode::COLLECTX_PROCESS_TRANSFER_SQS_PUSH_INIT,
+            [
+                Entity::GATEWAY => $provider,
+            ]
+        );
+
+        ProcessCollectxTransfer::dispatch($this->mode, $input, $provider);
+    }
+
+
+    protected function isExperimentEnabledForCollectXWorkerFlow(array $input, string $provider, $requestPayload): array
+    {
+        try
+        {
+            $formattedInput = $this->formatInputForCollectx($input, $provider, $requestPayload);
+
+            $merchantID = "";
+
+            switch($formattedInput[Entity::MODE]){
+                case self::TRANSFER_TYPE_UPI:
+                    $merchantID = $this->getMerchantIDForVPAPayment($formattedInput);
+                    break;
+                case self::TRANSFER_TYPE_IMPS:
+                case self::TRANSFER_TYPE_NEFT:
+                case self::TRANSFER_TYPE_RTGS:
+                case self::TRANSFER_TYPE_FT:
+                case self::TRANSFER_TYPE_IFT:
+                    $merchantID = $this->getMerchantIDForBankAccountPayment($formattedInput);
+                    break;
+            }
+
+            $properties = [
+                "id" => $merchantID,
+                "experiment_name" => RazorxTreatment::COLLECTX_WORKER_FLOW
+            ];
+
+            $expEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($properties, 'enable') === true;
+
+            return [
+                "merchant_id" => $merchantID,
+                "enabled" => $expEnabled
+            ];
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::COLLECTX_WORKER_FLOW_EXPERIMENT_EXCEPTION, [
+                    "input" => $input
+                ]
+            );
+
+            return [
+                "merchant_id" => "",
+                "enabled" => false
+            ];
+        }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    protected function getMerchantIDForVPAPayment(array $formattedInput): string
+    {
+        // Only available for Yesbank right now
+        // This will throw exception internally if VPA or VA does not exist
+        $vpa = $this->validateAndGetVpaForCollectxPayment($formattedInput, ProviderCode::YESBANKLTD);
+
+        /** @var VirtualAccountEntity $virtualAccount */
+        $virtualAccount = $vpa->source;
+
+        return $virtualAccount->getMerchantId();
+
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    protected function getMerchantIDForBankAccountPayment(array $formattedInput): string
+    {
+        $accountNumber = $formattedInput["payee_account"];
+
+        $ifsc = $formattedInput["payee_ifsc"];
+
+        /* @var VirtualAccountEntity $virtualAccount*/
+        $virtualAccount = $this->getVirtualAccountUsingAccountNumberAndIfsc($accountNumber, $ifsc);
+
+        if ($virtualAccount === null) {
+            $this->trace->info(TraceCode::COLLECTX_WORKER_FLOW_UNABLE_TO_FIND_VA);
+
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::COLLECTX_UNKNOWN_BANK_TRANSFER_REQUEST,
+                [
+                    "input" => $formattedInput
+                ]
+            );
+        }
+
+        return $virtualAccount->getMerchantId();
+    }
+
     protected function handleCollectXCallback(array $input, string $provider, $requestPayload): array
     {
         $response = [];
@@ -546,10 +869,57 @@ class Service extends Base\Service
         }
 
         $this->trace->info(TraceCode::COLLECTX_TRANSFER_PAYMENT_RESPONSE,[
-                        'response' => $response,
-                        'provider' => $provider,
-                        'mode'     => $transferMethod
-                    ]);
+            'response' => $response,
+            'provider' => $provider,
+            'mode'     => $transferMethod
+        ]);
+
+        return $this->modifyCollectxResponseBasedOnProvider($response, $provider);
+    }
+
+    protected function handleCollectXCallbackWorkerFlow(array $input, string $provider, $requestPayload, $merchantId): array
+    {
+        try {
+            $this->trace->info(TraceCode::COLLECTX_WORKER_FLOW_MERCHANT_START, [
+                "input" => $input,
+                "provider" => $provider
+            ]);
+
+            $response = [];
+
+            $formattedInput = $this->formatInputForCollectx($input, $provider, $requestPayload);
+
+            // Metric update, no business logic
+            $this->incrementCollectxCallbackMetric($formattedInput, $provider);
+
+            // 1. Perform validations for both modes
+            $this->performCollectxValidations($formattedInput, $provider, $merchantId);
+
+            // if AXIS Validation callback, we directly return
+            if ($this->checkForAxisValidationCallback($formattedInput, $provider))
+            {
+                return $this->handleAxisValidationCallback($input, $provider);
+            }
+
+            // 2. Push to worker, worker will create the required entities
+            $this->pushToCollectXWorker($formattedInput, $provider);
+
+            // 3. Respond to the bank with success or non success response
+            $response['valid'] = true;
+        }
+
+        catch(\Exception $ex) {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::COLLECTX_HANDLE_WORKER_FLOW_EXCEPTION, [
+                'provider'       => $provider,
+                'utr' => $input[Entity::REQ_UTR]
+            ]);
+
+            $response['valid'] = false;
+        }
+
 
         return $this->modifyCollectxResponseBasedOnProvider($response, $provider);
     }
@@ -579,16 +949,20 @@ class Service extends Base\Service
 
     protected function formatInputForCollectx(array $input, string $provider, $requestPayload): array
     {
+        $formattedPayload = $input;
         switch ($provider)
         {
             case Provider::YESBANK:
-                return $this->formatYesbankInputForCollectX($input);
+                $formattedPayload = $this->formatYesbankInputForCollectX($input);
+                break;
 
             case Provider::RBL:
-                return $this->formatRblInputForCollectX($input, $requestPayload);
+                $formattedPayload = $this->formatRblInputForCollectX($input, $requestPayload);
+                break;
 
             case Provider::AXIS:
-                return $input;
+                $formattedPayload = $input;
+                break;
 
             default:
                 $this->trace->info(
@@ -598,7 +972,15 @@ class Service extends Base\Service
                 );
         }
 
-        return $input;
+        $this->trace->info(TraceCode::COLLECTX_FORMATTED_INPUT, [
+            "input"          => $input,
+            "formattedInput" => $formattedPayload,
+            "provider"       => $provider
+        ]);
+
+        $formattedPayload[Entity::MODE] = strtoupper($formattedPayload[Entity::MODE]);
+
+        return $formattedPayload;
     }
 
     protected function formatRblInputForCollectX(array $input, $requestPayload): array
@@ -638,7 +1020,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function routeForCollectXUPIRequest(array $input, string $provider): array
+    public function routeForCollectXUPIRequest(array $input, string $provider): array
     {
         try
         {
@@ -654,6 +1036,51 @@ class Service extends Base\Service
                 'transaction_id' => $input['transaction_id'] ?? '',
             ];
         }
+    }
+
+    public function routeForCollectXBankTransferRequestViaWorkerFlow(array $input, string $provider, $routeName): array
+    {
+        try
+        {
+            // need to unset here because input will be used to build BTR and BT entities.
+            if (isset($input[BankTransferConstants::CREDIT_ACCOUNT_NUMBER])) {
+                unset($input[BankTransferConstants::CREDIT_ACCOUNT_NUMBER]);
+            }
+
+            $bankTransferRequest = (new BankTransferRequest\Core())->create(
+                $input,
+                $provider,
+                $input,
+                [],
+                $routeName
+            );
+
+            $bankTransferRequest->markAsCollectXBankTransfer();
+
+            $this->processBankTransfer($bankTransferRequest);
+
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::COLLECTX_BANK_TRANSFER_SAVE_REQUEST_FAILED, [
+                'provider'       => $provider,
+                'transaction_id' => $input[Entity::REQ_UTR]
+            ]);
+
+            return [
+                'valid' => false,
+                'message' => null,
+                'transaction_id' => $input[Entity::REQ_UTR] ?? '',
+            ];
+        }
+        return [
+            'valid' => true,
+            'message' => null,
+            'transaction_id' => $input[Entity::REQ_UTR] ?? '',
+        ];
     }
 
     protected function routeForCollectXBankTransferRequest(array $input, string $provider, $requestPayload, $routeName): array
@@ -753,7 +1180,8 @@ class Service extends Base\Service
     /**
      * @throws BadRequestValidationFailureException
      */
-    protected function checkForUnexpectedUpiTransferPayments(array $input, string $provider): void
+    // Only intended to be used for CollectX Payments
+    public function checkForUnexpectedUpiTransferPayments(array $input, string $provider): void
     {
         try
         {
@@ -853,7 +1281,7 @@ class Service extends Base\Service
     /**
      * @throws BadRequestValidationFailureException
      */
-    protected function validateProviderForCollectxUPI(string $provider, array $input): void
+    public function validateProviderForCollectxUPI(string $provider, array $input): void
     {
         if (in_array($provider, Provider::COLLECTX_UPI_PROVIDERS) === false) {
 
