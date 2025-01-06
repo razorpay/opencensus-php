@@ -12236,15 +12236,23 @@ class Core extends Base\Core
         /** @var Attempt\Entity $fundTransferAttempt */
         $fundTransferAttempt = $payout->fundTransferAttempts()->first();
 
+        $utr = $payout->getUtr();
+        $status = $payout->getStatus();
+        if ($payout->getIsPayoutService())
+        {
+            $utr = $fundTransferAttempt->getUtr();
+            $status = $fundTransferAttempt->getStatus();
+        }
+
         return [
             PayoutConstants::ENTITY_ID               => $payout->getId(),
             PayoutConstants::ENTITY_TYPE             => PayoutConstants::PAYOUTS_ENTITY_TYPE,
-            PayoutConstants::UTR                     => $payout->getUtr() ? $payout->getUtr() : "",
+            PayoutConstants::UTR                     => $utr ? $utr : "",
             PayoutConstants::EVENT_CREATED_TIMESTAMP => Carbon::now(Timezone::IST)->getTimestamp(),
             PayoutConstants::EVENT_ID                => UniqueIdEntity::generateUniqueId(),
             PayoutConstants::GATEWAY_REF_NO          => $fundTransferAttempt ? $fundTransferAttempt->getGatewayRefNo() : "",
             PayoutConstants::CMS_REF_NO              => $fundTransferAttempt ? $fundTransferAttempt->getCmsRefNo() : "",
-            PayoutConstants::STATUS                  => $payout->getStatus(),
+            PayoutConstants::STATUS                  => $status,
             PayoutConstants::MODE                    => $payout->getMode(),
             PayoutConstants::AMOUNT                  => $payout->getAmount(),
             PayoutConstants::BALANCE_ID              => $payout->getBalanceId(),

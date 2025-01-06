@@ -8,6 +8,7 @@ use Queue;
 use Mockery;
 use Carbon\Carbon;
 use Database\Connection;
+use Illuminate\Queue\SqsQueue;
 
 use RZP\Services\Mock\WorkflowService;
 use RZP\Models\Merchant\Detail;
@@ -12097,5 +12098,710 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
 
         $this->assertFalse(isset($assertionBody['va_to_va_info']));
+    }
+
+    public function testAccountStatementQueuePushForProcessedPSPayout() {
+
+        $queueMock = Mockery::mock(SqsQueue::class);
+
+        // Mock the queue push call made for DLQ and access the queue name that was passed
+        $queueObject = new class {
+            public $queueName;
+            public $payload;
+            public function pushRaw($payload, $queueName) {
+                $this->payload = $payload;
+                $this->queueName = $queueName;
+                return true;
+            }
+        };
+
+        $queueMock->shouldReceive(['connection' => $queueObject]);
+
+        $this->app->instance('queue', $queueMock);
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'variables'
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.account_statements_source_event_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $accountStatementQueue = $this->app['config']->get('queue.account_statements_source_event.' . Mode::LIVE);
+
+        /** @var Balance\Entity $secondBankingBalance */
+        $secondBankingBalance = $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => '10000000000000',
+                'balance'          => 1000,
+                'account_type'     => "direct",
+                'account_number'   => '2224440041626787',
+                'channel'          => 'rbl',
+            ]);
+        $id = $secondBankingBalance->getId();
+        $fundAccountID = '100000000003fa';
+        $bankAccountID = '100000000003ba';
+
+        $payoutData = [
+            'id' => "randomid111112",
+            'merchant_id' => "10000000000000",
+            'fund_account_id' => $fundAccountID,
+            'method' => "fund_transfer",
+            'reference_id' => null,
+            'balance_id' => $id ,
+            'user_id' => "random_user123",
+            'batch_id' => null,
+            'idempotency_key' => "random_key",
+            'purpose' => "refund",
+            'narration' => "Batman",
+            'purpose_type' => "refund",
+            'amount' => 2000000,
+            'currency' => "INR",
+            'notes' => "{}",
+            'fees' => 10,
+            'tax' => 33,
+            'status' => "initiated",
+            'fts_transfer_id' => 60,
+            'transaction_id' => "KHTaWqqBKwrVTM",
+            'channel' => "rbl",
+            'failure_reason' => null,
+            'remarks' => "Check the status by calling getStatus API.",
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'scheduled_at' => null,
+            'queued_at' => null,
+            'mode' => "IMPS",
+            'fee_type' => "free_payout",
+            'workflow_feature' => null,
+            'origin' => 1,
+            'status_code' => null,
+            'cancellation_user_id' => null,
+            'registered_name' => "SUSANTA BHUYAN",
+            'queued_reason' => "beneficiary_bank_down",
+            'on_hold_at' => 1663092113,
+            'created_at' => 1000000000,
+            'updated_at' => 1000000002,
+            'is_payout_service' => 1,
+        ];
+
+        $this->fixtures->create(
+            'fund_transfer_attempt',
+            [
+                'id'             => 'randomftaid112',
+                'source_id'      => 'randomid111112',
+                'source_type'    => 'payout',
+                'is_fts'         => true,
+                'merchant_id'    => '10000000000000',
+                'purpose'        => 'refund',
+                'channel'        => 'rbl',
+                'status'         => 'initiated',
+                'initiate_at'    => '1000000001',
+                'gateway_ref_no' => 'grntest101'
+            ]);
+
+        $this->fixtures->on('live')->create('contact',
+                                            ['id' => '1000002contact', 'name' => 'Contact X', 'merchant_id' => '10000000000000']);
+
+        $contact = $this->getDbLastEntity('contact', 'live');
+
+        $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'id'                => $bankAccountID,
+                'merchant_id'       => '10000000000000',
+                'account_number'    => '2224440041626787',
+                'ifsc_code'         => 'SBIN0007105',
+                'beneficiary_name'  => 'test',
+                'type'              => 'contact',
+            ]
+        );
+
+        $this->fixtures->on('live')->create('fund_account', [
+            'id'           => $fundAccountID,
+            'source_type'  => 'contact',
+            'source_id'    => $contact->getId(),
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'bank_account',
+            'account_id'   => $bankAccountID,
+        ]);
+
+        \DB::connection('live')->table('payouts')->insert($payoutData);
+
+        $psData = $payoutData;
+        array_pull($psData, 'is_payout_service');
+
+        \DB::connection('test')->table('ps_payouts')->insert($psData);
+
+        $payoutServiceDetailsMock = Mockery::mock(PayoutServiceDetails::class, [$this->app])->makePartial();
+
+        $this->app->instance(PayoutServiceDetails::PAYOUT_SERVICE_DETAIL, $payoutServiceDetailsMock);
+
+        $payoutServiceDetailsMock->shouldReceive('updatePayoutDetailsViaFTS')
+                                 ->andReturnUsing(function($payout, array $input = []) {
+                                     return $this->createResponseForPayoutServiceMock(false);
+                                 })->once();
+
+        $payoutServiceStatusMock = Mockery::mock(PayoutServiceStatus::class, [$this->app])->makePartial();
+
+        $this->app->instance(PayoutServiceStatus::PAYOUT_SERVICE_STATUS, $payoutServiceStatusMock);
+
+        $payoutServiceStatusMock->shouldReceive('updatePayoutStatusViaFTS')
+                                ->andReturnUsing(function($payoutId,
+                                                          string $status,
+                                                          string $failureReason = null,
+                                                          string $bankStatusCode = null,
+                                                          array $ftsInfo = []) {
+                                    return $this->createResponseForPayoutServiceMock(false, 'processed');
+                                })->once();
+
+        /** @var Payout\Entity $payout1 */
+        $payout1 = $this->getDbLastEntity('payout', 'live');
+
+        /** @var Attempt\Entity $fta */
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $payout1->getId()], 'live');
+
+        $this->fixtures->edit('payout', $payout1['id'], ['status' => 'initiated']);
+
+        $this->updateFtaAndSource("randomid111112", "processed", "933815383814", "live");
+
+        $payout1->reload();
+
+        $fta->reload();
+
+        $queuePayload = json_decode($queueObject->payload);
+
+        $this->assertEquals($accountStatementQueue, $queueObject->queueName);
+
+        // assert queue payload
+        $this->assertEquals($payout1->getId(), $queuePayload->entity_id);
+        $this->assertEquals('payout', $queuePayload->entity_type);
+        $this->assertEquals('933815383814', $queuePayload->utr);
+        $this->assertEquals($fta->getGatewayRefNo(), $queuePayload->gateway_ref_no);
+        $this->assertEquals($fta->getCmsRefNo(), $queuePayload->cms_ref_no);
+        $this->assertEquals('processed', $queuePayload->status);
+        $this->assertEquals($payout1->getMode(), $queuePayload->mode);
+        $this->assertEquals($payout1->getAmount(), $queuePayload->amount);
+        $this->assertNotNull($queuePayload->event_id);
+        $this->assertEquals($payout1->getBalanceId(), $queuePayload->balance_id);
+    }
+
+    public function testAccountStatementQueuePushForFailedPSPayout() {
+
+        $queueMock = Mockery::mock(SqsQueue::class);
+
+        // Mock the queue push call made for DLQ and access the queue name that was passed
+        $queueObject = new class {
+            public $queueName;
+            public $payload;
+            public function pushRaw($payload, $queueName) {
+                $this->payload = $payload;
+                $this->queueName = $queueName;
+                return true;
+            }
+        };
+
+        $queueMock->shouldReceive(['connection' => $queueObject]);
+
+        $this->app->instance('queue', $queueMock);
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'variables'
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.account_statements_source_event_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $accountStatementQueue = $this->app['config']->get('queue.account_statements_source_event.' . Mode::LIVE);
+
+        /** @var Balance\Entity $secondBankingBalance */
+        $secondBankingBalance = $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => '10000000000000',
+                'balance'          => 1000,
+                'account_type'     => "direct",
+                'account_number'   => '2224440041626787',
+                'channel'          => 'rbl',
+            ]);
+        $id = $secondBankingBalance->getId();
+        $fundAccountID = '100000000003fa';
+        $bankAccountID = '100000000003ba';
+
+        $payoutData = [
+            'id' => "randomid111112",
+            'merchant_id' => "10000000000000",
+            'fund_account_id' => $fundAccountID,
+            'method' => "fund_transfer",
+            'reference_id' => null,
+            'balance_id' => $id ,
+            'user_id' => "random_user123",
+            'batch_id' => null,
+            'idempotency_key' => "random_key",
+            'purpose' => "refund",
+            'narration' => "Batman",
+            'purpose_type' => "refund",
+            'amount' => 2000000,
+            'currency' => "INR",
+            'notes' => "{}",
+            'fees' => 10,
+            'tax' => 33,
+            'status' => "initiated",
+            'fts_transfer_id' => 60,
+            'channel' => "rbl",
+            'failure_reason' => null,
+            'remarks' => "Check the status by calling getStatus API.",
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'scheduled_at' => null,
+            'queued_at' => null,
+            'mode' => "IMPS",
+            'fee_type' => "free_payout",
+            'workflow_feature' => null,
+            'origin' => 1,
+            'status_code' => null,
+            'cancellation_user_id' => null,
+            'registered_name' => "SUSANTA BHUYAN",
+            'queued_reason' => "beneficiary_bank_down",
+            'on_hold_at' => 1663092113,
+            'created_at' => 1000000000,
+            'updated_at' => 1000000002,
+            'is_payout_service' => 1,
+        ];
+
+        $this->fixtures->create(
+            'fund_transfer_attempt',
+            [
+                'id'             => 'randomftaid112',
+                'source_id'      => 'randomid111112',
+                'source_type'    => 'payout',
+                'is_fts'         => true,
+                'merchant_id'    => '10000000000000',
+                'purpose'        => 'refund',
+                'channel'        => 'rbl',
+                'status'         => 'initiated',
+                'initiate_at'    => '1000000001',
+                'gateway_ref_no' => 'grntest101'
+            ]);
+
+        $this->fixtures->on('live')->create('contact',
+                                            ['id' => '1000002contact', 'name' => 'Contact X', 'merchant_id' => '10000000000000']);
+
+        $contact = $this->getDbLastEntity('contact', 'live');
+
+        $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'id'                => $bankAccountID,
+                'merchant_id'       => '10000000000000',
+                'account_number'    => '2224440041626787',
+                'ifsc_code'         => 'SBIN0007105',
+                'beneficiary_name'  => 'test',
+                'type'              => 'contact',
+            ]
+        );
+
+        $this->fixtures->on('live')->create('fund_account', [
+            'id'           => $fundAccountID,
+            'source_type'  => 'contact',
+            'source_id'    => $contact->getId(),
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'bank_account',
+            'account_id'   => $bankAccountID,
+        ]);
+
+        \DB::connection('live')->table('payouts')->insert($payoutData);
+
+        $psData = $payoutData;
+        array_pull($psData, 'is_payout_service');
+
+        \DB::connection('test')->table('ps_payouts')->insert($psData);
+
+        $payoutServiceDetailsMock = Mockery::mock(PayoutServiceDetails::class, [$this->app])->makePartial();
+
+        $this->app->instance(PayoutServiceDetails::PAYOUT_SERVICE_DETAIL, $payoutServiceDetailsMock);
+
+        $payoutServiceDetailsMock->shouldReceive('updatePayoutDetailsViaFTS')
+                                 ->andReturnUsing(function($payout, array $input = []) {
+                                     return $this->createResponseForPayoutServiceMock(false);
+                                 })->once();
+
+        $payoutServiceStatusMock = Mockery::mock(PayoutServiceStatus::class, [$this->app])->makePartial();
+
+        $this->app->instance(PayoutServiceStatus::PAYOUT_SERVICE_STATUS, $payoutServiceStatusMock);
+
+        $payoutServiceStatusMock->shouldReceive('updatePayoutStatusViaFTS')
+                                ->andReturnUsing(function($payoutId,
+                                                          string $status,
+                                                          string $failureReason = null,
+                                                          string $bankStatusCode = null,
+                                                          array $ftsInfo = []) {
+                                    return $this->createResponseForPayoutServiceMock(false, 'processed');
+                                })->once();
+
+        /** @var Payout\Entity $payout1 */
+        $payout1 = $this->getDbLastEntity('payout', 'live');
+
+        /** @var Attempt\Entity $fta */
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $payout1->getId()], 'live');
+
+        $this->fixtures->edit('payout', $payout1['id'], ['status' => 'initiated']);
+
+        $this->updateFtaAndSource("randomid111112", "failed", "933815383814", "live");
+
+        $payout1->reload();
+
+        $fta->reload();
+
+        $queuePayload = json_decode($queueObject->payload);
+
+        $this->assertEquals($accountStatementQueue, $queueObject->queueName);
+
+        // assert queue payload
+        $this->assertEquals($payout1->getId(), $queuePayload->entity_id);
+        $this->assertEquals('payout', $queuePayload->entity_type);
+        $this->assertEquals('933815383814', $queuePayload->utr);
+        $this->assertEquals($fta->getGatewayRefNo(), $queuePayload->gateway_ref_no);
+        $this->assertEquals($fta->getCmsRefNo(), $queuePayload->cms_ref_no);
+        $this->assertEquals('failed', $queuePayload->status);
+        $this->assertEquals($payout1->getMode(), $queuePayload->mode);
+        $this->assertEquals($payout1->getAmount(), $queuePayload->amount);
+        $this->assertNotNull($queuePayload->event_id);
+        $this->assertEquals($payout1->getBalanceId(), $queuePayload->balance_id);
+    }
+
+    public function testAccountStatementQueuePushForReversedPSPayout() {
+
+        $queueMock = Mockery::mock(SqsQueue::class);
+
+        // Mock the queue push call made for DLQ and access the queue name that was passed
+        $queueObject = new class {
+            public $queueName;
+            public $payload;
+            public function pushRaw($payload, $queueName) {
+                $this->payload = $payload;
+                $this->queueName = $queueName;
+                return true;
+            }
+        };
+
+        $queueMock->shouldReceive(['connection' => $queueObject]);
+
+        $this->app->instance('queue', $queueMock);
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'variables'
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.account_statements_source_event_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $accountStatementQueue = $this->app['config']->get('queue.account_statements_source_event.' . Mode::LIVE);
+
+        /** @var Balance\Entity $secondBankingBalance */
+        $secondBankingBalance = $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => '10000000000000',
+                'balance'          => 1000,
+                'account_type'     => "direct",
+                'account_number'   => '2224440041626787',
+                'channel'          => 'rbl',
+            ]);
+        $id = $secondBankingBalance->getId();
+        $fundAccountID = '100000000003fa';
+        $bankAccountID = '100000000003ba';
+
+        $payoutData = [
+            'id' => "randomid111112",
+            'merchant_id' => "10000000000000",
+            'fund_account_id' => $fundAccountID,
+            'method' => "fund_transfer",
+            'reference_id' => null,
+            'balance_id' => $id ,
+            'user_id' => "random_user123",
+            'batch_id' => null,
+            'idempotency_key' => "random_key",
+            'purpose' => "refund",
+            'narration' => "Batman",
+            'purpose_type' => "refund",
+            'amount' => 2000000,
+            'currency' => "INR",
+            'notes' => "{}",
+            'fees' => 10,
+            'tax' => 33,
+            'status' => "initiated",
+            'fts_transfer_id' => 60,
+            'transaction_id' => "KHTaWqqBKwrVTM",
+            'channel' => "rbl",
+            'failure_reason' => null,
+            'remarks' => "Check the status by calling getStatus API.",
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'scheduled_at' => null,
+            'queued_at' => null,
+            'mode' => "IMPS",
+            'fee_type' => "free_payout",
+            'workflow_feature' => null,
+            'origin' => 1,
+            'status_code' => null,
+            'cancellation_user_id' => null,
+            'registered_name' => "SUSANTA BHUYAN",
+            'queued_reason' => "beneficiary_bank_down",
+            'on_hold_at' => 1663092113,
+            'created_at' => 1000000000,
+            'updated_at' => 1000000002,
+            'is_payout_service' => 1,
+        ];
+
+        $this->fixtures->create(
+            'fund_transfer_attempt',
+            [
+                'id'             => 'randomftaid112',
+                'source_id'      => 'randomid111112',
+                'source_type'    => 'payout',
+                'is_fts'         => true,
+                'merchant_id'    => '10000000000000',
+                'purpose'        => 'refund',
+                'channel'        => 'rbl',
+                'status'         => 'initiated',
+                'initiate_at'    => '1000000001',
+                'gateway_ref_no' => 'grntest101'
+            ]);
+
+        $this->fixtures->on('live')->create('contact',
+                                            ['id' => '1000002contact', 'name' => 'Contact X', 'merchant_id' => '10000000000000']);
+
+        $contact = $this->getDbLastEntity('contact', 'live');
+
+        $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'id'                => $bankAccountID,
+                'merchant_id'       => '10000000000000',
+                'account_number'    => '2224440041626787',
+                'ifsc_code'         => 'SBIN0007105',
+                'beneficiary_name'  => 'test',
+                'type'              => 'contact',
+            ]
+        );
+
+        $this->fixtures->on('live')->create('fund_account', [
+            'id'           => $fundAccountID,
+            'source_type'  => 'contact',
+            'source_id'    => $contact->getId(),
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'bank_account',
+            'account_id'   => $bankAccountID,
+        ]);
+
+        \DB::connection('live')->table('payouts')->insert($payoutData);
+
+        $psData = $payoutData;
+        array_pull($psData, 'is_payout_service');
+
+        \DB::connection('test')->table('ps_payouts')->insert($psData);
+
+        $payoutServiceDetailsMock = Mockery::mock(PayoutServiceDetails::class, [$this->app])->makePartial();
+
+        $this->app->instance(PayoutServiceDetails::PAYOUT_SERVICE_DETAIL, $payoutServiceDetailsMock);
+
+        $payoutServiceDetailsMock->shouldReceive('updatePayoutDetailsViaFTS')
+                                 ->andReturnUsing(function($payout, array $input = []) {
+                                     return $this->createResponseForPayoutServiceMock(false);
+                                 })->once();
+
+        $payoutServiceStatusMock = Mockery::mock(PayoutServiceStatus::class, [$this->app])->makePartial();
+
+        $this->app->instance(PayoutServiceStatus::PAYOUT_SERVICE_STATUS, $payoutServiceStatusMock);
+
+        $payoutServiceStatusMock->shouldReceive('updatePayoutStatusViaFTS')
+                                ->andReturnUsing(function($payoutId,
+                                                          string $status,
+                                                          string $failureReason = null,
+                                                          string $bankStatusCode = null,
+                                                          array $ftsInfo = []) {
+                                    return $this->createResponseForPayoutServiceMock(false, 'processed');
+                                })->once();
+
+        /** @var Payout\Entity $payout1 */
+        $payout1 = $this->getDbLastEntity('payout', 'live');
+
+        /** @var Attempt\Entity $fta */
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $payout1->getId()], 'live');
+
+        $this->fixtures->edit('payout', $payout1['id'], ['status' => 'initiated']);
+
+        $this->updateFtaAndSource("randomid111112", "reversed", "933815383814", "live");
+
+        $payout1->reload();
+
+        $fta->reload();
+
+        $queuePayload = json_decode($queueObject->payload);
+
+        $this->assertEquals($accountStatementQueue, $queueObject->queueName);
+
+        // assert queue payload
+        $this->assertEquals($payout1->getId(), $queuePayload->entity_id);
+        $this->assertEquals('payout', $queuePayload->entity_type);
+        $this->assertEquals('933815383814', $queuePayload->utr);
+        $this->assertEquals($fta->getGatewayRefNo(), $queuePayload->gateway_ref_no);
+        $this->assertEquals($fta->getCmsRefNo(), $queuePayload->cms_ref_no);
+        $this->assertEquals('reversed', $queuePayload->status);
+        $this->assertEquals($payout1->getMode(), $queuePayload->mode);
+        $this->assertEquals($payout1->getAmount(), $queuePayload->amount);
+        $this->assertNotNull($queuePayload->event_id);
+        $this->assertEquals($payout1->getBalanceId(), $queuePayload->balance_id);
+    }
+
+    public function testFetchSourceEventInfoForPsPayout()
+    {
+        /** @var Balance\Entity $bankingBalance */
+        $bankingBalance = $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => '10000000000000',
+                'balance'          => 1000,
+                'account_type'     => "direct",
+                'account_number'   => '2224440041626787',
+                'channel'          => 'rbl',
+            ]);
+
+        $id = $bankingBalance->getId();
+        $fundAccountID = '100000000003fa';
+        $bankAccountID = '100000000003ba';
+
+        $payoutData = [
+            'id' => "randomid111112",
+            'merchant_id' => "10000000000000",
+            'fund_account_id' => $fundAccountID,
+            'method' => "fund_transfer",
+            'reference_id' => null,
+            'balance_id' => $id ,
+            'user_id' => "random_user123",
+            'batch_id' => null,
+            'idempotency_key' => "random_key",
+            'purpose' => "refund",
+            'narration' => "Batman",
+            'purpose_type' => "refund",
+            'amount' => 2000000,
+            'currency' => "INR",
+            'notes' => "{}",
+            'fees' => 10,
+            'tax' => 33,
+            'status' => "initiated",
+            'fts_transfer_id' => 60,
+            'transaction_id' => "KHTaWqqBKwrVTM",
+            'channel' => "rbl",
+            'utr' => "933815383814",
+            'failure_reason' => null,
+            'remarks' => "Check the status by calling getStatus API.",
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'scheduled_at' => null,
+            'queued_at' => null,
+            'mode' => "IMPS",
+            'fee_type' => "free_payout",
+            'workflow_feature' => null,
+            'origin' => 1,
+            'status_code' => null,
+            'cancellation_user_id' => null,
+            'registered_name' => "SUSANTA BHUYAN",
+            'queued_reason' => "beneficiary_bank_down",
+            'on_hold_at' => 1663092113,
+            'created_at' => 1000000000,
+            'updated_at' => 1000000002,
+            'is_payout_service' => 1,
+        ];
+
+        $this->fixtures->on('live')->create(
+            'fund_transfer_attempt',
+            [
+                'id'             => 'randomftaid112',
+                'source_id'      => 'randomid111112',
+                'source_type'    => 'payout',
+                'is_fts'         => true,
+                'merchant_id'    => '10000000000000',
+                'purpose'        => 'refund',
+                'channel'        => 'rbl',
+                'status'         => 'processed',
+                'initiate_at'    => '1000000001',
+                'gateway_ref_no' => 'grntest101',
+                'utr'            => "933815383814",
+            ]);
+
+        $this->fixtures->on('live')->create('contact',
+                                            ['id' => '1000002contact', 'name' => 'Contact X', 'merchant_id' => '10000000000000']);
+
+        $contact = $this->getDbLastEntity('contact', 'live');
+
+        $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'id'                => $bankAccountID,
+                'merchant_id'       => '10000000000000',
+                'account_number'    => '2224440041626787',
+                'ifsc_code'         => 'SBIN0007105',
+                'beneficiary_name'  => 'test',
+                'type'              => 'contact',
+            ]
+        );
+
+        $this->fixtures->on('live')->create('fund_account', [
+            'id'           => $fundAccountID,
+            'source_type'  => 'contact',
+            'source_id'    => $contact->getId(),
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'bank_account',
+            'account_id'   => $bankAccountID,
+        ]);
+
+        \DB::connection('live')->table('payouts')->insert($payoutData);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts_internal/' . $payoutData['id'] . '/source_event_info';
+
+        $this->ba->payoutInternalAppAuth('live');
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        /** @var Attempt\Entity $fta */
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $payout->getId()], 'live');
+
+        $expectedResponse = [
+            'entity_id'               => $payout->getId(),
+            'entity_type'             => 'payout',
+            'utr'                     => '933815383814',
+            'gateway_ref_no'          => $fta->getGatewayRefNo(),
+            'cms_ref_no'              => $fta->getCmsRefNo(),
+            'status'                  => 'processed',
+            'mode'                    => $payout->getMode(),
+            'amount'                  => $payout->getAmount(),
+            'balance_id'              => $payout->getBalanceId(),
+        ];
+
+        $response = $this->startTest();
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+        $this->assertArrayHasKey('event_create_timestamp', $response);
+        $this->assertArrayHasKey('event_id', $response);
     }
 }
