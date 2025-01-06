@@ -13092,8 +13092,6 @@ We look forward to transacting with you!
 
         $website = 'www.liotec.ch';
 
-        $this->setMockRazorxTreatment(['WHATCMS_EXPERIMENT' => 'on']);
-
         $kafkaEventPayload = [
             'merchant_id'=>'IY31FYZ48vP1vc',
             'website_url'=>'www.liotec.ch'

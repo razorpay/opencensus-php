@@ -544,10 +544,6 @@ final class RazorxTreatment
 
     const DRUID_MIGRATION = 'DRUID_MIGRATION';
 
-    const WHATCMS_EXPERIMENT = 'WHATCMS_EXPERIMENT';
-
-    const ESIGN_AADHAR_VERIFICATION = 'ESIGN_AADHAR_VERIFICATION';
-
     //Experiment for removal of extra fields in payment response
     const DISALLOW_ORG_DATA_IN_RESPONSE = 'disallow_org_data_in_response';
 
@@ -888,9 +884,6 @@ final class RazorxTreatment
 
     //Experiment to remove bank fetch call if balance is stale while creating CA payout and mark the payout to queued.
     const CA_PAYOUT_SKIP_BALANCE_FETCH = 'ca_payout_skip_balance_fetch';
-
-    //Experiment to create dedicated UPI terminal
-    const UPI_DEDICATED_TERMINAL = 'upi_dedicated_terminal';
 
     // Unexpected payment refund delay to T+1
     const UNEXPECTED_PAYMENT_REFUND_DELAY = 'unexpected_payment_refund_delay';

@@ -1366,14 +1366,6 @@ class Core extends Base\Core
 
     public function handlePluginDetails(Merchant\Entity $merchant, $businessWebsite)
     {
-        $whatCMSExperiment = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchant->getId(),
-            RazorxTreatment::WHATCMS_EXPERIMENT);
-
-        if ($whatCMSExperiment === false)
-        {
-            return;
-        }
 
         $topic = env('WHATCMS_KAFKA_TOPIC_NAME');
 
@@ -8770,30 +8762,8 @@ class Core extends Base\Core
 
     private function isAadhaarEsignVerificationRequired(Entity $merchantDetails)
     {
-        if ($merchantDetails->merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
-        {
-            return false;
-        }
-
-        if (BusinessType::isAadhaarEsignVerificationRequired($merchantDetails->getBusinessType()) === false)
-        {
-            return false;
-        }
-
-        if ($merchantDetails->merchant->isLinkedAccount() === true)
-        {
-            return false;
-        }
-
-        //We will set a single experiment for aadhaar esign verification
-        $isAadhaarEsignEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(), RazorxTreatment::ESIGN_AADHAR_VERIFICATION);
-
-        if ($isAadhaarEsignEnabled === false)
-        {
-            return false;
-        }
-
-        return true;
+       //We don't do aadhaar e-sign verification anymore. Either merchant is asked to upload their aadhaar documents or do verification via digilocker.
+        return false;
     }
 
     public function canSubmitActivationForm(
