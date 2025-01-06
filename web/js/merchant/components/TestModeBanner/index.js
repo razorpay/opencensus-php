@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import { withI18Service } from 'common/i18';
+import { bindActionCreators } from 'redux';
 
 import Banner from 'common/ui/Banner';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -11,11 +12,19 @@ import { redirectToEasyAfter1sec } from 'merchant/components/Activation/Activati
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
 
+import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
+
 import { trackLinkClick } from './ga';
 import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 @RTracking(() => window.rzpQ.component('TestModeBanner'))
 class TestModeBanner extends Component {
+  componentDidMount() {
+    const { fetchIsAdminAsMerchant, isAdminAsMerchant } = this.props;
+    const { loading, error } = isAdminAsMerchant;
+    if (loading || error !== null) fetchIsAdminAsMerchant();
+  }
+
   switchToLiveMode = () => {
     const { user } = this.props;
 
@@ -70,13 +79,16 @@ class TestModeBanner extends Component {
       tracking,
       isNcEligibile,
       i18: { isConfigTagEnabled },
+      isAdminAsMerchant,
     } = this.props;
 
     if (mode === 'live') {
       return null;
     }
 
-    if (user.isOrgAxis) return null;
+    if (user.isOrgAxis && !isAdminAsMerchant?.data) {
+      return null;
+    }
 
     const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
     const isNewNC = isNcEligibile && user.activation_status === 'needs_clarification';
@@ -126,6 +138,9 @@ const mapStateToProps = (state) => ({
   user: state.session.user,
   mode: state.session.mode,
   isNcEligibile: state.home.isNcEligibile,
+  isAdminAsMerchant: state.profile.isAdminAsMerchant,
 });
 
-export default connect(mapStateToProps, null)(withI18Service(TestModeBanner));
+const mapDispatchToProps = (dispatch) => bindActionCreators({ fetchIsAdminAsMerchant }, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(withI18Service(TestModeBanner));
