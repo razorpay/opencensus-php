@@ -376,7 +376,8 @@ class Processor extends Base\Core
             Payment\Entity::NOTES       => $this->qrCode->getNotes()->toArray(),
         ];
 
-        if ($this->qrCode->getRequestSource() === NonVirtualAccountQrCode\RequestSource::EZETAP)
+        if (($this->qrCode->getRequestSource() === NonVirtualAccountQrCode\RequestSource::EZETAP) or
+            ($this->terminal->isOffline()))
         {
             $paymentArray[Payment\Entity::SOURCE_CHANNEL] = QrConstants::PAYMENT_TYPE_IN_PERSON;
         }

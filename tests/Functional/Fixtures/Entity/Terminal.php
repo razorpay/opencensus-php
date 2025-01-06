@@ -6236,4 +6236,57 @@ class Terminal extends Base
 
         return $this->createOptimizerRazorpayTerminal($attributes);
     }
+
+    public function createDedicatedUpiIciciOfflineTerminal($attributes)
+    {
+        $termId = Shared::UPI_ICICI_TERMINAL_DEDICATED;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => 'LiveAccountMer',
+            'gateway'                   => 'upi_icici',
+            'gateway_merchant_id'       => '1357900',
+            'gateway_terminal_id'       => 'nodal account upi icici',
+            'gateway_merchant_id2'      => 'rzp.qrTest@icici',
+            'gateway_terminal_password' => 'razorpay_password',
+            'upi'                       => true,
+            'tpv'                       => 2,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::NON_RECURRING     => '1',
+                Type::OFFLINE           => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createDedicatedUpiKotakOfflineTerminal($attributes)
+    {
+        $termId = '101KotDedTrmnl';
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => 'LiveAccountMe1',
+            'gateway'                   => 'upi_kotak',
+            'gateway_merchant_id'       => 'razorpayupi1',
+            'gateway_terminal_id'       => 'nodal account upi kotak',
+            'gateway_terminal_password' => 'razorpay_password',
+            'vpa'                       => 'testvpa1@kotak',
+            'upi'                       => true,
+            'tpv'                       => 2,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::NON_RECURRING     => '1',
+                Type::OFFLINE           => '1',
+                Type::COLLECT           => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }

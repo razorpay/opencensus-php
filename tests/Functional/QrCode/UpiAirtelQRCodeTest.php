@@ -74,7 +74,7 @@ class UpiAirtelQRCodeTest extends TestCase
     }
 
 
-    public function createPricingForOffline()
+    public function createPricingForOffline($contents = [])
     {
         $posQRPricingPlan = [
             'plan_id' => '1hDYlICobzOCYt',
@@ -89,6 +89,8 @@ class UpiAirtelQRCodeTest extends TestCase
             'fixed_rate' => 0,
             'channel' => 'in_person',
         ];
+
+        $posQRPricingPlan = array_merge($posQRPricingPlan, $contents);
 
         $this->fixtures->create('pricing', $posQRPricingPlan);
     }
@@ -1314,7 +1316,7 @@ class UpiAirtelQRCodeTest extends TestCase
                 'api_upi_airtel_pre_process_v1' => 'upi_airtel'
             ]
         );
-        $this->createPricingForOffline();
+        $this->createPricingForOffline(['receiver_type' => 'qr_code']);
         $this->createQrCode(
                      [
                          'usage' => 'multiple_use',

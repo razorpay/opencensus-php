@@ -36,6 +36,8 @@ class UpiKotakQRCodeTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['qr_codes']);
 
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
         $this->fixtures->merchant->createAccount('LiveAccountMer');
 
         $this->fixtures->on('live')->merchant->edit('LiveAccountMer', ['activated' => true, 'live' => true]);
@@ -914,5 +916,82 @@ class UpiKotakQRCodeTest extends TestCase
         $contentType = $response->baseResponse->headers->get('content-type');
 
         $this->assertEquals('image/png', $contentType);
+    }
+
+    public function testProcessUnexpectedPaymentWhenMerchantIsNotLiveForOfflinePayments()
+    {
+        // Creating Merchant
+        $this->fixtures->merchant->createAccount('LiveAccountMe1');
+
+        $this->fixtures->on('live')->merchant->edit('LiveAccountMe1', [
+            'activated'         => true,
+            'live'              => false,
+            'pricing_plan_id'   => Fee::DEFAULT_PRICING_PLAN_ID
+        ]);
+
+        $this->fixtures->on('live')->merchant->addFeatures(
+            [
+                'qr_codes',
+                'bharat_qr_v2',
+                'omni_enabled'
+            ],
+            'LiveAccountMe1'
+        );
+
+        $this->fixtures->on('live')->merchant->enableMethod('LiveAccountMe1', 'upi');
+        $this->fixtures->on('live')->merchant->activate();
+
+        // Creating Terminal
+        $this->fixtures->on('live')->create('terminal:dedicated_upi_kotak_offline_terminal');
+
+        $this->createPricingForOffline(['receiver_type' => 'qr_code']);
+
+        $this->setMockSplitzTreatment([
+            'M25grFTOPZEGQS' => 'on'
+        ]);
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+            'live',
+            'LiveAccountMe1'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $response = $this->makeUpiKotakPayment($qrCodeEntity,
+            [
+                'payeevpa'      => 'testvpa1@kotak',
+                'merchantcode'  => 'razorpayupi1'
+            ]);
+
+        $paymentEntity = $this->getLastEntity('payment', true, 'live');
+        $qrPayment = $this->getLastEntity('qr_payment', true, 'live');
+
+        $this->assertEquals('in_person', $paymentEntity['reference13']);
+        $this->assertEquals(0, $qrPayment['expected']);
+    }
+
+    public function createPricingForOffline($contents = [])
+    {
+        $posQRPricingPlan = [
+            'plan_id'           => '1hDYlICobzOCYt',
+            'plan_name'         => 'TestMerchantPosUPIPricingPlan1',
+            'payment_method'    => 'upi',
+            'org_id'            => '100000razorpay',
+            'type'              => 'pricing',
+            'feature'           => 'payment',
+            'receiver_type'     => 'offline',
+            'fee_bearer'        => 'platform',
+            'percent_rate'      => 0,
+            'fixed_rate'        => 0,
+            'channel'           => 'in_person',
+        ];
+
+        $posQRPricingPlan = array_merge($posQRPricingPlan, $contents);
+
+        $this->fixtures->create('pricing', $posQRPricingPlan);
     }
 }

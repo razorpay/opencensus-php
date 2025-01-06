@@ -1816,7 +1816,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals(27071, $qrCode->getAmount());
     }
 
-    public function createPricingForOffline()
+    public function createPricingForOffline($contents = [])
     {
         $posQRPricingPlan = [
             'plan_id' => '1hDYlICobzOCYt',
@@ -1831,6 +1831,8 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
             'fixed_rate' => 0,
             'channel' => 'in_person',
         ];
+
+        $posQRPricingPlan = array_merge($posQRPricingPlan, $contents);
 
         $this->fixtures->create('pricing', $posQRPricingPlan);
     }
@@ -2618,5 +2620,43 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
         $this->assertEquals('testi12',$payment['device_id']);
+    }
+
+    public function testProcessUnexpectedPaymentWhenMerchantIsNotLiveForOfflinePayments()
+    {
+        // Creating Offline Terminal
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_offline_terminal');
+
+        $this->fixtures->merchant->edit('LiveAccountMer', ['live' => false]);
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
+        $this->createQrCode(
+            [
+                'usage'          => 'multiple_use',
+                'type'           => 'upi_qr',
+                'request_source' => 'ezetap'
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $this->createPricingForOffline(['receiver_type' => 'qr_code']);
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['merchantId'] = $terminal->getGatewayMerchantId();
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeEntity['reference'];
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true, 'live');
+        $payment = $this->getLastEntity('payment', true, 'live');
+
+        $this->assertEquals(0, $qrPayment['expected']);
+        $this->assertEquals('in_person', $payment['reference13']);
     }
 }
