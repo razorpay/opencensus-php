@@ -1,5 +1,7 @@
 import React from 'react';
 import {
+  Alert,
+  AlertCircleIcon,
   AlertTriangleIcon,
   Badge,
   Box,
@@ -43,7 +45,7 @@ const getBadgeDetails = (
       };
     case BRAND_EMI_VERIFICATION_STATUS_ENUM.PENDING:
       return {
-        badgeText: 'Pending',
+        badgeText: 'Pending validation',
         color: 'notice',
         icon: ClockIcon,
       };
@@ -128,6 +130,16 @@ const BrandInfoCard = ({
               {brand.merchantGst}
             </Text>
           </Box>
+        )}
+        {brand.verificationStatus === BRAND_EMI_VERIFICATION_STATUS_ENUM.FAILED && (
+          <Alert
+            color="negative"
+            description="Records will be validated manually"
+            emphasis="subtle"
+            isDismissible={false}
+            title="Auto-verification failed"
+            icon={AlertCircleIcon}
+          />
         )}
       </Box>
     </Box>
