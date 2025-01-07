@@ -1186,6 +1186,83 @@ class RblBankTransferTest extends TestCase
         $this->assertEquals(0, $txn['credit']);
     }
 
+    public function testRblCallbackForCollectxWithNonAllowedPayer()
+    {
+        $this->app['config']->set('gateway.mock_bt_rbl', true);
+
+        $testData = $this->testData['testBankTransferRblCollectx'];
+
+        $merchantID = '10000000000000';
+
+        $response = $this->createCollectXVirtualAccount(merchantID: $merchantID, receivers: ['bank_account']);
+
+        $url = '/virtual_accounts/'.$response['id']. '/allowed_payers';
+
+        $request = [
+            'url' => $url,
+            'method' => 'post',
+            'content' => [
+                'type'         => 'bank_account',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0000002',
+                    'account_number' => '765432123456789'
+                ],
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $beneAccountNo;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->enableSplitzExperiment(
+            experimentName: RazorxTreatment::COLLECTX_RBL_PAYMENT_TRANSFER_RAMP_UP,
+            id: $merchantID,
+            requestData: ['id' => $merchantID]);
+
+        $response = $this->startTest();
+
+        $this->assertEquals('Success', $response['Status']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertTrue($bankTransferRequest['is_created']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals(200, $bankTransfer['amount']);
+        $this->assertEquals('processed', $bankTransfer['status']);
+        $this->assertEquals('RTGS', $bankTransfer['mode']);
+        $this->assertTrue($bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['Data'][0]['senderAccountNumber'], $payerBankAccount['account_number']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+        $this->assertEquals('10000000000001', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('collectx', $payment['reference14']);
+        $this->assertTrue($payment['auto_captured']);
+
+        $txn =  $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $txn['entity_id']);
+        $this->assertEquals(0, $txn['credit']);
+    }
+
     // If we received a webhook from bank that was for collectx but our check failed to identify it, the request will be processed as normal fundloading
     // transfer (because balance type is banking). Payment entity won't be created, but BT and BTR both will be created and will be in processed state
     public function testRblCallbackForCollectx_WithExperimentDisabled()

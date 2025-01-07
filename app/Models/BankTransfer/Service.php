@@ -69,6 +69,7 @@ use RZP\Models\Workflow\Service\Builder as WorkflowBuilder;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
 use RZP\Models\Ledger\ReverseShadow\Payments as CLSPayments;
 use RZP\Models\VirtualAccount\Entity as VirtualAccountEntity;
+use RZP\Models\VirtualAccount\Processor as VirtualAccountProcessor;
 use RZP\Models\BankTransfer\Constants as BankTransferConstants;
 use RZP\Models\BankTransfer\Processor as BankTransferProcessor;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstants;
@@ -107,11 +108,9 @@ class Service extends Base\Service
     const TRANSFER_TYPE_FT = "FT";
     const TRANSFER_TYPE_IFT = "IFT";
     const COLLECTX_DEFAULT_FEE_CREDITS_THRESHOLD = 50000;
-
     const STATUS = "status";
 
     const REASON = "reason";
-
 
     /**
      * Service constructor. Sets provider from app auth, and
@@ -543,6 +542,7 @@ class Service extends Base\Service
                 $this->validateDuplicateUpiRequest($input, $provider);
                 $this->checkForUnexpectedUpiTransferPayments($input, $provider);
                 $this->checkForAvailableBalanceAndFeeCredits($merchantId);
+
                 break;
             case self::TRANSFER_TYPE_IMPS:
             case self::TRANSFER_TYPE_NEFT:
@@ -553,6 +553,7 @@ class Service extends Base\Service
                 $this->checkForUnexpectedBankTransferPayments($input, $provider);
                 $this->checkForAvailableBalanceAndFeeCredits($merchantId);
                 break;
+
         }
     }
 
@@ -920,7 +921,6 @@ class Service extends Base\Service
             $response['valid'] = false;
         }
 
-
         return $this->modifyCollectxResponseBasedOnProvider($response, $provider);
     }
 
@@ -1168,6 +1168,8 @@ class Service extends Base\Service
             $this->validateBalanceTypeForCollectxPayments($balance, $input);
 
             $this->validateCreditAccountNumberForRblCollectxPayments($balance, $provider, $input);
+
+            $this->validateTpvForCollectxPayments($virtualAccount, $input, $provider);
         }
         catch (\Exception $ex)
         {
@@ -1195,6 +1197,8 @@ class Service extends Base\Service
             $balance = $this->repo->balance->findOrFailById($virtualAccount->getBalanceId());
 
             $this->validateVirtualAccountStatusForCollectxPayments($virtualAccount, $input);
+
+            $this->validateTpvForCollectxPayments($virtualAccount, $input, $provider);
 
             // not adding below check here because some of Swiggy VAs are attached with primary balance.
             // TODO: Uncomment this once fix is live for VA creation.
@@ -1354,12 +1358,28 @@ class Service extends Base\Service
                 throw new Exception\BadRequestValidationFailureException(
                     ErrorCode::COLLECTX_UNEXPECTED_PAYMENT_CREDIT_ACCOUNT_MISMATCH,
                     $input);
-
             }
         }
     }
 
+    protected function validateTpvForCollectxPayments(VirtualAccountEntity $virtualAccount, array $input, string $provider)
+    {
+        if ($provider != Provider::RBL)
+        {
+            $processor = new Processor();
 
+            $isVerifiedPayer = $processor->verifyPayerUsingTPVForCollectX($virtualAccount, $input);
+
+            if ($isVerifiedPayer === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    ErrorCode::COLLECTX_UNEXPECTED_PAYMENT_BY_NON_ALLOWED_PAYER,
+                    $input
+                );
+
+            }
+        }
+    }
 
     protected function processValidationRequest(array $input, string $provider = null)
     {

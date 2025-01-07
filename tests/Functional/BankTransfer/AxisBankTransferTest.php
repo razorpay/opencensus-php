@@ -1560,4 +1560,103 @@ class AxisBankTransferTest extends TestCase
         $this->assertNull($nonMigratedVirtualAccount->getAttribute('bank_account_id_2'));
     }
 
+    public function testAxisValidationCallbackForCollectxWithAllowedPayer()
+    {
+        $testData = $this->testData['testValidateBankTransferAxis'];
+
+        $response = $this->createCollectXVirtualAccount(receivers: ['bank_account']);
+
+        $url = '/virtual_accounts/'.$response['id']. '/allowed_payers';
+
+        $request = [
+            'url' => $url,
+            'method' => 'post',
+            'content' => [
+                'type'         => 'bank_account',
+                'bank_account' => [
+                    'ifsc'           => 'HDFC0000522',
+                    'account_number' => '910910910910910'
+                ],
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $testData['request']['content']['Bene_acc_no'] = $beneAccountNo;
+
+        $testData['request']['content']['Corp_code'] = '9845';
+
+        $testData['request']['content']['Req_dt_time'] = date("Y-m-d H:i:s");
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $merchantID = '10000000000000';
+
+        $this->enableSplitzExperiment(
+            experimentName: RazorxTreatment::COLLECTX_AXIS_PAYMENT_TRANSFER_RAMP_UP,
+            id: $merchantID,
+            requestData: ['id' => $merchantID]);
+
+        $this->enableSplitzExperiment(
+            experimentName: RazorxTreatment::COLLECTX_WORKER_FLOW,
+            id: $merchantID);
+
+        $response = $this->startTest();
+
+        $this->assertEquals('S', $response['Stts_flg']);
+        $this->assertEquals('000', $response['Err_cd']);
+        $this->assertEquals('Success', $response['message']);
+    }
+
+    public function testAxisValidationCallbackForCollectxWithNonAllowedPayer()
+    {
+        $testData = $this->testData['testBankTransferAxisCallbackValidationFailure'];
+
+        $response = $this->createCollectXVirtualAccount(receivers: ['bank_account']);
+
+        $url = '/virtual_accounts/'.$response['id']. '/allowed_payers';
+
+        $request = [
+            'url' => $url,
+            'method' => 'post',
+            'content' => [
+                'type'         => 'bank_account',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0000002',
+                    'account_number' => '765432123456789'
+                ],
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $testData['request']['content']['Bene_acc_no'] = $beneAccountNo;
+
+        $testData['request']['content']['Corp_code'] = '9845';
+
+        $testData['request']['content']['Req_dt_time'] = date("Y-m-d H:i:s");
+
+        $testData['request']['content']['Req_type'] = 'validation';
+
+        $testData['request']['content']['UTR'] = 'RAZP00010742429600013';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $merchantID = '10000000000000';
+
+        $this->enableSplitzExperiment(
+            experimentName: RazorxTreatment::COLLECTX_AXIS_PAYMENT_TRANSFER_RAMP_UP,
+            id: $merchantID,
+            requestData: ['id' => $merchantID]);
+
+         $response = $this->startTest();
+
+        $this->assertEquals('F', $response['Stts_flg']);
+        $this->assertEquals('002', $response['Err_cd']);
+        $this->assertEquals('Validation failed', $response['message']);
+    }
 }
