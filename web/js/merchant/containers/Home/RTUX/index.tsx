@@ -17,6 +17,7 @@ import { getUcsAliasFromQueryKey, getBaseWidget, track } from 'merchant/widgets/
 import { ResponsiveWrapper } from './styles';
 import DiwaliReportBanner from '../DiwaliReportBanner';
 import FestivalThemeBanner from '../FestivalThemeBanner';
+import { isEligibleForRazorpayRewind } from 'merchant/components/RazorpayRewind/utils';
 
 const RTUX_HOMEPAGE_LAYOUT_KEY = ['rtux-homepage', 'layout'];
 const RTUX_HOMEPAGE_DATA_KEY = ['rtux-homepage', 'data'];
@@ -25,6 +26,10 @@ const ReKycStatusBanner = lazy(() =>
   import(/* webpackChunkName: 'rekycStatusBanner' */ 'merchant/components/ReKycStatusAlerts').then(
     (module) => ({ default: module.ReKycStatusBanner }),
   ),
+);
+
+const RazorpayRewind = lazy(
+  () => import(/* webpackChunkName: 'payments-recap' */ 'merchant/components/RazorpayRewind'),
 );
 
 const RTUXHomepage = (): JSX.Element => {
@@ -42,6 +47,7 @@ const RTUXHomepage = (): JSX.Element => {
   // home page widget doesn't has a type or id
   const widgetId = `merchantDashboard.${screen}`;
   const shouldShowReKycBanner = isEligibleForReKyc(splitz, user);
+  const shouldShowRazorpayRewind = isEligibleForRazorpayRewind(splitz, user);
 
   const retryHandler = () => {
     if (isError) refetch();
@@ -105,6 +111,11 @@ const RTUXHomepage = (): JSX.Element => {
         {shouldShowReKycBanner ? (
           <Suspense fallback={null}>
             <ReKycStatusBanner isRtux={true} />
+          </Suspense>
+        ) : null}
+        {shouldShowRazorpayRewind ? (
+          <Suspense fallback={null}>
+            <RazorpayRewind isRtux={true} />
           </Suspense>
         ) : null}
         <FestivalThemeBanner isRtux={true} />

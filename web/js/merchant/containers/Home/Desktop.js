@@ -109,11 +109,16 @@ import {
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
 import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 import { Box } from '@razorpay/blade/components';
+import { isEligibleForRazorpayRewind } from 'merchant/components/RazorpayRewind/utils';
 
 const TerminalStatus = lazy(() =>
   import(
     /* webpackChunkName: 'terminal-status-banner' */ 'merchant/components/Announcements/TerminalStatus'
   ),
+);
+
+const RazorpayRewind = lazy(() =>
+  import(/* webpackChunkName: 'payments-recap' */ 'merchant/components/RazorpayRewind'),
 );
 
 const ReKycStatusBanner = lazy(() =>
@@ -542,6 +547,7 @@ class AnalyticsDesktop extends Component {
 
     const isJKOmniFlow = isJKOfflineMerchant(org, user);
     const shouldShowReKycBanner = isEligibleForReKyc(splitz, user);
+    const shouldShowRazorpayRewind = isEligibleForRazorpayRewind(splitz, user);
 
     const goToNCOnEasy = () => {
       analyticsTrack({
@@ -592,6 +598,11 @@ class AnalyticsDesktop extends Component {
             }`}
           >
             <Box display="flex" gap="spacing.4" flexDirection="column">
+              {shouldShowRazorpayRewind ? (
+                <Suspense fallback={null}>
+                  <RazorpayRewind />
+                </Suspense>
+              ) : null}
               {shouldShowReKycBanner ? (
                 <Suspense fallback={null}>
                   <ReKycStatusBanner />

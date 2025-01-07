@@ -62,11 +62,16 @@ import {
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
 import { Box } from '@razorpay/blade/components';
 import { isEligibleForReKyc } from 'merchant/components/ReKycStatusAlerts/utils';
+import { isEligibleForRazorpayRewind } from 'merchant/components/RazorpayRewind/utils';
 
 const TerminalStatus = lazy(() =>
   import(
     /* webpackChunkName: 'terminal-status-banner' */ 'merchant/components/Announcements/TerminalStatus'
   ),
+);
+
+const RazorpayRewind = lazy(() =>
+  import(/* webpackChunkName: 'payments-recap' */ 'merchant/components/RazorpayRewind'),
 );
 
 const ReKycStatusBanner = lazy(() =>
@@ -286,6 +291,7 @@ class AnalyticsMobile extends Component {
     if (banner_carousel_items.length) carouselItem = [...banner_carousel_items];
     const isJkOrg = isJKOfflineMerchant(this.props.org, this.props.user);
     const shouldShowReKycBanner = isEligibleForReKyc(this.props.splitz, user);
+    const shouldShowRazorpayRewind = isEligibleForRazorpayRewind(this.props.splitz, user);
 
     return (
       <div className="home-analytics-mobile">
@@ -309,6 +315,11 @@ class AnalyticsMobile extends Component {
           }`}
         >
           <Box display="flex" gap="spacing.4" flexDirection="column">
+            {shouldShowRazorpayRewind ? (
+              <Suspense fallback={null}>
+                <RazorpayRewind />
+              </Suspense>
+            ) : null}
             {shouldShowReKycBanner ? (
               <Suspense fallback={null}>
                 <ReKycStatusBanner />

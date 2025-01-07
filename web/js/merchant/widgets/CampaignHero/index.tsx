@@ -115,13 +115,13 @@ export const CampaignHero = ({
             {campaigns.map(({ templates }, idx) => {
               const asset = templates[0].data;
               const template = asset.rtux_ucs_campaigns;
-
+              const target = template.cta_link.indexOf('https://') === 0 ? '_blank' : '_self';
               return (
                 <CarouselItem key={asset.id}>
                   <Box borderRadius="medium" overflow="hidden" testID="campaign-hero-card">
                     <Link
                       to={template.cta_link}
-                      target="_blank"
+                      target={target}
                       onClick={() => _track(idx, 'link', 'clicked')}
                     >
                       <img

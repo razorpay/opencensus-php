@@ -1270,6 +1270,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'enable_razorpay_rewind',
+          experimentId: {
+            beta: 'Pg2HiL6hjOzsAf',
+            production: 'Pg2CXXqNEjAE8l',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {
