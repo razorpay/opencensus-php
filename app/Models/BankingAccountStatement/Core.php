@@ -419,7 +419,7 @@ class Core extends Base\Core
 
                     $basDetailEntity->balance->updateLastFetchedAt();
                 },
-                300,
+                600,
                 ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
             );
         }
