@@ -11,6 +11,7 @@ import {
   getProgressFromModularStep,
 } from 'apps/pos/src/app/utils/modularConfig';
 import { MILESTONE_NAME_FIELDS } from '../types/DeviceSelection';
+import { DeviceModel } from './deviceSelection';
 
 interface ModularConfigType {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
@@ -205,8 +206,12 @@ export const getDeviceConfigurationDetailsFromModularConfig = ({
     deviceId: currentDeviceDetails?.id || '',
     language: isStringValue(languageFieldData) ? languageFieldData?.stringValue : 'English',
     deviceName: currentDeviceDetails?.details_page_name || '',
-    hideLanguageSettings: languageFieldData?.isHidden || false,
-    hideWifiConfiguration: wifiConfigField?.isHidden || false,
+    hideLanguageSettings:
+      languageFieldData?.isHidden ||
+      currentDeviceDetails.display_name === DeviceModel.STICKER_AND_STANDEE, //TODO: revert this change once BE SDK for isHidden is fixed
+    hideWifiConfiguration:
+      wifiConfigField?.isHidden ||
+      currentDeviceDetails.display_name === DeviceModel.STICKER_AND_STANDEE,
     currentDeviceDetails,
   };
 };
