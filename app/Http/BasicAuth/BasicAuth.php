@@ -2023,7 +2023,7 @@ class BasicAuth
 
     public function isAdminExperienceServiceApp()
     {
-        return $this->internalApp === 'admin-experience-service';
+        return (($this->getInternalApp() === 'admin-experience-service') || ($this->getInternalApp() === 'aes_service'));
     }
 
     public function isMobApp()
