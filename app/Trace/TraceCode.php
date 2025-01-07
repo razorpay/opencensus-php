@@ -1178,6 +1178,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CUSTOMER_CREATE_REQUEST_CTX                           = 'CUSTOMER_CREATE_REQUEST_CTX';
     const CUSTOMER_CREATE_REQUEST_SUCCESS                       = 'CUSTOMER_CREATE_REQUEST_SUCCESS';
+    const CUSTOMER_CREATE_UNKNOWN_FLOW                          = 'CUSTOMER_CREATE_UNKNOWN_FLOW';
     const CMS_REQUEST_SPLITZ_ERROR                              = 'CMS_REQUEST_SPLITZ_ERROR';
     const CMS_REQUEST_ERROR                                     = 'CMS_REQUEST_ERROR';
     const CMS_REQUEST_FAILED                                    = 'CMS_REQUEST_FAILED';

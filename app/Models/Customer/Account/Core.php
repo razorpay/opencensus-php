@@ -153,7 +153,7 @@ class Core extends Base\Core
 
         // Read the global ID of the customer to which we want to link the newly created customer
         $globalCustomerID = $input[Entity::GLOBAL_CUSTOMER_ID];
-        if (!empty($globalCustomerID) && empty(app('request.ctx')->getInternalAppName()))
+        if (!empty($globalCustomerID) && $this->app['api.route']->getCurrentRouteName() == "customer_create")
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_FIELD_SENT, null, null);
         }
@@ -232,7 +232,7 @@ class Core extends Base\Core
                 // This needs to happen here because address create associates itself with the customer.
                 // Hence, it's required that the customer is saved.
                 $customer->setAttribute(Entity::GLOBAL_CUSTOMER_ID,$globalCustomerID);
-                $this->repo->saveOrFail($customer);
+                $this->repo->saveOrFail($customer, ['logged' => true]);
 
                 $this->createCustomerAddressesIfValuesSetInInput($customer, $input);
 

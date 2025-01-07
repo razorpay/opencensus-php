@@ -6,10 +6,27 @@ use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Exception;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'customer';
+
+    public function saveOrFail($entity, array $options = array())
+    {
+        parent::saveOrFail($entity);
+
+        // check if the create flow has already been logge
+        // the value of logged will not be set for create flows that we haven't identified yet
+        if (!array_key_exists('logged', $options) || !$options['logged'])
+            $this->trace->info(TraceCode::CUSTOMER_CREATE_UNKNOWN_FLOW,
+                [
+                    'customer_id' => $entity->getId(),
+                    'merchant_id' => $entity->getMerchantId(),
+                    'mode' => $this->app['rzp.mode'],
+                    'internal_app_name' => $this->app['request.ctx']->getInternalAppName()
+                ]);
+    }
 
     public function getGlobalCustomerForPayment($payment)
     {
