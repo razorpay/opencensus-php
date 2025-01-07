@@ -532,11 +532,7 @@ const CreateRule = (props, context): JSX.Element => {
       if (value === 'upi_intent' || value === 'upi_collect') {
         val = 'upi';
       }
-      // As getsimpl wallet is not actually a wallet issuer
-      if (
-        mapProvider[p.id]?.includes(val) ||
-        (val === 'getsimpl' && p.id.startsWith('getsimpl_optimizer_'))
-      ) {
+      if (mapProvider[p.id]?.includes(val)) {
         isDisable = false;
       }
     });
@@ -612,15 +608,6 @@ const CreateRule = (props, context): JSX.Element => {
     dispatch({ type: 'set_rule_details_fields', payload: { name: 'rules', value } });
   };
 
-  const updateParameter = (selectedMethods) => {
-    if (
-      (selectedMethods as string[]).includes('paylater') &&
-      parameters.some((p) => p.name === 'Wallets')
-    ) {
-      dispatch({ type: 'set_parameters', payload: parameters.filter((p) => p.name !== 'Wallets') });
-    }
-  };
-
   const rules: RuleGroup[] = deepClone(rulesList);
 
   let mappedProviders: MappedProiders[] = createMappedProviders(terminalProviders);
@@ -670,7 +657,6 @@ const CreateRule = (props, context): JSX.Element => {
     mappedProviders = mappedProviders.map((p) => {
       if (isMethod) {
         configureProvider('method', selectedMethods, mapMethodsProvider, p);
-        updateParameter(selectedMethods);
       }
       if (isWallet && selectedWallets.length !== 0) {
         configureProvider('wallet', selectedWallets, mapWalletProvider, p);

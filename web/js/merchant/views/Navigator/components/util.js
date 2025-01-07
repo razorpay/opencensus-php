@@ -1115,7 +1115,7 @@ export const parameters = [
   ...tokenAuthTypeParameter,
   {
     name: 'Paylater Provider',
-    value: '$payment.optimizer_wallet',
+    value: '$payment.optimizer_paylater_provider',
     description: 'Simpl',
     id: 19,
     values: [

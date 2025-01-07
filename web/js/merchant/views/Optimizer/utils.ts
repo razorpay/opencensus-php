@@ -1106,7 +1106,7 @@ export const PARAMETERS: Parameter[] = [
   },
   {
     name: 'Paylater Provider',
-    value: '$payment.optimizer_wallet',
+    value: '$payment.optimizer_paylater_provider',
     description: 'Simpl',
     id: 19,
     values: [
@@ -1179,16 +1179,13 @@ export const gatewayLogos = {
   zaakpay: getLogoPath('zaakpay', 'svg'),
 };
 
-export const getValue = (type, value, paramValue = '') => {
+export const getValue = (type, value) => {
   let r;
   if (type == 'parameter') {
     r = PARAMETERS;
   }
   if (type == 'operator') {
     r = OPERATORS;
-  }
-  if (paramValue?.includes('getsimpl')) {
-    return r.find((p) => p.value === value && p.name === 'Paylater Provider') || { name: '' };
   }
   return r.find((p) => p.value == value) || { name: '' };
 };
