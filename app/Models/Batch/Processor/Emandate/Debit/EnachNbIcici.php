@@ -11,6 +11,7 @@ use RZP\Gateway\Enach\Base\Entity as EnachEntity;
 use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\Status;
 use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\ErrorCodes as ErrorCode;
 use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\DebitFileHeadings as Headings;
+use RZP\Trace\TraceCode;
 
 // Deprecated. CombinedNachIcici is now used for debits of both paper nach and e-mandate in a single file
 class EnachNbIcici extends Base
@@ -180,5 +181,25 @@ class EnachNbIcici extends Base
     protected function getFormattedGatewayAmount($content)
     {
         return number_format($content[self::AMOUNT] / 100, 2, '.', '');
+    }
+
+    public function shouldSendToBatchService(): bool
+    {
+        $experimentId = $this->app['config']->get('app.migrate_enach_nb_icic_batch_service_experiment');
+
+        $properties = [
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        return (strtolower($variant) === 'enable');
     }
 }

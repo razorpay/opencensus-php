@@ -256,6 +256,8 @@ class Type
 
     const EMANDATE_DEBIT_AXIS         = 'emandate_debit_axis';
 
+    const EMANDATE_DEBIT_ENACH_NB_ICICI   = 'emandate_debit_enach_nb_icici';
+
     const S2P_GROUPS_ONBOARDING       = 's2p_groups_onboarding';
 
     const S2P_USERS_ONBOARDING        = 's2p_users_onboarding';
