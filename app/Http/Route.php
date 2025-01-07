@@ -12435,6 +12435,10 @@ class Route
             'internal_payment_update_b2b_invoice'
         ],
 
+        'cross_border_import_service' => [
+            'payment_fetch_by_id'
+        ],
+
         'xperience' => [
             'merchant_fetch_internal_users',
             'merchant_search_users_internal',

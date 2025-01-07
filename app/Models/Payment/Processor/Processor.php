@@ -1408,6 +1408,11 @@ class Processor
         return $this->merchant->isOpgspImportEnabled();
     }
 
+    private function isImportFlowMerchant():bool
+    {
+        return $this->merchant->isImportFlowEnabled();
+    }
+
     private function isLRSEducationMerchant(): bool
     {
         return $this->merchant->isLRSFlowEnabled();
@@ -4358,6 +4363,7 @@ class Processor
             if (($isSplitPaymentRequest === false) and
                 ($this->isLRSEducationMerchant() === false) and
                 ($this->isOpgspImportMerchant() === false) and
+                ($this->isImportFlowMerchant() === false) and
                 ($isPaCbPartnerPayment === false) and
                 ($this->isLRSTravelCitiMerchant() === false) and
                 ($this->isJPMCImportFlowMerchant() === false) and

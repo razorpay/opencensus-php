@@ -1246,7 +1246,7 @@ return array(
     'gifu_card_upi_ds_refunds_exp_id' => env('GIFU_CARD_UPI_DS_REFUNDS_EXP_ID'),
 
     'handling_null_self_user' => env('HANDLING_NULL_SELF_USER'),
-  
+
     'optimizer_card_payment_fetch_provider_exp_id' => env('OPTIMIZER_CARD_PAYMENT_FETCH_PROVIDER_EXP_ID'),
 
     'order_payments_parity_producer' => env('ORDER_PAYMENT_PARITY_PRODUCER'),
@@ -1255,5 +1255,9 @@ return array(
 
     'enable_payout_ikey_required_feature_flag_experiment_id' => env('ENABLE_PAYOUT_IKEY_REQUIRED_FEATURE_FLAG_EXPERIMENT_ID'),
 
-    'enable_intl_va_async' => env('ENABLE_INTERNATIONAL_VIRTUAL_ACCOUNT_ASYNC')
+    'enable_intl_va_async' => env('ENABLE_INTERNATIONAL_VIRTUAL_ACCOUNT_ASYNC'),
+
+    'cross_border_import_rearch_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_EXPERIMENT_ID'),
+
+    'cross_border_import_rearch_shadow_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_SHADOW_EXPERIMENT_ID')
 );

@@ -10403,6 +10403,7 @@ class Service extends Base\Service
             "country_code"                     => $merchant->getCountry(),
             "merchant_settlement_currency"     => $merchant->getCurrency(),
             "cross_border_import_flow"         => $this->getCrossBorderImportFlow($merchant),
+            "cb_import_flow_enabled"           => $merchant->isImportFlowEnabled(),
         ];
     }
 

@@ -1197,12 +1197,17 @@ class CBPaymentCreateTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
         $payment = $this->getDefaultUpiPaymentArray();
-        $order = $this->createOrder([
-            'amount' => $payment['amount'],
-            'currency' => $payment['currency'],
+        $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
+
+        $orderMeta = $this->fixtures->create('order_meta',
+        [
+            'order_id' => $order->getId(),
+            'value'    => self::getOrderMetaValueForLrsTravelCitiFlow(),
+            'type'     => 'cart_info',
         ]);
+
         $payment['_']['library'] = 'checkoutjs';
-        $payment['order_id'] = $order['id'];
+        $payment['order_id'] = $order->getPublicId();
         $payment['bank'] = 'ICIC';
         $payment['notes'] = [
             'invoice_number' => '1234567890qwertyuiop'
@@ -1222,18 +1227,159 @@ class CBPaymentCreateTest extends TestCase
         $this->assertNull($paymentInvoice['ref_num']);
     }
 
+    public function testCitiTravelLrsPaymentWithoutCartInfoOrderMeta()
+    {
+        $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        
+        $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
+
+        $payment['_']['library'] = 'checkoutjs';
+        $payment['order_id'] = $order->getPublicId();
+         $this->makeRequestAndCatchException(function () use ($payment) {
+            $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+            $error = $response['error'];
+
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+
+        },
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'Pan and Billing Address Details are Required');
+    }
+
+    public function testCitiTravelLrsPaymentWithoutPanDetails()
+    {
+        $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
+       
+        $value = self::getOrderMetaValueForLrsTravelCitiFlow();
+
+        unset($value['customer_details']['identity']);
+
+        $orderMeta = $this->fixtures->create('order_meta',
+        [
+            'order_id' => $order->getId(),
+            'value'    => $value,
+            'type'     => 'cart_info',
+        ]);
+        
+        $payment['_']['library'] = 'checkoutjs';
+        $payment['order_id'] = $order->getPublicId();
+         $this->makeRequestAndCatchException(function () use ($payment) {
+            $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+            $error = $response['error'];
+
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+
+        },
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'Pan Details are Required');
+    }
+
+    public function testCitiTravelLrsPaymentWithoutBillingAddress()
+    {
+        $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
+       
+        $value = self::getOrderMetaValueForLrsTravelCitiFlow();
+
+        $value['customer_details']['billing_address']['line1'] = null;
+        $value['customer_details']['billing_address']['line2'] = null;
+        $value['customer_details']['billing_address']['city'] = null;
+        $value['customer_details']['billing_address']['state'] = null;
+        $value['customer_details']['billing_address']['country'] = null;
+        $value['customer_details']['billing_address']['zipcode'] = null;
+
+        $value = self::getOrderMetaValueForLrsTravelCitiFlow();
+
+        unset($value['customer_details']['billing_address']);
+
+        $orderMeta = $this->fixtures->create('order_meta',
+        [
+            'order_id' => $order->getId(),
+            'value'    => $value,
+            'type'     => 'cart_info',
+        ]);
+
+        $payment['_']['library'] = 'checkoutjs';
+        $payment['order_id'] = $order->getPublicId();
+         $this->makeRequestAndCatchException(function () use ($payment) {
+            $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+            $error = $response['error'];
+
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+
+        },
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'Billing Address is Required');
+    }
+
+    public function testCitiTravelLrsPaymentWithoutBillingAddress2()
+    {
+        $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
+       
+        $value = self::getOrderMetaValueForLrsTravelCitiFlow();
+
+        $value['customer_details']['billing_address']['line1'] = null;
+        $value['customer_details']['billing_address']['line2'] = null;
+        $value['customer_details']['billing_address']['city'] = null;
+        $value['customer_details']['billing_address']['state'] = null;
+        $value['customer_details']['billing_address']['country'] = null;
+        $value['customer_details']['billing_address']['zipcode'] = null;
+
+        $orderMeta = $this->fixtures->create('order_meta',
+        [
+            'order_id' => $order->getId(),
+            'value'    => $value,
+            'type'     => 'cart_info',
+        ]);
+
+        $payment['_']['library'] = 'checkoutjs';
+        $payment['order_id'] = $order->getPublicId();
+         $this->makeRequestAndCatchException(function () use ($payment) {
+            $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+            $error = $response['error'];
+
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+
+        },
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'Billing Address is Required');
+    }
+
     public function testCitiTravelLrsPaymentPositiveWithHostedCheckout()
     {
         $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
         $payment = $this->getDefaultUpiPaymentArray();
-        $order = $this->createOrder([
-            'amount' => $payment['amount'],
-            'currency' => $payment['currency'],
+        $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
+
+        $orderMeta = $this->fixtures->create('order_meta',
+        [
+            'order_id' => $order->getId(),
+            'value'    => self::getOrderMetaValueForLrsTravelCitiFlow(),
+            'type'     => 'cart_info',
         ]);
+
         $payment['_']['library'] = 'hosted';
-        $payment['order_id'] = $order['id'];
+        $payment['order_id'] = $order->getPublicId();
         $payment['bank'] = 'ICIC';
         $payment['notes'] = [
             'invoice_number' => '1234567890qwertyuiop'
@@ -3148,6 +3294,42 @@ class CBPaymentCreateTest extends TestCase
             'line_items'        => null,
             'line_items_total'  => null,
             'customer_details'  => $customer,
+        ];
+    }
+
+    protected function getOrderMetaValueForLrsTravelCitiFlow()
+    {
+        $app = App::getFacadeRoot();
+        $billing_address = [
+            'line1'         => 'line_one',
+            'line2'         => 'line_two',
+            'city'          => 'Bangalore',
+            'state'         => 'Karnataka',
+            'zipcode'       => '560001',
+            'country'       => 'IND',
+            'type'          => 'billing_address',
+            'primary'       => true
+        ];
+
+        $identity = [
+                [
+                    'type'          => 'pan_number',
+                    'id'            => 'ABCDE1234F',
+                ]
+            ];
+
+        $customer_details = [
+            'name'              => 'Test Customer',
+            'billing_address'   => $billing_address,
+            'identity'          => $identity,
+        ];
+
+        return [
+            'campaign'          => null,
+            'refund_allowed'    => null,
+            'line_items'        => null,
+            'line_items_total'  => null,
+            'customer_details'  => $customer_details,
         ];
     }
 

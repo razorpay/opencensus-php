@@ -2356,6 +2356,11 @@ class Constants
      */
     const VAS_ORG_IDENTIFIER = 'vas_org_identifier';
 
+    /*
+     * Feature flag for Merchants on import
+    */
+    const ENABLE_IMPORT_FLOW = 'enable_import_flow';
+
 
     /**
      * Feature flag will be enabled on
@@ -3350,6 +3355,7 @@ class Constants
         self::BETA_LA_CREATE_ENABLE        => true,
         self::PAYOUTS_BLOCKED_ON_LITE      => true,
         self::ALLOW_PARTIAL_CAPTURE => true,
+        self::ENABLE_IMPORT_FLOW           => true,
     ];
 
     // Entity type constants
@@ -4895,6 +4901,11 @@ class Constants
             'feature' => self::ALLOW_PARTIAL_CAPTURE,
             'display_name' => "Feature flag for merchants to capture payment partially",
             'documentation' => "",
+        ],
+        self::ENABLE_IMPORT_FLOW => [
+            'feature' => self::ENABLE_IMPORT_FLOW,
+            'display_name' => 'Feature flag to enable import flow on merchants',
+            'documentation' => 'this feature flag will be enabled for merchants outside of india'
         ],
     ];
 

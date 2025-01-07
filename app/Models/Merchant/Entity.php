@@ -1279,6 +1279,11 @@ class Entity extends Base\PublicEntity
         return $this->isLRSEducationFlowEnabled() || $this->isLRSTravelFlowEnabled();
     }
 
+    public function isImportFlowEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::ENABLE_IMPORT_FLOW) === true);
+    }
+
     public function isNoCodeAppFeeFeatureFlagEnabled(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::NOCODEAPP_FEE_APPLICABLE) === true);
