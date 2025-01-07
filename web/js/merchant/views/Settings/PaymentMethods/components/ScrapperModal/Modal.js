@@ -47,10 +47,18 @@ const ScrapperModal = ({ isOpen, handleModal, showNotification, props }) => {
   }
 
   const handleAcceptTermsAndConditions = async () => {
+    const { instrument } = props;
+    const hasWebsiteDetails = instrument?.collect_info.some(
+      (field) => field.category === 'Website Details',
+    );
+    if (!hasWebsiteDetails) {
+      setCollectInfo(instrument?.collect_info);
+      setScrapperFormView(true);
+      return;
+    }
     setLoading(true);
 
     try {
-      const { instrument } = props;
       const triggerResponse = await merchantFetch({
         url: 'collect_info/website_details/scraper',
         method: 'post',

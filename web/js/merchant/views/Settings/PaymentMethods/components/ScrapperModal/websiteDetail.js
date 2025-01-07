@@ -43,11 +43,15 @@ const WebsiteDetailsModal = ({
   handleSubmitRequest,
   handleWebsiteFieldChange,
 }) => {
-  const [tab, setActiveTab] = useState(0);
+  const [isAdditionalDetailsView, setAdditionalDetailsView] = useState(false);
   const merchantWebsiteDetails = getWebsiteDetailsInfo(props.user);
   const [initialStateOfFields, setInitialStateOfField] = useState([]);
 
   useEffect(() => {
+    const keys = Object.keys(getGroupedCollectInfo(collectInfo));
+    if (keys.indexOf('Website Details') === -1 && keys.length !== 0) {
+      setAdditionalDetailsView(true);
+    }
     const initial = collectInfo
       .map((item) => {
         if (item.category === 'Website Details' && !item?.verification_status) {
@@ -100,12 +104,11 @@ const WebsiteDetailsModal = ({
   };
 
   const handleNext = () => {
-    const categories = getGroupedCollectInfo(collectInfo);
-    const tabs = Object.keys(categories);
-    if (tab === tabs.length - 1) {
+    const keys = Object.keys(getGroupedCollectInfo(collectInfo));
+    if (isAdditionalDetailsView || keys.indexOf('Business Details') === -1) {
       handleSubmitRequest();
     } else {
-      setActiveTab(tab + 1);
+      setAdditionalDetailsView(true);
     }
   };
 
@@ -204,7 +207,7 @@ const WebsiteDetailsModal = ({
             </Box>
           </>
         ) : null}
-        {tab === 0 && !isRetryNeeded() ? (
+        {!isAdditionalDetailsView && !isRetryNeeded() ? (
           <Alert
             description={`Important: Due to incomplete website verification, your ${props.instrument.name} activation request may be rejected by the banking partner. We recommend ensuring all pages exist and meet guidelines before proceeding`}
             isDismissible={false}
@@ -317,13 +320,15 @@ const WebsiteDetailsModal = ({
 
     return (
       <Box display="flex" flexDirection="column" gap="spacing.7">
-        {tab === 0 ? renderWebsiteDetails(categories) : renderAdditionalDetails(categories)}
+        {isAdditionalDetailsView
+          ? renderAdditionalDetails(categories)
+          : renderWebsiteDetails(categories)}
       </Box>
     );
   };
 
   const renderModalHeader = () => {
-    return tab === 0
+    return !isAdditionalDetailsView
       ? `Page Compliance Check - ${
           merchantWebsiteDetails.isWebsiteDetails
             ? merchantWebsiteDetails.websitesData[0]
@@ -345,16 +350,18 @@ const WebsiteDetailsModal = ({
           ) : (
             <>
               <Button
-                variant={tab === 0 ? 'secondary' : 'primary'}
+                variant={!isAdditionalDetailsView ? 'secondary' : 'primary'}
                 onClick={handleNext}
                 isLoading={submitLoading}
                 isDisabled={
-                  tab === 0 ? validateWebsiteFields() : isValidDetailsFilled('Business Details')
+                  !isAdditionalDetailsView
+                    ? validateWebsiteFields()
+                    : isValidDetailsFilled('Business Details')
                 }
               >
-                {tab === 0 ? 'Proceed Anyway' : 'Submit Request'}
+                {!isAdditionalDetailsView ? 'Proceed Anyway' : 'Submit Request'}
               </Button>
-              {tab === 0 ? (
+              {!isAdditionalDetailsView ? (
                 <Button
                   variant="primary"
                   onClick={handleRetryClick}
