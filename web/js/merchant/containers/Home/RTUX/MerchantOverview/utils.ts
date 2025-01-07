@@ -56,3 +56,6 @@ export function getAnalyticsHeroCardStateIdentifier(heroCardData) {
     return 'UNKNOWN_STATE';
   }
 }
+
+export const CURRENT_BALANCE_TOOLTIP =
+  'This is the total amount that is due to be deposited in your bank account after deduction of taxes, platform fees, any other applicable charges, and adjustment of refunds and credits';

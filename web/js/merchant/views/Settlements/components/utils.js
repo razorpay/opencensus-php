@@ -171,6 +171,8 @@ export const SETTLEMENT_HOLD_CONTACT_SUPPORT_MESSAGE = {
   SUB_TITLE:
     "Please reach out to our support team, and we'll assist you in resolving this issue and getting your settlements back on track.",
 };
+export const SETTLEMENTS_BLOCK_TITLE =
+  'Your settlements are on-hold because of your request raised with Razorpay.';
 
 export const SETTLEMENT_SLA_IN_HOURS = 3;
 
