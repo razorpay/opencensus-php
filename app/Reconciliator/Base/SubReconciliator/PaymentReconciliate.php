@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Base\ConnectionType;
 use RZP\Constants;
+use RZP\Constants\Environment;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
@@ -1456,7 +1457,17 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $cardDetails = $rowDetails[BaseReconciliate::CARD_DETAILS];
 
-        $this->paymentIin = $this->payment->card->iinRelation;
+        $iin = $this->payment->card->getIin();
+
+        if ($iin !== null && $this -> shouldForceIINFetchFromAPI($iin) === true)
+        {
+            $this->paymentIin = $this->iinRepo->findOrFailAPIEntity($iin);
+
+        } else
+        {
+            $this->paymentIin = $this->payment->card->iinRelation;
+        }
+
         $gatewayFee = $rowDetails[BaseReconciliate::GATEWAY_FEE];
         $gatewayServiceTax = $rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX];
 
@@ -1507,7 +1518,34 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $this->traceIssuer($cardDetails[BaseReconciliate::ISSUER], $gatewayFee, $gatewayServiceTax);
         }
 
+        $this->trace->info(TraceCode::RECON_INFO, [
+            'infoCode' => Base\InfoCode::PERSISTING_CARD_DETAILS,
+            'payment_iin' => $this->paymentIin]
+        );
+
         $this->repo->saveOrFail($this->paymentIin);
+    }
+
+    protected function shouldForceIINFetchFromAPI(string $bin)
+    {
+        {
+            if (Environment::isTestingEnvironment($this->app['env']) === true ||
+                Environment::isEnvironmentQA($this->app['env']) === true ||
+                Environment::isEnvironmentItf($this->app['env']) === true)
+            {
+                return true;
+            }
+
+            $properties = [
+                'id'            => $bin,
+                'experiment_id' => $this->app['config']->get('app.force_iin_fetch_from_api_for_recon'),
+                'request_data' => json_encode([
+                    "bin" => $bin
+                ]),
+            ];
+
+            return (new Card\TokenisedIIN\Service)->checkIfSplitzExperimentIsEnabled($properties);
+        }
     }
 
     protected function persistAccountDetails(array $rowDetails, PublicEntity $gatewayPayment)

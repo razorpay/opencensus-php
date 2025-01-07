@@ -227,6 +227,7 @@ class InfoCode
     const GATEWAY_CAPTURED_MISMATCH                     = 'GATEWAY_CAPTURED_MISMATCH';
 
     const RECON_UPDATE_RECONCILIATION_DATA_FAILED       = 'RECON_UPDATE_RECONCILIATION_DATA_FAILED';
+    const PERSISTING_CARD_DETAILS                       = 'PERSISTING_CARD_DETAILS';
 
     public static $fileBasedReconInfoCodes = [
         self::COLUMN_HEADER_MISMATCH,
