@@ -13712,10 +13712,24 @@ class Core extends Base\Core
 
             $latestStatus = $service->getLatestRekycStatus($details);
 
-            if($latestStatus != Status::EDD_PENDING) {
-                $service->transitionToNextRekycStatus($merchantId, $details, Status::EDD_PENDING);
+            switch ($latestStatus) {
+                case Status::UNDER_REVIEW:
+                case Status::NEEDS_CLARIFICATION:
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_ALLOWED_FOR_VCIP, null, [
+                        'error' => 'Please move the merchant to EDD PENDING state in rekyc form before creating a vcip link'
+                    ]);
+                case Status::EDD_PENDING:
+                case Status::APPROVED:
+                    break;
+                case Status::REJECTED:
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_ALLOWED_FOR_VCIP, null, [
+                        'error' => 'Please move the merchant to UNDER REVIEW, then into EDD PENDING state in rekyc form before creating a vcip link'
+                    ]);
+                default:
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_ALLOWED_FOR_VCIP, null, [
+                        'error' => 'Please raise NEEDS CLARIFICATION in rekyc form before creating a vcip link'
+                    ]);
             }
-
             $payload = [
                 "actor_details" => $actorDetails,
                 "merchant_id"   => $input['merchant_id'],
