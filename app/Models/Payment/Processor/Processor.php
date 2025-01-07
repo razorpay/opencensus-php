@@ -425,7 +425,7 @@ class Processor
      * Razorx flag to block merchants from re-arch flow
      */
     const BLOCK_MERCHANTS_ON_REARCH_UPS = 'block_merchants_on_rearch_ups';
-
+    
     /**
      * Razorx flag to allow merchants from re-arch flow
      */
@@ -2820,174 +2820,128 @@ class Processor
         return false;
     }
 
+    /**
+     * canRouteThroughNbPlusRearchFlow checks if payment is eligible to route via rearch flow
+     * First check if merchant is enabled on rearch
+     * Second check would be if bank's are enabled on rearch
+     * Perform other check
+     * @param $input
+     * @return bool
+     */
+
 
     private function canRouteThroughNbPlusRearchFlow($input): bool
     {
-        $shouldRoute = false;
-
-        $currentRouteName = $this->route->getCurrentRouteName();
-        /**
-         * @var Merchant\Entity $merchant
-         */
-        $merchant = $this->app['basicauth']->getMerchant();
-
-
-        if ((app()->isEnvironmentProduction() === true) and
-            ($this->mode === Mode::TEST))
+        try
         {
-            return false;
-        }
+            $currentRouteName = $this->route->getCurrentRouteName();
+            $merchant = $this->app['basicauth']->getMerchant();
 
-        if (($this->route->isNbRearchRoute($currentRouteName) === true) and
-            ($merchant->isRazorpayOrgId() === true) and
-            ($merchant->isFeeBearerPlatform() === true) and
-            (empty($input[Payment\Entity::METHOD]) === false) and
-            ($input[Payment\Entity::METHOD] === Payment\METHOD::NETBANKING) and
-            (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true) and
-            (empty($input[Payment\Entity::INVOICE_ID]) === true) and
-            (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === true) and
-            (empty($input['reward_ids']) === true) and
-            ($merchant->isFeatureEnabled('raas') === false) and
-            ($merchant->isFeatureEnabled('openwallet') === false) and
-            (empty($input[Payment\Entity::META]) === true) and
-            (empty($input['signature']) === true) and
-            (empty($input[Payment\Entity::BILLING_ADDRESS]) === true) and
-            (empty($input[Payment\Entity::BANK]) === false))
-        {
-            if (empty($input[Payment\Entity::ORDER_ID]) === true)
-            {
-                $shouldRoute = false; // disabling for now till pg-router raise the fix
-            }
-            else
-            {
-                $order = $this->fetchOrderFromInput($input);
-
-                // offers are not supported in initial ramp
-                if ((empty($order) === false) and
-                    (($order->hasOffers() === false) and
-                        ($order->isDiscountApplicable() === false) and
-                        ($order->getProductId() === null) and
-                        ($order->getFeeConfigId() === null))
-                )
-                {
-                    $shouldRoute = true;
-
-                    if ($this->ba->isPartnerAuth() === true)
-                    {
-                        $shouldRoute = false;
-                        $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_partner';
-                        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag, $this->mode);
-
-                        $this->trace->info(TraceCode::PAYMENTS_REARCH_RAZORX_EVALUATION, [
-                            'variant'      => $variant,
-                            'feature_flag' => $featureFlag,
-                        ]);
-
-                        if ($variant === 'on')
-                        {
-                            $shouldRoute = true;
-                        }
-                    }
-
-                    if ($this->ba->getOAuthClientId() !== null)
-                    {
-                        $shouldRoute = false;
-                        $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_oauth';
-                        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag, $this->mode);
-
-                        $this->trace->info(TraceCode::PAYMENTS_REARCH_RAZORX_EVALUATION, [
-                            'variant'      => $variant,
-                            'feature_flag' => $featureFlag,
-                        ]);
-
-                        if ($variant === 'on')
-                        {
-                            $shouldRoute = true;
-                        }
-                    }
-
-                    if ($this->route->getCurrentRouteName() === "payment_create_private_json" ||
-                        $this->route->getCurrentRouteName() === "payment_create_private_json_internal")
-                    {
-                        // experiment for payment_create_private_json route on the basis of merchant ID
-
-                        $shouldRoute = false;
-                        $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_create_json';
-                        $variant = $this->app->razorx->getTreatment($merchant->getId(), $featureFlag, $this->mode);
-
-                        $this->trace->info(TraceCode::PAYMENTS_REARCH_RAZORX_EVALUATION, [
-                            'variant'      => $variant,
-                            'feature_flag' => $featureFlag,
-                        ]);
-
-                        if ($variant === 'on')
-                        {
-                            $shouldRoute = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        if ($shouldRoute === false)
-        {
-            return false;
-        }
-
-        $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_disable_mid';
-        $variant = $this->app->razorx->getTreatment($merchant->getId(), $featureFlag, $this->mode);
-
-        $this->trace->info(TraceCode::PAYMENTS_REARCH_RAZORX_EVALUATION, [
-            'variant'      => $variant,
-            'feature_flag' => $featureFlag,
-        ]);
-
-        if ($variant === 'disable')
-        {
-            return false;
-        }
-
-        if ($merchant->isMarketplace() === true)
-        {
-            $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_marketplace';
-            $variant = $this->app->razorx->getTreatment($merchant->getId(), $featureFlag, $this->mode);
-
-            $this->trace->info(TraceCode::PAYMENTS_REARCH_RAZORX_EVALUATION, [
-                'variant'      => $variant,
-                'feature_flag' => $featureFlag,
-            ]);
-
-            if ($variant !== 'on')
+            // test mode payments are not supported
+            if ((app()->isEnvironmentProduction() === true) and
+                ($this->mode === Mode::TEST))
             {
                 return false;
             }
-        }
+            // live mode payments are not supported
+            if ((app()->isEnvironmentQA() === true) and
+                ($this->mode === Mode::LIVE))
+            {
+                return false;
+            }
+            $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_ROUTING_VIA_REARCH,
+            [
+                'merchant_id'       => $merchant->getId(),
+                'bank'              => $input[Payment\Entity::BANK],
+                'route'             => $currentRouteName,
+            ]
+        );
+        //Feaute flag for Master contorl to enable/disbale further checks
+        //This Feature flag will be used to enable and disable all the traffic on Nbplus microservice
+        $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER;
 
-        if ((app()->runningUnitTests() === true) and
-            ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false))
-        {
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $featureFlag,
+                'request_data'  => json_encode(['merchant_id' => $merchant->getId(), 'mode' => $this->mode]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+        if ($variant === 'variant_off'){
+
+            return false;
+        }  
+
+        $customCheckResults = $this->performCustomChecksToRouteViaNbPlusRearchFlow($input, $merchant, $currentRouteName);
+
+        $isNbPlusDFB = $customCheckResults['is_dfb'] ?? false;
+        
+        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_ROUTING_CRITERIA,
+            [
+                'merchant_id'       => $merchant->getId(),
+                'dimensions'        => $customCheckResults['dimensions'],
+                'route'             => $currentRouteName,
+                'route_via_nbplus'  => $customCheckResults['route_via_nbplus'],
+                'is_dfb'            => $isNbPlusDFB,
+            ]
+        );
+        
+        if ($customCheckResults['route_via_nbplus'] === false) {
             return false;
         }
 
-        if (Netbanking::banksRoutedAlwaysThroughNbRearch($input[Payment\Entity::BANK]) === true)
+        if (Processor::shouldRouteBanksThroughNbRearch($input[Payment\Entity::BANK]) !==true)
         {
-            return true;
+            return false;
+        }
+        // This Feature Flag will be used for intial rampup to enable merchants
+        // Use the same function to disbale merchant traffic once intial rampup is completed
+            $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_enable_merchants';
+
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $featureFlag,
+                'request_data'  => json_encode(['merchant_id' => $merchant->getId(), 'mode' => $this->mode]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_MERCHANT_SPLITZ_VARIANT,
+            [
+                'merchant_id'       => $merchant->getId(),
+                'bank'              => $input[Payment\Entity::BANK],
+                'route'             => $currentRouteName,
+                'variant'           => $variant,
+            ]
+        );
+        
+            if ($variant === 'enabled') {
+                return true;
+            }
+             
+            if ((app()->runningUnitTests() === true) and
+               ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false))
+            {
+               return false;
+            }
+        
+        }
+        catch(\Throwable $e)
+        {
+             $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::REARCH_CRITIERIA_CHECK_FAILED,
+                    []);
         }
 
-        $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER;
-        if ($this->isDarkRequest() === true)
-        {
-            $featureFlag .= '_dark';
-        }
+        return false;
 
-        $this->trace->info(TraceCode::PAYMENT_CREATE_ON_PUBLIC, [
-            'flag' => $featureFlag,
-        ]);
-
-        $result = $this->app->razorx->getTreatment($input[Payment\Entity::BANK], $featureFlag, $this->mode);
-
-        return ($result === 'on');
     }
+
 
     /**
      * canRouteThroughUpsRearchFlow checks if payment is eligible to route via rearch flow
@@ -3499,7 +3453,189 @@ class Processor
 
         return $response;
     }
+//Function for custom checks Netbanking payments rearch
+    private function performCustomChecksToRouteViaNbPlusRearchFlow(array $input, Merchant\Entity $merchant, string $currentRouteName): array
+    {
+        $routeViaReArch = true;
+        $dimensions = array_fill(0, 38, 0);
+        $response = [
+            'route_via_nbplus' => $routeViaReArch
+        ];
+        if ($this->route->isNbRearchRoute($currentRouteName) == false)
+        {
+            $routeViaReArch = false;
+            $dimensions[0] = 1;
+        }
 
+        if ($merchant->isRazorpayOrgId() === false)
+        {
+            if ($this->isNBPlusRearchNonRzpOrgMerchant() === false)
+            {
+                $routeViaReArch = false;
+                $dimensions[1] = 1;
+            }
+        }
+        if ($this->checkFeeBearerRoutingOnNbPlusRearch($merchant) === false)
+            {
+                $routeViaReArch = false;
+                $dimensions[2] = 1;
+            }
+        
+
+        if (empty($input[Payment\Entity::METHOD]) === true)
+        {
+            $routeViaReArch = false;
+            $dimensions[3] = 1;
+        }
+
+         if ($input[Payment\Entity::METHOD] !== Payment\METHOD::NETBANKING)
+        {
+            $routeViaReArch = false;
+            $dimensions[4] = 1;
+        }
+
+        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
+        {
+            $routeViaReArch = true;
+            $dimensions[5] = 1;
+        }
+
+        if (empty($input[Payment\Entity::INVOICE_ID]) === false)
+        {
+            $routeViaReArch = true;
+            $dimensions[6] = 1;
+        }
+
+       if (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false)
+       {
+           $routeViaReArch = false;
+           $dimensions[7] = 1;
+       }
+       
+       if (empty($input['reward_ids']) === false)
+       {
+           $routeViaReArch = true;
+           $dimensions[8] = 1;
+       }
+
+       if ($merchant->isFeatureEnabled('raas')===true)
+       {
+          $routeViaReArch= false;
+          $dimensions[9]=1;
+       }
+       
+       if ($merchant->isFeatureEnabled('openwallet')===true)
+       {
+          $routeViaReArch=false;
+          $dimensions[10]=1;
+       }
+
+       if (empty($input[Payment\Entity::META])===false)
+       {
+          $routeViaReArch=true;
+          $dimensions[11]=1;
+       }
+
+       if (empty($input['signature'])===false)
+       {
+          $routeViaReArch=true;
+          $dimensions[12]=1;
+       }
+
+      if (empty($input[Payment\Entity::BILLING_ADDRESS])===false)
+      {
+         $routeViaReArch=true;
+         $dimensions[13]=1;
+      }
+      
+      if (empty($input[Payment\Entity::OFFER_ID]) === false)
+      {
+            $routeViaReArch = false;
+            $dimensions[14] = 1;
+      }
+
+      if ($merchant->isMarketplace() === true)
+    {
+         if ($this->isNBPlusRearchMarketPlace($merchant) === false)
+         {
+         $routeViaReArch = false;
+         $dimensions[15] = 1;
+         }
+    }
+
+      if (empty($input[Payment\Entity::ORDER_ID]) === false)
+       {
+            $order = $this->fetchOrderFromInput($input);
+
+            $orderMeta = (new Order\Core)->getFormattedOrderMeta($order);
+
+            if (empty($order) === false)
+            {
+                // Check if offers exist in the order and can be routed to nbplus
+                if (($order->hasOffers() === true) and ($this->canRouteOfferThroughNbplusRearch($input, $order) === false))
+                {
+                    $routeViaReArch = false;
+                    $dimensions[16] = 1;
+                }
+
+                // Check if discounts are applicable to the order
+                if ($order->isDiscountApplicable() === true)
+                {
+                    $routeViaReArch = false;
+                    $dimensions[17] = 1;
+                }
+
+                // Check if product ID exists in the order
+                if ($order->getProductId() !== null)
+                {
+                    if ($this->shouldRouteAppsViaNbplus($order) === false) {
+                        $routeViaReArch = false;
+                        $dimensions[18] = 1;
+                    }
+                }
+
+                // Check if fee config ID exists in the order
+                if ($order->getFeeConfigId() !== null)
+                {
+
+                    if ($this->isFeeConfigIDRampedForNbPlus() === false)
+                    {
+                        $routeViaReArch = false;
+                        $dimensions[19] = 1;
+                    }
+                }
+               
+            }
+
+             $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(E::ORDER, $order->getId(), $this->merchant);
+
+            // Check if there are any order transfers
+            if ((empty($orderTransfers) === false) and
+                (count($orderTransfers) > 0))
+            {
+                if ($this->shouldRouteOrderTransfersViaNBPlus($this->merchant->getId()) === false)
+                {
+                    $routeViaReArch = false;
+                    $dimensions[20] = 1;
+                }
+            }
+        }
+
+        
+        $dimensions[21] = (string) strtolower($input['_']['library'] ?? 'unknown');
+
+        $dimensions[22] = (string) $currentRouteName;
+
+        $dimensionsString = implode(', ', $dimensions);
+
+        // if none of the condition evaluated as true, the request can be routed via NBPlus
+        // after checking the razorx variant
+        $response['route_via_nbplus'] = $routeViaReArch;
+        $response['dimensions'] = $dimensionsString;
+
+        return $response;
+    }
+    
     /**
      * shouldRouteOrderTransfersViaUPS check if order tranfers should be ramped on re-arch
      *
@@ -3537,7 +3673,46 @@ class Processor
 
         return false;
     }
+    
+    /**
+     * shouldRouteOrderTransfersViaNBPlus check if order tranfers should be ramped on re-arch
+     *
+     * @param string $merchantID
+     * @return boolean
+     */
+    private function shouldRouteOrderTransfersViaNBPlus($merchantID): bool
+    {
+        try
+        {
+            $feature = self::NETBANKING_PAYMENTS_VIA_PGROUTER .'_allow_order_transfer' ;
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $feature,
+                'request_data'  => json_encode(['merchant_id' => $merchantID]),
+            ];
 
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::NBPLUS_PAYMENT_ORDER_TRANSFERS_SPLITZ_VARIANT, [
+                'merchant_id' => $merchantID,
+                'variant' => $variant,
+            ]);
+
+            return $variant === 'variant_on';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::ORDER_TRANSFERS_ON_NBPLUS_REARCH_SPLITZ_ERROR);
+        }
+
+        return false;
+    }
+    
     private function canRouteFpxThroughRearchFlow($input): bool
     {
         // fpx always through nbplus rearch except test mode in production
@@ -13652,6 +13827,55 @@ class Processor
         return false;
     }
 
+    private function canRouteOfferThroughNbplusRearch(array $input, Order\Entity $order): bool
+    {
+        // This is already getting checked - but keeping here for safety as this is prerequisite for ramp and should be present here
+        if (empty($input[Payment\Entity::OFFER_ID]) === false)
+        {
+            return false;
+        }
+
+        // When offer is forced, we do not expect offer_id in the payment input.
+        // Instead we retrieve the offer to be applied (we can figure
+        // this out ourselves from the payment) and validate it.
+        if ($order->isOfferForced() === true)
+        {
+            return false;
+        }
+
+        try
+        {
+            $merchantID = $this->merchant->getMerchantId();
+            $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_order_offer';
+
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $featureFlag,
+                'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId()]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::NBPLUS_PAYMENT_OFFERS_SPLITZ_VARIANT, [
+                'merchant_id' => $merchantID,
+                'order' => $order->getId(),
+                'variant' => $variant,
+            ]);
+
+            return $variant === 'enable_offers';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::OFFER_ON_NBPLUS_REARCH_SPLITZ_ERROR);
+        }
+
+        return false;
+    }
+
     /**
      * isUpsRearchFeeBearerMerchant checks FeeBearer is supported in Rearch
      * @param array $response
@@ -13681,6 +13905,69 @@ class Processor
     }
 
     /**
+     * isNBPlusRearchFeeBearerMerchant checks FeeBearer is supported in Rearch
+     * @param array $response
+     * @param $fee
+     * @return bool
+     */
+
+public function checkFeeBearerRoutingOnNbPlusRearch(Merchant\Entity $merchant): bool
+{
+
+    // Get the feature variant for NbPlus fee bearer merchants
+    $fee=$merchant->getFeeBearer();
+    $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_cfb_merchants';
+    $properties = [
+        'id'            => $fee,
+        'experiment_id' => $featureFlag,
+        'request_data'  => json_encode(['fee' => $fee]),
+    ];
+    $response = $this->app['splitzService']->evaluateRequest($properties);
+
+    $variant = $response['response']['variant']['name'] ?? 'control';
+
+    // Log the feature variant for debugging
+    $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_CFB_SPLITZ_VARIANT, [
+        'merchant_id' => $this->merchant->getMerchantId(),
+        'variant'     => $variant,
+        'mode'        => $this->mode,
+        'feature'     => $featureFlag,
+        'feeee'       => $fee,
+        'lalalala101010alala1q1010'=> $response,
+        '$variant === variant_on' => $variant === 'variant_on',
+    ]);
+
+    // Return true if the feature variant is 'on', otherwise return false
+    return $variant === 'variant_on';
+}
+
+public function isNBPlusRearchMarketPlace($merchant): bool
+{
+
+    $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_marketplace';
+
+    $properties = [
+        'id'            => $this->app['request']->getTaskId(),
+        'experiment_id' => $featureFlag,
+        'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId()]),
+    ];
+    $response = $this->app['splitzService']->evaluateRequest($properties);
+
+    $variant = $response['response']['variant']['name'] ?? 'control';
+
+     // Log the feature variant for debugging
+     $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_MARKET_PLACE_SPLITZ_VARIANT, [
+        'merchant_id' => $this->merchant->getMerchantId(),
+        'variant'     => $variant,
+        'mode'        => $this->mode,
+        'feature'     => $featureFlag,
+        'response'=> $response,
+    ]);
+
+    return $variant === 'variant_on';
+}
+
+/**
      * isFeeConfigIDRamped returns true if merchant is ramped on FeeConfigID
      * @return bool
      */
@@ -13697,6 +13984,34 @@ class Processor
         ]);
 
         return str_starts_with($variant, 'on');
+    }
+
+    /**
+     * isFeeConfigIDRampedForNbPlus returns true if merchant is ramped on FeeConfigID
+     * @return bool
+     */
+
+    public function isFeeConfigIDRampedForNbPlus() : bool
+    {
+
+        $feature = self::NETBANKING_PAYMENTS_VIA_PGROUTER .'_allow_fee_configId_merchants' ;
+        $properties = [
+            'id'            => $this->app['request']->getTaskId(),
+            'experiment_id' => $feature,
+            'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId(), 'mode' => $this->mode]),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+    
+        $variant = $response['response']['variant']['name'] ?? 'control';
+
+        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_FEE_CONFIG_SPLITZ_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'variant' => $variant,
+            'mode'    => $this->mode,
+            'feature' => $feature,
+        ]);
+
+        return $variant === 'variant_on';
     }
 
     /**
@@ -13741,6 +14056,49 @@ class Processor
 
         return str_starts_with($variant, 'on') === true;
     }
+
+    /**
+     * isNBPlusRearchNonRzpOrgMerchant checks if Non Rzp Org Merchant is whitelisted for Rearch flow
+     * @return bool
+     */
+
+    public function isNBPlusRearchNonRzpOrgMerchant(): bool
+    {
+        // If external_pa_vas or other_payment_gateway_configured feature is enabled on a merchant,
+        // then they can have optimizer terminals. We can't route these payments to Nbplus.
+        if ($this->merchant->isAtLeastOneFeatureEnabled([
+            Features::EXTERNAL_PA_VAS, DcsConstants::OtherPaymentGatewayConfigured]) === true)
+       {
+          return false;
+       }
+
+        // If the feature flag "banking_nbplus_rearch" and the razorx experiment for the merchant ID are enabled,
+        // route the NBPlus traffic of that org via rearch as part of API decomposition.
+        
+        // Custom feature flag and logic specific to NBPlus.
+        $orgId = $this->merchant->getMerchantOrgId();
+
+        $feature = self::NETBANKING_PAYMENTS_VIA_PGROUTER .'allow_non_rzp_org_merchants_org';
+        $properties = [
+            'id'            => $this->app['request']->getTaskId(),
+            'experiment_id' => $feature,
+            'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId(), 'mode' => $this->mode]),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? 'control';
+
+      $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_NON_RZP_ORG_RAZORX_VARIANT, [
+        'merchant_id' => $this->merchant->getMerchantId(),
+        'org_id'      => $orgId,
+        'variant'     => $variant,
+        'mode'        => $this->mode,
+        'feature'     => $feature,
+      ]);
+
+      return $variant === 'enabled';
+    }
+
 
     /**
      * shouldRouteUpsReArchUpiMode checks if upi mode can be enabled
@@ -13845,7 +14203,7 @@ class Processor
     }
 
     /**
-     * shouldRouteUpsReArchTokenSave checks if upi token  can be enabled
+     * shouldRouteUpsReArchToken checks if upi token  can be enabled
      * @return bool
      */
     private function shouldRouteUpsReArchToken($input): bool {
@@ -13878,6 +14236,90 @@ class Processor
             return true;
         }
 
+        return false;
+    }
+
+    /**
+     * shouldRouteAppsViaNBPLUS checks if Apps traffic should be routed to NBPLUS Rearch flow
+     * @param $order
+     * @return bool
+     */
+    public function shouldRouteAppsViaNbplus($order): bool
+    {
+        $productType = $order->getProductType() ?? 'unknown';
+
+        $feature = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_apps_merchants';
+
+        $properties = [
+            'id'            => $this->app['request']->getTaskId(),
+            'experiment_id' => $feature,
+            'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId(), 'mode' => $this->mode]),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+    
+        $variant = $response['response']['variant']['name'] ?? 'control';
+
+        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_APPS_RAZORX_VARIANT, [
+            'merchant_id'  => $this->merchant->getMerchantId(),
+            'product_type' => $productType,
+            'variant'      => $variant,
+            'mode'         => $this->mode,
+            'feature'      => $feature,
+        ]);
+
+        return $variant === 'variant_on';
+    }
+
+    private function shouldRouteBanksThroughNbRearch($input): bool
+    {
+        // Get the bank code from the input
+    
+        if ($input !== null && str_ends_with($input, '_c')) {
+            // for corporate banks
+            $corporateFeatureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_corporate_banks';
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $corporateFeatureFlag,
+                'request_data'  => json_encode(['bank_code' => $input, 'mode' => $this->mode]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+    
+            // Logging
+            $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_BANKS_SPLITZ_VARIANT, [
+                'merchant_id' => $this->merchant->getMerchantId(),
+                'variant'     => $response,
+                'mode'        => $this->mode,
+                'feature'     => $corporateFeatureFlag,
+            ]);
+    
+            return $variant === 'variant_on';
+
+        } else {
+            // for retail banks
+            $retailFeatureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_retail_banks1';
+            $properties = [
+                'id'            => $input,
+                'experiment_id' => $retailFeatureFlag,
+                'request_data'  => json_encode(['bank_code' => $input]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+    
+            // Logging
+            $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_BANKS_SPLITZ_VARIANT, [
+                'merchant_id' => $this->merchant->getMerchantId(),
+                'mode'        => $this->mode,
+                'bank_code'   => $input,
+                'feature'     => $retailFeatureFlag,
+                'response'    => $response,
+            ]);
+            return $variant === 'variant_on';
+        }
+    
+        // Default false if none of the conditions are met
         return false;
     }
 
@@ -13951,6 +14393,7 @@ class Processor
     }
 
 
+
     /**
      * shouldAllowDfb checks if DFB merchant is ramped
      * @return bool
@@ -13965,6 +14408,25 @@ class Processor
             'variant'     => $variant,
             'mode'        => $this->mode,
             'feature'     => self::ALLOW_DFB_MERCHANTS_ON_REARCH_UPS,
+        ]);
+
+        return str_starts_with($variant, 'on');
+    }
+
+    /**
+     * shouldAllowDfbOnNbplus checks if DFB merchant is ramped
+     * @return bool
+     */
+    private function shouldAllowDfbOnNbplus(): bool
+    {
+        $featureFlag = self:: NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_dfb_merchants';
+        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),$featureFlag, $this->mode);
+
+        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_DFB_RAZORX_VARIANT, [
+            'merchant_id'   => $this->merchant->getMerchantId(),
+            'variant'       => $variant,
+            'mode'          => $this->mode,
+            'feature'       => $featureFlag,
         ]);
 
         return str_starts_with($variant, 'on');
@@ -13993,6 +14455,35 @@ class Processor
             'variant' => $variant,
             'mode'    => $this->mode,
             'feature' => self::ALLOW_DFB_FEE_MERCHANTS_ON_REARCH_UPS,
+        ]);
+
+
+        return str_starts_with($variant, 'on');
+    }
+
+    /**
+     * shouldAllowDfbCfbOnNbplus checks if merchant is enabled for DFB flow with input fee
+     * @param $fee
+     * @return bool
+     */
+    private function shouldAllowDfbCfbOnNbplus($fee): bool
+    {
+
+        // we don't need to evaluate if fee is not set
+        if (isset($fee) === false)
+        {
+            return true;
+        }
+
+        $featureFlag = self:: NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_dfb_fee_merchants';
+
+        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),$featureFlag, $this->mode);
+
+        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_DFB_FEE_RAZORX_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'variant' => $variant,
+            'mode'    => $this->mode,
+            'feature' => $featureFlag,
         ]);
 
 
