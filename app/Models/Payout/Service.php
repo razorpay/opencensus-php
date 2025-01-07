@@ -5275,6 +5275,10 @@ class Service extends Base\Service
             {
                 $input[Entity::CHANNEL] = 'yesbank';
             }
+            else if ($channel === 'idfc')
+            {
+                $input[Entity::CHANNEL] = 'idfc';
+            }
         }
         else if ($balance->isAccountTypeShared() === true)
         {

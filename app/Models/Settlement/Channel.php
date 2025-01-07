@@ -294,6 +294,7 @@ class Channel
             self::ICICI,
             self::AXIS,
             self::YESBANK,
+            self::IDFC,
         ];
     }
 
@@ -323,7 +324,8 @@ class Channel
             self::M2P,
             self::MCS,
             self::OCBC,
-            self::HDFC
+            self::HDFC,
+            self::IDFC
         ];
     }
 
@@ -452,6 +454,17 @@ class Channel
                     Mode::DUITNOW,
                     Mode::IBG
                 ]
+            ],
+            self::IDFC       => [
+                Constants\Entity::VPA           =>  [
+                    Mode::UPI,
+                ],
+                Constants\Entity::BANK_ACCOUNT => [
+                    Mode::NEFT,
+                    Mode::RTGS,
+                    Mode::IMPS,
+                    Mode::IFT,
+                ],
             ],
         ];
     }

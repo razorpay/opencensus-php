@@ -199,7 +199,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
-                    'description' => 'Similar request pay123 in progress. Retry after 100 or use a unique identifier.',
+                    'description' => 'Similar request pay123 in progress. Retry after 100 seconds or use a unique identifier.',
                 ],
             ],
             'status_code' => 409,
@@ -242,7 +242,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
-                    'description' => 'Similar request pay123 in progress. Retry after 100 or use a unique identifier.',
+                    'description' => 'Similar request pay123 in progress. Retry after 100 seconds or use a unique identifier.',
                 ],
             ],
             'status_code' => 409,
@@ -284,7 +284,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
-                    'description' => 'Similar request pay123 in progress. Retry after 100 or use a unique identifier.',
+                    'description' => 'Similar request pay123 in progress. Retry after 100 seconds or use a unique identifier.',
                 ],
             ],
             'status_code' => 409,
@@ -328,7 +328,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
-                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 or use a unique identifier.',
+                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 seconds or use a unique identifier.',
                 ],
             ],
             'status_code' => 409,
@@ -370,7 +370,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
-                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 or use a unique identifier.',
+                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 seconds or use a unique identifier.',
                 ],
             ],
             'status_code' => 409,
@@ -414,7 +414,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
-                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 or use a unique identifier.',
+                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 seconds or use a unique identifier.',
                 ],
             ],
             'status_code' => 409,

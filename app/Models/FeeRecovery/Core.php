@@ -866,6 +866,7 @@ class Core extends Base\Core
         switch($balance->getChannel())
         {
             case Channel::AXIS:
+            case Channel::IDFC:
                 $payoutMode = Payout\Mode::NEFT;
                 break;
 
