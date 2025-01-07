@@ -622,7 +622,23 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function checkIsCustomCheckoutEnabledForMerchant($merchantId, $mode): bool
+    {
+
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => 'PTqos03FUZtHsd'
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        return $variant === $mode;
+    }
+
     public function getCustomerByMerchantType($customerIssuer) {
+
+        $customerContact = $customerIssuer->getContact();
 
         $merchantForCustomerCreation = $this->merchant;
 
@@ -631,8 +647,20 @@ class Service extends Base\Service
         if(strtolower($variant) === 'on')
             $merchantForCustomerCreation = $this->repo->merchant->fetchMerchantFromId(Merchant\Account::SHARED_ACCOUNT);
 
+        if(strlen($customerContact) > 10 && $this->checkIsCustomCheckoutEnabledForMerchant(
+                $merchantForCustomerCreation->getId(),
+                'enable'
+        )){
+                $customerContact = substr($customerContact, -10);
+
+                $existingCustomer =  $this->repo->customer->findByContactAndMerchant($customerContact, $merchantForCustomerCreation);
+                if($existingCustomer !== null) {
+                    return $existingCustomer;
+                }
+        }
+
         $customer =  (new Customer\Core)->createLocalCustomer([
-            Customer\Entity::CONTACT       => $customerIssuer->getContact(),
+            Customer\Entity::CONTACT       => $customerContact,
             Customer\Entity::EMAIL         => $customerIssuer->getEmail(),
         ], $merchantForCustomerCreation, false);
 
