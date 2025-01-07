@@ -183,7 +183,7 @@ function PartnerPage(props) {
               >
                 <img
                   alt={`Logo of ${partnerDetails.title}`}
-                  src={`/dist/css/assets/app-store/partner-logos/${partnerDetails.logo}`}
+                  src={require(`assets/app-store/partner-logos/${partnerDetails.logo}`)}
                 />
               </div>
             </div>

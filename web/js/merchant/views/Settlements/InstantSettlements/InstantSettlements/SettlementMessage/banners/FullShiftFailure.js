@@ -1,15 +1,15 @@
 import React from 'react';
+import CLOCK_ICON from 'assets/settlements/clock.svg';
 import styled from 'styled-components';
 
 import { AsyncBtn } from 'common/new-ui/Button';
-
-import Base, { Container, LeftSideBorder, Title } from './Base';
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
 import { POST_ENABLE_TYPES } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
+
+import Base, { Container, LeftSideBorder, Title } from './Base';
 import { NEW_BANNERS } from './constants';
 
 const color = '#008CB1';
-const CLOCK_ICON = '/dist/css/assets/settlements/clock.svg';
 
 const StyledContainer = styled(Container)`
   background: rgba(0, 140, 177, 0.03);

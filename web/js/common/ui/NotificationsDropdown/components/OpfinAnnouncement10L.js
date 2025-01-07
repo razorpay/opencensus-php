@@ -8,6 +8,9 @@ import { classList } from 'common/utils/rzp-utils';
 import RTracking from 'react-tracking';
 import OpfinAnnouncementForm from './OpfinAnnouncementForm';
 
+import CreditsOfferIcon from "assets/opfin/credits_offer_icon.svg"
+import PayrollOfferIcon from "assets/opfin/payroll_offer_icon.svg"
+
 // STYLE - opfin-announcement.styl
 const OpfinAnnouncement = ({ id, openModal, closeModal, onClose, tracking }) => {
   const handleCloseAnnouncement = () => {
@@ -51,7 +54,7 @@ const OpfinAnnouncement = ({ id, openModal, closeModal, onClose, tracking }) => 
         Get exclusive benefits when you use Opfin Payroll
       </h2>
       <div className="opfin-announcement-offer">
-        <img src="/dist/css/assets/opfin/credits_offer_icon.svg" />
+        <img src={CreditsOfferIcon} />
         <div>
           <h4 className="opfin-announcement-offer-title">Get 10,00,000 rupees of free credits </h4>
           <p className="opfin-announcement-offer-description">
@@ -61,7 +64,7 @@ const OpfinAnnouncement = ({ id, openModal, closeModal, onClose, tracking }) => 
         </div>
       </div>
       <div className="opfin-announcement-offer">
-        <img src="/dist/css/assets/opfin/payroll_offer_icon.svg" />
+        <img src={PayrollOfferIcon} />
         <div>
           <h4 className="opfin-announcement-offer-title">3 months of free payroll software</h4>
           <p className="opfin-announcement-offer-description">
@@ -92,11 +95,11 @@ const FormModal = ({ id, onClose, tracking }) => {
             when you use Opfin Payroll
           </p>
           <div className="hbspot-opfin-nitro-offer">
-            <img src="/dist/css/assets/opfin/credits_offer_icon.svg" />
+            <img src={CreditsOfferIcon} />
             <span>10L of free credits on Razorpay</span>
           </div>
           <div className="hbspot-opfin-nitro-offer">
-            <img src="/dist/css/assets/opfin/payroll_offer_icon.svg" />
+            <img src={PayrollOfferIcon} />
             <span>
               3 months of Opfin Payroll <br /> software for FREE
             </span>

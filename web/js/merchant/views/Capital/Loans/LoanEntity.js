@@ -77,7 +77,7 @@ class LoanEntity extends Component {
         <div className="loan-application-modal-header">
           <div className="wrapper">
             <div className="logo">
-              <img src="/dist/css/assets/capital/capital_logo.svg" alt="Loading icon" />
+              <img src={require("assets/capital/capital_logo.svg")} alt="Loading icon" />
             </div>
             <div className="title">
               {isCashAdvanceProduct(meta.product)

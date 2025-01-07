@@ -332,7 +332,7 @@ class NachEntity extends Component {
         {this.getSteps().map((step, index) => (
           <div className="nach-submission-step">
             <div className="nach-step-icon">
-              <img src={`/dist/css/assets/capital/${step.icon}.svg`} alt="Loading icon" />
+              <img src={require(`assets/capital/${step.icon}.svg`)} alt="Loading icon" />
             </div>
             <div className="nach-step-instructions">
               <div className="nach-step-index">Step {index + 1}</div>

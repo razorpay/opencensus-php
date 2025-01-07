@@ -6,6 +6,11 @@ import Button from 'common/new-ui/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
 
+import SymbolCard from "assets/symbols/card.svg";
+import SymbolSC from "assets/symbols/sc.svg";
+import SymbolPL from "assets/symbols/pl.svg";
+import SymbolInv from "assets/symbols/inv.svg";
+
 // eslint-disable-next-line no-unused-vars
 @RTracking((state, props, args) => {
   return window.rzpQ.component('InstantActivationSuccess');
@@ -45,7 +50,7 @@ export default class InstantActivationSuccess extends Component {
                 <Fragment>
                   <GroupItem>
                     <p>
-                      <img src="/dist/css/assets/symbols/card.svg" />
+                      <img src={SymbolCard} />
                     </p>
                     <p>
                       <b>Accept payments on your website</b>
@@ -77,9 +82,9 @@ export default class InstantActivationSuccess extends Component {
               )}
               <GroupItem>
                 <p>
-                  {/* <img src="/dist/css/assets/symbols/sc.svg" /> */}
-                  <img src="/dist/css/assets/symbols/pl.svg" />
-                  <img className="m-l" src="/dist/css/assets/symbols/inv.svg" />
+                  {/* <img src={SymbolSC} /> */}
+                  <img src={SymbolPL} />
+                  <img className="m-l" src={SymbolInv} />
                 </p>
                 <p>
                   <b>Accept payments using products</b>

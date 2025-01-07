@@ -75,7 +75,7 @@ export default class Staged extends React.Component {
         {!isDocPreUploaded && (
           <img
             class="Dropzone-file-icon"
-            src={`/dist/css/assets/files/file-type-${getFileTypeIcon(file ? file.name : '')}.svg`}
+            src={require(`assets/files/file-type-${getFileTypeIcon(file ? file.name : '')}.svg`)}
             alt=""
           />
         )}

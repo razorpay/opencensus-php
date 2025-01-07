@@ -17,6 +17,6 @@ export const getQuickGuideData = (businessName: string) => [
 ];
 
 export const IMAGE_PATH = {
-  QUICK_GUIDE_BANNER: '/dist/css/assets/risk-analytics/risk-quick-guide.png',
-  QUICK_GUIDE_ICON: '/dist/css/assets/risk-analytics/risk-quick-guide-icon.svg',
+  QUICK_GUIDE_BANNER: require('assets/risk-analytics/risk-quick-guide.png'),
+  QUICK_GUIDE_ICON: require('assets/risk-analytics/risk-quick-guide-icon.svg'),
 };

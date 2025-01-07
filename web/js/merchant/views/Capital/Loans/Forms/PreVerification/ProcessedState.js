@@ -32,9 +32,9 @@ const ProcessedState = ({ isNetbankingUpload, files }) => {
             return (
               <div className="toggle-with-description" key={id}>
                 <img
-                  src={`/dist/css/assets/files/file-type-${getFileTypeIcon(
+                  src={require(`assets/files/file-type-${getFileTypeIcon(
                     name || file_type || '',
-                  )}.svg`}
+                  )}.svg`)}
                   alt={name || 'Bank Statement'}
                 />
                 {`${name || 'Bank Statement.pdf'}`}

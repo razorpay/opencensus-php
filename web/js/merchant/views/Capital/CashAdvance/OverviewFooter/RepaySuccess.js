@@ -25,7 +25,7 @@ const RepaySuccess = ({ setView, resultAmounts, location: { pathname = '' } }) =
         <img
           className="mr-8"
           height={20}
-          src="/dist/css/assets/success-tick-green.svg"
+          src={require("assets/success-tick-green.svg")}
           alt="Success Tick"
         />
         <h1 className="title">Repayment Successful!</h1>

@@ -1,10 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+
 import Amount from 'common/ui/Amount';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import Time from 'common/ui/Time';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
-import PropTypes from 'prop-types';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 
 const CurrentBalance = ({
@@ -32,7 +33,7 @@ const CurrentBalance = ({
     <div className="current-balance">
       <div className="current-balance--left">
         <div>
-          <img src="/dist/css/assets/capital/bank-balance.svg" />
+          <img src={require('assets/capital/bank-balance.svg')} />
         </div>
         <div className="current-balance--cb-content">
           <div className="current-balance--cb-heading">Current Balance</div>

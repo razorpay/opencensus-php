@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   Box,
   Collapsible,
@@ -6,7 +7,6 @@ import {
   Heading,
   Text,
 } from '@razorpay/blade/components';
-import React, { useState } from 'react';
 
 import { BulletPointsProps } from 'merchant/views/Settings/PaymentMethods/components/MethodEnablementForm/types';
 
@@ -65,7 +65,7 @@ const PreRequisiteTab = (): React.ReactElement => {
           <img
             width="100%"
             height="auto"
-            src="/dist/css/assets/cross-border/self-attest-sample1.png"
+            src={require('assets/cross-border/self-attest-sample1.png')}
             alt="self-attest-sample"
           />
         </Box>
@@ -74,7 +74,7 @@ const PreRequisiteTab = (): React.ReactElement => {
             <img
               width="100%"
               height="auto"
-              src="/dist/css/assets/cross-border/self-attest-sample2.png"
+              src={require('assets/cross-border/self-attest-sample2.png')}
               alt="self-attest-sample"
             />
           </Box>

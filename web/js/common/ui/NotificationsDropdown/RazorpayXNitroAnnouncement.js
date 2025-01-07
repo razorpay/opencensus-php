@@ -20,6 +20,10 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateUser } from 'merchant_common/reducers/user';
 
+import RazorpayXLogoWhite from "assets/razorpay-x-logo-white.svg"
+import RXCABullet from "assets/rxca-bullet.svg"
+import RXCADashboardBG from "assets/rxca-dashboard-bg.svg";
+
 const BENEFITS = {
   other: [
     'Use the dashboard or APIs to make rule based payouts',
@@ -109,7 +113,7 @@ class InfoForm extends React.Component {
     return (
       <form autoComplete="off">
         <div className="left-section">
-          <img className="rx-logo" src="/dist/css/assets/razorpay-x-logo-white.svg" alt="rx-logo" />
+          <img className="rx-logo" src={RazorpayXLogoWhite} alt="rx-logo" />
           <div className="row">
             <div class="form-group">
               <label className="control-label label-required">Name</label>
@@ -471,7 +475,7 @@ class DetailView extends React.Component {
           <div className="left-section">
             <img
               className="rx-logo"
-              src="/dist/css/assets/razorpay-x-logo-white.svg"
+              src={RazorpayXLogoWhite}
               alt="rx-logo"
             />
             <h3 className="heading">
@@ -480,7 +484,7 @@ class DetailView extends React.Component {
             <ul className="list">
               {content.map((data) => (
                 <li key={data}>
-                  <img src="/dist/css/assets/rxca-bullet.svg" />
+                  <img src={RXCABullet} />
                   <span>{data}</span>
                 </li>
               ))}
@@ -492,7 +496,7 @@ class DetailView extends React.Component {
             </div>
           </div>
           <div className="right-section">
-            <img src="/dist/css/assets/rxca-dashboard-bg.svg" alt="razorpayx-current-account" />
+            <img src={RXCADashboardBG} alt="razorpayx-current-account" />
           </div>
         </div>
       </div>

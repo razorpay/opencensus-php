@@ -1,4 +1,8 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
+import RazorpayXLogoWhite from 'assets/razorpay-x-logo-white.svg';
+import RXPayrollLogoWhite from 'assets/rx-payroll-logo-white.svg';
+import RXCABullet from 'assets/rxca-bullet.svg';
+import RXCADashboardBG from 'assets/rxca-dashboard-bg.svg';
 
 const RXPayrollMoonshineModal = ({ hideModal, tracking }) => {
   const content = [
@@ -30,16 +34,8 @@ const RXPayrollMoonshineModal = ({ hideModal, tracking }) => {
         <div className="section">
           <div className="left-section">
             <div className="logo-header">
-              <img
-                className="rx-logo"
-                src="/dist/css/assets/razorpay-x-logo-white.svg"
-                alt="Razorpay X"
-              />
-              <img
-                className="rx-payroll-logo"
-                src="/dist/css/assets/rx-payroll-logo-white.svg"
-                alt="Payroll"
-              />
+              <img className="rx-logo" src={RazorpayXLogoWhite} alt="Razorpay X" />
+              <img className="rx-payroll-logo" src={RXPayrollLogoWhite} alt="Payroll" />
             </div>
             <h3 className="heading">
               Get <span>10 lakhs worth of credits</span> when you use RazorpayX Payroll for 3 months
@@ -47,7 +43,7 @@ const RXPayrollMoonshineModal = ({ hideModal, tracking }) => {
             <ul className="list">
               {content.map((data) => (
                 <li key={data}>
-                  <img src="/dist/css/assets/rxca-bullet.svg" />
+                  <img src={RXCABullet} />
                   <span>{data}</span>
                 </li>
               ))}
@@ -69,7 +65,7 @@ const RXPayrollMoonshineModal = ({ hideModal, tracking }) => {
             </div>
           </div>
           <div className="right-section">
-            <img src="/dist/css/assets/rxpayroll-dashboard-bg.svg" alt="razorpayx-payroll" />
+            <img src={RXCADashboardBG} alt="razorpayx-payroll" />
           </div>
         </div>
       </div>

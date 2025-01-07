@@ -147,7 +147,7 @@ const CorporateCards = ({ user }) => {
       <div className="corporate-cards__right">
         <div
           className="right__content"
-          style={{ backgroundImage: "url('/dist/css/assets/capital/cc-preview.png')" }}
+          style={{ backgroundImage: `url(${require('assets/capital/cc-preview.png')})` }}
         >
           <Image src={XLogo} isWebP />
           <h1>Corporate Cards</h1>

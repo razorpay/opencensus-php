@@ -76,7 +76,7 @@ const RepaymentsList = ({ repayments, loading, paginationConfig, onPaginate }) =
           emptyTableMsg={
             <div class="no-results-container flex">
               <div class="m-r">
-                <img src="/dist/css/assets/capital/no_results.svg" height={240} width={240} />
+                <img src={require("assets/capital/no_results.svg")} height={240} width={240} />
               </div>
               <div class="content">
                 <p class="m-b">

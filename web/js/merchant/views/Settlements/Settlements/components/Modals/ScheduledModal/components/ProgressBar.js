@@ -2,8 +2,8 @@ import React from 'react';
 import moment from 'moment';
 import styled from 'styled-components';
 
-import { getEnableEsPartialAutomaticDate } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
 import { FULL_SHIFT_DAYS } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
+import { getEnableEsPartialAutomaticDate } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
 
 const Container = styled.div`
   width: 100%;
@@ -132,12 +132,12 @@ export default function ProgressBar() {
       <DaysToGo>{nonActive} days to go...</DaysToGo>
       <Legends>
         <EarlyAccess>
-          <img src="/dist/css/assets/settlements/left-message.svg" alt="left" />
+          <img src={require('assets/settlements/left-message.svg')} alt="left" />
           <i className="i i-unlock" />
           <span> Early Access</span>
         </EarlyAccess>
         <Legend>
-          <img src="/dist/css/assets/settlements/right-message.svg" alt="right" />
+          <img src={require('assets/settlements/right-message.svg')} alt="right" />
           <span>🚀 </span>
           <span>100% Settlements</span>
         </Legend>

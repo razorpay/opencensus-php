@@ -1,9 +1,10 @@
 import React from 'react';
+
 import '@testing-library/jest-dom/extend-expect';
-import CurrentBalance from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/CurrentBalance';
-import { render, screen, userEvent, waitFor } from 'test-utils';
 import * as trackGa from 'common/utils/googleAnalytics';
 import { getFormattedAmount } from 'common/utils/rzp-utils';
+import CurrentBalance from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/CurrentBalance';
+import { render, screen, userEvent, waitFor } from 'test-utils';
 
 const defaultProps = {
   showOndemandSettlementForm: jest.fn(),
@@ -28,7 +29,7 @@ describe('CurrentBalance', () => {
 
     const bankBalanceImg = screen.getAllByRole('img')?.[0];
     expect(bankBalanceImg).toBeInTheDocument();
-    expect(bankBalanceImg).toHaveAttribute('src', '/dist/css/assets/capital/bank-balance.svg');
+    expect(bankBalanceImg).toHaveAttribute('src', 'bank-balance.svg');
   });
 
   test('should render current balance amount', () => {

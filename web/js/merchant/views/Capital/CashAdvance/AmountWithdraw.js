@@ -1813,7 +1813,7 @@ class AmountWithdraw extends React.Component {
               )}
               <div className="flex">
                 <img
-                  src="/dist/css/assets/capital/calendar2.svg"
+                  src={require("assets/capital/calendar2.svg")}
                   className="calendar-icon"
                   alt="calendar"
                 />
@@ -1904,7 +1904,7 @@ class AmountWithdraw extends React.Component {
         >
           <div>
             <div className="title-container">
-              <img height={16} src="/dist/css/assets/success-tick-green.svg" alt="Loading icon" />
+              <img height={16} src={require("assets/success-tick-green.svg")} alt="Loading icon" />
               <h3 className="text--secondary">
                 <strong>Withdrawal Request Successful!</strong>
               </h3>

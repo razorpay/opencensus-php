@@ -11,7 +11,7 @@ const CashAdvanceCarouselSlide = React.memo(
           className="background-pattern-image"
           height="120%"
           width="120%"
-          src="/dist/css/assets/capital/carousel-bg-pattern.svg"
+          src={require("assets/capital/carousel-bg-pattern.svg")}
         />
         <div className="header">
           <div className="left">

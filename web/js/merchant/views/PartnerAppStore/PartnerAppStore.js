@@ -77,7 +77,7 @@ function NewAppBanner(props) {
   return (
     <div className="new-app-banner">
       <div className="new-app-icon">
-        <img src="/dist/css/assets/app-store/new-app-icon.svg" />
+        <img src={require("assets/app-store/new-app-icon.svg")} />
       </div>
       <div className="new-app-message">
         <p>Don’t miss out on our</p>
@@ -89,17 +89,17 @@ function NewAppBanner(props) {
       <div className="arrow-head-container">
         {isMobileResolution ? (
           <>
-            <img className="arrow-head-top" src="/dist/css/assets/app-store/mob-down-head-1.svg" />
-            <img className="arrow-head-mid" src="/dist/css/assets/app-store/mob-down-head-2.svg" />
+            <img className="arrow-head-top" src={require("assets/app-store/mob-down-head-1.svg")} />
+            <img className="arrow-head-mid" src={require("assets/app-store/mob-down-head-2.svg")} />
             <img
               className="arrow-head-bottom"
-              src="/dist/css/assets/app-store/mob-down-head-3.svg"
+              src={require("assets/app-store/mob-down-head-3.svg")}
             />
           </>
         ) : (
           <>
-            <img className="arrow-head-top" src="/dist/css/assets/app-store/down-head-1.svg" />
-            <img className="arrow-head-bottom" src="/dist/css/assets/app-store/down-head-2.svg" />
+            <img className="arrow-head-top" src={require("assets/app-store/down-head-1.svg")} />
+            <img className="arrow-head-bottom" src={require("assets/app-store/down-head-2.svg")} />
           </>
         )}
       </div>
@@ -141,7 +141,7 @@ function BecomePartner(props) {
 
       <img
         className="footer-pc-illustration"
-        src="/dist/css/assets/app-store/footer-pc-illustration.svg"
+        src={require("assets/app-store/footer-pc-illustration.svg")}
         alt="PC illustration"
       />
     </div>
@@ -166,7 +166,7 @@ function PartnerAppCard(props) {
             <div className="product-image-background">
               <img
                 alt={`Logo of ${product.title}`}
-                src={`/dist/css/assets/app-store/partner-logos/${product.logo}`}
+                src={require(`assets/app-store/partner-logos/${product.logo}`)}
               />
             </div>
           </div>
@@ -248,19 +248,19 @@ function PartnerAppStore(props) {
               {props.isMobileResolution ? (
                 <img
                   className="top-shape-green top-shape-green-mobile"
-                  src="/dist/css/assets/app-store/mob-banner-shape-green.svg"
+                  src={require("assets/app-store/mob-banner-shape-green.svg")}
                   alt=""
                 />
               ) : (
                 <img
                   className="top-shape-green"
-                  src="/dist/css/assets/app-store/top-shape-green.svg"
+                  src={require("assets/app-store/top-shape-green.svg")}
                   alt=""
                 />
               )}
               <img
                 className="razorpay-partner-image"
-                src="/dist/css/assets/app-store/razorpay-partner.svg"
+                src={require("assets/app-store/razorpay-partner.svg")}
                 alt=""
               />
             </>
@@ -271,10 +271,10 @@ function PartnerAppStore(props) {
         {/* Background dots design */}
         {props.isMobileResolution ? null : (
           <div className="dots-container">
-            <img className="dots-1" src="/dist/css/assets/app-store/dots.svg" />
-            <img className="dots-2" src="/dist/css/assets/app-store/dots.svg" />
-            <img className="dots-3" src="/dist/css/assets/app-store/dots.svg" />
-            <img className="dots-4" src="/dist/css/assets/app-store/dots.svg" />
+            <img className="dots-1" src={require("assets/app-store/dots.svg")} />
+            <img className="dots-2" src={require("assets/app-store/dots.svg")} />
+            <img className="dots-3" src={require("assets/app-store/dots.svg")} />
+            <img className="dots-4" src={require("assets/app-store/dots.svg")} />
           </div>
         )}
 

@@ -19,7 +19,7 @@ function WithdrawalErrorReason({
         class="header"
         title={
           <div class="flex">
-            <img src={`/dist/css/assets/capital/question_circle.svg`} alt="Loading icon" /> &nbsp;
+            <img src={require(`assets/capital/question_circle.svg`)} alt="Loading icon" /> &nbsp;
             <p>Why Can’t I withdraw?</p>
           </div>
         }

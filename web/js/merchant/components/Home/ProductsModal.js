@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 
+import SymbolSC from "assets/symbols/sc.svg"
+import SymbolPL from "assets/symbols/pl.svg"
+import SymbolINV from "assets/symbols/inv.svg"
+
 export default ({ onClose, onBack, track }) => {
   return (
     <ModalMask>
@@ -18,7 +22,7 @@ export default ({ onClose, onBack, track }) => {
             {/*
             <li>
               <Link to="/virtualaccounts">
-                <img src="/dist/css/assets/symbols/sc.svg" />
+                <img src={SymbolSC} />
                 <p className="text-primary">Smart Collect</p>
                 <p>Get paid in virtual accounts via NEFT, RTGS</p>
                 <i className="i i-chevron-right" />
@@ -47,7 +51,7 @@ export default ({ onClose, onBack, track }) => {
                   onClose();
                 }}
               >
-                <img src="/dist/css/assets/symbols/pl.svg" />
+                <img src={SymbolPL} />
                 <p className="text-primary">Payment Links</p>
                 <p>Create & share Payment Links via SMS, Email etc</p>
                 <i className="i i-chevron-right" />
@@ -61,7 +65,7 @@ export default ({ onClose, onBack, track }) => {
                   onClose();
                 }}
               >
-                <img src="/dist/css/assets/symbols/inv.svg" />
+                <img src={SymbolINV} />
                 <p className="text-primary">Invoices</p>
                 <p>Create & send GST compliant Invoices</p>
                 <i className="i i-chevron-right" />

@@ -1,18 +1,18 @@
 // Features
 export const FEATURES_DATA = [
   {
-    icon: '/dist/css/assets/product_onboarding/va_ondamand.svg',
+    icon: require('assets/product_onboarding/va_ondamand.svg'),
     title: 'Create Customer Identifiers on demand',
     desc: `Generate customer identifiers on demand and accept payments via NEFT, RTGS and IMPS. Get notified for each incoming payment and automate the tedious reconciliation process`,
   },
   {
-    icon: '/dist/css/assets/product_onboarding/track_status.svg',
+    icon: require('assets/product_onboarding/track_status.svg'),
     title: 'Track Status',
     desc:
       'Track status of every transaction and customer identifier in real time. Get notified as soon as payment is completed via Dashboard and Webhook.',
   },
   {
-    icon: '/dist/css/assets/product_onboarding/easy_refunds.svg',
+    icon: require('assets/product_onboarding/easy_refunds.svg'),
     title: 'Easy Refunds',
     desc:
       'Send out full or partial refunds to customers via Dashboard & API and your customers will receive it directly in their bank accounts.',

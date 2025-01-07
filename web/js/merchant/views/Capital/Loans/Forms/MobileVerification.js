@@ -179,7 +179,7 @@ class MobileVerification extends Component {
         >
           <div className={`modal-header`}>
             <h3 className="modal-title">
-              <img src="/dist/css/assets/capital/otp_error.svg" alt="Loading icon" />
+              <img src={require("assets/capital/otp_error.svg")} alt="Loading icon" />
               Something went Wrong!
             </h3>
           </div>

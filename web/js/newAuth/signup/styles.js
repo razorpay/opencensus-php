@@ -78,7 +78,7 @@ export const BorderView = Styled(View)`
 `;
 
 export const DesktopBannerBg = Styled(View)`
-  background: url('/dist/css/assets/banner.svg')
+  background: url(${require('assets/banner.svg')})
 `;
 
 export const MobileBannerBg = Styled(View)`

@@ -166,7 +166,7 @@ const DetailsAction = ({
         <div className="submerchant-details-action request-access-kyc">
           <div className="icon-container">
             <div className="icon">
-              <img src="/dist/css/assets/partner-dashboard/razorpay-circle.svg" />
+              <img src={require("assets/partner-dashboard/razorpay-circle.svg")} />
             </div>
           </div>
           <div className="details-container">
@@ -191,7 +191,7 @@ const DetailsAction = ({
         <div className="submerchant-details-action ">
           <div className="icon-container">
             <div className="icon">
-              <img src="/dist/css/assets/partner-dashboard/document-circle.svg" />
+              <img src={require("assets/partner-dashboard/document-circle.svg")} />
             </div>
           </div>
           <div className="details-container">
@@ -221,7 +221,7 @@ const DetailsAction = ({
         <div className="submerchant-details-action ">
           <div className="icon-container">
             <div className="icon">
-              <img src="/dist/css/assets/partner-dashboard/rupee-circle.svg" />
+              <img src={require("assets/partner-dashboard/rupee-circle.svg")} />
             </div>
           </div>
           <div className="details-container">

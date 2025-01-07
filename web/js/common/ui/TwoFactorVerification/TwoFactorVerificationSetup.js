@@ -6,6 +6,8 @@ import Form from 'common/new-ui/Form';
 import { AsyncBtn } from 'common/new-ui/Button';
 import DocsLink from 'merchant/components/DocsLink';
 
+import IMG2FALocked from "assets/2fa/2fa-locked.svg"
+
 @connect(null, {
   closeModal,
   openModal,
@@ -22,7 +24,7 @@ export default class TwoFactorVerificationSetup extends React.Component {
         <ModalHeader title="Action Needs 2 Step Verification" onCloseClick={this.onCloseClick} />
         <div class="modal-body">
           <div class="illustration">
-            <img src="/dist/css/assets/2fa/2fa-locked.svg" />
+            <img src={IMG2FALocked} />
           </div>
 
           <p class="m-b">

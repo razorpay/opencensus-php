@@ -1,12 +1,9 @@
 import imgBoostFeature from 'assets/trustedbadge/boost_feature.svg';
 import imgBuild from 'assets/trustedbadge/build-brand_feature.svg';
 import imgCodFeature from 'assets/trustedbadge/cod_feature.svg';
+import imgRTBEligibility from 'assets/trustedbadge/rtb_eligibility.svg';
 import imgRtbNotAvaiilable from 'assets/trustedbadge/rtb_not_avaiilable.svg';
 import imgRtbWaitlist from 'assets/trustedbadge/rtb_waitlist.svg';
-import imgRTBEligibility from 'assets/trustedbadge/rtb_eligibility.svg';
-
-// For dynamic assets use assets which are copied to dist folder
-const trustedBadgeAssets = `${window.cdnDashboardUrl}/dist/css/assets/trustedbadge`;
 
 export const STATUS = {
   /** Not eligible, not waitlisted, not delisted once */
@@ -35,7 +32,7 @@ export const pageData = {
           'It shows your commitment to serving your customers',
           'It will be 100% free of cost on checkout once live',
         ],
-        imgSrc: `${trustedBadgeAssets}/${STATUS.NOT_ELIGIBLE_WAITLISTED_DELISTED.toLowerCase()}.svg`,
+        imgSrc: require(`assets/trustedbadge/${STATUS.NOT_ELIGIBLE_WAITLISTED_DELISTED.toLowerCase()}.svg`),
         subComponent: ['joinWaitlist'],
       },
       requirements: {
@@ -57,7 +54,7 @@ export const pageData = {
           'It shows your commitment to serving your customers',
           'It will be 100% free of cost on checkout once live',
         ],
-        imgSrc: `${trustedBadgeAssets}/${STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED.toLowerCase()}.svg`,
+        imgSrc: require(`assets/trustedbadge/${STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED.toLowerCase()}.svg`),
         subComponent: ['divider', 'notAvailable', 'info'],
       },
       requirements: {
@@ -81,7 +78,7 @@ export const pageData = {
         subtitle:
           'Thank you for your interest in the Razorpay Trusted Badge! We are currently evaluating your business using our secure algorithms to ensure it meets the requirements for this badge. This review process helps maintain high standards of trust and transparency for your customers. You’ll be notified once the evaluation is complete.',
         details: [],
-        imgSrc: `${trustedBadgeAssets}/${STATUS.NOT_ELIGIBLE_DELISTED_YES_WAITLISTED.toLowerCase()}.svg`,
+        imgSrc: require(`assets/trustedbadge/${STATUS.NOT_ELIGIBLE_DELISTED_YES_WAITLISTED.toLowerCase()}.svg`),
         subComponent: ['buyerProtection', 'info'],
       },
       requirements: {
@@ -109,7 +106,7 @@ export const pageData = {
           'Build credibility for your business',
           'Reduce dependency on cash on delivery',
         ],
-        imgSrc: `${trustedBadgeAssets}/${STATUS.YES_ELIGIBLE_OPTED_OUT.toLowerCase()}.svg`,
+        imgSrc: require(`assets/trustedbadge/${STATUS.YES_ELIGIBLE_OPTED_OUT.toLowerCase()}.svg`),
         subComponent: ['info', 'activateBadge'],
       },
       requirements: {
@@ -134,7 +131,7 @@ export const pageData = {
           'It is a sign of quality and trust',
           'It shows your commitment to serving your customers',
         ],
-        imgSrc: `${trustedBadgeAssets}/rtb_${STATUS.YES_ELIGIBLE_LIVE.toLowerCase()}.svg`,
+        imgSrc: require(`assets/trustedbadge/rtb_${STATUS.YES_ELIGIBLE_LIVE.toLowerCase()}.svg`),
         subComponent: ['info', 'optOut'],
       },
       requirements: {

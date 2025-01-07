@@ -55,7 +55,7 @@ class OfflineDocumentCollection extends Component {
         <div className="step">
           <div className="step-header">
             <div className="icon">
-              <img src={`/dist/css/assets/capital/mail_icon.svg`} alt="Loading icon" />
+              <img src={require(`assets/capital/mail_icon.svg`)} alt="Loading icon" />
             </div>
             <div class="title-content-wrapper">
               <strong class="text-faded step-index">STEP 1</strong>
@@ -72,7 +72,7 @@ class OfflineDocumentCollection extends Component {
         <div className="step">
           <div className="step-header">
             <div class="icon">
-              <img src={`/dist/css/assets/capital/sign_documents.svg`} alt="Loading icon" />
+              <img src={require(`assets/capital/sign_documents.svg`)} alt="Loading icon" />
             </div>
             <div className="title-content-wrapper">
               <strong className="text-faded step-index">STEP 2</strong>

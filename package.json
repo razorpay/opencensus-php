@@ -92,6 +92,7 @@
     "eslint-import-resolver-jest": "^3.0.2",
     "eslint-import-resolver-typescript": "3.6.1",
     "eslint-plugin-i18n-rules": "file:./plugins/i18n-rules",
+    "eslint-plugin-no-dist-assets": "file:./plugins/no-dist-assets",
     "http-server": "^0.12.3",
     "human-id": "^4.1.1",
     "husky": "^7.0.0",

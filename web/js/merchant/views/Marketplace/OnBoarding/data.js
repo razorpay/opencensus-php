@@ -1,19 +1,19 @@
 // Features
 export const FEATURES_DATA = [
   {
-    icon: '/dist/css/assets/product_onboarding/linked_account.svg',
+    icon: require('assets/product_onboarding/linked_account.svg'),
     title: 'Linked Accounts',
     desc:
       'Easily onboard your vendors, sellers, service providers etc. as linked accounts without the hassles of any physical paperwork.',
   },
   {
-    icon: '/dist/css/assets/product_onboarding/transfers.svg',
+    icon: require('assets/product_onboarding/transfers.svg'),
     title: 'Transfers',
     desc:
       'Create as many transfers as you need to various linked accounts and automate the process through powerful Transfer APIs.',
   },
   {
-    icon: '/dist/css/assets/product_onboarding/settlements.svg',
+    icon: require('assets/product_onboarding/settlements.svg'),
     title: 'Settlements',
     desc: 'Control the entire fund movements with flexible settlement plans.',
   },

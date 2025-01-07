@@ -72,7 +72,7 @@ const S2 = ({
             label="Reseller Partner"
             onClick={() => onRoleSelect('reseller')}
             checked={role === 'reseller'}
-            icon="/dist/css/assets/onboarding/reseller-icon.svg"
+            icon={require("assets/onboarding/reseller-icon.svg")}
             description="Refer your connections and get rewarded"
             hoverContent="Freelancer, Startup Incubator, Entrepreneur, Influencer, Blogger, Web developer, Designer etc"
             isMobile={isMobile}
@@ -91,7 +91,7 @@ const S2 = ({
             label="Aggregator Partner"
             onClick={() => onRoleSelect('aggregator')}
             checked={role === 'aggregator'}
-            icon="/dist/css/assets/onboarding/aggregator-icon.svg"
+            icon={require("assets/onboarding/aggregator-icon.svg")}
             description="Manage account and payment cycle of your merchants (Tech integration required)"
             hoverContent="Business that manage end-to-end payment collection for their customers. Eg: ERP, Restaurant Management Platform"
             isMobile={isMobile}

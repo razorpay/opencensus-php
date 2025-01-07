@@ -19,7 +19,7 @@ const Message = ({ heading, description, image, showEnableNowButton, openModal }
     <>
       <div className="flex">
         <div>
-          <img src={`/dist/css/assets/capital/${image}.svg`} />
+          <img src={require(`assets/capital/${image}.svg`)} />
         </div>
         <div className="payout-message-date--content">
           <div className="payout-message-date--heading">{heading}</div>

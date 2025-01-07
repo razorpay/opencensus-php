@@ -30,7 +30,7 @@ const ConfigItem = ({ type, item, isPreview = false, openModal }) => {
     if (isZoneMapping) {
       return (
         <SubText>
-          <img src="/dist/css/assets/in-flag.png" alt="in-flag" loading="lazy" />
+          <img src={require("assets/in-flag.png")} alt="in-flag" loading="lazy" />
           <span>India | {item.state_count} states</span>
         </SubText>
       );

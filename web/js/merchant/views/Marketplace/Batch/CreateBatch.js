@@ -1,10 +1,13 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
+import { withSplitzService } from 'common/splitz';
+import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import { isExperimentActive } from 'common/utils/rzp-utils';
+import ShowWhen from 'merchant/components/ShowWhen';
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
-import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
-
+import { isOrgFeatureExist } from 'merchant/models/User';
 import {
   createTransferBatch,
   validateTransferBatch,
@@ -14,10 +17,6 @@ import {
   validateReversalsBatch,
 } from 'merchant/reducers/batches';
 import { closeModal } from 'merchant_common/reducers/modals';
-import ShowWhen from 'merchant/components/ShowWhen';
-import { isOrgFeatureExist } from 'merchant/models/User';
-import { withSplitzService } from 'common/splitz';
-import { isExperimentActive } from 'common/utils/rzp-utils';
 
 const gaEvents = setGaTrack('Dashboard - Route - BU');
 
@@ -102,7 +101,7 @@ class CreateHostedMandateBatch extends Component {
       <div className="RouteBatch--dropdown">
         <div className="panel panel-default" onClick={openUploadModal(this.renderTransfersModal)}>
           <div className="panel-body">
-            <img src="/dist/css/assets/marketplace/transfers.svg" />
+            <img src={require('assets/marketplace/transfers.svg')} />
             <div className="description">
               <div className="text-primary">
                 <strong>Transfers</strong>
@@ -114,7 +113,7 @@ class CreateHostedMandateBatch extends Component {
         </div>
         <div className="panel panel-default" onClick={openUploadModal(this.renderReversalsModal)}>
           <div className="panel-body">
-            <img src="/dist/css/assets/marketplace/reversals.svg" />
+            <img src={require('assets/marketplace/reversals.svg')} />
             <div className="description">
               <div className="text-primary">
                 <strong>Reversals</strong>
@@ -138,7 +137,7 @@ class CreateHostedMandateBatch extends Component {
                 }
               >
                 <div className="panel-body">
-                  <img src="/dist/css/assets/marketplace/linked_accounts.svg" />
+                  <img src={require('assets/marketplace/linked_accounts.svg')} />
                   <div className="description">
                     <div className="text-primary">
                       <strong>Linked accounts</strong>

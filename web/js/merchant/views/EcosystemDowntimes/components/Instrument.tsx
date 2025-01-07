@@ -1,11 +1,13 @@
 import React from 'react';
+import { Text } from '@razorpay/blade/components';
+
 import { STATUS } from 'merchant/views/EcosystemDowntimes/constants';
 import {
   instrumentClick,
   trackEcosystemDowntimeEvents,
 } from 'merchant/views/EcosystemDowntimes/events';
 import { InstrumentItem } from 'merchant/views/EcosystemDowntimes/styles';
-import { Text } from '@razorpay/blade/components';
+
 import type {
   DowntimeMetaDataType,
   InstrumentMetaData,
@@ -34,12 +36,16 @@ const Instrument = ({ instrument, status, onClick }: InstrumentType): JSX.Elemen
     onClick?.(instrument);
   };
 
-  const { logo, name } = instrument;
+  const { name, logo } = instrument;
   const { text, icon } = downtimeType;
 
   return (
     <InstrumentItem aria-label="instrument" status={downtimeType} onClick={handleOnClick}>
-      <img className="instrument-logo" src={logo} alt={name} />
+      <img
+        className="instrument-logo"
+        src={require(`assets/ecosystem_health/${logo}`)}
+        alt={name}
+      />
       <Text
         size="medium"
         truncateAfterLines={1}

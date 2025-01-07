@@ -8,9 +8,10 @@ const {
 module.exports = {
   root: true,
   extends: [universeEsLintConfig],
-  plugins: [smartLinterPluginName],
+  plugins: [smartLinterPluginName, 'no-dist-assets'],
   rules: {
     ...smartLinterRules,
+    'no-dist-assets/no-dist-assets': 'error',
   },
   overrides: smartLinterOverrides,
 };

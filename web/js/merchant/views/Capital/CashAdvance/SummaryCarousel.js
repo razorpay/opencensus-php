@@ -29,7 +29,7 @@ const Information = ({ message, backgroundColor }) => {
               className="background-pattern-image"
               height="120%"
               width="120%"
-              src="/dist/css/assets/capital/carousel-bg-pattern.svg"
+              src={require("assets/capital/carousel-bg-pattern.svg")}
             />
             {message}
           </div>

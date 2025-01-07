@@ -25,8 +25,8 @@ import {
 } from 'merchant_common/reducers/modals';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 
-const BIG_UPSELLING_BG = '/dist/css/assets/settlements/bigupselling-bg.svg';
-const SMALL_UPSELLING_BG = '/dist/css/assets/settlements/upselling-bg.svg';
+import BIG_UPSELLING_BG from 'assets/settlements/bigupselling-bg.svg';
+import SMALL_UPSELLING_BG from 'assets/settlements/upselling-bg.svg';
 
 const Container = styled.div`
   background-color: ${(props) => props.theme.colors.interactive.background.staticWhite.faded};

@@ -38,7 +38,7 @@ const ParentStep = ({
           )}
           {status.includes('pending') && (
             <img
-              src="/dist/css/assets/capital/pending.svg"
+              src={require("assets/capital/pending.svg")}
               style={{ height: 32 }}
             />
           )}
@@ -78,7 +78,7 @@ const Step = ({ status, title, onClick, disabled }) => {
           )}
           {status.includes('pending') && (
             <img
-              src="/dist/css/assets/capital/pending.svg"
+              src={require("assets/capital/pending.svg")}
               style={{ height: 16, marginTop: -4 }}
             />
           )}

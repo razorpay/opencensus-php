@@ -22,6 +22,7 @@ import {
   getApplications,
 } from 'merchant/reducers/capital';
 import { trackLandingOnCashAdvanceV1 } from 'merchant/views/Capital/CashAdvanceV2/TrackEvents';
+import Banner from 'merchant/views/Capital/components/Banner';
 import FormSectionLoadingSkeleton from 'merchant/views/Capital/components/FormSectionLoadingSkeleton';
 import {
   isCashAdvanceProduct,
@@ -32,27 +33,26 @@ import getApplicationProgressPercentage from 'merchant/views/Capital/utils/Progr
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import BusinessInfoEntity from './Forms/BusinessInfoEntity';
+import CashAdvanceApproved from './Forms/CashAdvanceApproved';
+import ContractEntity from './Forms/ContractEntity';
 import CreditOfferEntity from './Forms/CreditOfferEntity';
 import CreditScoreBreakdown from './Forms/CreditScoreBreakdown';
-import MobileVerification from './Forms/MobileVerification';
-import PromoterDetailsEntity from './Forms/PromoterDetails/PromoterDetailsEntity';
-import Banner from 'merchant/views/Capital/components/Banner';
-
-import LoanStatusBanner from './LoanStatusBanner';
-import PreVerification from './Forms/PreVerification/PreVerification';
-import ContractEntity from './Forms/ContractEntity';
-import NachEntity from './Forms/NachEntity';
+import DisbursalEntity from './Forms/DisbursalEntity';
 import LoanApproved from './Forms/LoanApproved';
+import MobileVerification from './Forms/MobileVerification';
+import NachEntity from './Forms/NachEntity';
+import OfflineDocumentCollection from './Forms/OfflineDocumentCollection';
+import PendingState from './Forms/PendingState';
+import PreVerification from './Forms/PreVerification/PreVerification';
+import PromoterDetailsEntity from './Forms/PromoterDetails/PromoterDetailsEntity';
+import LoanStatusBanner from './LoanStatusBanner';
 import {
   APPLICATION_STATES,
   APPLICATION_STATE_MESSAGE_MAP,
   APPLICATION_STATE_TITLE_MAP,
   GA_CATEGORY_BY_PRODUCT,
 } from './constants';
-import DisbursalEntity from './Forms/DisbursalEntity';
-import PendingState from './Forms/PendingState';
-import CashAdvanceApproved from './Forms/CashAdvanceApproved';
-import OfflineDocumentCollection from './Forms/OfflineDocumentCollection';
+import { LoanConfigImages } from '../loaders/constants';
 
 const stateFormMap = {
   BUSINESS_INFO_PENDING: BusinessInfoEntity,
@@ -797,7 +797,9 @@ class FormSectionRenderer extends Component {
           }`}
         >
           <img
-            src={this.getUserFlowConfiguration().ui.product.secondaryHeroImageSource}
+            src={
+              LoanConfigImages[this.getUserFlowConfiguration().ui.product.secondaryHeroImageSource]
+            }
             alt="landing-image"
           />
         </div>

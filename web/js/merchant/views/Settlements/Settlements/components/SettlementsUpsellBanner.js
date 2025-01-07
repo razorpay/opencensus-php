@@ -1,17 +1,18 @@
 import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
-import PropTypes from 'prop-types';
 import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';
 import LoaderDots from 'common/ui/LoaderDots';
+import track from 'common/utils/googleAnalytics';
 import {
   fetchProducts as fnFetchProducts,
   getApplications as fnGetApplications,
 } from 'merchant/reducers/capital';
 import { fetchFunctionalWithdrawalConfigByMerchantID as fnFetchFunctionalWithdrawalConfigByMerchantID } from 'merchant/reducers/capital/withdrawals';
-import track from 'common/utils/googleAnalytics';
 import { CAPITAL_PRODUCT_CODES } from 'merchant/views/Capital/Loans/constants';
 
 const SettlementsUpsell = ({
@@ -147,7 +148,7 @@ const SettlementsUpsell = ({
       <div
         className="cash-advance-upsell-banner"
         style={{
-          backgroundImage: 'url("/dist/css/assets/capital/withdrawals-upsell-banner-bg.svg")',
+          backgroundImage: `url(${require('assets/capital/withdrawals-upsell-banner-bg.svg')})`,
         }}
       >
         <div className="banner-content">

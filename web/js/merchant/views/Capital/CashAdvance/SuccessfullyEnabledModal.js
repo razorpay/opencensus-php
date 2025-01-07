@@ -26,7 +26,7 @@ const SuccesfullyEnabledModal = ({ onClose }) => {
         <i class="i i-close" />
       </div>
       <div className="successfully-enabled-modal--heading">
-        <img src="/dist/css/assets/capital/hurray_tick.svg" />
+        <img src={require("assets/capital/hurray_tick.svg")} />
         <div className="successfully-enabled-modal--title">Successfully Enabled!</div>
       </div>
       <div className="successfully-enabled-modal--description">

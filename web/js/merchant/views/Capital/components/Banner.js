@@ -33,7 +33,7 @@ const Banner = React.forwardRef(
           )}
           {type && type === 'pending' && (
             <div class="status-icon icon-pending">
-              <img src="/dist/css/assets/capital/pending.svg" />
+              <img src={require("assets/capital/pending.svg")} />
             </div>
           )}
           {type && type === 'error' && <i className={`i i-info-circle ${type} status-icon`} />}
@@ -47,7 +47,7 @@ const Banner = React.forwardRef(
           </p>
         )}
         {type === 'approval' && (
-          <img src="/dist/css/assets/capital/green_patch.svg" className="green_patch" />
+          <img src={require("assets/capital/green_patch.svg")} className="green_patch" />
         )}
       </div>
       {cta}

@@ -56,7 +56,7 @@ const NonFldgLoans = ({ user }) => {
     <OnBoardingWrapper class="Loans">
       <div className="Landing--Image">
         <div class="image-wrapper">
-          <img src="/dist/css/assets/capital/los_onboarding_hero.svg" alt="landing-image" />
+          <img src={require("assets/capital/los_onboarding_hero.svg")} alt="landing-image" />
         </div>
       </div>
 

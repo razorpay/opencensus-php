@@ -17,7 +17,7 @@ function RepaymentTicketSuccessModal({
           <div class="flex">
             <img
               height={16}
-              src={`/dist/css/assets/success-tick-green.svg`}
+              src={require(`assets/success-tick-green.svg`)}
               alt="Loading icon"
             />{' '}
             &nbsp;

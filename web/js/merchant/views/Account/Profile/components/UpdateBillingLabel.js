@@ -15,6 +15,8 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import User from 'merchant/models/User';
 
+import SuccessTickBlue from "assets/success-tick-blue.svg"
+
 @connect(
   (state) => {
     return { user: state.session.user };
@@ -263,7 +265,7 @@ export default class UpdateBillingLabel extends PureComponent {
               meta={{}}
               suffix={
                 <img
-                  src="/dist/css/assets/success-tick-blue.svg"
+                  src={SuccessTickBlue}
                   alt="Tick icon"
                   className="suggested-label-selected-tick"
                 />
@@ -289,7 +291,7 @@ export default class UpdateBillingLabel extends PureComponent {
                 >
                   {item}
                   <img
-                    src="/dist/css/assets/success-tick-blue.svg"
+                    src={SuccessTickBlue}
                     alt="Tick icon"
                     className={`suggested-label-selected-tick ${
                       !(selectedSuggestion === index) ? 'hide-element' : ''

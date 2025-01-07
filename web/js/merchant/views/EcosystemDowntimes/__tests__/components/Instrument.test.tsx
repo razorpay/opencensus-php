@@ -1,8 +1,9 @@
 import React from 'react';
-import { high_sev_downtime_mock } from 'merchant/views/EcosystemDowntimes/__tests__/mocks/mockResponses';
-import { screen, userEvent, render } from 'test-utils';
-import Instrument from 'merchant/views/EcosystemDowntimes/components/Instrument';
+
 import * as analytics from 'common/utils/analytics';
+import { high_sev_downtime_mock } from 'merchant/views/EcosystemDowntimes/__tests__/mocks/mockResponses';
+import Instrument from 'merchant/views/EcosystemDowntimes/components/Instrument';
+import { screen, userEvent, render } from 'test-utils';
 
 const initProps = {
   index: 0,
@@ -10,7 +11,7 @@ const initProps = {
   instrument: {
     key: 'VISA',
     name: 'VISA',
-    logo: '',
+    logo: 'sbi.png',
     group: 'network',
     method: 'card',
     srKey: 'card.network.Visa',

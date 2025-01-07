@@ -89,7 +89,7 @@ function WithdrawalStatus({ status, withdrawalDetails }) {
               active: true,
               date: getLastRepaidDate(),
               icon: (
-                <img src={`/dist/css/assets/capital/partially_repaid.svg`} alt="Loading icon" />
+                <img src={require(`assets/capital/partially_repaid.svg`)} alt="Loading icon" />
               ),
             },
           ]

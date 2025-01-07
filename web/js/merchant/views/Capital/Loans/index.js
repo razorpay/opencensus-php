@@ -1,38 +1,13 @@
 /* eslint-disable react/no-unsafe */
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
-import lazy from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
-import getApplicationProgressPercentage from 'merchant/views/Capital/utils/ProgressPercentageCalculator';
-import ApplicationOverviewLoadingSkeleton from 'merchant/views/Capital/components/ApplicationOverviewLoadingSkeleton';
-import {
-  getDisabledReasons,
-  getProductNames,
-  isCashAdvanceProduct,
-  isLOCEMIProduct,
-  isLoanProduct,
-  isCashAdvanceProductActive,
-  canViewCashAdvanceProduct,
-  canViewLOCEMIProduct,
-} from 'merchant/views/Capital/utils';
-import Spinner from 'merchant/views/Capital/components/Spinner';
-import ApplicationOnboardingForm from './Forms/ApplicationOnboardingForm';
-import ApplicationStatusOverview from './ApplicationStatusOverview';
-import LoanEntity from './LoanEntity';
-import {
-  CAPITAL_PRODUCT_NAME_CODE_MAP,
-  HOTJAR_TRIGGERS,
-  GA_CATEGORY_BY_PRODUCT,
-  APPLICATION_STATES,
-  LOANS_BASE_URL,
-  LOANS_SECTIONS,
-  CAPITAL_PRODUCT_CODES,
-} from './constants';
-import EditPanModal from './EditPanModal';
+import { withRouter } from 'common/deprecated/withRouter';
 import CircularProgress from 'common/new-ui/CircularProgress';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
+import DataList from 'merchant/components/OnBoarding/Slides/DataList';
 import {
   changeActiveState,
   fetchLoanApplicationMeta,
@@ -44,16 +19,43 @@ import {
   registerProduct,
   resetCapitalLendingData,
 } from 'merchant/reducers/capital';
-import DataList from 'merchant/components/OnBoarding/Slides/DataList';
-import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
-import { triggerHotjarRecording } from 'common/utils/hotjar';
-import api from './LoansCollections/api';
-import { PLAN_STATUS } from './LoansCollections/constants';
+import lazy from 'merchant/routes/LazyLoader';
 import {
   CASH_ADVANCE_BASE_URL,
   LINE_OF_CREDIT_BASE_URL,
   CASH_ADVANCE_SECTIONS,
 } from 'merchant/views/Capital/CashAdvance/constants';
+import ApplicationOverviewLoadingSkeleton from 'merchant/views/Capital/components/ApplicationOverviewLoadingSkeleton';
+import Spinner from 'merchant/views/Capital/components/Spinner';
+import {
+  getDisabledReasons,
+  getProductNames,
+  isCashAdvanceProduct,
+  isLOCEMIProduct,
+  isLoanProduct,
+  isCashAdvanceProductActive,
+  canViewCashAdvanceProduct,
+  canViewLOCEMIProduct,
+} from 'merchant/views/Capital/utils';
+import getApplicationProgressPercentage from 'merchant/views/Capital/utils/ProgressPercentageCalculator';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+
+import ApplicationStatusOverview from './ApplicationStatusOverview';
+import EditPanModal from './EditPanModal';
+import ApplicationOnboardingForm from './Forms/ApplicationOnboardingForm';
+import LoanEntity from './LoanEntity';
+import api from './LoansCollections/api';
+import { PLAN_STATUS } from './LoansCollections/constants';
+import {
+  CAPITAL_PRODUCT_NAME_CODE_MAP,
+  HOTJAR_TRIGGERS,
+  GA_CATEGORY_BY_PRODUCT,
+  APPLICATION_STATES,
+  LOANS_BASE_URL,
+  LOANS_SECTIONS,
+  CAPITAL_PRODUCT_CODES,
+} from './constants';
+import { LoanConfigImages } from '../loaders/constants';
 
 const CashAdvanceV2 = lazy(() =>
   import(/* webpackChunkName: 'CashAdvanceV2' */ '../CashAdvanceV2'),
@@ -601,7 +603,7 @@ class LoanApplicationOverview extends React.Component {
         <OnBoardingWrapper className="Loans">
           <div className="Landing--Image">
             <div className="image-wrapper">
-              <img src={UIConfig.product.heroImageSource} alt="landing-image" />
+              <img src={LoanConfigImages[UIConfig.product.heroImageSource]} alt="landing-image" />
             </div>
           </div>
 

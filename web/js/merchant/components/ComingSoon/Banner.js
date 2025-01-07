@@ -7,6 +7,8 @@ import DocsLink from 'merchant/components/DocsLink';
 import Button from 'common/new-ui/Button';
 import useLocalStorageCheck from 'merchant/hooks/localStorageCheck';
 
+import ComingSoonSuccess from "assets/coming_soon/success.svg"
+
 const Banner = (props) => {
   const [isHidden, toggleIsHidden] = useLocalStorageCheck(
     `${props.product.replace(' ', '-')}-${props.mode}-${props.merchant_id}`,
@@ -38,7 +40,7 @@ const Banner = (props) => {
     <div class="ComingSoon--Banner">
       {isHidden ? (
         <div class="request-success">
-          <img src="/dist/css/assets/coming_soon/success.svg" />
+          <img src={ComingSoonSuccess} />
           <div>
             <strong>We're glad you're interested in Razorpay {props.product}!</strong>
             <p>We’ll share details of early access on your registered email ID in a few days.</p>

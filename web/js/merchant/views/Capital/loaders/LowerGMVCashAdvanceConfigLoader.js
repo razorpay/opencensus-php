@@ -1,3 +1,8 @@
+import React from 'react';
+
+import store from 'merchant/store';
+
+import BaseConfigLoader from './BaseConfigLoader';
 import {
   //TODO: Eliminate this by extending from base config loader
   APPLICATION_STATE_DESCRIPTIONS,
@@ -5,9 +10,6 @@ import {
   CONSOLIDATED_STATES,
 } from '../Loans/constants';
 import { isPreceedingState } from '../utils';
-import BaseConfigLoader from './BaseConfigLoader';
-import React from 'react';
-import store from 'merchant/store';
 
 export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
   constructor(loanApplication) {
@@ -17,11 +19,11 @@ export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
     this.ui = {
       product: {
         title: 'Cash Advance',
-        heroImageSource: '/dist/css/assets/capital/loc_onboarding_hero.svg',
-        secondaryHeroImageSource: '/dist/css/assets/capital/loc_secondary_hero.svg',
+        heroImageSource: 'loc_onboarding_hero',
+        secondaryHeroImageSource: 'loc_secondary_hero',
         pros: [
-          <div class="flex">
-            <img src={'/dist/css/assets/capital/internal_credit.svg'} alt="landing-image" />
+          <div class="flex" key="1">
+            <img src={require('assets/capital/internal_credit.svg')} alt="landing-image" />
             <div class="p-l m-l m-t">
               <strong>
                 <p>Withdraw Cash Instantly</p>
@@ -31,8 +33,8 @@ export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
               </p>
             </div>
           </div>,
-          <div class="flex m-t">
-            <img src={'/dist/css/assets/capital/auto_repayment.svg'} alt="landing-image" />
+          <div class="flex m-t" key="2">
+            <img src={require('assets/capital/auto_repayment.svg')} alt="landing-image" />
             <div className="p-l m-l m-t">
               <strong>
                 <p>Auto-repay from settlements</p>
@@ -42,8 +44,8 @@ export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
               </p>
             </div>
           </div>,
-          <div class="flex m-t">
-            <img src={'/dist/css/assets/capital/flexible_interest.svg'} alt="landing-image" />
+          <div class="flex m-t" key="3">
+            <img src={require('assets/capital/flexible_interest.svg')} alt="landing-image" />
             <div className="p-l m-l m-t">
               <strong>
                 <p>Pay Interest only when you withdraw</p>

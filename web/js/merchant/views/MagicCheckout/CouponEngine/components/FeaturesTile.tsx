@@ -24,19 +24,19 @@ const FeatureTile: React.FC<FeatureTileProps> = ({ icon, metric, featureDesc, de
 
 const FeatureTilesList = [
   {
-    icon: '/dist/css/assets/affordability_widget/aff-cart.svg',
+    icon: require('assets/affordability_widget/aff-cart.svg'),
     metric: '47%',
     featureDesc: <>Increase avg. order value</>,
     description: 'Higher average order value with affordable payment options and offers',
   },
   {
-    icon: '/dist/css/assets/affordability_widget/aff-growth.svg',
+    icon: require('assets/affordability_widget/aff-growth.svg'),
     metric: '57%',
     featureDesc: <>Increase conversion</>,
     description: 'Increase in conversion rates by helping customers make informed choices',
   },
   {
-    icon: '/dist/css/assets/affordability_widget/aff-customers.svg',
+    icon: require('assets/affordability_widget/aff-customers.svg'),
     metric: '38%',
     featureDesc: <>Increase customer delight & loyalty</>,
     description: 'Increase in customer satisfaction with more offers and discounts to choose from',

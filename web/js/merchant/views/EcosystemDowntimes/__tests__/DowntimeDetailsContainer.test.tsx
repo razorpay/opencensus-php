@@ -1,13 +1,15 @@
 import React from 'react';
-import { screen, render, waitFor } from 'test-utils';
+
 import DowntimeDetailsContainer from 'merchant/views/EcosystemDowntimes/containers/DowntimeDetailsContainer';
 import { EcosystemDowntimeContext } from 'merchant/views/EcosystemDowntimes/context';
 import { processPreviousDowntimes } from 'merchant/views/EcosystemDowntimes/helpers';
-import { previous_downtimes_mock } from './mocks/mockResponses';
 import { InstrumentMetaData } from 'merchant/views/EcosystemDowntimes/types';
+import { screen, render, waitFor } from 'test-utils';
+
+import { previous_downtimes_mock } from './mocks/mockResponses';
 
 const instrument: InstrumentMetaData = {
-  logo: '',
+  logo: 'sbi.png',
   name: 'VISA',
   key: 'VISA',
   method: 'card',

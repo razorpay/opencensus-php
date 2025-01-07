@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import messageFactory from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage/messageFactory';
+
 import Message from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage/Message';
+import messageFactory from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage/messageFactory';
 import {
   checkDateIsWeekend,
   checkDateIsUpcomingBankHoliday,
@@ -12,10 +13,10 @@ import {
   getNoOfDaysAfterEsPartialEnable,
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
 
-import { NEW_BANNERS } from './banners/constants';
 import EnableAutomatic from './banners/EnabledAutomatic';
-import FullShiftSuccess from './banners/FullShiftSuccess';
 import FullShiftFailure from './banners/FullShiftFailure';
+import FullShiftSuccess from './banners/FullShiftSuccess';
+import { NEW_BANNERS } from './banners/constants';
 
 const SettlementMessageContainer = ({ user, holidayList, openModal, balance }) => {
   // eslint-disable-next-line no-unused-vars
@@ -93,10 +94,10 @@ const SettlementMessageContainer = ({ user, holidayList, openModal, balance }) =
       {!message.hideRightImages && (
         <>
           <div className="payout-message-date--svg-up">
-            <img src="/dist/css/assets/capital/payout-date-message-up.svg" />
+            <img src={require('assets/capital/payout-date-message-up.svg')} />
           </div>
           <div className="payout-message-date--svg-down">
-            <img src="/dist/css/assets/capital/payout-date-message-down.svg" />
+            <img src={require('assets/capital/payout-date-message-down.svg')} />
           </div>
         </>
       )}

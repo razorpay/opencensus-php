@@ -1,4 +1,7 @@
 /* eslint-disable i18n-rules/no-hardcoded-i18n-types */
+import RewardLeadingBrands from "assets/product_onboarding/rewards_leading_brands.svg";
+import RewardBusinessGrowth from "assets/product_onboarding/rewards_business_growth.svg";
+import RewardFreeCost from "assets/product_onboarding/rewards_free_cost.svg";
 
 export const EXPORTER_REWARDS_LINKS = {
   KNOW_MORE: 'https://razorpay.com/docs/international/exporter-rewards',
@@ -8,18 +11,18 @@ export const EXPORTER_REWARDS_LINKS = {
 
 export const ONBOARDING_CARDS = [
   {
-    icon: '/dist/css/assets/product_onboarding/rewards_leading_brands.svg',
+    icon: RewardLeadingBrands,
     title: 'Increasing rewards',
     desc: 'As you hit the next milestone, you receive exponential bump in the rewards you receive too',
   },
   {
-    icon: '/dist/css/assets/product_onboarding/rewards_business_growth.svg',
+    icon: RewardBusinessGrowth,
     title: 'Redeem rewards with ease',
     // eslint-disable-next-line i18n-rules/no-hardcoded-i18n-types
     desc: 'Most rewards are credits or vouchers which you can easily redeem on Razorpay products',
   },
   {
-    icon: '/dist/css/assets/product_onboarding/rewards_free_cost.svg',
+    icon: RewardFreeCost,
     title: 'Tips and suggestions',
     desc: 'Get tips and suggestions around boosting your GMV and hence maximize your rewards',
   },

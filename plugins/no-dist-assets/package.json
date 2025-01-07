@@ -1,0 +1,5 @@
+{
+  "name": "eslint-plugin-no-dist-assets",
+  "version": "1.0.0",
+  "main": "index.js"
+}

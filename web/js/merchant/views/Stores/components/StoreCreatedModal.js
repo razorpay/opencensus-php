@@ -14,12 +14,12 @@ const StoreCreatedModal = ({ hideSuccessModal, history }) => {
       <Modal maskClosable={false} className="store-success" showCloseBtn={false}>
         <div className="store-succcess--image-container">
           <img
-            src="/dist/css/assets/stores/store-success-bg.svg"
+            src={require("assets/stores/store-success-bg.svg")}
             alt="store-success-bg"
             className="store--success-bg"
           />
           <img
-            src="/dist/css/assets/stores/store-preview.svg"
+            src={require("assets/stores/store-preview.svg")}
             alt="store-preview"
             className="store--preview"
           />

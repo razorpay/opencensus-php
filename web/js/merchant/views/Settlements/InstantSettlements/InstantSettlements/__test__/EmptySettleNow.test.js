@@ -1,9 +1,10 @@
 import React from 'react';
+
 import '@testing-library/jest-dom/extend-expect';
-import EmptySettleNow from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/EmptySettleNow';
-import { render, screen, userEvent, waitFor } from 'test-utils';
 import * as trackGa from 'common/utils/googleAnalytics';
+import EmptySettleNow from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/EmptySettleNow';
 import * as trackEvents from 'merchant/views/Settlements/trackEvents';
+import { render, screen, userEvent, waitFor } from 'test-utils';
 
 describe('EmptySettleNow', () => {
   const defaultProps = {
@@ -35,20 +36,11 @@ describe('EmptySettleNow', () => {
   test('should render transaction banner content', () => {
     renderApp();
     const bannerImages = screen.getAllByRole('img');
-    expect(bannerImages[0]).toHaveAttribute(
-      'src',
-      '/dist/css/assets/capital/get_settlements_instantly.svg',
-    );
+    expect(bannerImages[0]).toHaveAttribute('src', 'get_settlements_instantly.svg');
     expect(bannerImages[0]).toHaveAttribute('alt', 'Get settlements instantly');
-    expect(bannerImages[1]).toHaveAttribute(
-      'src',
-      '/dist/css/assets/capital/early-settlement-light-blue.svg',
-    );
+    expect(bannerImages[1]).toHaveAttribute('src', 'early-settlement-light-blue.svg');
     expect(bannerImages[1]).toHaveAttribute('alt', 'Settle Now');
-    expect(bannerImages[2]).toHaveAttribute(
-      'src',
-      '/dist/css/assets/capital/instant_settlement_no_transaction.svg',
-    );
+    expect(bannerImages[2]).toHaveAttribute('src', 'instant_settlement_no_transaction.svg');
     expect(bannerImages[2]).toHaveAttribute('alt', 'No transactions');
   });
 

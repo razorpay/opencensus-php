@@ -26,7 +26,7 @@ class SuccessModal extends React.Component {
 
     const modalTitle = (
       <>
-        <img src="/dist/css/assets/success-tick-green.svg" /> {title}
+        <img src={require("assets/success-tick-green.svg")} /> {title}
       </>
     );
 

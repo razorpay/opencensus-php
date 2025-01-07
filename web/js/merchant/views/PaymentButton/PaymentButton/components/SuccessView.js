@@ -171,7 +171,7 @@ class SuccessModal extends React.Component {
                   class="code-section"
                   style={{
                     backgroundImage:
-                      'url("/dist/css/assets/payment_button/success-screen/code-background.svg")',
+                      `url(${require("assets/payment_button/success-screen/code-background.svg")}`,
                   }}
                 >
                   <div class="section-title">

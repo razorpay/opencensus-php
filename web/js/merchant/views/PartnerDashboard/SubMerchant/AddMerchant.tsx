@@ -876,7 +876,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                     <div className="success-message flex-col-between">
                       <div>
                         <p>
-                          <img src="/dist/css/assets/check-round.svg" alt="Tick icon" /> &nbsp;
+                          <img src={require("assets/check-round.svg")} alt="Tick icon" /> &nbsp;
                           {bulkContactsCount} contacts have been identified.
                         </p>
                         <span>

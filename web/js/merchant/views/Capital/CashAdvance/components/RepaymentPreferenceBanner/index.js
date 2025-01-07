@@ -28,7 +28,7 @@ const RepaymentPreferenceBanner = (props) => {
 
   return (
     <div className="banner-container">
-      <img className="banner-icon" src="/dist/css/assets/check-round.svg" alt="Tick icon" />
+      <img className="banner-icon" src={require("assets/check-round.svg")} alt="Tick icon" />
       <p className="banner-text">
         Your repayment preference for all future withdrawals is set to{' '}
         <strong>

@@ -96,7 +96,7 @@ export default class QRCodesOnBoarding extends React.Component {
               {...sliderProps}
               feature={RZPFeatures.QR_CODES}
               title="QR Codes"
-              imageUrl="/dist/css/assets/qr_code/onboarding.svg"
+              imageUrl={require("assets/qr_code/onboarding.svg")}
               desc="Create UPI QR codes in 3 simple steps with no integration efforts. Adopt contactless payments through customized QR codes and track payments easily."
               readMoreClicked={this.readMoreClicked}
             />

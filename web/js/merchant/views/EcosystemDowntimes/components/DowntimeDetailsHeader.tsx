@@ -23,7 +23,7 @@ const DowntimeDetailsHeader = ({
   return (
     <DowntimeDetailsHeaderStyled aria-label="ecosystem-downtime-details-header">
       <div className="instrument-logo">
-        <img src={logo} height={30} width={30} />
+        <img src={require(`assets/ecosystem_health/${logo}`)} height={30} width={30} />
       </div>
       <div className="instrument-name">
         <Heading

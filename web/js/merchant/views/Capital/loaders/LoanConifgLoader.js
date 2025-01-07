@@ -1,12 +1,14 @@
 import React from 'react';
+
+import store from 'merchant/store';
+
+import BaseConfigLoader from './BaseConfigLoader';
 import {
   APPLICATION_STATE_DESCRIPTIONS,
   CONSOLIDATED_STATES,
   APPLICATION_STATES,
 } from '../Loans/constants';
 import { isPreceedingState } from '../utils';
-import BaseConfigLoader from './BaseConfigLoader';
-import store from 'merchant/store';
 
 export default class LoansConfigLoader extends BaseConfigLoader {
   constructor(loanApplication) {
@@ -14,8 +16,8 @@ export default class LoansConfigLoader extends BaseConfigLoader {
     this.ui = {
       product: {
         title: 'Business Loans for you',
-        heroImageSource: '/dist/css/assets/capital/los_onboarding_hero.svg',
-        secondaryHeroImageSource: '/dist/css/assets/capital/los_onboarding_hero.svg',
+        heroImageSource: 'los_onboarding_hero',
+        secondaryHeroImageSource: 'los_onboarding_hero',
         pros: [
           <React.Fragment key={1}>
             <i className="i i-bullet" />

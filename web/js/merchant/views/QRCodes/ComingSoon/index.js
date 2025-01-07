@@ -7,7 +7,7 @@ import { setOnBoardingDataInLocalState } from 'merchant/components/OnBoarding';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateFeatures } from 'merchant/reducers/config';
 import { saveOnboarding, handleProductQuickGuide } from 'merchant/reducers/onboarding';
-import featuresList from './features.json';
+import featuresList from './features';
 import track from './track';
 
 @connect(
@@ -50,7 +50,7 @@ export default class QRComingSoonContainer extends React.Component {
         title="Razorpay QR Codes"
         description="Adopt contactless payments through customized UPI & Bharat QR Codes"
         features={featuresList}
-        previewURL="/dist/css/assets/qr_code/product_preview.gif"
+        previewURL={require("assets/qr_code/product_preview.gif")}
         interestClicked={this.handleEnableFeature}
       />
     );

@@ -54,7 +54,7 @@ const EnableAutomatedWithdrawModal = ({
 
       <div className="enable-automated-withdrawal-modal--subModal">
         <div className="enable-automated-withdrawal-image">
-          <img src="/dist/css/assets/capital/enable-automated-withdrawal.svg" />
+          <img src={require("assets/capital/enable-automated-withdrawal.svg")} />
         </div>
         <div className="enable-automated-withdrawal-modal--subModal-heading">
           Here’s how it works:

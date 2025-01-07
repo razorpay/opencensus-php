@@ -2,7 +2,7 @@ import { Theme } from '@razorpay/blade/components';
 
 import { AnalyticsEntity, DateRangePreset, MetricOptions, Ratios } from './types';
 
-export const ASSETS_PATH = '/dist/css/assets/risk-analytics';
+export const ASSETS_PATH = 'assets/risk-analytics';
 
 export const FRAUD: AnalyticsEntity = 'fraud';
 export const DISPUTES: AnalyticsEntity = 'disputes';
@@ -27,7 +27,7 @@ export const ENTITY_HEADER = {
     popoverTitle: 'Fraud-to-sales ratio',
     popoverContent:
       'A fraud is said to occur when an unauthorized transaction is made with a lost, stolen, compromised or counterfeit card/number. It is calculated as:',
-    popoverImage: `${ASSETS_PATH}/fraud-to-sales-ratio.png`,
+    popoverImage: require(`${ASSETS_PATH}/fraud-to-sales-ratio.png`),
     imageAlt: 'fraud-to-sales-ratio',
     docLink:
       'https://_businessName_.com/docs/payments/payments/risk-visibility-dashboard/fraud-sales-ratio/#calculating-fraud-to-sales-ratio',
@@ -39,7 +39,7 @@ export const ENTITY_HEADER = {
     popoverTitle: 'Dispute-to-sales ratio',
     popoverContent:
       'A dispute is said to occur when a cardholder questions your payment with their card issuer. It is calculated as:',
-    popoverImage: `${ASSETS_PATH}/disputes-to-sales-ratio.png`,
+    popoverImage: require(`${ASSETS_PATH}/disputes-to-sales-ratio.png`),
     imageAlt: 'disputes-to-sales-ratio',
     docLink:
       'https://_businessName_.com/docs/payments/payments/risk-visibility-dashboard/dispute-sales-ratio/#calculating-disputes-to-sales-ratio',
@@ -51,7 +51,7 @@ export const ENTITY_HEADER = {
     popoverTitle: 'Risk decline rate',
     popoverContent:
       'A risk decline occurs when the algorithm (_businessName_, bank or network) declines or blocks risky transactions that might be potentially fraudulent or have high likelihood of being disputed. It is calculated as:',
-    popoverImage: `${ASSETS_PATH}/risk-decline-ratio.png`,
+    popoverImage: require(`${ASSETS_PATH}/risk-decline-ratio.png`),
     imageAlt: 'risk-decline-ratio',
     docLink:
       'https://_businessName_.com/docs/payments/payments/risk-visibility-dashboard/risk-decline-rate/#calculating-risk-decline-rate',

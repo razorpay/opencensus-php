@@ -60,7 +60,7 @@ const RewardsInfo = () => {
               the fees for these payments will be deducted from the ₹100 fee credit.
             </Text>
           </Box>
-          <ImageContainer url="/dist/css/assets/exporter-rewards/rewards-info-example.svg" />
+          <ImageContainer url={require("assets/exporter-rewards/rewards-info-example.svg")} />
         </Box>
       </Card>
       <Card>
@@ -88,7 +88,7 @@ const RewardsInfo = () => {
               <ListItem>Donec sed venenatis nulla, a tristique augue.</ListItem>
             </List>
           </Box>
-          <ImageContainer url="/dist/css/assets/exporter-rewards/rewards-info-points.svg" />
+          <ImageContainer url={require("assets/exporter-rewards/rewards-info-points.svg")} />
         </Box>
       </Card>
     </Container>

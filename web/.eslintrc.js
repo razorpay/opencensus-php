@@ -14,7 +14,7 @@ module.exports = {
     'plugin:yml/standard',
   ],
   root: true,
-  plugins: ['no-relative-import-paths', smartLinterPluginName],
+  plugins: ['no-relative-import-paths', smartLinterPluginName, 'no-dist-assets'],
   ignorePatterns: ['.eslintrc.js'],
   rules: {
     'no-shadow': 'off',
@@ -74,6 +74,7 @@ module.exports = {
       },
     ],
     ...smartLinterRules,
+    'no-dist-assets/no-dist-assets': 'error',
     'import/extensions': 'off',
   },
   env: {

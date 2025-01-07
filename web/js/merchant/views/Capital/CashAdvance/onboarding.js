@@ -13,7 +13,7 @@ import LeadDetails from './LeadDetails';
 
 const PROS = [
   <div class="flex">
-    <img src="/dist/css/assets/capital/internal_credit.svg" alt="landing-image" />
+    <img src={require("assets/capital/internal_credit.svg")} alt="landing-image" />
     <div class="p-l m-l m-t">
       <strong>
         <p>Flexible Credit Limit</p>
@@ -24,7 +24,7 @@ const PROS = [
     </div>
   </div>,
   <div class="flex m-t">
-    <img src="/dist/css/assets/capital/auto_repayment.svg" alt="landing-image" />
+    <img src={require("assets/capital/auto_repayment.svg")} alt="landing-image" />
     <div className="p-l m-l m-t">
       <strong>
         <p>Auto Repayment</p>
@@ -35,7 +35,7 @@ const PROS = [
     </div>
   </div>,
   <div class="flex m-t">
-    <img src="/dist/css/assets/capital/flexible_interest.svg" alt="landing-image" />
+    <img src={require("assets/capital/flexible_interest.svg")} alt="landing-image" />
     <div className="p-l m-l m-t">
       <strong>
         <p>Pay Interest only on your use </p>
@@ -62,7 +62,7 @@ class Onboarding extends Component {
       <OnBoardingWrapper class="Withdrawals">
         <div className="Landing--Image">
           <div class="image-wrapper">
-            <img src="/dist/css/assets/capital/withdrawal_landing.svg" alt="landing-image" />
+            <img src={require("assets/capital/withdrawal_landing.svg")} alt="landing-image" />
           </div>
         </div>
         <div className="Product--Details">
@@ -99,7 +99,7 @@ class Onboarding extends Component {
                 type="success"
                 isFormHeader={true}
               />
-              <img src="/dist/css/assets/capital/green_patch.svg" className="green_patch" />
+              <img src={require("assets/capital/green_patch.svg")} className="green_patch" />
             </div>
           )}
           {hasLOCStage2Feature && hasWithdrawalConfiguration && (
@@ -161,7 +161,7 @@ class Onboarding extends Component {
           {!hasLOCStage2Feature && !hasWithdrawalConfiguration && leadGenerated && (
             <div className="withdrawal-form-container">
               <div className="lead-generation-message-container text-center">
-                <img src="/dist/css/assets/capital/lead_generated.svg" alt="landing-image" />
+                <img src={require("assets/capital/lead_generated.svg")} alt="landing-image" />
                 <p className="m-t">
                   We have successfully collected your details, Our team will reach you back to take
                   forward your application.
@@ -202,7 +202,7 @@ class Onboarding extends Component {
                 <i className="i i-question-circle-o m-l" />
               </a>
             </div>
-            <img src="/dist/css/assets/capital/capital_logo.svg" alt="Loading icon" />
+            <img src={require("assets/capital/capital_logo.svg")} alt="Loading icon" />
           </div>
         </div>
       </OnBoardingWrapper>

@@ -5,13 +5,13 @@ export const PlatformsTitle = 'Choose your website platform';
 export const PlatformsList = [
   {
     id: 'shopify',
-    icon: '/dist/css/assets/affordability_widget/shopify.svg',
+    icon: require('assets/affordability_widget/shopify.svg'),
     title: 'Shopify',
     desc: `Run offers across all payment methods or for specific banks, card networks and wallets.`,
   },
   {
     id: 'woocommerce',
-    icon: '/dist/css/assets/affordability_widget/wooc.svg',
+    icon: require('assets/affordability_widget/wooc.svg'),
     title: 'WooCommerce',
     // eslint-disable-next-line prettier/prettier
     desc:
@@ -19,7 +19,7 @@ export const PlatformsList = [
   },
   {
     id: 'others',
-    icon: '/dist/css/assets/affordability_widget/others.svg',
+    icon: require('assets/affordability_widget/others.svg'),
     title: 'Others',
     desc: 'Run No Cost EMI offers for your customers across any bank.',
   },
@@ -27,19 +27,19 @@ export const PlatformsList = [
 
 export const FeatureTilesList = [
   {
-    icon: '/dist/css/assets/affordability_widget/aff-cart.svg',
+    icon: require('assets/affordability_widget/aff-cart.svg'),
     metric: '47%',
     featureDesc: <>Increase in average order value</>,
     description: 'Higher average order value with affordable payment options and offers',
   },
   {
-    icon: '/dist/css/assets/affordability_widget/aff-growth.svg',
+    icon: require('assets/affordability_widget/aff-growth.svg'),
     metric: '57%',
     featureDesc: <>Growth in customer conversion</>,
     description: 'Increase in conversion rates by helping customers make informed choices',
   },
   {
-    icon: '/dist/css/assets/affordability_widget/aff-customers.svg',
+    icon: require(`assets/affordability_widget/aff-customers.svg`),
     metric: '38%',
     featureDesc: <>Higher customer retention</>,
     description: 'Increase in customer satisfaction with more offers and discounts to choose from',

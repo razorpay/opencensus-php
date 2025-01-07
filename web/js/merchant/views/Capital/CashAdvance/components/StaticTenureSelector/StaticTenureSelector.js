@@ -64,7 +64,7 @@ const StaticTenureSelector = ({
         <div className="static-tenure__cta-container">{withdrawCTA}</div>
       </div>
       <div className="static-tenure__banner">
-        <img alt="party_icon" src="/dist/css/assets/capital/party.svg" />
+        <img alt="party_icon" src={require("assets/capital/party.svg")} />
         <p>You can always repay before the due date without any additional charges.</p>
       </div>
     </div>

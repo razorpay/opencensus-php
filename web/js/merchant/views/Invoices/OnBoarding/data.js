@@ -3,17 +3,17 @@ import { getCustomURL } from 'merchant/components/DocsLink';
 // Features
 export const FEATURES_DATA = [
   {
-    icon: '/dist/css/assets/product_onboarding/gst.svg',
+    icon: require('assets/product_onboarding/gst.svg'),
     title: 'GST compliant',
     desc: `Add GST, discounts and shipping details, all in an invoice and let our invoicing solution do the calculation for you.`,
   },
   {
-    icon: '/dist/css/assets/product_onboarding/partial_payments.svg',
+    icon: require('assets/product_onboarding/partial_payments.svg'),
     title: 'Partial payments',
     desc: 'Enable partial payments for your customers at the time of invoice creation directly from the dashboard.',
   },
   {
-    icon: '/dist/css/assets/product_onboarding/download_option.svg',
+    icon: require('assets/product_onboarding/download_option.svg'),
     title: 'Download Option',
     desc: 'Let your customers save and download .pdf version of invoices for future reference.',
   },
@@ -22,7 +22,7 @@ export const FEATURES_DATA = [
 // Features
 export const CURLEC_FEATURES_DATA = [
   {
-    icon: '/dist/css/assets/product_onboarding/gst.svg',
+    icon: require('assets/product_onboarding/gst.svg'),
     title: 'Discounts and Shipping Details',
     desc: `Add discounts and shipping details, all in an invoice and let our invoicing solution work for you.`,
   },
