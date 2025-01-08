@@ -45,6 +45,7 @@ export enum L1_FUNNEL_STAGE {
   MERCHANT_ONBOARDING = 'Merchant Onboarding',
   AGREEMENT_SIGNING = 'Agreement Signing',
   DEVICE_DEPLOYMENT = 'Device Deployment',
+  VALUE_ADDED_SERVICES = 'Value Added Services',
 }
 
 export enum L2_FUNNEL_STAGE {
@@ -100,6 +101,16 @@ export enum L2_FUNNEL_STAGE {
   MERCHANT_ONBOARDING = 'MERCHANT_ONBOARDING',
   DEVICE_DEPLOYMENT = 'Device Deployment',
   EXPLORE_DEVICE_DEPLOYMENT = 'Explore Device Deployment',
+  BRAND_EMI = 'Brand EMI',
+  BRAND_EMI_FORM = 'Brand EMI Form',
+  BRAND_EMI_SCREEN = 'Brand EMI Screen',
+  TYPE_OF_STORE = 'Type of Store',
+  BRAND_NAME = 'Brand Name',
+  DEALER_CODE = 'Dealer Code',
+  STATE_CODE = 'State Code',
+  DISTRIBUTOR_CODE = 'Distributor Code',
+  GSTIN = 'GSTIN',
+  CUSTOM_RATES = 'Custom Rates',
 }
 
 export enum FIELD_TYPES {
@@ -136,7 +147,7 @@ export interface EventProperties {
   section?: string;
   subSection?: string;
   l1FunnelStage?: L1_FUNNEL_STAGE;
-  l2FunnelStage?: L2_FUNNEL_STAGE;
+  l2FunnelStage?: L2_FUNNEL_STAGE | string;
   fieldType?: FIELD_TYPES;
   status?: STATUS;
   errorMessage?: string;

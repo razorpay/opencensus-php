@@ -10,6 +10,7 @@ import {
   getFieldErrorText,
   getFieldRules,
 } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/PaymentMethods/BrandEMIForm/helpers';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DropdownOption {
   label: string;
@@ -91,9 +92,33 @@ const BrandEMIForm = ({
     resetBrandRelatedFields();
     resetFormValues();
     handleBrandNameChange(args.values[0]);
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_FIELD,
+      action: analyticsTypes.ANALYTICS_ACTIONS.SELECTED,
+      properties: {
+        formName: 'Brand EMI Form',
+        fieldName: analyticsTypes.L2_FUNNEL_STAGE.BRAND_NAME,
+        fieldType: analyticsTypes.FIELD_TYPES.DROPDOWN,
+        section: analyticsTypes.L1_FUNNEL_STAGE.VALUE_ADDED_SERVICES,
+        subSection: 'Brand Information Form',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.VALUE_ADDED_SERVICES,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.BRAND_NAME,
+      },
+    });
   };
 
   const onSubmit = () => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Save',
+        section: analyticsTypes.L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+        subSection: analyticsTypes.L2_FUNNEL_STAGE.BRAND_EMI_FORM,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.BRAND_EMI_FORM,
+      },
+    });
     const formValues = { ...getValues() };
     for (const key in formValues) {
       if (formValues.hasOwnProperty(key)) {
@@ -129,6 +154,20 @@ const BrandEMIForm = ({
     return merchantGstField;
   };
 
+  const handleBrandFieldAnalytics = (fieldTitle: string) => {
+    if (!fieldTitle) return;
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_FIELD,
+      action: analyticsTypes.ANALYTICS_ACTIONS.FILLED,
+      properties: {
+        formName: 'Brand EMI Form',
+        fieldName: fieldTitle,
+        fieldType: analyticsTypes.FIELD_TYPES.TEXTBOX,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.VALUE_ADDED_SERVICES,
+        l2FunnelStage: fieldTitle,
+      },
+    });
+  };
   useEffect(() => {
     if (hasAddedBrandEMIData && storeTypeField) {
       setValue(
@@ -147,6 +186,20 @@ const BrandEMIForm = ({
       resetBrandRelatedFields();
     }
   }, [JSON.stringify(brandRelatedFields)]);
+
+  useEffect(() => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_PAGE,
+      action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+      properties: {
+        formName: 'Brand EMI form screen',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.ONBOARDING_MODEL,
+        section: analyticsTypes.L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+        subSection: analyticsTypes.L2_FUNNEL_STAGE.ONBOARDING_MODEL,
+      },
+    });
+  }, []);
 
   return (
     <Box>
@@ -203,6 +256,7 @@ const BrandEMIForm = ({
               ? brandRelatedFields.map((item) => (
                   <Box key={item.name} marginBottom="spacing.4">
                     <FormField
+                      onTextInputClick={() => handleBrandFieldAnalytics(item.meta?.title || '')}
                       control={control}
                       name={item.name}
                       label={item.meta?.title ?? ''}

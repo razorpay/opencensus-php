@@ -66,6 +66,7 @@ import {
 import { BrandEmiFormData } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/PaymentMethods/BrandEMIForm/BrandEMIFormContainer';
 import { AvailableComponents } from 'apps/pos/src/app/types/common';
 import { SpiltzContext } from 'shell/SpiltzServiceContext';
+import { analyticsTypes, trackEvent } from 'apps/pos/src/services/analytics';
 
 const createDefaultForm = (type: PaymentMethodFormType): PaymentMethodForm => {
   const defaultFormValue: PaymentMethodFormStringValue = {
@@ -509,6 +510,19 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
   const onBrandEmiFieldInputChange = (key: string, value: any) => {
     if (key === MODULAR_PRICING_FIELDS.STORE_TYPE_FIELD) {
       setBrandEmiForm((prev) => ({ ...prev, store_type_field: value }));
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_FIELD,
+        action: analyticsTypes.ANALYTICS_ACTIONS.SELECTED,
+        properties: {
+          formName: 'Brand EMI Form',
+          fieldName: analyticsTypes.L2_FUNNEL_STAGE.TYPE_OF_STORE,
+          fieldType: analyticsTypes.FIELD_TYPES.DROPDOWN,
+          section: analyticsTypes.L1_FUNNEL_STAGE.VALUE_ADDED_SERVICES,
+          subSection: 'Brand Information Form',
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.VALUE_ADDED_SERVICES,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.TYPE_OF_STORE,
+        },
+      });
     }
   };
 
@@ -572,6 +586,17 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
   };
 
   const handleViewBrandEMIForm = () => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'View Brand EMI Form',
+        section: analyticsTypes.L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+        subSection: analyticsTypes.L2_FUNNEL_STAGE.ONBOARDING_MODEL,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.ONBOARDING_MODEL,
+      },
+    });
     const { handleProceedToNextComponent, updateModularConfig } = handlers;
     if (isFormDisabled) {
       handleProceedToNextComponent({
