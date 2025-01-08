@@ -58,7 +58,7 @@ class Validator extends Base\Validator
     {
         $isEligibleForNCRevamp = (new Service)->getMerchantNcRevampEligibility($merchantId);
 
-        $this->trace->info(TraceCode::GET_NC_REVAMP_RESPONSE, [
+        $this->getTrace()->info(TraceCode::GET_NC_REVAMP_RESPONSE, [
             'isEligibleForNCRevamp' => $isEligibleForNCRevamp
         ]);
 
@@ -66,7 +66,7 @@ class Validator extends Base\Validator
 
             $clarificationDetails = (new Service)->getClarificationDetail($merchantId);
 
-            $this->trace->info(TraceCode::GET_CLARIFICATION_DETAILS_RESPONSE, [
+            $this->getTrace()->info(TraceCode::GET_CLARIFICATION_DETAILS_RESPONSE, [
                 '$clarificationDetails' => $clarificationDetails
             ]);
 
