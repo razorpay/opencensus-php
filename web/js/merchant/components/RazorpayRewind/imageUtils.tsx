@@ -48,7 +48,7 @@ const captureImage = (componentRef, isMobileOrTablet, action): Promise<void> | u
       useCORS: true,
     }).then((canvas) => {
       // Trimming the canvas from each side due to carousel buttons & indicators
-      const trimWidth = isMobileOrTablet ? 20 : 80;
+      const trimWidth = isMobileOrTablet ? 0 : 80;
       const trimHeight = isMobileOrTablet ? 90 : 30;
       const trimmedCanvas = trimCanvas(canvas, trimWidth, trimHeight);
       if (!trimmedCanvas) {
@@ -67,7 +67,6 @@ const captureImage = (componentRef, isMobileOrTablet, action): Promise<void> | u
             });
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
               try {
-                fileDownload(blob, 'rewind.png', imageType);
                 await navigator.share({
                   text: postContent,
                   files: [file],

@@ -394,13 +394,13 @@ const fbBase = 'https://www.facebook.com/sharer/sharer.php';
 const twitterBase = 'https://twitter.com/share';
 const linkedinBase = 'https://www.linkedin.com/shareArticle';
 
-export const socialShare = (componentRef, isMobile, type) => {
+export const socialShare = ({ componentRef, isMobile, isTablet = false, type }) => {
   let mediaUrl;
 
   const mediaMsg = window.encodeURIComponent(`"${postContent}"`);
 
   if (['facebook', 'twitter', 'linkedin'].includes(type) && !isMobile) {
-    captureImage(componentRef, true, 'download');
+    captureImage(componentRef, isTablet, 'download');
   }
 
   switch (type) {

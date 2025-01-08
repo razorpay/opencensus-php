@@ -41,7 +41,12 @@ const RewindModal = ({ isOpen, onDismiss, slides, isMobile, isNativeWebShare, is
     if (['navigator-share', 'download', 'copy'].includes(action)) {
       captureImage(componentRef, isMobile || isTablet, action);
     } else {
-      socialShare(componentRef, isMobile, action);
+      socialShare({
+        componentRef: componentRef,
+        isMobile: isMobile,
+        isTablet: isTablet,
+        type: action,
+      });
     }
   };
 
@@ -62,7 +67,7 @@ const RewindModal = ({ isOpen, onDismiss, slides, isMobile, isNativeWebShare, is
               indicatorVariant="white"
               navigationButtonPosition="side"
               marginTop={'spacing.3'}
-              autoPlay={true}
+              autoPlay={!isBottomSheetOpen}
             >
               {slides.map(({ imgOverlay, imgSrc, key }) => {
                 return (
