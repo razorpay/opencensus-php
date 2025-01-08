@@ -247,9 +247,7 @@ const TopNavigation = ({
 
     const { defaultPath } = productConfigMap[componentData.alias];
 
-    setTimeout(() => {
-      navigate(defaultPath);
-    }, 0);
+    navigate(defaultPath);
   };
 
   const handleConnectedMobileHomeNavigate = () => {

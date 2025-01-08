@@ -4,6 +4,8 @@ import { useBreakpoint } from '@razorpay/blade/utils';
 import { useNavigate } from 'react-router-dom';
 import { productConfigMap } from './config';
 import useConnectedProducts from 'merchant/components/NavigationLayout/hooks/useConnectedProducts';
+import openProductModal from 'merchant/components/NavigationLayout/TopNavigation/utils/openProductModal';
+import { useStore } from 'shell/commonStore';
 
 const ProductCardContent = ({ title, description }) => {
   return (
@@ -73,6 +75,8 @@ const ProductCard = ({ title, description, imageSrc, onClick, productAlias }) =>
 
 const ConnectedMobileHome = () => {
   const { theme } = useTheme();
+  const openModal = useStore((state) => state.openModal);
+  const closeModal = useStore((state) => state.closeModal);
   const navigate = useNavigate();
   const { matchedDeviceType } = useBreakpoint({
     breakpoints: theme.breakpoints,
@@ -92,6 +96,11 @@ const ConnectedMobileHome = () => {
 
     if (type == 'external') {
       window.open(value!, '_blank');
+      return;
+    }
+
+    if (type == 'modal') {
+      openProductModal(value, openModal, closeModal, { deviceType: matchedDeviceType });
       return;
     }
 

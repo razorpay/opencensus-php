@@ -27,6 +27,13 @@ export const productConfigMap = {
     description: 'Refer Merchants to a complete suite of payment products',
     imageSrc: '',
   },
+  more_partners_top_navigation_item: {
+    defaultPath: '/partners',
+    productAlias: 'more_partners_top_navigation_item',
+    title: 'Partner',
+    description: 'Refer Merchants to a complete suite of payment products',
+    imageSrc: '',
+  },
   billme_top_navigation_item: {
     defaultPath: '/billme',
     productAlias: 'billme_top_navigation_item',
