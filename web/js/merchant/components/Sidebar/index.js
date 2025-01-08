@@ -76,6 +76,7 @@ export const BASE_ROUTES = {
   reconciliations: '/reconciliations/dashboard/processes',
   assistedFinancing: '/assisted-financing',
   posSales: '/pos-sales',
+  billme: '/billme',
   posSelfServe: '/pos/catalog',
 };
 

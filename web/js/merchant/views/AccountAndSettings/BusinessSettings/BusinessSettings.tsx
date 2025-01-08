@@ -34,7 +34,6 @@ import {
 
 import { useGSTUpdateExperiment } from './Tabs/GSTDetails/utils';
 import { BusinessSettingsProps } from './typings';
-import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 import DocsLink from 'merchant/components/DocsLink';
 
 const AccountDetails = lazy(
@@ -165,16 +164,6 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
             >
               {user.isMobileSignupCareActive ? `Support History` : `Support Tickets`}
             </NavLink>
-          </ShowWhen>
-          <ShowWhen
-            additionalCondition={(user, { abExperiments }) => isBillMeMerchant({ abExperiments })}
-          >
-            <NavLink to={ROUTES_INFO.BILLME_SETTINGS}>BillMe Settings</NavLink>
-          </ShowWhen>
-          <ShowWhen
-            additionalCondition={(user, { abExperiments }) => isBillMeMerchant({ abExperiments })}
-          >
-            <NavLink to={ROUTES_INFO.STORE_SETTINGS}>Store Settings</NavLink>
           </ShowWhen>
           <DocsLink title="Documentations" isTab shouldUseBladeLink />
         </StyledHeader>

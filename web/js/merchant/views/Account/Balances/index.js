@@ -30,9 +30,9 @@ import { CompanyBalance } from 'merchant/views/Account/Balances/CompanyBalance';
 import CurrentBalance from 'merchant/views/Account/Balances/CurrentBalance';
 import Loader from 'common/ui/Loader';
 import { TicketSystemEmitter } from 'merchant/care/init';
+import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { BellIcon, Box, Heading, Link, Text } from '@razorpay/blade/components';
-import { isBillMeActivatedMerchant } from 'common/splitz/utils';
 
 const ManageBalanceAlert = lazy(() =>
   import(
@@ -287,7 +287,8 @@ class AddFundsContainer extends Component {
             <Text size="small" weight="regular" color="surface.text.gray.normal">
               Note: Standard TDR charges applies on adding funds
             </Text>
-            {isBillMeActivatedMerchant() ? <CompanyBalance /> : null}
+            {/* TODO: to add 'mode' condition check before Go-Live */}
+            {isBillMeMerchant() ? <CompanyBalance /> : null}
           </Box>
         </Box>
       </div>

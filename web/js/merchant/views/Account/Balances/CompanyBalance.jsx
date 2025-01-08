@@ -29,7 +29,7 @@ export const CompanyBalance = () => {
       backgroundColor="surface.background.gray.intense"
     >
       <Text size="large" weight="semibold" color="interactive.text.gray.subtle">
-        Wallet Balance (RazorpayBillme)
+        Wallet Balance (BillMe)
       </Text>
       <Text size="medium">
         Enjoy uninterrupted messaging services on digital billing & campaign management with your

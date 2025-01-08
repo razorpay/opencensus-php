@@ -149,6 +149,12 @@ export const navigationApi = {
           category: '',
           tags: [],
         },
+        {
+          title: 'BillMe',
+          product_id: 'bill_me',
+          category: '',
+          tags: [],
+        },
       ],
       max_default_options: '3',
     },

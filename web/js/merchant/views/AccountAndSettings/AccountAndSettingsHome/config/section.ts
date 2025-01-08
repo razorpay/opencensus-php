@@ -385,18 +385,18 @@ export const Sections: SectionCardInterface[] = [
         title: BusinessSettingsTitles[BusinessSettingsFields.BILLME_SETTINGS],
         href: ROUTES_INFO.BILLME_SETTINGS,
         additionalCondition:
-          ({ extraConfig: { abExperiments } }: AdditionalContextInterface) =>
+          ({ extraConfig: { abExperiments }, mode }: AdditionalContextInterface) =>
           (): boolean =>
-            isBillMeMerchant({ abExperiments }),
+            mode === 'live' && isBillMeMerchant({ abExperiments }),
       },
       {
         id: BusinessSettingsFields.STORE_SETTINGS,
         title: BusinessSettingsTitles[BusinessSettingsFields.STORE_SETTINGS],
         href: ROUTES_INFO.STORE_SETTINGS,
         additionalCondition:
-          ({ extraConfig: { abExperiments } }: AdditionalContextInterface) =>
+          ({ extraConfig: { abExperiments }, mode }: AdditionalContextInterface) =>
           (): boolean =>
-            isBillMeMerchant({ abExperiments }),
+            mode === 'live' && isBillMeMerchant({ abExperiments }),
       },
     ],
   },

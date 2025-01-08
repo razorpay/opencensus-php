@@ -15,6 +15,7 @@ import {
 } from 'merchant/components/Activation/ActivationUtils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
+import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 import {
   canViewCashAdvanceProduct,
   canViewLOCEMIProduct,
@@ -190,6 +191,18 @@ function MerchantNavLinks(props) {
           additionalCondition={(currentUser) =>
             currentUser.isMagicKonnectEnabled && showMagicKonnectTab
           }
+        />
+
+        <MainNavLink
+          label="BillMe"
+          type="product"
+          icon="i i-bill-me text-info"
+          additionalCondition={(currentUser) => {
+            // TODO: to add 'mode' condition check before Go-Live
+            return isBillMeMerchant({ abExperiments });
+          }}
+          to={routes.billme}
+          isNew={true}
         />
 
         <MainNavLink

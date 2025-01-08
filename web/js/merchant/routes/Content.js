@@ -988,9 +988,12 @@ class Content extends Component {
           />
 
           <Route
-            path="digital-bills/*"
+            path="billme/*"
             element={
-              <RouteGuard additionalCondition={() => false}>
+              <RouteGuard
+                // TODO: to add 'mode' condition check before Go-Live
+                additionalCondition={() => isBillMeMerchant({ abExperiments })}
+              >
                 <DigitalBills />
               </RouteGuard>
             }
@@ -2642,7 +2645,9 @@ class Content extends Component {
           <Route
             path="billme-settings/*"
             element={
-              <RouteGuard additionalCondition={() => isBillMeMerchant({ abExperiments })}>
+              <RouteGuard
+                additionalCondition={() => mode === 'live' && isBillMeMerchant({ abExperiments })}
+              >
                 <BillMeSettings />
               </RouteGuard>
             }

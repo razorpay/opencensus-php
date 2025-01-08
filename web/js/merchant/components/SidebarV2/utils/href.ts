@@ -1,6 +1,6 @@
 export const ROUTE_REG = {
   accountsettings:
-    /^\/(account-settings|payment-methods|checkout-settings|notification-settings|website-app-settings|payments-and-refunds-settings|business-settings|bank-accounts-settlements|international-settings)/,
+    /^\/(account-settings|payment-methods|checkout-settings|notification-settings|website-app-settings|payments-and-refunds-settings|business-settings|bank-accounts-settlements|international-settings|billme-settings|store-settings)/,
   riskAndFraud: /^\/(risk-and-fraud|risk-analytics)/,
   transactions: /^\/(payments|refunds|orders|batch-refunds|disputes|success-rate)/,
   // eslint-disable-next-line prettier/prettier
@@ -45,6 +45,7 @@ export const ROUTE_REG = {
   gcms_reports: /^\/gcms\/reports/,
   reconciliations: /^\/reconciliations/,
   assisted_financing: /^\/(assisted-financing)/,
+  bill_me: /^\/billme/,
   reports: /^\/reports(\/(downloads|schedules))?/,
 };
 
@@ -91,7 +92,7 @@ export const BASE_ROUTES = {
   internationalPaymentsBtn: '/payment-methods/international-payments',
   payment_metrics: '/payment-metrics',
   pos: '/pos',
-  bill_me: '/digital-bills',
+  bill_me: '/billme',
   gcms_programs: '/gcms/programs',
   gcms_resellers: '/gcms/resellers',
   gcms_orders: '/gcms/orders',

@@ -320,6 +320,7 @@ export const PRODUCTS_DATA = {
   bill_me: {
     icon: 'i-bill-me',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) => {
+      // TODO: to add 'mode' condition check before Go-Live
       return isBillMeMerchant({ abExperiments });
     },
   },

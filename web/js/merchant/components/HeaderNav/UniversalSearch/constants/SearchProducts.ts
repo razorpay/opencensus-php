@@ -6,6 +6,7 @@ import {
 import { SIDEEBAR_PRODUCTS_TITLES } from 'merchant/components/SidebarV2/constants/constants';
 import { BASE_ROUTES as SIDEBAR_ROUTES } from 'merchant/components/SidebarV2/utils/href';
 import { ExtraConfig, PRODUCTS_DATA } from 'merchant/components/SidebarV2/utils/Products';
+import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 import { AccountNSettingsIcons } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/config/section';
 import {
   ACCOUNT_N_SETTINGS_TITLES,
@@ -70,6 +71,7 @@ const {
   magic_checkout,
   magic_konnect,
   riskAndFraud,
+  bill_me,
 } = PRODUCTS_DATA;
 
 const paymentMethodCondition = ({ instruments, user, mode, paymentMethod }): boolean =>
@@ -641,6 +643,41 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     apiCondition: false,
   },
   {
+    title: SEARCH_PRODUCTS_TITLES.billme_settings,
+    url: SEARCH_PRODUCTS_URL.BILLME_SETTINGS,
+    tags: [
+      { value: 'BillMe' },
+      { value: 'Brands' },
+      { value: 'Terminals' },
+      { value: 'Digital Billing' },
+    ],
+    group: ['in: Account & Settings'],
+    icon: AccountNSettingsIcons.business_settings,
+    additionalCondition: ({
+      mode,
+      extraConfig: { abExperiments },
+    }: EligibleProductsTypes): boolean => mode === 'live' && isBillMeMerchant({ abExperiments }),
+    apiCondition: false,
+  },
+  {
+    title: SEARCH_PRODUCTS_TITLES.store_settings,
+    url: SEARCH_PRODUCTS_URL.STORE_SETTINGS,
+    tags: [
+      { value: 'BillMe' },
+      { value: 'Stores' },
+      { value: 'Store Groups' },
+      { value: 'Terminals' },
+      { value: 'Digital Billing' },
+    ],
+    group: ['in: Account & Settings'],
+    icon: AccountNSettingsIcons.business_settings,
+    additionalCondition: ({
+      mode,
+      extraConfig: { abExperiments },
+    }: EligibleProductsTypes): boolean => mode === 'live' && isBillMeMerchant({ abExperiments }),
+    apiCondition: false,
+  },
+  {
     title: SEARCH_PRODUCTS_TITLES.balances,
     url: SEARCH_PRODUCTS_URL.BALANCES,
     tags: [
@@ -1202,6 +1239,21 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     icon: riskAndFraud.icon,
     additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
       riskAndFraud.additionalCondition(user),
+    apiCondition: false,
+  },
+  {
+    title: SEARCH_PRODUCTS_TITLES.bill_me,
+    url: SEARCH_PRODUCTS_URL.bill_me,
+    tags: [
+      { value: 'BillMe' },
+      { value: 'Digital Billing' },
+      { value: 'Bills' },
+      { value: 'Stores' },
+    ],
+    icon: bill_me.icon,
+    additionalCondition: ({ extraConfig: { abExperiments } }: EligibleProductsTypes): boolean =>
+      // TODO: to add 'mode' condition check before Go-Live
+      isBillMeMerchant({ abExperiments }),
     apiCondition: false,
   },
 ];
