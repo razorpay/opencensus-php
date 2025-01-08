@@ -1240,76 +1240,6 @@ class Service extends Base\Service
         $transferIdsFailed = [];
         $transactionIdsFailed = [];
 
-        $merchantId='';
-
-        $expResult=false;
-
-        $experimentId='';
-
-        try{
-            if(count($transactionIds)>0){
-
-                $txnId= $transactionIds[0];
-
-                $txn= $this->repo->transaction->fetchByIdFromTiDB($txnId);
-
-                if($txn === null){
-
-                    $ex= new SettlementIdUpdateException($transactionIds, false);
-
-                    $this->trace->traceException(
-                        $ex,
-                        Trace::CRITICAL,
-                        TraceCode::TRANSFER_RECON_FAILURE,
-                        [
-                            'transaction_id' => $transactionIds,
-                            'message'=>'transactions could not be updated due to mid extraction failure'
-                        ]
-                    );
-
-                    throw $ex;
-                }
-
-                $merchantId=$txn[0]['merchant_id'];
-            }
-
-            $experimentId=$this->app['config']->get(self::TRANSFER_SETTLEMENT_NSS_EXPERIMENT_KEY);
-
-            $properties= [
-                'id'            => $merchantId,
-                'experiment_id' => $experimentId,
-            ];
-
-            $response= $this->app['splitzService']->evaluateRequest($properties);
-
-            $expResult = $response['response']['variant']['name']==='variant_on' ?? false;
-
-            $this->trace->info(
-                TraceCode::TRANSFER_RECON_EXPERIMENT,
-                [
-                    'experiment_evaluated' => $expResult,
-                    'experiment_id'=> $experimentId,
-                    'merchant_id'=>$merchantId,
-                ]
-            );
-
-
-        }catch(\Throwable $ex){
-            $this->trace->traceException(
-                $ex,
-                Trace::CRITICAL,
-                TraceCode::TRANSFER_RECON_FAILURE,
-                [
-                    'id'            => $merchantId,
-                    'experiment_id' => $experimentId,
-                    'transaction_id' => $transactionIds,
-                    'message'=> 'exception while fetching tidb data or exp evaluation'
-                ]
-            );
-            $expResult=false;
-        }
-
-
         foreach ($transactionIds as $transactionId)
         {
             $transferId = null;
@@ -1318,13 +1248,7 @@ class Service extends Base\Service
             try
             {
 
-                if ($expResult===true){
-                    [$transferId, $settlementId] = $this->updateSingleTransferWithSettlementIdRearch($transactionId);
-                }
-                else {
-                    [$transferId, $settlementId] = $this->updateSingleTransferWithSettlementId($transactionId);
-                }
-
+                [$transferId, $settlementId] = $this->updateSingleTransferWithSettlementIdRearch($transactionId);
 
                 if ($transferId === null and $settlementId === null)
                 {

@@ -14,9 +14,9 @@ class Bucket extends Job
 {
     use TransactionAware;
 
-    const MAX_ATTEMPTS = 5;
+    const MAX_ATTEMPTS = 10;
 
-    const JOB_RETRY_INTERVAL = 100;
+    const JOB_RETRY_INTERVAL = 500;
 
     const TRANSACTION_SETTLED_AT_ERROR_MESSAGE = 'transactions without settled_at value can not be consumed by new settlement service';
 
@@ -79,7 +79,13 @@ class Bucket extends Job
 
         try
         {
-            $txn = $this->repoManager->transaction->findOrFail($this->transactionId);
+            try{
+                $txn = $this->repoManager->transaction->findOrFail($this->transactionId);
+            }
+            catch(\Throwable $e)
+            {
+                $txn = $this->repoManager->transaction->fetchByIdFromTiDB($this->transactionId);
+            }
 
             // this is added to ensure that if the authorised transactions are created earlier
             // then after capture dirty reads should not happen and we always get the updated transaction

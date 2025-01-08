@@ -261,7 +261,7 @@ class Core extends Base\Core
         return $reversalAndRefundJournalIds;
     }
 
-    private function createPayloadForAPITransactionCreation( $results, RefundEntity $sourceRefund, $journals, $isCustomerRefundApplicable, $isRearchRefund = false)
+    public function createPayloadForAPITransactionCreation( $results, RefundEntity $sourceRefund, $journals, $isCustomerRefundApplicable, $isRearchRefund = false)
     {
 
         $segregatedJournalsByReversalId = [];
@@ -309,6 +309,11 @@ class Core extends Base\Core
             $refund = $refundsByReversalId[$reversalId]['refund'];
 
             [$creditJournalId, $debitJournalId] = $this->determineJournalIdForAPITransaction($transferReversalJournals, "merchant_balance", "merchant_balance");
+
+            if($debitJournalId==='' || isset($debitJournalId)===false)
+            {
+                [$creditJournalId, $debitJournalId] = $this->determineJournalIdForAPITransaction($transferReversalJournals, "merchant_refund_credits", "merchant_balance");
+            }
 
             $reversalTransactionPayload[] = [
                 "transfer_reversal_id" => $reversal->getId(),
