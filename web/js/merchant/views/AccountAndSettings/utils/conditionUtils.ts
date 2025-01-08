@@ -8,7 +8,7 @@ import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 import { AdditionalContextInterface } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 
 export const isConfigurationViewAllowed = (user: User): boolean =>
-  user.isAllowedView('configuration');
+  user.isAllowedView('configuration') && !user.isJnKOmniEnabled;
 
 export const isProfileViewAllowed = (user: User): boolean => user.isAllowedView('profile');
 
@@ -48,8 +48,11 @@ export const isPaymentMethodEnabled = (user: User, mode: string): boolean => {
   const isInstrumentHidden = user.isInstrumentRequestHidden;
   const isModeLive = mode === 'live';
 
-  const isPaymentMethodConditionMet =
-    (isOrgValid && isCountryValid) || isInstrumentHidden;
+  if (user.isJnKOmniEnabled) {
+    return false;
+  }
+
+  const isPaymentMethodConditionMet = (isOrgValid && isCountryValid) || isInstrumentHidden;
 
   return isPaymentMethodConditionMet && isModeLive;
 };
@@ -85,9 +88,12 @@ export const isWebsiteDetailsEnabled = ({
   !extraConfig.isConfigTagEnabled('contact.website_app_details');
 
 export const isGstDetailsEnabled = (user: User, extraConfig: ExtraConfig): boolean =>
-  user.isAllowedView('profile_gst') && !extraConfig.isConfigTagEnabled('account.gst');
+  user.isAllowedView('profile_gst') &&
+  !extraConfig.isConfigTagEnabled('account.gst') &&
+  !user.isJnKOmniEnabled;
 
-export const isAccountDetailsEnabled = (user: User): boolean => user.isActivated;
+export const isAccountDetailsEnabled = (user: User): boolean =>
+  user.isActivated && !user.isJnKOmniEnabled;
 
 export const isTeamManagementAllowed = (user: User): boolean => user.isAllowedTeamManagement;
 

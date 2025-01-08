@@ -255,6 +255,10 @@ export const Sections: SectionCardInterface[] = [
     title: 'Website and app settings',
     icon: AccountNSettingsIcons.website_app_settings,
     iconBackground: 'linear-gradient(154.84deg, #01B358 17.49%, #008CB1 103.14%)',
+    additionalCondition:
+      () =>
+      (user: User): boolean =>
+        !user.isJnKOmniEnabled,
     subSections: [
       {
         id: WebsiteAppSettingsFields.WEBSITE_APP_DETAIL,
@@ -401,6 +405,10 @@ export const Sections: SectionCardInterface[] = [
     title: 'Payments and refunds',
     icon: AccountNSettingsIcons.payments_refunds,
     iconBackground: 'linear-gradient(330.16deg, #30C5D8 1.72%, #1566F1 91.46%)',
+    additionalCondition:
+      () =>
+      (user: User): boolean =>
+        !user.isJnKOmniEnabled,
     subSections: [
       {
         id: PaymentRefundsFields.BALANCES,
@@ -494,7 +502,10 @@ export const Sections: SectionCardInterface[] = [
     title: 'Bank accounts and settlements',
     icon: AccountNSettingsIcons.bank_and_settlements,
     iconBackground: 'linear-gradient(162.28deg, #2A86F3 27.27%, #C592FF 121.23%)',
-    additionalCondition: (): ((user: User) => boolean) => isProfileViewAllowed,
+    additionalCondition:
+      () =>
+      (user: User): boolean =>
+        !user.isJnKOmniEnabled && isProfileViewAllowed(user),
     subSections: [
       {
         id: BankAccountSettlementFields.BANK_ACCOUNT_DETAILS,

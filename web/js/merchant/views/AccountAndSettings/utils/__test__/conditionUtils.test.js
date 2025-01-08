@@ -549,3 +549,48 @@ describe('isCurlecPaypalOnboardingEnabled', () => {
     expect(conditionalUtils.isCurlecPaypalOnboardingEnabled(extraConfig)).toBe(false);
   });
 });
+
+const testUtilsForJnkOmniFlow = ({ utilName, userProperty, additionalProperties, config = {} }) => {
+  describe(`${utilName} - with JNK omni flow`, () => {
+    test.each([
+      [false, true],
+      [true, false],
+    ])(`should return %s when ${userProperty} is %s`, (userPropertyValue, utilOutput) => {
+      expect(
+        conditionalUtils[utilName](
+          {
+            [userProperty]: userPropertyValue,
+            ...additionalProperties,
+          },
+          config,
+        ),
+      ).toBe(utilOutput);
+    });
+  });
+};
+
+testUtilsForJnkOmniFlow({
+  utilName: 'isConfigurationViewAllowed',
+  userProperty: 'isJnKOmniEnabled',
+  additionalProperties: {
+    isAllowedView: jest.fn(() => true),
+  },
+});
+testUtilsForJnkOmniFlow({
+  utilName: 'isAccountDetailsEnabled',
+  userProperty: 'isJnKOmniEnabled',
+  additionalProperties: {
+    isActivated: true,
+  },
+});
+testUtilsForJnkOmniFlow({
+  utilName: 'isGstDetailsEnabled',
+  userProperty: 'isJnKOmniEnabled',
+  additionalProperties: {
+    isActivated: true,
+    isAllowedView: jest.fn(() => true),
+  },
+  config: {
+    isConfigTagEnabled: jest.fn(() => false),
+  },
+});

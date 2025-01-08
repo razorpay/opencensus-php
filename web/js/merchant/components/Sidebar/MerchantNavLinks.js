@@ -481,20 +481,17 @@ function MerchantNavLinks(props) {
         }
         isPending={isReportsPending}
       />
-
-      <ShowWhen additionalCondition={() => !isOmniJkFlow}>
-        <MainNavLink
-          label="Account & Settings"
-          icon="i i-settings text-warning"
-          type="general"
-          to="/account-settings"
-          additionalCondition={(currentUser) =>
-            currentUser.isAllowedMultiple(
-              'webhooks applications configuration api_keys profile credits add_funds team referrals',
-            ) && currentUser.isAccountAndSettingsRevampEnabled
-          }
-        />
-      </ShowWhen>
+      <MainNavLink
+        label="Account & Settings"
+        icon="i i-settings text-warning"
+        type="general"
+        to="/account-settings"
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedMultiple(
+            'webhooks applications configuration api_keys profile credits add_funds team referrals',
+          ) && currentUser.isAccountAndSettingsRevampEnabled
+        }
+      />
       <MainNavLink
         label="My Account"
         type="general"

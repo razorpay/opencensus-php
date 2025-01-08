@@ -1910,7 +1910,9 @@ export default class User {
     ];
 
     if (this.isJnKOmniEnabled) {
-      return false;
+      return (
+        getSplitzExperimentVariant('ramp_account_settings_for_jnk_omni')?.variables?.result === 'on'
+      );
     }
 
     const isHDFCOrg = excludedOrgs.some(
