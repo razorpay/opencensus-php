@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\QrCode\Entity as QrCodeEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Gateway\Upi\Base\IntentParams as IntentParams;
@@ -345,6 +346,11 @@ class QrGatewayModule
 
     public static function checkIfOldGatewayProcessedThroughNewQrPaymentProcessingFlow(string $gateway, $mode = Mode::LIVE)
     {
+        if ($gateway === Gateway::UPI_RZPAPB)
+        {
+            return true;
+        }
+
         // Fetch the variant from cache
         $qrVariant = Cache::get(self::QR_EXISTING_GATEWAY_CACHE_PREFIX . $gateway);
 

@@ -60,7 +60,7 @@ class UpiRzpApbQRCodeTest extends TestCase
             [
                 $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
                 $this->config->get('app.qr_payment_refactor_gateway')=> 'off',
-                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'on',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'off',
             ]
         );
 
