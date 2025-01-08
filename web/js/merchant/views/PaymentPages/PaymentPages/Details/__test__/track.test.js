@@ -107,6 +107,8 @@ describe('_track', () => {
       userId: 'Unknown',
       userRole: 'Unknown',
       section: 'Details Payment Page',
+      browser: undefined,
+      device_type: 'dweb',
     };
 
     _track.duplicatePage(extraProperties);
@@ -132,6 +134,8 @@ describe('_track', () => {
       mode: null,
       userId: 'Unknown',
       userRole: 'Unknown',
+      browser: undefined,
+      device_type: 'dweb',
     };
     _track.editPage(extraProperties);
 
@@ -224,6 +228,8 @@ describe('_track', () => {
       mode: null,
       userId: 'Unknown',
       userRole: 'Unknown',
+      browser: undefined,
+      device_type: 'dweb',
     };
     _track.updateStock(extraProperties);
 
@@ -261,6 +267,8 @@ describe('_track', () => {
       mode: null,
       userId: 'Unknown',
       userRole: 'Unknown',
+      browser: undefined,
+      device_type: 'dweb',
     };
     _track.settingsDropdown(extraProperties);
 

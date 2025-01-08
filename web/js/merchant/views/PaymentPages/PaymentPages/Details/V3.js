@@ -78,7 +78,7 @@ const trackShare = (eventName, data) => {
 @RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
 export default class PaymentPagesV3Entity extends React.Component {
   state = { detailsCollapse: true, isExportInProgress: false };
-
+  isStorefrontPage = location.hash === '#storefront';
   componentDidMount() {
     if (!this.props.reportConfigs) {
       this.props.saveReportConfigs();
@@ -247,24 +247,27 @@ export default class PaymentPagesV3Entity extends React.Component {
 
     action === 'Edit Stock' &&
       track.updateStock({
-        storefrontId: id,
+        pageId: id,
         published_page_url: short_url,
+        product_page: this.isStorefrontPage ? 'Storefront Page' : 'Payment Page',
       });
   };
 
   onClickDuplicatePage = () => {
     const { id, short_url } = this.props.paymentPageEntity;
     track.duplicatePage({
-      storefrontId: id,
+      pageId: id,
       published_page_url: short_url,
+      product_page: this.isStorefrontPage ? 'Storefront Page' : 'Payment Page',
     });
   };
 
   onClickEditPage = () => {
     const { id, short_url } = this.props.paymentPageEntity;
     track.editPage({
-      storefrontId: id,
+      pageId: id,
       published_page_url: short_url,
+      product_page: this.isStorefrontPage ? 'Storefront Page' : 'Payment Page',
     });
   };
 
@@ -426,8 +429,11 @@ export default class PaymentPagesV3Entity extends React.Component {
                             isActive
                               ? () => {
                                   track.deactivatePageClicked({
-                                    storefrontId: id,
+                                    pageId: id,
                                     published_page_url: short_url,
+                                    product_page: this.isStorefrontPage
+                                      ? 'Storefront Page'
+                                      : 'Payment Page',
                                   });
                                   toggleManualActivation();
                                 }
@@ -576,8 +582,9 @@ export default class PaymentPagesV3Entity extends React.Component {
             onClick={() => {
               this.state.detailsCollapse &&
                 track.showMore({
-                  storefrontId: id,
+                  pageId: id,
                   published_page_url: short_url,
+                  product_page: this.isStorefrontPage ? 'Storefront Page' : 'Payment Page',
                 });
               this.setState((prevState) => ({ detailsCollapse: !prevState.detailsCollapse }));
             }}

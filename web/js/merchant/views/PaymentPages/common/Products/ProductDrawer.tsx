@@ -311,11 +311,12 @@ const ProductDrawer = ({
         actionName: 'Clicked',
         screen: 'Edit product',
         properties: {
-          ...getCommonAnalyticsProperties(window.rzp_user),
+          ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
           storeFrontId,
           productId: productData?.id ?? undefined,
           isNewStorefront: Boolean(isCreate),
           screenSource,
+          product_page: 'Storefront Page',
         },
       });
       editProductCatalog(productData?.id, generateProductRequest(product))
@@ -343,10 +344,11 @@ const ProductDrawer = ({
         actionName: 'Clicked',
         screen: 'Add New Product',
         properties: {
-          ...getCommonAnalyticsProperties(window.rzp_user),
+          ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
           storeFrontId,
           isNewStorefront: Boolean(isCreate),
           screenSource,
+          product_page: 'Storefront Page',
         },
       });
       createProductCatalog(generateProductRequest(product))

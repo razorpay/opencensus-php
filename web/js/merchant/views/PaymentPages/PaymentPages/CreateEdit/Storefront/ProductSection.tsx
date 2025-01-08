@@ -66,8 +66,9 @@ export const ProductItem = ({
         actionName: 'Clicked',
         screen: 'Create storefront page',
         properties: {
-          ...getCommonAnalyticsProperties(window.rzp_user),
+          ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
           productId: id,
+          product_page: 'Storefront Page',
         },
       });
     }
@@ -82,8 +83,9 @@ export const ProductItem = ({
         actionName: 'Clicked',
         screen: 'Create storefront page',
         properties: {
-          ...getCommonAnalyticsProperties(window.rzp_user),
+          ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
           productId: id,
+          product_page: 'Storefront Page',
         },
       });
     }

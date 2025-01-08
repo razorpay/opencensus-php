@@ -61,7 +61,8 @@ export const getPaymentPagesTabs = (
           actionName: 'clicked',
           screen: 'Payment pages screen',
           properties: {
-            ...getCommonAnalyticsProperties(window.rzp_user),
+            ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
+            product_page: 'Storefront Page',
           },
         });
       },

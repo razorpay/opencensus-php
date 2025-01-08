@@ -40,8 +40,9 @@ export default ({ products, loading, handleEditProduct }) => {
       actionName: 'Clicked',
       screen: 'Products Screen',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
         productId: item.id,
+        product_page: 'Storefront Page',
       },
     });
   };

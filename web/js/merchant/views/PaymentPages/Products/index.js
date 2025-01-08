@@ -80,7 +80,8 @@ class Products extends ListContainer {
       actionName: 'loaded',
       screen: 'Products screen',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
+        product_page: 'Storefront Page',
       },
     });
   }
@@ -106,8 +107,9 @@ class Products extends ListContainer {
       actionName: 'Clicked',
       screen: 'Products Screen',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
         screen_source: 'listing_view',
+        product_page: 'Storefront Page',
       },
     });
   };
@@ -152,8 +154,9 @@ class Products extends ListContainer {
       actionName: 'Clicked on Add Category',
       screen: 'Products Screen',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
         screen_source: 'listing_view',
+        product_page: 'Storefront Page',
       },
     });
   };
@@ -165,7 +168,8 @@ class Products extends ListContainer {
       actionName: 'Clicked',
       screen: 'Products Screen',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
+        product_page: 'Storefront Page',
       },
     });
   };
@@ -194,10 +198,11 @@ class Products extends ListContainer {
       actionName: 'Clicked',
       screen: 'Products screen',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
         title,
         status,
         count,
+        product_page: 'Storefront Page',
       },
     });
   };

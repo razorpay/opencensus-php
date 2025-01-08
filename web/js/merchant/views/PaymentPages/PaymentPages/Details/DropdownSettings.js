@@ -22,8 +22,9 @@ const DropdownSettings = ({
 
   const onShow = useCallback(() => {
     track.settingsDropdown({
-      storefrontId: paymentPageEntity?.id,
+      pageId: paymentPageEntity?.id,
       published_page_url: paymentPageEntity?.short_url,
+      product_page: isStorefrontPage ? 'Storefront Page' : 'Payment Page',
     });
   }, [paymentPageEntity]);
 

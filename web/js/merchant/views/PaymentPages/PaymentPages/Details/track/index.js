@@ -29,7 +29,7 @@ function _track() {
       screen,
       toCleverTap,
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
         ...properties,
         section: section_name,
       },

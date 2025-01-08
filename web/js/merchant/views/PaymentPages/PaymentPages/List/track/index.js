@@ -2,10 +2,8 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-
 function _track() {
   let lumberjackTrack = () => {};
-
   function sendToLumberjack(event, data) {
     lumberjackTrack(
       window.rzpQ.paymentPages().interaction(`pp.${event}`, {
@@ -13,7 +11,6 @@ function _track() {
       }),
     );
   }
-
   function sendToSegment(
     objectName,
     actionName,
@@ -28,13 +25,13 @@ function _track() {
       screen,
       toCleverTap,
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
         ...properties,
         section,
       },
     });
   }
-
+  const product_page = 'Storefront Page';
   return {
     load: () => {
       sendToLumberjack('list.load');
@@ -112,7 +109,9 @@ function _track() {
         'storfront page checkbox',
         'clicked',
         'list payment page',
-        {},
+        {
+          product_page,
+        },
         'list Payment Pages',
       );
     },
@@ -134,6 +133,7 @@ function _track() {
         'Create storefront page',
         {
           ...extraProperties,
+          product_page,
         },
         'Select page of your choice',
       );
@@ -146,6 +146,7 @@ function _track() {
         'Add New Product Modal',
         {
           ...extraProperties,
+          product_page,
         },
         'Create Storefront Page',
       );
@@ -158,6 +159,7 @@ function _track() {
         'Existing Product Modal',
         {
           ...extraProperties,
+          product_page,
         },
         'Create Storefront Page',
       );
@@ -170,6 +172,7 @@ function _track() {
         'Existing Product Modal',
         {
           ...extraProperties,
+          product_page,
         },
         'Existing Product Modal',
       );
@@ -182,6 +185,7 @@ function _track() {
         'Add New Product Modal',
         {
           ...extraProperties,
+          product_page,
         },
         'Existing Product Modal',
       );
@@ -194,6 +198,7 @@ function _track() {
         'Add New Product Modal',
         {
           ...extraProperties,
+          product_page,
         },
         'Add New Product Modal',
       );
@@ -206,6 +211,7 @@ function _track() {
         'Add New Category Modal',
         {
           ...extraProperties,
+          product_page,
         },
         'Add New Product Modal',
       );
@@ -218,6 +224,7 @@ function _track() {
         'Add New Category Modal',
         {
           ...extraProperties,
+          product_page,
         },
         'Add New Category Modal',
       );
@@ -230,6 +237,7 @@ function _track() {
         'Add New Category Modal',
         {
           ...extraProperties,
+          product_page,
         },
         'Add New Category Modal',
       );
@@ -242,6 +250,7 @@ function _track() {
         'Add New Product Modal',
         {
           ...extraProperties,
+          product_page,
         },
         'Add New Category Modal',
       );
@@ -254,6 +263,7 @@ function _track() {
         'Create Storefront Pages',
         {
           ...extraProperties,
+          product_page,
         },
         'Existing Product Modal',
       );
@@ -266,6 +276,7 @@ function _track() {
         'Create Storefront Pages',
         {
           ...extraProperties,
+          product_page,
         },
         'Create Storefront Pages',
       );
@@ -278,6 +289,7 @@ function _track() {
         'Create Storefront Pages',
         {
           ...extraProperties,
+          product_page,
         },
         'Create Storefront Pages',
       );
@@ -290,6 +302,7 @@ function _track() {
         'Create Storefront Pages',
         {
           ...extraProperties,
+          product_page,
         },
         'Create Storefront Pages',
       );
@@ -302,6 +315,7 @@ function _track() {
         'Create Storefront Pages',
         {
           ...extraProperties,
+          product_page,
         },
         'Create Storefront Pages',
       );
@@ -314,6 +328,7 @@ function _track() {
         'Published Page',
         {
           ...extraProperties,
+          product_page,
         },
         'Published Page',
       );
@@ -326,6 +341,7 @@ function _track() {
         'Edit storefront page',
         {
           ...extraProperties,
+          product_page,
         },
         'Published Page',
       );
@@ -338,7 +354,28 @@ function _track() {
         'Published Page',
         {
           ...extraProperties,
+          product_page,
         },
+        'Published Page',
+      );
+    },
+
+    successPageCopyUrl: (extraProperties) => {
+      sendToSegment(
+        'copy page url',
+        'clicked',
+        'Published Page',
+        { ...extraProperties, product_page },
+        'Published Page',
+      );
+    },
+
+    publishedPagePreview: (extraProperties) => {
+      sendToSegment(
+        'view published page',
+        'clicked',
+        'Published Page',
+        { ...extraProperties, product_page },
         'Published Page',
       );
     },

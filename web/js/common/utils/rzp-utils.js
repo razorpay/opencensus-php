@@ -37,6 +37,7 @@ import currencies from 'merchant/constants/currency';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 
 import { acronyms, shortenText } from './acronyms';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -93,8 +94,7 @@ export function getCommonAnalyticsProperties(user, config = {}) {
     // skip properties if sesion is expired/user details are not availble
     return {};
   }
-
-  const { addUserProperties = false } = config;
+  const { addUserProperties = false, isStorefrontPage = false } = config;
 
   let userProperties = {};
 
@@ -109,6 +109,13 @@ export function getCommonAnalyticsProperties(user, config = {}) {
       user_business_sub_category: user.business_subcategory,
     };
   }
+  let storefrontProperties = {};
+  if (isStorefrontPage) {
+    storefrontProperties = {
+      browser: window.razorpayAnalytics?.utils?.getBrowserDetails(),
+      device_type: isMobileDevice(1020) ? 'mweb' : 'dweb',
+    };
+  }
 
   const mode = localStorage?.getItem(`rzp_mode--${user.id}`);
   return {
@@ -117,6 +124,7 @@ export function getCommonAnalyticsProperties(user, config = {}) {
     userRole: user?.role || 'Unknown',
     merchantId: user?.current || 'Unknown',
     ...userProperties,
+    ...storefrontProperties,
   };
 }
 

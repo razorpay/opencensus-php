@@ -26,9 +26,10 @@ function MobileActionButtons({
       actionName: 'Clicked',
       screen: 'Create storefront page',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
         storefrontId: storefrontId ?? undefined,
         isNewStoreFront: Boolean(isCreate),
+        product_page: 'Storefront Page',
       },
     });
   };
@@ -40,9 +41,10 @@ function MobileActionButtons({
       actionName: 'Clicked',
       screen: 'Create storefront page',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
         storefrontId: storefrontId ?? undefined,
         isNewStoreFront: Boolean(isCreate),
+        product_page: 'Storefront Page',
       },
     });
   };

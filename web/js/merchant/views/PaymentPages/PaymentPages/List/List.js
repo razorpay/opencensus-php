@@ -35,7 +35,8 @@ export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }
         screen: 'Payment Page List Item',
         properties: {
           storefrontId: item.id,
-          ...getCommonAnalyticsProperties(window.rzp_user),
+          ...getCommonAnalyticsProperties(window.rzp_user, { isStorefrontPage: true }),
+          product_page: 'Storefront Page',
         },
       });
     } else {

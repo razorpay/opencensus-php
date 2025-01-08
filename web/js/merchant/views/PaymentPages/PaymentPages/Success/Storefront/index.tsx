@@ -72,7 +72,21 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
   };
 
   const trackClickboardCopy = () => {
-    // track.success.clickCopyUrl();
+    const locationState = location.state;
+    track.successPageCopyUrl({
+      storefrontId: props.id,
+      isNewStorefront: Boolean(locationState?.isCreate),
+      published_page_url: storeData.shortUrl,
+    });
+  };
+
+  const handlePreviewPublishedPageClick = () => {
+    const locationState = location.state;
+    track.publishedPagePreview({
+      storefrontId: props.id,
+      isNewStorefront: Boolean(locationState?.isCreate),
+      published_page_url: storeData.shortUrl,
+    });
   };
 
   const handleShare = (): void => {
@@ -251,6 +265,7 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
               href={storeData.shortUrl}
               target="_blank"
               rel="noreferrer noopener"
+              onClick={handlePreviewPublishedPageClick}
             >
               <i className="i i-external-link" />
             </a>
