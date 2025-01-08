@@ -100,7 +100,7 @@ class Service extends Base\Service
         ]);
 
         list($error, $data, $httpCode) = $request->processInput($data)->send('submerchants', 'POST');
-        
+
         if (($isLinkedAccount === false) and (empty($error) === true))
         {
             list($error, $genericUser) = (new User\Service)->getUserFromApi($this->currentUser->id);
@@ -634,6 +634,41 @@ class Service extends Base\Service
         return null;
     }
 
+    private function getPreSignupDetailsCacheKey($merchantId)
+    {
+        return session()->getId().':presignup_details:' . $merchantId;
+    }
+
+    public function getPreSignupDetailsWithCache($merchantId): array
+    {
+        $cacheKey = $this->getPreSignupDetailsCacheKey($merchantId);
+
+        $data = $this->app['cache']->get($cacheKey);
+
+        if (!empty($data))
+        {
+            return $data;
+        }
+
+        try {
+            $data = $this->getPreSignupDetails($merchantId);
+
+            if (!empty($data))
+            {
+                $this->app['cache']->put($cacheKey, $data, AppConstants::PRE_SIGNUP_DETAILS_CACHE_TTL);
+            }
+        } catch (\Exception $e) {
+            $data = [
+                'contact_name' => '',
+            ];
+
+            $this->trace->error(TraceCode::PRE_SIGNUP_DETAILS_FETCH_ERROR, [
+                'exception' => $e->getMessage()
+            ]);
+        }
+
+        return $data;
+    }
     /**
      * returns the presignup data for a merchant
      * if the merchant is referred (submerchant)
@@ -790,7 +825,7 @@ class Service extends Base\Service
 
         return $data;
     }
-    
+
     public function getTreatment($featureFlag, $merchantId = '')
     {
         $razorxService = (new Razorx\Service());

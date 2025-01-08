@@ -30,6 +30,7 @@ use App\Constants\Constants as AppConstants;
 use App\Metrics\Constants as MetricConstants;
 use App\Merchant\Constants as MerchantConstants;
 use App\User\Constants as UserConstants;
+use Illuminate\Http\Request as HttpRequest;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 
@@ -366,6 +367,7 @@ class UserController extends Controller
         }
 
         $data['cdnDashboardUrl'] = \Config::get('app.cdn_dashboard_url');
+        $data['cdnDashboardAssetsUrl'] = \Config::get('app.cdn_dashboard_assets_url');
         $data['cdnBaseUrl'] = \Config::get('app.cdn_base_url');
         $data['ljKey'] = \Config::get('app.lj_key');
         $data['env'] = \Config::get('app.env');
@@ -706,6 +708,18 @@ class UserController extends Controller
         $this->httpClient   = $this->getHttpClient(ApiUrl::getApiBaseUrl(), \Config::get('api.request_timeout'));
         $this->adminService = new Admin\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
         $this->userService  = new User\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
+
+        $currentRouteName = \Route::currentRouteName();
+        $authSource = app('request')->input('auth_source', '');
+
+        if ($currentRouteName === 'dashboard'
+            && $authSource !== 'website'
+            && $authSource !== 'website_homepage'
+            && $this->isShellRedirectionExperimentEnabled()
+            && $this->shouldRedirectToShell())
+        {
+            return redirect()->route('dashboard_app');
+        }
 
         [$orgError, $org] = $this->adminService->getOrg($domain);
 
@@ -1135,6 +1149,7 @@ class UserController extends Controller
             'env'              => \Config::get('app.env'),
             'cdnBaseUrl'       => \Config::get('app.cdn_base_url'),
             'cdnDashboardUrl'  => \Config::get('app.cdn_dashboard_url'),
+            'cdnDashboardAssetsUrl'  => \Config::get('app.cdn_dashboard_assets_url'),
             'api_host'         => ApiUrl::getCheckoutApi(),
             'org'              => json_encode($org),
         ];
@@ -2227,6 +2242,14 @@ class UserController extends Controller
         return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
+    public function getShellRedirectionData(): array
+    {
+        $this->httpClient   = $this->httpClient ?? $this->getHttpClient(ApiUrl::getApiBaseUrl(), \Config::get('api.request_timeout'));
+        $this->userService  = $this->userService ?? new User\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
+
+        return $this->userService->getShellRedirectionData();
+    }
+
     private function getDashboardBaseUrl()
     {
         $isSessionSecure = \Config::get('session.secure');
@@ -2424,5 +2447,28 @@ class UserController extends Controller
             $cacheKey = Util::getIsMerchantLoginCacheKey($merchant_id);
             $this->cache->forget($cacheKey);
         }
+    }
+
+    private function shouldRedirectToShell(): bool
+    {
+        $data = $this->getShellRedirectionData();
+
+        return $data['destination'] === AppConstants::DESTINATION_SHELL;
+    }
+
+    private function isShellRedirectionExperimentEnabled(): bool
+    {
+        $merchantId = Session::get('current_merchant_id') ?? '';
+
+        if (empty($merchantId) === true)
+        {
+            return false;
+        }
+
+        $shellExpId = config('splitz.experiments')['SHELL_REDIRECTION_EXPERIMENT_ID'];
+
+        $data = (new SplitzService())->getVariantBulk($merchantId, [$shellExpId], [], self::SPLITZ_BULK_EVALUATE_PATH);
+
+        return ($data[$shellExpId]['variables']['result'] ?? null) === 'on';
     }
 }

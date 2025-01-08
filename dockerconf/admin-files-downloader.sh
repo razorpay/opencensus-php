@@ -22,6 +22,11 @@ admin_file=${BASH_REMATCH[0]}
 # css file
 [[ $content =~ $css_pattern ]]
 css_file=${BASH_REMATCH[0]}
+
+# Ensure directories exist
+mkdir -p /app/public/dist
+mkdir -p /app/public/dist/css
+
 # get all the files and output in proper path
 wget $base_url/admin-entry.js -P /app/public/dist
 wget $base_url/$vendor_file -P /app/public/dist

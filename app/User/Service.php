@@ -35,6 +35,7 @@ use App\Merchant\GenericMerchant;
 use Razorpay\Api\Errors\ErrorCode;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Illuminate\Contracts\Cache\Store;
+use Illuminate\Support\Facades\Cache;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use App\Admin\Service as AdminService;
 use Illuminate\Foundation\Application;
@@ -1517,6 +1518,159 @@ class Service extends Base\Service
         }
     }
 
+    public function getUserAndMerchantDetailsCacheKey(): string
+    {
+        return "user_merchant_details:" . session()->getId();
+    }
+
+    public function getUserAndMerchantDetailsWithCache(array $params = []): array
+    {
+        $cacheKey = $this->getUserAndMerchantDetailsCacheKey();
+
+        $data = $this->cache->get($cacheKey);
+
+        if (!empty($data))
+        {
+            return [[], $data];
+        }
+
+        [$error, $data] = $this->getUserAndMerchantDetails($params);
+
+        if (!empty($error))
+        {
+            $this->cache->put($cacheKey, $data, AppConstants::USER_MERCHANT_DETAILS_CACHE_TTL);
+        }
+
+        return [$error, $data];
+    }
+
+    public function getUserAndMerchantDetails(array $params = [])
+    {
+        $data = [
+            'current'   =>  null,
+        ];
+        $userId = "";
+
+        $user = Auth::user();
+
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            $userId = app('request.ctx')->getUserId();
+        }
+
+        if (!$user && empty($userId) === true)
+        {
+            return [['Not logged in'], null];
+        }
+        else if (empty($userId) === true)
+        {
+            $userId = $user->id;
+        }
+
+        [$error, $genericUser] = $this->getUserFromApiWithCache($userId);
+
+        if (empty($error) === false)
+        {
+            return [$error, ['details' => $data, 'currentMerchant' => null, 'genericUser' => null]];
+        }
+
+        $userDetails = $genericUser->toArray();
+
+        $data['user'] = $userDetails;
+
+        $currentMerchant = (new Helper([AppConstants::HTTP_CLIENT => $this->httpClient]))->getCurrentMerchant($genericUser);
+
+        if ($currentMerchant === null)
+        {
+            return [[], ['details' => $data, 'currentMerchant' => null, 'genericUser' => null]];
+        }
+
+        $data = $data + $currentMerchant->toArray();
+
+        $data['primaryOwner'] = false;
+
+        if ($currentMerchant->role === 'owner')
+        {
+            $data['primaryOwner'] = true;
+        }
+
+        return [[], ['details' => $data, 'currentMerchant' => $currentMerchant, 'genericUser' => $genericUser]];
+    }
+
+    public function getShellRedirectionData($options=[]): array
+    {
+        $authSource = app('request')->input('auth_source', '');
+
+        if ($authSource === 'website' || $authSource === 'website_homepage')
+        {
+            return [
+                "destination"   => AppConstants::DESTINATION_PHP_BE,
+            ];
+        }
+
+        [$error, $data] = $this->getUserAndMerchantDetailsWithCache($options);
+
+        if (!empty($error))
+        {
+            $this->trace->info(TraceCode::SHELL_REDIRECT_ERROR, [
+                'error' => $error,
+            ]);
+
+            return [
+                "destination"   => AppConstants::DESTINATION_PHP_BE,
+            ];
+        }
+
+        $currentMerchant = $data['currentMerchant'] ?? null;
+
+        if (empty($currentMerchant))
+        {
+            $this->trace->info(TraceCode::SHELL_REDIRECT_ERROR, [
+                'error' => 'No current merchant found',
+            ]);
+            return [
+                "destination"   => AppConstants::DESTINATION_PHP_BE,
+            ];
+        }
+
+        $currentMerchantId = $currentMerchant->id;
+
+        $merchantService = new Merchant\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
+
+        $data["pre_signup"] = $merchantService->getPreSignupDetailsWithCache($currentMerchantId);
+
+        $data['pre_signup_complete'] = (
+            isset($data['pre_signup'][Merchant\Entity::CONTACT_NAME])
+            AND (strlen($data['pre_signup'][Merchant\Entity::CONTACT_NAME]) !== 0)
+        );
+
+        $merchantDetailService = new MerchantDetails\Service;
+
+        // for non-registered check if pre_signup_complete done or not;
+        if (($merchantDetailService->isExperimentOnAndIsUnregisteredBusinessType($data) === true
+                && ($merchantDetailService->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup'])) === true)
+            || ((isset($data['activation_status']) === true)
+                && ($data['activation_status'] !== null))
+            || (($currentMerchant->role !== 'owner')
+                && ($currentMerchant->banking_role !== 'owner')))
+        {
+            $data['pre_signup_complete'] = true;
+        }
+
+        // This condition is only for scenarios when user is already authenticated and visits the root route directly.
+        // This will enforce routing via ingress for shell node server switch integration to work (whenever enabled)
+        $user = $data['details']['user'] ?? [];
+        $isConfirmed = (bool) ($user['confirmed'] ?? false);
+        $isMobileConfirmed = (bool) ($user['contact_mobile_verified'] ?? false);
+        $isPreSignupComplete = (bool) ($data['pre_signup_complete'] ?? false);
+
+        $isRedirectApplicable = ($isConfirmed || $isMobileConfirmed) && $isPreSignupComplete;
+
+        return [
+            "destination"   => $isRedirectApplicable ? AppConstants::DESTINATION_SHELL : AppConstants::DESTINATION_PHP_BE,
+        ];
+    }
+
     public function getFirstChunkUserDetails(array $params = [])
     {
         $data = [
@@ -2922,6 +3076,51 @@ class Service extends Base\Service
     public function loginOnApiBy2faSetupSuccessful(array $input)
     {
         return $this->loginOnApiOnRoute($input,'users/login/2fa_setup/verify-mobile', 'POST');
+    }
+
+    private function getUserCacheKey(string $userId, $options=[]): string
+    {
+        $adminUser = Auth::guard('api')->user();
+
+        $currentMerchantId = Session::get('current_merchant_id');
+
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            $currentMerchantId = app('request.ctx')->getMerchantId();
+        }
+
+        $suffix = 'user';
+
+        if (empty($adminUser) === false)
+        {
+            $suffix = 'admin-user';
+        }
+
+        return 'user_details:'.session()->getId().':'.$userId.':'.$currentMerchantId.':'.$suffix;
+    }
+
+    public function getUserFromApiWithCache(string $userId, $options=[]): array
+    {
+        if (empty($userId) === true)
+        {
+            return [['User could not be determined'], null];
+        }
+
+        $cacheKey = $this->getUserCacheKey($userId, $options);
+        $data = Cache::get($cacheKey);
+        if (!empty($data))
+        {
+            return [null, $data];
+        }
+
+        [$error, $genericUser] = $this->getUserFromApi($userId);
+
+        if ($error === null)
+        {
+            Cache::put($cacheKey, $genericUser, AppConstants::USER_CACHE_TTL);
+        }
+
+        return [$error, $genericUser];
     }
 
 

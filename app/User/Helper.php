@@ -9,6 +9,7 @@ use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\Trace\SpanTrace;
 use App\Constants\Tracing;
+use Illuminate\Http\Request as HttpRequest;
 use App\Constants\Constants as AppConstants;
 use App\RZP\PublicCollection;
 use App\Providers\GenericUser;

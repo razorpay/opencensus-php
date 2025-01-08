@@ -104,7 +104,8 @@ class AdminController extends Controller
                 $build_sub_path = '';
                 $env = \App::environment();
                 $cdn = \Config::get('app.cdn_dashboard_url');
-
+                $cdnDashboardAssetsUrl = \Config::get('app.cdn_dashboard_assets_url');
+                
                 if ($currentRouteName === 'razorx_catchall' and (empty($org['custom_code'] === false) and ($org['custom_code'] === 'rzp'))) {
                     $view = 'admin.razorx';
                 }
@@ -120,6 +121,7 @@ class AdminController extends Controller
                 }
 
                 return view($view, [
+                    'cdnDashboardAssetsUrl' => $cdnDashboardAssetsUrl,
                     'cdn' => $cdn,
                     'build_sub_path' => $build_sub_path,
                     'org'   => $org,
@@ -174,6 +176,7 @@ class AdminController extends Controller
         $admin = $this->getAdmin()->getData(true);
 
         return view('admin.pokedex', [
+            'cdnDashboardAssetsUrl' => \Config::get('app.cdn_dashboard_assets_url'),
             'cdn' => \Config::get('app.cdn_dashboard_url'),
             'user'  => $admin['data'],
         ]);

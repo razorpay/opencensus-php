@@ -266,5 +266,8 @@ return [
 
         // Ramp Account and Settings for Excluded Segment of merchants
         'RAMP_SETTLEMENTS_FOR_EXCLUDED_SEGMENT' => env('RAMP_SETTLEMENTS_FOR_EXCLUDED_SEGMENT', ''),
+
+        // Shell redirection experiment
+        'SHELL_REDIRECTION_EXPERIMENT_ID' => env('SHELL_REDIRECTION_EXPERIMENT_ID', ''),
     ]
 ];

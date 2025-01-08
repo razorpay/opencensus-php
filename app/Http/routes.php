@@ -155,6 +155,7 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['middleware' => ['auth:user', 'tnc_popup']] , function()
     {
+        Route::get('/shell/redirect', 'UserController@getShellRedirectionData')->name('shell_redirect');
         Route::get('/merchant/experiments', 'MerchantController@getMerchantExperiments')->name('merchant_experiment');
         Route::get('/merchant/features', 'MerchantController@getMerchantFeatures')->name('merchant_features');
         Route::get('/merchant/splitzexperiments', 'MerchantController@getSplitzExperiments')->name('merchant_splitz_experiment');
