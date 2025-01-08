@@ -210,6 +210,7 @@ const MerchantNumberVerify = ({
             marginBottom="spacing.8"
             testID="phone-number-input"
             onFocus={onPhoneNumberFocused}
+            maxCharacters={10}
           />
           <Button
             size="large"
