@@ -177,6 +177,7 @@ class BankingAdminLeadTest extends TestCase
             $this->assertArrayHasKey('adminName', $data);
             $this->assertArrayHasKey('template_name', $getParamsForStork);
             $this->assertArrayHasKey('template_namespace', $getParamsForStork);
+            $this->assertArrayHasKey('org_id', $getParamsForStork);
             $this->assertArrayHasKey('params', $getParamsForStork);
             $this->assertArrayHasKey('sign_up_url', $getParamsForStork['params']);
             $this->assertArrayHasKey('login_url', $getParamsForStork['params']);

@@ -128,16 +128,19 @@ class MerchantInvitation extends Base\Mailable
             'template_name' => 'banking_mail_invite_merchant',
             'template_namespace' => 'payments_banking',
             'params' => $this->data,
+            'org_id' => $this->org['id'],
         ];
-        
-        $storkParams['params']['sign_up_url'] = 'https://' . $this->data['hostname'] .'/#/access/signup?merchant_invitation=' . $this->data['invitation']['token'];
+
+        $storkParams['params']['org'] = $this->org;
+    
+        $storkParams['params']['sign_up_url'] = 'https://' . $this->org['host_name'] .'/#/access/signup?merchant_invitation=' . $this->invitation['token'];
         if($this->org['custom_code'] === 'rzp')
         {
             $storkParams['params']['login_url'] = 'https://razorpay.com';
             $storkParams['params']['login_logo_url'] = public_path().'/img/logo_black.png';
         }else
         {
-            $storkParams['params']['login_url'] = 'https://' . $this->data['hostname'];
+            $storkParams['params']['login_url'] = 'https://' . $this->org['host_name'];
             $storkParams['params']['login_logo_url'] = $this->org['login_logo_url'];
         }
 

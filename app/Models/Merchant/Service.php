@@ -6847,6 +6847,12 @@ class Service extends Base\Service
         $data[EntityConstants::MERCHANT][EntityConstants::ORG_FEATURE] = $merchant->org->getEnabledFeatures();
         $data[EntityConstants::MERCHANT][EntityConstants::ORG_DETAILS] = $merchant->org->ToArray();
 
+        // Add hostname & use in email template to redirect specific VAS dashboard
+        if( $merchant->org->isFeatureEnabled(Feature\Constants::ENABLE_STORK_EMAIL) === true )
+        {
+            $data[EntityConstants::MERCHANT][EntityConstants::ORG_DETAILS]["hostname"] = $merchant->org->getPrimaryHostName();
+        }
+
         $isTransacted = (new \RZP\Models\Payment\Repository)
             ->hasMerchantTransacted($merchant->getId());
 

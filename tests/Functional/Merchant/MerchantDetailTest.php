@@ -3074,9 +3074,9 @@ class MerchantDetailTest extends OAuthTestCase
         {
             $shouldSendEmailViaStork = $mail->shouldSendEmailViaStork();
             $getParamsForStork = $mail->getParamsForStork();
-
             $this->assertArrayHasKey('template_name', $getParamsForStork);
             $this->assertArrayHasKey('template_namespace', $getParamsForStork);
+            $this->assertArrayHasKey('org_id', $getParamsForStork);
             $this->assertArrayHasKey('params', $getParamsForStork);
             $this->assertArrayHasKey('isCustomOnboardingEmail', $getParamsForStork['params']);
             $this->assertArrayHasKey('is_email_logo', $getParamsForStork['params']);
