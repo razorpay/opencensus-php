@@ -2024,7 +2024,7 @@ class Route
         'workflow_config_list_admin'                => ['post',    'admin/workflow/config/list',                       'WorkflowServiceController@listWorkflowConfig'                        ],
         'workflow_config_update_admin'              => ['put',     'admin/workflow/config',                            'WorkflowServiceController@updateWorkflowConfig'                      ],
         'workflow_config_delete_admin'              => ['delete',  'admin/workflow/config',                            'WorkflowServiceController@deleteWorkflowConfig'                      ],
-        'workflow_service_wildcard_admin'           => ['any',     'workflows/admin/{path}',                           'WorkflowServiceController@wildcardAdminRequest'                      ],
+        'workflow_service_wildcard_admin'           => ['any',     'workflows/admin/{path?}',                          'WorkflowServiceController@wildcardAdminRequest'                      ],
         'workflow_config_create_bulk_admin'         => ['post',    'admin/workflow/config/bulk',                       'WorkflowServiceController@bulkCreateWorkflowConfig'                  ],
         'workflow_config_create_internal'           => ['post',    'internal/workflow/config',                         'WorkflowServiceController@createWorkflowConfig'                      ],
 
