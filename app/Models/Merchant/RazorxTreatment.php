@@ -1075,10 +1075,6 @@ final class RazorxTreatment
      */
     const PAYEE_ACCOUNT_LENGTH_VALIDATION = 'payee_account_length_validation';
     /*
-    * Razorx flag is used to control versions(old/new) of otp unification for acs page
-    */
-    const OTP_UNIFICATION_ACS_PAGE  = 'otp_unification_acs_page';
-    /*
      * Razorx flag to enable/disable three decimal currency check for invoice and plugins flow
      */
     const NON_TWO_DECIMAL_CURRENCY_VALIDATION   = 'non_two_decimal_currency_validation';

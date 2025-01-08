@@ -9217,14 +9217,7 @@ class Service extends Base\Service
      */
     public function addExperimentDetailsInGatewayOtpPostFormData(array &$input): void
     {
-        $merchantId = $input["merchant_id"] ?? "";
-        $otpUnificationAcsPageVariant = $this->app['razorx']->getTreatment(
-            $merchantId,
-            RazorxTreatment::OTP_UNIFICATION_ACS_PAGE,
-            $this->app['rzp.mode'],
-        );
-
-        $input['experiments']['otp_unification_acs_page'] = $otpUnificationAcsPageVariant;
+        $input['experiments']['otp_unification_acs_page'] = 'variant_on';
     }
 
 
