@@ -82,9 +82,9 @@ function PaymentSplitItems({ order_id }: IPaymentSplitItems): React.ReactElement
             <TableHeader>
               <TableHeaderRow>
                 <TableHeaderCell>Item Name</TableHeaderCell>
-                <TableHeaderCell>Revenue</TableHeaderCell>
                 <TableHeaderCell>Price</TableHeaderCell>
                 <TableHeaderCell>Units Sold</TableHeaderCell>
+                <TableHeaderCell>Total Amount</TableHeaderCell>
               </TableHeaderRow>
             </TableHeader>
             <TableBody>
@@ -93,17 +93,17 @@ function PaymentSplitItems({ order_id }: IPaymentSplitItems): React.ReactElement
                   <TableCell>{tableItem.name}</TableCell>
                   <TableCell>
                     <Amount
-                      value={i18nifyConvertToMajorUnit(tableItem.net_amount, tableItem.currency)}
-                      currency={tableItem.currency}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Amount
                       value={i18nifyConvertToMajorUnit(tableItem.amount, tableItem.currency)}
                       currency={tableItem.currency}
                     />
                   </TableCell>
                   <TableCell>{tableItem.quantity || '--'}</TableCell>
+                  <TableCell>
+                    <Amount
+                      value={i18nifyConvertToMajorUnit(tableItem.net_amount, tableItem.currency)}
+                      currency={tableItem.currency}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

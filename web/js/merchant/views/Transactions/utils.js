@@ -1,6 +1,6 @@
 import { generateDynamicComponent, email, contact } from 'common/ui/item/pair';
 
-import { COLUMNS } from './constants';
+import { ALLOWED_MODULES_FOR_PAYMENT_SPLIT, COLUMNS } from './constants';
 import {
   customerDetail,
   generateDynamicComponentV2,
@@ -51,4 +51,10 @@ export const createPayloadForSavePreferences = (selectedColumnsListData) => {
       payment_optional_keys_columns: [],
     },
   );
+};
+
+export const isPaymentSplitSectionAllowed = (hashValue) => {
+  if (!hashValue) return false;
+  const module = hashValue.substring(1);
+  return ALLOWED_MODULES_FOR_PAYMENT_SPLIT.includes(module);
 };

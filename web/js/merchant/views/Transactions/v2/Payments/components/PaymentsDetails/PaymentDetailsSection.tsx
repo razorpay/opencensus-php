@@ -82,6 +82,7 @@ import {
 import pdfCreation from 'merchant/views/Transactions/v1/Payments/components/PdfCreation';
 import { fetchBouncememo } from 'merchant/views/Transactions/v1/Payments/BounceMemo.types';
 import { useMutation } from '@tanstack/react-query';
+import { isPaymentSplitSectionAllowed } from 'merchant/views/Transactions/utils';
 
 const PaymentReceipt = lazy(
   () =>
@@ -269,17 +270,6 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   const posGatewayId = gateway_terminal_id || payee_vpa;
   const posDeviceSerialNumber = device_id || device_detail;
 
-  const isPaymentSplitSectionAllowed = (hashValue: string) => {
-    const allowedModules = [
-      'paymentpages',
-      'paymentbuttons',
-      'subscription_buttons',
-      'stores',
-      'storefront',
-    ];
-    return allowedModules.includes(hashValue);
-  };
-
   const hash = location.hash;
 
   const isPaymentReceiptSectionAllowed = () => {
@@ -418,7 +408,10 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                   label="Order ID"
                   value={
                     order_id ? (
-                      <Link onClick={() => history.push(`/orders/${order_id}`)} variant="button">
+                      <Link
+                        onClick={() => history.push(`/orders/${order_id}${hash}`)}
+                        variant="button"
+                      >
                         {order_id}
                       </Link>
                     ) : (
@@ -716,7 +709,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                   </>
                 )}
 
-                {hash && isPaymentSplitSectionAllowed(hash.substring(1)) ? (
+                {isPaymentSplitSectionAllowed(hash) ? (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                     <RowWrapper>

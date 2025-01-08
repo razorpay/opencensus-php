@@ -14,9 +14,13 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import AmountBreakup from 'merchant/views/Transactions/v1/Orders/components/AmountBreakup';
 import SkuDetails from 'merchant/views/Transactions/v1/Orders/components/SkuDetails';
 import { getFormattedKey } from 'merchant/views/Transactions/v1/Orders/helpers';
+import PaymentSplitItems from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentSplitItems';
+import { isPaymentSplitSectionAllowed } from 'merchant/views/Transactions/utils';
 
 export default (props) => {
   const { order, payments, isLoading, statusMsg, version } = props;
+  const hash = location.hash;
+  const isStorefront = hash === '#storefront';
 
   useEffect(() => {
     const properties = {
@@ -94,17 +98,22 @@ export default (props) => {
               ) : (
                 <EntityDetailRow label="Payments" value="No Payments" />
               )}
-
               <EntityDetailRow label="Notes">
-                {Object.keys(order.notes).length
-                  ? Object.keys(order.notes).map((key, index) => (
+                {isStorefront || !Object.keys(order.notes).length
+                  ? '--'
+                  : Object.entries(order.notes).map(([key, value], index) => (
                       <Definition key={index} customClass="notes">
                         {getFormattedKey(key)}
-                        {String(order.notes[key] || '--')}
+                        {String(value || '--')}
                       </Definition>
-                    ))
-                  : '--'}
+                    ))}
               </EntityDetailRow>
+              {isPaymentSplitSectionAllowed(hash) && order?.id ? (
+                <EntityDetailRow
+                  label="Payment Split"
+                  value={() => <PaymentSplitItems order_id={order?.id} />}
+                />
+              ) : null}
             </div>
           </div>
           <div class="SliderPanel__Extra">

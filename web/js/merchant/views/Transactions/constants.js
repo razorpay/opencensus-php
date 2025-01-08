@@ -31,3 +31,11 @@ export const CARD_SUB_TYPE_MAP = {
   consumer: 'Consumer',
   business: 'Business',
 };
+
+export const ALLOWED_MODULES_FOR_PAYMENT_SPLIT = [
+  'paymentpages',
+  'paymentbuttons',
+  'subscription_buttons',
+  'stores',
+  'storefront',
+];
