@@ -64,6 +64,32 @@ class CredcaseService
         return $queryResults;
     }
 
+
+    public function fetchKey($routeName, $credcaseResponse, $queryResult)
+    {
+        if(!isset($credcaseResponse) && !isset($queryResult)){
+            return $credcaseResponse;
+        }
+        if(!isset($credcaseResponse) || !isset($queryResult)) {
+            $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH);
+            return $queryResult;
+        }
+        $credcaseItem = $this->buildKeyFromCredcaseResponse($credcaseResponse);
+
+        // Extract relevant fields for comparison (id, merchant_id, expired_at)
+        $filteredCredcaseItems = $this->extractFields(new PublicCollection(array($credcaseItem)));
+        $filteredQueryItems = $this->extractFields(new PublicCollection(array($queryResult)));
+
+        // Compare only the extracted fields
+        if ($this->compareKeys($filteredCredcaseItems, $filteredQueryItems)) {
+            return $credcaseItem;
+        }
+
+        // Log metric if there is a mismatch
+        $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH);
+        return $queryResult;
+    }
+
     /**
      * Extract specific fields (id, merchant_id, expired_at) from the items array
      */

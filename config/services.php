@@ -80,6 +80,7 @@ return [
         'user'               => env('CREDCASE_USER'),
         'password'           => env('CREDCASE_PASSWORD'),
         'read_key_splitz'    => env('CREDCASE_READ_KEY_SPLITZ', ''),
+        'admin_read_key_splitz' => env('CREDCASE_ADMIN_READ_KEY_SPLITZ', ''),
     ],
 
     // Ref \RZP\Services\CredcaseSigner.php.
