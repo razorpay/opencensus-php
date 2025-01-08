@@ -27,6 +27,8 @@ class Fields
     const MERCH_CHANNEL_ID                  = 'merchantChannelId';
     const SUB_MERCH_ID                      = 'subMerchantId';
     const MERCHANT_CUSTOMER_ID              = 'merchantCustomerId';
+    const TENANT_IDENTIFIER                 = 'tenant_id';
+    const TENANT_ID                         = 'tenantId';
 
     // --------------------------- DEVICE --------------- //
     const EMAIL_ID                          = 'emailId';

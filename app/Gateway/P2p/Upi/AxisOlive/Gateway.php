@@ -4,6 +4,8 @@ namespace RZP\Gateway\P2p\Upi\AxisOlive;
 
 use RZP\Constants\Entity;
 use RZP\Constants\Mode;
+use RZP\Error\P2p\ErrorCode;
+use RZP\Exception\ServerErrorException;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\P2p\Upi;
 use RZP\Gateway\P2p\Upi\AxisOlive\ErrorMap;
@@ -39,6 +41,15 @@ class Gateway extends Upi\Gateway
     protected function getMerchantId()
     {
         return $this->getClientGatewayData()->get(Fields::MERCH_ID);
+    }
+
+    /***
+     * This is the method to get tenant id from client data
+     * @return \Illuminate\Support\TGetDefault|\Illuminate\Support\TValue
+     */
+    protected function getTenantId()
+    {
+        return $this->getClientGatewayData()->get(Fields::TENANT_ID);
     }
 
     /**

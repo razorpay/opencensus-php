@@ -4,15 +4,18 @@ namespace RZP\Gateway\P2p\Upi\AxisOlive;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\P2p\Base\Libraries\ContextMap;
 use RZP\Models\P2p\Client\Entity;
 use RZP\Models\Customer\Entity as CustomerEntity;
 use RZP\Gateway\P2p\Upi\Contracts;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Gateway\P2p\Upi\AxisOlive\Sdk;
+use Razorpay\Trace\Logger;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 use RZP\Gateway\P2p\Upi\AxisOlive\Actions\ClientAction;
 use RZP\Models\Upi\Turbo\RewardProcessor\Base as Rewards;
+use RZP\Trace\TraceCode;
 
 /**
  * Class file responsible for client gateway interaction
@@ -24,6 +27,9 @@ class ClientGateway extends Gateway implements Contracts\ClientGateway
 {
     protected $actionMap = ClientAction::MAP;
 
+    /**
+     * @throws ServerErrorException
+     */
     public function getGatewayConfig(Response $response)
     {
         $request = $this->initiateS2sRequest(ClientAction::GET_GATEWAY_CONFIG);
@@ -68,9 +74,33 @@ class ClientGateway extends Gateway implements Contracts\ClientGateway
                 Fields::ROUTE                    => $route,
         ]);
 
-        if(isset($this->input[CustomerEntity::CONTACT]) && !empty($this->input[CustomerEntity::CONTACT])) {
+        if($route == Fields::AXIS_2P) {
+            $tenant_id = $this->getTenantId();
+            if($tenant_id == null || $tenant_id == '') {
+                $e = new ServerErrorException(
+                    'Tenant ID not found for given merchant',
+                    ErrorCode::SERVER_ERROR);
+                $this->trace->traceException(
+                    $e,
+                    Logger::ERROR,
+                    TraceCode::TENANT_ENTITY_ROLES_NOT_MAPPED,[
+                    'exception' => $e->getMessage(),
+                ]);
+                throw $e;
+            }
             $request->merge([
-                Fields::MOBILE_NUMBER => '91' . substr($this->input[CustomerEntity::CONTACT] , -10)
+                Fields::TENANT_IDENTIFIER => $tenant_id
+            ]);
+        }
+
+        if(isset($this->input[CustomerEntity::CONTACT]) && !empty($this->input[CustomerEntity::CONTACT])) {
+            $mobileNumber = $this->input[CustomerEntity::CONTACT];
+            if ($route == Fields::AXIS_3P) {
+                $mobileNumber = substr($mobileNumber, -10);
+                $mobileNumber = '91' . $mobileNumber;
+            }
+            $request->merge([
+                Fields::MOBILE_NUMBER => $mobileNumber
             ]);
         }
 
