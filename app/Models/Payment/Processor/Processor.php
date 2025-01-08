@@ -1835,11 +1835,6 @@ class Processor
 
                 // Check card mandate created date and mandate hub for ramp up
                 $cardMandate = $token->cardMandate;
-                $this->trace->info(TraceCode::MISC_TRACE_CODE, [
-                    'createdAt' => $cardMandate->getCreatedAt(),
-                    'merchant_id' => $merchant->getId(),
-                    'flow' => 'card_recurring',
-                ]);
                 if($cardMandate === null or $cardMandate->getCreatedAt() > 1733920200)
                 {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
@@ -1900,6 +1895,19 @@ class Processor
                     Token\Entity::TOKEN => $token->getToken(),
                 ];
                 $input["recurring_token"] = $recurringToken;
+
+                if (empty($cardMandate->getNetworkTransactionId())) {
+                    $initialPayment = (new Payment\Repository)->fetchInitialPaymentIdForToken($token->getId(), $merchant->getId());
+                    if (empty($initialPayment)){
+                        throw new \Exception("Initial Payment for token not found");
+                    }
+                    $initialPaymentId = $initialPayment->getId();
+                }
+                $cardMandateDetails = [
+                    "network_transaction_id" => $cardMandate->getNetworkTransactionId(),
+                    "initial_payment_id" => $initialPaymentId,
+                ];
+                $input["card_mandate_details"] = $cardMandateDetails;
 
                 return true;
             }
