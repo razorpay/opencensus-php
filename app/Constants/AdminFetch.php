@@ -742,7 +742,7 @@ class AdminFetch
                         'emandate_debit_enach_rbl',
                         'emandate_debit_sbi',
                         'emandate_debit_axis',
-                        'emandate_debit_enach_nb_icici',
+                        'emandate_debit_nach_icici',
                         'auth_link',
                         'recurring_charge',
                         'recurring_charge_bulk',

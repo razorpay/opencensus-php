@@ -1191,7 +1191,7 @@ return array(
 
     'bank_data_via_npci_api_experiment' => env('BANK_DATA_VIA_NPCI_API_EXP_ID'),
 
-    'migrate_enach_nb_icic_batch_service_experiment' => env('MIGRATE_ENACH_NB_ICIC_BATCH_SERVICE_EXP_ID'),
+    'migrate_nach_icic_batch_service_experiment' => env('MIGRATE_NACH_ICICI_BATCH_SERVICE_EXP_ID'),
 
     'hdfc_ecms_fund_trans_experiment_id' => env('HDFC_ECMS_FUND_TRANS_EXPERIMENT_ID'),
 

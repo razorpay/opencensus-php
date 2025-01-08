@@ -182,24 +182,4 @@ class EnachNbIcici extends Base
     {
         return number_format($content[self::AMOUNT] / 100, 2, '.', '');
     }
-
-    public function shouldSendToBatchService(): bool
-    {
-        $experimentId = $this->app['config']->get('app.migrate_enach_nb_icic_batch_service_experiment');
-
-        $properties = [
-            'experiment_id' => $experimentId,
-        ];
-
-        $response = $this->app['splitzService']->evaluateRequest($properties);
-
-        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
-            'properties' => $properties,
-            'response' => $response,
-        ]);
-
-        $variant = $response['response']['variant']['name'] ?? '';
-
-        return (strtolower($variant) === 'enable');
-    }
 }
