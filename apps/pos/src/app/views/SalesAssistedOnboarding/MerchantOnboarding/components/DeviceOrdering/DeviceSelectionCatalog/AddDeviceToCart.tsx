@@ -216,11 +216,11 @@ const AddDeviceToCart = ({
   }, [isDetailsOpen]);
 
   const shouldShowOptionalFeatures = () => {
-    if (!selectionPlanRate?.rentalCharge && !isPosEkycAgent) {
-      return false;
-    } else if (!isPosEkycAgent) {
-      return true;
-    } else if (deviceConfig.title === DeviceModel.SOUNDBOX_KIT) {
+    if (!isPosEkycAgent) {
+      //sales flow
+      if (selectionPlanRate?.rentalCharge) return true;
+    } else if (deviceConfig.title === DeviceModel.SOUNDBOX_KIT && selectionPlanRate?.rentalCharge) {
+      //partner flow
       return true;
     }
     return false;
