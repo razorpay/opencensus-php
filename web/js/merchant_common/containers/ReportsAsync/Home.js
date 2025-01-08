@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { analyticsTrack } from 'common/utils/analytics';
 import Spinner from 'common/ui/Spinner';
-import TestModeBanner from 'merchant/components/TestModeBanner';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -175,7 +174,6 @@ export default class ReportHome extends React.PureComponent {
           <header>
             <NavLink to="/reports">Reports</NavLink>
           </header>
-          <TestModeBanner />
           <content>
             <div className="content-wrapper Reporting--ContentWrapper">
               {configs.loading && logs.pending ? (
