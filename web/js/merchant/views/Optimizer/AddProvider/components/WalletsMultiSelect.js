@@ -44,7 +44,7 @@ const WalletsMultiSelect = (props) => {
         </Box>
       ) : (
         <Text weight="semibold">
-          {walletSelected.map((wallet) => WalletLabels[wallet])?.join(', ')}
+          {walletSelected?.map((wallet) => WalletLabels[wallet])?.join(', ')}
         </Text>
       )}
     </Box>

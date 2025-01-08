@@ -216,18 +216,36 @@ const ProviderConfiguration = (props) => {
 
                             return !IS_METHOD_UNSUPPORTED;
                           })
-                          .map((method) => (
-                            <Checkbox
-                              key={method}
-                              name={label}
-                              value={method}
-                              isChecked={Gateway_details?.['Payment Methods']?.includes(method)}
-                              isDisabled={isMethodCheckboxDisabled(method)}
-                              onChange={handlePaymentMethods}
-                            >
-                              {METHODS_MAP?.[method] ?? method}
-                            </Checkbox>
-                          ))}
+                          .map((method) =>
+                            selectedProvider === 'paytm' && method === 'wallet' ? (
+                              // Need to show as enabled but if disabled is true then it will not show as selected on UI so using isIndeterminate
+                              <Checkbox
+                                key={method}
+                                name={label}
+                                value={method}
+                                defaultChecked={true}
+                                isIndeterminate={true}
+                              >
+                                {METHODS_MAP?.[method] ?? method}
+                                <Popover theme="dark" align="right">
+                                  <PopoverBody>
+                                    Wallet method by default added for &quot;Paytm&quot;.
+                                  </PopoverBody>
+                                </Popover>
+                              </Checkbox>
+                            ) : (
+                              <Checkbox
+                                key={method}
+                                name={label}
+                                value={method}
+                                isChecked={Gateway_details?.['Payment Methods']?.includes(method)}
+                                isDisabled={isMethodCheckboxDisabled(method)}
+                                onChange={handlePaymentMethods}
+                              >
+                                {METHODS_MAP?.[method] ?? method}
+                              </Checkbox>
+                            ),
+                          )}
                         {isSodexoEnabled && (
                           <Checkbox
                             key={`${PROVIDER_KEYS.SODEXO}-${
@@ -267,7 +285,7 @@ const ProviderConfiguration = (props) => {
                     Gateway_details?.['Payment Methods']?.includes('wallet') && (
                       <WalletsMultiSelect
                         walletOptions={walletOptions}
-                        walletSelected={Gateway_details?.wallet_metadata?.wallets}
+                        walletSelected={Gateway_details?.wallet_metadata?.wallets || []}
                         changeGatewayWallets={changeGatewayWallets}
                         disabled={selectedProvider === 'paytm'} // For paytm wallets get enabled by default
                         isFormEdit={isFormEdit}

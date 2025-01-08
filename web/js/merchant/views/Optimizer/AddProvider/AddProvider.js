@@ -166,6 +166,18 @@ class AddProvider extends React.Component {
           provider.Gateway_details.TPV = 0;
         }
 
+        // Edge case where provider added thorugh integration audit where wallet method didn't go live after provider onboarding
+        // and after that if we disable the integration audit on MID we don't get the wallets paytm for specific to Paytm Gateway
+        if (
+          Gateway === 'paytm' &&
+          Gateway_details?.['Payment Methods']?.includes('wallet') &&
+          !Gateway_details.wallet_metadata
+        ) {
+          provider.Gateway_details.wallet_metadata = {
+            wallets: ['paytm'],
+          };
+        }
+
         const { search, state } = this.props.location;
         const locationParams = new Proxy(new URLSearchParams(search), {
           get: (searchParams, prop) => searchParams.get(prop),
