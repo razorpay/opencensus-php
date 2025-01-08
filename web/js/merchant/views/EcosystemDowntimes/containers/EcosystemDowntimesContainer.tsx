@@ -21,6 +21,8 @@ import {
 } from 'merchant/views/EcosystemDowntimes/styles';
 import { openSlider } from 'merchant_common/reducers/slider';
 import { analyticsTrack } from 'common/utils/analytics';
+import { ANALYTICS_ONENAV_EXPERIMENT } from 'merchant/components/NavigationLayout/constants';
+import useConnectedNavigationStore from 'merchant/components/NavigationLayout/navigationStore';
 
 // eslint-disable-next-line prettier/prettier
 const MethodsContainer = lazy(
@@ -29,6 +31,7 @@ const MethodsContainer = lazy(
 
 const EcosystemDowntimesContainer = (props): JSX.Element => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const { selectedProduct } = useConnectedNavigationStore();
   const { openSlider: sliderOpen, isRTUXHomepage, isConnectedNavigation } = props;
   const methodsContainerRef = useRef<HTMLDivElement | null>(null);
   const ecosystemHealthIcon = useRef<HTMLDivElement | null>(null);
@@ -37,6 +40,20 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
   const handleToggleSlider = () => {
     sliderOpen();
     setIsExpanded(!isExpanded);
+    analyticsTrack({
+      objectName: 'L0 Main Frame Icons',
+      actionName: 'Clicked',
+      screen: location.pathname?.replace('/app/', ''),
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
+        version: 'v1',
+        option_name: 'View Ecosystem Health',
+        icon_name: 'Ecosystem Health',
+        page: location.pathname?.replace('/app/', ''),
+        bu_title: selectedProduct?.product?.title,
+        experiment_name: ANALYTICS_ONENAV_EXPERIMENT,
+      },
+    });
   };
 
   const isDowntimeDetailsExits = () => {

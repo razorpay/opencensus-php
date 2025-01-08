@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Card, CardBody, useTheme } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import styled from 'styled-components';
@@ -15,6 +15,9 @@ import SidebarV2 from '../SidebarV2';
 import useConnectedProducts from './hooks/useConnectedProducts';
 import { useStore } from 'shell/commonStore';
 import UniversalSearch from '../HeaderNav/UniversalSearch';
+import { getItem, setItem } from 'common/utils/localStorage';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { HOTJAR_TRIGGERS } from './constants';
 
 const DashboardBackground = styled.div(() => {
   return {
@@ -52,6 +55,20 @@ function NavigationLayout({
   });
   const isMobile = matchedDeviceType === 'mobile';
 
+  useEffect(() => {
+    if (isConnectedNavigation) {
+      const userSeenConnectedNavigation = (viewType: string) => {
+        setItem('conn-nav-viewed', viewType);
+        triggerHotjarRecording(viewType, [viewType]);
+      };
+      const connNavViewed = getItem('conn-nav-viewed');
+      const viewType = !connNavViewed
+        ? HOTJAR_TRIGGERS.CONNECTED_NAV_FIRST
+        : HOTJAR_TRIGGERS.CONNECTED_NAV_REPEAT;
+      userSeenConnectedNavigation(viewType);
+    }
+  }, []);
+
   if (isConnectedNavigation) {
     const commonProps = {
       renderFullPageView,
@@ -86,6 +103,7 @@ function NavigationLayout({
       </NavigationLayoutContext.Provider>
     );
   }
+
   return (
     <>
       {!renderFullPageView && showHeaderInWebview() && (

@@ -21,7 +21,7 @@ import ActivationProgress from './components/ActivationProgress';
 const [PAYMENTS_PRODUCTS_SECTION, BANKING_PRODUCTS_SECTION, GIFTS_CARD_PRODUCTS_SECTION] =
   FALLBACK_PRODUCTS; // v2 fallback products
 
-const accountsAndSettingsIds = new Set(['settings', 'accountsettings', 'my_account']);
+export const accountsAndSettingsIds = new Set(['settings', 'accountsettings', 'my_account']);
 
 const result = COMMON_PRODUCTS.reduce(
   (
@@ -41,13 +41,13 @@ const result = COMMON_PRODUCTS.reduce(
   { ACCOUNTS_AND_SETTINGS_PRODUCTS: [], COMMON_PRODUCTS: [] },
 );
 
-const COMMON_SECTION = {
+export const COMMON_SECTION = {
   section_name: '',
   section_id: 'common_products',
   product_options: result.COMMON_PRODUCTS,
 };
 
-const CUSTOMERS_PRODUCTS_SECTION = {
+export const CUSTOMERS_PRODUCTS_SECTION = {
   section_name: 'CUSTOMER PRODUCTS',
   section_id: 'customer_products',
   product_options: CUSTOMERS_PRODUCTS,

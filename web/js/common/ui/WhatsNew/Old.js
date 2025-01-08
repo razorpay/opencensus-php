@@ -45,6 +45,7 @@ import { openSlider } from 'merchant_common/reducers/slider';
 import './Old.styl';
 
 import { getButtonClass, iconMap, getQueryData, getNotificationTrackingProperties } from './common';
+import { ANALYTICS_ONENAV_EXPERIMENT } from 'merchant/components/NavigationLayout/constants';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -379,15 +380,32 @@ class WhatsNewOld extends Component {
   }
 
   onShow = () => {
-    analyticsTrack({
-      objectName: 'announcements drop down',
-      actionName: 'clicked',
-      screen: 'home page',
-      properties: {
-        location: 'top navigation',
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
+    if (this.props?.isConnectedNavigation) {
+      analyticsTrack({
+        objectName: 'L0 Main Frame Icons',
+        actionName: 'Clicked',
+        screen: location.pathname?.replace('/app/', ''),
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
+          version: 'v1',
+          option_name: 'Announcements/Notification',
+          icon_name: 'Notification',
+          page: location.pathname?.replace('/app/', ''),
+          bu_title: this.props?.selectedProduct?.product?.title,
+          experiment_name: ANALYTICS_ONENAV_EXPERIMENT,
+        },
+      });
+    } else {
+      analyticsTrack({
+        objectName: 'announcements drop down',
+        actionName: 'clicked',
+        screen: 'home page',
+        properties: {
+          location: 'top navigation',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
 
     const { tracking, announcements } = this.props;
     tracking.trackEvent(

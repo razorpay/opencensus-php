@@ -8,6 +8,13 @@ import {
 
 export const ONE_NAV_MOBILE_PATH = '/home';
 
+export const ANALYTICS_ONENAV_EXPERIMENT = 'oneNavV1';
+
+export const HOTJAR_TRIGGERS = {
+  CONNECTED_NAV_FIRST: 'conn-nav-first',
+  CONNECTED_NAV_REPEAT: 'conn-nav-repeat',
+};
+
 export const paymentsFallbackData = {
   id: '21',
   type: 'top_navigation_item',

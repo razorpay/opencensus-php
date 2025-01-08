@@ -19,7 +19,7 @@ const SidebarFooter = ({ listItems }: SidebarFooterProps) => {
       {listItems.map((section, index) => (
         <React.Fragment key={index}>
           {section.product_options.map((item) => (
-            <NavItem key={item.title} {...item} />
+            <NavItem key={item.title} section_id={item.product_id ?? ''} {...item} />
           ))}
         </React.Fragment>
       ))}

@@ -39,6 +39,8 @@ import { CopyWrapper } from 'merchant/views/Transactions/v2/Payments/components/
 
 import SwitchMerchantTypeaheadV2 from '../HeaderNav/SwitchMerchantTypeaheadV2';
 import ShowWhen from '../ShowWhen';
+import useConnectedNavigationStore from '../NavigationLayout/navigationStore';
+import { trackProfileDropdownClicks } from './utils';
 
 interface ConnectedProfileDropdownProps {
   user: any;
@@ -69,6 +71,7 @@ function ConnectedProfileDropdown({
   onSwitchMerchantDismiss,
   onSwitchMerchant,
 }: ConnectedProfileDropdownProps): JSX.Element {
+  const { selectedProduct } = useConnectedNavigationStore();
   const [shouldShowMobileBottomSheet, setShouldShowMobileBottomSheet] = useState(false);
 
   const { user: loggedInUser, name, id: merchantId } = user;
@@ -87,6 +90,12 @@ function ConnectedProfileDropdown({
   const invertMode = mode === 'live' ? 'test' : 'live';
 
   const handleSwitchMerchant = () => {
+    trackProfileDropdownClicks({
+      objectName: 'Profile Options',
+      optionName: 'Switch Merchant',
+      bu_title: selectedProduct?.product?.title,
+      type: 'option',
+    });
     if (isMobile) {
       setShouldShowMobileBottomSheet(false);
     }
@@ -95,18 +104,42 @@ function ConnectedProfileDropdown({
 
   const handleMIDCopyClick = () => {
     //TOOD: Add feedback that copy is successful
+    trackProfileDropdownClicks({
+      objectName: 'Profile Options',
+      optionName: 'Copy MID',
+      bu_title: selectedProduct?.product?.title,
+      type: 'option',
+    });
     copyToClipboard(merchantId);
   };
 
   const handleModeSwitch = () => {
+    trackProfileDropdownClicks({
+      objectName: 'Profile Options',
+      optionName: `Enable ${titleCase(invertMode)} Mode`,
+      bu_title: selectedProduct?.product?.title,
+      type: 'option',
+    });
     onSwitchMode(invertMode);
   };
 
   const handleHelpSupport = () => {
+    trackProfileDropdownClicks({
+      objectName: 'Profile Options',
+      optionName: 'Help & Support',
+      bu_title: selectedProduct?.product?.title,
+      type: 'option',
+    });
     CreateTicketEmitter.emit('toggle-help-section');
   };
 
   const handleLogout = () => {
+    trackProfileDropdownClicks({
+      objectName: 'Profile Options',
+      optionName: 'Log out',
+      bu_title: selectedProduct?.product?.title,
+      type: 'option',
+    });
     onLogout();
   };
 
@@ -289,6 +322,12 @@ function ConnectedProfileDropdown({
           variant="square"
           {...(isRTBEnabled ? { bottomAddon: TrustedBadgeIcon } : {})}
           onClick={() => {
+            trackProfileDropdownClicks({
+              objectName: 'L0 Main Frame Icons',
+              optionName: 'Profile Icon/Button',
+              bu_title: selectedProduct?.product?.title,
+              type: 'icon',
+            });
             setShouldShowMobileBottomSheet(true);
           }}
         />
@@ -321,6 +360,14 @@ function ConnectedProfileDropdown({
           name={loggedInUserName}
           variant="square"
           {...(isRTBEnabled ? { bottomAddon: TrustedBadgeIcon } : {})}
+          onClick={() => {
+            trackProfileDropdownClicks({
+              objectName: 'L0 Main Frame Icons',
+              optionName: 'Profile Icon/Button',
+              bu_title: selectedProduct?.product?.title,
+              type: 'icon',
+            });
+          }}
         />
         <MenuOverlay minWidth="300px" maxWidth="400px">
           {getProfileDropdownItems()}

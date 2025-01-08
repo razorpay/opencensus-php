@@ -1,8 +1,11 @@
 import { Indicator, SideNavItem, Switch } from '@razorpay/blade/components';
 import useConnectedNavigationStore from 'merchant/components/NavigationLayout/navigationStore';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import React, { useState } from 'react';
 import { useStore } from 'shell/commonStore';
 import { useNavigationLayoutContext } from '../../context';
+import { ANALYTICS_ONENAV_EXPERIMENT } from '../../constants';
 
 // 1. READ payment Mode
 // 2. Read partner Mode
@@ -17,13 +20,31 @@ interface SidebarModeSwitcherProps {
 
 function SidebarModeSwitcher({ mode }: SidebarModeSwitcherProps): JSX.Element | null {
   const { onSwitchMode } = useNavigationLayoutContext();
+  const { selectedProduct } = useConnectedNavigationStore();
   const [currentMode, setCurrentMode] = useState(mode);
   const isTestModeActive = currentMode === 'test';
 
   const handleSwitchMode = () => {
     const invertMode = mode === 'live' ? 'test' : 'live';
+    let page = location.pathname?.replace('/app/', '');
     setCurrentMode(invertMode);
     onSwitchMode(invertMode);
+    analyticsTrack({
+      objectName: 'Sidebar',
+      actionName: 'Clicked',
+      screen: page,
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
+        version: 'v1',
+        option_name: 'Mode Switcher',
+        page,
+        section: 'Mode and Settings',
+        bu_title: selectedProduct.product?.title,
+        ToggleModeTo: invertMode,
+        ToggleModeFrom: mode,
+        experiment_name: ANALYTICS_ONENAV_EXPERIMENT,
+      },
+    });
   };
 
   return (

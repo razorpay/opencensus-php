@@ -9,10 +9,19 @@ import {
   IconComponent,
 } from '@razorpay/blade/components';
 import { Link, matchPath, useLocation } from 'react-router-dom';
-
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import useConnectedNavigationStore from '../navigationStore';
 import { useNavigationLayoutContext } from '../context';
+import { FALLBACK_PRODUCTS } from 'merchant/components/SidebarV2/utils/Fallback';
+import {
+  accountsAndSettingsIds,
+  COMMON_SECTION,
+  CUSTOMERS_PRODUCTS_SECTION,
+} from '../NavigationContent/Payments/Sidebar/useSideNavHook';
 import useSideNavigation from './useSideNavigation';
+import { ANALYTICS_ONENAV_EXPERIMENT } from '../constants';
+import { useStore } from 'shell/commonStore';
 
 interface ProductOptions {
   title: string;
@@ -31,10 +40,33 @@ export interface SideNavSection {
   }>;
 }
 
+type NavItemProps = {
+  title: string;
+  icon: IconComponent;
+  href: string;
+  routeRegex?: string;
+  items?: Array<any>;
+};
+
+type NavItemAnalyticsProps = {
+  section_id?: string;
+};
+
 const MAX_VISIBLE_SECTION_ITEMS = 3; //maxVisibleItems
 /**
   Note: Sidebar will be part of shell
  */
+
+const getSection = (section_id) => {
+  const navItemsToSection = {
+    [COMMON_SECTION.section_id]: 'Central Products',
+    [FALLBACK_PRODUCTS[0].section_id]: 'Offerings',
+    [FALLBACK_PRODUCTS[1].section_id]: 'Offerings',
+    [CUSTOMERS_PRODUCTS_SECTION.section_id]: 'Others',
+  };
+  if (accountsAndSettingsIds.has(section_id)) return 'Mode and Settings';
+  return navItemsToSection[section_id] ?? '';
+};
 
 export const isItemActive = (item: any, pathname: string): boolean => {
   //Check for routeRegex match first
@@ -44,7 +76,6 @@ export const isItemActive = (item: any, pathname: string): boolean => {
       return true;
     }
   }
-
   //Check for exact href match
   if (item.href && matchPath({ path: item.href, exact: true }, pathname)) {
     return true;
@@ -60,29 +91,57 @@ export const isItemActive = (item: any, pathname: string): boolean => {
   return false;
 };
 
-export const NavItem: React.FC<{
-  title: string;
-  icon: IconComponent;
-  href: string;
-  routeRegex?: string;
-  items?: Array<any>;
-}> = ({ title, icon, href, items, routeRegex }) => {
+export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
+  title,
+  section_id,
+  icon,
+  href,
+  items,
+  routeRegex
+}) => {
   const location = useLocation();
   const active = isItemActive({ href, routeRegex, items, icon }, location.pathname);
+  const storeData = useStore();
+  const { selectedProduct } = useConnectedNavigationStore();
+
+  const trackNavItemClick = () => {
+    let page = location.pathname?.replace(/[\/_-]/g, '');
+    analyticsTrack({
+      objectName: 'Sidebar',
+      actionName: 'Clicked',
+      screen: page,
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
+        version: 'v1',
+        option_name: title,
+        page,
+        section: section_id ? getSection(section_id) : '',
+        bu_title: selectedProduct.product?.title,
+        ToggleMode: storeData?.session?.modeFormatted,
+        experiment_name: ANALYTICS_ONENAV_EXPERIMENT,
+      },
+    });
+  };
 
   //Currently we have only single level of nesting
   if (items) {
     return (
       <SideNavLevel>
-        <SideNavLink icon={icon} isActive={active} as={Link} title={title}></SideNavLink>
-        {/* {items.map((child) => (
+        <div onClick={trackNavItemClick}>
+          <SideNavLink icon={icon} isActive={active} as={Link} title={title}></SideNavLink>
+          {/* {items.map((child) => (
           <NavItem key={child.title} {...child} />
         ))} */}
+        </div>
       </SideNavLevel>
     );
   }
 
-  return <SideNavLink title={title} as={Link} href={href} icon={icon} isActive={active} />;
+  return (
+    <div onClick={trackNavItemClick}>
+      <SideNavLink title={title} as={Link} href={href} icon={icon} isActive={active} />
+    </div>
+  );
 };
 
 const SideBar: React.FC<{ renderFullPageView: React.ReactNode }> = ({ renderFullPageView }) => {
@@ -119,7 +178,7 @@ const SideBar: React.FC<{ renderFullPageView: React.ReactNode }> = ({ renderFull
             defaultIsExpanded={isSectionExpanded(section.product_options)}
           >
             {section.product_options.map((item) => (
-              <NavItem key={item.title} {...item} />
+              <NavItem key={item.title} section_id={section.section_id} {...item} />
             ))}
           </SideNavSection>
         ))}

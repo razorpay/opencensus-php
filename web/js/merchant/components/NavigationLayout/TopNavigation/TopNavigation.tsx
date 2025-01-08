@@ -75,6 +75,7 @@ const TopNavigation = ({
   renderFullPageView,
 }) => {
   const isRTUXHomepageEnabled = useIsRTUXHomepageEnabled();
+  const { selectedProduct, setProduct } = useConnectedNavigation();
   const isRTUXHomepage = isSidebarV2 && isRTUXHomepageEnabled;
   const { theme } = useTheme();
   const { matchedDeviceType } = useBreakpoint({
@@ -94,6 +95,7 @@ const TopNavigation = ({
     onSwitchMerchant,
     isRTUXHomepage,
     isConnectedNavigation: true,
+    selectedProduct,
   };
 
   const showEcosystemDowntimeButton =
@@ -156,7 +158,6 @@ const TopNavigation = ({
     return { productAlias: '', path: '/' };
   }
 
-  const { selectedProduct, setProduct } = useConnectedNavigation();
   const openModal = useStore((state) => state.openModal);
   const closeModal = useStore((state) => state.closeModal);
 
