@@ -2422,5 +2422,30 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: ['/payment-methods/international-payments'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'intl_settings_page_revamp',
+          experimentId: {
+            beta: 'PYYFjWr7ov0Vvf',
+            production: '',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+              {
+                key: 'message',
+                value: '',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

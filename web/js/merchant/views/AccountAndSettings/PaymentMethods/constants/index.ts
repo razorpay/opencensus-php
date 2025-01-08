@@ -17,3 +17,6 @@ export const PAYMENT_METHOD_DOCS = {
     'https://razorpay.com/docs/payment-gateway/dashboard-guide/settings/payment-methods/',
   curlec_docs: 'https://curlec.com/docs/payments/payment-methods/',
 };
+
+export const INTERNATIONAL_METHOD_DOC =
+  'https://razorpay.com/docs/payments/payments/international-payments/';

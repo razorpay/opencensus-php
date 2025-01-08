@@ -1229,10 +1229,13 @@ export default class User {
     return getSplitzExperimentVariant('add_reply_migration')?.variables?.result === 'on';
   }
   get isInttCurrenciesEnabled() {
+    const isIntlBankTransferActivated =
+      Object.keys(this.methods?.intl_bank_transfer || {}).length > 0;
     return (
       this.currentMerchant.product_international === '1111000000' ||
       !!(this.methods || {}).paypal ||
-      !!this.international
+      !!this.international ||
+      isIntlBankTransferActivated
     );
   }
 

@@ -984,6 +984,7 @@ export const initialState = {
         {
           header: 'International Payments',
           docLink: 'https://razorpay.com/docs/payments/payments/international-payments/',
+          slug: 'card',
           list: [
             {
               name: 'International Cards',
@@ -991,18 +992,6 @@ export const initialState = {
               status: 'greyed',
               slug: 'internationalcards',
               icon: '',
-            },
-          ],
-        },
-        {
-          header: 'Apps',
-          list: [
-            {
-              name: 'PayPal',
-              description: 'Accept International Payments using PayPal on Razorpay Checkout',
-              status: 'greyed',
-              slug: 'paypal',
-              icon: 'paypal',
             },
           ],
         },
@@ -1015,9 +1004,9 @@ export const initialState = {
           list: [],
         },
         {
-          header: 'MoneySaver Export Account',
+          header: 'International bank transfers',
           listHeader: '',
-          listDescription: '',
+          listDescription: 'Cost effective for high-ticket transactions, supports 30+ countries',
           slug: 'moneysaverexportaccount',
           leafList: [
             {
@@ -1058,6 +1047,19 @@ export const initialState = {
                   icon: 'https://cdn.razorpay.com/static/assets/instrument-request/swift.svg',
                 },
               ],
+            },
+          ],
+        },
+        {
+          header: 'Apps',
+          slug: 'wallet',
+          list: [
+            {
+              name: 'PayPal',
+              description: 'Accept International Payments using PayPal on Razorpay Checkout',
+              status: 'greyed',
+              slug: 'paypal',
+              icon: 'paypal',
             },
           ],
         },

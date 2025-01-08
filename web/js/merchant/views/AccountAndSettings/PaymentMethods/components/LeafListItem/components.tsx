@@ -1,4 +1,6 @@
 import React from 'react';
+import { Text, Heading } from '@razorpay/blade/components';
+
 import { StyledLeafListItemHeader, StyledLeafListItemHeaderInfo } from './Styled';
 
 type LeafListItemHeaderProps = {
@@ -15,8 +17,8 @@ const LeafListItemHeader = ({
   return (
     <StyledLeafListItemHeader>
       <StyledLeafListItemHeaderInfo>
-        <h3>{name}</h3>
-        <p>{description}</p>
+        <Heading size="small">{name}</Heading>
+        <Text size="small">{description}</Text>
       </StyledLeafListItemHeaderInfo>
       {!!actionComponent ? actionComponent : null}
     </StyledLeafListItemHeader>
