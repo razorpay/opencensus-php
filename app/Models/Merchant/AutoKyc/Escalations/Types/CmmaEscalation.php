@@ -62,7 +62,7 @@ class CmmaEscalation
 
                 $merchantName = $merchant->getName() ?? "undefined";
 
-                $hasMerchantTransacted = (new \RZP\Models\Payment\Repository)->hasMerchantTransacted($merchantId);
+                $hasMerchantTransacted = (new \RZP\Models\Payment\Repository)->checkIsMerchantTransacted($merchantId);
 
                 $cmmaExperimentEnabled = self::isCMMAEscalationExperimentEnabled($merchantId, Constants::CMMA_EXPERIMENT_ID_KEY);
 

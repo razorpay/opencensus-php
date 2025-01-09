@@ -4172,9 +4172,14 @@ class Core extends Base\Core
 
         $merchantDetails = $merchant->merchantDetail;
 
+        if((new MerchantCore())->isRegularMerchant($merchant) === true && strtolower($merchant->getCountry()) === Country::IN)
+        {
+            return false;
+        }
+
         //Do not move merchants to Activated if the merchant has not transacted yet
         $mtuTransacted = (new \RZP\Models\Payment\Repository)
-            ->hasMerchantTransacted($merchantDetails->getMerchantId());
+            ->checkIsMerchantTransacted($merchantDetails->getMerchantId());
 
         if ($mtuTransacted === true)
         {
