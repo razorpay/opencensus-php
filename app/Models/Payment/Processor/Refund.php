@@ -2009,6 +2009,9 @@ trait Refund
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_INVALID_STATUS, null,null, 'Payment status should be authorized but here the status is '. $payment->getStatus());
                 }
 
+                $merchant= $this->repo->merchant->fetchMerchantFromId($payment->getMerchantId());
+                $partialCaptureFlag = $this->merchant->isFeatureEnabled(RefundConstants::PARTIAL_CAPTURE_FEATURE);
+
                 $this->trace->info(
                     TraceCode::REFUND_PAYMENT_UPDATE_INITIATED,
                     [
@@ -2056,7 +2059,7 @@ trait Refund
                     }
 
                     // update the payment entity for refund
-                    $this->payment->refundAmount($refundAmount, $refundBaseAmount);
+                    $this->payment->refundAmount($refundAmount, $refundBaseAmount,$partialCaptureFlag);
                 }
                 // amount will be negative for compensatory actions
                 else

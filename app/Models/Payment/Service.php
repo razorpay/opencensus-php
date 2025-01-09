@@ -113,7 +113,6 @@ use RZP\Models\Ledger\ReverseShadow as LedgerReverseShadow;
 use Symfony\Component\HttpFoundation;
 use RZP\Services\UfhService;
 
-
 class Service extends Base\Service
 {
     use FraudDetector;
@@ -1581,6 +1580,9 @@ class Service extends Base\Service
                         $card = $this->repo->card->findByIdAndMerchantId($paymentMap['card_id'], $paymentMap['merchant_id']);
 
                         $payment->card()->associate($card);
+                    }
+                    if (isset($paymentMap['amount_captured'])) {
+                        $payment->setAmountCaptured($paymentMap['amount_captured']);
                     }
 
                     return $payment;
