@@ -5,7 +5,7 @@ import { CommonPoints } from 'merchant/views/Navigator/components/Provider/Seaml
 export const NETBANKING_FEATURES = 'Netbanking Features';
 export const UPI_FEATURES = 'UPI Features';
 
-export const INTERNATIONAL_GATEWAYS = ['checkout_dot_com_optimizer'];
+export const INTERNATIONAL_GATEWAYS = ['checkout_dot_com_optimizer', 'airwallex_optimizer'];
 export const BANK_GATEWAYS = [
   'upi_icici',
   'upi_mindgate',

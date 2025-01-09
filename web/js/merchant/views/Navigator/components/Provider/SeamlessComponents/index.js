@@ -1,9 +1,10 @@
+import { List, ListItem, ListItemText } from '@razorpay/blade/components';
+
 import { AtomPoints } from './AtomPoints';
 import { AxisMigsPoints } from './AxisMigsPoints';
 import { BillDeskPoints } from './BillDeskPoints';
 import { CashfreePoints } from './CashfreePoints';
 import { CcavenuePoints } from './CcavenuePoints';
-import { CommonPoints } from './CommonPoints';
 import { CybersourcePoints } from './CybersourcePoints';
 import { HdfcPoints } from './HdfcPoints';
 import { IngenicoPoints } from './IngenicoPoints';
@@ -17,7 +18,6 @@ import { UpiIciciPoints } from './UpiIciciPoints';
 import { GetSimplPoints } from './GetSimplPoints';
 import { IciciNetbankingPoints } from './IciciNetbankingPoints';
 import { HdfcNetbankingPoints } from './HdfcNetbankingPoints';
-import { ZaakpayPoints } from './ZaakpayPoints';
 
 export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
   switch (selectedProvider) {
@@ -59,13 +59,16 @@ export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
       return <IciciNetbankingPoints />;
     case 'netbanking_hdfc':
       return <HdfcNetbankingPoints />;
-    case 'zaakpay':
-      return <ZaakpayPoints />;
     default:
       return (
-        <ol>
-          <CommonPoints gatewayName={gatewayName} />
-        </ol>
+        <List size="small" variant="unordered">
+          <ListItem>
+            <ListItemText color="surface.text.gray.subtle">
+              Reach out to your relationship manager to get your server to server or seamless
+              integration kit with credentials
+            </ListItemText>
+          </ListItem>
+        </List>
       );
   }
 };
