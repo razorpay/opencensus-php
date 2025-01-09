@@ -14369,4 +14369,11 @@ class Service extends Base\Service
         }
     }
 
+    public function fetchUserIdAndOrgIdFromMerchantId($merchantId)
+    {
+        $response =  $this->repo->merchant_user->fetchUserIdAndOrgIdFromMerchantId($merchantId);
+
+        return $response;
+    }
+
 }

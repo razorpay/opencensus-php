@@ -512,6 +512,7 @@ class Route
         'merchant_validate_create_terminal_v3'     => ['post',     'merchants/{id}/terminals/validatev3',            'MerchantController@postValidateCreateTerminalV3'                   ],
         'merchant_create_terminal_v3'              => ['post',     'merchants/{id}/terminals/v3',                    'MerchantController@postCreateTerminalV3'                           ],
         'merchant_create_terminal_internal'        => ['post',     'merchants/{id}/terminals/internal',              'MerchantController@postCreateTerminalWithId',                      ],
+        'merchant_info_fetch'                      => ['get',      'internal/merchant_info_fetch/{mid}',             'MerchantController@fetchUserIdAndOrgIdFromMerchantId',             ],
         'merchant_get_terminals'                   => ['get',      'merchants/{id}/terminals',                       'MerchantController@getTerminals'                                   ],
         'proxy_merchant_get_terminals'             => ['get',      'proxy/merchant/terminals',                       'MerchantController@proxyGetTerminals'                              ],
         'admin_merchant_get_terminals'             => ['post',     'admin/merchant/terminals',                       'TerminalController@proxyV2TerminalService'                        ],
@@ -5789,6 +5790,7 @@ class Route
     // Put it in the Admin Array instead
     public static $internal = [
         'internal_order_payments',
+        'merchant_info_fetch',
         'internal_fd_fetch_ticket',
         'internal_create_workflow',
         'internal_workflow_observer_data_update',
@@ -18022,6 +18024,7 @@ class Route
         ],
 
         'terminals_service' => [
+            'merchant_info_fetch',
             'merchant_update_miq',
             'pricing_update_miq',
             'terminal_sync_internal',

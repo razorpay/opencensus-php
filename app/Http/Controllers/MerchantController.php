@@ -4637,4 +4637,11 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchUserIdAndOrgIdFromMerchantId($merchantId)
+    {
+        $response = $this->service(E::MERCHANT)->fetchUserIdAndOrgIdFromMerchantId($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
 }
