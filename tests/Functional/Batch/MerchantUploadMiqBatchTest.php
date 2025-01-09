@@ -15,11 +15,13 @@ use RZP\Models\Merchant\Detail;
 use RZP\Tests\Functional\Merchant;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Admin\Org;
+use RZP\Tests\Traits\MocksSplitz;
 
 class MerchantUploadMiqBatchTest extends TestCase
 {
     use BatchTestTrait;
     use HeimdallTrait;
+    use MocksSplitz;
 
     protected function setUp(): void
     {
@@ -1861,6 +1863,168 @@ class MerchantUploadMiqBatchTest extends TestCase
 
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BRANCH_IFSC_CODE] = '';
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+        $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
+    }
+
+    public function testCreateMerchantUploadMIQRearchFlowOnboardingViaPGOSSuccess()
+    {
+        Config::set('pgos.proxy.request.mock', true);
+
+        $this->ba->appAuth();
+
+        $this->app->instance("rzp.mode", Mode::TEST);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::KYC_VERIFICATION_FOR_VAS,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+
+        $splitzMock->shouldReceive('evaluateRequest')->andReturn($output);
+
+        $input = $this->testData['defaultSuccess']['request']['content'];
+
+        $response = (new Detail\Upload\Core)->processMerchantEntry($input);
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+
+        $this->assertNotEmpty($response[Header::MIQ_OUT_MERCHANT_ID]);
+
+    }
+
+    public function testCreateMerchantUploadMIQRearchFlowOnboardingViaAPISuccess()
+    {
+        Config::set('pgos.proxy.request.mock', true);
+
+        $this->ba->appAuth();
+
+        $this->app->instance("rzp.mode", Mode::TEST);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::KYC_VERIFICATION_FOR_VAS,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'off',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+
+        $splitzMock->shouldReceive('evaluateRequest')->andReturn($output);
+
+        $input = $this->testData['defaultSuccess']['request']['content'];
+        $response = (new Detail\Upload\Core)->processMerchantEntry($input);
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+
+        $this->assertNotEmpty($response[Header::MIQ_OUT_MERCHANT_ID]);
+
+    }
+
+    public function testCreateMerchantUploadMIQRearchFlowOnboardingViaAPIValidationFailure()
+    {
+        $this->ba->appAuth();
+
+        $this->app->instance("rzp.mode", Mode::TEST);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::KYC_VERIFICATION_FOR_VAS,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'off',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+
+        $splitzMock->shouldReceive('evaluateRequest')->andReturn($output);
+
+        $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_ADDRESS] = null;
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+        $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
+
+    }
+
+    public function testCreateMerchantUploadMIQRearchFlowOnboardingViaPGOSValidationFailure()
+    {
+        $this->ba->appAuth();
+
+        $this->app->instance("rzp.mode", Mode::TEST);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::KYC_VERIFICATION_FOR_VAS,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+
+        $splitzMock->shouldReceive('evaluateRequest')->andReturn($output);
+
+        $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_ADDRESS] = null;
 
         $response = $this->startTest();
 
