@@ -129,7 +129,7 @@ const ActivationModal = ({ isOpen, onDismiss, ...props }: ActivationModalProps) 
       </ModalBody>
       <ModalFooter>
         <Box display="flex" justifyContent="flex-end">
-          <Button onClick={handleContinueClick} isLoading={isSavingForm}>
+          <Button onClick={handleContinueClick} isLoading={isSavingForm} testID="continue-button">
             {currentStepSubmitBtnText}
           </Button>
         </Box>

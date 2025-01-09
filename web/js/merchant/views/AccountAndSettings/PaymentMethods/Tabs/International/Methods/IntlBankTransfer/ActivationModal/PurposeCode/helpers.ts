@@ -5,6 +5,7 @@ import { PurposeCodes } from './types';
 export const getPurposeCode = () =>
   merchantFetch({
     url: 'purposecode',
+    mode: 'live',
   }).then<PurposeCodes>((res) => {
     return {
       groups: res?.data ?? [],

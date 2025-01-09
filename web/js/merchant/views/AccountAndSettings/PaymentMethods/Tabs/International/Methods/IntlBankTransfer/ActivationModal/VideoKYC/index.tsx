@@ -49,6 +49,7 @@ const IecCode = () => {
           validationState={validationState.owner.state}
           errorText={validationState.owner.errorText}
           isDisabled={isSavingForm}
+          name="owner"
         >
           <Radio value="yes" marginBottom="spacing.4">
             Yes, I am {promoterPanName}

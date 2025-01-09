@@ -2,13 +2,19 @@ import { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
+
 import { withRouter } from 'common/deprecated/withRouter';
 import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { setFormData, setFormError, setFormFetching } from 'merchant/reducers/apmForm/actions';
 import { videoKycBannerActions } from 'merchant/reducers/videoKYCBanner';
-import { DISABLE_REQUEST_TOOLTIP } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
+import {
+  DISABLE_REQUEST_TOOLTIP,
+  DISABLE_NEW_ONBOARDING,
+} from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
 import { REQUESTABLE, GREYED } from 'merchant/views/Settings/PaymentMethods/constants';
 import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -54,7 +60,15 @@ const InstantBankTransfer = ({
   const { submitted } = formData ?? {};
   const isSubmitted = submitted === '1' || submitted === true;
 
-  const isDisableInternationalPaymentMethods = showMorePaymentMethodsSection;
+  const {
+    abExperiments: { intl_settings_page_revamp },
+  } = useSplitzService();
+
+  const isExpEnabled = isExperimentEnabled(intl_settings_page_revamp);
+
+  const isDisableInternationalPaymentMethods = showMorePaymentMethodsSection || isExpEnabled;
+
+  const disableTooltipMessage = isExpEnabled ? DISABLE_NEW_ONBOARDING : DISABLE_REQUEST_TOOLTIP;
 
   const trackActivateClicked = (formSubmitted, containerButtonClicked, listButtonClicked) => {
     track({
@@ -176,7 +190,7 @@ const InstantBankTransfer = ({
           showListAction={showListAction()}
           onInstrumentRequest={onInstrumentButtonClick}
           isRequestButtonDisabled={isDisableInternationalPaymentMethods}
-          requestTooltipText={isDisableInternationalPaymentMethods ? DISABLE_REQUEST_TOOLTIP : ''}
+          requestTooltipText={isDisableInternationalPaymentMethods ? disableTooltipMessage : ''}
         />
       </div>
     </ErrorBoundary>

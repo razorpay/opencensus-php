@@ -72,6 +72,7 @@ const PurposeCode = () => {
             leadingIcon={SearchIcon}
             onChange={handleSearch}
             onClearButtonClick={handleClearSearch}
+            testID="search-purpose-code"
           />
           <Dropdown>
             <SelectInput
@@ -83,6 +84,7 @@ const PurposeCode = () => {
               onChange={handleSelectedGroupChange}
               placeholder="Select Group"
               validationState="none"
+              testID="select-purpose-group"
             />
             <DropdownOverlay>
               <ActionList>
@@ -127,7 +129,7 @@ const PurposeCode = () => {
           {searchValue && !filteredCodes?.length && <Text>Purpose code not found.</Text>}
 
           {isLoading && (
-            <Box display="grid" gap="spacing.5">
+            <Box display="grid" gap="spacing.5" testID="purpose-code-skeleton">
               {[1, 2, 3, 4].map((item) => (
                 <Box key={item}>
                   <Skeleton height="20px" width="80px" marginBottom="spacing.3" />

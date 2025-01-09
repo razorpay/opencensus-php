@@ -3,6 +3,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 export const patchMerchantPurposeCode = (data: Record<string, string>) =>
   merchantFetch({
     url: 'merchants/purpose/code',
+    mode: 'live',
     method: 'patch',
     data,
   });
