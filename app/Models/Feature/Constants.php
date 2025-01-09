@@ -285,6 +285,9 @@ class Constants
     const OPTIMIZER_CFB_STANDARD   = 'optimizer_cfb_standard';
     const OPTIMIZER_CFB_CUSTOM     = 'optimizer_cfb_custom';
 
+    // feature flag to enable/disable route on optimizer merchant
+    const OPTIMIZER_ROUTE = 'optimizer_route';
+
     const OPTIMIZER_RAZORPAY_VAS          = 'optimizer_razorpay_vas';
 
     // Ledger constants
@@ -2797,6 +2800,7 @@ class Constants
         self::OPTIMIZER_RAZORPAY_VAS                       => true,
         self::OPTIMIZER_CFB_STANDARD                       => true,
         self::OPTIMIZER_CFB_CUSTOM                         => true,
+        self::OPTIMIZER_ROUTE                              => true,
         self::PAYMENTLINKS_V2                              => true,
         self::RECURRING_DEBIT_UMRN                         => true,
         self::NACH_FORM_DIRECT_DOWNLOAD                    => true,
