@@ -97,7 +97,7 @@ class Service extends Base\Service
 
                         if(count($nectorPromotions)>0)
                         {
-                            $promotions[] = $nectorPromotions[0];
+                            $promotions = array_merge($promotions, $nectorPromotions);
                         }
 
                         if(count($flitsPromotions)>0)
