@@ -835,8 +835,8 @@ class Route
         'qr_code_create'                           => ['post',     'payments/qr_codes',                              'QrCodeController@create'                                           ],
         'qr_code_merchant_create'                  => ['post',     'payments/merchant/qr_codes',                     'QrCodeController@createQrForMerchant'                              ],
         'internal_qr_code_merchant_create'         => ['post',     'internal/payments/merchant/qr_codes',            'QrCodeController@createQrForMerchant'                              ],
-        'set_qr_code_device'                       => ['put',      'payments/qr_codes/device/map',                    'QrCodeController@setDeviceIdForQr'                              ],
-        'qr_code_device_id_unmap'                       => ['put',      'payments/qr_codes/device/unmap',                    'QrCodeController@unMapDeviceIdForQr'                              ],
+        'set_qr_code_device'                       => ['put',      'payments/qr_codes/device/map',                   'QrCodeController@setDeviceIdForQr'                              ],
+        'qr_code_device_id_unmap'                  => ['put',      'payments/qr_codes/device/unmap',                 'QrCodeController@unMapDeviceIdForQr'                               ],
         'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
         //'qr_code_checkout_create'                  => ['post',     'checkout/qr_codes',                              'QrCodeController@createForCheckout'                                           ],
         'qr_code_fetch_payment_status'             => ['get',      'checkout/qr_code/{id}/payment/status',           'QrPaymentController@fetchCheckoutPaymentStatusByQrCodeId'          ],
@@ -17483,8 +17483,6 @@ class Route
         ],
 
         'ezetap-api' => [
-            'set_qr_code_device',
-            'qr_code_device_id_unmap',
             'payment_fetch_by_id',
             'qr_code_create',
             'qr_code_close',
@@ -18080,7 +18078,9 @@ class Route
             'create_merchant_balance_entities_internal',
             'setl_service_migration_internal',
             'internal_merchant_details_fetch',
-            'payment_fetch_by_id_internal'
+            'payment_fetch_by_id_internal',
+            'qr_code_device_id_unmap',
+            'set_qr_code_device'
         ],
 
         'spinnaker' => [
