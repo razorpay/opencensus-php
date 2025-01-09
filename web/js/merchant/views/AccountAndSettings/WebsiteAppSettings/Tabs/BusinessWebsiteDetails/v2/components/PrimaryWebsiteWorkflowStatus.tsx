@@ -138,12 +138,24 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
   useEffect(() => {
     // If landed on this page with query params for opening modals
     const queryParams = new URLSearchParams(location.search);
+    let deleteUrlQuery = '';
     if (queryParams.get('clarificationModalVisible') === 'true') {
       // open needs clarification modal
       onReplyClick();
+      deleteUrlQuery = 'clarificationModalVisible';
     } else if (queryParams.get('bvsModalVisible') === 'true') {
       // open bvs website pages update modal
       onFixMissingPages();
+      deleteUrlQuery = 'bvsModalVisible';
+    }
+
+    // Remove the query params after the page load is successfull
+    if (deleteUrlQuery) {
+      queryParams.delete(deleteUrlQuery);
+      const newUrl = queryParams.toString()
+        ? `/app${location.pathname}?${queryParams.toString()}`
+        : `/app${location.pathname}`;
+      window.history.replaceState(null, '', newUrl);
     }
   }, [location.search]);
 

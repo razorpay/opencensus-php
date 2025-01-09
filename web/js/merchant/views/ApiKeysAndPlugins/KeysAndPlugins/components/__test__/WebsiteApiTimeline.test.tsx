@@ -24,9 +24,7 @@ describe('Generate Key WebsiteApiTimeline', () => {
         handleNavigateToWebsite={handleNavigateToWebsite}
       />,
     );
-    expect(
-      screen.getByText(/Website in review. Expect an update within 10mins/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Website in review. Expect an update by/i)).toBeInTheDocument();
   });
 
   it('renders WorkflowInReview state', () => {

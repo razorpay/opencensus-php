@@ -36,9 +36,6 @@ const getActiveWebsiteStatus = (
       activeStatusColor = 'positive';
       break;
     case WebsiteStatusEnum.BvsInProgress:
-      activeStatusComponent = <>Website in review. Expect an update within 10mins.</>;
-      activeStatusColor = 'notice';
-      break;
     case WebsiteStatusEnum.WorkflowInReview:
       activeStatusComponent = (
         <>

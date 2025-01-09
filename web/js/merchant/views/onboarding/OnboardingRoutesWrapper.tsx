@@ -1,5 +1,5 @@
 import React, { lazy } from 'react';
-import { Routes, Route, Outlet } from 'react-router-dom';
+import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
@@ -24,6 +24,7 @@ const OnboardingRoutesWrapper = (): JSX.Element => {
         <Route path="onboarding" element={<Outlet />}>
           <Route path="payment-methods/*" element={<OnboardingPaymentMethods />} />
           <Route path="business-website-details" element={<OnboardingBusinessWebsite />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Route>
       </Routes>
     </ErrorBoundary>
