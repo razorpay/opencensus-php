@@ -69,7 +69,8 @@ class Base
     /* reason code mapping endpoint, supposed to be used by external services
       dashboard, Risk. */
     const HOLD_REASON_CODE_MAPPING = '/v1/settlements/on_hold/reason_codes';
-
+    const HOLD_REASON_CODE_MAPPING_INTERNAL = '/v1/settlements/internal/on_hold/reason_codes';
+    const UPDATE_FOH = '/v1/settlements/updateFOH';
     protected $trace;
 
     protected $config;

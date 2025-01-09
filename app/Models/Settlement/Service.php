@@ -2037,9 +2037,19 @@ class Service extends Base\Service
         return app('settlements_api')->triggerFileGeneration($input);
     }
 
-    public function getHoldReasonCodeMappingsInternal(array $input) : array
+    public function getHoldReasonCodeMappings(array $input) : array
     {
         return app('settlements_dashboard')->getHoldReasonCodeMappingsDashboard($input);
+    }
+
+    public function getHoldReasonCodeMappingsInternal(array $input) : array
+    {
+        return app('settlements_api')->getHoldReasonCodeMappingsInternal($input);
+    }
+
+    public function updateFOH(array $input) : array
+    {
+        return app('settlements_api')->updateFOH($input);
     }
 
     public function updateSchedule(array $input) : array

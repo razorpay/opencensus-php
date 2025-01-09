@@ -15,6 +15,8 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Workflow\Action as Action;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Models\RiskWorkflowAction\Constants as RiskWorkflowActionConstants;
+
 
 class Core extends Base\Core
 {
@@ -36,6 +38,18 @@ class Core extends Base\Core
         $entityId = UniqueIdEntity::generateUniqueId();
 
         $tags[] = sprintf("%s%s", RiskWorkflowAction\Constants::BULK_WORKFLOW_GROUP_TAG_PREFIX, $entityId);
+        // Add risk reason and subreason tags if available in the input
+        if($action == "release_funds" || $action == "hold_funds"){
+            $riskAttributes = $input[RiskWorkflowActionConstants::RISK_ATTRIBUTES] ?? [];
+
+            if (isset($riskAttributes[RiskWorkflowActionConstants::RISK_REASON])) {
+                $tags[] = RiskWorkflowActionConstants::RISK_REASON_PREFIX . $riskAttributes[RiskWorkflowActionConstants::RISK_REASON];
+            }
+
+            if (isset($riskAttributes[RiskWorkflowActionConstants::RISK_SUB_REASON])) {
+                $tags[] = RiskWorkflowActionConstants::RISK_SUB_REASON_PREFIX . $riskAttributes[RiskWorkflowActionConstants::RISK_SUB_REASON];
+            }
+        }
 
         $this->trace->info(TraceCode::CREATE_BULK_EDIT_WORKFLOW,
             [
