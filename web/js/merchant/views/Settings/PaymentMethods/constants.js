@@ -121,3 +121,13 @@ export const PLACEHOLDERS = {
   'merchant_business_detail|website_details|about': 'https://example.com/about',
 };
 export const CC_EMI_SEPARATE_INSTRUMENT = ['credit.sbi', 'credit.hdfc', 'credit.amex'];
+
+export const FIELD_STATUS = {
+  missing: 'Missing/Unverified Details',
+  verified: 'Verified Details',
+};
+
+export const DETAILS_TYPE = {
+  business: 'Business Details',
+  website: 'Website Details',
+};

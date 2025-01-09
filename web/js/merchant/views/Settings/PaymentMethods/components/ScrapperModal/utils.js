@@ -1,6 +1,9 @@
 import isEmpty from 'lodash/isEmpty';
 
-import { WEBSITE_LINKS_MAPPING } from 'merchant/views/Settings/PaymentMethods/constants';
+import {
+  DETAILS_TYPE,
+  WEBSITE_LINKS_MAPPING,
+} from 'merchant/views/Settings/PaymentMethods/constants';
 
 export const getInstrumentTat = (props) => {
   const { instrument, intermediateInstrument, leafInstrument, instrumentsTat } = props;
@@ -44,8 +47,8 @@ export const getGroupedCollectInfo = (collectInfo) => {
   }, {});
 
   const sortedCategories = Object.keys(grouped).sort((a, b) => {
-    if (a === 'Website Details') return -1;
-    if (b === 'Website Details') return 1;
+    if (a === DETAILS_TYPE.website) return -1;
+    if (b === DETAILS_TYPE.website) return 1;
     return 0;
   });
 
@@ -72,13 +75,17 @@ export const updatedWebsiteDetailsValues = (collectInfo, scrapperInfo = []) => {
 };
 
 export const isWebsiteDetailsPresent = (data) => {
-  return data.some((item) => item.category === 'Website Details');
+  return data.some((item) => item.category === DETAILS_TYPE.website);
+};
+
+export const isBusinessDetailsPresent = (data) => {
+  return data.some((item) => item.category === DETAILS_TYPE.business);
 };
 
 export const countUnverifiedWebsiteDetails = (data) => {
   return data.filter(
     (item) =>
-      item.category === 'Website Details' &&
+      item.category === DETAILS_TYPE.website &&
       (item.verification_status === false || !item.verification_status),
   ).length;
 };

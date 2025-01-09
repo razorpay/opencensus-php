@@ -30,7 +30,9 @@ import {
   hasValidFieldsForCategory,
   isFieldValidUrl,
   isWebsiteDetailsPresent,
+  isBusinessDetailsPresent,
 } from './utils';
+import { DETAILS_TYPE, FIELD_STATUS } from 'merchant/views/Settings/PaymentMethods/constants';
 
 const WebsiteDetailsModal = ({
   props,
@@ -46,15 +48,26 @@ const WebsiteDetailsModal = ({
   const [isAdditionalDetailsView, setAdditionalDetailsView] = useState(false);
   const merchantWebsiteDetails = getWebsiteDetailsInfo(props.user);
   const [initialStateOfFields, setInitialStateOfField] = useState([]);
+  const [allPagesVerified, setAllPagesVerified] = useState(false);
 
   useEffect(() => {
-    const keys = Object.keys(getGroupedCollectInfo(collectInfo));
-    if (keys.indexOf('Website Details') === -1 && keys.length !== 0) {
+    const groupedCollectInfo = getGroupedCollectInfo(collectInfo);
+    const keys = Object.keys(groupedCollectInfo);
+    if (isWebsiteDetailsPresent(collectInfo)) {
+      const groupedByVerficiationStatus = groupByVerificationStatus(
+        groupedCollectInfo[DETAILS_TYPE.website],
+      );
+      setAllPagesVerified(
+        Object.keys(groupedByVerficiationStatus).join('') === FIELD_STATUS.verified,
+      );
+    }
+
+    if (!isWebsiteDetailsPresent(collectInfo) && keys.length !== 0) {
       setAdditionalDetailsView(true);
     }
     const initial = collectInfo
       .map((item) => {
-        if (item.category === 'Website Details' && !item?.verification_status) {
+        if (item.category === DETAILS_TYPE.website && !item?.verification_status) {
           return {
             name: item.name,
             value: item.value || '',
@@ -74,7 +87,7 @@ const WebsiteDetailsModal = ({
     let flag = true;
     for (let idx = 0; idx < collectInfo.length; idx++) {
       const item = collectInfo[idx];
-      if (item.category === 'Website Details' && !item?.verification_status) {
+      if (item.category === DETAILS_TYPE.website && !item?.verification_status) {
         const resp = isFieldValidUrl(
           item.value,
           merchantWebsiteDetails.isWebsiteDetails
@@ -104,8 +117,7 @@ const WebsiteDetailsModal = ({
   };
 
   const handleNext = () => {
-    const keys = Object.keys(getGroupedCollectInfo(collectInfo));
-    if (isAdditionalDetailsView || keys.indexOf('Business Details') === -1) {
+    if (isAdditionalDetailsView || !isBusinessDetailsPresent(collectInfo)) {
       handleSubmitRequest();
     } else {
       setAdditionalDetailsView(true);
@@ -121,7 +133,7 @@ const WebsiteDetailsModal = ({
 
     return (
       <>
-        {initialStateOfFields.length && groupedWebsiteDetails[type]
+        {(allPagesVerified || initialStateOfFields.length) && groupedWebsiteDetails[type]
           ? groupedWebsiteDetails[type].map((item, idx) => {
               return (
                 <Box key={item.name} display="flex" alignItems="center" gap="spacing.4">
@@ -132,13 +144,13 @@ const WebsiteDetailsModal = ({
                       name={item.name}
                       value={item.value || ''}
                       validationState={
-                        !item.value ? 'error' : type === 'Verified Details' ? 'none' : 'error'
+                        !item.value ? 'error' : type === FIELD_STATUS.verified ? 'none' : 'error'
                       }
-                      isDisabled={type === 'Verified Details'}
+                      isDisabled={type === FIELD_STATUS.verified}
                       onChange={handleFieldChange}
                     />
                   </Box>
-                  {type !== 'Verified Details' ? (
+                  {type !== FIELD_STATUS.verified ? (
                     <Tooltip
                       content={
                         !initialStateOfFields[idx].value
@@ -165,11 +177,13 @@ const WebsiteDetailsModal = ({
   };
 
   const renderWebsiteDetails = (websiteDetails) => {
-    if (!websiteDetails['Website Details']) {
+    if (!websiteDetails[DETAILS_TYPE.website]) {
       return <Text>Something went wrong! Please try again</Text>;
     }
-    const websiteFieldLength = websiteDetails['Website Details'].length;
-    const unverifiedFieldLength = countUnverifiedWebsiteDetails(websiteDetails['Website Details']);
+    const websiteFieldLength = websiteDetails[DETAILS_TYPE.website].length;
+    const unverifiedFieldLength = countUnverifiedWebsiteDetails(
+      websiteDetails[DETAILS_TYPE.website],
+    );
     return (
       <>
         {unverifiedFieldLength !== 0 ? (
@@ -190,7 +204,7 @@ const WebsiteDetailsModal = ({
               <Text variant="body" weight="semibold" size="medium">
                 Needs Clarification
               </Text>
-              {renderWebsiteFields(websiteDetails['Website Details'], 'Missing/Unverified Details')}
+              {renderWebsiteFields(websiteDetails[DETAILS_TYPE.website], FIELD_STATUS.missing)}
             </Box>
           </>
         ) : null}
@@ -201,13 +215,13 @@ const WebsiteDetailsModal = ({
               <Text variant="body" weight="semibold" size="medium">
                 {unverifiedFieldLength === 0
                   ? 'All policy pages verified successfully'
-                  : 'Verified Details'}
+                  : FIELD_STATUS.verified}
               </Text>
-              {renderWebsiteFields(websiteDetails['Website Details'], 'Verified Details')}
+              {renderWebsiteFields(websiteDetails[DETAILS_TYPE.website], FIELD_STATUS.verified)}
             </Box>
           </>
         ) : null}
-        {!isAdditionalDetailsView && !isRetryNeeded() ? (
+        {!allPagesVerified && !isAdditionalDetailsView && !isRetryNeeded() ? (
           <Alert
             description={`Important: Due to incomplete website verification, your ${props.instrument.name} activation request may be rejected by the banking partner. We recommend ensuring all pages exist and meet guidelines before proceeding`}
             isDismissible={false}
@@ -305,7 +319,7 @@ const WebsiteDetailsModal = ({
     return (
       <Box display="flex" flexDirection="column" gap="spacing.4">
         {categories.map((category) => {
-          if (category === 'Website Details') {
+          if (category === DETAILS_TYPE.website) {
             return null;
           }
           return renderGeneralInfo(websiteDetails[category]);
@@ -337,41 +351,62 @@ const WebsiteDetailsModal = ({
       : 'Additional Details Required';
   };
 
+  const renderModalFooter = () => {
+    if (allPagesVerified && !isAdditionalDetailsView) {
+      return (
+        <Button variant={'primary'} isLoading={submitLoading} onClick={handleNext}>
+          {!isBusinessDetailsPresent(collectInfo) ? 'Submit Request' : 'Proceed'}
+        </Button>
+      );
+    }
+
+    if (allPagesVerified && isAdditionalDetailsView) {
+      return (
+        <Button
+          variant="primary"
+          onClick={handleNext}
+          isLoading={submitLoading}
+          isDisabled={isValidDetailsFilled(DETAILS_TYPE.business)}
+        >
+          Submit Request
+        </Button>
+      );
+    }
+
+    return isRetryNeeded() ? (
+      <Button onClick={handleRetryClick} isDisabled={validateWebsiteFields()}>
+        Verify Again
+      </Button>
+    ) : (
+      <>
+        <Button
+          variant={!isAdditionalDetailsView ? 'secondary' : 'primary'}
+          onClick={handleNext}
+          isLoading={submitLoading}
+          isDisabled={
+            !isAdditionalDetailsView
+              ? validateWebsiteFields()
+              : isValidDetailsFilled(DETAILS_TYPE.business)
+          }
+        >
+          {!isAdditionalDetailsView ? 'Proceed Anyway' : 'Submit Request'}
+        </Button>
+        {!isAdditionalDetailsView ? (
+          <Button variant="primary" onClick={handleRetryClick} isDisabled={validateWebsiteFields()}>
+            Verify Again
+          </Button>
+        ) : null}
+      </>
+    );
+  };
+
   return (
     <Modal isOpen={isOpen} onDismiss={handleClose} size="medium">
       <ModalHeader title={renderModalHeader()} />
       <ModalBody>{renderModalBody()}</ModalBody>
       <ModalFooter>
         <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
-          {isRetryNeeded() ? (
-            <Button onClick={handleRetryClick} isDisabled={validateWebsiteFields()}>
-              Verify Again
-            </Button>
-          ) : (
-            <>
-              <Button
-                variant={!isAdditionalDetailsView ? 'secondary' : 'primary'}
-                onClick={handleNext}
-                isLoading={submitLoading}
-                isDisabled={
-                  !isAdditionalDetailsView
-                    ? validateWebsiteFields()
-                    : isValidDetailsFilled('Business Details')
-                }
-              >
-                {!isAdditionalDetailsView ? 'Proceed Anyway' : 'Submit Request'}
-              </Button>
-              {!isAdditionalDetailsView ? (
-                <Button
-                  variant="primary"
-                  onClick={handleRetryClick}
-                  isDisabled={validateWebsiteFields()}
-                >
-                  Verify Again
-                </Button>
-              ) : null}
-            </>
-          )}
+          {renderModalFooter()}
         </Box>
       </ModalFooter>
     </Modal>
