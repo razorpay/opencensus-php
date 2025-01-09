@@ -288,7 +288,7 @@ class AddFundsContainer extends Component {
               Note: Standard TDR charges applies on adding funds
             </Text>
             {/* TODO: to add 'mode' condition check before Go-Live */}
-            {isBillMeMerchant() ? <CompanyBalance /> : null}
+            {/* {isBillMeMerchant() ? <CompanyBalance /> : null} */}
           </Box>
         </Box>
       </div>
