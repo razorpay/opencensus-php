@@ -8305,6 +8305,7 @@ class Route
         'order_fetch_internal_checkout',
         'merchant_methods_offers_checkout_internal',
         'checkout_1cc_configs_get',
+        'payment_validate_account',
 
         'partner_config_fetch',
         'partner_config_edit',
@@ -18523,6 +18524,7 @@ class Route
             'customer_truecaller_verify_internal',
             'customer_truecaller_callback_internal',
             'payment_fetch_by_id_internal',
+            'payment_validate_account',
         ],
 
         'wallet_service' => [
