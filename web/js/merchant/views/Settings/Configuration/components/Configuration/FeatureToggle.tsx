@@ -28,6 +28,7 @@ const FeatureToggle: React.FC<FeatureToggleProps> = ({
   toggleHandler,
   extraItems,
   blockData,
+  subSectionName = '',
 }) => {
   const [isShowFeedback, setIsShowFeedback] = React.useState(false);
   const handleSwitchChange = ({ isChecked }: { isChecked: boolean }) => {
@@ -47,6 +48,7 @@ const FeatureToggle: React.FC<FeatureToggleProps> = ({
       subTitle={subTitle}
       blockData={blockData}
       showFeedback={isShowFeedback}
+      subSectionName={subSectionName}
       rightChildren={
         <RightChildren
           isChecked={isChecked}

@@ -19,6 +19,7 @@ import {
 import { LineItemsProps } from 'merchant/views/Settings/Configuration/components/Configuration/types';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
+import sendToSegment from 'merchant/views/Settings/Configuration/CheckoutEditor/track';
 
 const LineItems: React.FC<LineItemsProps> = ({
   title,
@@ -27,6 +28,7 @@ const LineItems: React.FC<LineItemsProps> = ({
   extraItems,
   blockData,
   showFeedback,
+  subSectionName = '',
 }) => {
   const [feedback, setFeedback] = React.useState('');
   const [submittedFeedbackType, setSubmittedFeedbackType] = React.useState('not_submitted');
@@ -44,6 +46,13 @@ const LineItems: React.FC<LineItemsProps> = ({
       });
       blockData.is_feedback_taken = true;
       showNotification({ type: 'success', message: 'Feedback submitted successfully' });
+      sendToSegment(
+        'feedback vote result',
+        'submit',
+        { vote: type, feedback },
+        'Checkout features',
+        subSectionName,
+      );
     } catch (error) {
       const { errors, message } = error as { errors: string[]; message: string };
       showNotification({ type: 'error', message: errors?.[0] ?? message });

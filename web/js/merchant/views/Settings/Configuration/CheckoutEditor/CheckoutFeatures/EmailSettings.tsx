@@ -48,6 +48,7 @@ const EmailSettings = ({ blockData }: any) => {
       subTitle={EMAIL_SETTINGS_DEFAULT_VALUE.subTitle}
       toggleHandler={(isChecked) => handleEmailToggle(isChecked)}
       blockData={blockData}
+      subSectionName="email-settings"
       isFeature
       extraItems={
         <ExtraItems

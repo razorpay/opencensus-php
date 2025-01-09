@@ -25,6 +25,7 @@ const CustomMessageSettings = ({ blockData }: any) => {
       subTitle={CUSTOM_MESSAGE_DEFAULT_VALUE.subTitle}
       toggleHandler={handleToggleMessageBanner}
       blockData={blockData}
+      subSectionName="custom-message"
       extraItems={<ExtraItems />}
     />
   );

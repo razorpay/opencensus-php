@@ -30,7 +30,7 @@ export const FLASH_CHECKOUT_DEFAULT_VALUE = {
 };
 
 export const MANDATORT_SUMMARY_DEFAULT_VALUE = {
-  title: 'Mandatory summary page',
+  title: 'Mandate summary page',
   subTitle: 'Show mandate summary page for credit and debit card payments',
 };
 

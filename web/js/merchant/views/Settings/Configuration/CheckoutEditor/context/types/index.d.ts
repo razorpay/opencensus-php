@@ -59,6 +59,36 @@ export type MerchantCheckoutConfig = {
   } | null;
 };
 
+export type Tag = {
+  audience_roles: string;
+  block_id: string;
+  created_at: number;
+  enabled: boolean;
+  enabled_at: number;
+  id: string;
+  page: string;
+  tab: string;
+  tag: string;
+  type: string;
+  updated_at: number;
+  description?: string;
+  name: string;
+  audience_splitz_id?: string;
+};
+
+export type Block = {
+  description?: string;
+  id: string;
+  is_existing_block: boolean;
+  is_feedback_taken: boolean;
+  name: string;
+  page: string;
+  tab: string;
+  tags: Tag[];
+};
+
+type Blocks = Block[];
+
 export type ConfigFeatures = { feature: string; value: boolean; display_name: string }[];
 
 export type AccountConfig = {

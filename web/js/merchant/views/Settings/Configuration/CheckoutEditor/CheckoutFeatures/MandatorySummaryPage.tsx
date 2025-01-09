@@ -19,6 +19,7 @@ const MandatorySummaryPage = ({ blockData }: any) => {
       subTitle={MANDATORT_SUMMARY_DEFAULT_VALUE.subTitle}
       blockData={blockData}
       toggleHandler={(isChecked) => handleMandatorySummaryPageToggle(isChecked)}
+      subSectionName="mandate-summary-page"
     />
   );
 };

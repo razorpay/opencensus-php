@@ -14,6 +14,7 @@ export type FeatureToggleProps = {
   extraItems?: React.ReactNode;
   blockData?: any;
   badgeText?: React.ReactNode;
+  subSectionName?: string;
 };
 
 export type LineItemsProps = {
@@ -22,5 +23,6 @@ export type LineItemsProps = {
   rightChildren?: React.ReactNode;
   extraItems?: React.ReactNode;
   blockData?: any;
+  subSectionName?: string;
   showFeedback?: boolean;
 };

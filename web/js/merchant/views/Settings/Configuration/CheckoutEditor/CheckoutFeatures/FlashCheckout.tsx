@@ -18,6 +18,7 @@ const FlashCheckout = ({ blockData }: any) => {
       subTitle={FLASH_CHECKOUT_DEFAULT_VALUE.subTitle}
       blockData={blockData}
       toggleHandler={(isChecked) => handleFlashCheckoutToggle(isChecked)}
+      subSectionName="flash-checkout"
     />
   );
 };

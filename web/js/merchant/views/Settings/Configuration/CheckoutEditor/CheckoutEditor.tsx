@@ -3,6 +3,7 @@ import { Box } from '@razorpay/blade/components';
 import {
   AccountConfig,
   AccountLocale,
+  Blocks,
   MerchantCheckoutConfig,
   MerchantCheckoutStyledConfig,
   TrustedBadgeType,
@@ -59,6 +60,7 @@ import {
   PROD_BLOCKS_IDs,
   STAGE_BLOCKS_IDs,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/constant';
+import blockAnalytics from 'merchant/views/Settings/Configuration/CheckoutEditor/track/blockAnalytics';
 
 type CheckoutConfigProps = {
   accountConfig?: AccountConfig;
@@ -66,7 +68,7 @@ type CheckoutConfigProps = {
   merchantCheckoutConfig?: MerchantCheckoutConfig;
   suggestion?: any;
   user: User;
-  blocks?: any;
+  blocks?: Blocks;
   fetchBlocks: typeof fetchBlocks;
   fetchLocale: typeof fetchLocale;
   fetchMerchantCheckoutConfig: typeof fetchMerchantCheckoutConfig;
@@ -141,6 +143,12 @@ const CheckoutFeatures = ({
   useEffect(() => {
     fetchBlocks();
   }, [fetchBlocks]);
+
+  useEffect(() => {
+    if (blocks) {
+      blockAnalytics(blocks);
+    }
+  }, [blocks]);
 
   const handleUpdateFeatures = (payload: unknown) => updateFeatures(payload, user.current);
 

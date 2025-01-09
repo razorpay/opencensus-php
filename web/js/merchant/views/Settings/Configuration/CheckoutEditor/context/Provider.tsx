@@ -46,6 +46,7 @@ import {
   flashCheckoutProps,
   skipCardMandateSummaryProps,
 } from 'merchant/views/Settings/Configuration/settings-config-constants';
+import sendToSegment from 'merchant/views/Settings/Configuration/CheckoutEditor/track';
 
 export type CheckoutEditorProviderProps = {
   children: React.ReactNode;
@@ -397,6 +398,13 @@ const CheckoutEditorProvider = ({
     try {
       await createSuggestion({ type: 'post', data });
       showNotification({ type: 'success', message: 'Suggestion submitted successfully' });
+      sendToSegment(
+        'create feature suggestion',
+        'submit',
+        { suggestion: data.suggestion },
+        'Checkout Settings',
+        'suggestion',
+      );
     } catch (error) {
       const { errors, message } = error as { errors: string[]; message: string };
       showNotification({ type: 'error', message: errors?.[0] ?? message });
