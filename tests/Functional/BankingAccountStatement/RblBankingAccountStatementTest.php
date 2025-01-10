@@ -37,6 +37,7 @@ use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Webhook\Event;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use RZP\Models\Merchant\Balance\Entity;
+use RZP\Jobs\AccountStatementDualWrite;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankingAccount\Gateway\Rbl;
@@ -18337,5 +18338,19 @@ class RblBankingAccountStatementTest extends TestCase
 
         // Assert that only 1 entry was saved
         $this->assertEquals(1, sizeof($bas));
+    }
+
+    public function testDualWriteForAccountStatementServiceIsNotPushedInPayoutsDualWriteQueue()
+    {
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceBas'];
+
+        Queue::fake();
+
+        $this->startTest();
+
+        Queue::assertNotPushed(PayoutServiceDualWrite::class);
+        Queue::assertPushed(AccountStatementDualWrite::class, 1);
     }
 }

@@ -2,17 +2,14 @@
 
 namespace RZP\Jobs;
 
-use App;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
-use RZP\Models\Payout\Core;
-use RZP\Models\Payout\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Models\BankingAccountStatement;
 
-class PayoutServiceDualWrite extends Job
+class AccountStatementDualWrite extends Job
 {
     const MAX_RETRY_ATTEMPT = 5;
 
@@ -26,7 +23,7 @@ class PayoutServiceDualWrite extends Job
     /**
      * @var string
      */
-    protected $queueConfigKey = 'payout_service_dual_write';
+    protected $queueConfigKey = 'account_statement_dual_write';
 
     /**
      * @var array
@@ -47,35 +44,14 @@ class PayoutServiceDualWrite extends Job
             parent::handle();
 
             $this->trace->info(
-                TraceCode::PAYOUT_SERVICE_DUAL_WRITE_INIT,
+                TraceCode::ACCOUNT_STATEMENT_DUAL_WRITE_INIT,
                 $this->params
             );
 
-            if (array_key_exists(Entity::PAYOUT_ID, $this->params))
-            {
-                (new Core)->processDualWrite($this->params);
-            }
-            else
-            {
-                switch ($this->params[self::ENTITY_TYPE])
-                {
-                    case 'payout':
-                        $input = $this->params;
-                        $input[Entity::PAYOUT_ID] = $input[self::ENTITY_ID];
-                        unset($input[self::ENTITY_TYPE]);
-                        unset($input[self::ENTITY_ID]);
-
-                        (new Core)->processDualWrite($input);
-                        break;
-
-                    case 'bas':
-                        (new BankingAccountStatement\Core)->processDualWrite($this->params);
-                        break;
-                }
-            }
+            (new BankingAccountStatement\Core)->processAccountStatementDualWrite($this->params);
 
             $this->trace->info(
-                TraceCode::PAYOUT_SERVICE_DUAL_WRITE_COMPLETE,
+                TraceCode::ACCOUNT_STATEMENT_DUAL_WRITE_COMPLETE,
                 $this->params);
 
             $this->delete();
@@ -85,7 +61,7 @@ class PayoutServiceDualWrite extends Job
             $this->trace->traceException(
                 $exception,
                 Trace::ERROR,
-                TraceCode::PAYOUT_SERVICE_DUAL_WRITE_FAILURE,
+                TraceCode::ACCOUNT_STATEMENT_DUAL_WRITE_FAILURE,
                 $this->params);
 
             $this->checkRetry();
@@ -97,7 +73,7 @@ class PayoutServiceDualWrite extends Job
         if ($this->attempts() < self::MAX_ATTEMPTS_FOR_DUAL_WRITE)
         {
             $this->trace->info(
-                TraceCode::PAYOUTS_DUAL_WRITE_JOB_RELEASE,
+                TraceCode::ACCOUNT_STATEMENT_DUAL_WRITE_JOB_RELEASE,
                 $this->params);
 
             $this->release(self::MAX_RETRY_DELAY);
@@ -105,7 +81,7 @@ class PayoutServiceDualWrite extends Job
         else
         {
             $this->trace->info(
-                TraceCode::PAYOUTS_DUAL_WRITE_JOB_DELETE,
+                TraceCode::ACCOUNT_STATEMENT_DUAL_WRITE_JOB_DELETE,
                 $this->params);
 
             $this->delete();

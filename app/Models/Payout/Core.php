@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Monolog\Logger;
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Jobs\AccountStatementDualWrite;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Exception\RuntimeException;
 use RZP\Http\Route;
@@ -8903,12 +8904,24 @@ class Core extends Base\Core
             $input
         );
 
-        PayoutServiceDualWrite::dispatch($this->mode, $input);
+        if (array_key_exists('entity_type', $input) === true && ($input['entity_type'] == 'account_statement_bas'))
+        {
+            AccountStatementDualWrite::dispatch($this->mode, $input);
 
-        $this->trace->info(
-            TraceCode::PAYOUT_DUAL_WRITE_DISPATCHED_TO_QUEUE,
-            $input
-        );
+            $this->trace->info(
+                TraceCode::ACCOUNT_STATEMENT_DUAL_WRITE_DISPATCHED_TO_QUEUE,
+                $input
+            );
+        }
+        else
+        {
+            PayoutServiceDualWrite::dispatch($this->mode, $input);
+
+            $this->trace->info(
+                TraceCode::PAYOUT_DUAL_WRITE_DISPATCHED_TO_QUEUE,
+                $input
+            );
+        }
 
         return ['status' => 'success'] ;
     }
