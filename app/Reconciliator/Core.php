@@ -286,9 +286,23 @@ class Core extends Base\Core
 
     public function pushSuccessPaymentReconMetrics(Payment\Entity $payment, $source)
     {
+        $transaction = $payment->transaction;
+
+        // Transaction will not be created on CLS onboarded merchants
+        // for CPS payments, skipping as Transaction would be null for these payments.
+        if ($transaction === null) {
+            $this->trace->info(
+                TraceCode::RECON_TRANSACTION_METRIC_SKIPPED,
+                [
+                    'message' => 'transaction metric skipped due missing API transaction entity.'
+                ]
+            );
+            return;
+        }
+
         $this->trace->histogram(
             Metric::RECON_PAYMENT_CREATE_TO_RECONCILED_TIME_MINUTES,
-            $payment->transaction->getReconTimeFromTransactionCreationInMinutes(),
+            $transaction->getReconTimeFromTransactionCreationInMinutes(),
             Metric::getPaymentMetricDimensions($payment, $source)
         );
     }

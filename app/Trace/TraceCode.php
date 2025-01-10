@@ -3381,6 +3381,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_FILE_DELETE_FAILURE                             = 'RECON_FILE_DELETE_FAILURE';
     const RECON_INFO_ALERT                                      = 'RECON_INFO_ALERT';
     const RECON_FIRST_DATA_CAPS_PID                             = 'RECON_FIRST_DATA_CAPS_PID';
+
+    const RECON_TRANSACTION_METRIC_SKIPPED                      = 'RECON_TRANSACTION_METRIC_SKIPPED';
     const RECON_CRITICAL_ALERT                                  = 'RECON_CRITICAL_ALERT';
     const RECON_REQUEST                                         = 'RECON_REQUEST';
     const RECON_REQUEST_VIA_BATCH_SERVICE                       = 'RECON_REQUEST_VIA_BATCH_SERVICE';
