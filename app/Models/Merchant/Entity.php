@@ -4423,7 +4423,7 @@ class Entity extends Base\PublicEntity
     }
 
     public function getOrgAttribute() {
-        return parent::getRelationValue('org');
+        return $this->getRelationValue('org');
     }
 
     public function getFeaturesAttribute() {

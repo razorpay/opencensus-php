@@ -257,7 +257,6 @@ class AsvRouter
         try {
             $routeOrWorkerName    = $this->getRouteOrJobName();
             $isRequestRoutedToAsv = true;
-            $this->logAndReportMetrics($repoClass, $routeOrWorkerName, $isRequestRoutedToAsv, $functionName);
             return $isRequestRoutedToAsv;
         } catch (\Throwable $e) {
             $this->trace->count(Metric::ASV_WRITE_REQUEST_ROUTER_ERROR, [
@@ -432,40 +431,6 @@ class AsvRouter
             ]);
             return false;
         }
-    }
-
-    /**
-     * @param $repoClass
-     * @param string $routeOrWorkerName
-     * @param bool $isRequestRoutedToAsv
-     * @param $functionName
-     * @return void
-     */
-    public function logAndReportMetrics($repoClass, string $routeOrWorkerName, bool $isRequestRoutedToAsv, $functionName): void
-    {
-        // Metric is temporary, will be removed/seperated to avoid highcardinality.
-        // When We ramp up for all entities.
-        // Why both metric/log?: It is hard to get insights from logs for over
-        // 7 days, hence, also adding a metric.
-        if ($repoClass != MerchantRepository::class and $repoClass != MerchantDetailRepository::class) {
-            $this->trace->count(Metric::ASV_WRITE_REQUEST_ROUTER_RESULT, [
-                'routeOrWorkerName' => $routeOrWorkerName,
-                'isWriteRequestRouted' => $isRequestRoutedToAsv,
-                'identifier' => $repoClass . '::' . $functionName,
-            ]);
-        } else {
-            $this->trace->count(Metric::ASV_WRITE_MERCHANT_AND_MERCHANT_DETAIL_ROUTER_RESULT, [
-                'routeOrWorkerName' => $routeOrWorkerName,
-                'isWriteRequestRouted' => $isRequestRoutedToAsv,
-                'identifier' => $repoClass . '::' . $functionName,
-            ]);
-        }
-
-        $this->trace->info(TraceCode::ASV_WRITE_REQUEST_ROUTER_RESULT, [
-            'routeOrWorkerName' => $routeOrWorkerName,
-            'isWriteRequestRouted' => $isRequestRoutedToAsv,
-            'function_identifier' => $repoClass . '::' . $functionName,
-        ]);
     }
 
     public function shouldRouteFilterToAsv(string $callingIdentifier): bool
