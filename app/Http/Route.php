@@ -12583,6 +12583,7 @@ class Route
             'payout_update_tax_payment_id',
             'bulk_payout_purpose_post',
             'accounting_integration_merchant_details',
+            'merchant_search_users_internal',
         ],
 
         'dashboard' => [

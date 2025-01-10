@@ -132,7 +132,7 @@ class Entity extends Base\PublicEntity
 
     // Constant for skipping sms verification on stage
     const SKIP_SMS_REQUEST    = 'skip_sms_request';
-    
+
     const XPERIENCE = 'xperience';
     const ABACUS = 'abacus';
 
@@ -830,7 +830,7 @@ class Entity extends Base\PublicEntity
     {
         $app = App::getFacadeRoot();
         $basicAuth = $app['basicauth'];
-        if ($basicAuth->isXperienceApp() || $basicAuth->isAbacusApp()) {
+        if ($basicAuth->isXperienceApp() || $basicAuth->isAbacusApp() || $basicAuth->isVendorPaymentApp()) {
             $attributes = [
                 self::ID => $this->getAttribute(self::ID),
                 self::NAME => $this->getAttribute(self::NAME),
