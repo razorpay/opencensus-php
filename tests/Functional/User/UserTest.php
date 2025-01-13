@@ -16363,4 +16363,44 @@ class UserTest extends TestCase
             ]
         ]);
     }
+
+    public function testCreateMerchantForExistingOrphanUserWithEmailAndMobile()
+    {
+        $user = $this->fixtures->create('user',
+            [
+                'contact_mobile' => '+919999999999',
+                'email'  => 'email@razorpay.com',
+                'signup_via_email' => 1
+            ]
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        //deleting merchant_user mapping so that user becomes an orphan
+        DB::table('merchant_users')->where('user_id', '=', $user['id'])->delete();
+
+        //here, asserting the merchantUser's count to zero to ensure the user was orphaned
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+        $this->assertEquals(0, $merchantUsers->count());
+
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        var_dump('response', $response);
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        $merchantDetailEntry = DB::table('merchant_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
+
+        $merchantEntry = DB::table('merchants')->where('id', '=', $merchantUserEntry->merchant_id)->first();
+
+        $this->assertEquals($user['contact_mobile'], $merchantDetailEntry->contact_mobile);
+        $this->assertEquals($user['email'], $merchantDetailEntry->contact_email);
+        $this->assertEquals($user['signup_via_email'], $merchantEntry->signup_via_email);
+
+    }
 }
