@@ -36,6 +36,7 @@ use RZP\Models\Payment\Verify\Action as VerifyAction;
 class Gateway extends Base\Gateway
 {
     use Processor\UpiTrait;
+    use RecurringTrait;
 
     // set Upi Aquirer as null for all upi gateways.
     const ACQUIRER = null;
@@ -1339,6 +1340,17 @@ class Gateway extends Base\Gateway
                 throw new Exception\LogicException(
                     'Invalid gateway passed for processing mandate callback');
 
+        }
+    }
+
+    /**
+     * @throws Exception\LogicException
+     */
+    protected function getActualPaymentIdFromServerCallback(array $response)
+    {
+        if (isset($response['data']['terminal']['gateway']) === true)
+        {
+            return $this->getPaymentIdFromServerCallback($response, $response['data']['terminal']['gateway']);
         }
     }
 

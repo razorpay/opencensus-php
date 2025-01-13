@@ -362,6 +362,12 @@ class GatewayController extends Controller
 
         $input = $this->preProcessServerCallback($gateway, $input, $gatewayDriver);
 
+        if ((isset($input['data']['upi_mandate']) === true) and
+            (isset($input['data']['upi_mandate']['status']) === true))
+        {
+            $input['upi_mandate'] = $input['data']['upi_mandate'];
+        }
+
         if ((isset($input['upi_mandate']) === true) and
             (isset($input['upi_mandate']['status']) === true))
         {
@@ -2154,9 +2160,44 @@ class GatewayController extends Controller
         }
     }
 
+    // Determines if autopay callback should be preprocessed by UPS
+    protected function shouldPreProcessUpiRecurringThroughUpiPaymentService($gateway, $mode)
+    {
+        try {
+
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_rearch_pre_process'),
+                'request_data'  => json_encode(['gateway' => $gateway]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            return ($variant === 'variant_on' or $gateway === Payment\Gateway::UPI_RZPAPB);
+
+        } catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::UPI_AUTOPAY_GATEWAY_REARCH_SPLITZ_FAILED, [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return false;
+    }
+
     // Determines if callback should be preprocessed by UPS
     protected function shouldPreProcessThroughUpiPaymentService($gateway, $mode = null)
     {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if(($routeName === 'gateway_payment_callback_recurring') and
+            (Payment\Gateway::isUpiRecurringSupportedGateway($gateway) === true)) {
+            return $this->shouldPreProcessUpiRecurringThroughUpiPaymentService($gateway, $mode);
+        }
+
         if (Payment\Gateway::isOnlyUpiPaymentServiceGateway($gateway) === true)
         {
             return true;
@@ -2378,6 +2419,13 @@ class GatewayController extends Controller
 
         if ((isset($input['ResponseCode']) === true) and
             ($input['ResponseCode'] === "BT"))
+        {
+            return true;
+        }
+
+        if ((isset($input["error"]) === true) and
+            (isset($input["error"]["gateway_error_code"]) === true) and
+            ($input["error"]["gateway_error_code"] === "BT"))
         {
             return true;
         }

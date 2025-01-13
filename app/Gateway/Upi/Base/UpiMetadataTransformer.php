@@ -56,10 +56,12 @@ class UpiMetadataTransformer extends UpiTransformer
                 break;
 
             case Action::AUTHORIZE:
+            case Action::DEBIT:
                 $this->processResponseForAuthorize();
                 break;
 
             case Action::PRE_DEBIT:
+            case Action::NOTIFY:
                 $this->processResponseForPreDebit();
         }
 
@@ -75,7 +77,9 @@ class UpiMetadataTransformer extends UpiTransformer
 
     protected function processResponseForAuthenticate()
     {
-        if ($this->context->getAction() === Action::AUTHENTICATE)
+        $action = $this->context->getAction() ?? $this->input['action'];
+
+        if ($action === Action::AUTHENTICATE)
         {
             $this->updateMetadataFromResponse()
                  ->setVpa();
@@ -102,7 +106,7 @@ class UpiMetadataTransformer extends UpiTransformer
                 }
             }
         }
-        else if ($this->context->getAction() === Action::CALLBACK)
+        else if (($action === Action::CALLBACK) or ($action === Action::RECURRING_CALLBACK))
         {
             $this->updateMetadataFromResponse()
                  ->setVpa();
@@ -118,7 +122,7 @@ class UpiMetadataTransformer extends UpiTransformer
                 $this->item->setInternalStatus(InternalStatus::FAILED);
             }
         }
-        else if ($this->context->getAction() === Action::VERIFY)
+        else if ($action === Action::VERIFY)
         {
             $this->updateMetadataFromResponse()
                  ->setVpa();
@@ -138,7 +142,9 @@ class UpiMetadataTransformer extends UpiTransformer
 
     protected function processResponseForAuthorize()
     {
-        if ($this->context->getAction() === Action::DEBIT)
+        $action = $this->context->getAction() ?? $this->input['action'];
+
+        if ($action === Action::DEBIT)
         {
             $this->updateMetadataFromResponse()
                  ->setVpa();
@@ -171,7 +177,7 @@ class UpiMetadataTransformer extends UpiTransformer
                 $this->item->setInternalStatus(InternalStatus::FAILED);
             }
         }
-        else if ($this->context->getAction() === Action::CALLBACK)
+        else if (($action === Action::CALLBACK) or ($action === Action::RECURRING_CALLBACK))
         {
             $this->updateMetadataFromResponse()
                  ->setVpa();
@@ -186,7 +192,7 @@ class UpiMetadataTransformer extends UpiTransformer
                 $this->item->setInternalStatus(InternalStatus::FAILED);
             }
         }
-        else if ($this->context->getAction() === Action::VERIFY)
+        else if ($action === Action::VERIFY)
         {
             $this->updateMetadataFromResponse()
                  ->setVpa();
@@ -207,8 +213,9 @@ class UpiMetadataTransformer extends UpiTransformer
     protected function processResponseForPreDebit()
     {
         $app = \App::getFacadeRoot();
+        $action = $this->context->getAction() ?? $this->input['action'];
 
-        if ($this->context->getAction() === Action::PRE_DEBIT)
+        if ($action === Action::PRE_DEBIT or $action === Action::NOTIFY)
         {
             $this->setVpa();
 
@@ -251,7 +258,7 @@ class UpiMetadataTransformer extends UpiTransformer
         $mode           = $this->input[Entity::UPI][Metadata::MODE];
 
         // Three attempt for notification, next action is authorization when success
-        if ($action === Action::PRE_DEBIT)
+        if ($action === Action::PRE_DEBIT or $action === Action::NOTIFY)
         {
             if ($this->isSuccess() === false)
             {
@@ -284,7 +291,7 @@ class UpiMetadataTransformer extends UpiTransformer
 
         // Three attempt for authorize (for subsequent debits only i.e. mode === auto),
         // no next reminder needed when success
-        if ($action === Action::AUTHORIZE and $mode === Mode::AUTO)
+        if (($action === Action::AUTHORIZE or $action === Action::DEBIT) and $mode === Mode::AUTO)
         {
             if($this->isSuccess() === true)
             {

@@ -650,6 +650,10 @@ return array(
 
     'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),
 
+    'upi_autopay_rearch_upi_rzpapb_v1_exp_id'   => env('UPI_AUTOPAY_REARCH_UPI_RZPAPB_V1_EXP_ID'),
+
+    'upi_autopay_rearch_upi_mindgate_v1_exp_id'   => env('UPI_AUTOPAY_REARCH_UPI_MINDGATE_V1_EXP_ID'),
+
     'cc_on_upi_pricing_splitz_experiment_id' => env('CC_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
 
     'credit_line_on_upi_pricing_splitz_experiment_id' => env('CREDIT_LINE_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
@@ -759,6 +763,10 @@ return array(
     'cross_border_payment_fee_fix_experiment_id' => env('CROSS_BORDER_PAYMENT_FEE_FIX_EXPERIMENT_ID'),
 
     'show_upi_autopay_method_on_dashboard' => env('SHOW_UPI_AUTOPAY_METHOD_ON_DASHBOARD'),
+
+    'upi_autopay_rearch_pre_process' => env('UPI_AUTOPAY_REARCH_PRE_PROCESS'),
+
+    'upi_autopay_payment_remark' => env('UPI_AUTOPAY_PAYMENT_REMARK'),
 
     'enable_force_auth_on_upi_autopay' => env('ENABLE_FORCE_AUTH_ON_UPI_AUTOPAY'),
 

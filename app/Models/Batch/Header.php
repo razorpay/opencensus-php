@@ -1038,6 +1038,7 @@ class Header
     const UPI_ONBOARDED_TERMINAL_EDIT_MCC                   =   'MCC';
     const UPI_ONBOARDED_TERMINAL_EDIT_BILLING_LABEL         =   'Edit Billing Label';
     const UPI_ONBOARDED_TERMINAL_EDIT_MOBILE_NUMBER         =   'Edit Mobile Number';
+    const UPI_ONBOARDED_TERMINAL_EDIT_RECURRING             =   'Recurring';
 
     // Upi Terminal Onboarding Headers
     const UPI_TERMINAL_ONBOARDING_MERCHANT_ID   =   'Merchant Id';

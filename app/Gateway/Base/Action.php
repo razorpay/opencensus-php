@@ -28,6 +28,7 @@ class Action
     const DISABLE_TERMINAL = 'disable_terminal';
     const DEBIT            = 'debit';
     const PRE_DEBIT        = 'pre_debit';
+    const NOTIFY           = 'notify';
     const MANDATE_CANCEL   = 'mandate_cancel';
     const AUTHORIZE_FAILED = 'authorize_failed';
     const INTENT_QR        = 'intent_qr';
@@ -37,6 +38,7 @@ class Action
     const COLLECT          = 'collect';
 
     const FORCE_AUTHORIZE_FAILED        = 'force_authorize_failed';
+    const RECURRING_CALLBACK            = 'recurring_callback';
 
     public static $nonVerifiableActions = [
         self::AUTHENTICATE,

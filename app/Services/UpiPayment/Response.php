@@ -8,4 +8,6 @@ class Response
     const INTENT_URL        = 'intent_url';
     const ENTITY            = 'entity';
     const ENTITIES          = 'entities';
+    const RECURRING         = 'recurring';
+    const UPI               = 'upi';
 }

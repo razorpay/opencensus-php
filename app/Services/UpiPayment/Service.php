@@ -12,17 +12,26 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Gateway\Upi\Base;
+use RZP\Models\UpiMandate;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Mozart\Gateway;
 use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Gateway\Upi\Base\Constants;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use RZP\Gateway\Upi\Base\RecurringTrait;
 use Http\Discovery\Psr18ClientDiscovery;
+use RZP\Exception\GatewayErrorException;
+use RZP\Models\Merchant\RazorxTreatment;
 use Http\Discovery\Psr17FactoryDiscovery;
 use GuzzleHttp\Psr7\Request as Psr7Request;
 use Psr\Http\Client\NetworkExceptionInterface;
 use \RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Models\Payment\UpiMetadata\InternalStatus;
 use RZP\Models\Gateway\File\Constants as GatewayConstants;
 
 /**
@@ -30,6 +39,8 @@ use RZP\Models\Gateway\File\Constants as GatewayConstants;
  */
 class Service
 {
+    use RecurringTrait;
+
     /**
      * App container
      *
@@ -107,6 +118,15 @@ class Service
 
     const TURBO_CALLBACK_RECEIVE_AT_ANALYSIS_REDIS_KEY = 'turbo_%s_callback_rec_at';
 
+    public static $upiRecurringActions = [
+        Payment\Action::AUTHENTICATE,
+        Payment\Action::DEBIT,
+        Payment\Action::RECURRING_CALLBACK,
+        Payment\Action::VERIFY_RECURRING,
+        Payment\Action::NOTIFY,
+        self::PRE_PROCESS
+    ];
+
     /**
      * Initiates the app container, trace and UPS config
      */
@@ -151,7 +171,7 @@ class Service
     /**
      * preProcessServerCallback handles the pre processing of callback through UPS
      *
-     * @param  array|string $input
+     * @param array|string $input
      * @param  string $gateway
      * @return array
      */
@@ -381,10 +401,13 @@ class Service
             case self::PRE_PROCESS:
                 $data = [
                     'data'      => $input,
+                    'body'      => $input['gateway']['payload'],
                     'gateway'   => $this->gateway,
+                    'method'    => Payment\Method::UPI
                 ];
                 break;
             case Payment\Action::CALLBACK:
+            case Payment\Action::RECURRING_CALLBACK:
                 $data = [
                     'data'      => $input['gateway'],
                     'gateway'   => $input['payment']['gateway'],
@@ -427,6 +450,21 @@ class Service
             case self::DASHBOARD_ENTITY_FETCH:
             case self::DASHBOARD_MULTIPLE_ENTITY_FETCH:
                 $data = $input;
+                break;
+            case Payment\Action::AUTHENTICATE:
+                $data = $this->getRequestBodyForAuthentication($input);
+                break;
+            case Payment\Action::DEBIT:
+                $data = $this->getCommonRequestForRecurring($input, Payment\Action::DEBIT);
+                break;
+            case Payment\Action::VERIFY_RECURRING:
+                $data = $this->getRequestBodyForVerifyRecurring($input);
+                break;
+            case Payment\Action::REVOKE:
+                $data = $this->getCommonRequestForRecurring($input, Payment\Action::REVOKE);
+                break;
+            case Payment\Action::NOTIFY:
+                $data = $this->getRequestBodyForNotify($input);
                 break;
             default:
                 throw new Exception\LogicException(
@@ -489,6 +527,162 @@ class Service
             }
         }
     }
+
+
+    /**
+     * returns the common Request Body for all actions
+     *
+     * @param  string $action
+     * @param  array  $input
+     * @return array
+     */
+    protected function getCommonRequestForRecurring(array $input, $action): array
+    {
+        return [
+            Entity::PAYMENT     => $input[Entity::PAYMENT] ?? null,
+            self::METADATA      => $input[self::METADATA] ?? null,
+            Entity::TERMINAL    => $input[Entity::TERMINAL] ?? null,
+            Entity::MERCHANT    => $input[Entity::MERCHANT] ?? null,
+            Entity::UPI_MANDATE => $input[Entity::UPI_MANDATE] ?? null,
+            Base\Entity::ACTION => $action,
+        ];
+    }
+
+    /**
+     * returns the Request Body for Notify action
+     *
+     * @param  array  $input
+     * @return array
+     */
+    protected function getRequestBodyForNotify(array $input): array {
+
+        $request = $this->getCommonRequestForRecurring($input, $this->action);
+
+        $request[Entity::NOTIFICATION] = $input[Entity::NOTIFICATION] ?? null;
+
+        return $request;
+    }
+
+    /**
+     * returns the Request Body for Verify action
+     *
+     * @param  array  $input
+     */
+    protected function getRequestBodyForVerifyRecurring(array $input) {
+
+        $ipt = $this->getCommonRequestForRecurring($input, Payment\Action::VERIFY);
+
+        return [
+            'data'      => $ipt,
+            'gateway'   => $input['payment']['gateway'],
+            'action'    => $this->action,
+        ];
+    }
+
+    /**
+     * returns the Request Body for Authenticate action
+     *
+     * @param  string $action
+     * @param  array  $input
+     * @return array
+     */
+    protected function getRequestBodyForAuthentication(array $input): array
+    {
+        $input[self::METADATA] = $input['upi'];
+
+        if ($input[Entity::MERCHANT]->isTPVRequired() === true)
+        {
+            $input[self::METADATA][self::TPV] = true;
+        }
+
+        // check vpa in vpas table of upi, if not present then fetch it from gateway
+        if ($input['payment']['gateway'] === Payment\Gateway::UPI_MINDGATE ||
+            $input['payment']['gateway'] === Payment\Gateway::UPI_AXIS)
+        {
+            if ($input['metadata']['flow'] === Constants::COLLECT)
+            {
+                $vpa = $this->getVpaDetails($input);
+
+                $input['vpa'] = $vpa;
+            }
+        }
+
+        $variant = $this->evaluateSplitzExperimentForUpiAutopayPaymentRemark($input['payment']['merchant_id']);
+
+        $description = "";
+        if($variant === true)
+        {
+            $paymentDescription = $input['payment']['description'] ?? '';
+            $description = Payment\Entity::getFilteredDescription($paymentDescription);
+            $description =  ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
+        }
+        else
+        {
+            $description = $this->getPaymentRemark($input);
+        }
+
+        $input[self::METADATA][Base\Entity::REMARK] = $description;
+
+        $this->convertInputToArray($input);
+
+        $response = $this->getCommonRequestForRecurring($input, Payment\Action::AUTHENTICATE);
+        $response[Entity::ORDER] = $input[Entity::ORDER] ?? null;
+        return $response;
+    }
+
+    protected function evaluateSplitzExperimentForUpiAutopayPaymentRemark($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_payment_remark'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_PAYMENT_REMARK
+            );
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the Payment Remark, i.e. The payment description if it exists
+     * else the default remark 'Pay via Razorpay`
+     *
+     * @param array $input
+     * @return string
+     */
+    protected function getPaymentRemark(array $input)
+    {
+        $paymentDescription = $input['payment']['description'] ?? '';
+        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
+
+        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
+
+        return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
+    }
+
 
     /**
      * returns the Request Body for Authorize action
@@ -562,7 +756,10 @@ class Service
     {
         $this->traceResponse($response);
 
-        $this->checkForErrors($response, $code);
+        if(!(in_array($this->action, self::$upiRecurringActions, true)))
+        {
+            $this->checkForErrors($response, $code);
+        }
 
         switch ($this->action)
         {
@@ -582,6 +779,13 @@ class Service
                 return $this->processCallbackResponse($response);
             case Payment\Action::VERIFY:
             case Payment\Action::AUTHORIZE_FAILED:
+                if($this->input[Entity::PAYMENT][Payment\Entity::RECURRING] === true)
+                {
+                    $response = $this->transformRecurringResponse($this->input, $response);
+                }
+            return $this->processVerifyResponse($response);
+            case Payment\Action::VERIFY_RECURRING:
+                $response = $this->transformRecurringResponse($this->input, $response);
                 return $this->processVerifyResponse($response);
             case self::ENTITY_FETCH:
                 return $this->processEntityFetchResponse($response);
@@ -600,6 +804,17 @@ class Service
             case self::DASHBOARD_ENTITY_FETCH:
             case self::DASHBOARD_MULTIPLE_ENTITY_FETCH:
                 return $response;
+            case Payment\Action::DEBIT:
+            case Payment\Action::AUTHENTICATE:
+            case Payment\Action::RECURRING_CALLBACK:
+            case Payment\Action::REVOKE:
+                return $this->processRecurringResponse($this->input, $response);
+            case Payment\Action::NOTIFY:
+                if (isset($this->input[Entity::NOTIFICATION]) === true)
+                {
+                    return $this->transformRecurringResponse($this->input, $response);
+                }
+                return $this->processRecurringResponse($this->input, $response);
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -662,6 +877,70 @@ class Service
         $data[Payment\Entity::AMOUNT_AUTHORIZED] = (int) $data[Payment\Entity::AMOUNT_AUTHORIZED];
 
         return $data;
+    }
+
+    /**
+     * processes the debit response
+     *
+     * @param array $response
+     * @return array
+     */
+    protected function processRecurringResponse($input, array $response): array
+    {
+        $response = $this->transformRecurringResponse($input, $response);
+
+        if (isset($response['error']) === true)
+        {
+            $error = $response['error'];
+
+            $exception = new GatewayErrorException(
+                $error['internal']['metadata']['internal_error_code'] ?? 'BAD_REQUEST_PAYMENT_FAILED',
+                $error['internal']['metadata']['gateway_error_code'] ?? null,
+                $error['internal']['metadata']['gateway_error_description'] ?? null,
+                null,
+                null,
+                $this->action);
+
+            $exception->setData($this->processRecurringRearchResponse($input, $response['data'], $exception));
+
+            throw $exception;
+        }
+
+        return $this->processRecurringRearchResponse($input, $response['data']);
+    }
+
+    protected function transformRecurringResponse($input, $response): array
+    {
+        $response['data']['version'] = "v2";
+        $response['data']['mandate'] = $response['data']['upi_mandate'] ?? [];
+
+        if(isset($response['data']['data']['upi_mandate']) === true)
+        {
+            $response['data']['data']['mandate'] = $response['data']['data']['upi_mandate'];
+            $response['data']['data']['version'] = "v2";
+        }
+
+        if(isset($response['data']['data']) and isset($response['data']['data'][Response::INTENT_URL]))
+        {
+            $response['data'][Response::INTENT_URL] = $response['data']['data'][Response::INTENT_URL];
+        }
+
+        $upiData = [];
+        if (isset($response['data']['upi']) === true)
+        {
+            $upiData = $response['data']['upi'];
+            $upiData['type'] = $input['upi']['flow'];
+        }
+
+        $response['data']['upi'] = $upiData;
+
+        // transformation for decoupled notify response
+        if((isset($this->input['notification']) === true) and (isset($response['error']) === false))
+        {
+            $response['success'] = true;
+        }
+
+        return $response;
     }
 
     /**
@@ -813,7 +1092,7 @@ class Service
             $verify->setStatus(VerifyResult::STATUS_MISMATCH);
         }
 
-        if ($verify->gatewaySuccess === true)
+        if ($verify->gatewaySuccess === true and $this->input[Entity::PAYMENT][Payment\Entity::RECURRING] !== true)
         {
             $payment = $response[Response::DATA][Response::DATA][Entity::PAYMENT];
 
@@ -836,6 +1115,13 @@ class Service
 
         if ($this->action === Payment\Action::AUTHORIZE_FAILED)
         {
+            if($this->input[Entity::PAYMENT][Payment\Entity::RECURRING] === true)
+            {
+                $upi = $this->createRecurringUpiEntityFromResponse($response['data']['data']);
+                $gateway = New Gateway();
+                $verify->input['action'] = Action::VERIFY;
+                return $gateway->extractUpiRecurringMandateAndPaymentProperties($upi, $verify);
+            }
             return $this->processAuthorizeFailedPayment($verify, $response);
         }
 
@@ -844,6 +1130,18 @@ class Service
         return $verify->getDataToTrace();
     }
 
+    protected function createRecurringUpiEntityFromResponse($response) : Base\Entity
+    {
+        $upi = new Base\Entity($response['upi']);
+
+        $upi->setAction(Action::DEBIT);
+
+        if (str_contains($upi->getMerchantReference(), 'create')){
+            $upi->setAction(Action::AUTHENTICATE);
+        }
+
+        return $upi;
+    }
     /**
      * set verify error
      *
@@ -1064,10 +1362,12 @@ class Service
                 $traceData += $this->getPreProcessTraceData($request[Request::CONTENT]);
                 break;
             case Payment\Action::CALLBACK:
+            case Payment\Action::RECURRING_CALLBACK:
                 $traceData += $request[Request::CONTENT];
                 break;
             case Payment\Action::VERIFY:
             case Payment\Action::AUTHORIZE_FAILED:
+            case Payment\Action::VERIFY_RECURRING:
                 $traceData += $this->getVerifyTraceData($request[Request::CONTENT]);
                 break;
             case self::ENTITY_FETCH:
@@ -1094,6 +1394,12 @@ class Service
             case self::VALIDATE_VPA:
                 $traceData += $this->getValdiateVpaTraceData($request[Request::CONTENT]);
                 break;
+            case Payment\Action::AUTHENTICATE:
+            case Payment\Action::DEBIT:
+            case Payment\Action::NOTIFY:
+            case Payment\Action::REVOKE:
+                $traceData += $this->getRecurringTraceData($request[Request::CONTENT]);
+                break;
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -1105,6 +1411,45 @@ class Service
     }
 
     /**
+     * Returns trace data for recurring debit request
+     *
+     * @param array $content
+     * @return array
+     */
+    protected function getRecurringTraceData(array $content): array
+    {
+        $data = [
+            Payment\Entity::GATEWAY    => $content[Entity::PAYMENT][Payment\Entity::GATEWAY] ?? null,
+            Entity::PAYMENT     => [
+                Payment\Entity::ID        => $content[Entity::PAYMENT][Payment\Entity::ID] ?? null,
+                Payment\Entity::AMOUNT    => $content[Entity::PAYMENT][Payment\Entity::AMOUNT] ?? null,
+                Payment\Entity::CURRENCY  => $content[Entity::PAYMENT][Payment\Entity::CURRENCY] ?? null,
+                Payment\Entity::CPS_ROUTE => $content[Entity::PAYMENT][Payment\Entity::CPS_ROUTE] ?? null,
+                Payment\Entity::VPA       => $content[Entity::PAYMENT][Payment\Entity::VPA] ?? null,
+                Payment\Entity::RECURRING => $content[Entity::PAYMENT][Payment\Entity::RECURRING] ?? null,
+                Payment\Entity::TOKEN_ID  => $content[Entity::PAYMENT][Payment\Entity::TOKEN_ID] ?? null,
+            ],
+            Entity::MERCHANT   => [
+                Merchant\Entity::BILLING_LABEL  => $content[Entity::MERCHANT][Merchant\Entity::BILLING_LABEL] ?? null,
+            ],
+            Entity::UPI_MANDATE => [
+                UpiMandate\Entity::ID              => $content[Entity::UPI_MANDATE][UpiMandate\Entity::ID] ?? null,
+                UpiMandate\Entity::FREQUENCY       => $content[Entity::UPI_MANDATE][UpiMandate\Entity::FREQUENCY] ?? null,
+                UpiMandate\Entity::START_TIME      => $content[Entity::UPI_MANDATE][UpiMandate\Entity::START_TIME] ?? null,
+                UpiMandate\Entity::END_TIME        => $content[Entity::UPI_MANDATE][UpiMandate\Entity::END_TIME] ?? null,
+                UpiMandate\Entity::UMN             => $content[Entity::UPI_MANDATE][UpiMandate\Entity::UMN] ?? null,
+                UpiMandate\Entity::MAX_AMOUNT      => $content[Entity::UPI_MANDATE][UpiMandate\Entity::MAX_AMOUNT] ?? null,
+                UpiMandate\Entity::RECURRING_TYPE  => $content[Entity::UPI_MANDATE][UpiMandate\Entity::RECURRING_TYPE] ?? null,
+                UpiMandate\Entity::RECURRING_VALUE => $content[Entity::UPI_MANDATE][UpiMandate\Entity::RECURRING_VALUE] ?? null,
+            ]
+        ];
+
+        $data[self::METADATA] = $content[self::METADATA] ?? [];
+
+        return $data;
+    }
+
+    /**
      * Returns trace data for pre-process request
      *
      * @param array $content
@@ -1113,6 +1458,10 @@ class Service
     protected function getPreProcessTraceData(array $content): array
     {
         $data = $content[Response::DATA];
+
+        if (is_string($data)) {
+            $data = $content;
+        }
 
         $traceData['gateway'] = $data['gateway'];
 
@@ -1164,7 +1513,8 @@ class Service
 
         $action = $this->action;
 
-        if ($action === Payment\Action::AUTHORIZE_FAILED)
+        if ($action === Payment\Action::AUTHORIZE_FAILED or
+            $action === Payment\Action::VERIFY_RECURRING)
         {
             $action = Payment\Action::VERIFY;
         }
@@ -1201,6 +1551,11 @@ class Service
         if ($action === self::DASHBOARD_ENTITY_FETCH)
         {
             return sprintf('%s/dashboard/entity_fetch', $version);
+        }
+
+        if ($action === Payment\Action::RECURRING_CALLBACK)
+        {
+            return sprintf('%s/recurring/callback', $version);
         }
 
         return sprintf('%s/%s', $version, $action);
@@ -1333,6 +1688,7 @@ class Service
                 Payment\Entity::CURRENCY  => $content[Entity::PAYMENT][Payment\Entity::CURRENCY] ?? null,
                 Payment\Entity::CPS_ROUTE => $content[Entity::PAYMENT][Payment\Entity::CPS_ROUTE] ?? null,
                 Payment\Entity::VPA       => $content[Entity::PAYMENT][Payment\Entity::VPA] ?? null,
+                Payment\Entity::RECURRING => $content[Entity::PAYMENT][Payment\Entity::RECURRING] ?? null,
             ],
             Entity::MERCHANT   => [
                 Merchant\Entity::BILLING_LABEL  => $content[Entity::MERCHANT][Merchant\Entity::BILLING_LABEL] ?? null,

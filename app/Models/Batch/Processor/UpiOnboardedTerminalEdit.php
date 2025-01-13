@@ -41,6 +41,7 @@ class UpiOnboardedTerminalEdit extends Base
         $mcc                = $entry[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_MCC] ?? null;
         $editBillingLabel   = $entry[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_BILLING_LABEL] ?? null;
         $editMobileNumber   = $entry[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_MOBILE_NUMBER] ?? null;
+        $recurring          = $entry[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING] ?? null;
 
         // To store if no input has been passed at all
         $emptyInputFlag = true;
@@ -103,6 +104,11 @@ class UpiOnboardedTerminalEdit extends Base
         }
 
         $features['recurring'] = '0';
+
+        if (!empty($recurring))
+        {
+            $features['recurring'] = (boolval($recurring) === true) ? '1' : '0';
+        }
 
         if (empty($mcc) === false)
         {

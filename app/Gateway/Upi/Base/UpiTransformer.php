@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Base;
 
 use RZP\Exception\BaseException;
+use RZP\Gateway\Mozart\Gateway as MozartGateway;
 use RZP\Models\Payment\UpiMetadata\Entity as Metadata;
 
 abstract class UpiTransformer
@@ -46,7 +47,7 @@ abstract class UpiTransformer
 
     abstract protected function updateMetadataFromResponse(): UpiTransformer;
 
-    public function __construct(Gateway $context, Anomalies $anomalies)
+    public function __construct(MozartGateway|Gateway $context, Anomalies $anomalies)
     {
         $this->context = $context;
 

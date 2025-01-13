@@ -541,6 +541,13 @@ trait Authorize
             $isPushedToKafka = $this->pushPaymentToKafkaForVerify($this->payment);
 
             $payment->setIsPushedToKafka($isPushedToKafka);
+            
+            // Check if the method is UPI and we need to use re-arch flow for subsequent payment
+            if ($payment->isUpiAutoRecurring() === true)
+            {
+                // set appropriate cps_route for UPI Payments
+                $this->setCpsRouteForUpi($payment);
+            }
 
             $this->repo->saveOrFail($payment);
 

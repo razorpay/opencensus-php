@@ -250,12 +250,20 @@ trait UpiRecurring
 
                     $this->modifyGatewayInputForUpi($payment, $input);
 
-                    $gatewayResponse = $this->app['gateway']->call(
-                        $input['gateway'],
-                        $input['action'],
-                        $input,
-                        $this->mode,
-                        $input['terminal']);
+                    $gatewayResponse = null;
+                    if($payment->getCpsRoute() === Payment\Entity::UPI_PAYMENT_SERVICE)
+                    {
+                        $gatewayResponse =  $this->callUpiPaymentServiceAction($this->payment, $input['gateway'], Payment\Action::NOTIFY, $input);
+                    }
+                    else
+                    {
+                        $gatewayResponse = $this->app['gateway']->call(
+                            $input['gateway'],
+                            $input['action'],
+                            $input,
+                            $this->mode,
+                            $input['terminal']);
+                    }
 
                     return $this->processPreDebitGatewaySuccess($payment, $mandate, $gatewayResponse);
                 }
@@ -410,12 +418,22 @@ trait UpiRecurring
             function() use ($gatewayData, $action, $gateway, $tokenTerminal, $upiMandate) {
                 try
                 {
-                    $gatewayResponse = $this->app['gateway']->call(
-                        $gateway,
-                        $action,
-                        $gatewayData,
-                        $this->mode,
-                        $tokenTerminal);
+
+                    $payment = $gatewayData['payment'];
+                    $gatewayResponse = null;
+                    if($payment->getCpsRoute() === Payment\Entity::UPI_PAYMENT_SERVICE)
+                    {
+                        $gatewayResponse =  $this->callUpiPaymentServiceAction($payment, $gatewayData['gateway'], $action, $gatewayData);
+                    }
+                    else {
+
+                        $gatewayResponse = $this->app['gateway']->call(
+                            $gateway,
+                            $action,
+                            $gatewayData,
+                            $this->mode,
+                            $tokenTerminal);
+                    }
 
                     $upiMandate->setStatus(UpiMandate\Status::REVOKED);
 

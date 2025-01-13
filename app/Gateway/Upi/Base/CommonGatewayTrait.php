@@ -313,6 +313,12 @@ trait CommonGatewayTrait
             $merchantReference = $merchantReferenceDetails[0];
         }
 
+        if ((str_contains($merchantReference, 'create') === true) or
+            (str_contains($merchantReference, 'execte') === true))
+        {
+            $merchantReference = substr($merchantReference, 0, 14);
+        }
+
         return $merchantReference;
     }
 

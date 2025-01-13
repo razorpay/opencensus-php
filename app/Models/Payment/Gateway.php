@@ -3989,6 +3989,7 @@ class Gateway
         Gateway::CHECKOUT_DOT_COM,
         Gateway::PAYU,
         Gateway::UPI_AXIS,
+        Gateway::UPI_RZPAPB,
     ];
 
     public static $cardMandateGateways = [
@@ -4005,6 +4006,7 @@ class Gateway
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
         Gateway::UPI_AXIS,
+        Gateway::UPI_RZPAPB,
     ];
 
     public static $recurringCardNetworks = [

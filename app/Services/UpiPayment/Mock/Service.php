@@ -23,7 +23,8 @@ class Service extends UpiPaymentService
 
         $action = $this->action;
 
-        if ($this->action === Payment\Action::AUTHORIZE_FAILED)
+        if ($this->action === Payment\Action::AUTHORIZE_FAILED or
+            $this->action === Payment\Action::VERIFY_RECURRING)
         {
             $action = Payment\Action::VERIFY;
         }
@@ -166,7 +167,11 @@ class Service extends UpiPaymentService
         }
 
         $payload = $content['data']['gateway']['payload'];
-        $payload = json_decode($payload, true);
+
+        if(isJson($payload) === true)
+        {
+            $payload = json_decode($payload, true);
+        }
 
         if ($content['gateway'] == Payment\Gateway::UPI_RZPAXIS)
         {
@@ -205,7 +210,7 @@ class Service extends UpiPaymentService
                 ],
                 'payment' => [
                     'currency' => 'INR',
-                    'amount_authorized' => (string) $payload['amount'] * 100
+                    'amount_authorized' => (string) ($payload['amount'] * 100)
                 ],
                 'terminal' => [
                     'gateway_merchant_id2' => $content['data']['terminal']['gateway_merchant_id2'],
@@ -214,12 +219,98 @@ class Service extends UpiPaymentService
             ];
         }
 
+        $recurringPayload = $content['body'];
+
+        if(!is_string($recurringPayload) and $recurringPayload['requestInfo']['pgMerchantid'] !== null)
+        {
+            $data['data'] = [
+                'version' => 'v2',
+                'upi' => [
+                    'vpa' => $recurringPayload['mandateDtls']['0']['payerVpa'] ?? '',
+                    'status_code' => $recurringPayload['mandateDtls']['0']['respCode'],
+                    'npci_reference_id' => $recurringPayload['mandateDtls']['0']['custRefNo'],
+                    'merchant_reference' => $recurringPayload['requestInfo']['pspRefNo'],
+                ],
+                'payment' => [
+                    'id' => substr($recurringPayload['requestInfo']['pspRefNo'], 0,14),
+                    'currency' => 'INR',
+                    'amount_authorized' => (string) ($recurringPayload['mandateDtls']['0']['amount'] * 100),
+                    'recurring' => true
+                ]
+            ];
+
+            if($recurringPayload['mandateDtls']['0']['status'] === 'PAUSE')
+            {
+                $data['data']['upi_mandate']['status'] = 'pause';
+                $data['data']['upi_mandate']['umn'] = $recurringPayload['mandateDtls']['0']['UMN'];
+            }
+
+            if($recurringPayload['mandateDtls']['0']['status'] === 'UNPAUSE')
+            {
+                $data['data']['upi_mandate']['status'] = 'resume';
+                $data['data']['upi_mandate']['umn'] = $recurringPayload['mandateDtls']['0']['UMN'];
+            }
+
+            if($recurringPayload['mandateDtls']['0']['status'] === 'REVOKED')
+            {
+                $data['data']['upi_mandate']['status'] = 'revoke';
+                $data['data']['upi_mandate']['umn'] = $recurringPayload['mandateDtls']['0']['UMN'];
+            }
+
+            $recurringPayload['code'] = '0';
+        }
+
+        $recurringApbPayload = [];
+        if($content['gateway'] === 'upi_rzpapb')
+        {
+            $recurringApbPayload = json_decode($content['body'], true);
+
+            if ($recurringApbPayload['mandate'] === true) {
+
+                $data['data'] = [
+                    'version' => 'v2',
+                    'upi' => [
+                        'vpa' => $recurringApbPayload['payer']['vpa'] ?? '',
+                        'status_code' => $recurringApbPayload['upi_response_code'],
+                        'npci_reference_id' => $recurringApbPayload['upi_customer_reference_number'],
+                        'merchant_reference' => $recurringApbPayload['reference_id'],
+                    ],
+                    'payment' => [
+                        'id' => substr($recurringApbPayload['reference_id'], 0,14),
+                        'currency' => 'INR',
+                        'amount_authorized' => (string) ($recurringApbPayload['amount'] * 100),
+                        'recurring' => true
+                    ]
+                ];
+
+                if($recurringApbPayload['status'] === 'paused')
+                {
+                    $data['data']['upi_mandate']['status'] = 'pause';
+                    $data['data']['upi_mandate']['umn'] = $recurringApbPayload['umn'];
+                }
+
+                if($recurringApbPayload['status'] === 'unpaused')
+                {
+                    $data['data']['upi_mandate']['status'] = 'resume';
+                    $data['data']['upi_mandate']['umn'] = $recurringApbPayload['umn'];
+                }
+
+                if($recurringApbPayload['status'] === 'revoked')
+                {
+                    $data['data']['upi_mandate']['status'] = 'revoke';
+                    $data['data']['upi_mandate']['umn'] = $recurringApbPayload['umn'];
+                }
+            }
+        }
+
         $data['success'] = true;
         $data['error'] = null;
         $data['next'] = null;
 
         if (($payload['code'] !== '0' && $content['gateway'] == Payment\Gateway::UPI_AIRTEL) or
-            ($payload['description'] === 'payment_failed' && $content['gateway'] == Payment\Gateway::UPI_RZPAXIS))
+            ($payload['description'] === 'payment_failed' && $content['gateway'] == Payment\Gateway::UPI_RZPAXIS) or
+            (!is_string($recurringPayload) and ($recurringPayload['mandateDtls']['0']['respCode'] !== '00')) or
+            ($recurringApbPayload['mandate'] === true and $recurringApbPayload['upi_response_code'] !== '00'))
         {
             $data['error'] = [
                 'description'               => 'Debit has been failed',
@@ -628,5 +719,255 @@ class Service extends UpiPaymentService
         $result['error'] = null;
 
         return [$result, 200];
+    }
+
+    protected function authenticate($input)
+    {
+        $description = $input['payment']['description'];
+
+        $response = [];
+
+        $error = null;
+
+        $code = 500;
+
+        switch ($description)
+        {
+            case 'authenticate_success':
+                $response = [
+                    'data' => [
+                        'data' => [
+                            'vpa' => 'test@okhdfcbank',
+                            'rrn' => '32131429',
+                            'npci_txn_id' => '32131429'
+                        ],
+                        'upi_mandate' => [
+                            'umn' => 'HDFebdef01e51b340448dd0caf01fffc@hdfc',
+                        ],
+                        'upi' => [
+                            'merchant_reference' => 'OCfR6llPPsglMc0create1',
+                            'flow' => 'collect',
+                            'action' => 'authenticate'
+                        ]
+                    ],
+                    'gateway' => 'upi_mindgate',
+                    'error' => null
+                ];
+                $code = 200;
+                break;
+            case 'authenticate_failure':
+                $response['data'] = [
+                    'upi' => [
+                        'merchant_reference' => 'OCfR6llPPsglMc0create1',
+                        'flow' => 'collect',
+                        'action' => 'authenticate'
+                    ]
+                ];
+                $response['error'] = [
+                    'code' => '01',
+                    'internal' => [
+                        'code'          => 'BAD_REQUEST_VALIDATION_FAILURE',
+                        'description'   => 'Vpa is required for UPI collect request',
+                        'metadata'      => [
+                            'description'               => 'INPUT_VALIDATION_FAILED',
+                            'gateway_error_code'        => '',
+                            'gateway_error_description' => '',
+                            'internal_error_code'       => 'BAD_REQUEST_VALIDATION_FAILURE',
+                            'http_code'                 => 400
+                        ]
+                    ]
+                ];
+                $code = 200;
+                break;
+        }
+
+        return [$response, $code];
+    }
+
+    public function revoke()
+    {
+        $response = [
+            'data' => [
+                'data' => [
+                    'vpa' => 'test@okhdfcbank',
+                    'rrn' => '32131429',
+                    'npci_txn_id' => '32131429'
+                ],
+                'upi_mandate' => [
+                    'umn' => 'HDFebdef01e51b340448dd0caf01fffc@hdfc',
+                    'status' => 'revoked'
+                ],
+                'upi' => [
+                    'merchant_reference' => 'OCfR6llPPsglMc0create1',
+                    'flow' => 'collect',
+                    'action' => 'revoke'
+                ],
+            ],
+            'gateway' => 'upi_mindgate',
+            'error' => null
+        ];
+        $code = 200;
+
+        return [$response, $code];
+    }
+
+    public function recurringCallback($input)
+    {
+        $result = [];
+        if(str_contains($input['data']['data']['upi']['merchant_reference'], 'create'))
+        {
+            $result = [
+                'data' => [
+                    'data' => [
+                        'vpa' => 'test@okhdfcbank',
+                        'rrn' => '32131429',
+                        'npci_txn_id' => '32131429'
+                    ],
+                    'upi_mandate' => [
+                        'umn' => 'HDFebdef01e51b340448dd0caf01fffc@hdfc',
+                    ],
+                    'upi' => [
+                        'merchant_reference' => 'OCfR6llPPsglMc0create1',
+                        'flow' => 'collect',
+                        'action' => 'authenticate',
+                        'gateway_data' => [
+                            'id' => 'OCfR6llPPsglMc0create1'
+                        ]
+                    ]
+                ],
+                'gateway' => 'upi_mindgate',
+                'error' => null
+            ];
+        }
+        else if(str_contains($input['data']['data']['upi']['merchant_reference'], 'execte')) {
+            $result = [
+                'data' => [
+                    'data' => [
+                        'vpa' => 'test@okhdfcbank',
+                        'rrn' => '32131429',
+                        'npci_txn_id' => '32131429'
+                    ],
+                    'upi_mandate' => [
+                        'umn' => 'HDFebdef01e51b340448dd0caf01fffc@hdfc',
+                    ],
+                    'upi' => [
+                        'merchant_reference' => 'OCfR6llPPsglMc0execte1',
+                        'flow' => 'collect',
+                        'action' => 'debit',
+                        'gateway_data' => [
+                            'id' => 'OCfR6llPPsglMc0execte1'
+                        ]
+                    ]
+                ],
+                'gateway' => 'upi_mindgate',
+                'error' => null
+            ];
+        }
+
+        return [$result, 200];
+    }
+
+    public function debit($input)
+    {
+        $result = [
+            'data' => [
+                'data' => [
+                    'vpa' => 'test@okhdfcbank',
+                    'rrn' => '32131429',
+                    'npci_txn_id' => '32131429'
+                ],
+                'upi_mandate' => [
+                    'umn' => 'HDFebdef01e51b340448dd0caf01fffc@hdfc',
+                ],
+                'upi' => [
+                    'merchant_reference' => 'OCfR6llPPsglMc0execte1',
+                    'flow' => 'collect',
+                    'action' => 'debit'
+                ]
+            ],
+            'gateway' => 'upi_mindgate',
+            'error' => null
+        ];
+
+        return [$result, 200];
+    }
+
+    protected function notify($input)
+    {
+        $description = $input['payment']['description'];
+
+        $response = [];
+
+        $error = null;
+
+        $code = 500;
+
+        switch ($description)
+        {
+            case 'notify_success':
+                $response = [
+                    'data' => [
+                        'data' => [
+                            'vpa' => 'test@okhdfcbank',
+                            'rrn' => '615519221388',
+                            'npci_txn_id' => '615519221388'
+                        ],
+                        'upi' => [
+                            'merchant_reference' => $input['payment']['id'].'0create1',
+                            'flow' => 'collect',
+                            'action' => 'notify',
+                            'npci_txn_id' => '615519221388',
+                            'npci_reference_id'   => '615519221388'
+                        ],
+                        'upi_mandate' => [
+                            'umn' => 'FirstUpiRecPayment@razorpay'
+                        ]
+                    ],
+                    'gateway' => 'upi_mindgate',
+                    'error' => null
+                ];
+                $code = 200;
+                break;
+            case 'notify_failure':
+                $response['data'] = [
+                    'upi' => [
+                        'merchant_reference' => 'OCfR6llPPsglMc0create1',
+                        'flow' => 'collect',
+                        'action' => 'notify'
+                    ]
+                ];
+                $response['error'] = [
+                    'code' => '01',
+                    'internal' => [
+                        'code'          => 'BAD_REQUEST_VALIDATION_FAILURE',
+                        'description'   => 'Vpa is required for UPI collect request',
+                        'metadata'      => [
+                            'description'               => 'INPUT_VALIDATION_FAILED',
+                            'gateway_error_code'        => '',
+                            'gateway_error_description' => '',
+                            'internal_error_code'       => 'BAD_REQUEST_VALIDATION_FAILURE',
+                            'http_code'                 => 400
+                        ]
+                    ]
+                ];
+                $code = 200;
+                break;
+        }
+
+        return [$response, $code];
+    }
+
+    protected function getMozartGatewayWithModeSet()
+    {
+        $gateway = $this->app['gateway']->gateway('mozart');
+
+        $gateway->setMode($this->getMode());
+
+        return $gateway;
+    }
+
+    public function getMode()
+    {
+        return $this->mode;
     }
 }

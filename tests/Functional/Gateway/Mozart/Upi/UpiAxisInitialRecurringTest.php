@@ -1444,7 +1444,7 @@ class UpiAxisInitialRecurringTest extends TestCase
 
         $content = $this->mockServer()->getAsyncCallbackResponseFirstDebitForAxis($payment);
 
-        $this->makeS2sCallbackAndGetContent($content, 'upi_axis');
+        $this->makeS2sCallbackAndGetContent($content, 'upi_axis', true);
 
         $this->assertUpiDbLastEntity('payment', [
             'status'        => 'captured',

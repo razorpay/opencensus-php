@@ -9,9 +9,9 @@ use Carbon\Carbon;
 use Razorpay\IFSC\Bank;
 use RZP\Models\Pricing\Entity;
 use RZP\Services\RazorXClient;
+use RZP\Services\SplitzService;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Services\SplitzService;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Constants\Shield as ShieldConstants;
@@ -2087,6 +2087,76 @@ trait PaymentTrait
                         "response" => [
                             "variant" => [
                                 "name" => $upiAutopayPricing
+                            ]
+                        ]
+                    ];
+                }
+                // For all other experiments return an off value
+                // For example, evaluating if a dedicated terminal is enabled or not.
+                return [
+                    "response" => [
+                        "variant" => [
+                            "name" => $upiAutopayOtherExperiment
+                        ]
+                    ]
+                ];
+            });
+    }
+
+    protected function mockSplitzTreatmentForAutopayDebitRetries($upiAutopayPricing = 'variant_on', $upiAutopayOtherExperiment = 'control')
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) use ($upiAutopayPricing, $upiAutopayOtherExperiment) {
+                // If the experiment to evaluate is related to status check splitz, return the mock output
+                if ($input['experiment_id'] === 'PLCa20SI9HGtQt' or
+                    $input['experiment_id'] === 'PLCNycPzMvtgV6' or
+                    $input['experiment_id'] === 'PLCPWHMLyubjNC')
+                {
+                    return [
+                        "response" => [
+                            "variant" => [
+                                "name" => $upiAutopayPricing
+                            ]
+                        ]
+                    ];
+                }
+                // For all other experiments return an off value
+                // For example, evaluating if a dedicated terminal is enabled or not.
+                return [
+                    "response" => [
+                        "variant" => [
+                            "name" => $upiAutopayOtherExperiment
+                        ]
+                    ]
+                ];
+            });
+    }
+
+    protected function mockSplitzTreatmentForAutopayRearch($upiAutopayRearch = 'variant_on', $upiAutopayOtherExperiment = 'control')
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) use ($upiAutopayRearch, $upiAutopayOtherExperiment) {
+                // If the experiment to evaluate is related to status check splitz, return the mock output
+                if ($input['experiment_id'] === 'PLCa20SI9HGtQt' or
+                    $input['experiment_id'] === 'PDANy0UHIO3yOJ' or
+                    $input['experiment_id'] === 'PMncVHaTfAX8VI' or
+                    $input['experiment_id'] === 'PSIW9jjGHde6az'
+                )
+                {
+                    return [
+                        "response" => [
+                            "variant" => [
+                                "name" => $upiAutopayRearch
                             ]
                         ]
                     ];

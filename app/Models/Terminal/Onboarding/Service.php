@@ -292,6 +292,7 @@ class Service extends Base\Service
                 'MCC'                => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_MCC] ?? null,
                 'Edit Billing Label' => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_BILLING_LABEL] ?? null,
                 'Edit Mobile Number' => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_MOBILE_NUMBER] ?? null,
+                'Recurring'          => $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING] ?? null,
                 'idempotency_key'    => $row['idempotency_key'] ?? null,
             ]);
 

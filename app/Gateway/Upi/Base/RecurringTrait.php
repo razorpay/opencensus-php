@@ -13,7 +13,6 @@ use RZP\Constants\Timezone;
 use RZP\Models\Notification;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Mozart\Gateway;
-use RZP\Gateway\Upi\Base\Entity;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Payment\UpiMetadata;
@@ -25,6 +24,11 @@ use RZP\Models\UpiMandate\Metrics as UpiMandateMetrics;
 
 trait RecurringTrait
 {
+    /**
+     * @var Entity
+     */
+    protected $upi;
+
     protected $gatewayDataIdToActionMap = [
         Action::AUTHENTICATE    => 'create',
         Action::AUTHORIZE       => 'execte',
@@ -323,10 +327,12 @@ trait RecurringTrait
         return $response;
     }
 
-    protected function getVpaDetails(gateway $gateway, array $input)
+    protected function getVpaDetails(array $input)
     {
         try
         {
+            $gateway = $this->getMozartGatewayWithModeSet();
+
             $vpaCore = new PaymentsUpi\Vpa\Core;
 
             $vpa = $vpaCore->firstByAddress($input['payment']['vpa']);
@@ -362,18 +368,17 @@ trait RecurringTrait
 
     protected function sendMandateCreateRequest(array $input, Entity $upi)
     {
-        $gateway = $this->getMozartGatewayWithModeSet();
-
         if (Payment\Gateway::isUpiRecurringValidateVPASupportedGateway($input['payment']['gateway']) === true)
         {
             if ($input['upi']['flow'] === Constants::COLLECT)
             {
-                $vpa = $this->getVpaDetails($gateway, $input);
+                $vpa = $this->getVpaDetails($input);
 
                 $input['vpa'] = $vpa;
             }
         }
 
+        $gateway = $this->getMozartGatewayWithModeSet();
         $response = $gateway->mandateCreate($input);
 
         if ($response['success'] !==  true)
@@ -840,6 +845,75 @@ trait RecurringTrait
             'action'        => $upi->getAction(),
             'mandate_id'    => $upi->getMerchantReference(),
             'mode'          => $input[Entity::UPI][UpiMetadata\Entity::MODE],
+            'response'      => $response->toArrayTrace(),
+            'processed'     => $processed,
+            'sno'           => $input['upi_mandate'][UpiMandate\Entity::SEQUENCE_NUMBER],
+            'mandate'       => $mandate->toArrayTrace(),
+        ]);
+
+        return $processed;
+    }
+
+    public function processRecurringRearchResponse(
+        array $input,
+        array $data = null,
+        BaseException $exception = null)
+    {
+        $gateway = $this->app['gateway']->gateway($input['payment']['gateway']);
+
+        $anomalies = new Anomalies($gateway);
+
+        $response = new Response($data);
+
+        $upi = new Entity($data['upi']);
+
+        $input['action'] = $this->action;
+
+        $action = $this->action;
+        if($action === Action::RECURRING_CALLBACK or $action === Payment\Action::VERIFY_RECURRING)
+        {
+            $action = Action::DEBIT;
+            if (str_contains($upi['gateway_data']['id'], 'create')) {
+                $action = Action::AUTHENTICATE;
+            }
+        }
+        $upi->setAction($action);
+
+        $mandateTransformer = (new UpiMandateTransformer($gateway, $anomalies));
+        $mandate = $mandateTransformer->from($input, $response, $upi, $exception)->transform();
+
+        $metadataTransformer = (new UpiMetadataTransformer($gateway, $anomalies));
+        $metadata = $metadataTransformer->from($input, $response, $upi, $exception)->transform();
+
+        $processed = [
+            // Data which is needed for mandate
+            'upi_mandate'                       => $mandateTransformer->toArray(),
+            // Data which is needed for UPI Metadata
+            'upi'                               => $metadataTransformer->toArray(),
+            // Acquirer data which is needed to be saved in payment entity
+            'acquirer'                          => [
+                Payment\Entity::VPA             => $data['vpa'] ?? $input['payment']['vpa'],
+                Payment\Entity::REFERENCE1      => $data['npci_txn_id'] ?? $data['data']['npci_txn_id'],
+                Payment\Entity::REFERENCE16     => $data['rrn'] ?? $data['mandate']['rrn'],
+            ],
+        ];
+
+        // Data Block take preference over all other entities as this means some action is needed from customer
+        $dataBlock = $metadataTransformer->getDataBlock();
+
+        if (empty($dataBlock) === false)
+        {
+            // Data block and acquired can not go together
+            unset($processed['acquirer']);
+
+            $processed['data'] = $dataBlock;
+        }
+
+        $this->trace->info(TraceCode::PAYMENT_UPI_RECURRING_GATEWAY_RESPONSE, [
+            'payment_id'    => $input['payment']['id'],
+            'action'        => $input['action'],
+            'mandate_id'    => $data['merchant_reference'],
+            'mode'          => $input[Entity::UPI][UpiMetadata\Entity::MODE] ?? $input['payment']['recurring_type'],
             'response'      => $response->toArrayTrace(),
             'processed'     => $processed,
             'sno'           => $input['upi_mandate'][UpiMandate\Entity::SEQUENCE_NUMBER],

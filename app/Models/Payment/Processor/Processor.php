@@ -7011,7 +7011,6 @@ class Processor
         // Service does not support Bharat QR, UPI QR, Recurring and UPI transfer.
         if (($payment->isBharatQr() === true) or
             ($payment->isUpiQr() === true) or
-            ($payment->isRecurring() === true) or
             ($payment->isUpiTransfer() === true))
         {
             return;
@@ -7030,6 +7029,18 @@ class Processor
             return;
         }
 
+        if(($payment->isRecurring() === true))
+        {
+            // hit razorx service to get the variant
+            $isVariantOn = $this->getSplitzVariantForUpiAutopay($payment);
+
+            if ($isVariantOn === true)
+            {
+                $this->setPaymentService($payment, 'upips');
+            }
+            return;
+        }
+
         $variant = $this->getRazorxVariantForUPS($payment);
 
         if ($variant !== 'upips')
@@ -7039,6 +7050,42 @@ class Processor
 
         // set upi cps_route route for a payment.
         $this->setPaymentService($payment, 'upips');
+    }
+
+    /**
+     * Get splitz variant for UPS payment initiation
+     *
+     * @param Payment\Entity $payment
+     */
+    protected function getSplitzVariantForUpiAutopay(Payment\Entity $payment)
+    {
+        try {
+            $merchantId = $payment->getMerchantId();
+            if (isset($merchantId) === true)
+            {
+                $feature = 'upi_autopay_rearch'. '_' . $payment->getGateway() . '_v1_exp_id';
+                $properties = [
+                    'id'            => UniqueIdEntity::generateUniqueId(),
+                    'experiment_id' => $this->app['config']->get('app.'.$feature),
+                    'request_data'  => json_encode(['merchant_id' => $merchantId]),
+                ];
+                $response = $this->app['splitzService']->evaluateRequest($properties);
+
+                $variant = $response['response']['variant']['name'] ?? '';
+
+                return ($variant === 'variant_on' or $payment->getGateway() === Payment\Gateway::UPI_RZPAPB);
+
+            }
+        } catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::UPI_AUTOPAY_GATEWAY_REARCH_SPLITZ_FAILED, [
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+
+        return false;
     }
 
     /**
@@ -7581,6 +7628,11 @@ class Processor
         $notification = $this->repo->notification->findByOrderId(
             Order\Entity::verifyIdAndSilentlyStripSign($input['order_id'])
         );
+
+        if($notification->getTokenId() !== substr($input['token'], -14))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_TOKEN);
+        }
 
         (new Notifications\Validator())->validateOrderNotification($notification);
 
