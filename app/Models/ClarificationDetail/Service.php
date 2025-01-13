@@ -2,7 +2,6 @@
 
 namespace RZP\Models\ClarificationDetail;
 
-use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -701,48 +700,6 @@ class Service extends Base\Service
         }
     }
 
-    public function fetchAndBuildClarificationDetails($merchantId)
-    {
-        try {
-            $response = (new Service)->getClarificationDetail($merchantId);
-
-            $this->trace->info(TraceCode::GET_CLARIFICATION_DETAILS_RESPONSE, [
-                'response' => $response,
-            ]);
-
-            $clarificationDetails = [];
-
-            if (isset($response['clarification_details']['nc_count']) && $response['clarification_details']['nc_count'] > 0) {
-
-                foreach ($response['clarification_details'] as $key => $details) {
-
-                    if (!empty($details['comments'])) {
-
-                        $groupName = ucwords(str_replace("_", " ", $key));
-
-                        foreach ($details['comments'] as $comment) {
-
-                            if ($comment['message_from'] === 'admin' && $comment['comment_data']['type'] === 'predefined' && $comment['status'] === Constants::NEEDS_CLARIFICATION) {
-
-                                $clarificationDetails[$groupName] = $comment['comment_data']['text'];
-
-                            }
-                        }
-                    }
-                }
-            }
-
-            return $clarificationDetails;
-        } catch (\Exception $exception) {
-            $this->trace->error(TraceCode::FETCH_AND_BUILD_CLARIFICATION_DETAILS_ERROR, [
-                'error_message' => $exception->getMessage()
-            ]);
-
-            throw new Exception\ServerErrorException(PublicErrorDescription::SERVER_ERROR, PublicErrorDescription::SERVER_ERROR, [
-                'error description' => 'data could not be fetched'
-            ]);
-        }
-    }
     /**
      * buildUBOPayload updates UBO-related fields in the clarification reason if they are empty.
      *

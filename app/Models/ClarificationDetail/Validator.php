@@ -56,38 +56,17 @@ class Validator extends Base\Validator
 
     public function validateClarificationExists($merchantId)
     {
-        $isEligibleForNCRevamp = (new Service)->getMerchantNcRevampEligibility($merchantId);
+        if ((new Service())->isEligibleForRevampNC($merchantId) === true)
+        {
+            $result =
+                (new Repository)->getByMerchantIdAndStatus($merchantId, Constants::NEEDS_CLARIFICATION)
+                                ->toArray();
 
-        $this->getTrace()->info(TraceCode::GET_NC_REVAMP_RESPONSE, [
-            'isEligibleForNCRevamp' => $isEligibleForNCRevamp
-        ]);
-
-        if ($isEligibleForNCRevamp){
-
-            $clarificationDetails = (new Service)->getClarificationDetail($merchantId);
-
-            $this->getTrace()->info(TraceCode::GET_CLARIFICATION_DETAILS_RESPONSE, [
-                '$clarificationDetails' => $clarificationDetails
-            ]);
-
-            if (isset($clarificationDetails['clarification_details'])) {
-
-                foreach ($clarificationDetails['clarification_details'] as $key => $details) {
-
-                    if(isset($details['comments'])) {
-
-                        foreach ($details['comments'] as $comment) {
-
-                            if ($comment['status'] === Constants::NEEDS_CLARIFICATION) {
-                                return;
-                            }
-                        }
-                    }
-                }
+            if (empty($result) === true)
+            {
+                throw new BadRequestValidationFailureException(
+                    PublicErrorDescription::INVALID_STATUS_CHANGE_NC);
             }
-
-            throw new BadRequestValidationFailureException(
-                PublicErrorDescription::INVALID_STATUS_CHANGE_NC);
         }
     }
 

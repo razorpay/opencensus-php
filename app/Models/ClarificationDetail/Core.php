@@ -4,11 +4,7 @@ namespace RZP\Models\ClarificationDetail;
 
 use Mail;
 use Carbon\Carbon;
-use RZP\Error\PublicErrorDescription;
-use RZP\Exception;
 use RZP\Constants\Timezone;
-use RZP\Error\ErrorCode;
-use RZP\Http\Controllers\NeedsClarificationProxyController;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -237,13 +233,9 @@ class Core extends Base\Core
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $clarificationDetails = (new Service)->fetchAndBuildClarificationDetails($merchantId);
+        $clarificationDetails = (new ClarDetailCore)->getCommunicationParams($merchantId);
 
-        $this->trace->info(TraceCode::FETCH_AND_BUILD_CLARIFICATION_DETAILS_RESPONSE, [
-            'clarificationDetails'  => $clarificationDetails,
-        ]);
-
-        if (!empty($clarificationDetails))
+        if ($this->hasClarificationDetails($merchantId) === true)
         {
             $args = [
                 EscalationsConstant::MERCHANT => $merchant,
@@ -315,48 +307,27 @@ class Core extends Base\Core
         {
             $properties = [];
 
-            $isEligibleForNCRevamp = (new ClarDetailService)->getMerchantNcRevampEligibility($merchant->getId());
+            $isEligibleForNCRevamp = (new ClarDetailService())->isEligibleForRevampNC($merchant->getId());
 
-            $this->trace->info(TraceCode::GET_NC_REVAMP_RESPONSE, [
-                'isEligibleForNCRevamp' => $isEligibleForNCRevamp
-            ]);
-
-            if ($isEligibleForNCRevamp === false) {
-
-                return $properties;
-            }
-
-            $clarificationDetails = (new ClarDetailService)->getClarificationDetail($merchant->getId());
-
-            $this->trace->info(TraceCode::GET_CLARIFICATION_DETAILS_RESPONSE, [
-                '$clarificationDetails' => $clarificationDetails
-            ]);
-
-            if(isset($clarificationDetails['clarification_details']['nc_count'])) {
-
+            if($isEligibleForNCRevamp === true)
+            {
                 $properties['merchantId'] = $merchant->getId();
 
-                $properties['nc_count'] = $clarificationDetails["clarification_details"]["nc_count"];
+                $properties['nc_count'] = $this->getNcCount($merchant);
 
-                foreach ($clarificationDetails['clarification_details'] as $key => $details) {
+                $clarificationDetails = $this->repo->clarification_detail->getByMerchantIdAndStatusFromReplica($merchant->getId(), Constants::NEEDS_CLARIFICATION);
 
-                    if(isset($details['comments'])) {
+                foreach ($clarificationDetails as $clarificationDetail)
+                {
+                    $params = [];
 
-                        $params = [];
+                    $groupName = $clarificationDetail->getGroupName();
 
-                        foreach ($details['comments'] as $comment) {
+                    $params['admin_email'] = $clarificationDetail->getAdminEmail();
 
-                            if ($comment['message_from'] === 'admin' && $comment['comment_data']['type'] === 'predefined' && $comment['status'] === Constants::NEEDS_CLARIFICATION) {
+                    $params['admin_comment'] = $clarificationDetail->getAdminComment();
 
-                                $params['admin_email'] = $comment['admin_email'];
-
-                                $params['admin_comment'] = $comment['comment_data']['text'];
-
-                            }
-                        }
-
-                        $properties[$key] = $params;
-                    }
+                    $properties[$groupName] = $params;
                 }
             }
 
