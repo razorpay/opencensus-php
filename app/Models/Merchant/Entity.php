@@ -6,6 +6,7 @@ use App;
 use Config;
 use Carbon\Carbon;
 use Conner\Tagging\Taggable;
+use DateTimeZone;
 use Illuminate\Support\Str;
 use Razorpay\Trace\Logger;
 use RZP\Models\Payment\Method;
@@ -4317,12 +4318,20 @@ class Entity extends Base\PublicEntity
         return Currency::getCurrencyForCountry($this->getCountry()) ?? "INR";
     }
 
+    Public function getTimezonesByCountryCode($countryCode) {
+        $timezones = DateTimeZone::listIdentifiers(DateTimeZone::PER_COUNTRY, strtoupper($countryCode));
+        return $timezones;
+    }
     public function getTimeZone(){
 
         $country = $this->getCountry();
-        if ($country == 'MY'){
-            return Timezone::MYT;
+
+        $timezones = $this->getTimezonesByCountryCode($country);
+        // currently we are picking only the first timezone from the list, for countries with multiple timezone it needs to be
+        if (!empty($timezones)) {
+            return $timezones[0];
         }
+
         return Timezone::IST;
     }
 

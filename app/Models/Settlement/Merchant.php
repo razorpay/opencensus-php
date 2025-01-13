@@ -403,6 +403,10 @@ class Merchant
         {
             return Channel::ICICIEXP;
         }
+        if (strcasecmp($channel, Channel::AIRWALLEX) === 0)
+        {
+            return Channel::AWX;
+        }
         return $channel;
     }
 

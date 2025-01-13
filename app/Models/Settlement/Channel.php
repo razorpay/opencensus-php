@@ -41,6 +41,11 @@ class Channel
 
     const OCBC = 'ocbc';
 
+    // This channel is for singapore merchant transaction
+    const AWX = "awx"; // settlement has "airwallex" as value where api db has "awx" due to DB limitations 8 char only
+
+    const AIRWALLEX = 'airwallex';
+
     // This channel is for in person transactions
     const HDFC_POS = 'hdfc_pos';
 
@@ -70,7 +75,10 @@ class Channel
         Constants\Country::MY => [
             self::OCBC,
             self::RHB
-        ]
+        ],
+        Constants\Country::SG => [
+            self::AIRWALLEX
+        ],
     ];
 
     public static $gateways = [
@@ -453,6 +461,11 @@ class Channel
                 Constants\Entity::BANK_ACCOUNT  =>  [
                     Mode::DUITNOW,
                     Mode::IBG
+                ]
+            ],
+            self::AIRWALLEX => [
+                Constants\Entity::BANK_ACCOUNT  =>  [
+                    Mode::FAST
                 ]
             ],
             self::IDFC       => [

@@ -1039,6 +1039,13 @@ class Service extends Base\Service
             $year = (int) $input['year'];
         }
 
+        $this->trace->info(
+            TraceCode::GET_COUNTRY_BASED_TIMEZONE,
+            [
+                'merchant' => $merchant,
+                'timezone' => $timezone,
+            ]);
+
         if ($timezone == Timezone::IST) {
             return Holidays::getHolidayListForYear($year);
         }
