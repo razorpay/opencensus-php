@@ -2063,6 +2063,9 @@ class Processor
                                         Card\Entity::TOKENISED              => true,
                                         Card\Entity::REWARD                 => $input['card']['reward']
                                     ];
+                                    if($this->inputCurrencyNotINR($input)){
+                                        return false;
+                                    }
                                     $input[Payment\Entity::CARD] = $cardInput;
                                     $input[Payment\Entity::API_VAULT] = $card->getVault();   // We are passing API_VALUT key to CPS to send it to router so that it can provide us terminals acc.
                                     // explicitly adding token_id in token since for global customer we add token instead of token_id
@@ -2092,9 +2095,6 @@ class Processor
                                             'token_id' => $input[Payment\Entity::TOKEN],
                                             'card_number' => $input[Payment\Entity::CARD],
                                         ]);
-                                    if($this->inputCurrencyNotINR($input)){
-                                        return false;
-                                    }
                                     return true;
                                 }
 
@@ -2130,6 +2130,9 @@ class Processor
                                 if (($cpsCryptogramFetchResult === 'on' && $card->getVault() !== Card\Vault::HDFC && $this->merchant->isFeatureEnabled(Feature::RAAS) === false) || ($mcScofTokenResult === 'on'))
                                 {
                                     $cardInput = $this->getCardInputWithoutCryptogramForRearch($card, $input, $token);
+                                    if($this->inputCurrencyNotINR($input)){
+                                        return false;
+                                    }
                                     //modify input for cards
                                     $input[Payment\Entity::CARD] = $cardInput;
                                     $input[Payment\Entity::TOKEN] = $token->getId();
@@ -2146,20 +2149,17 @@ class Processor
                                     {
                                         $input["cryptogram_source"] = "cps";
                                     }
-                                    if($this->inputCurrencyNotINR($input)){
-                                        return false;
-                                    }
                                     return true;
                                 }
                                 else {
                                     $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant, 'null', $card);
                                     $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input, $token);
-                                    //modify input for cards
-                                    $input[Payment\Entity::CARD] = $cardInput;
-                                    $input[Payment\Entity::TOKEN] = $token->getId();
                                     if($this->inputCurrencyNotINR($input)){
                                         return false;
                                     }
+                                    //modify input for cards
+                                    $input[Payment\Entity::CARD] = $cardInput;
+                                    $input[Payment\Entity::TOKEN] = $token->getId();
                                     return true;
                                 }
                             }
@@ -2210,11 +2210,11 @@ class Processor
             }
 
             if ($this->isExternalAltIdPayment($input)) {
-                $input[E::CARD][E::TOKEN_REFERENCE_NUMBER ]=  $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER] ?? null;
-                $input[E::CARD][E::TOKEN_REFERENCE_ID ]= $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID] ?? null;
                 if($this->inputCurrencyNotINR($input)){
                     return false;
                 }
+                $input[E::CARD][E::TOKEN_REFERENCE_NUMBER ]=  $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER] ?? null;
+                $input[E::CARD][E::TOKEN_REFERENCE_ID ]= $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID] ?? null;
                 return true;
             }
 
