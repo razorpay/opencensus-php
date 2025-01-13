@@ -906,8 +906,16 @@ class Service extends Base\Service
 
         $mandates = [];
         if (empty($input['mandate_hubs']) === true){
-            $input['mandate_hubs'] = $originalIIN['mandate_hubs'];
+            $input['mandate_hubs'] = [];
+            if(isset($originalIIN['mandate_hubs'])){
+                foreach (MandateHub::getEnabledMandateHubs($originalIIN['mandate_hubs'])
+                         as $value)
+                {
+                    $input['mandate_hubs'][$value] = '1';
+                }
+            }
         }
+
         foreach ($input['mandate_hubs'] as $key => $value) {
             if ($value === "1") {
                 $mandates[] = $key;
