@@ -5041,7 +5041,7 @@ class Base extends BaseCore
                 $this->fetchVaToVaInfoForPayoutServiceProcessing($input[Payout\Entity::FUND_ACCOUNT_ID],
                     $fundAccount);
 
-            [$FetchPricingInfoSuccess,$pricingRuleId, $fees, $tax] = $this->fetchPricingInfo($input, $fundAccount);
+            [$FetchPricingInfoSuccess,$pricingRuleId, $fees, $tax, $PricingInput] = $this->fetchPricingInfo($input, $fundAccount);
 
             $extraInfo = [
                 Payout\Entity::FUND_ACCOUNT_INFO => [
@@ -5062,7 +5062,8 @@ class Base extends BaseCore
                     Payout\Entity::FETCH_PRICING_INFO_SUCCESS => $FetchPricingInfoSuccess,
                     Entity::PRICING_RULE_ID => $pricingRuleId,
                     Entity::FEES => $fees,
-                    Entity::TAX => $tax
+                    Entity::TAX => $tax,
+                    Entity::PRICING_INPUT => $PricingInput
                 ],
             ];
 
@@ -5447,7 +5448,7 @@ class Base extends BaseCore
 
             if ($variant != 'on')
             {
-                return [false, null, null, null];
+                return [false, null, null, null,null];
             }
 
             $bankingAccount = (new BankingAccount\Service())->fetchBankingAccountForAccountNumber($input[Entity::ACCOUNT_NUMBER],
@@ -5531,10 +5532,14 @@ class Base extends BaseCore
                 Entity::PAYOUT_ID => '',
                 Entity::USER_ID => $userId?? null,
             ];
+
+            $xRequestId = $app['request']->getTaskId();
+
             $this->trace->info(
                 TraceCode::PAYOUT_SERVICE_FETCH_PRICING_REQUEST,
                 [
-                    'params' => $params
+                    'params' => $params,
+                    'x_request_id' => $xRequestId
                 ]);
 
             $pricingInfo = $this->fetchPricingInfoForPayoutService($params);
@@ -5548,10 +5553,10 @@ class Base extends BaseCore
 
             if (isset($pricingInfo[Entity::ERROR]) === true)
             {
-                return [false, null, null, null];
+                return [false, null, null, null,null];
             }
 
-            return [true, $pricingInfo[Entity::PRICING_RULE_ID], $pricingInfo[Entity::FEES], $pricingInfo[Entity::TAX]];
+            return [true, $pricingInfo[Entity::PRICING_RULE_ID], $pricingInfo[Entity::FEES], $pricingInfo[Entity::TAX], $params];
 
         }
         catch (\Throwable $throwable)
@@ -5566,7 +5571,7 @@ class Base extends BaseCore
                     'error' => $throwable
                 ]);
 
-            return [false, null, null, null];
+            return [false, null, null, null,null];
         }
     }
 

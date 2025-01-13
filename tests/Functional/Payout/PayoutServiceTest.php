@@ -208,6 +208,7 @@ class PayoutServiceTest extends TestCase
                                                     "pricing_rule_id" => $arg['content']['pricing_rule_id'],
                                                     "fees"=> $arg['content']['fees'],
                                                     "tax"=> $arg['content']['tax'],
+                                                    "pricing_input_redis_key" => $arg['content']['pricing_input_redis_key'],
                                                 ];
                                             }
 
@@ -3845,6 +3846,7 @@ class PayoutServiceTest extends TestCase
             'pricing_rule_id'           => 'Bbg7cl6t6I3XA6',
             'fees'       => 590,
             'tax'   => 90,
+            'pricing_input_redis_key' => '10000000000000' . '_' . $balance->getId() . '_' . 'rbl_IMPS_refund_fund_transfer_100__',
         ];
 
         $this->fixtures->on('live')->create('merchant',
@@ -4008,6 +4010,7 @@ class PayoutServiceTest extends TestCase
             'pricing_rule_id'           => 'Bbg7cl6t6I3XA6',
             'fees'       => 590,
             'tax'   => 90,
+            'pricing_input_redis_key' => '10000000000000' . '_' . $balance->getId() . '_' . 'rbl_IMPS_refund_fund_transfer_100__',
         ];
 
         $this->fixtures->on('live')->create('merchant',

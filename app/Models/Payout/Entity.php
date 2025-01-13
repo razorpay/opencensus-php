@@ -187,6 +187,8 @@ class Entity extends Base\PublicEntity
     const FETCH_FUND_ACCOUNT_INFO_SUCCESS = 'fetch_fund_account_info_success';
     const FUND_ACCOUNT_INFO               = 'fund_account_info';
     const FETCH_PRICING_INFO_SUCCESS      = 'fetch_pricing_info_success';
+    const PRICING_INPUT                   = 'pricing_input';
+    const PRICING_INPUT_REDIS_KEY         = 'pricing_input_redis_key';
 
     const VA_TO_VA_INFO                                   = 'va_to_va_info';
     const PRICING_RULE_INFO                               = 'pricing_rule_info';

@@ -5,7 +5,7 @@ namespace RZP\Services\PayoutService;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 use Razorpay\Edge\Passport\Passport;
-
+use App;
 use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Models\Payout;
@@ -355,18 +355,46 @@ class Create extends Base
                 return;
             }
 
-            $variant = $this->app['razorx']->getTreatment($merchantId,
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
+            $params = $pricingRuleInfo[Payout\Entity::PRICING_INPUT];
 
-            if ($variant != 'on') {
-                return;
+            if (!isset($params[Payout\Entity::PURPOSE]))
+            {
+                $params[Payout\Entity::PURPOSE] = '';
             }
+
+            if (!isset($params[Payout\Entity::USER_ID]))
+            {
+                $params[Payout\Entity::USER_ID] = '';
+            }
+
+            if (!isset($params[Payout\Entity::FEE_TYPE]))
+            {
+                $params[Payout\Entity::FEE_TYPE] = '';
+            }
+
+            // Pricing Input Redis Key :  MerchantId_BalanceId_Channel_Mode_Purpose_Method_Amount_FeeType_UserId
+            $pricingInputKey =   $params[Payout\Entity::MERCHANT_ID] . '_' . $params[Payout\Entity::BALANCE_ID] . '_' .
+                $params[Payout\Entity::CHANNEL] . '_' . $params[Payout\Entity::MODE] . '_' .
+                $params[Payout\Entity::PURPOSE] . '_' . $params[Payout\Entity::METHOD] . '_' .
+                $params[Payout\Entity::AMOUNT] . '_' . $params[Payout\Entity::FEE_TYPE] . '_' .
+                $params[Payout\Entity::USER_ID];
 
             $request = [
                 Payout\Entity::PRICING_RULE_ID => $pricingRuleInfo[Payout\Entity::PRICING_RULE_ID],
                 Payout\Entity::FEES => $pricingRuleInfo[Payout\Entity::FEES],
-                Payout\Entity::TAX => $pricingRuleInfo[Payout\Entity::TAX]
+                Payout\Entity::TAX => $pricingRuleInfo[Payout\Entity::TAX],
+                Payout\Entity::PRICING_INPUT_REDIS_KEY => $pricingInputKey
             ];
+
+            $app = App::getFacadeRoot();
+            $xRequestId = $app['request']->getTaskId();
+
+            $this->trace->info(
+                TraceCode::PRICING_RULE_INFO_REDIS_SET_PAYOUT_SERVICE_REQUEST,
+                [
+                    'request' => $request,
+                    'x_request_id' => $xRequestId
+                ]);
 
             $uri = self::SET_PRICING_RULE_INFO_URI;
 
@@ -380,6 +408,7 @@ class Create extends Base
             $this->trace->info(TraceCode::PRICING_RULE_INFO_REDIS_SET_PAYOUT_SERVICE_RESPONSE,
                 [
                     'response' => $response,
+                    'x_request_id' => $xRequestId
                 ]);
         }
         catch (\Throwable $throwable)
