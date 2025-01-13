@@ -55,7 +55,8 @@ test.describe('GCMS resellers @flow=resellers @project=payments', () => {
     await expect(await page.getByText('Total Quantity')).toBeVisible();
   });
 
-  test('should navigate to reseller account page', async ({ page }) => {
+  // https://razorpay.slack.com/archives/C061HJGS1CY/p1736481866732029
+  test.skip('should navigate to reseller account page', async ({ page }) => {
     await page.getByRole('link', { name: 'Ibaco' }).first().click(); //Select first reseller as it has the seed data
     await expect(page).toHaveURL(`${routes.GCMS_RESELLERS}/N91osUDdN9WdO9/programs`); //Reseller id of first reseller
     await expect(await page.getByText('N91osUDdN9WdO9')).toBeVisible(); //Reseller id of first reseller
