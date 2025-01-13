@@ -2380,6 +2380,7 @@ trait Capture
             'Reason: Server is in script upgrade mode. Only administrator can connect at this time.',
             'Unknown $curl_error_code: 77',
             'SQLSTATE[40001]: Serialization failure',
+            'SQLSTATE[HY000]: General error: 1412 Table definition has changed',
         ]);
     }
 

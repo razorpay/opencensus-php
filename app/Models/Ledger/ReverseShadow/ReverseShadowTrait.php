@@ -204,9 +204,49 @@ trait ReverseShadowTrait
             LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()
         ];
 
-        $response = $ledgerService->fetchAccountsByEntitiesAndMerchantID($accountPayload, $requestHeaders, true);
+        $retryAttempts = 0;
 
-        return $response['body']['accounts'];
+        while ($retryAttempts <= LedgerReverseShadowConstants::MAX_RETRY_COUNT)
+        {
+            try
+            {
+                $response = $ledgerService->fetchAccountsByEntitiesAndMerchantID($accountPayload, $requestHeaders, true);
+
+                return $response['body']['accounts'];
+            }
+            catch (\Throwable $e)
+            {
+                if (method_exists($e, 'getData'))
+                {
+                    $data = $e->getData();
+
+                    if (isset($data['status_code']))
+                    {
+                        $responseCode = $data['status_code'];
+
+                        if ($responseCode >= 500)
+                        {
+                            $retryAttempts++;
+                            if ($retryAttempts > LedgerReverseShadowConstants::MAX_RETRY_COUNT)
+                            {
+                                throw $e;
+                            }
+
+                            continue;
+
+                        } else
+                        {
+                            throw $e;
+                        }
+                    }
+                }
+
+                throw $e;
+
+            }
+        }
+
+        return [];
     }
 
     public function getMerchantAccountBalancesMap($merchantAccountBalancesList): array
