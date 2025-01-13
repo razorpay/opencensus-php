@@ -745,6 +745,7 @@ class Gateway
         self::UPI_RZPAPB,
         self::AMEX,
         self::UPI_RZPAXIS,
+        self::LYRA,
     ];
 
     const FORCE_AUTHORIZE_FAILED_SYNC_GATEWAYS = [
