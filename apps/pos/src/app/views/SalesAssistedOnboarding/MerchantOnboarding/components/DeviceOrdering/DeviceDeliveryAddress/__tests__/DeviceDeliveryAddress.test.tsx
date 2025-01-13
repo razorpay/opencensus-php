@@ -73,10 +73,39 @@ describe('DeviceDeliveryAddress', () => {
       merchantDetails: {
         ...MOCK_MERCHANT_DETAILS,
         activation: { ...MOCK_MERCHANT_DETAILS.activation, isFormSubmitted: false },
+        business: {
+          ...MOCK_MERCHANT_DETAILS.business,
+          address: {
+            ...MOCK_MERCHANT_DETAILS.business.address,
+            registered: {
+              city: {
+                value: null,
+              },
+              country: {
+                value: null,
+              },
+              district: {
+                value: null,
+              },
+              line1: {
+                value: null,
+              },
+              line2: {
+                value: null,
+              },
+              state: {
+                value: null,
+              },
+              zipCode: {
+                value: null,
+              },
+            },
+          },
+        },
       },
     });
     expect(
-      screen.getByText('Please complete the KYC journey first and try again'),
+      screen.getByText('Please fill business address in KYC journey first and try again'),
     ).toBeInTheDocument();
   });
 });

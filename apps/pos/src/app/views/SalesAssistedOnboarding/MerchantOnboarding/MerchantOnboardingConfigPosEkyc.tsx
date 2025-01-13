@@ -30,6 +30,7 @@ import MerchantAdditionalDetails from 'apps/pos/src/app/views/SalesAssistedOnboa
 import {
   getAgreementSigningStatus,
   getProgressFromModularStep,
+  isAddressPresent,
   isDevicePricingAdditionalDetailsCompletedForPosEkyc,
   isPosEnabledForMerchant,
 } from 'apps/pos/src/app/utils/modularConfig';
@@ -131,7 +132,7 @@ const DEVICE_SELECTION_STEP = {
   getStatus: ({ states }) => getDeviceStepStatus({ modularConfig: states.modularConfig }),
   checkIfDisabled: ({ values, states }) =>
     !values.merchantId ||
-    !states.merchantDetails?.activation.isFormSubmitted ||
+    !isAddressPresent(states?.merchantDetails?.business?.address?.registered) ||
     !isPosEnabledForMerchant({ states }),
   checkIfCompleted: ({ states }) =>
     getProgressFromModularStep({
@@ -187,7 +188,7 @@ const ADDITIONAL_DETAILS_STEP = {
   },
   checkIfDisabled: ({ values, states }) =>
     !values.merchantId ||
-    !states.merchantDetails?.activation.isFormSubmitted ||
+    !isAddressPresent(states?.merchantDetails?.business?.address?.registered) ||
     !isPosEnabledForMerchant({ states }),
   checkIfCompleted: ({ states }) =>
     getProgressFromModularStep({
@@ -218,6 +219,7 @@ const AGREEMENT_SIGNING_STEP = {
   getStatus: ({ states }) => getAgreementSigningStatus({ modularConfig: states.modularConfig }),
   checkIfDisabled: ({ states, values }) =>
     !values.merchantId ||
+    !states.merchantDetails?.activation.isFormSubmitted ||
     !isDevicePricingAdditionalDetailsCompletedForPosEkyc({
       modularConfig: states.modularConfig,
     }) ||

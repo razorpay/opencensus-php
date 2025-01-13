@@ -15,6 +15,7 @@ import {
   PENDING,
 } from 'apps/pos/src/app/utils/agreementSigning';
 import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
+import { MerchantAddress } from '@dashboard/shared-utils/graphql/graph-types';
 
 interface GetStepsFromModularConfigProps {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse;
@@ -194,4 +195,16 @@ export const isPosEnabledForMerchant = ({ states }: isPosEnabledArgs) => {
       ? allowedFlows.includes(posActivationFlow ?? '')
       : true;
   return isRegisteredMerchant && isWhitelistedForPos && isPgosMerchant;
+};
+
+export const isAddressPresent = (address: MerchantAddress) => {
+  if (
+    address?.line1?.value &&
+    address?.city?.value &&
+    address?.state?.value &&
+    address?.zipCode?.value
+  ) {
+    return true;
+  }
+  return false;
 };

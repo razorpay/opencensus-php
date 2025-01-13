@@ -5,9 +5,11 @@ import {
   getStepsFromModularConfig,
   isPosEnabledForMerchant,
   processFormDataForModularSubmit,
+  isAddressPresent,
 } from '../modularConfig';
 import { MerchantModularOnboardingDetailsSuccessResponse } from '../../types/modular';
 import { SUCCESS_MODULAR_RESPONSE } from 'apps/pos/src/services/mocks/fixtures/modularConfig';
+import { MerchantAddress } from '@dashboard/shared-utils/graphql/graph-types';
 
 describe('modularconfig utils', () => {
   const modularResponse = SUCCESS_MODULAR_RESPONSE.merchantModularOnboardingDetailsAsSales;
@@ -248,5 +250,51 @@ describe('isPosEnabledForMerchant', () => {
     };
 
     expect(isPosEnabledForMerchant({ states })).toBe(true);
+  });
+});
+
+describe('isAddressPresent', () => {
+  it('should return true if all address fields are present', () => {
+    const address = {
+      line1: { value: '123, ABC Street' },
+      city: { value: 'XYZ' },
+      state: { value: 'PQR' },
+      zipCode: { value: '123456' },
+    } as MerchantAddress;
+
+    expect(isAddressPresent(address)).toBe(true);
+  });
+
+  it('should return false if any address field is missing', () => {
+    const address = {
+      line1: { value: '123, ABC Street' },
+      city: { value: 'XYZ' },
+      state: { value: 'PQR' },
+      zipCode: { value: null },
+    } as MerchantAddress;
+
+    expect(isAddressPresent(address)).toBe(false);
+  });
+
+  it('should return false if all address fields are missing', () => {
+    const address = {
+      line1: { value: null },
+      city: { value: null },
+      state: { value: null },
+      zipCode: { value: null },
+    } as MerchantAddress;
+
+    expect(isAddressPresent(address)).toBe(false);
+  });
+
+  it('should return false if all address fields are missing empty strings', () => {
+    const address = {
+      line1: { value: '' },
+      city: { value: '' },
+      state: { value: '' },
+      zipCode: { value: '' },
+    } as MerchantAddress;
+
+    expect(isAddressPresent(address)).toBe(false);
   });
 });

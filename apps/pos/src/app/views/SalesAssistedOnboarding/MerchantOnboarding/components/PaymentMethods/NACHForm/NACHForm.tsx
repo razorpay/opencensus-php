@@ -86,7 +86,14 @@ const NACHForm: React.FC<NachFormProps> = ({
           onChange={onNachTextAreaChange}
           placeholder="Add comments here for sales team"
           label=""
+          validationState={
+            nachForm[NachFormKeyNames.NACH_FORM_COMMENTS_FIELD]?.trim().length < 4 &&
+            !(nachForm[NachFormKeyNames.NACH_FORM_COMMENTS_FIELD]?.length === 0)
+              ? 'error'
+              : 'none'
+          }
           size="large"
+          errorText="Please enter more than 3 characters"
           value={nachForm[NachFormKeyNames.NACH_FORM_COMMENTS_FIELD]}
         />
       </Box>
@@ -112,8 +119,10 @@ const NACHForm: React.FC<NachFormProps> = ({
           isDisabled={
             isFormDisabled ||
             !(
-              nachForm[NachFormKeyNames.NACH_FORM_COMMENTS_FIELD] &&
-              nachForm[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD]?.length
+              !(
+                nachForm[NachFormKeyNames.NACH_FORM_COMMENTS_FIELD]?.trim().length < 4 &&
+                nachForm[NachFormKeyNames.NACH_FORM_COMMENTS_FIELD]?.trim().length !== 0
+              ) && nachForm[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD]?.length
             )
           }
         >

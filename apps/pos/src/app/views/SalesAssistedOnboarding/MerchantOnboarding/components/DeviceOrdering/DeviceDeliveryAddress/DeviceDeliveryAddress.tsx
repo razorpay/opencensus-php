@@ -21,7 +21,7 @@ import DeviceConfirmationCTA from 'apps/pos/src/app/views/SalesAssistedOnboardin
 import { DeviceCharges, ModularPayload } from 'apps/pos/src/app/types/modular';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
-
+import { isAddressPresent } from 'apps/pos/src/app/utils/modularConfig';
 interface DeviceDeliveryAddressProps {
   title: string;
   countryCode: string;
@@ -84,9 +84,12 @@ const DeviceDeliveryAddress = ({
     handleModularUpdate(payload);
   };
 
-  if (!merchantDetails?.activation?.isFormSubmitted) {
+  if (!isAddressPresent(merchantDetails?.business?.address?.registered)) {
     return (
-      <PageError title="Error!" description="Please complete the KYC journey first and try again" />
+      <PageError
+        title="Error!"
+        description="Please fill business address in KYC journey first and try again"
+      />
     );
   }
 
