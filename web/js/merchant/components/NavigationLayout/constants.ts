@@ -8,7 +8,10 @@ import {
 
 export const ONE_NAV_MOBILE_PATH = '/home';
 
-export const ANALYTICS_ONENAV_EXPERIMENT = 'oneNavV1';
+export const ANALYTICS_ONENAV = {
+  EXPERIMENT_NAME: 'oneNavV1',
+  SCREEN: 'Connected Navigation',
+};
 
 export const HOTJAR_TRIGGERS = {
   CONNECTED_NAV_FIRST: 'conn-nav-first',

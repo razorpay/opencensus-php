@@ -1,6 +1,10 @@
 import React from 'react';
 import { Box, Text, Button, Heading, ArrowUpRightIcon, useTheme } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
+import { ANALYTICS_ONENAV } from '../constants';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
+import useConnectedNavigationStore from '../navigationStore';
 
 type Action = {
   title: string;
@@ -26,8 +30,26 @@ const GrowthPage: React.FC<GrowthPageProps> = ({ title, description, actions, im
     breakpoints: theme.breakpoints,
   });
   const isMobile = matchedDeviceType === 'mobile';
-  const handleButtonClick = (url) => {
-    window.open(url, '_blank');
+  const { selectedProduct } = useConnectedNavigationStore();
+
+  const handleButtonClick = (action) => {
+    const page = location.pathname?.replace(/[\/_-]/g, '');
+    const analyticsInfo = {
+      objectName: 'Growth Page CTA',
+      actionName: 'Clicked',
+      screen: ANALYTICS_ONENAV.SCREEN,
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
+        version: 'v1',
+        page,
+        bu_title: selectedProduct?.product?.title,
+        variant: action.properties.variant,
+        title: action.title,
+        experiment_name: ANALYTICS_ONENAV.EXPERIMENT_NAME,
+      },
+    };
+    analyticsTrack(analyticsInfo);
+    window.open(action.action_params.url, '_blank');
   };
 
   return (
@@ -93,7 +115,7 @@ const GrowthPage: React.FC<GrowthPageProps> = ({ title, description, actions, im
                 variant={action.properties.variant}
                 icon={ArrowUpRightIcon}
                 iconPosition={index == 0 ? 'right' : action.icon_position}
-                onClick={() => handleButtonClick(action.action_params.url)}
+                onClick={() => handleButtonClick(action)}
               >
                 {action.title}
               </Button>

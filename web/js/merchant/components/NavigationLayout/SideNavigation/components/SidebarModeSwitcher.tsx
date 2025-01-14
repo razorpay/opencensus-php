@@ -5,7 +5,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import React, { useState } from 'react';
 import { useStore } from 'shell/commonStore';
 import { useNavigationLayoutContext } from '../../context';
-import { ANALYTICS_ONENAV_EXPERIMENT } from '../../constants';
+import { ANALYTICS_ONENAV } from '../../constants';
 
 // 1. READ payment Mode
 // 2. Read partner Mode
@@ -32,7 +32,7 @@ function SidebarModeSwitcher({ mode }: SidebarModeSwitcherProps): JSX.Element | 
     analyticsTrack({
       objectName: 'Sidebar',
       actionName: 'Clicked',
-      screen: page,
+      screen: ANALYTICS_ONENAV.SCREEN,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
         version: 'v1',
@@ -42,7 +42,7 @@ function SidebarModeSwitcher({ mode }: SidebarModeSwitcherProps): JSX.Element | 
         bu_title: selectedProduct.product?.title,
         ToggleModeTo: invertMode,
         ToggleModeFrom: mode,
-        experiment_name: ANALYTICS_ONENAV_EXPERIMENT,
+        experiment_name: ANALYTICS_ONENAV.EXPERIMENT_NAME,
       },
     });
   };

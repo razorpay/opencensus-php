@@ -336,20 +336,23 @@ function ConnectedProfileDropdown({
 
   return (
     <>
-      <Menu>
-        <Avatar
-          size="medium"
-          name={loggedInUserName}
-          variant="square"
-          {...(isRTBEnabled ? { bottomAddon: TrustedBadgeIcon } : {})}
-          onClick={() => {
+      <Menu
+        onOpenChange={({ isOpen }) => {
+          if (isOpen) {
             trackProfileDropdownClicks({
               objectName: 'L0 Main Frame Icons',
               optionName: 'Profile Icon/Button',
               bu_title: selectedProduct?.product?.title,
               type: 'icon',
             });
-          }}
+          }
+        }}
+      >
+        <Avatar
+          size="medium"
+          name={loggedInUserName}
+          variant="square"
+          {...(isRTBEnabled ? { bottomAddon: TrustedBadgeIcon } : {})}
         />
         <MenuOverlay minWidth="300px" maxWidth="400px">
           {getProfileDropdownItems()}

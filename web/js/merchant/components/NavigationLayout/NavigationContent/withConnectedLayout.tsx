@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { Box, useTheme } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
-import { ANALYTICS_ONENAV_EXPERIMENT, ONE_NAV_MOBILE_PATH } from '../constants';
+import { ANALYTICS_ONENAV, ONE_NAV_MOBILE_PATH } from '../constants';
 import { useLocation } from 'react-router-dom';
 import TestModeHighlight from '../components/TestModeHighlight';
 import useConnectedProducts from '../hooks/useConnectedProducts';
@@ -22,11 +22,6 @@ const withConnectedLayout = (WrappedComponent: React.FC<any>) => {
       () => getProductAction(selectedProductAlias),
       [getProductAction, selectedProductAlias],
     );
-
-    const product = {
-      alias: selectedProductAlias,
-      type: productAction.type,
-    };
 
     const { theme } = useTheme();
     const { matchedDeviceType } = useBreakpoint({
@@ -54,19 +49,18 @@ const withConnectedLayout = (WrappedComponent: React.FC<any>) => {
     const marginLeftXLValue = isConnectedFullPageView ? '0px' : '264px';
 
     useEffect(() => {
-      let page = location.pathname?.replace(/[\/_-]/g, '');
-      let analyticsInfo = {
+      const page = location.pathname?.replace(/[\/_-]/g, '');
+      const analyticsInfo = {
         objectName: 'BU Page',
         actionName: 'Displayed',
-        screen: page,
+        screen: ANALYTICS_ONENAV.SCREEN,
         properties: {
           ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
           version: 'v1',
-          page: page,
+          page,
           bu_title: selectedProduct?.product?.title,
-          // TODO: check later with analytics team
-          // error_reason: product.type === 'access_denied_page' ? 'access_denied_page' : 'no_error',
-          experiment_name: ANALYTICS_ONENAV_EXPERIMENT,
+          page_type: productAction?.type,
+          experiment_name: ANALYTICS_ONENAV.EXPERIMENT_NAME,
         },
       };
       analyticsTrack(analyticsInfo);

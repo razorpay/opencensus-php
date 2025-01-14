@@ -45,7 +45,7 @@ import { openSlider } from 'merchant_common/reducers/slider';
 import './Old.styl';
 
 import { getButtonClass, iconMap, getQueryData, getNotificationTrackingProperties } from './common';
-import { ANALYTICS_ONENAV_EXPERIMENT } from 'merchant/components/NavigationLayout/constants';
+import { ANALYTICS_ONENAV } from 'merchant/components/NavigationLayout/constants';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -384,7 +384,7 @@ class WhatsNewOld extends Component {
       analyticsTrack({
         objectName: 'L0 Main Frame Icons',
         actionName: 'Clicked',
-        screen: location.pathname?.replace('/app/', ''),
+        screen: ANALYTICS_ONENAV.SCREEN,
         properties: {
           ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
           version: 'v1',
@@ -392,7 +392,7 @@ class WhatsNewOld extends Component {
           icon_name: 'Notification',
           page: location.pathname?.replace('/app/', ''),
           bu_title: this.props?.selectedProduct?.product?.title,
-          experiment_name: ANALYTICS_ONENAV_EXPERIMENT,
+          experiment_name: ANALYTICS_ONENAV.EXPERIMENT_NAME,
         },
       });
     } else {

@@ -20,7 +20,7 @@ import {
   CUSTOMERS_PRODUCTS_SECTION,
 } from '../NavigationContent/Payments/Sidebar/useSideNavHook';
 import useSideNavigation from './useSideNavigation';
-import { ANALYTICS_ONENAV_EXPERIMENT } from '../constants';
+import { ANALYTICS_ONENAV } from '../constants';
 import { useStore } from 'shell/commonStore';
 
 interface ProductOptions {
@@ -97,19 +97,29 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
   icon,
   href,
   items,
-  routeRegex
+  routeRegex,
 }) => {
   const location = useLocation();
   const active = isItemActive({ href, routeRegex, items, icon }, location.pathname);
-  const storeData = useStore();
+  const { session } = useStore();
   const { selectedProduct } = useConnectedNavigationStore();
 
   const trackNavItemClick = () => {
-    let page = location.pathname?.replace(/[\/_-]/g, '');
+    let toggleMode = '';
+    const page = location.pathname?.replace(/[\/_-]/g, '');
+    const { mode, partnerMode } = session;
+    const alias = selectedProduct?.product?.alias;
+
+    if (alias === 'payments_top_navigation_item') {
+      toggleMode = mode;
+    }
+    if (alias === 'partnership_top_navigation_item') {
+      toggleMode = partnerMode;
+    }
     analyticsTrack({
       objectName: 'Sidebar',
       actionName: 'Clicked',
-      screen: page,
+      screen: ANALYTICS_ONENAV.SCREEN,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
         version: 'v1',
@@ -117,8 +127,8 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
         page,
         section: section_id ? getSection(section_id) : '',
         bu_title: selectedProduct.product?.title,
-        ToggleMode: storeData?.session?.modeFormatted,
-        experiment_name: ANALYTICS_ONENAV_EXPERIMENT,
+        toggle_mode: toggleMode,
+        experiment_name: ANALYTICS_ONENAV.EXPERIMENT_NAME,
       },
     });
   };

@@ -1,6 +1,6 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { ANALYTICS_ONENAV_EXPERIMENT } from '../NavigationLayout/constants';
+import { ANALYTICS_ONENAV } from '../NavigationLayout/constants';
 
 interface TrackProfileClick {
   objectName: 'Profile Options' | 'L0 Main Frame Icons';
@@ -15,10 +15,10 @@ export const trackProfileDropdownClicks = ({
   bu_title,
   type,
 }: TrackProfileClick): void => {
-  let analyticsInfo = {
-    objectName: objectName,
+  const analyticsInfo = {
+    objectName,
     actionName: 'Clicked',
-    screen: location.pathname?.replace('/app/', ''),
+    screen: ANALYTICS_ONENAV.SCREEN,
     properties: {
       ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
       version: 'v1',
@@ -26,7 +26,7 @@ export const trackProfileDropdownClicks = ({
       page: location.pathname?.replace('/app/', ''),
       bu_title: bu_title,
       icon_name: type === 'icon' ? 'Profile' : null,
-      experiment_name: ANALYTICS_ONENAV_EXPERIMENT,
+      experiment_name: ANALYTICS_ONENAV.EXPERIMENT_NAME,
     },
   };
   analyticsTrack(analyticsInfo);

@@ -21,7 +21,7 @@ import {
 } from 'merchant/views/EcosystemDowntimes/styles';
 import { openSlider } from 'merchant_common/reducers/slider';
 import { analyticsTrack } from 'common/utils/analytics';
-import { ANALYTICS_ONENAV_EXPERIMENT } from 'merchant/components/NavigationLayout/constants';
+import { ANALYTICS_ONENAV } from 'merchant/components/NavigationLayout/constants';
 import useConnectedNavigationStore from 'merchant/components/NavigationLayout/navigationStore';
 
 // eslint-disable-next-line prettier/prettier
@@ -43,7 +43,7 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
     analyticsTrack({
       objectName: 'L0 Main Frame Icons',
       actionName: 'Clicked',
-      screen: location.pathname?.replace('/app/', ''),
+      screen: ANALYTICS_ONENAV.SCREEN,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
         version: 'v1',
@@ -51,7 +51,7 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
         icon_name: 'Ecosystem Health',
         page: location.pathname?.replace('/app/', ''),
         bu_title: selectedProduct?.product?.title,
-        experiment_name: ANALYTICS_ONENAV_EXPERIMENT,
+        experiment_name: ANALYTICS_ONENAV.EXPERIMENT_NAME,
       },
     });
   };

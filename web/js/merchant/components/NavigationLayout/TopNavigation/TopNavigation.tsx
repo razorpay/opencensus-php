@@ -37,7 +37,10 @@ import ErrorFallbackComponent from 'common/ui/WhatsNew/ErrorFallbackComponent';
 import NotificationIcon from 'common/ui/WhatsNew/Icon';
 import ProfileDropdown from 'merchant/components/HeaderNav/ProfileDropdown';
 import UniversalSearch from 'merchant/components/HeaderNav/UniversalSearch';
-import { ONE_NAV_MOBILE_PATH } from 'merchant/components/NavigationLayout/constants';
+import {
+  ANALYTICS_ONENAV,
+  ONE_NAV_MOBILE_PATH,
+} from 'merchant/components/NavigationLayout/constants';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 import lazyLoader from 'merchant/routes/LazyLoader';
@@ -53,6 +56,8 @@ import useConnectedProducts from '../hooks/useConnectedProducts';
 import useConnectedNavigation from '../navigationStore';
 import { productIconsMap, ExtendedListItems } from '../utils';
 import { useNavigationLayoutContext } from '../context';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const WhatsNew = lazyLoader(
   () => import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -231,6 +236,24 @@ const TopNavigation = ({
   )
     return <TopNavigationSkeleton />;
 
+  const trackProductItemClick = ({ itemTitle, itemRank, isInsideMore = false }) => {
+    analyticsTrack({
+      objectName: 'L0 Main Frame Title',
+      actionName: 'Clicked',
+      screen: ANALYTICS_ONENAV.SCREEN,
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
+        version: 'v1',
+        page: location.pathname?.replace('/app/', ''),
+        bu_title: itemTitle,
+        bu_title_rank: itemRank,
+        // TODO: Add states including error ones
+        experiment_name: ANALYTICS_ONENAV.EXPERIMENT_NAME,
+        is_inside_more: isInsideMore,
+      },
+    });
+  };
+
   const handleProductItemClick = (productItem) => {
     const { datum: componentData } = productItem;
 
@@ -340,7 +363,7 @@ const TopNavigation = ({
             return (
               <>
                 <TabNavItems>
-                  {items.map((item) => {
+                  {items.map((item, index) => {
                     const Icon = item?.trailing ? productIconsMap[item.trailing] : null;
                     return (
                       <TabNavItem
@@ -348,7 +371,10 @@ const TopNavigation = ({
                         title={item.title}
                         isActive={selectedProduct?.product?.id == item.id}
                         icon={item.icon}
-                        onClick={() => handleProductItemClick(item)}
+                        onClick={() => {
+                          trackProductItemClick({ itemTitle: item.title, itemRank: index + 1 });
+                          handleProductItemClick(item);
+                        }}
                         trailing={Icon ? <Icon /> : undefined} // Fix: Change `null` to `undefined`
                       />
                     );
@@ -370,12 +396,19 @@ const TopNavigation = ({
 
                     <MenuOverlay>
                       <MenuHeader title="Products for you" />
-                      {overflowingItems.map((item) => {
+                      {overflowingItems.map((item, index) => {
                         return (
                           <MenuItem
                             key={item.id}
                             title={item.title}
-                            onClick={() => handleProductItemClick(item)}
+                            onClick={() => {
+                              trackProductItemClick({
+                                itemTitle: item.title,
+                                itemRank: items.length + index + 1,
+                                isInsideMore: true,
+                              });
+                              handleProductItemClick(item);
+                            }}
                           >
                             <ExploreItem
                               icon={item.icon ?? RazorpayIcon}
