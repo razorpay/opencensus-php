@@ -13,7 +13,7 @@ import { renderWidgetProps } from 'merchant/widgets/types';
 import { renderWidget } from 'merchant/widgets/utils';
 
 import { DateRangeValues } from './Select/types';
-import { ChartDataType, ChartSchemaType, PointType, Dataset } from './types';
+import { ChartDataType, ChartSchemaType, PointType, Dataset, durationOptionKeys } from './types';
 
 export const getActionWidgetIcon = (type: string): IconComponent | undefined => {
   if (type === 'arrow_right') {
@@ -75,10 +75,22 @@ export const getCommonWidget = ({
     analyticsProperties,
   });
 
-export const renderInput = ({ widget, value, onChange, analyticsProperties = {} }: any) => {
+export const renderInput = ({
+  widget,
+  value,
+  onChange,
+  analyticsProperties = {},
+  customRange,
+}: any) => {
   const widgetComponent = inputKeyToComponentMapping[widget.type];
   if (widgetComponent) {
-    return widgetComponent({ ...widget, value, onChange, analyticsProperties });
+    return widgetComponent({
+      ...widget,
+      value,
+      onChange,
+      analyticsProperties,
+      customRange: widget.name === 'date' && widget.type === 'select' ? customRange : undefined,
+    });
   } else {
     return null;
   }
@@ -91,7 +103,7 @@ export function formatXAxis(
 ) {
   const { type } = schema;
   if (type === 'timestamp') {
-    if (unit === 'last_30_days') {
+    if (unit === durationOptionKeys.LAST_30_DAYS) {
       const startDate = moment(Number(point) * 1000);
       // MomentJS week is ending on Saturday, we want a week to run from Monday-Sunday
       const endOfWeekTimestamp = moment(Number(point) * 1000)
@@ -130,6 +142,17 @@ export const getChartData = (
   labels: Array<string>;
   datasets: Array<Dataset>;
 } => {
+  if (unit === durationOptionKeys.CUSTOM) {
+    const fromDate = moment.unix(+chartData.data[0].points[0].x),
+      toDate = moment.unix(+chartData.data[0].points[chartData.data[0].points.length - 1].x);
+    if (fromDate.isSame(toDate, 'day')) {
+      unit = durationOptionKeys.TODAY;
+    } else if (toDate.diff(fromDate, 'days') <= 7) {
+      unit = durationOptionKeys.LAST_7_DAYS;
+    } else {
+      unit = durationOptionKeys.LAST_30_DAYS;
+    }
+  }
   const labels = chartData.data[0].points.map((point) =>
     formatXAxis(point.x, chartData.schema.x, unit),
   );
@@ -169,11 +192,11 @@ export const TOOLTIP_CHART_CONFIG = {
 
 function getTimestampFormat(unit?: DateRangeValues) {
   switch (unit) {
-    case 'today':
+    case durationOptionKeys.TODAY:
       return 'hh:mm A';
-    case 'last_7_days':
+    case durationOptionKeys.LAST_7_DAYS:
       return 'MMM DD';
-    case 'last_30_days':
+    case durationOptionKeys.LAST_30_DAYS:
       return 'MMM DD';
     default:
       return 'MMM DD';

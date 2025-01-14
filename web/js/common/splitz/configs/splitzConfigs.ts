@@ -1286,6 +1286,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'date_range_insight_charts',
+          experimentId: {
+            beta: 'PPQlgBorXXG30Z',
+            production: 'PPQePz8GoeFig8',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

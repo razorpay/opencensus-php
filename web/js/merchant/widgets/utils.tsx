@@ -1,4 +1,6 @@
 import React from 'react';
+import moment from 'moment';
+
 import { widgetKeyToComponentMapping } from 'merchant/widgets/mapping';
 import { TrackParameters, renderWidgetProps } from './types';
 import { ErrorState } from './common/ErrorState';
@@ -8,6 +10,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { QueryKey } from '@tanstack/react-query';
 import { ValueOf } from 'merchant/views/Affordability/AssistedFinancing/type';
 import { ANALYTICS } from 'common/constant';
+import { durationOptionKeys } from './common/types';
 
 export const renderWidget = ({
   widget,
@@ -101,4 +104,17 @@ export const track = ({
 export const getUcsAliasFromQueryKey = (queryKey: QueryKey) => {
   if (queryKey.includes('rtux-homepage')) return 'home page';
   return '';
+};
+
+export const getDateRangeValues = (option: string): [Date, Date] => {
+  switch (option) {
+    case durationOptionKeys.TODAY:
+      return [moment().toDate(), moment().toDate()];
+    case durationOptionKeys.LAST_7_DAYS:
+      return [moment().subtract(7, 'days').toDate(), moment().subtract(1, 'day').toDate()];
+    case durationOptionKeys.LAST_30_DAYS:
+      return [moment().subtract(30, 'days').toDate(), moment().subtract(1, 'day').toDate()];
+    default:
+      return [moment().subtract(7, 'days').toDate(), moment().subtract(1, 'day').toDate()];
+  }
 };

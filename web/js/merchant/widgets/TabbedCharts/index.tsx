@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Heading } from '@razorpay/blade/components';
+import moment from 'moment';
 
+import { useSplitzService } from 'common/splitz';
+import { isDateRangeForInsightChartsEnabled } from 'merchant/containers/Home/RTUX/utils';
 import { ErrorState } from 'merchant/widgets/common/ErrorState';
 import { DateRangeValues } from 'merchant/widgets/common/Select/types';
 import { renderInput } from 'merchant/widgets/common/utils';
@@ -11,6 +14,7 @@ import LoadingSkeleton from './LoadingSkeleton';
 import Tab from './Tab';
 import TabsWrapper from './TabsWrapper';
 import { TabbedChartsProps } from './types';
+import { durationOptionKeys } from '../common/types';
 
 export const TabbedCharts: React.FC<TabbedChartsProps> = ({
   isLoading = false,
@@ -24,7 +28,9 @@ export const TabbedCharts: React.FC<TabbedChartsProps> = ({
 }) => {
   const [isRetrying, retryHandler] = useRetryWidget(queryKey);
   const [date, setDate] = useState<DateRangeValues | ''>('');
+  const splitz = useSplitzService();
 
+  const isDatePickerEnabled = isDateRangeForInsightChartsEnabled(splitz?.abExperiments);
   const input = inputs.find((input) => input.type === 'select');
   const defaultValue = input?.default_value;
 
@@ -56,9 +62,22 @@ export const TabbedCharts: React.FC<TabbedChartsProps> = ({
     }
   }, [isLoading, isRetrying, error, date]);
 
-  const handleDateChange = (value: Array<DateRangeValues>) => {
+  const handleDateChange = (value: Array<DateRangeValues>, custom_range: [number, number]) => {
     setDate(value[0]);
-    retryHandler({ id, date_time: { quick: value[0] } });
+    if (value[0] !== durationOptionKeys.CUSTOM) {
+      retryHandler({ id, date_time: { quick: value[0] } });
+    } else if (value[0] === durationOptionKeys.CUSTOM && custom_range) {
+      const [fromDate, toDate] = custom_range;
+      retryHandler({
+        id,
+        date_time: {
+          custom: {
+            from: moment(fromDate).startOf('day').unix(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
+            to: moment(toDate).endOf('day').unix(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
+          },
+        },
+      });
+    }
   };
 
   return (
@@ -78,24 +97,28 @@ export const TabbedCharts: React.FC<TabbedChartsProps> = ({
     >
       <Box
         display="flex"
+        gap="spacing.5"
         flexDirection="row"
         justifyContent="space-between"
         margin={['spacing.0', 'spacing.5']}
         alignItems="center"
       >
         <Heading size="medium">{title}</Heading>
-        {input &&
-          renderInput({
-            widget: input,
-            value: date,
-            onChange: handleDateChange,
-            analyticsProperties: {
-              screen,
-              widgetId,
-              actionBy: widgetId,
-              title,
-            },
-          })}
+        <Box display="flex" gap="12px" flexWrap="wrap" justifyContent="flex-end">
+          {input &&
+            renderInput({
+              widget: input,
+              value: date,
+              onChange: handleDateChange,
+              analyticsProperties: {
+                screen,
+                widgetId,
+                actionBy: widgetId,
+                title,
+              },
+              customRange: isDatePickerEnabled,
+            })}
+        </Box>
       </Box>
       {isLoading || isRetrying ? (
         <LoadingSkeleton count={components.length} />

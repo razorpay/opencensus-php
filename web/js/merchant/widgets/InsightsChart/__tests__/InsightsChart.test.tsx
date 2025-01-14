@@ -6,6 +6,11 @@ import { durationOptionsMap } from 'merchant/widgets/InsightsChart/utils';
 
 import { renderWithSuspense, screen, userEvent, waitFor } from 'test-utils';
 
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({ abExperiments: {} }),
+  withSplitzService: jest.fn(),
+}));
+
 const renderApp = ({ ...props }) =>
   renderWithSuspense(
     <InsightsChart {...INSIGHTS_CHART_MOCK_RESPONSE} isLoading={false} queryKey={[]} {...props} />,

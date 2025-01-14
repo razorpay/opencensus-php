@@ -6,6 +6,11 @@ import { render, screen, userEvent } from 'test-utils';
 
 import { TABBED_CHARTS_MOCKED_RESPONSE } from './mocks';
 
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({ abExperiments: {} }),
+  withSplitzService: jest.fn(),
+}));
+
 describe('TabbedCharts', () => {
   const renderApp = ({ isLoading = false }) => {
     render(

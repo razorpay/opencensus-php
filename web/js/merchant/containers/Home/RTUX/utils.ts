@@ -32,3 +32,7 @@ export const useIsRTUXHomepageEnabled = (): boolean => {
   const { abExperiments } = useSplitzService();
   return isRTUXHomepageEnabled({ user, abExperiments });
 };
+
+export const isDateRangeForInsightChartsEnabled = (abExperiments: any = {}): boolean => {
+  return isExperimentEnabled(abExperiments.date_range_insight_charts);
+};

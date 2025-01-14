@@ -1,4 +1,4 @@
-import { CommonInputProps } from 'merchant/widgets/common/types';
+import { CommonInputProps, durationOptionKeys } from 'merchant/widgets/common/types';
 
 export interface DateRangeInput {
   type: 'select';
@@ -7,11 +7,15 @@ export interface DateRangeInput {
 }
 
 export type SelectProps = CommonInputProps &
-  DateRangeInput & { analyticsProperties: Record<string, any> };
+  DateRangeInput & {
+    analyticsProperties: Record<string, any>;
+    customRange?: boolean;
+    toggleHelpWidget?: ({ showWidget }: { showWidget: boolean }) => void;
+  };
 
 export interface SelectChangeEvent {
   name?: string;
   values: Array<string>;
 }
 
-export type DateRangeValues = 'today' | 'last_7_days' | 'last_30_days';
+export type DateRangeValues = (typeof durationOptionKeys)[keyof typeof durationOptionKeys];

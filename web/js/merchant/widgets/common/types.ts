@@ -6,15 +6,22 @@ export interface ErrorStateProps {
   analyticsProperties?: any;
 }
 
-export enum durationOptionsMap {
-  'today' = 'Today',
-  'last_7_days' = 'This week',
-  'last_30_days' = 'This month',
-}
+export const durationOptionKeys = {
+  TODAY: 'today',
+  LAST_7_DAYS: 'last_7_days',
+  LAST_30_DAYS: 'last_30_days',
+  CUSTOM: 'custom_range',
+} as const;
+
+export const durationOptionsMap = {
+  [durationOptionKeys.TODAY]: 'Today',
+  [durationOptionKeys.LAST_7_DAYS]: 'This week',
+  [durationOptionKeys.LAST_30_DAYS]: 'This month',
+};
 
 export interface CommonInputProps {
   value: any;
-  onChange: (value: any) => any;
+  onChange: (value: any, custom_range: any) => any;
 }
 
 export type PointType = {

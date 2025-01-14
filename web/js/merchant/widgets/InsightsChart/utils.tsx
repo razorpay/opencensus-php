@@ -21,13 +21,13 @@ export const getSubWidget = ({
     analyticsProperties,
   });
 
-export const durationOptionsMap: Record<DateRangeValues, string> = {
+export const durationOptionsMap: Record<Exclude<DateRangeValues, 'custom_range'>, string> = {
   today: 'Today',
   last_7_days: 'Last week',
   last_30_days: 'Last month',
 };
 
-export const durationOptionsSubtextMap: Record<DateRangeValues, string> = {
+export const durationOptionsSubtextMap: Record<Exclude<DateRangeValues, 'custom_range'>, string> = {
   today: 'Today',
   last_7_days: 'Last week',
   last_30_days: 'Last month',
