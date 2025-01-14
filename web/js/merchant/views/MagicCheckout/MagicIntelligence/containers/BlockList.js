@@ -28,6 +28,7 @@ import {
   openConfirmDeleteModal,
   openBatchUploadModal,
 } from 'merchant/views/MagicCheckout/MagicIntelligence/modal_util';
+import { getBlockListTypes } from 'merchant/views/MagicCheckout/MagicIntelligence/helpers';
 
 const gaEvents = setGaTrack('Dashboard - Magic Checkout - BU - bulk_blocklist_upsert');
 const SAMPLE_BLOCKLIST_UPLOAD_FILE =
@@ -61,7 +62,7 @@ const BlockList = (props) => {
   const successText = 'Blocklist upload initiated';
   const modalSource = 'Blocklist';
   // todo - invert control of attributes to parent view?
-  const list = props.isRCOD ? ['zipcode'] : ['zipcode', 'email', 'phone', 'ip'];
+  const list = getBlockListTypes({ isRCOD: props.isRCOD });
 
   const {
     fetchAll,

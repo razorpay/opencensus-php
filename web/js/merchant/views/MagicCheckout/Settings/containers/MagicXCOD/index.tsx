@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
+  Divider,
   Text,
   Heading,
   Box,
@@ -15,6 +16,7 @@ import {
   TabList,
   TabItem,
   TabPanel,
+  ExternalLinkIcon,
 } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -39,9 +41,13 @@ import {
 } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/BasicCOD/constants';
 import { SWITCH_TEXTS } from 'merchant/views/MagicCheckout/Settings/constants';
 import { COD_ENGINE_TYPES } from 'merchant/views/MagicCheckout/CODSettings/constants';
+import { DOCUMENTATION_LINK as ACOD_DOCS_LINK } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/constants';
 import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 
-import { ToggleCODPayload } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/types';
+import {
+  ToggleCODPayload,
+  CODTabValue,
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/types';
 
 const MagicXCOD = ({ settings, updateMagicSettings, showNotification, fetchShippingProfiles }) => {
   const { rcod = {}, cod_intelligence, sopc_metafields, platform, shop_id } = settings;
@@ -52,6 +58,7 @@ const MagicXCOD = ({ settings, updateMagicSettings, showNotification, fetchShipp
   const [confirmationModalConfigs, setConfirmationModalConfigs] =
     useState(CONFIRMATION_MODAL_OBJECT);
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<CODTabValue>('basic');
   const isACODExperimentEnabled = useMagicExperiment('magicx_publicapp_acod');
 
   useEffect(() => {
@@ -245,11 +252,33 @@ const MagicXCOD = ({ settings, updateMagicSettings, showNotification, fetchShipp
             </Box>
             <Box>
               <FormContextProvider>
-                <Tabs orientation="horizontal" variant="bordered" defaultValue="basic">
-                  <TabList>
-                    <TabItem value="basic">Basic</TabItem>
-                    {isACODExperimentEnabled && <TabItem value="advanced">Advanced</TabItem>}
-                  </TabList>
+                <Tabs
+                  orientation="horizontal"
+                  variant="borderless"
+                  value={activeTab}
+                  onChange={(activeTab) => {
+                    setActiveTab(activeTab as CODTabValue);
+                  }}
+                >
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    paddingX="spacing.6"
+                  >
+                    <TabList>
+                      <TabItem value="basic">Basic</TabItem>
+                      {isACODExperimentEnabled && <TabItem value="advanced">Advanced</TabItem>}
+                    </TabList>
+                    <Box display="flex" alignItems="center" gap="spacing.5">
+                      {activeTab === 'advanced' && (
+                        <Link href={ACOD_DOCS_LINK} icon={ExternalLinkIcon} target="_blank">
+                          Documentation
+                        </Link>
+                      )}
+                    </Box>
+                  </Box>
+                  <Divider />
                   <TabPanel value="basic">
                     <BasicCOD />
                   </TabPanel>

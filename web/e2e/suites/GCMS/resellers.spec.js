@@ -61,7 +61,7 @@ test.describe('GCMS resellers @flow=resellers @project=payments', () => {
     await expect(page).toHaveURL(`${routes.GCMS_RESELLERS}/N91osUDdN9WdO9/programs`); //Reseller id of first reseller
     await expect(await page.getByText('N91osUDdN9WdO9')).toBeVisible(); //Reseller id of first reseller
     await expect(await page.getByText('Account Balance')).toBeVisible();
-    await page.getByRole('link', { name: 'Accounts' }).first().click();
+    await page.getByRole('link', { name: 'Accounts', exact: true }).first().click();
     await expect(page).toHaveURL(`${routes.GCMS_RESELLERS}/N91osUDdN9WdO9/accounts`); //Reseller id of first reseller
     await expect(await page.getByText('Account Details')).toBeVisible();
   });

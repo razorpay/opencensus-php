@@ -1,6 +1,8 @@
 import { ShippingMethod } from 'merchant/reducers/magicCheckout/shippingEngine/types';
 import { SYNC_STATES } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/constants';
 
+export type CODTabValue = 'basic' | 'advanced';
+
 export type FormErrors = {
   paymentMethod?: string;
   codSlabs?: string;

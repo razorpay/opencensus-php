@@ -4,6 +4,9 @@ import { Box, Link, EditIcon, TrashIcon, PackageIcon, CashIcon } from '@razorpay
 import type { Rule } from 'merchant/reducers/magicCheckout/magicxACODRules/types';
 import type { Fact } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
+export const DOCUMENTATION_LINK =
+  'https://razorpay.com/docs/payments/cod-checkout360/shopify/configure-cod/#advanced';
+
 export const Facts: Fact[] = [
   { name: 'quantity', label: 'Quantity', type: 'number' },
   { name: 'subtotal', label: 'Cart Total Before Discount', type: 'number' },

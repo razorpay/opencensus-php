@@ -5,6 +5,7 @@ type Props = Required<Pick<CardProps, 'onClick' | 'accessibilityLabel'>> & {
   icon: React.ReactNode;
   title: React.ReactNode;
   description: React.ReactNode;
+  disabled?: boolean;
 };
 export const CardButton: React.FC<Props> = ({
   icon,
@@ -12,17 +13,23 @@ export const CardButton: React.FC<Props> = ({
   description,
   accessibilityLabel,
   onClick = () => {},
+  disabled = false,
 }) => {
   return (
     <Card
       elevation="none"
       borderRadius="medium"
       padding="spacing.7"
-      onClick={onClick}
+      onClick={!disabled ? onClick : undefined}
       accessibilityLabel={accessibilityLabel}
     >
       <CardBody>
-        <Box display="flex" alignItems="flex-start" gap="spacing.6">
+        <Box
+          display="flex"
+          alignItems="flex-start"
+          gap="spacing.6"
+          opacity={disabled ? '0.7' : '1'}
+        >
           <Box
             width="48px"
             height="48px"

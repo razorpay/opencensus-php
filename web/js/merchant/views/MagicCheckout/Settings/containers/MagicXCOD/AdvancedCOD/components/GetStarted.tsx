@@ -1,8 +1,11 @@
 import * as React from 'react';
-import { Heading, Box, Alert, InfoIcon } from '@razorpay/blade/components';
+import { Heading, Box, Alert, Link, InfoIcon } from '@razorpay/blade/components';
 
 import { CardButton } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/CardButton';
-import { GetStartedCards } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/constants';
+import {
+  GetStartedCards,
+  DOCUMENTATION_LINK,
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/constants';
 
 import type { Rule } from 'merchant/reducers/magicCheckout/magicxACODRules/types';
 
@@ -17,7 +20,15 @@ export const GetStarted: React.FC<GetStartedProps> = ({ onCreateRule, isAppUpdat
         <Alert
           color="notice"
           isDismissible={false}
-          description={<span>{GetStartedCards.appUpdateNotice}</span>}
+          description={
+            <span>
+              {GetStartedCards.appUpdateNotice}{' '}
+              <Link href={DOCUMENTATION_LINK} target="_blank" size="small">
+                Steps here
+              </Link>
+              .
+            </span>
+          }
           icon={() => <InfoIcon color="feedback.icon.notice.intense" />}
           marginBottom="spacing.2"
           isFullWidth
@@ -32,8 +43,16 @@ export const GetStarted: React.FC<GetStartedProps> = ({ onCreateRule, isAppUpdat
         Create New
       </Heading>
       <Box display="flex" gap="spacing.8">
-        <CardButton onClick={() => onCreateRule('shipping')} {...GetStartedCards.shipping} />
-        <CardButton onClick={() => onCreateRule('payment')} {...GetStartedCards.payment} />
+        <CardButton
+          onClick={() => onCreateRule('shipping')}
+          disabled={isAppUpdateRequired}
+          {...GetStartedCards.shipping}
+        />
+        <CardButton
+          onClick={() => onCreateRule('payment')}
+          disabled={isAppUpdateRequired}
+          {...GetStartedCards.payment}
+        />
       </Box>
     </>
   );
