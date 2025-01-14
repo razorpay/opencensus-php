@@ -253,7 +253,7 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
     );
   }
 
-  if (status === Status.Rejected) {
+  if (status === Status.Rejected && rejection_reason_message) {
     return (
       <Alert
         color="negative"
@@ -264,6 +264,23 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
           <Text color="surface.text.gray.subtle" wordBreak="break-word">
             <b>From {org.business_name} support:&nbsp;</b>
             {`"${rejection_reason_message}"`}
+          </Text>
+        }
+      />
+    );
+  }
+
+  if (status === Status.WebsiteUpdateFailed) {
+    return (
+      <Alert
+        color="negative"
+        isDismissible={true}
+        isFullWidth
+        title={title}
+        description={
+          <Text color="surface.text.gray.subtle" wordBreak="break-word">
+            Please try adding the website again. If the issue persists, reach out to our support
+            team for assistance.
           </Text>
         }
       />

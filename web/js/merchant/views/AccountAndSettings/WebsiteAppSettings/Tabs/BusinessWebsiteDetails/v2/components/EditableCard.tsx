@@ -255,7 +255,9 @@ export function CardDetails({ title, value, Icon }) {
               </Badge>
             </Box>
             <Box display="flex" justifyContent="space-between">
-              <Link variant="button">{value}</Link>
+              <Link variant="anchor" href={value} target="_blank" rel="noreferrer noopener">
+                {value}
+              </Link>
             </Box>
           </Box>
         </Box>

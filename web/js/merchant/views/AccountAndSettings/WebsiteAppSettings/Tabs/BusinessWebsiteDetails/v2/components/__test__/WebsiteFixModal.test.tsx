@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { render, screen, waitFor, userEvent } from 'test-utils';
 
 import { User } from 'common/typings';
@@ -9,6 +9,8 @@ import {
   mockContactPageUrl,
 } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/__test__/mocks/fixtures';
 import WebsiteFixModal from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/components/WebsiteFixModal';
+import { PolicyPageFormData } from '../../types';
+import { getInitialPolicyPagesFormState } from '../utils';
 
 const mockOnDismiss = jest.fn();
 const mockHandleMainPageSubmit = jest.fn();
@@ -52,8 +54,27 @@ jest.mock(
   },
 );
 
+const App = (props) => {
+  const { missingPages, missingPagesKeys, verifiedPages, verifiedPagesKeys } =
+    getInitialPolicyPagesFormState(mockWebsiteVerificationPageStatusParitalSuccess);
+
+  const [policyFormState, setPolicyFormState] = useState<PolicyPageFormData>(missingPages);
+  return (
+    <WebsiteFixModal
+      {...defaultProps}
+      {...props}
+      formState={policyFormState}
+      setFormState={setPolicyFormState}
+      verifiedPages={verifiedPages}
+      verifiedPagesKeys={verifiedPagesKeys}
+      missingPagesKeys={missingPagesKeys}
+      missingPages={missingPages}
+    />
+  );
+};
+
 const renderApp = (props = {}) => {
-  const renderOutput = render(<WebsiteFixModal {...defaultProps} {...props} />);
+  const renderOutput = render(<App {...props} />);
   return renderOutput;
 };
 

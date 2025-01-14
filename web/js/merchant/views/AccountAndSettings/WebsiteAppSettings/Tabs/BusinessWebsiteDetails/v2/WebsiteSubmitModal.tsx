@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -39,6 +39,7 @@ import {
   WebsiteVerificationStatus,
   PartialPolicyPages,
   WebsitePolicyPages,
+  PolicyPageCreationFormFieldType,
 } from './types';
 import {
   mainPageFormDefaultValue,
@@ -49,6 +50,8 @@ import {
   handleAppSubmitForActivated,
   isMainPageSubmitPayloadValid,
 } from './utils';
+import { getInitialPolicyPagesFormState } from './components/utils';
+import { defaultPolicyPageCreationFormField } from './components/constants';
 
 interface WebsiteSubmitModalProps {
   isOpen: boolean;
@@ -73,11 +76,31 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
 }) => {
   const isMobile = useMobile();
   const saveWebsiteUpdate = useSaveWebsiteUpdate();
-  const { currentStep, setCurrentStep, websiteUpdateData } = useBusinessWebsiteData();
+  const {
+    currentStep,
+    setCurrentStep,
+    websiteUpdateData: { main_page_url, website_verification_page_status } = {},
+  } = useBusinessWebsiteData();
   const [mainPageFormState, setMainPageFormState] =
     useState<MainPageFormData>(mainPageFormDefaultValue);
+
+  const { missingPages, missingPagesKeys, verifiedPages, verifiedPagesKeys } = useMemo(
+    () => getInitialPolicyPagesFormState(website_verification_page_status),
+    [website_verification_page_status],
+  );
+  const [policyFormState, setPolicyFormState] = useState<PolicyPageFormData>(missingPages);
   const [policyPagesToBeMade, setPolicyPagesToBeMade] = useState<PartialPolicyPages>([]);
   const [pagesBeingVerified, setPagesBeingVerified] = useState<WebsitePolicyPages[]>([]);
+
+  const [policyCreationState, setPolicyCreationState] = useState<PolicyPageCreationFormFieldType>(
+    defaultPolicyPageCreationFormField,
+  );
+
+  useEffect(() => {
+    if (missingPagesKeys.length > 0) {
+      setPolicyFormState(missingPages);
+    }
+  }, [missingPagesKeys]);
 
   async function submitAppForActivated(formState) {
     try {
@@ -254,7 +277,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
     const properties = {
       websiteCount: getWebsiteCount(user),
       pagesFilled,
-      newWebsiteLink: websiteUpdateData?.main_page_url,
+      newWebsiteLink: main_page_url,
     };
     trackWebsitePrivacyPolicyModalRequestClicked({ ...properties, clickedButton: 'submit' });
 
@@ -456,6 +479,12 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
           user={user}
           org={org}
           onCreateAllPolicyPagesButtonClick={onCreateAllPolicyPagesButtonClick}
+          formState={policyFormState}
+          setFormState={setPolicyFormState}
+          missingPages={missingPages}
+          missingPagesKeys={missingPagesKeys}
+          verifiedPages={verifiedPages}
+          verifiedPagesKeys={verifiedPagesKeys}
         />
       );
     case WebsiteSubmitModalSteps.POLICY_PAGES_CREATION:
@@ -468,6 +497,8 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
           mode={mode}
           org={org}
           showNotification={showNotification}
+          formState={policyCreationState}
+          setFormState={setPolicyCreationState}
         />
       );
     case WebsiteSubmitModalSteps.POLICY_PAGES_PREVIEW:

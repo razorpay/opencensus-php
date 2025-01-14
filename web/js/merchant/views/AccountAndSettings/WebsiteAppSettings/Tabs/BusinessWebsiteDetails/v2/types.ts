@@ -117,6 +117,9 @@ export enum WebsiteUpdateAutomationStatus {
   WORKFLOW_REJECTED = 'workflow_rejected',
   WORKFLOW_COMPLETED = 'workflow_completed',
   WORKFLOW_EXECUTED = 'workflow_executed',
+
+  WORKFLOW_CREATION_FAILED = 'workflow_creation_failed',
+  WEBSITE_UPDATE_FAILED = 'website_update_failed',
 }
 
 export enum WebsiteVerificationStatus {

@@ -34,7 +34,9 @@ const VerifiedPolicyPageCard: React.FC<VerifiedPolicyPageCardProps> = ({
         <Text color="surface.text.gray.normal" weight="medium">
           {title}
         </Text>
-        <Link>{url}</Link>
+        <Link variant="anchor" href={url} rel="noreferrer noopener" target="_blank">
+          {url}
+        </Link>
       </Box>
     </Box>
   );

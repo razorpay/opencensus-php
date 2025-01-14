@@ -1,16 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { render, screen, waitFor, userEvent } from 'test-utils';
 
 import Questionaire, {
   QuestionareProps,
 } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/components/Questionaire';
 import {
+  PolicyPageCreationFormFieldType,
   WebsitePolicyPages,
   WebsiteSubmitModalSteps,
-  WebsiteVerificationStatus,
 } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/types';
 
 import { mockWebsiteVerificationPageStatusParitalSuccess } from '../../__test__/mocks/fixtures';
+import { defaultPolicyPageCreationFormField } from '../constants';
 
 const mockSetCurrentStep = jest.fn();
 const mockShowNotification = jest.fn();
@@ -24,6 +25,8 @@ const defaultProps: QuestionareProps = {
   org: {
     business_name: 'Razorpay',
   },
+  formState: defaultPolicyPageCreationFormField,
+  setFormState: () => {},
 };
 
 jest.mock(
@@ -60,8 +63,21 @@ jest.mock(
   },
 );
 
+const App = (props) => {
+  const [policyCreationState, setPolicyCreationState] = useState<PolicyPageCreationFormFieldType>(
+    defaultPolicyPageCreationFormField,
+  );
+  return (
+    <Questionaire
+      {...props}
+      formState={policyCreationState}
+      setFormState={setPolicyCreationState}
+    />
+  );
+};
+
 const renderApp = (props = defaultProps) => {
-  const renderOutput = render(<Questionaire {...props} />);
+  const renderOutput = render(<App {...props} />);
   return renderOutput;
 };
 
@@ -175,59 +191,6 @@ describe('Questionaire', () => {
 
       const supportEmail = screen.getByTestId('support-email');
 
-      expect(supportEmail).toBeInTheDocument();
-    });
-  });
-
-  describe('Render questionaire in case of MCC check failure', () => {
-    const policyPagesToBeMade = [WebsitePolicyPages.PRIVACY];
-    const appProps = { ...defaultProps, policyPagesToBeMade };
-    it('should render all pages questions', () => {
-      mockedWebsiteVerificationStage.mcc_check_status = 'FAILED';
-      renderApp(appProps);
-
-      const shippingPeriod = screen.getByTestId('question-shipping_period');
-      const supportEmail = screen.getByTestId('support-email');
-      const supportContact = screen.getByTestId('support-contact-number');
-      const questionChips = screen.getByTestId('chips-shipping_period');
-      const refundRequestPeriod = screen.getByTestId('question-refund_request_period');
-      const refundProcessPeriod = screen.getByTestId('question-refund_process_period');
-      const refundRequestPeriodChips = screen.getByTestId('chips-refund_request_period');
-      const refundProcessPeriodChips = screen.getByTestId('chips-refund_process_period');
-
-      expect(refundRequestPeriod).toBeInTheDocument();
-      expect(refundProcessPeriod).toBeInTheDocument();
-      expect(refundRequestPeriodChips).toBeInTheDocument();
-      expect(refundProcessPeriodChips).toBeInTheDocument();
-      expect(shippingPeriod).toBeInTheDocument();
-      expect(supportContact).toBeInTheDocument();
-      expect(supportEmail).toBeInTheDocument();
-      expect(questionChips).toBeInTheDocument();
-    });
-
-    it('should render all pages questions apart from not applicable', () => {
-      mockedWebsiteVerificationStage.mcc_check_status = 'FAILED';
-      mockWebsiteVerificationPageStatusParitalSuccess.shipping.verified =
-        WebsiteVerificationStatus.NOT_APPLICABLE;
-      renderApp(appProps);
-
-      const shippingPeriod = screen.queryByTestId('question-shipping_period');
-      const questionChips = screen.queryByTestId('chips-shipping_period');
-      expect(shippingPeriod).not.toBeInTheDocument();
-      expect(questionChips).not.toBeInTheDocument();
-
-      const supportEmail = screen.getByTestId('support-email');
-      const supportContact = screen.getByTestId('support-contact-number');
-      const refundRequestPeriod = screen.getByTestId('question-refund_request_period');
-      const refundProcessPeriod = screen.getByTestId('question-refund_process_period');
-      const refundRequestPeriodChips = screen.getByTestId('chips-refund_request_period');
-      const refundProcessPeriodChips = screen.getByTestId('chips-refund_process_period');
-
-      expect(refundRequestPeriod).toBeInTheDocument();
-      expect(refundProcessPeriod).toBeInTheDocument();
-      expect(refundRequestPeriodChips).toBeInTheDocument();
-      expect(refundProcessPeriodChips).toBeInTheDocument();
-      expect(supportContact).toBeInTheDocument();
       expect(supportEmail).toBeInTheDocument();
     });
   });

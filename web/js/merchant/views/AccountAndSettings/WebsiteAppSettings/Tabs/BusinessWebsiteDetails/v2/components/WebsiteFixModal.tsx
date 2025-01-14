@@ -8,8 +8,7 @@ import HorizontalLineWithText from './HorizontalLineWithText';
 import SuggestionsBox from './SuggestionsBox';
 import VerifiedPolicyPageCard from './VerifiedPolicyPageCard';
 import PolicyPagesIllustration from './assets/policyPagesIllustration.svg';
-import { PolicyPageContent, getInitialPolicyPagesFormState } from './utils';
-import useBusinessWebsiteData from '../hooks/useBusinessWebsiteData';
+import { PolicyPageContent } from './utils';
 import useModalComponents from '../hooks/useModalComponents';
 import { trackWebsitePrivacyPolicyModalLoaded } from '../tracking';
 import {
@@ -17,6 +16,8 @@ import {
   ValidationState,
   WebsitePolicyPages,
   PolicyPageFormData,
+  FormFieldType,
+  MissingPagesFormFieldType,
 } from '../types';
 import { policyPageFormValidator, snapPoints, getWebsiteCount } from '../utils';
 
@@ -28,6 +29,13 @@ interface WebsiteFixModalProps {
   user: User;
   org: { business_name: string };
   onCreateAllPolicyPagesButtonClick: (formState: PolicyPageFormData) => void;
+  formState: PolicyPageFormData;
+  setFormState: React.Dispatch<React.SetStateAction<PolicyPageFormData>>;
+
+  verifiedPages: Record<WebsitePolicyPages, FormFieldType>;
+  missingPages: Record<WebsitePolicyPages, MissingPagesFormFieldType>;
+  verifiedPagesKeys: WebsitePolicyPages[];
+  missingPagesKeys: WebsitePolicyPages[];
 }
 
 const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
@@ -38,9 +46,13 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
   user,
   org,
   onCreateAllPolicyPagesButtonClick,
+  formState,
+  setFormState,
+  verifiedPages,
+  verifiedPagesKeys,
+  missingPagesKeys,
 }) => {
   const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
-  const { websiteUpdateData: { website_verification_page_status } = {} } = useBusinessWebsiteData();
 
   useEffect(() => {
     if (isOpen) {
@@ -50,12 +62,6 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
       trackWebsitePrivacyPolicyModalLoaded(properties);
     }
   }, [isOpen]);
-
-  const { verifiedPages, missingPages, verifiedPagesKeys, missingPagesKeys } = useMemo(
-    () => getInitialPolicyPagesFormState(website_verification_page_status),
-    [website_verification_page_status],
-  );
-  const [formState, setFormState] = useState<PolicyPageFormData>(missingPages);
 
   const [activeField, setActiveField] = useState<WebsitePolicyPages | undefined>(undefined);
 
@@ -75,13 +81,10 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
     });
   };
   const handleFocusOnNext = (page: WebsitePolicyPages) => {
-    const currentIndex = missingPagesKeys.indexOf(page);
-    // if currentIndex is not found or outside the array, set activeField to null
-    if (currentIndex === missingPagesKeys.length - 1) {
-      setActiveField(undefined);
-      return;
-    }
-    setActiveField(missingPagesKeys[currentIndex + 1]);
+    const nextUnfilledPageIdx = missingPagesKeys.findIndex(
+      (findPage) => !formState[findPage]?.radioValue && page !== findPage,
+    );
+    setActiveField(nextUnfilledPageIdx !== -1 ? missingPagesKeys[nextUnfilledPageIdx] : undefined);
   };
   return (
     <Modal isOpen={isOpen} onDismiss={onDismiss} snapPoints={snapPoints} size="large">

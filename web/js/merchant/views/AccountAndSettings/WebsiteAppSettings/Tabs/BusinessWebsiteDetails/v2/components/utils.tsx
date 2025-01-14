@@ -22,6 +22,7 @@ import {
   MissingPagesFormFieldType,
   PartialPolicyPages,
   PolicyPageFormData,
+  PolicyPagesSelection,
   SuggestionSteps,
   ValidationState,
   WebsitePolicyPages,
@@ -92,10 +93,15 @@ export const getInitialPolicyPagesFormState = (
       if (page.verified === WebsiteVerificationStatus.PASSED) {
         verifiedPages[field] = page;
         verifiedPagesKeys.push(policyPageKey);
-      } else if (page.verified !== WebsiteVerificationStatus.NOT_APPLICABLE) {
+      } else {
+        const initValue =
+          page.verified === WebsiteVerificationStatus.NOT_APPLICABLE
+            ? PolicyPagesSelection.NA
+            : undefined;
         missingPages[field] = {
           ...page,
           value: '',
+          radioValue: initValue,
         };
         missingPagesKeys.push(policyPageKey);
       }
@@ -330,24 +336,10 @@ export const isPolicyPageCreatedByRazorpay = (policyPageUrl: string) => {
 
 export const getQuestionaireDetailsFromPolicyPagesToBeGenerated = (
   policyPagesToGenerate: PartialPolicyPages,
-  websiteUpdateData,
 ) => {
-  let pendingQuestionPages = policyPagesToGenerate;
-
-  // if MCC checks failed, we need to ask all questions, but skip if it's not required
-  if (
-    websiteUpdateData?.website_verification_stage?.mcc_check_status ===
-    WebsiteVerificationStatus.FAILED
-  ) {
-    pendingQuestionPages = Object.values(WebsitePolicyPages).filter(
-      (page) =>
-        websiteUpdateData?.website_verification_page_status[page]?.verified !==
-        WebsiteVerificationStatus.NOT_APPLICABLE,
-    );
-  }
   const questions: Array<Partial<WebsitePolicyPagesDetailsKeys>> = [];
 
-  pendingQuestionPages.forEach((policyPage) => {
+  policyPagesToGenerate.forEach((policyPage) => {
     const mappedQuestions = mappingPolicyPageKeyToQuestionaire[policyPage];
 
     if (mappedQuestions) {

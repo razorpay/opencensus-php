@@ -214,6 +214,7 @@ const BusinessWebsiteDetails: React.FC<BusinessWebsiteDetailsProps> = ({
         />
         <RenderWebsites
           isMainWebsiteEditActionAllowed={isMainWebsiteEditActionAllowed}
+          isWebsiteDetailsFetching={isWebsiteDetailsFetching}
           isMobile={isMobile}
           onClickAddWebsite={handleClickAddWebsite}
           user={user}

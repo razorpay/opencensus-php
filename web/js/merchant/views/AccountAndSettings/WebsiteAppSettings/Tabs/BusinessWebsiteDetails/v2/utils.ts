@@ -377,6 +377,7 @@ export enum Status {
   WorkflowInReview = 'workflow_in_review',
   WorkflowNeedsClarification = 'workflow_needs_clarification',
   Rejected = 'rejected',
+  WebsiteUpdateFailed = 'website_update_failed',
 }
 
 export type NullableStatus = Status | null;
@@ -456,6 +457,11 @@ export function getWebsiteWorkflowStatus({
     status = Status.WorkflowNeedsClarification;
   } else if (hasRejectedStatus) {
     status = Status.Rejected;
+  } else if (
+    current_status === WebsiteUpdateAutomationStatus.WEBSITE_UPDATE_FAILED ||
+    current_status === WebsiteUpdateAutomationStatus.WORKFLOW_CREATION_FAILED
+  ) {
+    status = Status.WebsiteUpdateFailed;
   }
 
   return {
@@ -523,6 +529,7 @@ export const alertText: Record<NonNullableStatus, string> = {
   [Status.WorkflowInReview]: 'Your website verification request is under review',
   [Status.WorkflowNeedsClarification]: 'Our team needs a few more details to verify your website',
   [Status.Rejected]: 'Our team has rejected your website upon careful verification',
+  [Status.WebsiteUpdateFailed]: 'Oops, something went wrong',
 };
 
 export const alertCTAText: Partial<Record<NonNullableStatus, string>> = {

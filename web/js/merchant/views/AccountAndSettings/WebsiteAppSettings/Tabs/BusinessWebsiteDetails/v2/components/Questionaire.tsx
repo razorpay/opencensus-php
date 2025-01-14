@@ -5,7 +5,6 @@ import { Environments, ShowNotificationType } from 'common/typings';
 
 import { PolicyPageCreationQuestionaire, defaultPolicyPageCreationFormField } from './constants';
 import { getQuestionaireDetailsFromPolicyPagesToBeGenerated } from './utils';
-import useBusinessWebsiteData from '../hooks/useBusinessWebsiteData';
 import useModalComponents from '../hooks/useModalComponents';
 import { usePolicyPagesDetails } from '../hooks/usePolicyPagesDetails';
 import { track as analyticsTrack, trackQuestionaire } from '../tracking';
@@ -37,6 +36,8 @@ export interface QuestionareProps {
   mode: Environments;
   org: { business_name: string };
   showNotification: ShowNotificationType;
+  formState: PolicyPageCreationFormFieldType;
+  setFormState: React.Dispatch<React.SetStateAction<PolicyPageCreationFormFieldType>>;
 }
 
 function Questionare({
@@ -47,14 +48,11 @@ function Questionare({
   mode,
   org,
   showNotification,
+  formState,
+  setFormState,
 }: QuestionareProps): JSX.Element {
   const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
   const { mutate: savePolicyPagesMutate, isPosting } = usePolicyPagesDetails();
-  const { websiteUpdateData } = useBusinessWebsiteData();
-
-  const [formState, setFormState] = useState<PolicyPageCreationFormFieldType>(
-    defaultPolicyPageCreationFormField,
-  );
 
   useEffect(() => {
     if (isOpen) {
@@ -88,10 +86,8 @@ function Questionare({
     }));
   };
 
-  const { isEmpty, questionaireMapping } = getQuestionaireDetailsFromPolicyPagesToBeGenerated(
-    policyPagesToBeMade,
-    websiteUpdateData,
-  );
+  const { isEmpty, questionaireMapping } =
+    getQuestionaireDetailsFromPolicyPagesToBeGenerated(policyPagesToBeMade);
 
   const questionareCTAtrack = (properties) =>
     analyticsTrack({

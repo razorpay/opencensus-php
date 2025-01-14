@@ -14,6 +14,7 @@ import { User } from 'common/typings';
 import BusinessWebsiteCard from './components/BusinessWebsiteCard';
 import { AddWebsiteClickArgs, WebsiteUpdateApiData, WebsiteUpdateActionOn } from './types';
 import { getBusinessWebsitesToShow } from './utils';
+import WebsiteCardLoadingState from './components/WebsiteCardLoadingState';
 
 interface RenderWebsitesProps {
   isMobile: boolean;
@@ -23,6 +24,7 @@ interface RenderWebsitesProps {
   businessWebsiteWorkflow: Record<string, any>;
   websiteUpdateData: WebsiteUpdateApiData | undefined;
   ctaDisabledReason: string;
+  isWebsiteDetailsFetching: boolean;
 }
 
 const RenderWebsites: React.FC<RenderWebsitesProps> = ({
@@ -33,6 +35,7 @@ const RenderWebsites: React.FC<RenderWebsitesProps> = ({
   businessWebsiteWorkflow,
   websiteUpdateData,
   ctaDisabledReason,
+  isWebsiteDetailsFetching,
 }) => {
   const businessWebsitesToShow = getBusinessWebsitesToShow({
     user,
@@ -67,6 +70,11 @@ const RenderWebsites: React.FC<RenderWebsitesProps> = ({
       )}
     </Box>
   );
+
+  if (isWebsiteDetailsFetching) {
+    const cardsNumber = businessWebsitesToShow.length === 0 ? 1 : businessWebsitesToShow.length;
+    return <WebsiteCardLoadingState isMobile={isMobile} cardsNumber={cardsNumber} />;
+  }
 
   return businessWebsitesToShow.length === 0 ? (
     <Box
