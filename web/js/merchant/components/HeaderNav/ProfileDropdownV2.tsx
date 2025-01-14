@@ -16,7 +16,7 @@ import {
   Tooltip,
   UserIcon,
   HeadphonesIcon,
-  Link as BladeLink,
+  useTheme,
 } from '@razorpay/blade/components';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
@@ -38,6 +38,8 @@ import SwitchMerchantIcon from 'assets/rtux/switch-merchant.svg';
 import { analyticsTrack } from 'common/utils/analytics';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import SwitchMerchantTypeaheadV2 from 'merchant/components/HeaderNav/SwitchMerchantTypeaheadV2';
+import ExplorePartnerProgramCard from 'merchant/components/ExplorePartnerProgramCard';
+import { useBreakpoint } from '@razorpay/blade/utils';
 
 const TrustedBadgeIcon = styled.div(
   ({ theme }: { theme: Theme }) => `
@@ -102,6 +104,12 @@ const ProfileDropdownV2: React.FC<{
   const userNameInitials = getInitials(loggedInUserName);
 
   const invertMode = mode === 'live' ? 'test' : 'live';
+
+  const { theme } = useTheme();
+  const { matchedDeviceType } = useBreakpoint({
+    breakpoints: theme.breakpoints,
+  });
+  const isMobile = matchedDeviceType === 'mobile';
 
   const commonAnalyticsProperties = {
     version: 'v2',
@@ -258,11 +266,8 @@ const ProfileDropdownV2: React.FC<{
             }
           >
             <Divider />
-            <Box display="flex" flexDirection="column" padding="spacing.5" gap="spacing.2">
-              Partner with us and start earning on every referral
-              <BladeLink variant="button" onClick={showPartnerIntent}>
-                Explore Partner Program
-              </BladeLink>
+            <Box margin={'spacing.5'}>
+              <ExplorePartnerProgramCard onClick={showPartnerIntent} />
             </Box>
           </ShowWhen>
         </DropdownOverlay>

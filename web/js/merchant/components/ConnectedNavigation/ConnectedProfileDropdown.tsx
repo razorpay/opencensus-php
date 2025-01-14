@@ -9,12 +9,10 @@ import {
   TrustedBadgeIcon,
   Text,
   Tooltip,
-  Link as BladeLink,
   MenuItem,
   ActionListItemAsset,
   HeadphonesIcon,
   LogOutIcon,
-  MenuFooter,
   useTheme,
   BottomSheet,
   BottomSheetBody,
@@ -41,6 +39,7 @@ import SwitchMerchantTypeaheadV2 from '../HeaderNav/SwitchMerchantTypeaheadV2';
 import ShowWhen from '../ShowWhen';
 import useConnectedNavigationStore from '../NavigationLayout/navigationStore';
 import { trackProfileDropdownClicks } from './utils';
+import ExplorePartnerProgramCard from 'merchant/components/ExplorePartnerProgramCard';
 
 interface ConnectedProfileDropdownProps {
   user: any;
@@ -288,26 +287,9 @@ function ConnectedProfileDropdown({
             !isOrgFeatureExist('hide_razorpay_text_link')
           }
         >
-          <MenuFooter>
-            <Box maxWidth="300px" paddingX="spacing.3">
-              <Text
-                size="small"
-                variant="caption"
-                weight="regular"
-                color="surface.text.gray.subtle"
-              >
-                Partner with us and start earning on every referral
-                <BladeLink
-                  variant="anchor"
-                  color="primary"
-                  size="xsmall"
-                  onClick={showPartnerIntent}
-                >
-                  Explore Partner Program
-                </BladeLink>
-              </Text>
-            </Box>
-          </MenuFooter>
+          <Box margin={isMobile ? 'spacing.0' : 'spacing.4'}>
+            <ExplorePartnerProgramCard onClick={showPartnerIntent} />
+          </Box>
         </ShowWhen>
       </>
     );
