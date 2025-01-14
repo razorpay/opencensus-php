@@ -125,7 +125,7 @@ trait ExternalTransferRepo
                 {
                     Transfer\Entity::stripSignWithoutValidation($id);
 
-                    return $this->fetchExternalTransfer($id);
+                    return $this->fetchExternalTransfer($id, $merchant->getId(), $params);
                 }
             }
             catch(\Throwable $ex) {}
@@ -154,7 +154,7 @@ trait ExternalTransferRepo
                 if ($this->validateIfExternalFetchIsEnabledForTransfer() and
                     (EntityConstants::validateExternalRepoEntity($this->entityName) === true))
                 {
-                    return $this->fetchExternalTransfer($id);
+                    return $this->fetchExternalTransfer($id, $merchant->getId(), $params);
                 }
             }
             catch(\Throwable $ex) {}
@@ -179,7 +179,7 @@ trait ExternalTransferRepo
                 if ($this->validateIfExternalFetchIsEnabledForTransfer() and
                     (EntityConstants::validateExternalRepoEntity($this->entityName) === true))
                 {
-                    return $this->fetchExternalTransfer($id);
+                    return $this->fetchExternalTransfer($id, $merchantId);
                 }
             }
             catch(\Throwable $ex) {}
@@ -189,7 +189,7 @@ trait ExternalTransferRepo
         }
     }
 
-    protected function fetchExternalTransfer($transferId, $queryParams=[])
+    protected function fetchExternalTransfer($transferId, $merchantId = null, $queryParams=[])
     {
         $class = EntityConstants::getExternalRepoSingleton($this->entity);
 
@@ -199,7 +199,7 @@ trait ExternalTransferRepo
 
         try
         {
-            $entity = $class->fetchTransferById($transferId);
+            $entity = $class->fetchTransferById($transferId, $merchantId);
 
             if (empty($entity) === false)
             {
