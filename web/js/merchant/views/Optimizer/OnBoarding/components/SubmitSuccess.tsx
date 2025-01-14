@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Text, Heading, Divider, Button } from '@razorpay/blade/components';
 import { trackOptimizerEvents } from 'merchant/views/Optimizer/track';
 import { OPTI_BLOG, ONBOARDING_SUCCESS } from 'merchant/views/Optimizer/OnBoarding/constants';
-import { OPTIMIZER_BLOG_CLICK } from 'merchant/views/Optimizer/OnBoarding/track';
+import {
+  OPTIMIZER_ONBOARDING_SUCCESS_PAGE_VISIT,
+  OPTIMIZER_BLOG_CLICK,
+} from 'merchant/views/Optimizer/OnBoarding/track';
 
 export const SubmitSuccess = (): JSX.Element => {
   const goToBlogClicked = () => {
     window.open(OPTI_BLOG, '_blank');
     trackOptimizerEvents(OPTIMIZER_BLOG_CLICK);
   };
+
+  useEffect(() => {
+    trackOptimizerEvents(OPTIMIZER_ONBOARDING_SUCCESS_PAGE_VISIT);
+  }, []);
 
   return (
     <Box

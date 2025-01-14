@@ -49,6 +49,12 @@ export const submitDetailsClick = (properties) => {
   };
 };
 
+export const OPTIMIZER_ONBOARDING_SUCCESS_PAGE_VISIT = {
+  objectName: 'Optimizer Onboarding Success Page',
+  actionName: VISITED_ACTION,
+  screen: 'Optimizer - Onboarding',
+};
+
 export const OPTIMIZER_BLOG_CLICK = {
   objectName: 'Optimizer Onboarding Success Page Go to Blog',
   actionName: CLICKED_ACTION,
