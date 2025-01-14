@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Card, CardBody, useTheme } from '@razorpay/blade/components';
+import { Box, Card, CardBody, useTheme, BladeProvider } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import styled from 'styled-components';
 import SideNavigation from 'merchant/components/NavigationLayout/SideNavigation/SideNavigation';
@@ -15,6 +15,8 @@ import SidebarV2 from '../SidebarV2';
 import useConnectedProducts from './hooks/useConnectedProducts';
 import { useStore } from 'shell/commonStore';
 import UniversalSearch from '../HeaderNav/UniversalSearch';
+import FTUXBanner from './components/FTUXBanner';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import { getItem, setItem } from 'common/utils/localStorage';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { HOTJAR_TRIGGERS } from './constants';
@@ -23,6 +25,8 @@ const DashboardBackground = styled.div(() => {
   return {
     height: '100vh',
     background: '#E3EAF3',
+    display: 'flex',
+    flexDirection: 'column',
   };
 });
 
@@ -39,6 +43,10 @@ function NavigationLayout({
   isConnectedNavigation,
 }): JSX.Element {
   const [isSideNavOpenOnMobile, setIsSideNavOpenOnMobile] = useState(false);
+  const userId = window.rzp_user?.user?.id || '';
+  const [showFtuxBanner, setShowFtuxBanner] = useState(
+    getItem(`showOnenavFtuxBanner_${userId}`) !== 'false',
+  );
   const org = useStore((state) => state.session.org);
 
   const showHeaderInWebview = () => {
@@ -89,15 +97,25 @@ function NavigationLayout({
           <TopNavigation {...commonProps} {...headerProps} />
           <Box
             marginX={{ base: 'spacing.0', m: 'spacing.3' }}
-            borderTopLeftRadius="medium"
             overflow="hidden"
-            position="relative"
+            backgroundColor="surface.background.gray.intense"
+            borderTopLeftRadius="medium"
+            display="flex"
+            flexDirection="column"
+            flexGrow="1"
           >
-            <SideNavigation {...commonProps} />
-            <NavigationContent {...commonProps}>{children}</NavigationContent>
+            {showFtuxBanner && !isMobile && (
+              <BladeProvider themeTokens={bladeTheme} colorScheme="dark">
+                <FTUXBanner handleClose={() => setShowFtuxBanner(false)} />
+              </BladeProvider>
+            )}
+            <Box overflow="hidden" position="relative" flexGrow="1">
+              <SideNavigation {...commonProps} />
+              <NavigationContent {...commonProps}>{children}</NavigationContent>
 
-            {/* TODO: Hiding for initial release */}
-            {/* <BottomNavigation /> */}
+              {/* TODO: Hiding for initial release */}
+              {/* <BottomNavigation /> */}
+            </Box>
           </Box>
         </DashboardBackground>
       </NavigationLayoutContext.Provider>

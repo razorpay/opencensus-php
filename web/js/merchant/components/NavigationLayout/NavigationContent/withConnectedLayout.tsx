@@ -75,7 +75,7 @@ const withConnectedLayout = (WrappedComponent: React.FC<any>) => {
     return (
       <Box
         marginLeft={{ base: '0px', m: marginLeftMediumValue, xl: marginLeftXLValue }}
-        height={`calc(-${getTopNavHeight()} + 100vh)`}
+        height="100%"
       >
         <Box
           overflowY="scroll"
