@@ -21,7 +21,8 @@ import BestDayMobile from 'assets/razorpay_rewind/best-day-mobile.png';
 import BestDayDesktop from 'assets/razorpay_rewind/best-day-desktop.png';
 import { captureImage } from './imageUtils';
 
-export const postContent = 'What last quarter had in store! Check out my #RazorpayRewind';
+export const postContent =
+  'My numbers have quite the story to share this quarter! #RazorpaySnapshot';
 
 export const trackPaymentsRecapEvent = ({
   objectName,
@@ -410,7 +411,7 @@ export const socialShare = ({ componentRef, isMobile, isTablet = false, type }) 
       break;
 
     case 'twitter':
-      mediaUrl = `${twitterBase}?text=${mediaMsg}`;
+      mediaUrl = `${twitterBase}?url=%20&text=${mediaMsg}`;
       window.open(mediaUrl, 'twitter-share');
       break;
 
