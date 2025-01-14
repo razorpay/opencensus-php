@@ -57,6 +57,19 @@ const RewindModal = ({ isOpen, onDismiss, slides, isMobile, isNativeWebShare, is
       handleShareAction('navigator-share');
     }
   };
+
+  const onCarouselSlideChange = (slideIndex: number) => {
+    currentStoryKey.current = slides[slideIndex].key;
+    trackPaymentsRecapEvent({
+      objectName: 'RZP Rewind Card',
+      actionName: 'Viewed',
+      properties: {
+        current: slides[slideIndex].key,
+        total: slides.length,
+      },
+    });
+  };
+
   return (
     <Modal isOpen={isOpen} onDismiss={onDismiss} size="medium">
       <ModalHeader />
@@ -68,6 +81,7 @@ const RewindModal = ({ isOpen, onDismiss, slides, isMobile, isNativeWebShare, is
               navigationButtonPosition="side"
               marginTop={'spacing.3'}
               autoPlay={!isBottomSheetOpen}
+              onChange={onCarouselSlideChange}
             >
               {slides.map(({ imgOverlay, imgSrc, key }) => {
                 return (

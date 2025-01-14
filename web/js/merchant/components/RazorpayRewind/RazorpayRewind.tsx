@@ -7,7 +7,7 @@ import { getSlides, trackPaymentsRecapEvent, usePaymentsRecap } from './utils';
 
 import RzpDesktopBanner from 'assets/razorpay_rewind/desktop-banner.png';
 import RzpMobileBanner from 'assets/razorpay_rewind/mobile-banner.png';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { CarouselSlides } from './types';
 import lazy from 'merchant/routes/LazyLoader';
 import Loader from 'common/components/Loader';
@@ -33,23 +33,33 @@ const RazorpayRewind: React.FC<{
   const isMobileorTablet = isMobile || isTablet;
 
   const isNativeWebShare = !!navigator.canShare;
+  const bannerShownByDefault = localStorage.getItem('razorpay_rewind_banner');
 
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isRazorpayRewind = searchParams.get('event') === 'razorpay_rewind';
 
   useEffect(() => {
-    if (
-      isRtux &&
-      location.pathname === '/dashboard' &&
-      location.search === '?event=razorpay_rewind'
-    ) {
+    if (isRtux && location.pathname === '/dashboard' && isRazorpayRewind) {
       setIsOpen(true);
       trackPaymentsRecapEvent({
-        objectName: 'RZP RTUX Rewind Banner',
+        objectName: 'RZP Rewind Banner',
         actionName: 'Clicked',
       });
     }
   }, [location]);
+
+  useEffect(() => {
+    if (bannerShownByDefault !== 'true') {
+      setIsOpen(true);
+      localStorage.setItem('razorpay_rewind_banner', 'true');
+      trackPaymentsRecapEvent({
+        objectName: 'RZP Rewind Modal',
+        actionName: 'Viewed',
+      });
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (data) {
@@ -65,7 +75,9 @@ const RazorpayRewind: React.FC<{
 
   const onModalDismiss = () => {
     setIsOpen(false);
-    navigate(-1);
+    if (isRtux && isRazorpayRewind) {
+      navigate(-1);
+    }
   };
 
   if (isLoading || isError || !data.is_gmv) {

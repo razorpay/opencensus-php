@@ -184,7 +184,7 @@ export const getSlides = ({ data, isMobile = false, isTablet = false, isSmallMob
           </TextWrapper>
         </Box>
       ),
-      key: 'GMV',
+      key: 'quarter_gmv',
     });
   }
 
@@ -208,7 +208,7 @@ export const getSlides = ({ data, isMobile = false, isTablet = false, isSmallMob
             </TextWrapper>
           </Box>
         ),
-        key: 'Transaction bucket',
+        key: 'transaction_bucket',
       });
     }
   }
@@ -249,7 +249,7 @@ export const getSlides = ({ data, isMobile = false, isTablet = false, isSmallMob
           </Box>
         </Box>
       ),
-      key: 'Time of day',
+      key: 'time_of_day',
     });
   }
 
@@ -278,7 +278,7 @@ export const getSlides = ({ data, isMobile = false, isTablet = false, isSmallMob
           </TextWrapper>
         </Box>
       ),
-      key: 'Revenue Achieved Percentile',
+      key: 'revenue_achieved_percentage',
     });
   }
 
@@ -307,7 +307,7 @@ export const getSlides = ({ data, isMobile = false, isTablet = false, isSmallMob
           </TextWrapper>
         </Box>
       ),
-      key: 'Industry Growth Percentage',
+      key: 'industry_growth_percentage',
     });
   }
 
@@ -336,7 +336,7 @@ export const getSlides = ({ data, isMobile = false, isTablet = false, isSmallMob
           </TextWrapper>
         </Box>
       ),
-      key: 'Individual Growth Average',
+      key: 'industry_grew_avg',
     });
   }
 
@@ -385,7 +385,7 @@ export const getSlides = ({ data, isMobile = false, isTablet = false, isSmallMob
           </TextWrapper>
         </Box>
       ),
-      key: 'Best Date GMV',
+      key: 'gmv_date',
     });
   }
   return carouselSlides;
