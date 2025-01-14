@@ -143,28 +143,6 @@ class HeaderNav extends Component {
     });
   };
 
-  componentDidUpdate(_prevProp, prevState) {
-    if (prevState.mtuOfferCount !== this.state.mtuOfferCount) {
-      const { user, referee } = this.props;
-      const prevSessionID = getItem(`prev_session`);
-      const isReferredMerchant = referee?.status === 'signup';
-      const canShowOnboardingOffers =
-        user.isOnboardingCouponEnabled && !isReferredMerchant && user.showMtuPopup;
-
-      const showMtu =
-        canShowOnboardingOffers &&
-        window.session_id !== prevSessionID &&
-        typeof this.state.mtuOfferCount === 'number' &&
-        this.state.mtuOfferCount < COUNT_TO_SHOW_MTU_OFFER &&
-        user.autoOpenOnboardingCoupon;
-
-      if (showMtu) {
-        this.showMTUOffer();
-        setItem('prev_session', window.session_id);
-      }
-    }
-  }
-
   handleOnRefreshClick = () => {
     this.setState({ isRefreshLoading: true });
     window.location.reload();

@@ -1720,15 +1720,7 @@ export default class User {
   }
 
   get isAadharEkycMandatory() {
-    const query = QueryString.parse(window.location.search);
-    const isSourceRX = !!(query && query.merchant && query.merchant === 'x');
-
-    // not required for Razorpay X, partner accounts and sub merchants
-    if (isSourceRX || this.isPartner() || this.isSubMerchant) {
-      return false;
-    }
-
-    return this.getExpStatus('mandatory_aadhar_ekyc');
+    return false;
   }
 
   get isGstinMandatory() {
@@ -1751,10 +1743,6 @@ export default class User {
     return this.getExpStatus('recurring_more_account_type');
   }
 
-  get isOnboardingCouponEnabled() {
-    return this.getExpStatus('mtu_coupon_code') && this.isOrgRZP;
-  }
-
   get autoOpenOnboardingCoupon() {
     return this.isOrgRZP;
   }
@@ -1762,10 +1750,6 @@ export default class User {
   get isIndependentPartnerKYCEnabled() {
     const variant = getSplitzExperimentVariant('independent_partner_kyc');
     return variant?.name === 'exposed';
-  }
-
-  get isAutoRefreshExperimentEnabled() {
-    return this.getExpStatus('auto_refresh_experiment');
   }
 
   get isSyncBankVerificationEnabled() {
@@ -1777,7 +1761,7 @@ export default class User {
   }
 
   get isProductRecommendationEnabled() {
-    return this.getExpStatus('product_recommendation');
+    return true;
   }
 
   get isAutoPLEnabled() {

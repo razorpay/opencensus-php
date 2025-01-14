@@ -122,12 +122,7 @@ class NavFragment extends Component {
     } = this.props;
     const { showSwitchModeTooltip, showFtuxModal } = this.state;
 
-    const isReferredMerchant = referee?.status === 'signup';
-
     const shouldShowGSExclusiveOffers = Object.keys(exclusive_offers || {}).length > 0;
-
-    const canShowOnboardingOffers =
-      !isReferredMerchant && canShowMtuPopup && user.isOnboardingCouponEnabled;
 
     const showOFYNitroFlow = user.isProjectNitroEnabled;
 
@@ -145,16 +140,12 @@ class NavFragment extends Component {
               // eslint-disable-next-line no-shadow
               additionalCondition={(user) =>
                 showOFYNitroFlow ||
-                canShowOnboardingOffers ||
                 user.isProjectMoonshineEnabled ||
                 user?.isICICILinkedCAFlowEnabled?.('offers-for-you') ||
                 shouldShowGSExclusiveOffers
               }
             >
-              <OffersForYou
-                canShowOnboardingOffers={canShowOnboardingOffers}
-                mtuOfferCount={mtuOfferCount}
-              />
+              <OffersForYou canShowOnboardingOffers={false} mtuOfferCount={mtuOfferCount} />
             </ShowWhen>
           </GrowthAssetEB>
         )}

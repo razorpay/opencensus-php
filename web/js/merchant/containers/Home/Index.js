@@ -662,67 +662,6 @@ class HomeContainer extends Component {
     return response;
   };
 
-  triggerTimerToUpdateMode = () => {
-    /* eslint-disable */
-    const { user, mode, updateSession } = this.props;
-    /* eslint-enable */
-
-    if (
-      user.isAutoRefreshExperimentEnabled &&
-      mode === 'test' &&
-      user.isUnregisteredBusiness &&
-      user.instantActivation.isL1Submitted &&
-      user.poi_verification_status === 'initiated' &&
-      !user.activation_status
-    ) {
-      setTimeout(() => {
-        this.fetchMerchantDetails().then((res) => {
-          if (
-            res?.data &&
-            res?.data?.poi_verification_status === 'verified' &&
-            res?.data?.activation_status === 'instantly_activated'
-          ) {
-            const {
-              activation_progress,
-              activated,
-              activation_status,
-              activation_form_milestone,
-              poi_verification_status,
-              business_type,
-            } = res.data;
-
-            const userData = new User({
-              ...user,
-              activation_progress,
-              activated,
-              activation_status,
-              activation_form_milestone,
-              poi_verification_status,
-              business_type,
-            });
-
-            setItem(`rzp_mode--${user.current}`, 'live');
-            setItem(`is_activated--${user.current}`, 'true');
-            updateSession({ user: userData, mode: 'live' });
-            this.props.showNotification({
-              type: 'success',
-              message: 'Congratulations, you are now in live mode, start accepting payments now!',
-              hidePrevious: true,
-            });
-            analyticsTrack({
-              objectName: 'IA Page',
-              actionName: 'refreshed',
-              screen: 'home page',
-              properties: {
-                ...getCommonAnalyticsProperties(user),
-              },
-            });
-          }
-        });
-      }, 30000);
-    }
-  };
-
   componentDidMount() {
     this.props.fetchCurrentBalance();
     this.props.fetchSettlementAmount();
@@ -751,7 +690,6 @@ class HomeContainer extends Component {
         /* eslint-enable */
       }, 0);
     }
-    this.triggerTimerToUpdateMode();
 
     window.addEventListener('click', () => {
       if (this.autoOpenL1FormModal) {
