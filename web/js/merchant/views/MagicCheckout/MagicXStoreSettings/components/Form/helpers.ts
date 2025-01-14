@@ -56,6 +56,13 @@ export const transformServerDataToForm = (data: {
     }
   }
 
+  if (metafields.cart_config?.custom_selector) {
+    transformedData.cartSelector = metafields.cart_config.custom_selector;
+  }
+
+  if (metafields.product_config?.custom_selector) {
+    transformedData.productSelector = metafields.product_config.custom_selector;
+  }
   return transformedData;
 };
 
@@ -76,6 +83,12 @@ export const transformFormtoServerData = (
     is_login_mandatory: data.isLoginMandatory,
     enable_native_click: data.enableNativeClick,
     merchant_theme_color: data.themeColor,
+    cart_config: {
+      custom_selector: data.cartSelector,
+    },
+    product_config: {
+      custom_selector: data.productSelector,
+    },
   };
 
   return transformedData;

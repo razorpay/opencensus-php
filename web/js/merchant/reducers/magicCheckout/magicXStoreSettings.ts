@@ -9,6 +9,8 @@ export const INITIAL_STATE: MagicXConfigDataFormData = {
   flowType: 'cart_permalinks',
   cartPageLogin: true,
   recurpayEnabled: false,
+  cartSelector: '',
+  productSelector: '',
 };
 
 function reducer(state = INITIAL_STATE, action) {

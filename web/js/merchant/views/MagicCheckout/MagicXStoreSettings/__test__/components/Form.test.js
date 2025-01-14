@@ -21,6 +21,12 @@ const initState = {
       is_login_mandatory: true,
       enable_native_click: false,
       merchant_theme_color: '#000000',
+      cart_config: {
+        custom_selector: '',
+      },
+      product_config: {
+        custom_selector: '',
+      },
     },
   },
 };
@@ -78,6 +84,12 @@ describe('MagicX Settings Form Component', () => {
           is_login_mandatory: true,
           enable_native_click: false,
           merchant_theme_color: '#FFFFFF',
+          cart_config: {
+            custom_selector: '',
+          },
+          product_config: {
+            custom_selector: '',
+          },
         },
       },
     };

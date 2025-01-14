@@ -213,6 +213,39 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
         </Box>
       </Box>
       <Divider />
+      <Box
+        display="flex"
+        maxWidth="500px"
+        paddingY="spacing.7"
+        gap="spacing.7"
+        flexDirection="column"
+      >
+        <Box width="100%" display="flex" alignItems="center">
+          <Box width="50%">Cart Selector</Box>
+          <Box width="50%">
+            <Input
+              class="Input--vTop"
+              value={formState.cartSelector}
+              onChange={handleInputChange}
+              placeholder="Enter cart selector"
+              name="cartSelector"
+            />
+          </Box>
+        </Box>
+        <Box width="100%" display="flex" alignItems="center">
+          <Box width="50%">Product Selector</Box>
+          <Box width="50%">
+            <Input
+              class="Input--vTop"
+              value={formState.productSelector}
+              onChange={handleInputChange}
+              placeholder="Enter product selector"
+              name="productSelector"
+            />
+          </Box>
+        </Box>
+      </Box>
+      <Divider />
       <Box display="flex" alignItems="center" justifyContent="space-between">
         <Box maxWidth="75%">
           <Text>
