@@ -60,7 +60,11 @@ trait ExternalOffersRepo
         }
 
         // if experiment is false or exception caught, calls parent repo function but the offer response does not change
-        return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query->whereIn(OfferEntity::MERCHANT_ID, [$merchantId, Constants::PLATFORM_AD_PUBLISHER])
+                     ->findOrFailPublic($id);
     }
 
     public function findById($id, string $connectionType = null)
