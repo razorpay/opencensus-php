@@ -527,7 +527,7 @@ export default class User {
   }
 
   get isBulkAddressUploadEnabled() {
-    return this.getExpStatus('magic_bulk_address_live');
+    return true;
   }
 
   get isMagicCheckoutLive() {
@@ -604,10 +604,7 @@ export default class User {
       rolesList.OPERATIONS,
       rolesList.FINANCE,
     ];
-    return (
-      this.getExpStatus('magic_cod_orders_automation_live') &&
-      accessRoles.indexOf(this.userRole) > -1
-    );
+    return accessRoles.indexOf(this.userRole) > -1;
   }
 
   get isMagicPartialCODEnabled() {

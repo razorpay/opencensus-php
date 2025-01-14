@@ -105,8 +105,6 @@ class Constants
         'bvs_in_sync',
         'free_credit_recovery_banner',
         'bulk_payouts_improvements_rollout',
-        'magic_bulk_address_live',
-        'magic_cod_orders_automation_live',
         'loans_allow_custom_amount_repayment',
         'fee_credit_self_serve',
         'refund_credit_self_serve',
