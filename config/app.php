@@ -1165,8 +1165,6 @@ return array(
 
     'splitz_merchant_transacted_harvester_query_experiment_id' => env('SPLITZ_MERCHANT_TRANSACTED_HARVESTER_QUERY_EXPERIMENT_ID'),
 
-    'splitz_merchant_acq_datalake_query_experiment_id'  => env('SPLITZ_MERCHANT_ACQ_DATALAKE_QUERY_EXPERIMENT_ID'),
-
     'splitz_post_payment_harvester_query_experiment_id' => env('SPLITZ_POST_PAYMENT_HARVESTER_QUERY_EXPERIMENT_ID'),
 
     'splitz_payout_harvester_query_experiment_id'       => env('SPLITZ_PAYOUT_HARVESTER_QUERY_EXPERIMENT_ID'),

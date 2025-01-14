@@ -85,18 +85,6 @@ class Repository extends Base\Repository
     private bool $isCustomTxnViewEnabled = false;
 
     private array $subMerchants = [];
-    public const MERCHANT_HAS_TRANSACTED_QUERY = <<<'EOT'
-SELECT
-    merchant_id
-FROM
-    hive.realtime_hudi_api.payments
-WHERE
-    merchant_id = '%s'
-    AND base_amount > 0
-    AND status IN ('%s', '%s')
-LIMIT
-  1
-EOT;
 
     public const SUCCESSFUL_PAYMENTS_COUNT_SQL = <<<'EOT'
 SELECT
@@ -5215,28 +5203,53 @@ GROUP BY
         {
             if ($variant === true)
             {
+                $startTidbTimeMs = round(microtime(true) * 1000);
                 $result = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
-                    ->select(DB::raw("/*+ MAX_EXECUTION_TIME(30000) */ *"))
+                    ->select(DB::raw("/*+ MAX_EXECUTION_TIME(30000) */ `".Entity::MERCHANT_ID."`"))
                     ->from(\DB::raw('`payments`'))
                     ->where(Entity::MERCHANT_ID, "=", $merchantId)
-                    ->where(Entity::BASE_AMOUNT, ">", 0)
                     ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
                     ->limit(1)
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();;
+                $endTidbTimeMs = round(microtime(true) * 1000);
+
+                $tidbQueryDuration = $endTidbTimeMs - $startTidbTimeMs;
+
+                $this->trace->histogram(Metric::TIDB_QUERY_HAS_MERCHANT_TRANSACTED_PROCESSING_TIME, $tidbQueryDuration);
+
+                $this->trace->info(TraceCode::TIDB_QUERY_DURATION,
+                    [
+                        'time_taken_tidb' => $tidbQueryDuration,
+                        'result_query' => $result,
+                    ]
+                );
+
             }
             else
             {
+                $startTimeMs = round(microtime(true) * 1000);
                 $result = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
                     ->from(\DB::raw('`payments` FORCE INDEX (payments_merchant_id_status_created_at_index_all_replicas)'))
                     ->where(Entity::MERCHANT_ID, "=", $merchantId)
-                    ->where(Entity::BASE_AMOUNT, ">", 0)
                     ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
                     ->limit(1)
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();;
+                $endTimeMs = round(microtime(true) * 1000);
+
+                $queryDuration = $endTimeMs - $startTimeMs;
+
+                $this->trace->histogram(Metric::HARVESTER_QUERY_HAS_MERCHANT_TRANSACTED_PROCESSING_TIME, $queryDuration);
+
+                $this->trace->info(TraceCode::HARVESTER_QUERY_DURATION,
+                    [
+                        'time_taken_harvester' => $queryDuration,
+                        'result_query' => $result,
+                    ]
+                );
             }
 
             if (empty($result) === true)
@@ -5255,60 +5268,6 @@ GROUP BY
         }
 
         return false;
-    }
-
-    public function hasMerchantTransactedViaDatalake(string $merchantId)
-    {
-        try
-        {
-            $dataLakeQuery = sprintf(self::MERCHANT_HAS_TRANSACTED_QUERY, $merchantId, Status::CAPTURED, Status::AUTHORIZED);
-
-            $lakeData = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
-            $result = array_map(function ($row) {
-                return $row['merchant_id'];
-            }, $lakeData);
-
-            $isMerchantTransacted = !empty($result);
-
-            $this->trace->info(TraceCode::DATA_LAKE_HAS_MERCHANT_TRANSACTED,
-                [
-                    'isMerchantTransacted' => $isMerchantTransacted,
-                    'merchant_id'     => $merchantId,
-                ]
-            );
-
-            return $isMerchantTransacted;
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::DATA_LAKE_HAS_MERCHANT_TRANSACTED_ERROR);
-        }
-
-        return false;
-    }
-
-    public function checkIsMerchantTransacted(string $merchantId)
-    {
-        $dataLakeProperties = [
-            "id" => $merchantId,
-            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_datalake_query_experiment_id'),
-        ];
-
-        $variantName =  (new MerchantCore())->isSplitzExperimentEnable($dataLakeProperties, 'enable');
-
-        if($variantName === true)
-        {
-            $hasMerchantTransacted = $this->hasMerchantTransactedViaDatalake($merchantId);
-        }
-        else
-        {
-            $hasMerchantTransacted = $this->hasMerchantTransacted($merchantId);
-        }
-
-        return $hasMerchantTransacted;
     }
 
     public function findFirstDataAuthSeparatedPaymentIdsBetween(int $start, int $end)

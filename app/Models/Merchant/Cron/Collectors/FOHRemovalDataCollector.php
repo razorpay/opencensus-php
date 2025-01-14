@@ -276,7 +276,7 @@ class FOHRemovalDataCollector extends DbDataCollector
 
         foreach ($merchantIds as $merchantId)
         {
-            $hasTransacted = $this->repo->payment->checkIsMerchantTransacted($merchantId);
+            $hasTransacted = $this->repo->payment->hasMerchantTransacted($merchantId);
 
             if ($hasTransacted === true)
             {
