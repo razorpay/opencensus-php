@@ -2445,7 +2445,7 @@ export const splitzConfig: SplitzInitConfig = {
           uniqueHashKey: 'intl_settings_page_revamp',
           experimentId: {
             beta: 'PYYFjWr7ov0Vvf',
-            production: '',
+            production: 'Pg7K1f7G2HtQMN',
           },
           defaultVariant: {
             name: 'variables',
