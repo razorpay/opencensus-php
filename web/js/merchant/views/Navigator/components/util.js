@@ -1614,6 +1614,7 @@ export const gatewayLogos = {
   netbanking_hdfc: getLogoPath('hdfc'),
   zaakpay: getLogoPath('zaakpay', 'svg'),
   airwallex_optimizer: getLogoPath('airwallex_optimizer'),
+  nimbbl: getLogoPath('nimbbl'),
 };
 
 export const mapRulesObjectToArray = (e) => {
@@ -1836,6 +1837,11 @@ export const gatewayDetailsMapping = {
     dashboardImg: null,
     dashboardUrl: 'https://www.airwallex.com/signup',
     dashboardUrlLabel: 'airwallex.com',
+  },
+  nimbbl: {
+    dashboardImg: null,
+    dashboardUrl: 'https://nimbbl.biz/get-in-touch',
+    dashboardUrlLabel: 'nimbbl.biz',
   },
 };
 

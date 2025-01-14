@@ -1420,6 +1420,7 @@ export const gatewayLogos = {
   netbanking_hdfc: getLogoPath('hdfc'),
   zaakpay: getLogoPath('zaakpay', 'svg'),
   airwallex_optimizer: getLogoPath('airwallex_optimizer'),
+  nimbbl: getLogoPath('nimbbl'),
 };
 
 export const getValue = (type, value) => {
