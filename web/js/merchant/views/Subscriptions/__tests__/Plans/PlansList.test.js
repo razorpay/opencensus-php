@@ -43,7 +43,7 @@ describe('Plans List', () => {
     };
     analyticsSpy = jest.spyOn(analytics, 'track');
     server.use(fetchPlans());
-    render(<App location={{ search: '' }} docUrl="/123" />, {
+    render(<App location={{ search: '' }} docUrl="https://razorpay.com/docs/subscriptions/" />, {
       initialState: {
         session: {
           user: {

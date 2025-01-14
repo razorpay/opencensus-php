@@ -1,10 +1,11 @@
 import React from 'react';
+import { ExternalLinkIcon, Link } from '@razorpay/blade/components';
+
+import { useI18Service } from 'common/i18';
+import { docsUrl, docsUrlTabs } from 'common/utils/constants';
+import { getUser } from 'merchant/store';
 
 import ShowWhen from './ShowWhen';
-import { getUser } from 'merchant/store';
-import { useI18Service } from 'common/i18';
-import { ExternalLinkIcon, Link } from '@razorpay/blade/components';
-import { docsUrl, docsUrlTabs } from 'common/utils/constants';
 
 export default function DocsLink({
   url,
@@ -99,7 +100,11 @@ export function getCustomURL(url, isTab = false) {
   const urlSplits = url?.split('://');
   const org = orgCustomCode === 'axis' ? 'axisbank' : orgCustomCode;
   const link =
-    orgCustomCode !== 'axis' ? url : `https://${org}-docs.${urlSplits[1]}`.replace('/docs', '');
+    orgCustomCode !== 'axis'
+      ? isURL(url)
+        ? url
+        : docsUrl[url]
+      : `https://${org}-docs.${urlSplits[1]}`.replace('/docs', '');
 
   return link;
 }
