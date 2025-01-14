@@ -350,6 +350,10 @@ export const getCountryTaxDefinition = ({ countryCode = '' }: { countryCode: str
 };
 
 export const shouldHideAnalytics = (user: User, mode: Environments): boolean => {
+  // Hide analytics overview for JnK Omni merchants
+  if (user.isJnKOmniEnabled) {
+    return true;
+  }
   const isCurlecVASTestMode = mode === 'test' && !user.isOrgRZP;
   return isCurlecVASTestMode;
 };

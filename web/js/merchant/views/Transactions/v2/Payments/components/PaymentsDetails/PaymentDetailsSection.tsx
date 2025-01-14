@@ -649,7 +649,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                         />
                       </>
                     ) : null}
-                    {isChargeSlipExperimentEnabled ? (
+                    {isChargeSlipExperimentEnabled && !user.isJnKOmniEnabled ? (
                       <>
                         <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                         <DetailRow

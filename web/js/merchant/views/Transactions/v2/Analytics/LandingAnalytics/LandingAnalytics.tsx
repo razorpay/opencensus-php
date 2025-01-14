@@ -38,7 +38,6 @@ import BottomOverview from './BottomOverview';
 import DowntimeBanner from './DowntimeBanner';
 import TopOverviewContainer from './TopOverview';
 import DocsLink from 'merchant/components/DocsLink';
-import ShowWhen from 'merchant_common/components/SharedShowWhen';
 
 const LandingAnalytics = ({
   mode,
@@ -227,9 +226,7 @@ const LandingAnalytics = ({
           <DocsLink url="DASHBOARD_TRANSACTION_URL_DOC" shouldUseBladeLink />
         </Box>
         <TopOverviewContainer {...topOverviewProps} />
-        <ShowWhen additionalCondition={(user) => !user.isJnKOmniEnabled}>
-          <BottomOverview {...bottomOverviewProps} />
-        </ShowWhen>
+        <BottomOverview {...bottomOverviewProps} />
       </OverviewContainer>
     </Box>
   );
