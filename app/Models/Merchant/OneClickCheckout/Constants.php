@@ -50,6 +50,8 @@ class Constants
 
     const ONE_CC_MULTIPASS = 'one_cc_multipass_enabled';
 
+    const ONE_CC_FREEBIE_ENABLED = 'one_cc_freebie_enabled';
+
     // Coupon-Engine OneCC Config controls whether the merchant wants to use
     // coupon-engine's features (or) not.
     // Coupon-Engine flows/features include:
@@ -268,6 +270,7 @@ class Constants
         self::ONE_CC_PARTIAL_PAYMENTS_COD,
         self::ONE_CC_MULTIPASS,
         self::MULTIPASS_TOKEN,
+        self::ONE_CC_FREEBIE_ENABLED,
     ];
 
     /**
@@ -311,6 +314,7 @@ class Constants
         self::SOPC_METAFIELDS,
         self::ONE_CC_MULTIPASS,
         self::MULTIPASS_TOKEN,
+        self::ONE_CC_FREEBIE_ENABLED,
     ];
 
     const COMMON_CONFIGS = [
@@ -328,12 +332,14 @@ class Constants
        self::ONE_CC_PARTIAL_PAYMENTS_COD,
        self::ONE_CC_MULTIPASS,
        self::MULTIPASS_TOKEN,
+       self::ONE_CC_FREEBIE_ENABLED,
     ];
 
     public const COUPON_CONFIGS = [
         self::ONE_CC_AUTO_APPLY_COUPONS,
         self::ONE_CC_COUPON_ENGINE,
         self::ONE_CC_MULTI_COUPONS,
+        self::ONE_CC_FREEBIE_ENABLED,
     ];
 
     const INTELLIGENCE_CONFIGS = [

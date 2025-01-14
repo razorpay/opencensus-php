@@ -42,7 +42,8 @@ class Validator extends Base\Validator
         "shipping_engine"                => 'sometimes|boolean',
         "shipping_source"                => 'sometimes|string|in:shiprocket,merchant,null',
         "terra_wallet"                   => 'sometimes|boolean',
-        "wallet_payment"                 => 'sometimes|array|custom:wallet_payment_config'
+        "wallet_payment"                 => 'sometimes|array|custom:wallet_payment_config',
+        "one_cc_freebie_enabled"         => 'sometimes|boolean'
     ];
 
     protected static $shopifyRules = [
@@ -79,7 +80,8 @@ class Validator extends Base\Validator
         "apps_installed"                 => 'sometimes|array|min:1|max:2',
         "apps_installed.*"               => 'string|distinct:ignore_case|in:magic_checkout,sopc',
         "wallet_payment"                 => 'sometimes|array|custom:wallet_payment_config',
-        "one_cc_multipass_enabled"       => 'sometimes|boolean'
+        "one_cc_multipass_enabled"       => 'sometimes|boolean',
+        "one_cc_freebie_enabled"         => 'sometimes|boolean'
     ];
 
     protected static $shippingProviderRules = [
