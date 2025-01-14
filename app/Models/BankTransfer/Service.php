@@ -107,6 +107,7 @@ class Service extends Base\Service
     const TRANSFER_TYPE_IMPS = "IMPS";
     const TRANSFER_TYPE_FT = "FT";
     const TRANSFER_TYPE_IFT = "IFT";
+    const TRANSFER_TYPE_TRANSFER = "TRANSFER";
     const COLLECTX_DEFAULT_FEE_CREDITS_THRESHOLD = 50000;
     const STATUS = "status";
 
@@ -212,6 +213,7 @@ class Service extends Base\Service
 
             // Flow to worker flow if experiment is enabled for the merchant, else usual flow
             $checkForWorkerFlow = $this->isExperimentEnabledForCollectXWorkerFlow($input, $provider, $requestPayload);
+
             if ($checkForWorkerFlow['enabled'] === true)
             {
                 return $this->handleCollectXCallbackWorkerFlow($input, $provider, $requestPayload, $checkForWorkerFlow['merchant_id']);
@@ -414,6 +416,9 @@ class Service extends Base\Service
 
         $ifsc = $input["payee_ifsc"];
 
+        // ifsc is overriden to common ifsc to bypass the common corp code check which is happening outside.
+        $ifsc = Provider::getIFSC(true)[Provider::AXIS];
+
         /* @var VirtualAccountEntity $virtualAccount*/
         $virtualAccount = $this->getVirtualAccountUsingAccountNumberAndIfsc($accountNumber, $ifsc);
 
@@ -541,19 +546,29 @@ class Service extends Base\Service
             case self::TRANSFER_TYPE_UPI:
                 $this->validateDuplicateUpiRequest($input, $provider);
                 $this->checkForUnexpectedUpiTransferPayments($input, $provider);
-                $this->checkForAvailableBalanceAndFeeCredits($merchantId);
-
+                $this->checkForAvailableBalanceAndFeeCredits($merchantId, $input, $provider, Constants\Entity::UPI_TRANSFER);
                 break;
+
             case self::TRANSFER_TYPE_IMPS:
             case self::TRANSFER_TYPE_NEFT:
             case self::TRANSFER_TYPE_RTGS:
             case self::TRANSFER_TYPE_FT:
             case self::TRANSFER_TYPE_IFT:
+            case self::TRANSFER_TYPE_TRANSFER:
                 $this->validateDuplicateRequest($input, null, true);
                 $this->checkForUnexpectedBankTransferPayments($input, $provider);
-                $this->checkForAvailableBalanceAndFeeCredits($merchantId);
+                $this->checkForAvailableBalanceAndFeeCredits($merchantId, $input, $provider, Constants\Entity::BANK_TRANSFER);
                 break;
 
+            default:
+                $ex = new Exception\BadRequestValidationFailureException(
+                    ErrorCode::INVALID_MODE_COLLECTX_TRANSFER,
+                    $mode
+                );
+
+                $this->traceExceptionAndPushUnexpectedPaymentMetric($ex, $input, $provider, $mode);
+
+                throw $ex;
         }
     }
 
@@ -561,7 +576,7 @@ class Service extends Base\Service
      * @throws BadRequestValidationFailureException
      */
     // Only intended to be used for CollectX Payments
-    protected function checkForAvailableBalanceAndFeeCredits(string $merchantId): bool
+    protected function checkForAvailableBalanceAndFeeCredits(string $merchantId, $input, $provider, $method): bool
     {
         $availableBalance = $this->getAvailableBalanceForMerchantWithFeeCredits($merchantId);
 
@@ -572,15 +587,7 @@ class Service extends Base\Service
                 $merchantId
             );
 
-            $this->trace->traceException(
-                $ex,
-                Trace::CRITICAL,
-                TraceCode::COLLECTX_FEE_CREDITS_BELOW_THRESHOLD,
-                [
-                    'merchant_id' => $merchantId,
-                    'error_code' => $ex->getCode(),
-                    'error_message' => $ex->getMessage()
-                ]);
+            $this->traceExceptionAndPushUnexpectedPaymentMetric($ex, $input, $provider, $method);
 
             throw $ex;
         }
@@ -752,8 +759,17 @@ class Service extends Base\Service
                 case self::TRANSFER_TYPE_RTGS:
                 case self::TRANSFER_TYPE_FT:
                 case self::TRANSFER_TYPE_IFT:
+                case self::TRANSFER_TYPE_TRANSFER:
                     $merchantID = $this->getMerchantIDForBankAccountPayment($formattedInput);
                     break;
+
+                default:
+                    $ex = new Exception\BadRequestValidationFailureException(
+                        ErrorCode::INVALID_MODE_COLLECTX_TRANSFER,
+                        $formattedInput[Entity::MODE]
+                    );
+
+                    throw $ex;
             }
 
             $properties = [
@@ -858,6 +874,7 @@ class Service extends Base\Service
             case self::TRANSFER_TYPE_RTGS:
             case self::TRANSFER_TYPE_FT:
             case self::TRANSFER_TYPE_IFT:
+            case self::TRANSFER_TYPE_TRANSFER:
                 $response =  self::routeForCollectXBankTransferRequest($formattedInput, $provider, $requestPayload, "bank_transfer_process");
                 break;
 
@@ -867,6 +884,8 @@ class Service extends Base\Service
                         'mode' => $transferMethod
                     ]
                 );
+
+                $response['valid'] = false;
         }
 
         $this->trace->info(TraceCode::COLLECTX_TRANSFER_PAYMENT_RESPONSE,[
@@ -910,6 +929,7 @@ class Service extends Base\Service
         }
 
         catch(\Exception $ex) {
+
             $this->trace->traceException(
                 $ex,
                 Trace::ERROR,
@@ -961,7 +981,7 @@ class Service extends Base\Service
                 break;
 
             case Provider::AXIS:
-                $formattedPayload = $input;
+                $formattedPayload = $this->formatAxisInputForCollectX($input);
                 break;
 
             default:
@@ -981,6 +1001,13 @@ class Service extends Base\Service
         $formattedPayload[Entity::MODE] = strtoupper($formattedPayload[Entity::MODE]);
 
         return $formattedPayload;
+    }
+
+    protected function formatAxisInputForCollectX(array $input): array
+    {
+        $input['payee_ifsc'] = Provider::getIFSC(true)[Provider::AXIS];
+
+        return $input;
     }
 
     protected function formatRblInputForCollectX(array $input, $requestPayload): array

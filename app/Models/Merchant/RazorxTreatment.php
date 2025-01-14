@@ -392,10 +392,6 @@ final class RazorxTreatment
     const BT_RBL_CREATE_VIRTUAL_ACCOUNT = 'bt_rbl_create_virtual_account';
     const SC_STOP_QR_AS_RECEIVER_FOR_VIRTUAL_ACCOUNT = 'sc_stop_qr_as_receiver_for_virtual_account';
 
-    // This experiment COLLECTX_LIVE_ON_BANK_ACCOUNTS would be enabled for merchants who are live on bank accounts for collectx
-    // Since there could be merchants who are live on UPI but not on Bank Account, VAs should be created accordingly
-    const COLLECTX_LIVE_ON_BANK_ACCOUNTS = "collectx_live_on_bank_accounts";
-
     const COLLECTX_AXIS_PAYMENT_TRANSFER_RAMP_UP = "collectx_axis_payment_transfer_ramp_up";
 
     // this experiment is to disable webhooks for collectx merchants

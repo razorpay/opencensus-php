@@ -774,22 +774,6 @@ class RblBankTransferTest extends TestCase
             ];
 
             $this->fixtures->on('test')->create('terminal:bank_account_terminal', $bankTransferTerminalAttributes);
-
-            // enabling collectx_live_on_bank_accounts feature flag for merchant to allow creation of bank account type VA
-            $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-            $this->app->instance('razorx', $razorx);
-
-            $razorx->shouldReceive('getTreatment')
-                ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-                {
-                    if ($featureFlag === (RazorxTreatment::COLLECTX_LIVE_ON_BANK_ACCOUNTS))
-                    {
-                        return 'on';
-                    }
-
-                    return 'control';
-                });
         }
 
         if (in_array('vpa', $receivers))

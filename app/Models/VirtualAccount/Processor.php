@@ -959,6 +959,12 @@ abstract class Processor extends Base\Core
             $allowedPayerDetails['account_number'] = ltrim($allowedPayerDetails['account_number'],'0');
             $payerDetails['account_number']        = ltrim($payerDetails['account_number'],'0');
 
+            $payerIfsc = $payerDetails[BankAccount\Entity::IFSC];
+
+            if ($payerIfsc === null or $payerIfsc === '') {
+                $allowedPayerDetails[BankAccount\Entity::IFSC] = $payerIfsc;
+            }
+
             if (empty(array_diff($payerDetails, $allowedPayerDetails)) === true)
             {
                 return true;

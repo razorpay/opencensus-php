@@ -80,18 +80,11 @@ class Receiver extends Base\Core
     {
         if ($virtualAccount->merchant !== null)
         {
-            $bankAccountLiveOnCollectX = $this->app->razorx->getTreatment($virtualAccount->merchant->getId(),
-                RazorxTreatment::COLLECTX_LIVE_ON_BANK_ACCOUNTS,
-                $this->mode);
-
-            if ($bankAccountLiveOnCollectX === 'on')
+            if (($virtualAccount->merchant !== null) and ($virtualAccount->merchant->IsFeatureEnabled(Constants::COLLECTX_ENABLED) === true))
             {
-                if (($virtualAccount->merchant !== null) and ($virtualAccount->merchant->IsFeatureEnabled(Constants::COLLECTX_ENABLED) === true))
-                {
-                    $balance = $virtualAccount->merchant->directBankingBalance;
+                $balance = $virtualAccount->merchant->directBankingBalance;
 
-                    $virtualAccount->balance()->associate($balance);
-                }
+                $virtualAccount->balance()->associate($balance);
             }
         }
 
