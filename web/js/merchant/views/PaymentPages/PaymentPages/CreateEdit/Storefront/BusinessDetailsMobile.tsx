@@ -23,6 +23,7 @@ interface IBusinessDetailsMobile {
   formState: any;
   errors: any;
   handleChange: (e) => void;
+  handleEnteredAnalytics: (e) => void;
 }
 
 const BusinessDetailsMobile = ({
@@ -33,6 +34,7 @@ const BusinessDetailsMobile = ({
   formState,
   errors,
   handleChange,
+  handleEnteredAnalytics,
 }: IBusinessDetailsMobile): React.ReactElement => {
   const { contactEmail, contactPhone } = formState;
 
@@ -54,6 +56,7 @@ const BusinessDetailsMobile = ({
           handleChange={handleChange}
           errors={errors}
           textAreaHeight={4}
+          handleEnteredAnalytics={handleEnteredAnalytics}
         />
       </BottomSheetBody>
       <BottomSheetFooter>

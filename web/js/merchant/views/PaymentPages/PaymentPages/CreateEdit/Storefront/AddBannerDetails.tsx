@@ -2,10 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 import { Alert, Box, Button, ChevronRightIcon, Switch, Text } from '@razorpay/blade/components';
 import LineItems from './LineItems';
 import UploadBannerDrawer from './UploadBannerDrawer';
-
 import {
   editStorefront,
   PaymentPagesStorefrontType,
@@ -60,6 +60,10 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
   };
 
   const handleAlertPrimaryClick = () => {
+    track.uploadBannerClickedOnMissingBannerMsg({
+      storefrontId: storefront?.id,
+      isNewStoreFront: Boolean(!storefront?.id),
+    });
     setShowBannerAlert(false);
     handleBannerSetting(true);
     handleClick(true);
@@ -102,7 +106,14 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
                   <Switch
                     accessibilityLabel="storefront-banner-switch"
                     isChecked={storefront.entity.settings?.base_config?.banner_feature_enabled}
-                    onChange={({ isChecked }) => handleBannerSwitchChange(isChecked)}
+                    onChange={({ isChecked }) => {
+                      handleBannerSwitchChange(isChecked);
+                      track.bannerPreviewCheckboxClicked({
+                        storefrontId: storefront?.id,
+                        isNewStoreFront: Boolean(!storefront?.id),
+                        isChecked,
+                      });
+                    }}
                   />
                 </Box>
               )}

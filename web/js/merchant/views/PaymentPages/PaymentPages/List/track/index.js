@@ -148,7 +148,7 @@ function _track() {
           ...extraProperties,
           product_page,
         },
-        'Create Storefront Page',
+        'create storefront page',
       );
     },
 
@@ -161,7 +161,7 @@ function _track() {
           ...extraProperties,
           product_page,
         },
-        'Create Storefront Page',
+        'create storefront page',
       );
     },
 
@@ -260,7 +260,7 @@ function _track() {
       sendToSegment(
         'add existing products',
         'clicked',
-        'Create Storefront Pages',
+        'create storefront page',
         {
           ...extraProperties,
           product_page,
@@ -273,12 +273,12 @@ function _track() {
       sendToSegment(
         'preview',
         'clicked',
-        'Create Storefront Pages',
+        'create storefront page',
         {
           ...extraProperties,
           product_page,
         },
-        'Create Storefront Pages',
+        'create storefront page',
       );
     },
 
@@ -286,12 +286,12 @@ function _track() {
       sendToSegment(
         'custom page',
         'clicked',
-        'Create Storefront Pages',
+        'create storefront page',
         {
           ...extraProperties,
           product_page,
         },
-        'Create Storefront Pages',
+        'create storefront page',
       );
     },
 
@@ -299,12 +299,12 @@ function _track() {
       sendToSegment(
         'publish page',
         'clicked',
-        'Create Storefront Pages',
+        'create storefront page',
         {
           ...extraProperties,
           product_page,
         },
-        'Create Storefront Pages',
+        'create storefront page',
       );
     },
 
@@ -312,12 +312,12 @@ function _track() {
       sendToSegment(
         'add page setting',
         'clicked',
-        'Create Storefront Pages',
+        'create storefront page',
         {
           ...extraProperties,
           product_page,
         },
-        'Create Storefront Pages',
+        'create storefront page',
       );
     },
 
@@ -394,6 +394,127 @@ function _track() {
 
     skipClickOnTourPage: () => {
       sendToSegment('skip section', 'clicked', 'Payment Page Tour', {}, 'Payment Page Tour');
+    },
+    addBuisnessDetailsArrowClicked: (extraProperties) => {
+      sendToSegment(
+        'add business details arrow',
+        'clicked',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'add buisness details modal',
+      );
+    },
+    handleAddBuisnessDetailsEntered: (extraProperties, objectName) => {
+      sendToSegment(
+        objectName,
+        'entered',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'create storefront page',
+      );
+    },
+
+    handleAddBuisnessDetailsSave: (extraProperties) => {
+      sendToSegment(
+        'add business details save',
+        'clicked',
+        'add business details modal',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'create storefront page',
+      );
+    },
+    handleBannerEdit: (extraProperties) => {
+      sendToSegment(
+        'edit banner image',
+        'clicked',
+        'add banner details modal',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'upload banner modal',
+      );
+    },
+    handleBannerReplace: (extraProperties) => {
+      sendToSegment(
+        'replace banner image',
+        'clicked',
+        'add banner details modal',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'upload banner modal',
+      );
+    },
+    handleBannerDelete: (extraProperties) => {
+      sendToSegment(
+        'delete banner image',
+        'clicked',
+        'add banner details modal',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'delete banner confirmation modal',
+      );
+    },
+    addStoreBannerArrowClicked: (extraProperties) => {
+      sendToSegment(
+        'add store banner arrow',
+        'clicked',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'add banner details modal',
+      );
+    },
+    uploadBannerClicked: (extraProperties) => {
+      sendToSegment(
+        'Upload banner',
+        'clicked',
+        'add banner details modal',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'upload banner modal',
+      );
+    },
+    uploadBannerClickedOnMissingBannerMsg: (extraProperties) => {
+      sendToSegment(
+        'upload banner missing banner msg',
+        'clicked',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'upload banner modal',
+      );
+    },
+    bannerPreviewCheckboxClicked: (extraProperties) => {
+      sendToSegment(
+        'banner preview',
+        'checkbox',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'upload banner modal',
+      );
     },
   };
 }

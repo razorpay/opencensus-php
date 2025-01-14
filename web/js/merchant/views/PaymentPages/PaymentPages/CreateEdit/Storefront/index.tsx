@@ -158,10 +158,18 @@ const StoreFront = ({
 
   const handleBuisnessDetailsClick = (val: boolean) => {
     setOpenBuisnessDetailsDrawer(val);
+    track.addBuisnessDetailsArrowClicked({
+      storefrontId: id ?? undefined,
+      isNewStoreFront: Boolean(isCreate),
+    });
   };
 
   const handleAddBannerClick = (val: boolean) => {
     setOpenAddBannerDrawer(val);
+    track.addStoreBannerArrowClicked({
+      storefrontId: id ?? undefined,
+      isNewStoreFront: Boolean(isCreate),
+    });
   };
 
   const getMerchantDetails = useCallback(

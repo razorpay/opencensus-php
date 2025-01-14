@@ -19,6 +19,7 @@ import {
   Switch,
 } from '@razorpay/blade/components';
 import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
 import LineItems from './LineItems';
 
@@ -121,7 +122,14 @@ const RenderBannerSection = ({
           <Switch
             accessibilityLabel="storefront-banner-switch"
             isChecked={storefront.entity.settings?.base_config?.banner_feature_enabled}
-            onChange={({ isChecked }) => handleBannerSwitchChange(isChecked)}
+            onChange={({ isChecked }) => {
+              handleBannerSwitchChange(isChecked);
+              track.bannerPreviewCheckboxClicked({
+                storefrontId: storefront?.id,
+                isNewStoreFront: Boolean(!storefront?.id),
+                isChecked,
+              });
+            }}
           />
         </Box>
       )}
@@ -190,6 +198,10 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
       setImageFile(file);
       toBase64(file).then((base64) => {
         setImageSrc(base64 as string);
+      });
+      track.uploadBannerClicked({
+        storefrontId: storefront?.id,
+        isNewStoreFront: Boolean(!storefront?.id),
       });
     };
   };
@@ -315,11 +327,19 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
   };
 
   const handleReplaceImage = (banner: IBannerImage) => {
+    track.handleBannerReplace({
+      storefrontId: storefront?.id,
+      isNewStoreFront: Boolean(!storefront?.id),
+    });
     setSelectedBanner(banner);
     onImageUpload();
   };
 
   const handleDeleteImage = (banner: IBannerImage) => {
+    track.handleBannerDelete({
+      storefrontId: storefront?.id,
+      isNewStoreFront: Boolean(!storefront?.id),
+    });
     setSelectedBanner(banner);
     setOpenDeleteModal(true);
   };
@@ -352,6 +372,10 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
   };
 
   const handleEditImage = (banner: IBannerImage) => {
+    track.handleBannerEdit({
+      storefrontId: storefront?.id,
+      isNewStoreFront: Boolean(!storefront?.id),
+    });
     setSelectedBanner(banner);
     convertToBase64(banner.original)
       .then((base64) => {

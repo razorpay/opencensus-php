@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Box, Button, Heading, Text, TextArea, TextInput } from '@razorpay/blade/components';
-import { editStorefront } from 'merchant/reducers/paymentPages/storefront';
+import {
+  editStorefront,
+  PaymentPagesStorefrontType,
+} from 'merchant/reducers/paymentPages/storefront';
 import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
 import { validateContactDetails } from 'merchant/views/PaymentPages/common/Products/utils';
 import BusinessDetailsMobile from './BusinessDetailsMobile';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
 interface IBusinessDetailsDrawer {
   handleClose: () => void;
@@ -18,6 +22,7 @@ interface IBusinessDetailsDrawer {
   isMobile: boolean;
   openBuisnessDetailsDrawer: boolean;
   editStorefront: (name, value) => void;
+  storefront: PaymentPagesStorefrontType;
 }
 
 interface IFormDetails {
@@ -29,6 +34,7 @@ interface IFormDetails {
   };
   state: any;
   handleChange: (e: any) => void;
+  handleEnteredAnalytics: (e: any) => void;
   errors: any;
   textAreaHeight?: 2 | 3 | 4 | 5 | undefined;
 }
@@ -38,6 +44,7 @@ export const FormDetails = ({
   entity,
   errors,
   handleChange,
+  handleEnteredAnalytics,
   textAreaHeight = 2,
 }: IFormDetails): React.ReactElement => {
   const { contactEmail, contactPhone, terms } = state;
@@ -55,6 +62,7 @@ export const FormDetails = ({
         validationState={errors.contactEmail ? 'error' : 'none'}
         isRequired
         errorText={errors.contactEmail}
+        onBlur={handleEnteredAnalytics}
       />
       <Box
         borderColor="surface.border.gray.muted"
@@ -73,6 +81,7 @@ export const FormDetails = ({
         validationState={errors.contactPhone ? 'error' : 'none'}
         isRequired
         errorText={errors.contactPhone}
+        onBlur={handleEnteredAnalytics}
       />
       <Box
         borderColor="surface.border.gray.muted"
@@ -89,6 +98,7 @@ export const FormDetails = ({
         validationState="none"
         onChange={handleChange}
         value={terms}
+        onBlur={handleEnteredAnalytics}
       />
       <Text
         variant="caption"
@@ -120,6 +130,7 @@ const BusinessDetailsDrawer = ({
   entity,
   isMobile,
   editStorefront,
+  storefront,
 }: IBusinessDetailsDrawer): React.ReactElement => {
   const [state, setState] = useState({
     contactEmail: entity?.contactEmail || '',
@@ -134,12 +145,22 @@ const BusinessDetailsDrawer = ({
 
   const { contactEmail, contactPhone, terms } = state;
 
+  const handleEnteredAnalytics = (e) => {
+    track.handleAddBuisnessDetailsEntered(
+      {
+        storefrontId: storefront?.id,
+        isNewStoreFront: Boolean(!storefront?.id),
+        [e.name]: e.value,
+      },
+      e.name,
+    );
+  };
+
   const handleChange = (e) => {
     setState((prevState) => ({
       ...prevState,
       [e.name]: e.value,
     }));
-
     setErrors({
       ...errors,
       [e.name]: '',
@@ -165,7 +186,10 @@ const BusinessDetailsDrawer = ({
         editStorefront(field, value);
       }
     });
-
+    track.handleAddBuisnessDetailsSave({
+      storefrontId: storefront?.id,
+      isNewStoreFront: Boolean(!storefront?.id),
+    });
     handleClose();
   };
 
@@ -193,6 +217,7 @@ const BusinessDetailsDrawer = ({
       onSubmit={onSubmit}
       formState={state}
       errors={errors}
+      handleEnteredAnalytics={handleEnteredAnalytics}
     />
   ) : (
     <PaymentPagesDrawer
@@ -223,6 +248,7 @@ const BusinessDetailsDrawer = ({
         state={state}
         entity={entity}
         handleChange={handleChange}
+        handleEnteredAnalytics={handleEnteredAnalytics}
         errors={errors}
         textAreaHeight={3}
       />
@@ -231,6 +257,7 @@ const BusinessDetailsDrawer = ({
 };
 
 const mapStateToProps = (state) => ({
+  storefront: state.paymentPageStorefront,
   entity: state.paymentPageStorefront.entity,
   isMobile: state.app.isMobileResolution,
 });
