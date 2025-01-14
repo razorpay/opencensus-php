@@ -16,9 +16,12 @@ use Requests;
 use App\Base;
 use App\Merchant;
 use Carbon\Carbon;
+use App\Constants\Constants;
 use App\Mailers\MerchantMailer;
 use Aws\Laravel\AwsFacade as AWS;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\App as App;
+use App\Metrics\Constants as MetricsConstants;
 
 class Service extends Base\Service
 {
@@ -112,7 +115,7 @@ class Service extends Base\Service
 
     public function fetchDetails($merchantId = null)
     {
-        $merchantDetails = $this->getDetailsFromAPI($merchantId);
+        $merchantDetails = $this->getDetailsFromAPIWithCache($merchantId);
 
         $merchantDetails['submitted'] = (int) ($merchantDetails['submitted'] ?? 0);
 
@@ -141,7 +144,7 @@ class Service extends Base\Service
     {
         if ($merchantDetails === null)
         {
-            $merchantDetails = $this->getDetailsFromAPI($merchantId);
+            $merchantDetails = $this->getDetailsFromAPIWithCache($merchantId);
         }
 
         $presignupDetails = [];
@@ -172,6 +175,56 @@ class Service extends Base\Service
         }
 
         return true;
+    }
+
+    private function getDetailsFromAPICacheKey($merchantId): string
+    {
+        return session()->getId().":merchant_details:".$merchantId;
+    }
+
+    public function getDetailsFromAPIWithCache($merchantId = null)
+    {
+        if (empty($merchantId) === true)
+        {
+            $merchantId = Session::get('current_merchant_id');
+
+            if (empty($merchantId) === true)
+            {
+                return [];
+            }
+        }
+
+        $cacheKey = $this->getDetailsFromAPICacheKey($merchantId);
+
+        $merchantDetails = Cache::get($cacheKey);
+
+        if (!empty($merchantDetails))
+        {
+            $this->app['metrics']
+                ->count(MetricsConstants::METRIC_COUNTER_CACHE_RESULT, MetricsConstants::EVENT_COUNT_ONE, [
+                    Constants::CACHE_STATUS  => Constants::CACHE_HIT,
+                    Constants::CACHE_NAME    => Constants::MERCHANT_DETAILS_CACHE_NAME,
+                ]);
+            return $merchantDetails;
+        }
+
+        $this->app['metrics']
+            ->count(MetricsConstants::METRIC_COUNTER_CACHE_RESULT, MetricsConstants::EVENT_COUNT_ONE, [
+                Constants::CACHE_STATUS  => Constants::CACHE_MISS,
+                Constants::CACHE_NAME    => Constants::MERCHANT_DETAILS_CACHE_NAME,
+            ]);
+
+        try {
+            $merchantDetails = $this->getDetailsFromAPI($merchantId);
+            Cache::put($cacheKey, $merchantDetails, Constants::MERCHANT_DETAILS_CACHE_TTL);
+        } catch (\Exception $e) {
+            $merchantDetails = [];
+            $this->trace->info(TraceCode::MERCHANT_DETAILS_FETCH_ERROR, [
+                'error'                => $e,
+            ]);
+        }
+
+        return $merchantDetails;
     }
 
     public function getDetailsFromAPI($merchantId = null)

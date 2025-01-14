@@ -28,6 +28,7 @@ use App\Session\Entity as AppSession;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise\PromiseInterface;
+use App\Metrics\Constants as MetricsConstants;
 use App\Services\Razorassist\RazorassistClient;
 use App\Services\Insightx\InsightXClient;
 use App\Splitz\Service as SplitzService;
@@ -843,6 +844,53 @@ class Service extends Base\Service
         return $request->sendAsyncPromise('merchant/partner-intent', 'GET');
     }
 
+    public function getPartnerIntentCacheKey($merchantId)
+    {
+        return session()->getId().':partner_intent:' . $merchantId;
+    }
+    public function getPartnerIntentWithCache($merchantId=null)
+    {
+        $merchantId = $merchantId ?? Session::get('current_merchant_id');
+
+        $cacheKey = $this->getPartnerIntentCacheKey($merchantId);
+
+        $data = $this->app['cache']->get($cacheKey);
+
+        if (!empty($data))
+        {
+            $this->app['metrics']
+                ->count(MetricsConstants::METRIC_COUNTER_CACHE_RESULT, MetricsConstants::EVENT_COUNT_ONE, [
+                    AppConstants::CACHE_STATUS  => AppConstants::CACHE_HIT,
+                    AppConstants::CACHE_NAME    => AppConstants::PARTNER_INTENT_CACHE_NAME,
+                ]);
+            return $data;
+        }
+
+        $this->app['metrics']
+            ->count(MetricsConstants::METRIC_COUNTER_CACHE_RESULT, MetricsConstants::EVENT_COUNT_ONE, [
+                AppConstants::CACHE_STATUS  => AppConstants::CACHE_MISS,
+                AppConstants::CACHE_NAME    => AppConstants::PARTNER_INTENT_CACHE_NAME,
+            ]);
+
+        try {
+            $data = $this->getPartnerIntent();
+        } catch (\Exception $e) {
+            $data = [];
+
+            $this->trace->error(TraceCode::PARTNER_INTENT_FETCH_ERROR, [
+                'exception' => $e->getMessage()
+            ]);
+        }
+
+        if (!empty($data))
+        {
+            $this->app['cache']->put($cacheKey, $data, AppConstants::PARTNER_INTENT_CACHE_TTL);
+        }
+
+        return $data;
+    }
+
+
     public function getPartnerIntent()
     {
         $startTime = microtime(true) * 1000;
@@ -876,6 +924,51 @@ class Service extends Base\Service
         ]);
 
         return $data['partner_intent'] ?? null;
+    }
+
+    public function getMerchantTagsCacheKey($merchantId)
+    {
+        return session()->getId().':merchant_tags:' . $merchantId;
+    }
+
+    public function getMerchantTagsWithCache($merchantId)
+    {
+        $cacheKey = $this->getMerchantTagsCacheKey($merchantId);
+
+        $data = $this->app['cache']->get($cacheKey);
+
+        if (!empty($data))
+        {
+            $this->app['metrics']
+                ->count(MetricsConstants::METRIC_COUNTER_CACHE_RESULT, MetricsConstants::EVENT_COUNT_ONE, [
+                    AppConstants::CACHE_STATUS  => AppConstants::CACHE_HIT,
+                    AppConstants::CACHE_NAME    => AppConstants::MERCHANT_TAG_CACHE_NAME,
+                ]);
+            return $data;
+        }
+
+        $this->app['metrics']
+            ->count(MetricsConstants::METRIC_COUNTER_CACHE_RESULT, MetricsConstants::EVENT_COUNT_ONE, [
+                AppConstants::CACHE_STATUS  => AppConstants::CACHE_MISS,
+                AppConstants::CACHE_NAME    => AppConstants::MERCHANT_TAG_CACHE_NAME,
+            ]);
+
+        try {
+            $data = $this->getMerchantTags($merchantId);
+        } catch (\Exception $e) {
+            $data = [];
+
+            $this->trace->error(TraceCode::MERCHANT_TAGS_FETCH_ERROR, [
+                'exception' => $e->getMessage()
+            ]);
+        }
+
+        if (!empty($data))
+        {
+            $this->app['cache']->put($cacheKey, $data, AppConstants::MERCHANT_TAGS_CACHE_TTL);
+        }
+
+        return $data;
     }
 
     public function getMerchantTags($merchantId)
@@ -925,6 +1018,53 @@ class Service extends Base\Service
             'duration'            => $duration,
             'controller'          => app('request')->route()->getAction()['controller']
         ]);
+
+        return $data;
+    }
+
+    public function getMerchantFeaturesCacheKey($merchantId)
+    {
+        return session()->getId().':merchant_features:' . $merchantId;
+    }
+
+    public function getMerchantFeaturesWithCache($currentMerchantId=null): array
+    {
+        $merchantId = $currentMerchantId ?? Session::get('current_merchant_id');
+
+        $cacheKey = $this->getMerchantFeaturesCacheKey($merchantId);
+
+        $data = $this->app['cache']->get($cacheKey);
+
+        if (!empty($data))
+        {
+            $this->app['metrics']
+                ->count(MetricsConstants::METRIC_COUNTER_CACHE_RESULT, MetricsConstants::EVENT_COUNT_ONE, [
+                    AppConstants::CACHE_STATUS  => AppConstants::CACHE_HIT,
+                    AppConstants::CACHE_NAME    => AppConstants::MERCHANT_FEATURES_CACHE_NAME,
+                ]);
+            return $data;
+        }
+
+        $this->app['metrics']
+            ->count(MetricsConstants::METRIC_COUNTER_CACHE_RESULT, MetricsConstants::EVENT_COUNT_ONE, [
+                AppConstants::CACHE_STATUS  => AppConstants::CACHE_MISS,
+                AppConstants::CACHE_NAME    => AppConstants::MERCHANT_FEATURES_CACHE_NAME,
+            ]);
+
+        try {
+            $data = $this->getMerchantFeatures();
+        } catch (\Exception $e) {
+            $data = [];
+
+            $this->trace->error(TraceCode::MERCHANT_FEATURES_FETCH_ERROR, [
+                'exception' => $e->getMessage()
+            ]);
+        }
+
+        if (!empty($data))
+        {
+            $this->app['cache']->put($cacheKey, $data, AppConstants::MERCHANT_FEATURES_CACHE_TTL);
+        }
 
         return $data;
     }
@@ -1048,6 +1188,53 @@ class Service extends Base\Service
         ]);
 
         return $data['show_tnc_popup'];
+    }
+
+    public function getMerchantActiveCampaignsCacheKey($merchantId)
+    {
+        return session()->getId().':merchant_active_campaigns:' . $merchantId;
+    }
+
+    public function getMerchantActiveCampaignsWithCache($merchantId=null): array
+    {
+        $merchantId = $merchantId ?? Session::get('current_merchant_id');
+
+        $cacheKey = $this->getMerchantActiveCampaignsCacheKey($merchantId);
+
+        $data = $this->app['cache']->get($cacheKey);
+
+        if (!empty($data))
+        {
+            $this->app['metrics']
+                ->count(MetricsConstants::METRIC_COUNTER_CACHE_RESULT, MetricsConstants::EVENT_COUNT_ONE, [
+                    AppConstants::CACHE_STATUS  => AppConstants::CACHE_HIT,
+                    AppConstants::CACHE_NAME    => AppConstants::MERCHANT_ACTIVE_CAMPAIGNS_CACHE_NAME,
+                ]);
+            return $data;
+        }
+
+        $this->app['metrics']
+            ->count(MetricsConstants::METRIC_COUNTER_CACHE_RESULT, MetricsConstants::EVENT_COUNT_ONE, [
+                AppConstants::CACHE_STATUS  => AppConstants::CACHE_MISS,
+                AppConstants::CACHE_NAME    => AppConstants::MERCHANT_ACTIVE_CAMPAIGNS_CACHE_NAME,
+            ]);
+
+        try {
+            $data = $this->getMerchantActiveCampaigns();
+        } catch (\Exception $e) {
+            $data = [];
+
+            $this->trace->error(TraceCode::MERCHANT_ACTIVE_CAMPAIGNS_FETCH_ERROR, [
+                'exception' => $e->getMessage()
+            ]);
+        }
+
+        if (!empty($data))
+        {
+            $this->app['cache']->put($cacheKey, $data, AppConstants::MERCHANT_ACTIVE_CAMPAIGNS_CACHE_TTL);
+        }
+
+        return $data;
     }
 
     public function getMerchantActiveCampaigns(): array
@@ -1223,7 +1410,7 @@ class Service extends Base\Service
         {
             $merchantId = $this->getCurrentMerchantId();
         }
-        
+
         $response = [];
 
             $razorxService = (new Razorx\Service());

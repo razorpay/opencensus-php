@@ -83,7 +83,7 @@ class Constants
   const SPLITZ_EXPERIMENT_DASHBOARD_CACHE_MISS          = 'splitz_experiment_dashboard_cache_miss';
   const RAZORX_EXPERIMENT_DASHBOARD_CACHE_HIT           = 'razorx_experiment_dashboard_cache_hit';
   const RAZORX_EXPERIMENT_DASHBOARD_CACHE_MISS          = 'razorx_experiment_dashboard_cache_miss';
-  const OLD_DASHBOARD_REDIRECT_COUNT                    = 'old_dashboard_redirect_count';  
+  const OLD_DASHBOARD_REDIRECT_COUNT                    = 'old_dashboard_redirect_count';
   // Metric Lables
   const LOGIN_METHOD                = 'login_method';
   const LOGIN_ACTION                = 'login_action';
@@ -172,4 +172,6 @@ class Constants
   const REQUEST_SUCCESS             = 'success';
 
   const LABEL_API_BASE_URL          = 'API_BASE_URL';
+
+  const METRIC_COUNTER_CACHE_RESULT = 'cache_result';
 }

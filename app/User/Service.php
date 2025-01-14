@@ -4,8 +4,10 @@ namespace App\User;
 
 
 use Auth;
+use App\Http\AppResponse;
 use GuzzleHttp\Client as Guzzle;
 use Trace;
+use Input;
 use Cookie;
 use Session;
 use Request;
@@ -14,9 +16,11 @@ use App\Base;
 use DateTimeZone;
 use App\Merchant;
 use App\Razorx;
+use App\Admin;
 use App\Lib\Util;
 use App\Http\ApiUrl;
 use App\Http\Headers;
+use App\User\Constants as UserConstants;
 use App\Edge\EdgeClient;
 use Lcobucci\JWT\Token;
 use App\MerchantDetails;
@@ -122,6 +126,8 @@ class Service extends Base\Service
      */
     private $edgeClient;
 
+    private $splitzExprimentData;
+
     public function __construct(array $options = [])
     {
         $app = \App::getFacadeRoot();
@@ -137,6 +143,8 @@ class Service extends Base\Service
         $this->httpClient = array_get($options, AppConstants::HTTP_CLIENT);
 
         $this->edgeClient = new EdgeClient();
+
+        $this->splitzExprimentData = [];
     }
 
     /**
@@ -1601,10 +1609,13 @@ class Service extends Base\Service
     {
         $authSource = app('request')->input('auth_source', '');
 
-        if ($authSource === 'website' || $authSource === 'website_homepage')
+        $domainBasedRedirection = $this->getDomainBasedRedirectionUrlIfApplicable();
+
+        if (! empty($domainBasedRedirection) || $authSource === 'website' || $authSource === 'website_homepage')
         {
             return [
-                "destination"   => AppConstants::DESTINATION_PHP_BE,
+                AppConstants::DESTINATION   => AppConstants::DESTINATION_PHP_BE,
+                AppConstants::REDIRECT_TO   => $domainBasedRedirection,
             ];
         }
 
@@ -1617,7 +1628,7 @@ class Service extends Base\Service
             ]);
 
             return [
-                "destination"   => AppConstants::DESTINATION_PHP_BE,
+                AppConstants::DESTINATION   => AppConstants::DESTINATION_PHP_BE,
             ];
         }
 
@@ -1629,22 +1640,19 @@ class Service extends Base\Service
                 'error' => 'No current merchant found',
             ]);
             return [
-                "destination"   => AppConstants::DESTINATION_PHP_BE,
+                AppConstants::DESTINATION   => AppConstants::DESTINATION_PHP_BE,
             ];
         }
 
         $currentMerchantId = $currentMerchant->id;
+        $merchantDetailService = new MerchantDetails\Service;
 
-        $merchantService = new Merchant\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
-
-        $data["pre_signup"] = $merchantService->getPreSignupDetailsWithCache($currentMerchantId);
+        $data["pre_signup"] = $merchantDetailService->getDetailsFromAPIWithCache($currentMerchantId);
 
         $data['pre_signup_complete'] = (
             isset($data['pre_signup'][Merchant\Entity::CONTACT_NAME])
             AND (strlen($data['pre_signup'][Merchant\Entity::CONTACT_NAME]) !== 0)
         );
-
-        $merchantDetailService = new MerchantDetails\Service;
 
         // for non-registered check if pre_signup_complete done or not;
         if (($merchantDetailService->isExperimentOnAndIsUnregisteredBusinessType($data) === true
@@ -1657,17 +1665,28 @@ class Service extends Base\Service
             $data['pre_signup_complete'] = true;
         }
 
+        $redirectUrlBasedOnUserPersona = $this->getRedirectUrlBasedOnUserPersona($data);
+
+        if (!empty($redirectUrlBasedOnUserPersona))
+        {
+            return [
+                AppConstants::DESTINATION   => AppConstants::DESTINATION_PHP_BE,
+                AppConstants::REDIRECT_TO   => $redirectUrlBasedOnUserPersona,
+            ];
+        }
+
         // This condition is only for scenarios when user is already authenticated and visits the root route directly.
         // This will enforce routing via ingress for shell node server switch integration to work (whenever enabled)
         $user = $data['details']['user'] ?? [];
         $isConfirmed = (bool) ($user['confirmed'] ?? false);
         $isMobileConfirmed = (bool) ($user['contact_mobile_verified'] ?? false);
         $isPreSignupComplete = (bool) ($data['pre_signup_complete'] ?? false);
+        $isLinkedAccount = isset($data["pre_signup"]['linked_account']) === true && $data["pre_signup"]['linked_account'] === true;
 
-        $isRedirectApplicable = ($isConfirmed || $isMobileConfirmed) && $isPreSignupComplete;
+        $isRedirectApplicable = ($isConfirmed || $isMobileConfirmed || $isLinkedAccount) && $isPreSignupComplete;
 
         return [
-            "destination"   => $isRedirectApplicable ? AppConstants::DESTINATION_SHELL : AppConstants::DESTINATION_PHP_BE,
+            AppConstants::DESTINATION   => $isRedirectApplicable ? AppConstants::DESTINATION_SHELL : AppConstants::DESTINATION_PHP_BE,
         ];
     }
 
@@ -1701,7 +1720,7 @@ class Service extends Base\Service
             $userId = $user->id;
         }
 
-        list($error, $genericUser) = $this->getUserFromApi($userId);
+        [$error, $genericUser] = $this->getUserFromApiWithCache($userId);
 
         if (empty($error) === false)
         {
@@ -1777,11 +1796,11 @@ class Service extends Base\Service
         $this->setResponseForEachApiPromises($apiPromiseAny, $allApiResponses);
 
         $merchantService = new Merchant\Service;
-    
+
         $razorxService = (new razorx\Service());
-        
+
         $data[Constants::EXPERIMENTS] = [];
-        
+
         if (empty($data[Constants::EXPERIMENTS]))
         {
             if((isset($allApiResponses[self::EXPERIMENT_PROMISE]) === true) and
@@ -1789,7 +1808,7 @@ class Service extends Base\Service
             {
                 $experiments = $merchantService->processExperimentPromiseResponse($apiPromiseAny[self::EXPERIMENT_PROMISE]);
             }
-            
+
             if ($razorxService->isRazorxApiCallDisable($currentMerchantId) === true)
             {
                 $experiments = $merchantService->getExperiments(true, $currentMerchantId);
@@ -1886,11 +1905,11 @@ class Service extends Base\Service
         $isBankingRequest = ApiUrl::isBankingOriginRequest();
 
         $merchantService = new Merchant\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
-    
+
         $razorxService = (new razorx\Service());
-        
+
         $currentMerchantId = $currentMerchant->id;
-        
+
         // API 1.1
         if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
             ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
@@ -2057,14 +2076,14 @@ class Service extends Base\Service
                             ($this->isFieldExcluededInPgRendering(Constants::TAGS) === false)) and
                         ($tags === "1"))
                     {
-                        $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
+                        $data['tags'] = $merchantService->getMerchantTagsWithCache($currentMerchantId);
                     }
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
                             ($this->isFieldExcluededInPgRendering(Constants::FEATURES) === false)) and
                         ($features === "1"))
                     {
-                        $data['features'] = $merchantService->getMerchantFeatures();
+                        $data['features'] = $merchantService->getMerchantFeaturesWithCache($currentMerchantId);
                     }
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
@@ -2074,7 +2093,7 @@ class Service extends Base\Service
                         // adding this only for PG, if moving campaigns to X, an extra parameter merchant=x is being sent
                         // which is causing validation failure
                         // refer this: https://razorpay.slack.com/archives/C6QPQKVLZ/p1599729634355800
-                        $data['campaigns'] = $merchantService->getMerchantActiveCampaigns();
+                        $data['campaigns'] = $merchantService->getMerchantActiveCampaignsWithCache($currentMerchantId);
                     }
 
                     // Make switch product call only if
@@ -2304,14 +2323,14 @@ class Service extends Base\Service
                             ($this->isFieldExcluededInPgRendering(Constants::TAGS) === false)) and
                         ($tags === "1"))
                     {
-                        $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
+                        $data['tags'] = $merchantService->getMerchantTagsWithCache($currentMerchantId);
                     }
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
                             ($this->isFieldExcluededInPgRendering(Constants::FEATURES) === false)) and
                         ($features === "1"))
                     {
-                        $data['features'] = $merchantService->getMerchantFeatures();
+                        $data['features'] = $merchantService->getMerchantFeaturesWithCache();
                     }
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false)  or
@@ -2347,7 +2366,7 @@ class Service extends Base\Service
                         // Fetch partner intent incase current merchant has owner role
                         if ((new Helper)->isOwner($currentMerchant))
                         {
-                            $data['partner_intent'] = $merchantService->getPartnerIntent();
+                            $data['partner_intent'] = $merchantService->getPartnerIntentWithCache($currentMerchantId);
                         }
 
                         // if the merchant is a partner
@@ -2443,7 +2462,7 @@ class Service extends Base\Service
             $userId = $user->id;
         }
 
-        list($error, $genericUser) = $this->getUserFromApi($userId);
+        [$error, $genericUser] = $this->getUserFromApiWithCache($userId);
 
         if (empty($error) === false)
         {
@@ -2579,14 +2598,14 @@ class Service extends Base\Service
                             ($this->isFieldExcluededInPgRendering(Constants::TAGS) === false)) and
                         ($tags === "1"))
                     {
-                        $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
+                        $data['tags'] = $merchantService->getMerchantTagsWithCache($currentMerchantId);
                     }
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
                             ($this->isFieldExcluededInPgRendering(Constants::FEATURES) === false)) and
                         ($features === "1"))
                     {
-                        $data['features'] = $merchantService->getMerchantFeatures();
+                        $data['features'] = $merchantService->getMerchantFeaturesWithCache($currentMerchantId);
                     }
 
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false)  or
@@ -2616,13 +2635,13 @@ class Service extends Base\Service
                             // adding this only for PG, if moving campaigns to X, an extra parameter merchant=x is being sent
                             // which is causing validation failure
                             // refer this: https://razorpay.slack.com/archives/C6QPQKVLZ/p1599729634355800
-                            $data['campaigns'] = $merchantService->getMerchantActiveCampaigns();
+                            $data['campaigns'] = $merchantService->getMerchantActiveCampaignsWithCache($currentMerchantId);
                         }
 
                         // Fetch partner intent incase current merchant has owner role
                         if ((new Helper)->isOwner($currentMerchant))
                         {
-                            $data['partner_intent'] = $merchantService->getPartnerIntent();
+                            $data['partner_intent'] = $merchantService->getPartnerIntentWithCache($currentMerchantId);
                         }
 
                         // if the merchant is a partner
@@ -3445,9 +3464,9 @@ class Service extends Base\Service
     protected function updateNewUsersOnlyTypeExperiments(array $merchant, array $data): array
     {
         $merchantService = new Merchant\Service;
-    
+
         $merchantId = array_get($merchant, 'id', '');
-        
+
         foreach (config('razorx.new_signup_experiments_config') as $experimentFeatureFlag => $experimentConfig)
         {
             if (($this->isRequestOriginSatisfied($experimentConfig) === true)
@@ -3486,7 +3505,7 @@ class Service extends Base\Service
         }
 
         $merchantId = array_get($merchant, 'id', '');
-        
+
         /*
          * This flag is to tell FE whether to show NeoStone, SelfServe or None flow
          * to current account applicants
@@ -3934,5 +3953,655 @@ class Service extends Base\Service
             return false;
         }
         return $isMerchantLogin;
+    }
+
+
+    public function getDomainBasedRedirectionUrlIfApplicable(): ?string
+    {
+        $domain = \Request::server('SERVER_NAME');
+
+        foreach (UserConstants::DOMAIN_REDIRECT_MAP as $domainKey => $domainData) {
+            if ($domain == $domainKey) {
+                $redirectUrl = $domainData['redirect_url'];
+                if ($this->IsDomainRedirectionEnabled($domainData['id'])) {
+                    return $redirectUrl;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function IsDomainRedirectionEnabled($id): bool
+    {
+        if (empty($id)) {
+            // No experiment is set
+            return true;
+        }
+        $experimentId = env($id);
+        $data = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariant(
+            $experimentId,
+            "",
+        );
+
+        if ($data === null)
+        {
+            return false;
+        }
+
+        return ($data["variables"][0]["value"] ?? null) === 'true';
+    }
+
+    public function getUserDataForViewOrRedirectURL($details, $org): array
+    {
+        return [
+            'isAuthenticated'       => (bool) $details['user'],
+            'isConfirmed'           => $details['user']['confirmed'] ?? false,
+            'isMobileConfirmed'     => $details['user']['contact_mobile_verified'] ?? false,
+            'preSignupData'         => $details['pre_signup'] ?? [],
+            'isPreSignupComplete'   => $details['pre_signup_complete'] ?? false,
+            'user'                  => json_encode($details),
+            'org'                   => json_encode($org),
+            'api_host'              => ApiUrl::getCheckoutApi(),
+            'session_id'            => Session::getId(),
+        ];
+    }
+
+    private function getRedirectUrlBasedOnUserPersona(mixed $data):?string
+    {
+        [$orgError, $org] = $this->getOrgDetails();
+
+        if (!empty($orgError)) {
+            return null;
+        }
+
+        $newDetails = $data['details'] ?? [];
+        $newDetails = $newDetails + ($data['pre_signup'] ?? []) + $data;
+
+        $userdata = $this->getUserDataForViewOrRedirectURL($newDetails, $org);
+
+        return $this->getRedirectionUrlWithCache($newDetails, $org, $userdata);
+    }
+
+    public function getRedirectionUrlCacheKey($merchantId): string
+    {
+        return session()->getId() . ':redirection_url:' . $merchantId;
+    }
+
+    public function getRedirectionUrlWithCache($details, $org, $data): ?string
+    {
+        if (empty($details) || empty($org) || empty($data))
+        {
+            return null;
+        }
+
+        $redirectionUrlCacheKey = $this->getRedirectionUrlCacheKey($details['id']);
+
+        $redirectionUrl = Cache::get($redirectionUrlCacheKey);
+
+        if (!empty($redirectionUrl))
+        {
+            $this->app['metrics']
+                ->count(MetricConstants::METRIC_COUNTER_CACHE_RESULT, MetricConstants::EVENT_COUNT_ONE, [
+                    AppConstants::CACHE_STATUS  => AppConstants::CACHE_HIT,
+                    AppConstants::CACHE_NAME    => AppConstants::REDIRECTION_URL_CACHE_NAME,
+                ]);
+            return $redirectionUrl;
+        }
+
+        $this->app['metrics']
+            ->count(MetricConstants::METRIC_COUNTER_CACHE_RESULT, MetricConstants::EVENT_COUNT_ONE, [
+                AppConstants::CACHE_STATUS  => AppConstants::CACHE_MISS,
+                AppConstants::CACHE_NAME    => AppConstants::REDIRECTION_URL_CACHE_NAME,
+            ]);
+
+        try {
+            $redirectionUrl = $this->getRedirectionUrl($details, $org, $data);
+            Cache::put($redirectionUrlCacheKey, $redirectionUrl, AppConstants::REDIRECTION_URL_BASED_ON_PERSONA_CACHE_TTL);
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::GET_REDIRECTION_URL_ERROR, [
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
+
+        return $redirectionUrl;
+    }
+
+    public function getRedirectionUrl($details, $org, $data)
+    {
+        if ($this->isRedirectionApplicable($details) === true)
+        {
+            $ttl = 12 * 60;
+            $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
+                'redirection_url' => env('EASY_DASHBOARD_URL'),
+                'cookie_set'      => true,
+                'condition'       => $details['user']['signup_campaign'] ?? null,
+                'user'            => $data['user'] ?? null,
+                'api_host'        => $data['api_host'] ?? null,
+                'session_id'      => $data['session_id'] ?? null
+            ]);
+
+            $id = $details['id'] ?? null;
+            $userId = $details['user']['id'] ?? null;
+
+            $redirectionURL = env('EASY_DASHBOARD_URL');
+
+            $signupCampaign = $details['user']['signup_campaign'] ?? null;
+
+            if (!empty($signupCampaign) && $signupCampaign === 'i18n_my_signup') {
+                $redirectionURL = env('EASY_DASHBOARD_CURLEC_URL');
+            }
+
+            Cookie::queue('rzp_merchant_id', $id, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
+            Cookie::queue('rzp_user_id', $userId, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
+
+            return $redirectionURL;
+        }
+
+        $orgCode = $org[MerchantConstants::CUSTOM_CODE] ?? '';
+        $orgID = $org[MerchantConstants::ORG_ID] ?? '';
+
+        $isOrgRZP = $orgCode === MerchantConstants::RZP;
+        $isRZPOrgID = $orgID === MerchantConstants::RZP_ORG_ID;
+
+        $countryCode = $details[MerchantConstants::COUNTRY_CODE] ?? null;
+
+        // FTUX redirection for India merchants only
+        $isFTUXApplicableForIndia = $isRZPOrgID and $countryCode === MerchantConstants::INDIA_COUNTRY_CODE;
+
+        $isApplicableForFtuxRedirection = $this->isRedirectionApplicableForFtux($details) === true and $isOrgRZP === true;
+
+        if ($isApplicableForFtuxRedirection and $isFTUXApplicableForIndia)
+        {
+            $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
+                'redirection_url' => env('EASY_DASHBOARD_URL') . '/onboarding/overview',
+                'cookie_set'      => false,
+                'condition'       => 'FTUX',
+                'user'            => $data['user'] ?? null,
+                'api_host'        => $data['api_host'] ?? null,
+                'session_id'      => $data['session_id'] ?? null
+            ]);
+
+            return env('EASY_DASHBOARD_URL') . '/onboarding/overview';
+        }
+
+        if ($this->isPg3V1RedirectionApplicable($details) === true)
+        {
+            return env(AppConstants::EASY_DASHBOARD_URL) . AppConstants::PG_V3_REDIRECT_URL;
+        }
+
+        $signupCampaign = $details['user']['signup_campaign'] ?? null;
+
+        $submitted = $details['submitted'] ?? null;
+
+        $milestone = $details['activation_form_milestone'] ?? null;
+
+        $isPosSalesAgentRedirectApplicable = ($details["role"] ?? null) === AppConstants::RAZORPAY_SALES_ROLE;
+
+        if ($isPosSalesAgentRedirectApplicable) {
+            $rzpSalesMid = $details['id'] ?? '';
+            $isSwitchComplete =  $this->switchToPosSalesAgent($details);
+            if($isSwitchComplete){
+                $queryParams = http_build_query([
+                    'source' =>  AppConstants::SALES_ASSISTED_ONBOARDING_SOURCE,
+                    'rzp_sales_mid' => $rzpSalesMid
+                ]);
+                return '/app' . '?' . $queryParams;
+            }
+        }
+
+        if (($signupCampaign === 'p2pm_onboarding') and
+            ($submitted == 0) and
+            ($milestone !== 'L2'))
+        {
+            $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
+                'redirection_url' => env('EASY_DASHBOARD_URL') . '/onboarding/p2pm',
+                'cookie_set'      => false,
+                'condition'       => $signupCampaign,
+                'user'            => $data['user'] ?? null,
+                'api_host'        => $data['api_host'] ?? null,
+                'session_id'      => $data['session_id'] ?? null,
+            ]);
+
+            return env('EASY_DASHBOARD_URL') . '/onboarding/p2pm';
+        }
+
+        if ($this->canCookieSetForEasyOnboardingPostL1Submit($details) === true)
+        {
+            $ttl = 12 * 60;
+
+            $id = $details['id'] ?? null;
+            $userId = $details['user']['id'] ?? null;
+
+            Cookie::queue('rzp_merchant_id',$id, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
+            Cookie::queue('rzp_user_id', $userId, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
+        }
+
+        // Redirection if the user has come through multi account flow
+        // The user login was successful but the user didn't choose a merchant to login
+        // They will be able to login to a merchant from a list in USL
+        if (count($details['user']['merchants'] ?? []) > 0 && Session::get(Constants::DISABLE_AUTO_MERCHANT_LOGIN, false)) {
+            $this->trace->info(TraceCode::USL_REDIRECTION, [
+                'redirection_url' => env('RAZORPAY_ACCOUNTS_URL'),
+                'condition'       => 'USER_ONLY_LOGIN_REDIRECT',
+                'userId'            => $details['id'] ?? null,
+                'api_host'        => $data['api_host'] ?? null,
+                'session_id'      => $data['session_id'] ?? null,
+            ]);
+
+            return env('RAZORPAY_ACCOUNTS_URL');
+        }
+
+        return null;
+    }
+
+    private function isRedirectionApplicable($details): bool
+    {
+        $isAdminAsMerchant = (new Admin\Service)->isAdminLoggedIn();
+
+        $shouldUseBankingOriginRequestV2 = $this->isRedirectionExptEnabled($details);
+
+        $this->trace->info(TraceCode::SHOULD_USE_BANKING_ORIGIN_REQUEST_V2, [
+            'shouldUseBankingOriginRequestV2' => $shouldUseBankingOriginRequestV2
+        ]);
+
+        if ($isAdminAsMerchant === true || ApiUrl::isBankingOriginRequest($shouldUseBankingOriginRequestV2) === true)
+        {
+            return false;
+        }
+
+        if ($this->isAuthSourceHasWebsite() === true)
+        {
+            return false;
+        }
+
+        $signupCampaign = $details['user']['signup_campaign'] ?? null;
+
+        $submitted = $details['submitted'] ?? null;
+
+        $activationStatus = $details['activation_status'] ?? null;
+
+        if (($signupCampaign === 'easy_onboarding') and ($activationStatus === 'edd_pending'))
+        {
+            return true;
+        }
+
+        if ((($signupCampaign === 'i18n_my_signup') || ($signupCampaign === 'easy_onboarding')) and
+            (empty($details['activation_form_milestone']) === true) and
+            ($submitted == 0))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function isRedirectionExptEnabled($details): bool
+    {
+        $merchantId = Session::get('current_merchant_id') ?? '';
+        $user = Auth::user();
+        $userId = $user->id;
+        if (empty($userId) === true)
+        {
+            $userId = array_get($details, 'user.id');
+        }
+
+        $experimentId = config(AppConstants::SPLITZ_EXPERIMENTS)[AppConstants::DISABLE_EASY_REDIRECTION_FOR_BANKING];
+
+        if (isset($userId) === false || empty($userId) === true)
+        {
+            $this->trace->info(TraceCode::EASY_REDIRECTION_EXPERIMENT_NULL_USER_ID, [
+                'userId' => $userId,
+            ]);
+
+            return false;
+        }
+
+        $this->trace->info(TraceCode::EASY_REDIRECTION_SPLTIZ_EXPERIMENT_CALL, [
+            'userId' => $userId,
+        ]);
+
+        $redirectionSplitzExperimentData = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariant(
+            $experimentId,
+            $userId,
+            "",
+        );
+
+        $this->trace->info(TraceCode::EASY_REDIRECTION_EXPERIMENT, [
+            'merchantId' => $merchantId,
+            'experimentId' => $experimentId,
+            'userId' => $userId,
+            'splitzExperimentResult' => $redirectionSplitzExperimentData['variables'][0]['value'] ?? null,
+            'redirectionSplitzExperimentData' => $redirectionSplitzExperimentData
+        ]);
+
+        return ($redirectionSplitzExperimentData['variables'][0]['value'] ?? null) === 'on';
+    }
+
+    private function isAuthSourceHasWebsite(): bool
+    {
+        $queryParams = Input::all();
+
+        $authSource = $queryParams['auth_source'] ?? null;
+
+        if ($authSource === 'website' or $authSource === 'website_homepage')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function isRedirectionApplicableForFtux($details)
+    {
+        try
+        {
+            $isAdminAsMerchant = (new Admin\Service)->isAdminLoggedIn();
+
+            $isSubMerchant = $details[MerchantConstants::IS_SUB_MERCHANT] ?? false;
+            $partnerType = $details[MerchantConstants::PARTNER_TYPE] ?? null;
+            $countryCode = $details[MerchantConstants::COUNTRY_CODE] ?? null;
+            $shouldUseBankingOriginRequestV2 = $this->isRedirectionExptEnabled($details);
+
+            if($isAdminAsMerchant === true || $isSubMerchant === true || empty($partnerType) === false || $this->isEligibleForPos($details) === true || ApiUrl::isBankingOriginRequest($shouldUseBankingOriginRequestV2) === true)
+            {
+                return false;
+            }
+
+            $workflowType = array_get($details, 'workflow_type');
+            $workflowDetails = array_get($details, 'workflow_details');
+
+            if((isset($workflowType) === true and $workflowType === MerchantConstants::MODULAR_ONBOARDING) or
+                (is_array($workflowDetails) and isset($workflowDetails[MerchantConstants::PG_ONBOARDING_WORKFLOW_TYPE]) === true and $workflowDetails[MerchantConstants::PG_ONBOARDING_WORKFLOW_TYPE] === MerchantConstants::MODULAR_ONBOARDING))
+            {
+                return false;
+            }
+
+            $signupCampaign = $details['user']['signup_campaign'] ?? null;
+
+            if ($signupCampaign !== MerchantConstants::EASY_ONBOARDING)
+            {
+                return false;
+            }
+
+            // Do not show ftux id country is not India
+            if($signupCampaign === MerchantConstants::EASY_ONBOARDING and $countryCode !== MerchantConstants::INDIA_COUNTRY_CODE)
+            {
+                return false;
+            }
+
+            if($this->isFtuxExperimentEnabled() === false)
+            {
+                return false;
+            }
+
+            if(empty($_COOKIE['ftuxSession']) === false)
+            {
+                return false;
+            }
+
+            if($this->isFtuxAfterL2ExperimentEnabled($details) === true and $details[MerchantConstants::ACTIVATION_STATUS] === null)
+            {
+                return false;
+            }
+
+            if(array_get($details,'activation_status') !== 'activated' and array_get($details, 'activation_status') !== 'activated_mcc_pending')
+            {
+                return true;
+            }
+
+            if($details['isTransacted'] === false)
+            {
+                return true;
+            }
+
+            $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+            [$configError, $configData] = $request->send("merchants/config/store?namespace=onboarding", "GET");
+
+            if(empty($configError) === false)
+            {
+                $this->trace->info(TraceCode::GET_CONFIG_STORE_KEYS_FAILED, [
+                    'error' => $configError[0],
+                    'code'  => ErrorCode::BAD_REQUEST_ERROR
+                ]);
+
+                return false;
+            }
+
+            if($configData['show_ftux_final_screen'] === true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::FTUX_DASHBOARD_REDIRECTION_FAILED,
+                [
+                    "exception" => $e->getMessage()
+                ]
+            );
+
+            return false;
+        }
+
+    }
+
+    private function isEligibleForPos($details)
+    {
+        $physicalStore = $details[MerchantConstants::MERCHANT_BUSINESS_DETAIL][MerchantConstants::WEBSITE_DETAILS][MerchantConstants::PHYSICAL_STORE] ?? false;
+
+        if($physicalStore !== true) {
+            return false;
+        }
+
+        $experimentId = config('splitz.experiments')[AppConstants::ELIGIBLE_FOR_POS];
+
+        if (!array_key_exists($experimentId, $this->splitzExprimentData))
+        {
+            return false;
+        }
+        return ($this->splitzExprimentData[$experimentId][Constants::VARIABLES][Constants::RESULT] ?? null) === 'on';
+    }
+
+    public function setSplitzVariantBulkData($currentMerchant, $experiments = [])
+    {
+        if (is_null($currentMerchant))
+        {
+            $this->splitzExprimentData = [] ;
+            return;
+        }
+
+        $currentMerchantId = $currentMerchant->id;
+
+        $concurrentApiCallExperimentId = config('splitz.experiments')[AppConstants::DASHBOARD_USER_CONCURRENT_API_CALL];
+        $onboardingFtuxExperiment = config('splitz.experiments')[AppConstants::ONBOARDING_FTUX];
+        $onboardingFtuxAfterL2Experiment = config('splitz.experiments')[AppConstants::ONBOARDING_FTUX_AFTER_L2];
+        $splitzCachingEnabled = config('splitz.experiments')[Constants::SPLITZ_API_CACHING_ENABLED];
+        $razorxCachingEnabled = config('splitz.experiments')[Constants::RAZORX_CACHING_ENABLED];
+        $eligibleForPosExperiment = config('splitz.experiments')[AppConstants::ELIGIBLE_FOR_POS];
+        $chunkedBasedStreamingEnabled = config('splitz.experiments')[AppConstants::CHUNKED_BASED_STREAMING_DISABLED];
+        $shellRedirection = config('splitz.experiments')[AppConstants::SHELL_REDIRECTION_EXPERIMENT_ID];
+
+        $experimentIds = [$shellRedirection, $onboardingFtuxExperiment, $concurrentApiCallExperimentId,
+            $splitzCachingEnabled, $razorxCachingEnabled, $onboardingFtuxAfterL2Experiment, $eligibleForPosExperiment,
+            $chunkedBasedStreamingEnabled];
+
+        if (! empty($experiments))
+        {
+            $experimentIds = [];
+
+            foreach ($experiments as $experiment)
+            {
+                $experimentIds[] = config('splitz.experiments')[$experiment];
+            }
+        }
+
+        $data = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariantBulk(
+            $currentMerchantId,
+            $experimentIds,
+            [AppConstants::HTTP_CLIENT => $this->httpClient],
+            AppConstants::SPLITZ_BULK_EVALUATE_PATH
+        );
+
+        $this->updateSplitzExprimentData($data);
+    }
+
+    public function updateSplitzExprimentData($data)
+    {
+        $this->splitzExprimentData = $data;
+    }
+
+    public function getSplitzExprimentData()
+    {
+        return $this->splitzExprimentData;
+    }
+
+    private function isFtuxExperimentEnabled()
+    {
+        $experimentId = config('splitz.experiments')[AppConstants::ONBOARDING_FTUX];
+
+        if (!array_key_exists($experimentId, $this->splitzExprimentData))
+        {
+            return false;
+        }
+        return ($this->splitzExprimentData[$experimentId][Constants::VARIABLES][Constants::RESULT] ?? null) === 'on';
+    }
+
+    private function isFtuxAfterL2ExperimentEnabled()
+    {
+        $experimentId = config('splitz.experiments')[AppConstants::ONBOARDING_FTUX_AFTER_L2];
+
+        if (!array_key_exists($experimentId, $this->splitzExprimentData))
+        {
+            return false;
+        }
+        return ($this->splitzExprimentData[$experimentId][Constants::VARIABLES][Constants::RESULT] ?? null) === 'on';
+    }
+
+    public function isPg3V1RedirectionApplicable($details)
+    {
+        $this->trace->info(TraceCode::PG3_REDIRECTION, [
+            'INFO' => 'PG_V3_Redirection_START'
+        ]);
+
+        $merchantId = $details['current'];
+
+        if (array_get($details,'activation_status') !== 'activated')
+        {
+            return false;
+        }
+
+        if (isset(config(AppConstants::SPLITZ_EXPERIMENTS)[AppConstants::PG3_V1_ENABLED]) === false) {
+            return false;
+        }
+
+        $experimentID = config(AppConstants::SPLITZ_EXPERIMENTS)[AppConstants::PG3_V1_ENABLED];
+
+        $data = (new SplitzService())->getVariantBulk($merchantId, [$experimentID], [], AppConstants::SPLITZ_BULK_EVALUATE_PATH);
+
+        if ((isset($data[$experimentID]['name']) === true) and
+            ($data[$experimentID]['name'] === 'enabled'))
+        {
+            //get the Mx features from service
+            $merchantFeatures =  (new Merchant\Service)->getMerchantFeatures();
+
+            if ((in_array(AppConstants::SHOW_PG_V3, $merchantFeatures) === true) and
+                (in_array(AppConstants::PG_V3_ONBOARDING_COMPLETE, $merchantFeatures) === false))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function switchToPosSalesAgent($details)
+    {
+        try {
+            // Get merchant with role as partner agent from list of merchants
+
+            $partnerAgentMerchant = current(array_filter($details['merchants'], function ($merchant) {
+                return array_get($merchant, "role") ===  AppConstants::PARTNER_AGENT_ROLE;
+            }));
+
+            if ($partnerAgentMerchant["id"]) {
+                $switchMerchant = $this->switchCurrentMerchant($partnerAgentMerchant["id"]);
+                $this->trace->info(
+                    TraceCode::PARTNER_AGENT_SWITCH_SUCCESS,
+                    [
+                        "switchMerchant" => $switchMerchant,
+                        'partner_id'      => $partnerAgentMerchant["id"]
+                    ]
+                );
+
+                return true;
+            }
+        } catch (\Throwable $e) {
+            $this->trace->info(
+                TraceCode::PARTNER_AGENT_SWITCH_FAILED,
+                [
+                    "exception" => $e->getMessage(),
+                ]
+            );
+        }
+
+        return false;
+    }
+
+    /**
+     * Switch the merchant the user is currently viewing.
+     *
+     * @param  string  $merchantId
+     * @return \Illuminate\Http\Response
+     */
+    public function switchCurrentMerchant($merchantId)
+    {
+        $input = Input::all();
+
+        $user = Auth::user();
+
+        $error = $this->switchCurrentMerchantForUser($merchantId, $user);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    private function canCookieSetForEasyOnboardingPostL1Submit($details): bool
+    {
+        if ($this->isAuthSourceHasWebsite() === true)
+        {
+            return false;
+        }
+
+        $signupCampaign = $details['user']['signup_campaign'] ?? null;
+
+        $activationFormMilestone = $details['activation_form_milestone'] ?? null;
+
+        if (($signupCampaign === 'easy_onboarding') and
+            ($activationFormMilestone == 'L1' or $activationFormMilestone == 'L2'))
+        {
+            return true;
+        }
+
+        $submitted = $details['submitted'] ?? null;
+        $activationStatus = $details['activation_status'] ?? null;
+
+        //      WEBSITE_COMPLIANCE_FLOW_EXP is true
+        if (($activationFormMilestone === 'L1' or $activationFormMilestone === 'L2' or $submitted === 1) and $activationStatus !== 'activated') {
+            return true;
+        };
+
+        return false;
+
+    }
+
+    private function getOrgDetails(): ?array
+    {
+        $domain = \Request::server('SERVER_NAME');
+
+        return (new AdminService())->getOrg($domain);
     }
 }

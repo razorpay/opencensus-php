@@ -152,7 +152,7 @@ class Helper
             if ($currentMerchant === null)
             {
                 // Update the user and check if he accepted any new invites after logging in.
-                [$error, $updatedUser] = (new Service([AppConstants::HTTP_CLIENT => $this->httpClient]))->getUserFromApi($user->id);
+                [$error, $updatedUser] = (new Service([AppConstants::HTTP_CLIENT => $this->httpClient]))->getUserFromApiWithCache($user->id);
 
                 if (empty($error) === true)
                 {

@@ -50,7 +50,12 @@ class UserController extends Controller
     protected $app;
 
     protected $trace;
-
+    /**
+     * TODO: Remove this function after the SHELL_REDIRECTION_EXPERIMENT_ID experiment is 100% rampedup
+     *   Because all the functions has been move to user/Service file
+     *
+     * @var mixed
+     */
     protected $splitzExprimentData;
 
     const DASHBOARD_USER_CONCURRENT_API_CALL = 'DASHBOARD_USER_CONCURRENT_API_CALL';
@@ -117,6 +122,12 @@ class UserController extends Controller
 
         $this->cache = $app['cache'];
 
+        $this->httpClient   = $this->getHttpClient(ApiUrl::getApiBaseUrl(), \Config::get('api.request_timeout'));
+
+        $this->adminService = new Admin\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
+        $this->userService  = new User\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
+
+        $this->splitzExprimentData = [];
     }
 
     public function getDataForRendering($details, $org, $userError, $orgError): array
@@ -145,55 +156,6 @@ class UserController extends Controller
         return $data;
     }
 
-    public function setSplitzVariantBulkData($currentMerchant)
-    {
-        if (is_null($currentMerchant))
-        {
-            $this->splitzExprimentData = [] ;
-            return;
-        }
-
-        $currentMerchantId = $currentMerchant->id;
-
-        $concurrentApiCallExperimentId = config('splitz.experiments')[self::DASHBOARD_USER_CONCURRENT_API_CALL];
-        $onboardingFtuxExperiment = config('splitz.experiments')[self::ONBOARDING_FTUX];
-        $onboardingFtuxAfterL2Experiment = config('splitz.experiments')[self::ONBOARDING_FTUX_AFTER_L2];
-        $splitzCachingEnabled = config('splitz.experiments')[Constants::SPLITZ_API_CACHING_ENABLED];
-        $razorxCachingEnabled = config('splitz.experiments')[Constants::RAZORX_CACHING_ENABLED];
-        $eligibleForPosExperiment = config('splitz.experiments')[self::ELIGIBLE_FOR_POS];
-        $chunkedBasedStreamingEnabled = config('splitz.experiments')[self::CHUNKED_BASED_STREAMING_DISABLED];
-
-        $experimentIds = [$onboardingFtuxExperiment, $concurrentApiCallExperimentId, $splitzCachingEnabled, $razorxCachingEnabled, $onboardingFtuxAfterL2Experiment, $eligibleForPosExperiment, $chunkedBasedStreamingEnabled];
-
-        $data = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariantBulk(
-            $currentMerchantId,
-            $experimentIds,
-            [AppConstants::HTTP_CLIENT => $this->httpClient],
-            self::SPLITZ_BULK_EVALUATE_PATH
-        );
-
-        $this->splitzExprimentData = $data;
-    }
-
-    public function IsDomainRedirectionEnabled($id): bool
-    {
-        if (empty($id)) {
-            // No experiment is set
-            return true;
-        }
-        $experimentId = env($id);
-        $data = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariant(
-            $experimentId,
-            "",
-        );
-
-        if ($data === null)
-        {
-            return false;
-        }
-
-        return ($data["variables"][0]["value"] ?? null) === 'true';
-    }
 
     public function appendAllQueryParams($queryParams, $redirectURL): string
     {
@@ -228,141 +190,134 @@ class UserController extends Controller
 
         if (empty($userError) and empty($orgError))
         {
-            $data = [
-                'isAuthenticated'       => (bool) $details['user'],
-                'isConfirmed'           => $details['user']['confirmed'],
-                'isMobileConfirmed'     => $details['user']['contact_mobile_verified'],
-                'preSignupData'         => $details['pre_signup'],
-                'isPreSignupComplete'   => $details['pre_signup_complete'],
-                'user'                  => json_encode($details),
-                'org'                   => json_encode($org),
-                'api_host'              => ApiUrl::getCheckoutApi(),
-                'session_id'            => Session::getId(),
-            ];
-
-            if ($this->isRedirectionApplicable($details) === true)
+            if ($this->getShellRedirectionExperimentResult() === true)
             {
-                $ttl = 12 * 60;
-                $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
-                    'redirection_url' => env('EASY_DASHBOARD_URL'),
-                    'cookie_set'      => true,
-                    'condition'       => $details['user']['signup_campaign'] ?? null,
-                    'user'            => $data['user'] ?? null,
-                    'api_host'        => $data['api_host'] ?? null,
-                    'session_id'      => $data['session_id'] ?? null
-                ]);
+                $data = $this->userService->getUserDataForViewOrRedirectURL($details, $org);
 
-                $id = $details['id'] ?? null;
-                $userId = $details['user']['id'] ?? null;
+                $redirectPath = $this->userService->getRedirectionUrl($details, $org, $data);
 
-                $redirectionURL = env('EASY_DASHBOARD_URL');
-
-                $signupCampaign = $details['user']['signup_campaign'] ?? null;
-
-                if (!empty($signupCampaign) && $signupCampaign === 'i18n_my_signup') {
-                    $redirectionURL = env('EASY_DASHBOARD_CURLEC_URL');
+                if (! empty($redirectPath))
+                {
+                    return redirect($redirectPath);
                 }
-
-                return redirect($redirectionURL)->withCookies([
-                    Cookie::make('rzp_merchant_id', $id, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
-                    Cookie::make('rzp_user_id', $userId, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
-                ]);
             }
-
-            $orgCode = $org[MerchantConstants::CUSTOM_CODE] ?? '';
-            $orgID = $org[MerchantConstants::ORG_ID] ?? '';
-
-            $isOrgRZP = $orgCode === MerchantConstants::RZP;
-            $isRZPOrgID = $orgID === MerchantConstants::RZP_ORG_ID;
-
-            $countryCode = $details[MerchantConstants::COUNTRY_CODE] ?? null;
-
-            // FTUX redirection for India merchants only
-            $isFTUXApplicableForIndia = $isRZPOrgID and $countryCode === MerchantConstants::INDIA_COUNTRY_CODE;
-
-            $isApplicableForFtuxRedirection = $this->isRedirectionApplicableForFtux($details) === true and $isOrgRZP === true;
-
-            if ($isApplicableForFtuxRedirection and $isFTUXApplicableForIndia)
+            else
             {
-                $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
-                    'redirection_url' => env('EASY_DASHBOARD_URL') . '/onboarding/overview',
-                    'cookie_set'      => false,
-                    'condition'       => 'FTUX',
-                    'user'            => $data['user'] ?? null,
-                    'api_host'        => $data['api_host'] ?? null,
-                    'session_id'      => $data['session_id'] ?? null
-                ]);
+                /**
+                 * TODO: Remove this else block after the SHELL_REDIRECTION_EXPERIMENT_ID experiment is 100% rampedup
+                 *    Because all the functions has been move to user/Service file
+                 */
+                $data = [
+                    'isAuthenticated' => (bool)$details['user'],
+                    'isConfirmed' => $details['user']['confirmed'],
+                    'isMobileConfirmed' => $details['user']['contact_mobile_verified'],
+                    'preSignupData' => $details['pre_signup'],
+                    'isPreSignupComplete' => $details['pre_signup_complete'],
+                    'user' => json_encode($details),
+                    'org' => json_encode($org),
+                    'api_host' => ApiUrl::getCheckoutApi(),
+                    'session_id' => Session::getId(),
+                ];
 
-                return redirect(env('EASY_DASHBOARD_URL') . '/onboarding/overview');
-            }
-
-            if ($this->isPg3V1RedirectionApplicable($details) === true)
-            {
-                $redirectUrl = env(self::EASY_DASHBOARD_URL) . self::PG_V3_REDIRECT_URL;
-
-                return redirect($redirectUrl);
-            }
-
-            $signupCampaign = $details['user']['signup_campaign'] ?? null;
-
-            $submitted = $details['submitted'] ?? null;
-
-            $milestone = $details['activation_form_milestone'] ?? null;
-
-            $isPosSalesAgentRedirectApplicable = ($details["role"] ?? null) === self::RAZORPAY_SALES_ROLE;
-
-            if ($isPosSalesAgentRedirectApplicable) {
-                $rzpSalesMid = $details['id'] ?? '';
-                $isSwitchComplete =  $this->switchToPosSalesAgent($details);
-                if($isSwitchComplete){
-                    $queryParams = http_build_query([
-                        'source' =>  self::SALES_ASSISTED_ONBOARDING_SOURCE,
-                        'rzp_sales_mid' => $rzpSalesMid
+                if ($this->isRedirectionApplicable($details) === true) {
+                    $ttl = 12 * 60;
+                    $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
+                        'redirection_url' => env('EASY_DASHBOARD_URL'),
+                        'cookie_set' => true,
+                        'condition' => $details['user']['signup_campaign'] ?? null,
+                        'user' => $data['user'] ?? null,
+                        'api_host' => $data['api_host'] ?? null,
+                        'session_id' => $data['session_id'] ?? null
                     ]);
-                    return redirect('/app' . '?' . $queryParams);
+                    $id = $details['id'] ?? null;
+                    $userId = $details['user']['id'] ?? null;
+                    $redirectionURL = env('EASY_DASHBOARD_URL');
+                    $signupCampaign = $details['user']['signup_campaign'] ?? null;
+                    if (!empty($signupCampaign) && $signupCampaign === 'i18n_my_signup') {
+                        $redirectionURL = env('EASY_DASHBOARD_CURLEC_URL');
+                    }
+
+                    return redirect($redirectionURL)->withCookies([
+                        Cookie::make('rzp_merchant_id', $id, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
+                        Cookie::make('rzp_user_id', $userId, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
+                    ]);
                 }
-            }
+                $orgCode = $org[MerchantConstants::CUSTOM_CODE] ?? '';
+                $orgID = $org[MerchantConstants::ORG_ID] ?? '';
+                $isOrgRZP = $orgCode === MerchantConstants::RZP;
+                $isRZPOrgID = $orgID === MerchantConstants::RZP_ORG_ID;
+                $countryCode = $details[MerchantConstants::COUNTRY_CODE] ?? null;
+                // FTUX redirection for India merchants only
+                $isFTUXApplicableForIndia = $isRZPOrgID and $countryCode === MerchantConstants::INDIA_COUNTRY_CODE;
+                $isApplicableForFtuxRedirection = $this->isRedirectionApplicableForFtux($details) === true and $isOrgRZP === true;
+                if ($isApplicableForFtuxRedirection and $isFTUXApplicableForIndia) {
+                    $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
+                        'redirection_url' => env('EASY_DASHBOARD_URL') . '/onboarding/overview',
+                        'cookie_set' => false,
+                        'condition' => 'FTUX',
+                        'user' => $data['user'] ?? null,
+                        'api_host' => $data['api_host'] ?? null,
+                        'session_id' => $data['session_id'] ?? null
+                    ]);
 
-            if (($signupCampaign === 'p2pm_onboarding') and
-                ($submitted == 0) and
-                ($milestone !== 'L2'))
-            {
-                $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
-                    'redirection_url' => env('EASY_DASHBOARD_URL') . '/onboarding/p2pm',
-                    'cookie_set'      => false,
-                    'condition'       => $signupCampaign,
-                    'user'            => $data['user'] ?? null,
-                    'api_host'        => $data['api_host'] ?? null,
-                    'session_id'      => $data['session_id'] ?? null,
-                ]);
+                    return redirect(env('EASY_DASHBOARD_URL') . '/onboarding/overview');
+                }
+                if ($this->isPg3V1RedirectionApplicable($details) === true) {
+                    $redirectUrl = env(self::EASY_DASHBOARD_URL) . self::PG_V3_REDIRECT_URL;
 
-                return redirect(env('EASY_DASHBOARD_URL') . '/onboarding/p2pm');
-            }
+                    return redirect($redirectUrl);
+                }
+                $signupCampaign = $details['user']['signup_campaign'] ?? null;
+                $submitted = $details['submitted'] ?? null;
+                $milestone = $details['activation_form_milestone'] ?? null;
+                $isPosSalesAgentRedirectApplicable = ($details["role"] ?? null) === self::RAZORPAY_SALES_ROLE;
+                if ($isPosSalesAgentRedirectApplicable) {
+                    $rzpSalesMid = $details['id'] ?? '';
+                    $isSwitchComplete = $this->switchToPosSalesAgent($details);
+                    if ($isSwitchComplete) {
+                        $queryParams = http_build_query([
+                            'source' => self::SALES_ASSISTED_ONBOARDING_SOURCE,
+                            'rzp_sales_mid' => $rzpSalesMid
+                        ]);
 
-            if ($this->canCookieSetForEasyOnboardingPostL1Submit($details) === true)
-            {
-                $ttl = 12 * 60;
+                        return redirect('/app' . '?' . $queryParams);
+                    }
+                }
+                if (($signupCampaign === 'p2pm_onboarding') and
+                    ($submitted == 0) and
+                    ($milestone !== 'L2')) {
+                    $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
+                        'redirection_url' => env('EASY_DASHBOARD_URL') . '/onboarding/p2pm',
+                        'cookie_set' => false,
+                        'condition' => $signupCampaign,
+                        'user' => $data['user'] ?? null,
+                        'api_host' => $data['api_host'] ?? null,
+                        'session_id' => $data['session_id'] ?? null,
+                    ]);
 
-                $id = $details['id'] ?? null;
-                $userId = $details['user']['id'] ?? null;
+                    return redirect(env('EASY_DASHBOARD_URL') . '/onboarding/p2pm');
+                }
+                if ($this->canCookieSetForEasyOnboardingPostL1Submit($details) === true) {
+                    $ttl = 12 * 60;
+                    $id = $details['id'] ?? null;
+                    $userId = $details['user']['id'] ?? null;
+                    Cookie::queue('rzp_merchant_id', $id, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
+                    Cookie::queue('rzp_user_id', $userId, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
+                }
+                // Redirection if the user has come through multi account flow
+                // The user login was successful but the user didn't choose a merchant to login
+                // They will be able to login to a merchant from a list in USL
+                if (count($details['user']['merchants'] ?? []) > 0 && Session::get(Constants::DISABLE_AUTO_MERCHANT_LOGIN, false)) {
+                    $this->trace->info(TraceCode::USL_REDIRECTION, [
+                        'redirection_url' => env('RAZORPAY_ACCOUNTS_URL'),
+                        'condition' => 'USER_ONLY_LOGIN_REDIRECT',
+                        'userId' => $details['id'] ?? null,
+                        'api_host' => $data['api_host'] ?? null,
+                        'session_id' => $data['session_id'] ?? null,
+                    ]);
 
-                Cookie::queue('rzp_merchant_id',$id, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
-                Cookie::queue('rzp_user_id', $userId, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
-            }
-
-            // Redirection if the user has come through multi account flow
-            // The user login was successful but the user didn't choose a merchant to login
-            // They will be able to login to a merchant from a list in USL
-            if (count($details['user']['merchants'] ?? []) > 0 && Session::get(Constants::DISABLE_AUTO_MERCHANT_LOGIN, false)) {
-                $this->trace->info(TraceCode::USL_REDIRECTION, [
-                    'redirection_url' => env('RAZORPAY_ACCOUNTS_URL'),
-                    'condition'       => 'USER_ONLY_LOGIN_REDIRECT',
-                    'userId'            => $details['id'] ?? null,
-                    'api_host'        => $data['api_host'] ?? null,
-                    'session_id'      => $data['session_id'] ?? null,
-                ]);
-
-                return redirect(env('RAZORPAY_ACCOUNTS_URL'));
+                    return redirect(env('RAZORPAY_ACCOUNTS_URL'));
+                }
             }
         }
 
@@ -532,15 +487,10 @@ class UserController extends Controller
                 $timeTaken = self::millitime() - $startTime;
                 $this->pushUserRenderDataToMetrics($timeTaken, true, $isConcurrentApiCall);
 
-                $domain = \Request::server('SERVER_NAME');
+                $domainBasedRedirect = $this->userService->getDomainBasedRedirectionUrlIfApplicable();
 
-                foreach (UserConstants::DOMAIN_REDIRECT_MAP as $domainKey => $domainData) {
-                    if ($domain == $domainKey) {
-                        $redirectUrl = $domainData['redirect_url'];
-                        if ($this->IsDomainRedirectionEnabled($domainData['id'])) {
-                            return redirect($redirectUrl);
-                        }
-                    }
+                if (!empty($domainBasedRedirect)) {
+                    return redirect($domainBasedRedirect);
                 }
 
                 $this->trace->info(TraceCode::VIEW_MERCHANT_INDEX_FILE, [
@@ -567,6 +517,14 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * TODO: Remove this function after the SHELL_REDIRECTION_EXPERIMENT_ID experiment is 100% rampedup
+     *    Because all the functions has been move to user/Service file
+     *
+     * @param $details
+     *
+     * @return true|void
+     */
     private function switchToPosSalesAgent($details)
     {
         try {
@@ -705,10 +663,6 @@ class UserController extends Controller
 
         $domain = \Request::server('SERVER_NAME');
 
-        $this->httpClient   = $this->getHttpClient(ApiUrl::getApiBaseUrl(), \Config::get('api.request_timeout'));
-        $this->adminService = new Admin\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
-        $this->userService  = new User\Service([AppConstants::HTTP_CLIENT => $this->httpClient]);
-
         $currentRouteName = \Route::currentRouteName();
         $authSource = app('request')->input('auth_source', '');
 
@@ -767,7 +721,8 @@ class UserController extends Controller
 
         $currentMerchant = $firstChunkData['currentMerchant'] ?? null;
 
-        $this->setSplitzVariantBulkData($currentMerchant);
+        $this->userService->setSplitzVariantBulkData($currentMerchant);
+        $this->splitzExprimentData = $this->userService->getSplitzExprimentData();
 
         $isConcurrentApiCallEnabled = $this->isConcurrentApiCallEnabledForDashboardUser();
 
@@ -946,6 +901,14 @@ class UserController extends Controller
         return ($data[$unifiedExperimentID]['variables']['result'] ?? null) === 'on';
     }
 
+    /**
+     * TODO: Remove this function after the SHELL_REDIRECTION_EXPERIMENT_ID experiment is 100% rampedup
+     *  Because all the functions has been move to user/Service file
+     * @param $details
+     *
+     * @return bool
+     * @throws \Razorpay\Api\Errors\BadRequestError
+     */
     public function isPg3V1RedirectionApplicable($details)
     {
         $this->trace->info(TraceCode::PG3_REDIRECTION, [
@@ -1014,6 +977,12 @@ class UserController extends Controller
         return false;
     }
 
+    /**
+     * TODO: Remove this function after the SHELL_REDIRECTION_EXPERIMENT_ID experiment is 100% rampedup
+     *   Because all the functions has been move to user/Service file
+     *
+     * @return bool
+     */
     private function isAuthSourceHasWebsite(): bool
     {
         $queryParams = Input::all();
@@ -1028,6 +997,14 @@ class UserController extends Controller
         return false;
     }
 
+    /**
+     * TODO: Remove this function after the SHELL_REDIRECTION_EXPERIMENT_ID experiment is 100% rampedup
+     *   Because all the functions has been move to user/Service file
+     *
+     * @param $details
+     *
+     * @return bool
+     */
     private function canCookieSetForEasyOnboardingPostL1Submit($details): bool
     {
         if ($this->isAuthSourceHasWebsite() === true)
@@ -1057,6 +1034,14 @@ class UserController extends Controller
 
     }
 
+    /**
+     * TODO: Remove this function after the SHELL_REDIRECTION_EXPERIMENT_ID experiment is 100% rampedup
+     *   Because all the functions has been move to user/Service file
+     *
+     * @param $details
+     *
+     * @return bool
+     */
     private function isRedirectionExptEnabled($details): bool
     {
         $merchantId = Session::get('current_merchant_id') ?? '';
@@ -1099,6 +1084,14 @@ class UserController extends Controller
         return ($redirectionSplitzExperimentData['variables'][0]['value'] ?? null) === 'on';
     }
 
+    /**
+     * TODO: Remove this function after the SHELL_REDIRECTION_EXPERIMENT_ID experiment is 100% rampedup
+     *   Because all the functions has been move to user/Service file
+     *
+     * @param $details
+     *
+     * @return bool
+     */
     private function isRedirectionApplicable($details): bool
     {
         $isAdminAsMerchant = (new Admin\Service)->isAdminLoggedIn();
@@ -2016,6 +2009,9 @@ class UserController extends Controller
     }
 
     /**
+     * TODO: Remove this function after the SHELL_REDIRECTION_EXPERIMENT_ID experiment is 100% rampedup
+     *   Because all the functions has been move to user/Service file
+     *
      * Switch the merchant the user is currently viewing.
      *
      * @param  string  $merchantId
@@ -2279,6 +2275,14 @@ class UserController extends Controller
         return $isOauthLogin === true ? MetricConstants::OAUTH : MetricConstants::PASSWORD;
     }
 
+    /**
+     * TODO: Remove this function after the SHELL_REDIRECTION_EXPERIMENT_ID experiment is 100% rampedup
+     *   Because all the functions has been move to user/Service file
+     *
+     * @param $details
+     *
+     * @return bool
+     */
     private function isRedirectionApplicableForFtux($details)
     {
         try
@@ -2378,6 +2382,12 @@ class UserController extends Controller
 
     }
 
+    /**
+     * TODO: Remove this function after the SHELL_REDIRECTION_EXPERIMENT_ID experiment is 100% rampedup
+     *   Because all the functions has been move to user/Service file
+     *
+     * @return bool
+     */
     private function isFtuxExperimentEnabled()
     {
         $experimentId = config('splitz.experiments')[self::ONBOARDING_FTUX];
@@ -2389,6 +2399,12 @@ class UserController extends Controller
         return ($this->splitzExprimentData[$experimentId][Constants::VARIABLES][Constants::RESULT] ?? null) === 'on';
     }
 
+    /**
+     * TODO: Remove this function after the SHELL_REDIRECTION_EXPERIMENT_ID experiment is 100% rampedup
+     *   Because all the functions has been move to user/Service file
+     *
+     * @return bool
+     */
     private function isFtuxAfterL2ExperimentEnabled()
     {
 
@@ -2401,6 +2417,14 @@ class UserController extends Controller
         return ($this->splitzExprimentData[$experimentId][Constants::VARIABLES][Constants::RESULT] ?? null) === 'on';
     }
 
+    /**
+     * TODO: Remove this function after the SHELL_REDIRECTION_EXPERIMENT_ID experiment is 100% rampedup
+     *   Because all the functions has been move to user/Service file
+     *
+     * @param $details
+     *
+     * @return bool
+     */
     private function isEligibleForPos($details)
     {
 
@@ -2465,10 +2489,24 @@ class UserController extends Controller
             return false;
         }
 
-        $shellExpId = config('splitz.experiments')['SHELL_REDIRECTION_EXPERIMENT_ID'];
+        $shellExpId = config('splitz.experiments')[AppConstants::SHELL_REDIRECTION_EXPERIMENT_ID];
 
-        $data = (new SplitzService())->getVariantBulk($merchantId, [$shellExpId], [], self::SPLITZ_BULK_EVALUATE_PATH);
+        $data = (new SplitzService())->getVariantBulk($merchantId, [$shellExpId], [], AppConstants::SPLITZ_BULK_EVALUATE_PATH);
 
-        return ($data[$shellExpId]['variables']['result'] ?? null) === 'on';
+        $this->splitzExprimentData[$shellExpId] = $data[$shellExpId];
+
+        return $this->getShellRedirectionExperimentResult();
+    }
+
+    private function getShellRedirectionExperimentResult(): bool
+    {
+        $experimentId = config('splitz.experiments')[AppConstants::SHELL_REDIRECTION_EXPERIMENT_ID];
+
+        if (!array_key_exists($experimentId, $this->splitzExprimentData))
+        {
+            return false;
+        }
+
+        return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
     }
 }
