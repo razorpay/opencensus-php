@@ -425,7 +425,7 @@ class Processor
      * Razorx flag to block merchants from re-arch flow
      */
     const BLOCK_MERCHANTS_ON_REARCH_UPS = 'block_merchants_on_rearch_ups';
-    
+
     /**
      * Razorx flag to allow merchants from re-arch flow
      */
@@ -1435,6 +1435,137 @@ class Processor
         return $isOptimizerCFBFlow && $isPaymentCreateAjaxRoute;
     }
 
+    private function canRouteRecurringThroughOptimizerRearchFlow(array & $input): bool {
+        // Re-arch Criteria
+        // 1. Method should be card, upi, emandate
+        // 2. Only allow recurring payments via recurring route (payments/create/recurring)
+        // 3. Only for raas merchant
+        try {
+
+            $isRecurringPaymentRoute = $this->route->getCurrentRouteName() === 'payment_create_recurring';
+
+            if ($isRecurringPaymentRoute === false) {
+                return false;
+            }
+
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            $isOptimizerRecurringPayment = $this->isOptimizerRecurringRearchPayment($merchant);
+
+            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                'route_name' => $isRecurringPaymentRoute,
+                'merchant_id' => $merchant->getId(),
+                '$isOptimizerRecurringPayment' => $isOptimizerRecurringPayment,
+                'method' => $input[Payment\Entity::METHOD],
+            ]);
+
+            // This is for optimizer subsequent payment
+            if ($isOptimizerRecurringPayment === true and
+                (empty($input[Payment\Entity::RECURRING]) === false) and
+                ($input[Payment\Entity::METHOD] == Payment\METHOD::UPI or
+                    $input[Payment\Entity::METHOD] == Payment\METHOD::EMANDATE or
+                    $input[Payment\Entity::METHOD] == Payment\METHOD::CARD))
+            {
+
+                if($this->inputCurrencyNotINR($input)){
+                    return false;
+                }
+
+                $tokenId = $input[Payment\Entity::TOKEN];
+
+                $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
+
+                if ($input[Payment\Entity::METHOD] == Payment\METHOD::CARD)
+                {
+                    $card = $this->repo->card->fetchForToken($token);
+
+                    //check if card is not null
+                    if(empty($card) === true)
+                    {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "token_card_empty",
+                            'merchant_id' => $merchant->getId(),
+                            'flow' => 'optimizer_card_recurring',
+                        ]);
+
+                        return false;
+                    }
+
+                    if ($card->isInternational() === true)
+                    {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "international_card",
+                            'merchant_id' => $merchant->getId(),
+                            'flow' => 'optimizer_card_recurring',
+                        ]);
+                        return false;
+                    }
+                }
+
+                // Optimizer mandate details
+                $optimizerNotes = $token->getNotes();
+
+                $optimizerMandateID = null;
+
+                if(empty($optimizerNotes) === false && isset($optimizerNotes["source"]) && isset($optimizerNotes["mandate_id"]))
+                {
+                    $optimizerMandateID = $optimizerNotes["mandate_id"];
+                }
+
+                if($optimizerMandateID === null)
+                {
+
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "mandate_not_migrated",
+                        'merchant_id' => $merchant->getId(),
+                        'flow' => 'optimizer_method_recurring',
+                    ]);
+
+                    return false;
+                }
+
+                // not required in case of billdesk, add vpa if required for any other provider
+                $input[Payment\Entity::UPI] = null;
+
+                $input[Payment\Entity::API_VAULT] = "";
+
+                $recurringToken = [
+                    Token\Entity::MANDATE_ID => $optimizerMandateID,
+                    Token\Entity::ENTITY_ID => $token->getEntityId(),
+                    Token\Entity::ENTITY_TYPE => $token->getEntityType(),
+                    Token\Entity::TERMINAL_ID => $token->getTerminalId(),
+                    Token\Entity::VPA => $token->getVpaId(),
+                    Token\Entity::CARD_ID => $token->getCardId(),
+                    Token\Entity::RECURRING_STATUS => $token->getRecurringStatus(),
+                    Token\Entity::RECURRING_FAILURE_REASON => $token->getRecurringFailureReason(),
+                    Token\Entity::CONFIRMED_AT => $token->getConfirmedAt(),
+                    Token\Entity::MAX_AMOUNT => $token->getMaxAmount(),
+                    Token\Entity::EXPIRED_AT => $token->getExpiredAt(),
+                    Token\Entity::TOKEN => $token->getToken(),
+                ];
+
+                $input["recurring_token"] = $recurringToken;
+
+                $this->trace->info(TraceCode::OPTIMIZER_REARCH_ROUTING_CRITERIA_PASSED_REASON, [
+                    'merchant_id' => $merchant->getId(),
+                    'flow' => 'optimizer_recurring',
+                    'recurring_token' => $recurringToken,
+                ]);
+
+                return true;
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, null, TraceCode::OPTIMIZER_REARCH_ROUTING_REARCH_ERROR, [
+                "merchant_id" => $merchant->getId(),
+                "token_id"    => $token->getId()
+            ]);
+        }
+
+        return false;
+    }
+
     private function inputCurrencyNotINR($input): bool{
         if((empty($input['currency']) === false and
             $input['currency'] !== Currency\Currency::INR)){
@@ -1448,6 +1579,7 @@ class Processor
         $this->verifyMerchantIsLiveForLiveRequest();
         try
         {
+
             $result = '';
             $currentRouteName = $this->route->getCurrentRouteName();
             $merchant = $this->app['basicauth']->getMerchant();
@@ -2495,6 +2627,47 @@ class Processor
         return false;
     }
 
+    protected function isOptimizerRecurringRearchPayment($merchant): bool
+    {
+
+        if($merchant->isFeatureEnabled('raas') === false){
+           return false;
+        }
+
+        $mode = 'enable';
+
+        $merchantID = $this->merchant->getId();
+
+        try
+        {
+            $properties = [
+                'id'            => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.enabled_rearch_optimizer_recurring_flow'),
+                'request_data'  => json_encode(['merchant_id' => $merchantID]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::OPTIMIZER_MERCHANT_RECURRING_REARCH_ENABLE_EXPERIMENT, [
+                'splitz_output' => $variant,
+                'response' => $response,
+            ]);
+
+            return $variant === $mode;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::OPTIMIZER_MERCHANT_RECURRING_REARCH_ENABLE_EXPERIMENT_ERROR, [
+                'merchant_id'   => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.enabled_rearch_optimizer_recurring_flow') ?? null,
+            ]);
+
+            return false;
+        }
+    }
+
     protected function setChargeAccountMerchantFeatures(& $input)
     {
         if (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === true)
@@ -2885,12 +3058,12 @@ class Processor
         if ($variant === 'variant_off'){
 
             return false;
-        }  
+        }
 
         $customCheckResults = $this->performCustomChecksToRouteViaNbPlusRearchFlow($input, $merchant, $currentRouteName);
 
         $isNbPlusDFB = $customCheckResults['is_dfb'] ?? false;
-        
+
         $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_ROUTING_CRITERIA,
             [
                 'merchant_id'       => $merchant->getId(),
@@ -2900,7 +3073,7 @@ class Processor
                 'is_dfb'            => $isNbPlusDFB,
             ]
         );
-        
+
         if ($customCheckResults['route_via_nbplus'] === false) {
             return false;
         }
@@ -2930,17 +3103,17 @@ class Processor
                 'variant'           => $variant,
             ]
         );
-        
+
             if ($variant === 'enabled') {
                 return true;
             }
-             
+
             if ((app()->runningUnitTests() === true) and
                ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false))
             {
                return false;
             }
-        
+
         }
         catch(\Throwable $e)
         {
@@ -3493,7 +3666,7 @@ class Processor
                 $routeViaReArch = false;
                 $dimensions[2] = 1;
             }
-        
+
 
         if (empty($input[Payment\Entity::METHOD]) === true)
         {
@@ -3524,7 +3697,7 @@ class Processor
            $routeViaReArch = false;
            $dimensions[7] = 1;
        }
-       
+
        if (empty($input['reward_ids']) === false)
        {
            $routeViaReArch = true;
@@ -3536,7 +3709,7 @@ class Processor
           $routeViaReArch= false;
           $dimensions[9]=1;
        }
-       
+
        if ($merchant->isFeatureEnabled('openwallet')===true)
        {
           $routeViaReArch=false;
@@ -3560,7 +3733,7 @@ class Processor
          $routeViaReArch=true;
          $dimensions[13]=1;
       }
-      
+
       if (empty($input[Payment\Entity::OFFER_ID]) === false)
       {
             $routeViaReArch = false;
@@ -3617,7 +3790,7 @@ class Processor
                         $dimensions[19] = 1;
                     }
                 }
-               
+
             }
 
              $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(E::ORDER, $order->getId(), $this->merchant);
@@ -3634,7 +3807,7 @@ class Processor
             }
         }
 
-        
+
         $dimensions[21] = (string) strtolower($input['_']['library'] ?? 'unknown');
 
         $dimensions[22] = (string) $currentRouteName;
@@ -3648,7 +3821,7 @@ class Processor
 
         return $response;
     }
-    
+
     /**
      * shouldRouteOrderTransfersViaUPS check if order tranfers should be ramped on re-arch
      *
@@ -3686,7 +3859,7 @@ class Processor
 
         return false;
     }
-    
+
     /**
      * shouldRouteOrderTransfersViaNBPlus check if order tranfers should be ramped on re-arch
      *
@@ -3725,7 +3898,7 @@ class Processor
 
         return false;
     }
-    
+
     private function canRouteFpxThroughRearchFlow($input): bool
     {
         // fpx always through nbplus rearch except test mode in production
@@ -4378,6 +4551,7 @@ class Processor
                 ($this->isOptimizerCFBInternalFlow() === false ) and
                 (($this->canRouteWalletThroughRearchFlow($input) === true) or
                 ($this->canRouteRazorpayAccountThroughRearchFlow($input) === true) or
+                ($this->canRouteRecurringThroughOptimizerRearchFlow($input) === true) or
                 ($this->canRouteThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughNbPlusRearchFlow($input) === true) or
                 ($this->canRouteThroughUpsRearchFlow($input, $isUpiDfb) === true) or
@@ -14067,7 +14241,7 @@ public function isNBPlusRearchMarketPlace($merchant): bool
             'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId(), 'mode' => $this->mode]),
         ];
         $response = $this->app['splitzService']->evaluateRequest($properties);
-    
+
         $variant = $response['response']['variant']['name'] ?? 'control';
 
         $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_FEE_CONFIG_SPLITZ_VARIANT, [
@@ -14140,7 +14314,7 @@ public function isNBPlusRearchMarketPlace($merchant): bool
 
         // If the feature flag "banking_nbplus_rearch" and the razorx experiment for the merchant ID are enabled,
         // route the NBPlus traffic of that org via rearch as part of API decomposition.
-        
+
         // Custom feature flag and logic specific to NBPlus.
         $orgId = $this->merchant->getMerchantOrgId();
 
@@ -14322,7 +14496,7 @@ public function isNBPlusRearchMarketPlace($merchant): bool
             'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId(), 'mode' => $this->mode]),
         ];
         $response = $this->app['splitzService']->evaluateRequest($properties);
-    
+
         $variant = $response['response']['variant']['name'] ?? 'control';
 
         $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_APPS_RAZORX_VARIANT, [
@@ -14339,7 +14513,7 @@ public function isNBPlusRearchMarketPlace($merchant): bool
     private function shouldRouteBanksThroughNbRearch($input): bool
     {
         // Get the bank code from the input
-    
+
         if ($input !== null && str_ends_with($input, '_c')) {
             // for corporate banks
             $corporateFeatureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_corporate_banks';
@@ -14351,7 +14525,7 @@ public function isNBPlusRearchMarketPlace($merchant): bool
             $response = $this->app['splitzService']->evaluateRequest($properties);
 
             $variant = $response['response']['variant']['name'] ?? 'control';
-    
+
             // Logging
             $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_BANKS_SPLITZ_VARIANT, [
                 'merchant_id' => $this->merchant->getMerchantId(),
@@ -14359,7 +14533,7 @@ public function isNBPlusRearchMarketPlace($merchant): bool
                 'mode'        => $this->mode,
                 'feature'     => $corporateFeatureFlag,
             ]);
-    
+
             return $variant === 'variant_on';
 
         } else {
@@ -14373,7 +14547,7 @@ public function isNBPlusRearchMarketPlace($merchant): bool
             $response = $this->app['splitzService']->evaluateRequest($properties);
 
             $variant = $response['response']['variant']['name'] ?? 'control';
-    
+
             // Logging
             $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_BANKS_SPLITZ_VARIANT, [
                 'merchant_id' => $this->merchant->getMerchantId(),
@@ -14384,7 +14558,7 @@ public function isNBPlusRearchMarketPlace($merchant): bool
             ]);
             return $variant === 'variant_on';
         }
-    
+
         // Default false if none of the conditions are met
         return false;
     }

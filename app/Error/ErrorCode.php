@@ -2981,6 +2981,8 @@ class ErrorCode
     const MOZART_SERVICE_BAD_GATEWAY                                               = 'MOZART_SERVICE_BAD_GATEWAY';
     const BAD_REQUEST_INVALID_PAYMENT_ID                                           = 'BAD_REQUEST_INVALID_PAYMENT_ID';
     const XID_VALIDATION_ERROR                                                     = 'XID_VALIDATION_ERROR';
+
+    const BAD_REQUEST_INVALID_TOKEN_ID                                             = 'BAD_REQUEST_INVALID_TOKEN_ID';
     const VAULT_SERVICE_ERROR                                                      = 'VAULT_SERVICE_ERROR';
     const VAULT_RESPONSE_ERROR                                                     = 'VAULT_RESPONSE_ERROR';
     const UNKNOWN_NETWORK_ERROR                                                    = 'UNKNOWN_NETWORK_ERROR';

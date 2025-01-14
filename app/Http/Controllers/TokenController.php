@@ -243,4 +243,13 @@ class TokenController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function createTokenOptimizerInternal()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createTokenOptimizerInternal($input);
+
+        return ApiResponse::json($data);
+    }
 }

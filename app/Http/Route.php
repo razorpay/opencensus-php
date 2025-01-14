@@ -4765,6 +4765,7 @@ class Route
         'token_fetch_cryptogram'                  => ['post',        'tokens/service_provider_tokens/token_transactional_data',  'TokenController@fetchCryptoGram'                          ],
         'token_fetch_cryptogram_internal'         => ['post',        'internal/tokens/service_provider_tokens/token_transactional_data',  'TokenController@fetchCryptoGramInternal'         ],
         'token_fetch_card_internal'               => ['post',        'internal/tokens/card',                                      'TokenController@fetchTokenCardInternal'                   ],
+        'token_create_optimizer_internal'         => ['post',        'internal/tokens/optimizer',                                'TokenController@createTokenOptimizerInternal' ],
         'token_delete'                            => ['post',        'tokens/delete',                                            'TokenController@delete'                                   ],
         'token_status'                            => ['post',        'internal/tokens/status',                                   'TokenController@updateStatus'                             ],
         'update_token_on_authorized'              => ['post',        'internal/tokens/update_on_authorized',                     'TokenController@updateTokenOnAuthorized'                  ],
@@ -5988,6 +5989,7 @@ class Route
         'fetch_iin_by_token_iin',
         'token_fetch_cryptogram_internal',
         'token_fetch_card_internal',
+        'token_create_optimizer_internal',
         'payment_calculate_fees_with_gateway',
         'merchant_bulk_update_pricing_cron',
         'subscription_registration_nach_migration',
@@ -18119,6 +18121,7 @@ class Route
             'payment_calculate_fees_with_gateway',
             'token_fetch_cryptogram_internal',
             'token_fetch_card_internal',
+            'token_create_optimizer_internal',
             'internal_token_create',
             'update_token_on_authorized',
             'internal_transactions'

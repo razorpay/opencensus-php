@@ -2719,4 +2719,63 @@ class Service extends Base\Service
         }
         return false;
     }
+
+    public function createTokenOptimizerInternal($input)
+    {
+
+        if (empty($input['payment_id']) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_TOKEN_ID
+            );
+        }
+
+        $paymentId = $input['payment_id'];
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        if ($payment->getMethod() == "card" && empty($input['token_id']) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_TOKEN_ID
+            );
+        }
+
+
+        $clonedToken = null;
+
+        $updateDetails = $input['fields'];
+
+        $tokenCore = (new Token\Core);
+
+        if ($payment->getMethod() === "card")
+        {
+            $tokenId = $input['token_id'];
+
+            $token = $this->repo->token->findOrFail($tokenId);
+
+            $clonedToken = $tokenCore->cloneToken($token, $payment);
+
+        }else if ($payment->getMethod() === "upi" || $payment->getMethod() === "emandate")
+        {
+            $customer = $this->repo->customer->findOrFail($input['customer_id']);
+
+            $createInput = [
+                "method" => $payment->getMethod(),
+                "terminal_id" => $updateDetails['terminal_id'],
+                "max_amount" => $updateDetails['max_amount'],
+                "frequency" => $updateDetails['frequency'],
+            ];
+
+            $clonedToken = $tokenCore->create($customer, $createInput, null, false);
+        }
+
+        $clonedToken->setOptimizerMandateDetails($updateDetails);
+
+        $this->repo->token->saveOrFail($clonedToken);
+
+        $payment->localToken()->associate($clonedToken);
+
+        return $clonedToken->toArrayPublic();
+    }
 }
