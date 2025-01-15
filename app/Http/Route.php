@@ -17524,6 +17524,8 @@ class Route
             'user_fetch_internal',
             'merchant_features_fetch',
             'internal_feature_get_all',
+            'currency_fetch_rates_proxy',
+            'payment_refund',
             // Payment Page Routes
             'payment_page_get',
             'payment_page_get_details',
