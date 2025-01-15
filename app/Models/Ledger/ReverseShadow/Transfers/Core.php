@@ -768,73 +768,29 @@ class Core extends Base\Core
             return;
         }
 
-        $properties = [
-            'request_data' => json_encode(["merchant_id" => $transferMerchant->getId()]),
-            'id'            => $transferMerchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.api_ledger_dual_write_rearch'),
-        ];
+        // merchant is on RS, child+parent both.
+        // do early dispatch of settlement and dispatch transfers for dual write.
+        // ensure that job does dual write+balance update on api.
 
-        // dual write re-arch enabled for both child+parent if enabled for parent
-        $dualWriteRearchEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+        //note:  if nss dispatch fails+ or dual write dispatch/write fails, the job is to be retried
+        $transferTxn = $this->createTransferTransactionFromLedgerJournalRearch($debitJournal, $transfer);
 
-        $this->trace->info(TraceCode::TRANSFER_REVERSE_SHADOW_DUAL_EXPERIMENT_EVALUTATION,
-            [
-                'merchant_id' => $transfer->getMerchantId(),
-                'is_exp_enabled' => $dualWriteRearchEnabled,
-            ]);
+        $transferPaymentTxn = $this->createTransferPaymentTransactionFromLedgerJournalRearch($creditJournal, $transferPayment);
 
-        if ($dualWriteRearchEnabled === false) {
 
-            $transferTxn = $this->createTransferTransactionFromLedgerJournal($debitJournal, $transfer);
+        $bucketCore = new Bucket\Core;
 
-            $transferPaymentTxn = $this->createTransferPaymentTransactionFromLedgerJournal($creditJournal, $transferPayment);
+        // dispatch transfer and payment to nss
+        $parentStatus = $bucketCore->shouldProcessViaNewService($transferMerchant->getId());
 
-            // write api txn as is and dispatch for settlement. along with that trigger balance update
-            $txnCore = (new Transaction\Core());
-
-            $txnCore->dispatchForSettlementBucketing($transferTxn);
-
-            $txnCore->dispatchForSettlementBucketing($transferPaymentTxn);
-
-            (new Transfer\Core())->dispatchForAsyncBalanceUpdate($transfer);
-
-            $this->trace->info(TraceCode::TRANSFER_REVERSE_SHADOW_TXN_CREATION_SUCCESS,
-                [
-                    'transfer_id'               => $transfer->getId(),
-                    'transfer_txn_id'           => $transferTxn->getId(),
-                    'transfer_payment_txn_id'   => $transferPaymentTxn->getId(),
-                ]);
+        if ($parentStatus === true) {
+            $bucketCore->publishForSettlement($transferTxn);
         }
-        else
-        {
-            // merchant is on RS, child+parent both.
-            // do early dispatch of settlement and dispatch transfers for dual write.
-            // ensure that job does dual write+balance update on api.
 
-            //note:  if nss dispatch fails+ or dual write dispatch/write fails, the job is to be retried
-            $transferTxn = $this->createTransferTransactionFromLedgerJournalRearch($debitJournal, $transfer);
+        $childStatus = $bucketCore->shouldProcessViaNewService($paymentMerchant->getId());
 
-            $transferPaymentTxn = $this->createTransferPaymentTransactionFromLedgerJournalRearch($creditJournal, $transferPayment);
-
-
-            $bucketCore = new Bucket\Core;
-
-            // dispatch transfer and payment to nss
-            $parentStatus = $bucketCore->shouldProcessViaNewService($transferMerchant->getId());
-
-            if ($parentStatus === true) {
-                $bucketCore->publishForSettlement($transferTxn);
-            }
-
-            $childStatus = $bucketCore->shouldProcessViaNewService($paymentMerchant->getId());
-
-            if ($childStatus === true) {
-                $bucketCore->publishForSettlement($transferPaymentTxn);
-            }
-
-            // dispatch for dual write job
-            $this->pushTransferDataToKafkaForAPIDualWrite($transfer, $transferPayment, $creditJournal, $debitJournal);
-
+        if ($childStatus === true) {
+            $bucketCore->publishForSettlement($transferPaymentTxn);
         }
 
     }

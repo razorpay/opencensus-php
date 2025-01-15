@@ -840,6 +840,8 @@ class Core extends Base\Core
             {
                 $journal = (new ReverseShadowAdjustmentsCore())->createLedgerEntryForRazorpayDisputeDeductReverseShadow($adjustment, $disputePublicId);
 
+                $adjustment->setTransactionId($journal[LedgerConstants::ID]);
+
                 $adjustment->setStatus(AdjustmentStatus::PROCESSED);
 
                 $this->repo->saveOrFail($adjustment);
@@ -913,7 +915,9 @@ class Core extends Base\Core
 
             if ($dispute->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
             {
-                (new ReverseShadowAdjustmentsCore())->createLedgerEntryForForRazorpayDisputeReversalReverseShadow($adjustment, $disputePublicId);
+                $journal = (new ReverseShadowAdjustmentsCore())->createLedgerEntryForForRazorpayDisputeReversalReverseShadow($adjustment, $disputePublicId);
+
+                $adjustment->setTransactionId($journal[LedgerConstants::ID]);
 
                 $adjustment->setStatus(AdjustmentStatus::PROCESSED);
 

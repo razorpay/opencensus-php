@@ -333,7 +333,9 @@ class Core extends Base\Core
                     $sourceId = $adjustment->getPublicId();
                 }
 
-                (new ReverseShadowAdjustmentsCore())->createLedgerEntryForManualAdjustmentReverseShadow($adjustment, $sourceId);
+                $journal = (new ReverseShadowAdjustmentsCore())->createLedgerEntryForManualAdjustmentReverseShadow($adjustment, $sourceId);
+
+                $adjustment->setTransactionId($journal[LedgerConstants::ID]);
 
                 $adjustment->setStatus(Status::PROCESSED);
             }

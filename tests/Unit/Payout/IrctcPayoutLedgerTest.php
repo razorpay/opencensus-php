@@ -308,45 +308,45 @@ class IrctcPayoutLedgerTest extends TestCase
 
     }
 
-    public function testCreatePayoutAPILedger()
-    {
-        $kafkaPayload = $this->getKafkaPayloadForDualWrite();
-
-        $this->fixtures->merchant->createAccount('OGJDenfkpc6whP');
-
-        $this->fixtures->merchant->edit('OGJDenfkpc6whP', ['activated' => true, 'live' => true ]);
-
-        $balance = $this->fixtures->create('balance', [
-            'account_number'            =>     '2224440041626904',
-            'type'                      =>     'primary',
-            'merchant_id'               =>     'OGJDenfkpc6whP',
-            'balance'                   =>     10000
-        ]);
-
-        $this->fixtures->create('payout', [
-            'id'                         =>    'PjOiHwICySBkoD',
-            'merchant_id'                =>    'OGJDenfkpc6whP',
-            'amount'                     =>    100,
-            'balance_id'                 =>    $balance['id'],
-            'purpose'                    =>    'payout',
-            'purpose_type'               =>    'settlement'
-        ]);
-
-        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable']]]);
-
-        $response = (new \RZP\Services\KafkaMessageProcessor())->process("stage_test_api_cls_events", $kafkaPayload, "test");
-
-        $this->assertTrue($response);
-
-        $transaction = $this->getDbLastEntity('transaction');
-
-        $this->assertEquals('PjOiHwICySBkoD', $transaction['entity_id']);
-        $this->assertEquals('OGJDenfkpc6whP', $transaction['merchant_id']);
-        $this->assertEquals(100, $transaction['amount']);
-        $this->assertEquals(100, $transaction['debit']);
-        $this->assertEquals(0, $transaction['credit']);
-
-    }
+//    public function testCreatePayoutAPILedger()
+//    {
+//        $kafkaPayload = $this->getKafkaPayloadForDualWrite();
+//
+//        $this->fixtures->merchant->createAccount('OGJDenfkpc6whP');
+//
+//        $this->fixtures->merchant->edit('OGJDenfkpc6whP', ['activated' => true, 'live' => true ]);
+//
+//        $balance = $this->fixtures->create('balance', [
+//            'account_number'            =>     '2224440041626904',
+//            'type'                      =>     'primary',
+//            'merchant_id'               =>     'OGJDenfkpc6whP',
+//            'balance'                   =>     10000
+//        ]);
+//
+//        $this->fixtures->create('payout', [
+//            'id'                         =>    'PjOiHwICySBkoD',
+//            'merchant_id'                =>    'OGJDenfkpc6whP',
+//            'amount'                     =>    100,
+//            'balance_id'                 =>    $balance['id'],
+//            'purpose'                    =>    'payout',
+//            'purpose_type'               =>    'settlement'
+//        ]);
+//
+//        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable']]]);
+//
+//        $response = (new \RZP\Services\KafkaMessageProcessor())->process("stage_test_api_cls_events", $kafkaPayload, "test");
+//
+//        $this->assertTrue($response);
+//
+//        $transaction = $this->getDbLastEntity('transaction');
+//
+//        $this->assertEquals('PjOiHwICySBkoD', $transaction['entity_id']);
+//        $this->assertEquals('OGJDenfkpc6whP', $transaction['merchant_id']);
+//        $this->assertEquals(100, $transaction['amount']);
+//        $this->assertEquals(100, $transaction['debit']);
+//        $this->assertEquals(0, $transaction['credit']);
+//
+//    }
 
     public function getKafkaPayloadForDualWrite(): array
     {

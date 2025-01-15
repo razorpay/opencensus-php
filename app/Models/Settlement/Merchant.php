@@ -904,15 +904,6 @@ class Merchant
             return $settlementTransfer;
         });
 
-        try {
-            //create transaction corresponding to settlement
-            $this->createTransaction($this->setl, $settlementJournalID);
-        } catch (\Throwable $e) {
-            $this->trace->info(TraceCode::SETTLEMENT_MERCHANT_SETTLE_TIME_TAKEN, ['error' => $e]);
-
-            return [$this->setl, $settlementTransfer, true];
-        }
-
         return [$this->setl, $settlementTransfer, false];
     }
 

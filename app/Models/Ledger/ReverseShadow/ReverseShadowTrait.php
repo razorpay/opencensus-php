@@ -1005,13 +1005,20 @@ trait ReverseShadowTrait
             $merchant = $this->repo->merchant->findOrFail($merchantId);
         }
 
-        $credit = 0; $debit = 0; $feeCredits = 0;
+        $credit = 0; $debit = 0; $feeCredits = 0; $balance = 0;
 
         if (isset($merchantBalanceLedgerEntry) === true)
         {
             $credit = $merchantBalanceLedgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_CREDIT ? $merchantBalanceLedgerEntry[Constants::AMOUNT] : 0;
 
             $debit = $merchantBalanceLedgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_DEBIT ? $merchantBalanceLedgerEntry[Constants::AMOUNT] : 0;
+
+            $balance = $merchantBalanceLedgerEntry[Constants::BALANCE];
+        }
+        else if (isset($merchantReserveBalanceLedgerEntry) === true)
+        {
+            $credit = $merchantReserveBalanceLedgerEntry[Constants::AMOUNT];
+            $balance = $merchantReserveBalanceLedgerEntry[Constants::BALANCE];
         }
 
         $tax =  $taxBalanceLedgerEntry !== null ? $taxBalanceLedgerEntry[Constants::AMOUNT] : 0;
@@ -1048,7 +1055,7 @@ trait ReverseShadowTrait
             TransactionEntity::CURRENCY         => $currency,
             TransactionEntity::CREDIT           => (int) $credit,
             TransactionEntity::DEBIT            => (int) $debit,
-            TransactionEntity::BALANCE          => (int) $merchantBalanceLedgerEntry[Constants::BALANCE],
+            TransactionEntity::BALANCE          => (int) $balance,
             TransactionEntity::FEE              => (int) $fees,
             TransactionEntity::TAX              => (int) $tax,
             TransactionEntity::CHANNEL          => isset($merchant) ? $merchant->getChannel(): null,

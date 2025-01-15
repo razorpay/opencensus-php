@@ -63,8 +63,6 @@ class Core extends Base\Core
 
         $this->dispatchToSettlementFromJournalIfApplicable($journal, $adjustment);
 
-        $this->pushAdjustmentToKafkaForAPITransactionCreation($adjustment, $journal);
-
         return $journal;
     }
 
@@ -143,7 +141,7 @@ class Core extends Base\Core
 
         $this->dispatchToSettlementFromJournalIfApplicable($journal, $adjustment);
 
-        $this->pushAdjustmentToKafkaForAPITransactionCreation($adjustment, $journal);
+        return $journal;
     }
 
     public function createLedgerEntryForManualAdjustmentReverseShadow(Entity $adjustment, string $publicId)
@@ -180,7 +178,7 @@ class Core extends Base\Core
 
         $this->dispatchToSettlementFromJournalIfApplicable($journal, $adjustment);
 
-        $this->pushAdjustmentToKafkaForAPITransactionCreation($adjustment, $journal);
+        return $journal;
     }
 
     public function createLedgerEntryForManualReservePrimaryNegativeAdjustmentReverseShadow(Entity $adjustment, string $publicId)
@@ -211,89 +209,8 @@ class Core extends Base\Core
 
         $journalPayload = array_merge($transactionMessage, $manualAdjData);
 
-        $journal = $this->createAdjustemntAndDisputeJournalInLedger($journalPayload);
+        return $this->createAdjustemntAndDisputeJournalInLedger($journalPayload);
 
-        $this->pushAdjustmentToKafkaForAPITransactionCreation($adjustment, $journal);
-    }
-
-    private function pushAdjustmentToKafkaForAPITransactionCreation(Entity $adjustment,  $journal)
-    {
-        if (($this->app->runningUnitTests() === true))
-        {
-            return;
-        }
-
-        $producerKey =  $adjustment->getId();
-
-        $dualWriteRearchEnabled = (new \RZP\Models\LedgerOutbox\Core())->isAPILedgerDualWriteRearchSplitzEnabled($adjustment->merchant);
-
-        if ($dualWriteRearchEnabled === true)
-        {
-            $journal['adjustment_id'] = $adjustment->getPublicId();
-
-            $data = [
-                'payload_api'=>[
-                    'journal'       => $journal,
-                ]
-            ];
-
-            $message = [
-                LedgerConstants::KAFKA_MESSAGE_DATA       => $data,
-                LedgerConstants::KAFKA_MESSAGE_TASK_NAME  => LedgerConstants::DUAL_WRITE_TRANSACTION_FOR_API_EVENTS
-            ];
-
-            $topic = env('DUAL_WRITE_TRANSACTION_FOR_API_EVENTS', LedgerConstants::DUAL_WRITE_TRANSACTION_FOR_API_EVENTS);
-        }
-        else
-        {
-            $data = [
-                Entity::ID  => $adjustment->getId(),
-                Entity::TRANSACTION_ID => $journal['id']
-            ];
-
-            $message = [
-                Constants::KAFKA_MESSAGE_DATA      => $data,
-                Constants::KAFKA_MESSAGE_TASK_NAME  => Constants::CREATE_TRANSACTION_FOR_ADJUSTMENT
-            ];
-
-            $topic = env('CREATE_REFUND_TXN_API', Constants::CREATE_REFUND_TXN_API);
-        }
-
-        try
-        {
-            $kafkaProducer = (new KafkaProducer($topic, stringify($message), $producerKey));
-
-            $kafkaProducer->Produce();
-
-            $this->trace->info(TraceCode::KAFKA_ADJUSTMENT_API_TXN_PUSH_SUCCESS, [
-                Constants::PRODUCER_KEY => $producerKey,
-                Constants::TOPIC        => $topic,
-                Constants::MESSAGE      => $message
-            ]);
-
-            $this->trace->count(Metric::KAFKA_ADJUSTMENT_API_TXN_PUSH_SUCCESS, [
-                Constants::TOPIC        => $topic,
-            ]);
-
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->count(Metric::KAFKA_ADJUSTMENT_API_TXN_PUSH_FAILURE, [
-                Constants::TOPIC        => $topic,
-            ]);
-
-            $this->trace->traceException(
-                $ex,
-                500,
-                TraceCode::KAFKA_ADJUSTMENT_API_TXN_PUSH_FAILURE,
-                [
-                    Constants::PRODUCER_KEY => $producerKey,
-                    Constants::TOPIC        => $topic,
-                    Constants::MESSAGE      => $message
-                ]);
-
-            throw $ex;
-        }
     }
 
     private function getMaxNegativeLimitForAdjustment(Entity $adjustment, $balanceType = Balance\Type::PRIMARY): int
