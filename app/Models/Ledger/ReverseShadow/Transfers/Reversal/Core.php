@@ -91,29 +91,6 @@ class Core extends Base\Core
         return $moneyParams;
     }
 
-    public function getReversalDebitJournalPayloadBalanceSplitzResponse($merchantId)
-    {
-        try
-        {
-            $properties = [
-                'id'            => $merchantId,
-                'experiment_id' => $this->app['config']->get('app.reversal_debit_journal_payload_harvester_balance_experiment'),
-            ];
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            return $response['response']['variant']['name'] ?? '';
-        }
-        catch(\Throwable $e)
-        {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
-                'merchant_id'   => $merchantId,
-            ]);
-
-            return '';
-        }
-
-    }
-
     public function generateMoneyParamsForReversalDebit(RefundEntity $refund): array
     {
         $moneyParams = [];
@@ -135,17 +112,7 @@ class Core extends Base\Core
 
         $txnType = Transaction\Type::REFUND;
 
-        $tiDBBalanceFetch = $this->getReversalDebitJournalPayloadBalanceSplitzResponse($refund->merchant->getId()) === 'enable';
-
-        if ($tiDBBalanceFetch === true)
-        {
-            $balance = (new Balance\Repository())->getMerchantBalanceByTypeTiDBOrFail($refund->merchant->getId(), RefundConstants::PRIMARY);
-        }
-        else
-        {
-            $balance = $refund->merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
-        }
-
+        $balance = (new Balance\Repository())->getMerchantBalanceByTypeTiDBOrFail($refund->merchant->getId(), RefundConstants::PRIMARY);
 
         $balanceConfigCore = new Balance\BalanceConfig\Core();
 

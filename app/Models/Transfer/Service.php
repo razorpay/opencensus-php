@@ -67,11 +67,7 @@ class Service extends Base\Service
 
         $isReverseShadowMerchant = empty($merchant) === false ? $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) : false;
 
-        $requestId = empty($merchant) === false ? $merchant->getId() : $this->app['request']->getTaskId();
-
-        $readExp = $this->getTransferReadSplitzResponse($requestId) === 'enable';
-
-        if($isReverseShadowMerchant === true and $readExp === true)
+        if($isReverseShadowMerchant === true)
         {
             if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
                 and (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
@@ -123,25 +119,6 @@ class Service extends Base\Service
         }
 
         return $transfer;
-    }
-
-    public function getTransferReadSplitzResponse($merchantId)
-    {
-        try
-        {
-            $properties = [
-                'id'            => $merchantId,
-                'experiment_id' => $this->app['config']->get('app.transfer_read_experiment'),
-            ];
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            return $response['response']['variant']['name'] ?? '';
-        }
-        catch (\Throwable $e)
-        {
-            return '';
-        }
-
     }
 
     public function fetchMultiple(array $input)

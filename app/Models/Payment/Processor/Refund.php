@@ -2272,17 +2272,6 @@ trait Refund
         return $this->getDiscountIfApplicable($payment, $refundAmount);
     }
 
-    public function getRefundCreationDataClsBalanceSplitzResponse($merchantId)
-    {
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.refund_creation_data_cls_balance_experiment'),
-        ];
-        $response = $this->app['splitzService']->evaluateRequest($properties);
-
-        return $response['response']['variant']['name'] ?? '';
-    }
-
     // Fetches refund creation related data of the payment for FE apps
     //
     // Reference : https://docs.google.com/document/d/134CGvpRknoACraReuAVB7EAtUCmYRA4GYfu_cLhnm5w/edit?usp=sharing
@@ -2320,11 +2309,10 @@ trait Refund
         ];
 
         $lowBalance = false;
-        $useClsBalance = $this->getRefundCreationDataClsBalanceSplitzResponse($this->merchant->getId()) === 'enable';
         try
         {
 
-            $refund = $this->buildRefundEntity($payment, $buildInput, null, null, $useClsBalance);
+            $refund = $this->buildRefundEntity($payment, $buildInput, null, null, true);
 
             if ($refund->isRefundSpeedInstant() === true)
             {
@@ -2391,7 +2379,7 @@ trait Refund
 
                 $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
 
-                $this->refundBalanceChecks($refund, $useClsBalance);
+                $this->refundBalanceChecks($refund, true);
             }
             catch (\Throwable $ex)
             {

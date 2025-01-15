@@ -403,77 +403,28 @@ class Core extends Base\Core
 
     public function getBalanceByTypeFromTiDBForMerchantWithFail(Merchant\Entity $merchant, string $balanceType)
     {
-        $expEnabled=$this->getBalanceConfigBalanceIDFetchTiDBSplitzEnabled($merchant->getId());
+        $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
+            'merchant_id' => $merchant->getId(),
+            'balance_type' => $balanceType,
+            'message'=> 'fetching merchant balance from harvester'
+        ]);
 
-        if($expEnabled===true)
-        {
-            $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
-                'merchant_id' => $merchant->getId(),
-                'balance_type' => $balanceType,
-                'message'=> 'fetching merchant balance from harvester'
-            ]);
-
-            return $this->repo->balance->getMerchantBalanceByTypeTiDBOrFail($merchant->getId(), $balanceType);
-        }
-        else
-        {
-            return $merchant->getBalanceByTypeOrFail($balanceType);
-        }
+        return $this->repo->balance->getMerchantBalanceByTypeTiDBOrFail($merchant->getId(), $balanceType);
 
     }
 
     public function getBalanceByTypeFromTiDBForMerchantWithoutFail(Merchant\Entity $merchant, string $balanceType)
     {
-        $expEnabled=$this->getBalanceConfigBalanceIDFetchTiDBSplitzEnabled($merchant->getId());
 
-        if($expEnabled===true)
-        {
-            // fetch balance for balance_id from TiDB
-            $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
-                'merchant_id' => $merchant->getId(),
-                'balance_type' => $balanceType,
-                'message'=> 'fetching merchant balance from TiDB without fail'
-            ]);
-            return $this->repo->balance->getMerchantBalanceByTypeTiDB($merchant->getId(), $balanceType);
-
-        }
-        else
-        {
-            return $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
-        }
+        // fetch balance for balance_id from TiDB
+        $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
+            'merchant_id' => $merchant->getId(),
+            'balance_type' => $balanceType,
+            'message'=> 'fetching merchant balance from TiDB without fail'
+        ]);
+        return $this->repo->balance->getMerchantBalanceByTypeTiDB($merchant->getId(), $balanceType);
 
     }
-
-    public function getBalanceConfigBalanceIDFetchTiDBSplitzEnabled(string $merchantId)
-    {
-        try {
-
-            $properties = [
-                'id' => $merchantId,
-                'experiment_id' => $this->app['config']->get('app.transfer_balance_config_balance_id_harvester_experiment'),
-            ];
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $isExp = $response['response']['variant']['name'] === 'enable';
-
-            $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
-                'merchant_id' => $merchantId,
-                'response' => $response,
-                'experiment_enabled' => $isExp
-            ]);
-
-            return $isExp;
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
-                'merchant_id'   => $merchantId,
-            ]);
-
-            return false;
-        }
-    }
-
 
     private function pushTransferDataToKafkaForAPITransactionCreation($transfer, $transferPayment, $creditJournalId, $debitJournalId)
     {

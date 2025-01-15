@@ -1129,8 +1129,6 @@ return array(
 
     'route_tidb_fetch_exp_id' => env('ROUTE_TIDB_FETCH_EXP_ID'),
 
-    'transfer_balance_config_balance_id_harvester_experiment' => env('TRANSFER_BALANCE_CONFIG_BALANCE_ID_EXP_ID'),
-
     'order_transfer_idempotency_exp_id' => env('ORDER_TRANSFER_IDEMPOTENCY_EXP_ID'),
 
     'recurring_populate_error_metadata' => env('RECURRING_POPULATE_ERROR_METADATA'),
@@ -1139,14 +1137,6 @@ return array(
 
     'transaction_created_fire_webhook_sync'=>env('TXN_CREATED_FIRE_WEBHOOK_SYNC'),
 
-    'refund_creation_data_cls_balance_experiment' => env('REFUND_CREATION_DATA_CLS_BALANCE_EXP_ID'),
-
-    'refund_journal_payload_harvester_balance_experiment' => env('REFUND_JOURNAL_PAYLOAD_BALANCE_EXP_ID'),
-
-    'reversal_debit_journal_payload_harvester_balance_experiment' => env('REVERSAL_DEBIT_JOURNAL_BALANCE_EXP_ID'),
-
-    'refund_reversal_txn_experiment' => env('REFUND_REVERSAL_TXN_FETCH_EXP_ID'),
-
     'validate_transfer_using_oauth_exp_id' => env('VALIDATE_TRANSFER_USING_OAUTH'),
 
     'gifu_upi_ds_settlement_timestamp_exp_id' => env('GIFU_UPI_DS_SETTLEMENT_TIMESTAMP_EXP_ID'),
@@ -1154,8 +1144,6 @@ return array(
     'pos_activation_check_for_offline_payments_splitz_exp_id' => env('POS_ACTIVATION_CHECK_FOR_OFFLINE_PAYMENTS_SPLITZ_EXP_ID'),
 
     'merchant_activation_pos_activation_check_for_transfers_splitz_exp_id' => env('MERCHANT_ACTIVATION_POS_ACTIVATION_CHECK_FOR_TRANSFERS_SPLITZ_EXP_ID'),
-
-    'splitz_merchant_cls_balance_read_experiment_id'    => env('SPLITZ_MERCHANT_CLS_BALANCE_READ_EXPERIMENT_ID'),
 
     'splitz_harvester_query_upi_experiment_id'          => env('SPLITZ_HARVESTER_QUERY_UPI_EXPERIMENT_ID'),
 
@@ -1174,12 +1162,6 @@ return array(
     'splitz_insufficient_balance_experiment_id'          => env('SPLITZ_INSUFFICIENT_BALANCE_EXPERIMENT_ID'),
 
     'qr_code_v1_failed_payment_experiment' => env('QRCODEV1_FAILED_PAYMENT_EXPERIMENT'),
-
-    'transaction_read_experiment' => env('TRANSACTION_READ_EXPERIMENT_ID'),
-
-    'transfer_read_experiment' => env('TRANSFER_READ_EXPERIMENT_ID'),
-
-    'reversal_read_experiment' => env('REVERSAL_READ_EXPERIMENT_ID'),
 
     'qr_gateway_unrecognised_payment_process'  =>   env('QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS'),
 
