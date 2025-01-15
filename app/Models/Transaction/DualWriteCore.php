@@ -458,31 +458,7 @@ class DualWriteCore extends Base\Core
 
         $transfer = $this->repo->transfer->findByPublicId($transactorPublicId);
 
-        $resource = $this->getTransactionMutexresource($transfer);
-
-        $txn = $this->mutex->acquireAndRelease(
-            $resource,
-            function () use ($transfer, $journalId, $fees, $tax, $feeCreditUsed, $amountCreditUsed)
-            {
-                return $this->repo->transaction(function () use ($transfer, $journalId, $fees, $tax, $feeCreditUsed, $amountCreditUsed) {
-
-                    $txnCore = new Core();
-
-                    list($txn, $feeSplit) = $txnCore->createTransferTransactionForDualWrite($transfer, $journalId, $fees, $tax, $feeCreditUsed, $amountCreditUsed, false);
-
-                    $transfer->transaction()->associate($txn);
-
-                    $transfer->save();
-
-                    return $txn;
-                });
-            },
-            self::ENTITY_TRANSACTION_CREATION_MUTEX_TTL,
-            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
-            self::ENTITY_TRANSACTION_CREATION_MUTEX_RETRIES,
-            self::ENTITY_TRANSACTION_CREATION_MUTEX_MIN_RETRY_DELAY,
-            self::ENTITY_TRANSACTION_CREATION_MUTEX_MAX_RETRY_DELAY
-        );
+        list($txn, $feeSplit) = (new Core())->createTransferTransactionForDualWrite($transfer, $journalId, $fees, $tax, $feeCreditUsed, $amountCreditUsed, false);
 
         $this->trace->info(TraceCode::CUSTOMER_TRANSFER_TRANSACTION_CREATED,
             [

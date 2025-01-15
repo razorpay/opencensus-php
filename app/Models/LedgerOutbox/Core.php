@@ -2129,6 +2129,10 @@ class Core extends Base\Core
 
             $txn = $this->transformJournalResponseToTransactionEntityForCustomerTransfer($journal, $transfer);
 
+            $transfer->setAttribute(Transfer\Entity::TRANSACTION_ID, $txn->getId());
+
+            $this->repo->saveOrFail($transfer);
+
             $status = $bucketCore->shouldProcessViaNewService($txn->getMerchantId());
 
             if ($status === true)
