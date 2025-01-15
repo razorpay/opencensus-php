@@ -22,6 +22,22 @@ export const splitzConfig: SplitzInitConfig = {
     default: [],
     merchant: [
       {
+        uniqueHashKey: 'insight_x_experiment',
+        experimentId: {
+          beta: 'OsfzT1j3yvxYca',
+          production: 'Osg3KQZUfYYRcX',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'ramp_settlements_for_excluded_segment',
         experimentId: {
           beta: 'PQMyYVTn3GVaoo',

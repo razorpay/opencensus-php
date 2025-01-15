@@ -283,6 +283,7 @@ return array(
     'static_web_url'      => env('STATIC_WEBSITE_URL'),
     'easy_onboarding_url' => env('EASY_ONBOARDING_URL'),
     'pp_ecommerce_url' => env('PP_ECOMMERCE_URL'),
+    'insight_x_superset_url' => env('INSIGHT_X_SUPERSET_URL'),
     'easy_dashboard_url'  => env('EASY_DASHBOARD_URL'),
     'unified_signup_redirect_path' => env('UNIFIED_SIGNUP_REDIRECT_PATH'),
     'unified_login_redirect_path'  => env('UNIFIED_LOGIN_REDIRECT_PATH'),

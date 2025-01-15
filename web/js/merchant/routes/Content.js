@@ -646,6 +646,8 @@ const EditReport = lazy(() =>
   ),
 );
 
+const InsightX = lazy(() => import(/* webpackChunkName: "InsightX" */ 'merchant/views/InsightX'));
+
 const MyDevices = lazy(() =>
   import(/* webpackChunkName: "MyDevices" */ 'merchant/views/MyDevices'),
 );
@@ -907,6 +909,7 @@ class Content extends Component {
     const isTransactionV2Enabled = this.checkIsTransactionsV2Enabled();
     const isSettlementV3RevampEnabled = this.checkIsSettlementsV3RevampEnabled();
     const isMicrofrontendSelfserveEnabled = this.checkIsMicrofrontendSelfserveEnabled();
+
     const isPosSalesAgent = this.checkIfPosSalesAgent();
     const isPosEkycAgent = this.checkIfPosEkycAgent();
     const ExportPaymentsList = isExperimentActive(export_payments_v2)
@@ -2665,6 +2668,22 @@ class Content extends Component {
             element={
               <RouteGuard additionalCondition={() => isJkOrg && isExperimentActive(my_devices)}>
                 <MyDevices />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="insight-x"
+            element={
+              <RouteGuard
+                additionalCondition={() => {
+                  return (
+                    isExperimentEnabled(this.props.splitz?.abExperiments.insight_x_experiment) &&
+                    user.isOrgRZP &&
+                    user.isCountryIndia
+                  );
+                }}
+              >
+                <InsightX />
               </RouteGuard>
             }
           />

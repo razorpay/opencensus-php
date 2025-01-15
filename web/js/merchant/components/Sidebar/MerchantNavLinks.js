@@ -104,6 +104,7 @@ function MerchantNavLinks(props) {
           currentUser.isOrgRZP
         }
       />
+
       <MainNavLink
         label="Transactions"
         icon="i i-repeat text-primary"
@@ -493,6 +494,18 @@ function MerchantNavLinks(props) {
           currentUser.hideForNIASupportRole
         }
         isPending={isReportsPending}
+      />
+
+      <MainNavLink
+        label="InsightX"
+        type="general"
+        icon="i i-sparkles text-info"
+        to="/insight-x"
+        additionalCondition={() =>
+          isExperimentEnabled(abExperiments?.insight_x_experiment) &&
+          user.isOrgRZP &&
+          user.isCountryIndia
+        }
       />
       <MainNavLink
         label="Account & Settings"

@@ -386,6 +386,13 @@ export const PRODUCTS_DATA = {
       );
     },
   },
+  insight_x: {
+    icon: 'i i-sparkles text-info',
+    additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
+      isExperimentEnabled(abExperiments.insight_x_experiment) &&
+      user.isOrgRZP &&
+      user.isCountryIndia,
+  },
 };
 
 export type ProductTypeProp = {
@@ -419,6 +426,11 @@ export const COMMON_PRODUCTS: Array<ProductTypeProp> = [
   {
     title: SIDEEBAR_PRODUCTS_TITLES.reports,
     product_id: 'reports',
+    tags: [],
+  },
+  {
+    title: SIDEEBAR_PRODUCTS_TITLES.insight_x,
+    product_id: 'insight_x',
     tags: [],
   },
   {

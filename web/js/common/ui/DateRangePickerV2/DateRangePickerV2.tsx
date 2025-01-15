@@ -35,7 +35,7 @@ type Props = {
   renderCalendarInfo?: () => any;
   numberOfMonths?: number;
   horizontalMargin?: number;
-  isOutsideRange?: boolean;
+  isOutsideRange?: (x: moment.Moment) => boolean;
   icon?: JSX.Element;
 } & RouteComponentProps &
   WithRouterProps;

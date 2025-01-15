@@ -35,6 +35,7 @@ export enum Teams {
   RAY = 'Ray',
   BILLME_INTEGRATION = 'BillMe Integration',
   RECON_SAAS = 'recon-saas',
+  DATAHUB = 'DATAHUB',
 }
 
 // Maintain this list in ascending order
@@ -91,6 +92,7 @@ export const RoutesConfig = {
   '/developers/apis': Teams.DEV_EXP,
   '/developers/webhooks': Teams.DEV_EXP,
   '/disputes': Teams.PG_DASHBOARD,
+  '/insight-x': Teams.DATAHUB,
   '/instantsettlement_details': Teams.PG_DASHBOARD,
   '/instantsettlements': Teams.PG_DASHBOARD,
   '/invoices': Teams.PG_DASHBOARD,

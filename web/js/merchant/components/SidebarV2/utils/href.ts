@@ -47,6 +47,7 @@ export const ROUTE_REG = {
   assisted_financing: /^\/(assisted-financing)/,
   bill_me: /^\/billme/,
   reports: /^\/reports(\/(downloads|schedules))?/,
+  insight_x: /^\/insight-x/,
 };
 
 export const BASE_ROUTES = {
@@ -101,6 +102,7 @@ export const BASE_ROUTES = {
   riskAndFraud: '/risk-and-fraud',
   reconciliations: '/reconciliations/dashboard/processes',
   assisted_financing: '/assisted-financing',
+  insight_x: '/insight-x',
 };
 
 export const initializeRoutes = (location, user) => {
@@ -165,6 +167,8 @@ export const initializeRoutes = (location, user) => {
     routes.riskAndFraud = pathname.match(ROUTE_REG.riskAndFraud)[0];
   } else if (ROUTE_REG.assisted_financing.test(pathname)) {
     routes.assisted_financing = pathname.match(ROUTE_REG.assisted_financing)[0];
+  } else if (ROUTE_REG.insight_x.test(pathname)) {
+    routes.insight_x = pathname.match(ROUTE_REG.insight_x)[0];
   }
   return routes;
 };
