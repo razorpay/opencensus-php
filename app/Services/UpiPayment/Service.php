@@ -455,7 +455,7 @@ class Service
                 $data = $this->getRequestBodyForAuthentication($input);
                 break;
             case Payment\Action::DEBIT:
-                $data = $this->getCommonRequestForRecurring($input, Payment\Action::DEBIT);
+                $data = $this->getRequestBodyForDebit($input);
                 break;
             case Payment\Action::VERIFY_RECURRING:
                 $data = $this->getRequestBodyForVerifyRecurring($input);
@@ -628,6 +628,21 @@ class Service
         $response = $this->getCommonRequestForRecurring($input, Payment\Action::AUTHENTICATE);
         $response[Entity::ORDER] = $input[Entity::ORDER] ?? null;
         return $response;
+    }
+
+    /**
+     * returns the Request Body for Debit action
+     *
+     * @param  array  $input
+     * @return array
+     */
+    protected function getRequestBodyForDebit(array $input): array
+    {
+        if((isset($input['upi']) === true) and ($input['upi']['flow'] === 'intent')) {
+            $input['payment']['vpa'] = $input['upi']['vpa'];
+        }
+
+        return $this->getCommonRequestForRecurring($input, Payment\Action::DEBIT);
     }
 
     protected function evaluateSplitzExperimentForUpiAutopayPaymentRemark($merchantId)

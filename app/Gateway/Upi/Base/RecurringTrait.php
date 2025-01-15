@@ -892,7 +892,7 @@ trait RecurringTrait
             'upi'                               => $metadataTransformer->toArray(),
             // Acquirer data which is needed to be saved in payment entity
             'acquirer'                          => [
-                Payment\Entity::VPA             => $data['vpa'] ?? $input['payment']['vpa'],
+                Payment\Entity::VPA             => $input['payment']['vpa'] ?? $data['upi']['vpa'],
                 Payment\Entity::REFERENCE1      => $data['npci_txn_id'] ?? $data['data']['npci_txn_id'],
                 Payment\Entity::REFERENCE16     => $data['rrn'] ?? $data['mandate']['rrn'],
             ],

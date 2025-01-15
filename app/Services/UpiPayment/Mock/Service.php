@@ -832,7 +832,8 @@ class Service extends UpiPaymentService
                         'action' => 'authenticate',
                         'gateway_data' => [
                             'id' => 'OCfR6llPPsglMc0create1'
-                        ]
+                        ],
+                        'vpa' => 'test@okicici'
                     ]
                 ],
                 'gateway' => 'upi_mindgate',
@@ -849,6 +850,7 @@ class Service extends UpiPaymentService
                     ],
                     'upi_mandate' => [
                         'umn' => 'HDFebdef01e51b340448dd0caf01fffc@hdfc',
+                        'rrn' => '32131429',
                     ],
                     'upi' => [
                         'merchant_reference' => 'OCfR6llPPsglMc0execte1',
@@ -856,7 +858,8 @@ class Service extends UpiPaymentService
                         'action' => 'debit',
                         'gateway_data' => [
                             'id' => 'OCfR6llPPsglMc0execte1'
-                        ]
+                        ],
+                        'vpa' => 'nikita@okicici'
                     ]
                 ],
                 'gateway' => 'upi_mindgate',

@@ -424,7 +424,7 @@ trait UpiTrait
             ($input[Entity::PAYMENT][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL));
     }
 
-    protected function modifyActionForRecurringIfApplicable(array $input, &$action)
+    protected function modifyActionForRecurringIfApplicable(array &$input, &$action)
     {
         if (($action === Payment\Action::AUTHORIZE) and ($this->isUpiInitialRecurringPayment($input) === true))
         {
@@ -433,6 +433,9 @@ trait UpiTrait
 
         if(($action === Payment\Action::CALLBACK) and ($this->isUpiRecurringPayment($input['payment']) === true))
         {
+            if((isset($input['upi']) === true) and ($input['upi']['flow'] === 'intent')) {
+                $input['gateway']['data']['upi']['vpa'] = $input['upi']['vpa'];
+            }
             $action = Payment\Action::RECURRING_CALLBACK;
         }
 
