@@ -61,6 +61,10 @@ class Core extends Merchant\Core
 
         (new Validator)->validateInput('create', $input);
 
+        if (isset($input['account_details']['business_type']) && $input['account_details']['business_type'] === Detail\BusinessType::INDIVIDUAL) {
+            $input['account_details']['business_type'] = Detail\BusinessType::NOT_YET_REGISTERED;
+        }
+
         $this->blockLinkedAccountCreationIfApplicable($parentMerchant);
 
         $merchantDetailsInput    = $this->getMerchantDetailsFromInput($input);

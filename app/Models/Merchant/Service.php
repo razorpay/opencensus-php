@@ -820,6 +820,9 @@ class Service extends Base\Service
 
     public function createLinkedAccount(array $input)
     {
+        if (isset($input['business_type']) && $input['business_type'] === BusinessType::INDIVIDUAL) {
+            $input['business_type'] = BusinessType::NOT_YET_REGISTERED;
+        }
         $this->core()->setModeAndDefaultConnection(Mode::LIVE);
 
         if ($this->checkIfLinkedAccountBatchUploadNewFlowExpIsEnabled($this->merchant) === true)

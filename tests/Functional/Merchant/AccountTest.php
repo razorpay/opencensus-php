@@ -115,6 +115,11 @@ class AccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateLinkedAccountIndividual()
+    {
+        $response = $this->startTest();
+    }
+
     public function testCreateLinkedAccountWithCode()
     {
         $this->fixtures->merchant->addFeatures(['route_code_support']);

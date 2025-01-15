@@ -274,6 +274,85 @@ return [
         ],
     ],
 
+    'testCreateLinkedAccountIndividual' => [
+        'request'   => [
+            'url'     => '/beta/accounts',
+            'method'  => 'post',
+            'content' => [
+                'name'         => 'Linked account test 1',
+                'email'        => 'linkedaccounttest@example.com',
+                'tnc_accepted' => true,
+                'account_details' => [
+                    'business_name' => 'LA Corporation',
+                    'business_type' => 'individual',
+                ],
+                'bank_account' => [
+                    'ifsc_code'       => 'HDFC0CAGSBK',
+                    'beneficiary_name'=> 'Linked Account test',
+                    'account_type'    => 'current',
+                    'account_number'  => 1234567890123499,
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'entity'     => 'account',
+                'name'       => 'LA Corporation',
+                'email'      => 'linkedaccounttest@example.com',
+                'live'       => true,
+                'managed'    => true,
+                'tnc_accepted' => true,
+                'activation_details' => [
+                    'status'                        => 'activated',
+                    'can_submit'                    => true,
+                    'bank_details_verification_error' => null,
+                    'fields_pending'                => [],
+                ],
+                'secondary_emails' => [
+                    'transaction_report_email' => [],
+                ],
+                'account_details' => [
+                    'mobile'                 => null,
+                    'landline'               => null,
+                    'business_name'          => 'LA Corporation',
+                    'business_type'          => 'not_yet_registered',
+                    'paymentdetails'         => null,
+                    'business_model'         => null,
+                    'registered_address'     => [
+                        'address' => null,
+                        'city'    => null,
+                        'state'   => null,
+                        'pin'     => null,
+                    ],
+                    'operational_address'    => [
+                        'address' => null,
+                        'city'    => null,
+                        'state'   => null,
+                        'pin'     => null,
+                    ],
+                    'date_established'       => null,
+                    'transaction_volume'     => null,
+                    'average_transaction_size'=> null,
+                    'kyc_details' => [
+                        'cin'                => null,
+                        'gstin'              => null,
+                        'p_gstin'            => null,
+                        'pan'                => null,
+                        'pan_name'           => null,
+                        'promoter_pan'       => null,
+                        'promoter_pan_name'  => null,
+                        'business_proof_file'=> null,
+                        'address_proof_file' => null,
+                    ],
+                ],
+                'notes'         => [],
+                'dashboard_access' => false,
+                'allow_reversals'  => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testCreateLinkedAccountWithCode' => [
         'request' => [
             'url' => '/beta/accounts',
