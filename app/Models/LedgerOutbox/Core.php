@@ -338,54 +338,29 @@ class Core extends Base\Core
     private function handleOndemandSettlementEventsOnAcknowledgment($response, $journal, bool $accountAlreadyExistsForCapitalInNewLedger) {
         $transactorIdVal = $response[LedgerConstants::TRANSACTOR_ID];
         $event = $response[LedgerConstants::TRANSACTOR_EVENT];
+
+        $traceableData = [
+            LedgerConstants::TRANSACTOR_EVENT       => $event,
+            LedgerConstants::TRANSACTOR_ID          => $transactorIdVal,
+            Constants::SOURCE                       => Constants::ACK_WORKER
+        ];
+
         try
         {
             $entityId = $this->determineEntityIDFromTransactorID($transactorIdVal);
-            $txn = (new OndemandCore)->handleLedgerEventsOnAcknowledgment($journal, $transactorIdVal, $event, $entityId, $accountAlreadyExistsForCapitalInNewLedger);
-            if($txn === null)
-            {
-                $this->trace->info(TraceCode::CAPITAL_PG_LEDGER_TRANSACTION_NOT_CREATED,
-                    [
-                        LedgerConstants::TRANSACTOR_EVENT       => $event,
-                        LedgerConstants::TRANSACTOR_ID          => $transactorIdVal,
-                        Constants::SOURCE                       => Constants::ACK_WORKER
-                    ]
-                );
-            }
-            else
-            {
-                $txnId = $txn->getId();
 
-                $this->trace->info(TraceCode::CAPITAL_PG_LEDGER_CREATE_TRANSACTION_SUCCESS,
-                    [
-                        LedgerConstants::API_TRANSACTION_ID     => $txnId,
-                        LedgerConstants::TRANSACTOR_EVENT       => $event,
-                        LedgerConstants::TRANSACTOR_ID          => $transactorIdVal,
-                        Constants::SOURCE                       => Constants::ACK_WORKER
-                    ]
-                );
+            (new OndemandCore)->handleLedgerEventsOnAcknowledgment($journal, $transactorIdVal, $event, $entityId,
+                $accountAlreadyExistsForCapitalInNewLedger);
 
-                $this->trace->count(Metric::PG_LEDGER_CREATE_TRANSACTION_SUCCESS, [
-                    LedgerConstants::TRANSACTOR_EVENT   => $event,
-                    Constants::SOURCE                   => Constants::ACK_WORKER
-                ]);
-            }
-            $this->softDelete($response[LedgerConstants::TRANSACTOR_ID], $response[LedgerConstants::TRANSACTOR_EVENT]);
+            $this->trace->info(TraceCode::ONDEMAND_SETTLEMENT_LEDGER_ACKNOWLEDGEMENT_SUCCESS, $traceableData);
+
+            $this->softDelete($transactorIdVal, $event);
         }
         catch (Exception $e)
         {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::PG_LEDGER_ACK_WORKER_FAILURE,
-            );
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PG_LEDGER_ACK_WORKER_FAILURE, $traceableData);
 
-            $this->trace->count(Metric::PG_LEDGER_ACK_WORKER_FAILURE,
-                [
-                    LedgerConstants::TRANSACTOR_EVENT       => $event,
-                    LedgerConstants::TRANSACTOR_ID          => $transactorIdVal,
-                    Constants::SOURCE                       => Constants::ACK_WORKER
-                ]);
+            $this->trace->count(Metric::PG_LEDGER_ACK_WORKER_FAILURE, $traceableData);
         }
     }
 
@@ -1595,7 +1570,7 @@ class Core extends Base\Core
                         if($transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED || $transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED)
                         {
                             $entityId = $this->determineEntityIDFromTransactorID($transactorId);
-                            $txn = (new OndemandCore)->handleLedgerEventsOnAcknowledgment($journal, $transactorId, $transactorEvent, $entityId, false);
+                            (new OndemandCore)->handleLedgerEventsOnAcknowledgment($journal, $transactorId, $transactorEvent, $entityId, false);
                         }
                         else if($isBulkJournal === true)
                         {

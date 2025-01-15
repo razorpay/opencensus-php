@@ -164,45 +164,19 @@ class Core extends Base\Core
 
                     try
                     {
-                        $txn = null;
-
                         $entityId = $ledgerOutboxCore->determineEntityIDFromTransactorID($transactorId);
 
-                        $txn = (new OndemandCore)->handleLedgerEventsOnAcknowledgment($journal, $transactorId, $transactorEvent, $entityId, false);
+                        (new OndemandCore)->handleLedgerEventsOnAcknowledgment($journal, $transactorId, $transactorEvent, $entityId, false);
 
-                        if($txn === null)
-                        {
-                            $this->trace->info(TraceCode::PG_LEDGER_TRANSACTION_NOT_CREATED,
-                                [
-                                    LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
-                                    LedgerConstants::TRANSACTOR_ID          => $transactorId,
-                                    LedgerConstants::JOURNAL_ID             => $journal[LedgerConstants::ID],
-                                    Constants::SOURCE                       => Constants::CRON,
-                                    Constants::CRON_TYPE                    => Constants::ONDEMAND_SETTLEMENT
-                                ]
-                            );
-                        }
-                        else
-                        {
-                            $txnId = $txn->getId();
-
-                            $this->trace->info(TraceCode::PG_LEDGER_CREATE_TRANSACTION_SUCCESS,
-                                [
-                                    LedgerConstants::API_TRANSACTION_ID   => $txnId,
-                                    LedgerConstants::JOURNAL_ID           => $journal[LedgerConstants::ID],
-                                    LedgerConstants::TRANSACTOR_EVENT     => $transactorEvent,
-                                    LedgerConstants::TRANSACTOR_ID        => $transactorId,
-                                    Constants::SOURCE                     => Constants::CRON,
-                                    Constants::CRON_TYPE                  => Constants::ONDEMAND_SETTLEMENT
-                                ]
-                            );
-
-                            $this->trace->count(Metric::PG_LEDGER_CREATE_TRANSACTION_SUCCESS, [
-                                LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
-                                Constants::SOURCE                   => Constants::CRON,
-                                Constants::CRON_TYPE                => Constants::ONDEMAND_SETTLEMENT
-                            ]);
-                        }
+                        $this->trace->info(TraceCode::ONDEMAND_SETTLEMENT_LEDGER_ACKNOWLEDGEMENT_SUCCESS,
+                            [
+                                LedgerConstants::JOURNAL_ID           => $journal[LedgerConstants::ID],
+                                LedgerConstants::TRANSACTOR_EVENT     => $transactorEvent,
+                                LedgerConstants::TRANSACTOR_ID        => $transactorId,
+                                Constants::SOURCE                     => Constants::CRON,
+                                Constants::CRON_TYPE                  => Constants::ONDEMAND_SETTLEMENT
+                            ]
+                        );
                     }
                     catch (\Throwable $e)
                     {
@@ -217,12 +191,6 @@ class Core extends Base\Core
                                 LedgerReverseShadowConstants::RETRY_COUNT   => $retries,
                             ]
                         );
-
-                        $this->trace->count(Metric::PG_LEDGER_CREATE_TRANSACTION_FAILURE, [
-                                LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
-                                Constants::SOURCE                       => Constants::CRON,
-                                Constants::CRON_TYPE                    => Constants::ONDEMAND_SETTLEMENT,
-                        ]);
 
                         $this->trace->count(Metric::PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE, [
                             LedgerReverseShadowConstants::RETRY_COUNT => $retries,
