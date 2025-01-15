@@ -574,6 +574,12 @@ class Core extends Base\Core
             case "setlodrvrsl":
                 $res[Constants::TYPE] = Constants::ONDEMAND_SETTLEMENT;
                 return $res;
+            case "pout":
+                $res[Constants::TYPE] = Constants::PAYOUT;
+                return $res;
+            case "rds":
+                $res[Constants::TYPE] = Constants::RDS;
+                return $res;
             default:
                 $res[Constants::TYPE] = "";
                 return $res;
@@ -684,6 +690,21 @@ class Core extends Base\Core
                             constants::SOURCE                   => constants::ACK_WORKER,
 
                         ]);
+
+                        // Emit a separate metric for specific IRCTC Payout events
+                        if (in_array($transactorEvent, [
+                            LedgerConstants::IRCTC_PAYOUT_INITIATED,
+                            LedgerConstants::IRCTC_PAYOUT_PROCESSED,
+                            LedgerConstants::IRCTC_RDS_BALANCE_UPDATED
+                        ])) {
+                            $this->trace->count(Metric::IRCTC_PAYOUTS_CLS_NON_RECOVERABLE_ERROR, [
+                                constants::ERROR_MESSAGE            => $errorMessage,
+                                constants::ERROR_TYPE               => constants::NON_RECOVERABLE_ERROR,
+                                LedgerConstants::TRANSACTOR_ID      => $transactorId,
+                                LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
+                                constants::SOURCE                   => constants::ACK_WORKER,
+                            ]);
+                        }
 
                         // Soft deleting this record from outbox as the error is not recoverable and will
                         // fail when retried via cron as well
@@ -895,6 +916,44 @@ class Core extends Base\Core
 
             $txn = (new Reversal\Core)->createReversalTransaction($reversal, $journalId);
 
+        }
+        else if($transactionType === Constants::PAYOUT && in_array($this->merchant->getMerchantId(), LedgerConstants::IRCTC_MIDS)) {
+            /** @var \RZP\Models\Payout\Entity $payout */
+            $payout = $this->repo
+                ->payout
+                ->findByPublicIdAndMerchant($transactorPublicId, $this->merchant, []);
+
+            $resource = $this->getTransactionMutexresource($payout);
+
+            $this->mutex->acquireAndRelease(
+                $resource,
+                function () use ($payout, $journal, $journalId) {
+                    $this->repo->transaction(function () use ($payout, $journalId, $journal) {
+                        // Create FTA and update Payout Txn ID
+                        $payoutProcessor = new \RZP\Models\Payout\Processor\DownstreamProcessor\Base();
+                        $payoutProcessor->createFundTransferAttempt($payout, $payout->merchant->bankAccount);
+
+                        $updateData = [
+                            \RZP\Models\Payout\Entity::TRANSACTION_ID => $journalId,
+                        ];
+                        $this->repo->payout->updatePayout($payout->getId(), $payout->merchant->getId(), $updateData);
+
+                        $this->dispatchToSettlementFromJournalIfApplicableForPayout($journal, $payout);
+
+                        $dualWriteRearchEnabled = $this->isAPILedgerDualWriteRearchSplitzEnabled($payout->merchant);
+
+                        if ($dualWriteRearchEnabled === true) {
+                            // dispatch for dual write job
+                            $this->pushTxnDataToKafkaForAPIDualWrite($journal, $payout->getId());
+                        } else {
+                            $txnCore = new Transaction\Core();
+                            list($txn, $feeSplit) = $txnCore->createFromPayout($payout);
+
+                            $payout->transaction()->associate($txn);
+                            $payout->save();
+                        }
+                    });
+                });
         }
         else if($transactionType === Constants::PAYMENT)
         {
@@ -2198,6 +2257,20 @@ class Core extends Base\Core
             {
                 $bucketCore->publishForSettlement($virtualReversalTransaction);
             }
+    }
+
+    private function dispatchToSettlementFromJournalIfApplicableForPayout($journal, $payout)
+    {
+        $bucketCore = new Bucket\Core;
+
+        $virtualReversalTransaction = $this->transformJournalResponseToTransactionEntityForPayout($journal, $payout);
+
+        $status = $bucketCore->shouldProcessViaNewService($virtualReversalTransaction->getMerchantId());
+
+        if ($status === true)
+        {
+            $bucketCore->publishForSettlement($virtualReversalTransaction);
+        }
     }
 
     public function findTransferPaymentFromNotes($transfer)

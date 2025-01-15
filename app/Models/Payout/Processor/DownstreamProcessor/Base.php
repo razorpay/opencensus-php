@@ -4,6 +4,7 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Models\Ledger\ReverseShadow\IRCTCPayout\Core as IRCTCPayoutReverseShadowCore;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -14,6 +15,8 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Models\Feature\Constants as FeatureConstants;
+use \RZP\Models\Ledger\Constants as LedgerConstants;
 
 class Base extends BaseCore
 {
@@ -23,9 +26,19 @@ class Base extends BaseCore
     {
         $this->setChannel($payout);
 
-        $this->createTransaction($payout);
+        // If the merchant is IRCTC and the PG_LEDGER_REVERSE_SHADOW feature is enabled, FTA and Txn will be
+        // created later at the dual write worker.
 
-        $this->createFundTransferAttempt($payout, $ftaAccount);
+        $irctcPayoutReverseShadowCore = new IRCTCPayoutReverseShadowCore();
+
+        if ($irctcPayoutReverseShadowCore->isIrctcPGLedgerReverseShadowEnabled($payout->merchant)) {
+                return;
+        }
+        else {
+            $this->createTransaction($payout);
+
+            $this->createFundTransferAttempt($payout, $ftaAccount);
+        }
     }
 
     public function processTransaction(Entity $payout)
@@ -111,7 +124,7 @@ class Base extends BaseCore
             ]);
     }
 
-    protected function createFundTransferAttempt(Entity $payout, $ftaAccount)
+    public function createFundTransferAttempt(Entity $payout, $ftaAccount)
     {
 
         // For VA to VA transfers using creditTransfer entity we don't create FTA

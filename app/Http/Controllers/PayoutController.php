@@ -371,6 +371,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postInternalMerchantRDSReduce()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalMerchantRDSReduce($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPayout(string $id)
     {
         $input = Request::all();

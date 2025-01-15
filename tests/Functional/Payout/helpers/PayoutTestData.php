@@ -46,6 +46,25 @@ return [
             ],
         ],
     ],
+    'testCreatePayoutForIrctcMerchants' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout',
+            'content' => [
+                'amount'         => 1000,
+                'merchant_id'    => 'OGJDenfkpc6whP',
+                'min_amount'     => 100,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'notes'       => []
+            ],
+        ],
+    ],
     'testFTACreateWithMutex' => [
         'request'  => [
             'method'  => 'POST',

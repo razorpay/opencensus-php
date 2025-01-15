@@ -29238,6 +29238,43 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['pricing_rule_id'], 'custompricing1');
     }
 
+    public function testCreatePayoutForIrctcMerchants() {
+
+        $this->ba->cronAuth();
+
+        $irctcmid = "OGJDenfkpc6whP";
+
+        $this->fixtures->merchant->createAccount($irctcmid);
+
+        $this->fixtures->create('balance', [
+            'type'           => 'primary',
+            'account_type'   => 'shared',
+            'merchant_id'    => $irctcmid,
+        ]);
+
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::PG_LEDGER_REVERSE_SHADOW
+        ], $irctcmid);
+
+        $this->fixtures->merchant->edit($irctcmid, ['activated' => true, 'live' => true]);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($payoutAttempt);
+        $this->assertNull($transaction);
+        $this->assertEquals($payout['merchant_id'], "OGJDenfkpc6whP");
+        $this->assertEquals($payout['amount'], "1000");
+        $this->assertEquals($payout['purpose_type'], "settlement");
+        $this->assertEquals($payout['status'], "processing");
+
+    }
+
     public function testPayoutCreateForSharedWhenBankingRuleNotPresentInCustomPricingPlan()
     {
         $mid = random_alphanum_string(14);

@@ -5,7 +5,6 @@ namespace RZP\Models\Payout;
 use App;
 use Mail;
 use Carbon\Carbon;
-
 use Monolog\Logger;
 use RZP\Exception;
 use RZP\Constants;
@@ -125,6 +124,7 @@ use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 use RZP\Services\Mock\BankingAccountService as MockBankingAccountService;
 use RZP\Models\Transaction\Processor\Ledger\Payout as PayoutsLedgerProcessor;
+use RZP\Models\Ledger\ReverseShadow\IRCTCPayout\Core as IRCTCPayoutReverseShadowCore;
 
 /**
  * Class Core
@@ -141,6 +141,8 @@ class Core extends Base\Core
 
     const MUTEX_RESOURCE                    = 'PAYOUT_PROCESSING_%s_%s';
 
+    const RDS_BALANCE_UPDATE_RESOURCE       = 'RDS_BALANCE_UPDATE_%s_%s';
+
     const FREE_PAYOUT_MIGRATE_RESOURCE      = 'FREE_PAYOUT_MIGRATE_%s_%s_%s';
 
     const CUSTOMER_WALLET_MUTEX_RESOURCE    = 'CUSTOMER_WALLET_PAYOUT_%s_%s_%s';
@@ -152,6 +154,8 @@ class Core extends Base\Core
     const FREE_PAYOUT_MUTEX_LOCK_TIMEOUT    = 180;
 
     const PAYOUT_MUTEX_LOCK_TIMEOUT         = 180;
+
+    const RDS_BALANCE_MUTEX_LOCK_TIMEOUT    = 180;
 
     const PAYOUT_FAILURE_MUTEX_LOCK_TIMEOUT = 600;
 
@@ -1365,6 +1369,31 @@ class Core extends Base\Core
                 }
 
                 $this->repo->saveOrFail($payout);
+
+                // If the merchant is IRCTC and the PG_LEDGER_REVERSE_SHADOW feature is enabled
+                // Create the CLS journal entry to move money from Control account to RDS account
+                // If publishing to outbox fails, exception is thrown and the enclosing txn rolls back
+
+                $irctcPayoutReverseShadowCore = new IRCTCPayoutReverseShadowCore();
+
+                if ($irctcPayoutReverseShadowCore->isIrctcPGLedgerReverseShadowEnabled($payout->merchant)) {
+
+                    $ftaStatus = $ftaData[Attempt\Constants::FTA_STATUS] ?? null;
+
+                    if ((is_null($ftaStatus) === false) &&
+                        !in_array($ftaStatus, [Status::FAILED, Status::REVERSED], true)) {
+
+                        $ledgerData = [
+                            'merchant_id' => (string)$payout->merchant->getMerchantId(),
+                            'currency' => $payout->merchant->getCurrency(),
+                            'amount' => $payout->getAmount(),
+                            'transactor_id' => LedgerConstants::PAYOUTS_PREFIX . (string)$payout->getId(),
+                            'transactor_date' => $payout->getCreatedAt(),
+                        ];
+
+                        $irctcPayoutReverseShadowCore->createLedgerJournalAsync($ledgerData, LedgerConstants::IRCTC_PAYOUT_PROCESSED);
+                    }
+                }
             });
 
         $firePayoutUpdatedWebhook = false;
@@ -5612,7 +5641,20 @@ class Core extends Base\Core
         }
         else
         {
-            $merchantBalance = $merchant->primaryBalance->getBalance();
+            $merchantBalance = 0;
+
+            // Get CLS balance only for IRCTC MIDs in reverse shadow mode
+            $irctcPayoutReverseShadowCore = new IRCTCPayoutReverseShadowCore();
+
+            if ($irctcPayoutReverseShadowCore->isIrctcPGLedgerReverseShadowEnabled($merchant)) {
+
+                $clsBalance = (int) $irctcPayoutReverseShadowCore->getCLSBalance($merchantId, FeatureConstants::MERCHANT_BALANCE);
+
+                $merchantBalance = $clsBalance;
+            }
+            else {
+                $merchantBalance = $merchant->primaryBalance->getBalance();
+            }
 
             if ((isset($input[Entity::BUFFER_AMOUNT]) === true) and
                 ($merchantBalance < $input[Entity::BUFFER_AMOUNT]))
@@ -12202,7 +12244,74 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Entity $payout
+     * Updates the RDS balance in CLS for a merchant.
+     * Acquires a mutex lock to ensure that only one process can update the balance at a time.
+     * If the lock is already acquired, raises an error.
+     *
+     * @param array $input The input data for the balance update, including transaction details.
+     * @param Merchant\Entity $merchant The merchant entity whose balance is to be updated.
+     *
+     * @return array An acknowledgment or metadata about the initiated ledger journal update.
+     */
+    public function updateMerchantRDSBalance(array $input, Merchant\Entity $merchant): array
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_RDS_BALANCE_UPDATE_REQUEST,
+            [
+                'input' => $input,
+            ]);
+
+        $irctcPayoutReverseShadowCore = new IRCTCPayoutReverseShadowCore();
+
+        // If merchant is not IRCTC or reverse shadow mode is not enabled, do not proceed
+        if (!$irctcPayoutReverseShadowCore->isIrctcPGLedgerReverseShadowEnabled($merchant)) {
+            return [
+                'status' => 'failure',
+                'message' => 'Merchant is not IRCTC or Reverse Shadow flag not enabled',
+            ];
+        }
+
+        $mutexResource = sprintf(self::RDS_BALANCE_UPDATE_RESOURCE, $merchant->getId(), $this->mode);
+
+        $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function () use ($input, $merchant)
+            {
+
+                $irctcPayoutReverseShadowCore = new IRCTCPayoutReverseShadowCore();
+
+                $amount = (int) $irctcPayoutReverseShadowCore->getCLSBalance($merchant->getMerchantId(), LedgerConstants::RDS_BALANCE);
+
+                $currency = $this->getCurrency($input);
+
+                // Generating a UUID of length 14, specific for this use case
+                // At 10 million IDs, P(collision)≈0.069%.
+                $transactorId = $input['transactor_id'] ?? substr(
+                    hash('sha256', $merchant->getMerchantId() . microtime(true) . random_bytes(5)),
+                    0,
+                    14
+                );
+
+                $ledgerData = [
+                    'merchant_id'  => $merchant->getMerchantId(),
+                    'amount'       => $amount,
+                    'currency'     => $currency,
+                    'transactor_id' => LedgerConstants::RDS_TRANSACTOR_PREFIX . $transactorId,
+                    'transactor_date' => (new \DateTime())->getTimestamp(),
+                ];
+
+                $irctcPayoutReverseShadowCore->createLedgerJournalAsync($ledgerData, LedgerConstants::IRCTC_RDS_BALANCE_UPDATED);
+            },
+            self::RDS_BALANCE_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_RDS_BALANCE_UPDATE_IN_PROGRESS);
+
+        return [
+            'status' => 'success',
+            'message' => 'RDS balance update request has been successfully initiated.',
+        ];
+    }
+
+     /* @param Entity $payout
      *
      * @return array
      */
@@ -12318,5 +12427,4 @@ class Core extends Base\Core
         return $eventPayload;
 
     }
-
 }

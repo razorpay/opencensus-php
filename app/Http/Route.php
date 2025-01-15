@@ -3251,6 +3251,11 @@ class Route
         // This is a different route from /payouts since we need a different auth (internal) for this
         // Hence, created two different routes - one for customer and another for merchant.
         'merchant_payout'                          => ['post',     'merchant/payout',                                'PayoutController@postInternalMerchantPayout'                       ],
+
+        // IRCTC specific route for CLS RDS Balance update. Triggered by a CRON.
+        // Moves amount from RDS Balance virtual account to Transit virtual account.
+        'merchant_rds_reduce'                               => ['post',     'merchant/rds/reduce',                            'PayoutController@postInternalMerchantRDSReduce'                       ],
+
         // TODO: Fix the route. Changes on dashboard would be required.
         'on_demand_settlement'                     => ['post',     'merchant/payout/demand',                         'PayoutController@postMerchantPayoutOnDemand'                       ],
         'on_demand_settlement_fees'                => ['get',      'merchant/payout/demand/fees',                    'PayoutController@calculateEsOnDemandFees'                          ],
@@ -6075,6 +6080,7 @@ class Route
         'merchant_notify_holiday',
         'merchant_patch_beneficiary_code',
         'merchant_payout',
+        'merchant_rds_reduce',
         'merchant_payout_mail',
         'merchant_post_beneficiary_file',
         'merchant_secret',
@@ -17208,6 +17214,7 @@ class Route
             'linked_merchant_invoice_control',
             'merchant_invoice_entities_verify',
             'merchant_payout',
+            'merchant_rds_reduce',
             'gateway_file_create',
             'generate_gifu_file',
             'generate_nium_settlement_file',
@@ -20148,6 +20155,7 @@ class Route
         'virtual_account_refund_excess'                     => HeartbeatLagChecker::MASTER,
         'subscriptions_charge_invoices'                     => HeartbeatLagChecker::MASTER,
         'merchant_payout'                                   => HeartbeatLagChecker::MASTER,
+        'merchant_rds_reduce'                               => HeartbeatLagChecker::MASTER,
         'payment_auto_capture'                              => HeartbeatLagChecker::SLAVE,
         'payment_capture_gateway_multiple'                  => HeartbeatLagChecker::HEARTBEAT,
         'refund_generate_excel'                             => HeartbeatLagChecker::HEARTBEAT,

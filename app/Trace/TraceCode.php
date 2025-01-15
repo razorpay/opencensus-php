@@ -12809,6 +12809,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self:: TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE                        => 'Firing Transaction.Created Webhook Asynchronously '
     ];
 
+    // IRCTC RDS balance update trace codes
+    const MERCHANT_RDS_BALANCE_UPDATE_REQUEST                   = 'MERCHANT_RDS_BALANCE_UPDATE_REQUEST';
+
     public static $fileBasedReconTraceCodes = [
         self::RECON_FILE_LINK_NOT_FOUND,
         self::RECON_FILE_DELETE_FAILURE,

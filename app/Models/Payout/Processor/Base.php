@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Constants\Mode;
+use RZP\Models\Ledger\ReverseShadow\IRCTCPayout\Core as IRCTCPayoutReverseShadowCore;
 use RZP\Models\Workflow;
 use RZP\Models\Contact;
 use RZP\Constants\Timezone;
@@ -90,6 +91,7 @@ use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 use RZP\Models\Payout\BulkIdempotencyKey\Repository as bulkIdempotencyKeyRepository;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 
 
 /**
@@ -453,6 +455,23 @@ class Base extends BaseCore
             }
 
             $this->repo->saveOrFail($payout);
+
+            // Write to outbox for IRCTC MIDs to deduct CLS Merchant Balance
+            // If this fails, enclosing transaction rolls back
+            $irctcPayoutReverseShadowCore = new IRCTCPayoutReverseShadowCore();
+
+            if ($irctcPayoutReverseShadowCore->isIrctcPGLedgerReverseShadowEnabled($payout->merchant)) {
+
+                $ledgerData = [
+                    'merchant_id' => (string)$payout->merchant->getMerchantId(),
+                    'currency' => $payout->merchant->getCurrency(),
+                    'amount' => $payout->getAmount(),
+                    'transactor_id' => LedgerConstants::PAYOUTS_PREFIX . $payout->getId(),
+                    'transactor_date' => $payout->getCreatedAt(),
+                ];
+
+                $irctcPayoutReverseShadowCore->createLedgerJournalAsync($ledgerData, LedgerConstants::IRCTC_PAYOUT_INITIATED);
+            }
 
             $this->trace->info(
                 TraceCode::PAYOUT_CREATED,

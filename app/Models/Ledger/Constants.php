@@ -392,4 +392,15 @@ class Constants
     const MERCHANT_REFUND_CREDIT_WITHDRAWAL            = 'merchant_refund_credit_withdrawal';
 
     const MERCHANT_FEE_CREDIT_WITHDRAWAL               = 'merchant_fee_credit_withdrawal';
+
+    // IRCTC Related constants
+    const IRCTC_PAYOUT_INITIATED                            = "irctc_payout_initiated";
+    const IRCTC_PAYOUT_PROCESSED                            = "irctc_payout_processed";
+    const IRCTC_RDS_BALANCE_UPDATED                         = "irctc_rds_balance_updated";
+    const IRCTC                                             = "irctc";
+    const PAYOUTS_PREFIX                                    = "pout_";
+    const RDS_TRANSACTOR_PREFIX                             = "rds_";
+    const IRCTC_MIDS                                        = ["OGJDenfkpc6whP", "8YPFnW5UOM91H7", "Iat5Ez3oUPPfNu", "KiYqI07BE7wcfb", "B3AFCVPnT82ehc", "AEPXwjSlJJhfUl", "9m4CChGex4ENkR", "8ST00QgEPT14cE", "90xVmQJTCEJ6GH", "8byazTDARv4Io0", "AEsxERLbWiBuUG", "Git47hWvOhVUhr"];
+    const RDS_BALANCE                                       = "rds_balance";
+
 }

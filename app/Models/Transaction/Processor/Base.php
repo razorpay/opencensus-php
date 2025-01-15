@@ -516,6 +516,15 @@ abstract class Base extends BaseCore
             return;
         }
 
+        // Setting reference3 to "disabled" only for payouts involving PG balances to avoid conflicts with RazorpayX payouts.
+        if(($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) &&
+            $this->txn->getType() === Transaction\Type::PAYOUT &&
+            isset($this->txn->source->balance) &&
+            in_array($this->txn->source->balance->getType(), Balance\Type::$pgBalances))
+        {
+            $this->txn->setReference3("disabled");
+        }
+
         if(($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
             (in_array($this->txn->getType(),[Transaction\Type::PAYMENT, Transaction\Type::ADJUSTMENT,
                     Transaction\Type::DISPUTE, Transaction\Type::REFUND, Transaction\Type::REVERSAL,

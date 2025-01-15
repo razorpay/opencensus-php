@@ -1368,6 +1368,19 @@ trait ReverseShadowTrait
         return $baseTransactionEntity;
     }
 
+    public function transformJournalResponseToTransactionEntityForPayout($journalResponse, \RZP\Models\Payout\Entity $payout)
+    {
+        $baseTransactionEntity = $this->transformJournalResponseToTransactionEntityBase($journalResponse);
+
+        $baseTransactionEntity->setChannel($payout->merchant->getChannel());
+
+        $settledAt = $journalResponse[Constants::CREATED_AT];
+
+        $baseTransactionEntity->setSettledAt($settledAt);
+
+        return $baseTransactionEntity;
+    }
+
     public function transformJournalResponseToTransactionEntityForRefund($journalResponse, $refundId)
     {
         $baseTransactionEntity = $this->transformJournalResponseToTransactionEntityBase($journalResponse);

@@ -193,6 +193,7 @@
             <file>./tests/Unit/Utility/IfscValidationTest.php</file>
             <file>./tests/Unit/PayoutSource/PayoutSourceTest.php</file>
             <directory>./tests/Unit/Models/Payout/</directory>
+            <file>./tests/Unit/Payout/IrctcPayoutLedgerTest.php</file>
         </testsuite>
         <testsuite name="Features-3-2 Test Suite">
             <directory>./tests/Functional/Order/</directory>

@@ -1856,6 +1856,23 @@ class Service extends Base\Service
         return $payout->toArrayPublic();
     }
 
+    public function internalMerchantRDSReduce(array $input): array
+    {
+        $merchantId = $input[Entity::MERCHANT_ID] ?? null;
+
+        if (!is_string($merchantId)) {
+            throw new Exception\BadRequestValidationFailureException('merchant_id is mandatory for the RDS balance update');
+        }
+
+        (new Validator)->validateInput('merchant', $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $response = $this->core->updateMerchantRDSBalance($input, $merchant);
+
+        return $response;
+    }
+
     public function merchantPayoutOnDemand(array $input)
     {
         (new Validator)->validateInput('merchant_payout_on_demand', $input);

@@ -239,6 +239,12 @@ class Core extends Base\Core
         return [$txn, $feesSplit];
     }
 
+    public function createPayoutTransactionForDualWrite($payout, $txnId,  $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUsed)
+    {
+        list($txn, $feesSplit) = $this->createTransactionForSourceDualWrite($payout, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUsed);
+
+        return [$txn, $feesSplit];
+    }
 
     public function createUpdateLedgerTransaction(Payment\Entity $payment, $txnId =null)
     {
