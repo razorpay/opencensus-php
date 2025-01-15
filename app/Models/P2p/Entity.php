@@ -9,6 +9,7 @@ use RZP\Models\BankAccount;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Entity extends Base\PublicEntity
 {
@@ -32,6 +33,17 @@ class Entity extends Base\PublicEntity
     const INTERNAL_ERROR_CODE = 'internal_error_code';
     const ERROR_DESCRIPTION   = 'error_description';
     const ERROR_CODE          = 'error_code';
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
+    ];
 
     protected $fillable = [
         self::STATUS,

@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
@@ -36,6 +37,17 @@ class Entity extends Base\PublicEntity
     protected $primaryKey = self::CUSTOMER_ID;
 
     const MAX_BALANCE_DEFAULT = 2000000;
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
+    ];
 
     protected $fillable = [
         self::BALANCE,

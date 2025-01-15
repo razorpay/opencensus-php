@@ -3,6 +3,7 @@
 namespace RZP\Models\Address;
 
 use RZP\Constants;
+use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -38,6 +39,17 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     const ID_LENGTH = 14;
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        'source'
+    ];
 
     protected $fillable = [
         self::TYPE,

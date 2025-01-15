@@ -151,9 +151,8 @@ class Core extends Base\Core
     {
         $inputTrace = $input;
 
-        // Read the global ID of the customer to which we want to link the newly created customer
-        $globalCustomerID = $input[Entity::GLOBAL_CUSTOMER_ID];
-        if (!empty($globalCustomerID) && $this->app['api.route']->getCurrentRouteName() == "customer_create")
+        // global_customer_id field is not allowed on customer_create route
+        if (!empty($input[Entity::GLOBAL_CUSTOMER_ID]) && $this->app['api.route']->getCurrentRouteName() == "customer_create")
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_FIELD_SENT, null, null);
         }
@@ -162,10 +161,8 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::CUSTOMER_CREATE, $inputTrace);
 
-        // Unset Global Id from the Customer Entity because got validation Error while building Customer Entity
-        unset($input[Entity::GLOBAL_CUSTOMER_ID]);
-
-        $customer = (new Customer\Entity)->build($input);
+        // Remove global customer ID key from the array before passing it otherwise it leads to validation error in build()
+        $customer = (new Customer\Entity)->build(array_diff_key($input, [Entity::GLOBAL_CUSTOMER_ID => '']));
 
         $customer->merchant()->associate($merchant);
 
@@ -186,15 +183,12 @@ class Core extends Base\Core
             }
         }
 
+        $shouldCreateViaCMS = $this->isCreateOverrideToCmsEnabled($merchant, $this->mode,
+            app('request.ctx')->getInternalAppName(),
+            $this->app['api.route']->getCurrentRouteName());
 
         // Check if address is part of the input
         $hasAddress = $this->isAddressPresentInRequest($input);
-
-        // Proceed with CMS only if no address is found
-        if (!$hasAddress)
-        {
-            $shouldCreateViaCMS = $this->isCreateOverrideToCmsEnabled($merchant->getId(),$this->mode,app('request.ctx')->getInternalAppName(),$this->app['api.route']->getCurrentRouteName());
-        }
 
         $traceData = [
             'merchant_id' => $merchant->getId(),
@@ -205,37 +199,25 @@ class Core extends Base\Core
         ];
 
         $this->trace->info(TraceCode::CUSTOMER_CREATE_REQUEST_CTX, $traceData);
-        if ($shouldCreateViaCMS)
-        {
-            $cmsService = new CMSService\Service($this->app);
-            $cmsInput = $input;
-            $cmsInput[Entity::GLOBAL_CUSTOMER_ID] = $globalCustomerID;
-            $data = $cmsService->createCustomerV2($cmsInput, $merchant->getId());
 
-            $entityData = [
-                Entity::ID             => $data[Entity::ID] ?? null,
-                Entity::ENTITY         => $data[Entity::ENTITY] ?? null,
-                Entity::NAME           => $data['first_name'] ?? null,
-                Entity::EMAIL          => $data[Entity::EMAIL] ?? null,
-                Entity::CONTACT        => $data[Entity::CONTACT] ?? null,
-                Entity::GSTIN          => $data['tax_details'][0]['value'] ?? null,
-                Entity::NOTES          => $data['notes'] ?? [],
-            ];
-            $customer->fill($entityData);
-            $customer->setAttribute(Entity::GLOBAL_CUSTOMER_ID,$data['custom_data']['global_customer_id']);
-            $customer->setAttribute(Entity::CREATED_AT,$data[Entity::CREATED_AT]);
-        }
+        if ($shouldCreateViaCMS && !$hasAddress)
+            // no need to begin db transaction
+            $this->createCustomerViaCMS($customer, $input, $merchant->getId());
         else
         {
-            $this->repo->transaction(function() use ($globalCustomerID, $customer, $merchant, $input)
+            // start db transaction
+            $this->repo->transaction(function() use ($customer, $merchant, $input, $shouldCreateViaCMS, $hasAddress)
             {
-                // This needs to happen here because address create associates itself with the customer.
-                // Hence, it's required that the customer is saved.
-                $customer->setAttribute(Entity::GLOBAL_CUSTOMER_ID,$globalCustomerID);
-                $this->repo->saveOrFail($customer, ['logged' => true]);
+                if ($shouldCreateViaCMS)
+                    $this->createCustomerViaCMS($customer, $input, $merchant->getId());
+                else
+                {
+                    $customer->setAttribute(Entity::GLOBAL_CUSTOMER_ID, $input[Entity::GLOBAL_CUSTOMER_ID]);
+                    $this->repo->saveOrFail($customer, ['logged' => true]);
+                }
 
-                $this->createCustomerAddressesIfValuesSetInInput($customer, $input);
-
+                if ($hasAddress)
+                    $this->createCustomerAddressesIfValuesSetInInput($customer, $input);
             });
         }
 
@@ -257,13 +239,17 @@ class Core extends Base\Core
         }
         return false;
     }
-    public function isCreateOverrideToCmsEnabled($merchantId, $mode, $internal_app_name,$route_name): bool
+
+    public function isCreateOverrideToCmsEnabled($merchant, $mode, $internal_app_name, $route_name): bool
     {
         $experimentId = $this->mode == "test" ? "app.cms_create_override_test_experiment_id" : "app.cms_create_override_live_experiment_id";
         $properties = [
-                'id'            => $merchantId,
+                'id'            => $merchant->getId(),
                 'experiment_id' => $this->app['config']->get($experimentId),
-                'request_data'  => json_encode(['merchantId' => $merchantId, 'internal_app_name' => $internal_app_name, 'mode' => $mode,'route_name'  => $route_name])
+                'request_data'  => json_encode([
+                    'merchantId' => $merchant->getId(),
+                    'internal_app_name' => $internal_app_name, 'mode' => $mode,
+                    'route_name'  => $route_name, 'country' => $merchant->getCountry()])
             ];
         try
         {
@@ -277,6 +263,26 @@ class Core extends Base\Core
         $variant = $response['response']['variant']['name'] ?? '';
 
         return  $variant == "enabled";
+    }
+
+    protected function createCustomerViaCMS($customer, $input, $merchantId)
+    {
+        $cmsService = new CMSService\Service($this->app);
+        $cmsInput = $input;
+        $data = $cmsService->createCustomerV2($cmsInput, $merchantId);
+
+        $entityData = [
+            Entity::ID             => $data[Entity::ID] ?? null,
+            Entity::ENTITY         => $data[Entity::ENTITY] ?? null,
+            Entity::NAME           => $data['first_name'] ?? null,
+            Entity::EMAIL          => $data[Entity::EMAIL] ?? null,
+            Entity::CONTACT        => $data[Entity::CONTACT] ?? null,
+            Entity::GSTIN          => $data['tax_details'][0]['value'] ?? null,
+            Entity::NOTES          => $data[Entity::NOTES] ?? [],
+        ];
+        $customer->fill($entityData);
+        $customer->setAttribute(Entity::GLOBAL_CUSTOMER_ID, $data['custom_data']['global_customer_id']);
+        $customer->setAttribute(Entity::CREATED_AT, $data[Entity::CREATED_AT]);
     }
 
     /**

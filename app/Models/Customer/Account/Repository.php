@@ -4,7 +4,6 @@ namespace RZP\Models\Customer;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
-use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
@@ -16,7 +15,7 @@ class Repository extends Base\Repository
     {
         parent::saveOrFail($entity);
 
-        // check if the create flow has already been logge
+        // check if the create flow has already been logged
         // the value of logged will not be set for create flows that we haven't identified yet
         if (!array_key_exists('logged', $options) || !$options['logged'])
             $this->trace->info(TraceCode::CUSTOMER_CREATE_UNKNOWN_FLOW,

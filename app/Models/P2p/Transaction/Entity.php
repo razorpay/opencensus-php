@@ -9,6 +9,7 @@ use RZP\Models\P2p\Vpa;
 use RZP\Models\Customer;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\BankAccount;
+use RZP\Constants\Entity as ConstantsEntity;
 
 /**
  * @property Vpa\Entity $payer
@@ -84,6 +85,17 @@ class Entity extends Base\Entity
         Entity::COMPLETED_AT,
         Entity::CREATED_AT,
         Entity::UPDATED_AT,
+    ];
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
     ];
 
     protected $fillable = [

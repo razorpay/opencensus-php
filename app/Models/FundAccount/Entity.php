@@ -17,6 +17,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\BankingAccount\AccountType;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Constants\Entity as ConstantsEntity;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
@@ -127,6 +128,17 @@ class Entity extends Base\PublicEntity
     protected $isPSPayout = false;
 
     protected $composite = false;
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
+    ];
 
     protected $fillable = [
         self::ACTIVE,

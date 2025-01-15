@@ -4,6 +4,7 @@ namespace RZP\Models\Address\AddressConsent1cc;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 
@@ -19,6 +20,17 @@ class Entity extends Base\PublicEntity
     protected $entity = 'address_consent_1cc';
 
     protected $generateIdOnCreate = true;
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
+    ];
 
     protected static $generators = [
         self::ID,
@@ -67,4 +79,5 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(Customer\Entity::class, Base\UniqueIdEntity::ID, self::CUSTOMER_ID);
     }
+
 }

@@ -82,6 +82,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
 use RZP\Models\PaymentsUpi;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
+use RZP\Constants\Entity as ConstantsEntity;
 /**
  * @property Subscription\Entity    $subscription
  * @property Invoice\Entity         $invoice
@@ -935,7 +936,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected $lateBalanceUpdate = false;
 
     protected $ignoredRelations = [
-        self::ORDER
+        self::ORDER,
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER
     ];
 
     protected array $sensitiveFields = [

@@ -14,6 +14,7 @@ use RZP\Models\Customer;
 use RZP\Models\PaperMandate;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Constants\Entity as ConstantsEntity;
 
 /**
  * @property PaperMandate\Entity   $paperMandate
@@ -154,6 +155,17 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT,
         self::AUTH_TYPE,
         self::EXPIRE_AT,
+    ];
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
     ];
 
     protected $fillable = [

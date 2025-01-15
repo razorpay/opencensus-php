@@ -2,13 +2,16 @@
 
 namespace RZP\Services\CMS;
 
+use Request;
 use Razorpay\Trace\Facades\Trace as TraceFacade;
+use RZP\Constants\Metric;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 use RZP\Http\Request\Requests;
+use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
 
 class Service {
@@ -98,6 +101,9 @@ class Service {
 
         $headers['Content-Type'] = 'application/json';
 
+        // propagate request ID to CMS for tracing logs across applications
+        $headers['X-Razorpay-Request-Id'] = $this->app['request']->header(RequestHeader::X_RAZORPAY_REQUEST_ID) ?? Request::getTaskId();
+
         $headers['Accept'] = 'application/json';
 
         $options = array(
@@ -155,6 +161,7 @@ class Service {
     {
         $method = $request['method'];
         $response = null;
+        $requestStartAt = microtime(true);
 
         try
         {
@@ -173,10 +180,19 @@ class Service {
                 'error_message' => $e->getMessage()
             ]);
         }
+
+        $this->trace->histogram(Metric::CMS_REQUEST_DURATION_MS, microtime(true) - $requestStartAt,
+            [
+                Metric::LABEL_ROUTE => $request['url'],
+                Metric::LABEL_IS_SUCCESS => $success,
+                Metric::LABEL_STATUS_CODE => $success ? $response->status_code: "",
+            ]
+        );
+
         return $response;
     }
 
-    public function transformV1CreateOptionsToV2CreateOptions($opt,$merchantId)
+    public function transformV1CreateOptionsToV2CreateOptions($opt, $merchantId)
     {
         $v2CreateOptions = [
             'salutation'          =>        null,

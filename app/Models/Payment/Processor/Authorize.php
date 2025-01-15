@@ -5080,7 +5080,7 @@ trait Authorize
             );
         }
 
-        if ($payment->order->hasOrderMeta() === false || $payment->order->isCartInfoOrderMeta() === false) 
+        if ($payment->order->hasOrderMeta() === false || $payment->order->isCartInfoOrderMeta() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Pan and Billing Address Details are Required', 'order');
@@ -5088,13 +5088,13 @@ trait Authorize
 
         $cartInfo = $payment->order->getCartInfoOrderMeta();
 
-        if($this->validateBillingAddressInCartInfoOrderMeta($cartInfo) === false) 
+        if($this->validateBillingAddressInCartInfoOrderMeta($cartInfo) === false)
         {
                 throw new Exception\BadRequestValidationFailureException(
                     'Billing Address is Required', 'order');
         }
 
-        if($this->validatePanDetailsInCartInfoOrderMeta($cartInfo) === false) 
+        if($this->validatePanDetailsInCartInfoOrderMeta($cartInfo) === false)
         {
                 throw new Exception\BadRequestValidationFailureException(
                     'Pan Details are Required', 'order');
@@ -5180,19 +5180,19 @@ trait Authorize
     }
 
     protected function validatePanDetailsInCartInfoOrderMeta($cartInfo) : bool {
-        if (empty($cartInfo['customer_details'])) 
+        if (empty($cartInfo['customer_details']))
         {
             return false;
         }
 
-        if (empty($cartInfo['customer_details']['identity'])) 
+        if (empty($cartInfo['customer_details']['identity']))
         {
             return false;
         }
 
-        foreach($cartInfo['customer_details']['identity'] as $identity) 
+        foreach($cartInfo['customer_details']['identity'] as $identity)
         {
-           if ($identity['type'] === 'pan_number' && isset($identity['id'])) 
+           if ($identity['type'] === 'pan_number' && isset($identity['id']))
            {
                return true;
            }
@@ -5202,26 +5202,26 @@ trait Authorize
     }
 
     protected function validateBillingAddressInCartInfoOrderMeta($cartInfo) : bool {
-        if (empty($cartInfo['customer_details'])) 
+        if (empty($cartInfo['customer_details']))
         {
             return false;
         }
 
-        if (empty($cartInfo['customer_details']['billing_address'])) 
+        if (empty($cartInfo['customer_details']['billing_address']))
         {
             return false;
         }
 
-        if( isset($cartInfo['customer_details']['billing_address']['line1']) === false || 
+        if( isset($cartInfo['customer_details']['billing_address']['line1']) === false ||
             isset($cartInfo['customer_details']['billing_address']['line2']) === false ||
-            isset($cartInfo['customer_details']['billing_address']['city']) === false || 
+            isset($cartInfo['customer_details']['billing_address']['city']) === false ||
             isset($cartInfo['customer_details']['billing_address']['state']) === false ||
-            isset($cartInfo['customer_details']['billing_address']['country']) === false || 
+            isset($cartInfo['customer_details']['billing_address']['country']) === false ||
             isset($cartInfo['customer_details']['billing_address']['zipcode']) === false)
         {
             return false;
         }
-        
+
         return true;
     }
 
@@ -7557,15 +7557,7 @@ trait Authorize
     protected function createLocalCustomerForSubscription(
         Customer\Entity $customer)
     {
-        $localCustomer = (new Customer\Core)->createLocalCustomerFromGlobal($customer, $this->subscription->merchant);
-        $shouldCreateViaCMS = (new Customer\Core)->isCreateOverrideToCmsEnabled($this->subscription->merchant->getId(), $this->mode, app('request.ctx')->getInternalAppName(), $this->app['api.route']->getCurrentRouteName());
-        if (!$shouldCreateViaCMS)
-        {
-            $localCustomer->globalCustomer()->associate($customer);
-            $this->repo->saveOrFail($localCustomer);
-        }
-
-        return $localCustomer;
+        return (new Customer\Core)->createLocalCustomerFromGlobal($customer, $this->subscription->merchant);
     }
 
     protected function addCustomerIdToSubscriptionInput(array & $input)

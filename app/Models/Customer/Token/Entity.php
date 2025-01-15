@@ -36,6 +36,7 @@ use RZP\Models\SubscriptionRegistration\Entity as SubscriptionRegistrationEntity
 use RZP\Models\Customer;
 use RZP\Constants\Mode;
 use RZP\Models\Base\Traits\ExternalOwner;
+use RZP\Constants\Entity as ConstantsEntity;
 
 /**
  * @property Vpa\Entity  $vpa
@@ -255,6 +256,17 @@ class Entity extends Base\PublicEntity
     protected $entity           = 'token';
 
     protected $generateIdOnCreate = true;
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
+    ];
 
     protected $fillable = [
         self::ID,

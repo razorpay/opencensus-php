@@ -333,4 +333,6 @@ class Metric
     const CREDCASE_REQUEST_FAILED = 'credcase_request_failed';
     const CREDCASE_REQUEST_LATENCY_MS = 'credcase_request_latency_milliseconds.histogram';
 
+    const CMS_REQUEST_DURATION_MS = 'cms_request_duration_ms.histogram';
+
 }

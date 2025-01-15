@@ -11,6 +11,7 @@ use RZP\Models\P2p\Client;
 use RZP\Models\P2p\Vpa\Handle;
 use RZP\Models\P2p\Base\Traits;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Entity extends Base\Entity
 {
@@ -41,6 +42,17 @@ class Entity extends Base\Entity
     protected $generateIdOnCreate = true;
     protected static $generators  = [
         Entity::AUTH_TOKEN,
+    ];
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
     ];
 
     protected $dates = [

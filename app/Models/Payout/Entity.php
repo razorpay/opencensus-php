@@ -61,6 +61,7 @@ use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\BankingAccountService\Channel as BASChannel;
 use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
+use RZP\Constants\Entity as ConstantsEntity;
 
 /**
  * @property Customer\Entity        $customer
@@ -963,6 +964,8 @@ class Entity extends Base\PublicEntity
 
     protected $ignoredRelations = [
         'destination',
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
     ];
 
     public $payoutServiceResponse;
