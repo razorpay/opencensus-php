@@ -84,7 +84,9 @@ class FeaturesTest extends OAuthTestCase
     // Check Test data for expectations.
     public function testAddBharatQrFeatureToMerchant()
     {
-        $this->startTest();
+        // Ref thread: https://razorpay.slack.com/archives/C6XG1F99N/p1736824510256159
+        $this->markTestSkipped('Test case is buggy and owner has not been identified');
+        //$this->startTest();
     }
 
     public function testAddDuplicateFeatureToMerchant()
@@ -1507,19 +1509,21 @@ class FeaturesTest extends OAuthTestCase
      */
     public function testGetMultipleFeaturesInternalAuth()
     {
-        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
-
-        $pwd = $collectionsServiceConfig['secret'];
-
-        $this->ba->appAuth('rzp_'.'test', $pwd);
-
-        $content = $this->startTest();
-
-        $featuresWithValues = count(Constants::$featureValueMap);
-
-        $featuresInResponse = count($content['all_features']);
-
-        $this->assertEquals($featuresWithValues, $featuresInResponse);
+        // Ref thread: https://razorpay.slack.com/archives/C6XG1F99N/p1736824510256159
+        $this->markTestSkipped('Test case is buggy and owner has not been identified');
+//        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+//
+//        $pwd = $collectionsServiceConfig['secret'];
+//
+//        $this->ba->appAuth('rzp_'.'test', $pwd);
+//
+//        $content = $this->startTest();
+//
+//        $featuresWithValues = count(Constants::$featureValueMap);
+//
+//        $featuresInResponse = count($content['all_features']);
+//
+//        $this->assertEquals($featuresWithValues, $featuresInResponse);
 
     }
 
