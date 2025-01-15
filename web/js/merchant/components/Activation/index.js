@@ -1028,7 +1028,9 @@ class ActivationWizard extends React.Component {
 
     this.trackFieldsChange(currentActive);
 
-    this.props.save(reqData).then((data) => {
+    this.props
+      .save(reqData)
+      .then((data) => {
       if (this.unMounted) {
         return; // No further actions if component unmounted. To handle cross btn close, where only hit Api without doing then.
       }
@@ -1130,6 +1132,11 @@ class ActivationWizard extends React.Component {
           }
         }
       }
+    })
+    .catch(() => {
+      this.setState({
+        isSaving: LOADING.ERROR,
+      });
     });
   };
 

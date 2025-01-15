@@ -139,6 +139,7 @@ class App extends Component {
       isFeedbackFormCreated: false,
       isWebView: false,
       isShowFestiveAnimation: false,
+      loginAsMXEvent: false,
     };
     this.handleResize = debounce(this.handleResize.bind(this), 200);
     this.handleFestiveAnimeAction = this.handleFestiveAnimeAction.bind(this);
@@ -284,10 +285,13 @@ class App extends Component {
     });
 
     window.addEventListener('LOGIN_AS_MX', function loginAsMXHandler(e) {
-      if (e.detail?.message) {
+      if (e.detail?.message && !self.state.loginAsMXEvent) {
         self.props.showNotification({
           type: 'error',
           message: e.detail.message,
+        });
+        this.setState({
+          loginAsMXEvent: true,
         });
       }
     });
