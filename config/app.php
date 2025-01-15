@@ -658,6 +658,8 @@ return array(
 
     'credit_line_on_upi_pricing_splitz_experiment_id' => env('CREDIT_LINE_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
 
+    'enable_offers_bypass_ups_experiment_id' => env('ENABLE_OFFERS_BYPASS_UPS_EXPERIMENT_ID'),
+
     'allow_offers_on_rearch_ups_splitz_experiment_id' => env('ALLOW_OFFERS_ON_REARCH_UPS_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_netbanking_corporate_splitz_experiment_id' => env('CHECKOUT_NETBANKING_CORPORATE_SPLITZ_EXPERIMENT_ID'),

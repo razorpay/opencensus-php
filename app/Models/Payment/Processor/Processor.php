@@ -3505,7 +3505,7 @@ class Processor
             if (empty($order) === false)
             {
                 // Check if offers exist in the order and can be routed to upi
-                if (($order->hasOffers() === true) and ($this->canRouteOfferThroughUPIRearch($input, $order) === false))
+                if (($order->hasOffers() === true) and ($this->shouldRouteUpsReArchOffers($input)  === false))
                 {
                     $routeViaReArch = false;
                     $dimensions[23] = 1;
@@ -14409,18 +14409,37 @@ public function isNBPlusRearchMarketPlace($merchant): bool
 
     private function shouldRouteUpsReArchOffers($input): bool
     {
-        $feature = self::ALLOW_UPI_OFFERS_ON_REARCH_UPS;
 
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
+        $merchantId = $this->merchant->getMerchantId();
 
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_UPI_MODE_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'variant'     => $variant,
-            'mode'        => $this->mode,
-            'feature'     => $feature,
-        ]);
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.enable_offers_bypass_ups_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+            $response   = $this->app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? 'control';
 
-        return str_starts_with($variant, 'on') === true;
+            $this->trace->info(TraceCode::OFFER_ON_UPS_REARCH_SPLITZ_RESPONSE, [
+                'properties'    => $properties,
+                'merchant_id'   => $merchantId,
+                'variant'       => $variant,
+            ]);
+
+            return $variant === 'variant_on';
+
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::OFFER_ON_UPS_REARCH_SPLITZ_ERROR);
+        }
+
+        return false;
     }
 
     /**

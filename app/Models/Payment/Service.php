@@ -1230,8 +1230,6 @@ class Service extends Base\Service
      */
     public function forceAuthorizePayment($id, $input)
     {
-        (new Payment\Validator)->validateInput('force_authorize_payment', $input);
-
         $method = $input['payment']['method'];
 
         switch($method)
