@@ -3,10 +3,14 @@
 namespace RZP\Jobs;
 
 use Config;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
+use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Transfers\TransferRecon;
+use RZP\Models\Feature;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\SlackNotification;
 
 class ProcessSettlementServiceTxns extends Job
@@ -66,10 +70,14 @@ class ProcessSettlementServiceTxns extends Job
             $this->trace->info(TraceCode::SETTLEMENT_SERVICE_TRANSACTIONS_UPDATE_HANDLER_INIT);
             $settlement = $this->repoManager->settlement->findOrFail($this->data[self::SETTLEMENT_ID]);
 
-            $this->repoManager->transaction->updateAsSettled(
-                $this->data[self::TRANSACTION_IDS],
-                $values,
-                true);
+            if($this->txnNfcUpdateEligible($settlement->merchant,$settlement)===true)
+            {
+                $this->repoManager->transaction->updateAsSettled(
+                    $this->data[self::TRANSACTION_IDS],
+                    $values,
+                    true);
+            }
+
 
             if ($settlement->merchant->isLinkedAccount() === true)
             {
@@ -130,6 +138,38 @@ class ProcessSettlementServiceTxns extends Job
         }
     }
 
+    public function txnNfcUpdateEligible($merchant,$settlement)
+    {
+        // txn nfc update should happen
+        if ($this->mode!==Mode::LIVE){
+            return true;
+        }
+
+        $balance = $settlement->balance;
+
+        // txn nfc update should happen if event request is received
+        if ((isset($balance)=== true) and
+            ($balance->getType() !== Balance\Type::PRIMARY)){
+
+            return true ;
+        }
+
+        $currency = $merchant !== null ? $merchant->getCurrency() : Currency::INR;
+
+        // mode live and balance primary, If mid is myr then balance update should happen
+        if($currency !==Currency::INR)
+        {
+            return true;
+        }
+
+        // else if mid is RS, then all such use-cases are expected via Makeshift.
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
 
     /**
      * Get settlement details from message payload.
