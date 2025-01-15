@@ -1443,7 +1443,7 @@ class Route
         'customer_logout_global'                   => ['delete',   'apps/logout',                                    'CustomerController@logoutCustomer'                                 ],
         'customer_create_global_address'           => ['post',     'customers/addresses',                            'CustomerController@createGlobalAddress'                            ],
         'customer_edit_global_address'             => ['put',      'customers/addresses',                            'CustomerController@editGlobalAddress'                            ],
-        'customer_fetch_addresses_by_contact'      => ['get',      'internal/customers/addresses',                             'CustomerController@fetchAddressesForCustomer'                        ],
+        'customer_fetch_addresses_by_contact'      => ['get',      'internal/customers/addresses',                             'CustomerController@fetchAddressesForCustomerInternal'                        ],
         'internal_create_customer_global_address'  => ['post',     'internal/1cc/customer/addresses',                    'CustomerController@createGlobalCustomerAndAddress'             ],
         'customer_record_1cc_address_consent_view'     => ['put',      '1cc/consent/address/view',                   'CustomerController@recordAddressConsent1ccAudits'                  ],
         'customer_record_1cc_address_consent'          => ['put',      '1cc/address/consent',                        'CustomerController@recordAddressConsent1cc'                        ],

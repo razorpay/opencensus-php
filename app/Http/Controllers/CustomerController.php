@@ -733,10 +733,10 @@ class CustomerController extends Controller
 
     }
 
-    public function fetchAddressesForCustomer()
+    public function fetchAddressesForCustomerInternal()
     {
         $input = Request::all();
-        $address = $this->service()->fetchAddressesForCustomer($input);
+        $address = $this->service()->fetchAddressesForCustomerInternal($input);
         return ApiResponse::json($address);
     }
 }
