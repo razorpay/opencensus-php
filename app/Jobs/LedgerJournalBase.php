@@ -76,6 +76,8 @@ class LedgerJournalBase extends Job
 
             $this->trace->info(TraceCode::LEDGER_JOURNAL_QUEUE_JOB_INIT, $this->ledgerResponse);
 
+            app('worker.ctx')->setLedgerDualWriteFlow(true);
+
             if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_DISABLE_TRANSACTION_DUAL_WRITE) === true)
             {
                 $this->trace->info(TraceCode::LEDGER_JOURNAL_QUEUE_JOB_TRANSACTION_DUAL_WRITE_SKIPPED, [

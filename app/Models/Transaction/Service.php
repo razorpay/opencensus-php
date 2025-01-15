@@ -1030,63 +1030,97 @@ class Service extends Base\Service
             return;
         }
 
-        if ($this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow) === true)
+        [$isLoggingRequired, $type] = $this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow);
+
+        if ($isLoggingRequired === true)
         {
-            $paymentMethod = null;
-
-            if ($entity->getType() === Transaction\Type::PAYMENT)
+            if ($type === Balance\Type::PRIMARY)
             {
-                $payment = $entity->source;
+                $paymentMethod = null;
 
-                if ($payment !== null)
+                if ($entity->getType() === Transaction\Type::PAYMENT)
                 {
-                    $paymentMethod = $payment->getMethod();
+                    $payment = $entity->source;
+
+                    if ($payment !== null)
+                    {
+                        $paymentMethod = $payment->getMethod();
+                    }
                 }
 
+                app('trace')->info(TraceCode::TRANSACTIONS_RETRIEVAL_EVENT,
+                    [
+                        'transaction' => $entity->getId(),
+                        'route'       => $route,
+                    ]);
+
+                app('trace')->count(Metric::TRANSACTION_READ_API_LEDGER_CLS_MERCHANT, [
+                    'transaction_type' => $entity->getType(),
+                    'route'            => $route,
+                    'payment_method'   => $paymentMethod
+                ]);
             }
 
-            app('trace')->info(TraceCode::TRANSACTIONS_RETRIEVAL_EVENT,
-                [
-                    'transaction' => $entity->getId(),
-                    'route'       => $route,
-                ]);
+            if ($type === Balance\Type::BANKING)
+            {
+                app('trace')->info(TraceCode::X_TRANSACTIONS_FETCH_EVENT,
+                    [
+                        'transaction' => $entity->getId(),
+                        'route'       => $route,
+                    ]);
 
-            app('trace')->count(Metric::TRANSACTION_READ_API_LEDGER_CLS_MERCHANT, [
-                'transaction_type' => $entity->getType(),
-                'route'            => $route,
-                'payment_method'   => $paymentMethod
-            ]);
+                app('trace')->count(Metric::X_TRANSACTION_READ_API_LEDGER_MERCHANT, [
+                    'transaction_type' => $entity->getType(),
+                    'route'            => $route
+                ]);
+            }
         }
     }
 
     public function logTransactionWrites(Entity $entity, $isLedgerDualWriteFlow, $route)
     {
-        if ($this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow) === true)
+        [$isLoggingRequired, $type] = $this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow);
+
+        if ($isLoggingRequired === true)
         {
-            $paymentMethod = null;
-
-            if ($entity->getType() === Transaction\Type::PAYMENT)
+            if ($type === Balance\Type::PRIMARY)
             {
-                $payment = $entity->source;
+                $paymentMethod = null;
 
-                if ($payment !== null)
-                {
-                    $paymentMethod = $payment->getMethod();
+                if ($entity->getType() === Transaction\Type::PAYMENT) {
+                    $payment = $entity->source;
+
+                    if ($payment !== null) {
+                        $paymentMethod = $payment->getMethod();
+                    }
                 }
 
+                app('trace')->info(TraceCode::TRANSACTIONS_SAVED_EVENT,
+                    [
+                        'transaction' => $entity->getId(),
+                        'route' => $route,
+                    ]);
+
+                app('trace')->count(Metric::TRANSACTION_WRITE_API_LEDGER_CLS_MERCHANT, [
+                    'transaction_type' => $entity->getType(),
+                    'route' => $route,
+                    'payment_method' => $paymentMethod
+                ]);
             }
 
-            app('trace')->info(TraceCode::TRANSACTIONS_SAVED_EVENT,
-                [
-                    'transaction' => $entity->getId(),
-                    'route'       => $route,
-                ]);
+            if ($type === Balance\Type::BANKING)
+            {
+                app('trace')->info(TraceCode::X_TRANSACTIONS_WRITE_EVENT,
+                    [
+                        'transaction' => $entity->getId(),
+                        'route' => $route,
+                    ]);
 
-            app('trace')->count(Metric::TRANSACTION_WRITE_API_LEDGER_CLS_MERCHANT, [
-                'transaction_type' => $entity->getType(),
-                'route'            => $route,
-                'payment_method'   => $paymentMethod
-            ]);
+                app('trace')->count(Metric::X_TRANSACTION_WRITE_API_LEDGER_MERCHANT, [
+                    'transaction_type' => $entity->getType(),
+                    'route' => $route
+                ]);
+            }
         }
     }
 
@@ -1094,10 +1128,16 @@ class Service extends Base\Service
     {
         if ($isLedgerDualWriteFlow === true)
         {
-            return false;
+            return [false, null];
         }
 
         $isPGTransaction = false;
+
+        $isXTransaction = false;
+
+        $balanceType = null;
+
+        $balanceType = (isset($entity->source->balance)=== true) ?? $entity->source->balance->getType();
 
         if((in_array($entity->getType(),[Transaction\Type::PAYMENT, Transaction\Type::ADJUSTMENT,
                 Transaction\Type::DISPUTE, Transaction\Type::REFUND, Transaction\Type::REVERSAL,
@@ -1108,29 +1148,50 @@ class Service extends Base\Service
         }
 
         if ((in_array($entity->getType(), [Transaction\Type::ADJUSTMENT, Transaction\Type::REVERSAL, Transaction\Type::SETTLEMENT]) === true) and
-            (isset($entity->source->balance)=== true) and
-            ($entity->source->balance->getType() !== Balance\Type::PRIMARY))
+            ($balanceType !== null and $balanceType !== Balance\Type::PRIMARY))
         {
             $isPGTransaction = false;
         }
 
-        if ($isPGTransaction === false)
+        if((in_array($entity->getType(),[Transaction\Type::PAYOUT, Transaction\Type::ADJUSTMENT, Transaction\Type::REVERSAL,
+                Transaction\Type::BANK_TRANSFER, Transaction\Type::FUND_ACCOUNT_VALIDATION, Transaction\Type::CREDIT_TRANSFER, Transaction\Type::EXTERNAL]) === true))
         {
-            return false;
+            $isXTransaction = true;
+        }
+
+        if ((in_array($entity->getType(), [Transaction\Type::ADJUSTMENT, Transaction\Type::REVERSAL, Transaction\Type::BANK_TRANSFER]) === true) and
+            ($balanceType !== null and $balanceType !== Balance\Type::BANKING))
+        {
+            $isXTransaction = false;
         }
 
         $merchantId = $entity->getMerchantId();
 
-        $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
-            'merchant',
-            $merchantId,
-            Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
-
-        if (!empty($feature))
+        if ($isPGTransaction === true)
         {
-            return true;
+            $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                'merchant',
+                $merchantId,
+                Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
+
+            if (!empty($feature))
+            {
+                return [true, Balance\Type::PRIMARY];
+            }
         }
 
-        return false;
+        if ($isXTransaction === true)
+        {
+            $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                'merchant',
+                $merchantId,
+                Feature\Constants::LEDGER_REVERSE_SHADOW);
+
+            if (!empty($feature))
+            {
+                return [true, Balance\Type::BANKING];
+            }
+        }
+        return [false, null];
     }
 }
