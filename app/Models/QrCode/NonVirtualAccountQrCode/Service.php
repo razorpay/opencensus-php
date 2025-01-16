@@ -385,14 +385,14 @@ class Service extends QrCode\Service
         $id           = $input['identifier']['qr_code_id'] ?? null;
         $referenceID  = $input['identifier']['trId'] ?? null;
         $deviceId     = $input['device_id'];
-        $merchantId   = $input['identifier']['merchant_id'] ?? null;
+//        $merchantId   = $input['identifier']['merchant_id'] ?? null;
         try
         {
             $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
             $this->mode            = Mode::LIVE;
 
             //check if identifier is present if not then throw exception
-            if((empty($id) and empty($referenceID)) or empty($merchantId))
+            if(empty($id) and empty($referenceID))
             {
                 $this->trace->info(TraceCode::BAD_REQUEST_IDENTIFIER_NOT_FOUND, [
                     'message' => 'BAD_REQUEST_IDENTIFIER_NOT_FOUND',
@@ -443,8 +443,8 @@ class Service extends QrCode\Service
             }
 
             //check if the device id is already mapped to any qr code
-            //$qrCodeExists = (new Repository())->findByDeviceId($deviceId);
-            $qrCodeExists = (new Repository())->findByMerchantAndDeviceId($merchantId,$deviceId);
+            $qrCodeExists = (new Repository())->findByDeviceId($deviceId);
+//            $qrCodeExists = (new Repository())->findByMerchantAndDeviceId($merchantId,$deviceId);
             if ($qrCodeExists->count()>=1)
             {
                 $this->trace->info(TraceCode::BAD_REQUEST_DEVICE_ID_ALREADY_MAPPED, [
@@ -572,7 +572,7 @@ class Service extends QrCode\Service
                 'input' => $input
             ]);
         $deviceId = $input['device_id'];
-        $merchantId  = $input['merchant_id'];
+//        $merchantId  = $input['merchant_id'];
         $exception=null;
         try{
 
@@ -589,8 +589,8 @@ class Service extends QrCode\Service
             $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
             $this->mode            = Mode::LIVE;
 
-            //            $qrCodes =(new Repository())->findByDeviceId($deviceId);
-            $qrCodes = (new Repository())->findByMerchantAndDeviceId($merchantId,$deviceId);
+                        $qrCodes =(new Repository())->findByDeviceId($deviceId);
+//            $qrCodes = (new Repository())->findByMerchantAndDeviceId($merchantId,$deviceId);
 
             //check if device_id is mapped to any qr code
             if($qrCodes->isEmpty())

@@ -2777,8 +2777,14 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals($rrn, $payment['reference16']);
     }
 
-    public function testProcessPaymentOnStaticQrWithoutTransactionReferenceWithRazorxDisabled(): void
+    public function testProcessPaymentOnStaticQrWithoutTransactionReferenceWithSplitzDisabled(): void
     {
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_gateway_unrecognised_payment_process') => 'off',
+
+            ]
+        );
         $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
         $this->createQrCode(

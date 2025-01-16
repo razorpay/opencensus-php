@@ -2819,7 +2819,6 @@ class QrCodeRefactorTest extends TestCase
             [
                 "identifier"=>[
                     "trId"=>null,
-                    'merchant_id' => 'LiveAccountMer',
                     'qr_code_id'  => $qrCode['id'],
                 ],
                 'device_id'   => '123456Test',
@@ -2863,7 +2862,6 @@ class QrCodeRefactorTest extends TestCase
 
         $qrCode = $this->unMapDeviceIdforQrCode(
             [
-                'merchant_id' => 'LiveAccountMer',
                 'device_id'   => "12345Test",
             ]);
 
@@ -2871,7 +2869,6 @@ class QrCodeRefactorTest extends TestCase
             [
                 'identifier'=>[
                     'trId'=>null,
-                    'merchant_id' => 'LiveAccountMer',
                     'qr_code_id'  => $qrCode['id'],
                 ],
                 'device_id'   => 'testi12',
@@ -2914,7 +2911,6 @@ class QrCodeRefactorTest extends TestCase
             [
                 "identifier"=>[
                     "trId"=>null,
-                    'merchant_id' => 'LiveAccountMer',
                     'qr_code_id'  => $qrCode['id'],
                 ],
                 'device_id'   => "12345Test",
@@ -2926,7 +2922,6 @@ class QrCodeRefactorTest extends TestCase
 
         $qrCode = $this->unMapDeviceIdforQrCode(
             [
-                'merchant_id' => 'LiveAccountMer',
                 'device_id'   => "12345Test",
             ]);
 
