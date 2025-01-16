@@ -4,6 +4,7 @@ export enum ROUTES_INFO {
   BRANDING = '/checkout-settings/branding',
   CHECKOUT_FEATURES = '/checkout-settings/checkout-features',
   CHECKOUT_STYLING = '/checkout-settings/checkout-styling',
+  PAYMENT_CONFIGURATION = '/checkout-settings/payment-configuration',
   FLASH_CHECKOUT = '/checkout-settings/flash-checkout',
   SKIP_MANDATORY_SUMMARY_PAGE = '/checkout-settings/skip-mandatory-summary-page',
   TRUSTED_BADGE = '/checkout-settings/trustedbadge',

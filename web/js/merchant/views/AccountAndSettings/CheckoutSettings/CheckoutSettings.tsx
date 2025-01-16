@@ -1,13 +1,25 @@
 import React, { Suspense } from 'react';
+
+import { connect } from 'react-redux';
 import { Route, NavLink, Navigate, Routes } from 'react-router-dom';
+
+import Breadcrumb from 'common/components/Breadcrumb';
+import Loader from 'common/components/Loader';
+import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { useSplitzService } from 'common/splitz';
+import DashboardBanner from 'common/ui/DashboardBanner';
+import DocsLink from 'merchant/components/DocsLink';
+import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import DashboardBanner from 'common/ui/DashboardBanner';
-import Breadcrumb from 'common/components/Breadcrumb';
-import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
+import lazy from 'merchant/routes/LazyLoader';
+import { Checkout_V2_SettingTitles } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
+import {
+  accountAndSettingsLink,
+  ROUTE_MAP,
+} from 'merchant/views/AccountAndSettings/constants/constants';
 import {
   StyledConfiguration,
   StyledDivider,
@@ -15,23 +27,15 @@ import {
   StyledHeader,
   StyledTabContainer,
 } from 'merchant/views/AccountAndSettings/styled';
-import { connect } from 'react-redux';
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import {
+  isCheckoutV2PaymentConfigsEnabled,
   isCheckoutV2SettingsAllowed,
   isConfigurationViewAllowed,
   isFlashCheckoutAllowed,
   isSkipMandatorySummaryPageAllowed,
   isTrustedBadgeAllowed,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import {
-  accountAndSettingsLink,
-  ROUTE_MAP,
-} from 'merchant/views/AccountAndSettings/constants/constants';
-import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
-import Loader from 'common/components/Loader';
-import lazy from 'merchant/routes/LazyLoader';
-import { withRouter } from 'common/deprecated/withRouter';
-import DocsLink from 'merchant/components/DocsLink';
 
 const TrustedBadge = lazy(
   () => import(/* webpackChunkName: "BankAccountDetails" */ 'merchant/views/Account/TrustedBadge'),
@@ -80,8 +84,17 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
               isConfigurationViewAllowed(user) && isCheckoutV2SettingsAllowed(extraConfig)
             }
           >
-            <NavLink to={ROUTES_INFO.CHECKOUT_STYLING}>Checkout Styling</NavLink>
-            <NavLink to={ROUTES_INFO.CHECKOUT_FEATURES}>Checkout Features</NavLink>
+            <NavLink to={ROUTES_INFO.CHECKOUT_STYLING}>
+              {Checkout_V2_SettingTitles.checkout_styling}
+            </NavLink>
+            <NavLink to={ROUTES_INFO.CHECKOUT_FEATURES}>
+              {Checkout_V2_SettingTitles.features}
+            </NavLink>
+            <ShowWhen additionalCondition={() => isCheckoutV2PaymentConfigsEnabled(extraConfig)}>
+              <NavLink to={ROUTES_INFO.PAYMENT_CONFIGURATION}>
+                {Checkout_V2_SettingTitles.payment_configuration}
+              </NavLink>
+            </ShowWhen>
           </ShowWhen>
           <ShowWhen
             additionalCondition={(user) =>
@@ -163,6 +176,26 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
                         element={
                           <RouteGuard>
                             <StyledConfiguration showFeatures />
+                          </RouteGuard>
+                        }
+                      />
+                      <Route
+                        path={getRefRoute(ROUTES_INFO.CHECKOUT_FEATURES)}
+                        element={
+                          <RouteGuard
+                            additionalCondition={() =>
+                              isCheckoutV2PaymentConfigsEnabled(extraConfig)
+                            }
+                          >
+                            <StyledConfiguration showFeatures />
+                          </RouteGuard>
+                        }
+                      />
+                      <Route
+                        path={getRefRoute(ROUTES_INFO.PAYMENT_CONFIGURATION)}
+                        element={
+                          <RouteGuard>
+                            <StyledConfiguration showPaymentConfiguration />
                           </RouteGuard>
                         }
                       />

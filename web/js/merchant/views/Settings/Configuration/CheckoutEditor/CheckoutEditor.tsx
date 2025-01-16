@@ -5,14 +5,17 @@ import {
   AccountLocale,
   Blocks,
   MerchantCheckoutConfig,
+  MerchantCheckoutPaymentConfigs,
   MerchantCheckoutStyledConfig,
   TrustedBadgeType,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
 import { connect } from 'react-redux';
 import { AnyAction, Dispatch, bindActionCreators } from 'redux';
 
+import { useSplitzService } from 'common/splitz';
 import { User } from 'common/typings';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { isExperimentActive } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 import {
@@ -32,6 +35,7 @@ import {
   createMerchantCheckoutBrandConfig,
   updateConfig,
   updateEmailConfig,
+  fetchMerchantCheckoutPaymentConfigurations,
 } from 'merchant/reducers/config';
 import {
   isFlashCheckoutAllowed,
@@ -43,24 +47,24 @@ import EmailSettings from 'merchant/views/Settings/Configuration/CheckoutEditor/
 import FlashCheckout from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/FlashCheckout';
 import LanguageSettings from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/LanguageSettings/LanguageSettings';
 import MandatorySummaryPage from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/MandatorySummaryPage';
+import CheckoutStyles from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyles';
 import ConfigControls from 'merchant/views/Settings/Configuration/CheckoutEditor/ConfigControls';
 import ConfigFooter from 'merchant/views/Settings/Configuration/CheckoutEditor/ConfigFooter';
+import { PaymentConfiguration } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/PaymentConfiguration';
+import Suggestion from 'merchant/views/Settings/Configuration/CheckoutEditor/Suggestion';
+import {
+  PROD_BLOCKS_IDs,
+  STAGE_BLOCKS_IDs,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/constant';
 import {
   CUSTOM_MESSAGE_FEATURE_FLAG,
   CheckoutEditorProvider,
   CheckoutEditorProviderProps,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 import { mapCheckoutEmailConfig } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers';
-import { showNotification } from 'merchant_common/reducers/notifications';
-
-import CheckoutStyles from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyles';
-import Suggestion from 'merchant/views/Settings/Configuration/CheckoutEditor/Suggestion';
-import ComingSoonLineItems from 'merchant/views/Settings/Configuration/components/Configuration/ComingSoonLineItem';
-import {
-  PROD_BLOCKS_IDs,
-  STAGE_BLOCKS_IDs,
-} from 'merchant/views/Settings/Configuration/CheckoutEditor/constant';
 import blockAnalytics from 'merchant/views/Settings/Configuration/CheckoutEditor/track/blockAnalytics';
+import ComingSoonLineItems from 'merchant/views/Settings/Configuration/components/Configuration/ComingSoonLineItem';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 type CheckoutConfigProps = {
   accountConfig?: AccountConfig;
@@ -77,13 +81,16 @@ type CheckoutConfigProps = {
   createFeedback: typeof createFeedback;
   extraConfig: ExtraConfig;
   merchantCheckoutStyledConfig?: MerchantCheckoutStyledConfig;
+  merchantCheckoutPaymentConfigs: MerchantCheckoutPaymentConfigs;
   showFeatures: boolean;
   showStyling: boolean;
+  showPaymentConfiguration: boolean;
   trustedBadge: TrustedBadgeType;
   updateEmailConfig: typeof updateEmailConfig;
+  fetchMerchantCheckoutPaymentConfigurations: typeof fetchMerchantCheckoutPaymentConfigurations;
 } & Omit<CheckoutEditorProviderProps, 'children'>;
 
-const CheckoutFeatures = ({
+const CheckoutEditor = ({
   user,
   accountConfig,
   accountLocale,
@@ -99,6 +106,7 @@ const CheckoutFeatures = ({
   showNotification,
   fetchMerchantCheckoutConfig,
   fetchMerchantCheckoutStylingConfig,
+
   createMerchantCheckoutConfig,
   createSuggestion,
   createFeedback,
@@ -110,13 +118,22 @@ const CheckoutFeatures = ({
   extraConfig,
   showFeatures,
   showStyling,
+  showPaymentConfiguration,
   trustedBadge,
   updateEmailConfig,
+  fetchMerchantCheckoutPaymentConfigurations,
+  merchantCheckoutPaymentConfigs,
 }: CheckoutConfigProps) => {
   const isCustomMessageFeatureEnabled = useMemo(
     () => !user?.isFeatureEnabled(CUSTOM_MESSAGE_FEATURE_FLAG),
     [user],
   );
+
+  const {
+    abExperiments: { checkout_editor_payment_config },
+  } = useSplitzService();
+
+  const isPaymentConfigEnabled = isExperimentActive(checkout_editor_payment_config);
 
   useEffect(() => {
     if (!accountLocale) {
@@ -143,6 +160,12 @@ const CheckoutFeatures = ({
   useEffect(() => {
     fetchBlocks();
   }, [fetchBlocks]);
+
+  useEffect(() => {
+    if (isPaymentConfigEnabled) {
+      fetchMerchantCheckoutPaymentConfigurations();
+    }
+  }, [fetchMerchantCheckoutPaymentConfigurations, isPaymentConfigEnabled]);
 
   useEffect(() => {
     if (blocks) {
@@ -228,6 +251,7 @@ const CheckoutFeatures = ({
       createMerchantCheckoutBrandConfig={createMerchantCheckoutBrandConfig}
       updateFeatures={handleUpdateFeatures}
       merchantCheckoutStyledConfig={merchantCheckoutStyledConfig}
+      merchantCheckoutPaymentConfigs={merchantCheckoutPaymentConfigs}
       updateEmailConfig={updateEmailConfig}
       trustedBadge={trustedBadge}
     >
@@ -257,6 +281,8 @@ const CheckoutFeatures = ({
             />
           )}
           {showStyling && <CheckoutStyles trustedBadge={trustedBadge} />}
+          {showPaymentConfiguration && <PaymentConfiguration />}
+          {!suggestion && <Suggestion />}
           {!suggestion && showFeatures && <Suggestion />}
           <ConfigControls />
           <ConfigFooter />
@@ -285,6 +311,7 @@ const mapActionsToProps = (dispatch: Dispatch<AnyAction>) => {
       fetchBlocks,
       fetchMerchantCheckoutStylingConfig,
       createMerchantCheckoutStylingConfig,
+      fetchMerchantCheckoutPaymentConfigurations,
       createMerchantCheckoutBrandConfig,
       updateConfig,
       updateEmailConfig,
@@ -308,6 +335,7 @@ export default connect((state) => {
     merchantCheckoutStyledConfig: state.config?.checkoutStylingConfig?.data,
     accountLocale: state.config?.locale,
     merchantCheckoutConfig: state.config?.checkoutConfig?.data?.checkout_configuration,
+    merchantCheckoutPaymentConfigs: state.config?.checkoutPaymentConfigs,
     trustedBadge: state.trustedBadge,
   };
-}, mapActionsToProps)(CheckoutFeatures);
+}, mapActionsToProps)(CheckoutEditor);

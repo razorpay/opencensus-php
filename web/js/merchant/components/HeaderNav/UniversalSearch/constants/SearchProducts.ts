@@ -18,6 +18,7 @@ import {
   isApiKeyEnabled,
   isBalancesEnabled,
   isBankAccountDetailsAllowed,
+  isCheckoutV2PaymentConfigsEnabled,
   isCheckoutV2SettingsAllowed,
   isConfigurationViewAllowed,
   isCreditsEnabled,
@@ -869,11 +870,35 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
   {
     title: SEARCH_PRODUCTS_TITLES.checkout_styling,
     url: SEARCH_PRODUCTS_URL.CHECKOUT_STYLING,
-    tags: [{ value: 'Theme' }, { value: 'Color' }, { value: 'Logo' }, { value: 'brand name' }],
+    tags: [
+      { value: 'Theme' },
+      { value: 'Color' },
+      { value: 'Logo' },
+      { value: 'brand name' },
+      { value: 'razorpay trusted badge' },
+      { value: 'sidebar graphic' },
+      { value: 'checkout font' },
+    ],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
       isCheckoutV2SettingsAllowed(extraConfig) && isConfigurationViewAllowed(user),
+    apiCondition: false,
+  },
+  {
+    title: SEARCH_PRODUCTS_TITLES.payment_configuration,
+    url: SEARCH_PRODUCTS_URL.PAYMENT_CONFIGURATION,
+    tags: [
+      { value: 'payment configuration' },
+      { value: 'custom configuration' },
+      { value: 'payment methods' },
+    ],
+    group: ['in: Account & Settings'],
+    icon: AccountNSettingsIcons.checkout_settings,
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      isCheckoutV2PaymentConfigsEnabled(extraConfig) &&
+      isCheckoutV2SettingsAllowed(extraConfig) &&
+      isConfigurationViewAllowed(user),
     apiCondition: false,
   },
   {
@@ -891,7 +916,13 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
   {
     title: SEARCH_PRODUCTS_TITLES.flash_checkout,
     url: SEARCH_PRODUCTS_URL.CHECKOUT_FEATURES,
-    tags: [{ value: 'Enable flash checkout' }, { value: 'Flash checkout' }, { value: 'checkout' }],
+    tags: [
+      { value: 'Enable flash checkout' },
+      { value: 'Flash checkout' },
+      { value: 'message banner' },
+      { value: 'checkout language' },
+      { value: 'mandate summary' },
+    ],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>

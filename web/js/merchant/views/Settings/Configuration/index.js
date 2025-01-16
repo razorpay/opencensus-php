@@ -373,6 +373,7 @@ class CongfigurationContainer extends Component {
       showBranding,
       showStyling,
       showFeatures,
+      showPaymentConfiguration,
       showMissedOrderPaymentLink,
       showFlashCheckout,
       showPaymentSettings,
@@ -439,6 +440,11 @@ class CongfigurationContainer extends Component {
             {showFeatures && (
               <IntoView hashedWith={ACCOUNT_SETTINGS}>
                 <CheckoutEditorExperiment showFeatures={showFeatures} extraConfig={extraConfig} />
+              </IntoView>
+            )}
+            {showPaymentConfiguration && (
+              <IntoView hashedWith={ACCOUNT_SETTINGS}>
+                <CheckoutEditorExperiment showPaymentConfiguration extraConfig={extraConfig} />
               </IntoView>
             )}
             {showMissedOrderPaymentLink && remarketerEnabled && (

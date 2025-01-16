@@ -13,6 +13,7 @@ const CheckoutConfigExperiment = (props) => {
         showFeatures={props.showFeatures}
         showStyling={props.showStyling}
         extraConfig={props.extraConfig}
+        showPaymentConfiguration={props.showPaymentConfiguration}
       />
     </SuspenseWithLoader>
   );

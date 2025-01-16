@@ -72,6 +72,7 @@ export enum CheckoutSettingsFields {
 export enum Checkout_V2_SettingsFields {
   CHECKOUT_STYLING = 'checkout_styling',
   FEATURES = 'features',
+  PAYMENT_CONFIGURATION = 'payment_configuration',
 }
 
 export enum PricingFields {
@@ -157,6 +158,7 @@ export const CheckoutSettingsTitles: Record<CheckoutSettingsFields, string> = {
 export const Checkout_V2_SettingTitles: Record<Checkout_V2_SettingsFields, string> = {
   [Checkout_V2_SettingsFields.CHECKOUT_STYLING]: 'Checkout Styling',
   [Checkout_V2_SettingsFields.FEATURES]: 'Checkout Features',
+  [Checkout_V2_SettingsFields.PAYMENT_CONFIGURATION]: 'Payment Configuration',
 };
 
 export const PricingTitles: Record<PricingFields, string> = {

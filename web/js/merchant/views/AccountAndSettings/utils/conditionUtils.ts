@@ -23,6 +23,10 @@ export const isCheckoutV2SettingsAllowed = (extraConfig: ExtraConfig): boolean =
   return isExperimentActive(extraConfig.abExperiments.checkout_editor_v2_preview);
 };
 
+export const isCheckoutV2PaymentConfigsEnabled = (extraConfig: ExtraConfig): boolean => {
+  return isExperimentActive(extraConfig.abExperiments.checkout_editor_payment_config);
+};
+
 export const isSmsNotificationEnabled = (user: User): boolean => !!user.contact_mobile;
 
 export const isEmailNotificationEnabled = (user: User): boolean =>

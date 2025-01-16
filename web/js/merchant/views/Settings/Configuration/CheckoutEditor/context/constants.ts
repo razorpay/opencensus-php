@@ -1,10 +1,10 @@
 import {
   AccountLocale,
   AccountConfig,
+  MerchantCheckoutPaymentConfig,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
 
 import { EmailLessCheckoutConfigOptions } from 'merchant/reducers/config';
-
 import {
   AVAILABLE_BORDER_STYLE,
   AVAILABLE_GRAPHICS,
@@ -46,6 +46,8 @@ export const CHECKOUT_EDITOR_FIELDS = {
   TITLE_STYLE: 'titleStyle',
   RTB_ENABLED: 'rtb_enabled',
   FESTIVAL_THEME: 'festivalTheme',
+  SELECTED_PAYMENT_CONFIG: 'selectedPaymentConfig',
+  ALL_PAYMENT_CONFIGS: 'allPaymentConfigs',
 } as const;
 
 export const CUSTOM_MESSAGE_BANNER_SCREENS = {
@@ -75,6 +77,19 @@ const CUSTOM_MESSAGE_INITIAL_CONFIG = [
 
 export const EMPTY_LOGO = 'EMPTY_LOGO';
 export const EMPTY_WORDMARK = 'EMPTY_WORDMARK';
+
+export const PAYMENT_CONFIG_INITIAL_VALUES = {
+  checkout_config: {
+    display: {},
+  },
+  is_default: false,
+  name: '',
+  type: '',
+  config_id: '',
+  created_at: '',
+  updated_at: '',
+  is_deleted: false,
+};
 
 export const CHECKOUT_EDITOR_INITIAL_VALUES: {
   [CHECKOUT_EDITOR_FIELDS.LOCALE]: {
@@ -120,6 +135,8 @@ export const CHECKOUT_EDITOR_INITIAL_VALUES: {
   [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: string;
   [CHECKOUT_EDITOR_FIELDS.RTB_ENABLED]: boolean;
   [CHECKOUT_EDITOR_FIELDS.FESTIVAL_THEME]: boolean;
+  [CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG]: MerchantCheckoutPaymentConfig;
+  [CHECKOUT_EDITOR_FIELDS.ALL_PAYMENT_CONFIGS]: Array<MerchantCheckoutPaymentConfig>;
 } = {
   [CHECKOUT_EDITOR_FIELDS.LOCALE]: {
     id: '',
@@ -156,6 +173,8 @@ export const CHECKOUT_EDITOR_INITIAL_VALUES: {
   [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: AVAILABLE_TITLE_STYLE.LOGO_TEXT,
   [CHECKOUT_EDITOR_FIELDS.RTB_ENABLED]: true,
   [CHECKOUT_EDITOR_FIELDS.FESTIVAL_THEME]: true,
+  [CHECKOUT_EDITOR_FIELDS.ALL_PAYMENT_CONFIGS]: [],
+  [CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG]: PAYMENT_CONFIG_INITIAL_VALUES,
 };
 
 const CONFIG_INITIAL_STATE: { accountConfig: AccountConfig; locale: AccountLocale } = {

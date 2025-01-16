@@ -67,6 +67,7 @@ import {
   isExporterRewardsEnabled,
   isCheckoutV2SettingsAllowed,
   isCurlecPaypalOnboardingEnabled,
+  isCheckoutV2PaymentConfigsEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 export const AccountNSettingsIcons = {
@@ -646,6 +647,15 @@ export const Sections: SectionCardInterface[] = [
           () =>
           (user: User): boolean =>
             isConfigurationViewAllowed(user),
+      },
+      {
+        id: Checkout_V2_SettingsFields.PAYMENT_CONFIGURATION,
+        title: Checkout_V2_SettingTitles[Checkout_V2_SettingsFields.PAYMENT_CONFIGURATION],
+        href: ROUTES_INFO.PAYMENT_CONFIGURATION,
+        additionalCondition:
+          ({ extraConfig }: AdditionalContextInterface) =>
+          (user: User): boolean =>
+            isCheckoutV2PaymentConfigsEnabled(extraConfig) && isConfigurationViewAllowed(user),
       },
     ],
   },

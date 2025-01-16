@@ -2235,6 +2235,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: ['/checkout-settings/*', '/account-settings'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'checkout_editor_payment_config',
+          experimentId: {
+            beta: 'Pad9ccMln91SL4',
+            production: 'Pad6LZ8wY2CfFE',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: ['/dashboard', '/checkout-settings/*', '/account-settings'],
       abExperiments: [
         {

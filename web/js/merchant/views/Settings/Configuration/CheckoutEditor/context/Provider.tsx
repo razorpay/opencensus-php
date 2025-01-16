@@ -6,6 +6,7 @@ import {
   AccountLocale,
   ConfigFeatures,
   MerchantCheckoutConfig,
+  MerchantCheckoutPaymentConfigs,
   MerchantCheckoutStyledConfig,
   TrustedBadgeType,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
@@ -55,6 +56,7 @@ export type CheckoutEditorProviderProps = {
   accountLocale?: AccountLocale | null;
   merchantCheckoutStyledConfig?: MerchantCheckoutStyledConfig;
   merchantCheckoutConfig?: MerchantCheckoutConfig;
+  merchantCheckoutPaymentConfigs?: MerchantCheckoutPaymentConfigs;
   uploadLogo: (file: File, fileName: string) => Promise<unknown>;
   uploadWordmark: (file: File, fileName: string) => Promise<unknown>;
   removeLogo: (payload: Record<string, string | null>) => Promise<unknown>;
@@ -86,6 +88,7 @@ const CheckoutEditorProvider = ({
   createSuggestion,
   createFeedback,
   merchantCheckoutStyledConfig,
+  merchantCheckoutPaymentConfigs,
   createMerchantCheckoutStylingConfig,
   createMerchantCheckoutBrandConfig,
   showNotification,
@@ -107,6 +110,10 @@ const CheckoutEditorProvider = ({
 
   const setIsSaving = (isSaving: boolean) => {
     dispatch({ type: ACTIONS.SET_IS_SAVING, payload: isSaving });
+  };
+
+  const setIsLoading = (isLoading: boolean) => {
+    dispatch({ type: ACTIONS.SET_IS_LOADING, payload: isLoading });
   };
 
   const setIsSavingTitleModal = (isSaving: boolean) => {
@@ -307,6 +314,27 @@ const CheckoutEditorProvider = ({
       track.logRTBConfigAPIResponse(merchantCheckoutStyledConfig.rtb_enabled);
     }
   }, [merchantCheckoutStyledConfig, trustedBadge]);
+
+  const setMerchantCheckoutPaymentConfigToState = useCallback(() => {
+    if (merchantCheckoutPaymentConfigs) {
+      if (merchantCheckoutPaymentConfigs.loading) {
+        setIsLoading(true);
+      } else if (merchantCheckoutPaymentConfigs.error) {
+        showNotification({
+          type: 'error',
+          message: 'Error Fetching Payment Configs. Please try after sometime',
+        });
+      } else {
+        dispatch({
+          type: ACTIONS.SET_VALUES,
+          payload: {
+            [CHECKOUT_EDITOR_FIELDS.ALL_PAYMENT_CONFIGS]:
+              merchantCheckoutPaymentConfigs?.data?.checkout_configuration?.checkout_configs,
+          },
+        });
+      }
+    }
+  }, [merchantCheckoutPaymentConfigs, showNotification]);
 
   const setAccountLocaleToState = useCallback(() => {
     if (accountLocale) {
@@ -624,6 +652,10 @@ const CheckoutEditorProvider = ({
   useEffect(() => {
     setMerchantCheckoutStyledConfigToState();
   }, [merchantCheckoutStyledConfig, setMerchantCheckoutStyledConfigToState]);
+
+  useEffect(() => {
+    setMerchantCheckoutPaymentConfigToState();
+  }, [merchantCheckoutPaymentConfigs, setMerchantCheckoutPaymentConfigToState]);
 
   return (
     <checkoutEditorContext.Provider

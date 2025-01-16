@@ -37,6 +37,7 @@ const FETCH_MERCHANT_CHECKOUT_CONFIG = 'FETCH_MERCHANT_CHECKOUT_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_CONFIG = 'CREATE_MERCHANT_CHECKOUT_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG = 'CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG';
 const FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG = 'FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG';
+const FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS = 'FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS';
 const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG = 'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR = 'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR';
 const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_SUCCESS =
@@ -708,6 +709,13 @@ export const createMerchantCheckoutBrandConfig = ({ type, ...data }) => {
   };
 };
 
+export const fetchMerchantCheckoutPaymentConfigurations = () => {
+  return {
+    type: FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS,
+    payload: merchantFetch('checkout_config?type=4'),
+  };
+};
+
 const initialState = {
   loading: true,
   error: null,
@@ -775,6 +783,11 @@ const initialState = {
     error: null,
   },
   checkoutStylingConfig: {
+    loading: true,
+    data: {},
+    error: null,
+  },
+  checkoutPaymentConfigs: {
     loading: true,
     data: {},
     error: null,
@@ -1233,6 +1246,31 @@ const configReducer = (state = initialState, action) => {
         data: action.payload.data?.checkout_configuration?.checkout_style_config,
         error: null,
       });
+
+    case `${FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS}::PENDING`: {
+      return merge(state, {
+        checkoutPaymentConfigs: {
+          ...state.checkoutPaymentConfigs,
+          loading: true,
+        },
+      });
+    }
+
+    case `${FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS}::SUCCESS`: {
+      return set(state, 'checkoutPaymentConfigs', {
+        loading: false,
+        data: action.payload.data.checkout_configuration.checkout_configs,
+        error: null,
+      });
+    }
+
+    case `${FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS}::ERROR`: {
+      return set(state, 'checkoutPaymentConfigs', {
+        loading: false,
+        data: action.payload.data,
+        error: action.payload.errors,
+      });
+    }
 
     default:
       return state;

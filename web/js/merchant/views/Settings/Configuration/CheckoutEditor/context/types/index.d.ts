@@ -262,6 +262,44 @@ export type MerchantCheckoutStyledConfig = {
   festivities_enabled?: boolean;
 };
 
+export type MerchantCheckoutPaymentConfig = {
+  checkout_config?: {
+    display?: {
+      blocks?: {
+        [key: string]: PaymentConfigBlock;
+      };
+      sequence?: string[];
+      preferences?: {
+        show_default_blocks?: boolean;
+      };
+    };
+  };
+  is_default?: boolean;
+  name?: string;
+  type?: string;
+  config_id?: string;
+  created_at?: string;
+  updated_at?: string;
+  is_deleted?: boolean;
+};
+
+export type PaymentConfigBlock = {
+  [key: string]: {
+    name: string;
+    instruments: any;
+  };
+};
+
+export type MerchantCheckoutPaymentConfigs = {
+  data: {
+    checkout_configuration: {
+      checkout_configs: Array<MerchantCheckoutPaymentConfig>;
+    };
+  };
+  loading: boolean;
+  error: null;
+};
+
 export type MerchantCheckoutBrandConfig = {
   brand_name?: string;
   title_style?: string;
