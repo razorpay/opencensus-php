@@ -20,8 +20,8 @@ export const updateRule = async (rule: Partial<Rule>, merchantId: string) => {
   formData.append('json_payload', JSON.stringify(rule));
 
   return merchantFetch({
-    url: `magic/sopc/customisations/rules/${rule.id}`,
-    method: 'put',
+    url: `magic/sopc/customisations/rules/${rule.id}?_method=PUT`,
+    method: 'post',
     data: formData,
   });
 };
