@@ -84,41 +84,40 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
           rightChildren={<RightChildren handleClick={handleClick} />}
           extraItems={
             <>
-              {!storefront.entity.settings?.base_config?.banner_feature_enabled && (
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  borderTopWidth="thin"
-                  borderTopColor="surface.border.gray.muted"
-                  borderTopStyle="solid"
-                  paddingTop="spacing.4"
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                borderTopWidth="thin"
+                borderTopColor="surface.border.gray.muted"
+                borderTopStyle="solid"
+                paddingTop="spacing.4"
+              >
+                <Text
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                  variant="body"
+                  size="medium"
                 >
-                  <Text
-                    weight="regular"
-                    color="surface.text.gray.subtle"
-                    variant="body"
-                    size="medium"
-                  >
-                    Turn on banner preview
-                  </Text>
+                  Turn on banner preview
+                </Text>
 
-                  <Switch
-                    accessibilityLabel="storefront-banner-switch"
-                    isChecked={storefront.entity.settings?.base_config?.banner_feature_enabled}
-                    onChange={({ isChecked }) => {
-                      handleBannerSwitchChange(isChecked);
-                      track.bannerPreviewCheckboxClicked({
-                        storefrontId: storefront?.id,
-                        isNewStoreFront: Boolean(!storefront?.id),
-                        isChecked,
-                      });
-                    }}
-                  />
-                </Box>
-              )}
+                <Switch
+                  accessibilityLabel="storefront-banner-switch"
+                  isChecked={storefront.entity.settings?.base_config?.banner_feature_enabled}
+                  onChange={({ isChecked }) => {
+                    handleBannerSwitchChange(isChecked);
+                    track.bannerPreviewCheckboxClicked({
+                      storefrontId: storefront?.id,
+                      isNewStoreFront: Boolean(!storefront?.id),
+                      isChecked,
+                    });
+                  }}
+                />
+              </Box>
             </>
           }
+          isMobile={isMobile}
         />
       )}
       {showBannerAlert && (

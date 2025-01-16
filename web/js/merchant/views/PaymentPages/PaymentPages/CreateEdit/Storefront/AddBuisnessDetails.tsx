@@ -5,6 +5,7 @@ import BusinessDetailsDrawer from './BusinessDetailsDrawer';
 interface IAddBusinessDetailsProps {
   handleClick: (val: boolean) => void;
   openBuisnessDetailsDrawer?: boolean;
+  isMobile?: boolean;
 }
 
 const RightChildren: React.FC<IAddBusinessDetailsProps> = ({ handleClick }) => {
@@ -22,6 +23,7 @@ const RightChildren: React.FC<IAddBusinessDetailsProps> = ({ handleClick }) => {
 const AddBuisnessDetails: React.FC<IAddBusinessDetailsProps> = ({
   handleClick,
   openBuisnessDetailsDrawer,
+  isMobile,
 }) => {
   return (
     <>
@@ -35,6 +37,7 @@ const AddBuisnessDetails: React.FC<IAddBusinessDetailsProps> = ({
           title="Add business details"
           subTitle="Mandatory information"
           rightChildren={<RightChildren handleClick={handleClick} />}
+          isMobile={isMobile}
         />
       )}
     </>

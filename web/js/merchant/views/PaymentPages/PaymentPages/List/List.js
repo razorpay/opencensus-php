@@ -134,44 +134,6 @@ export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }
                                   <span class="more-btn">
                                     <b>+ {item.payment_page_items.length - 2} more</b>
                                   </span>
-                                  <Popover>
-                                    <PopoverBody>
-                                      <div class="more-items">
-                                        <div>
-                                          <span class="title">Item Name</span>
-                                          {item?.payment_page_items?.slice(2).map((pi, ix) => (
-                                            <span class="item-ellipsis" key={ix}>
-                                              {pi?.item?.name}
-                                            </span>
-                                          ))}
-                                        </div>
-                                        <div>
-                                          <span class="title">Quantities Sold</span>
-                                          {item?.payment_page_items?.slice(2).map((pi, ix) => (
-                                            <span class="item-ellipsis" key={ix}>
-                                              {!isStorefrontPage ? (
-                                                <>
-                                                  {Number(pi.quantity_sold)}
-                                                  {!!pi.stock && (
-                                                    <span style={{ opacity: 0.7 }}>
-                                                      {' '}
-                                                      of {Number(pi.stock)}
-                                                    </span>
-                                                  )}
-                                                </>
-                                              ) : (
-                                                getUnitsDescription({
-                                                  units: pi.stock,
-                                                  quantitySold: pi.quantity_sold,
-                                                  status: pi.catalog_status,
-                                                })
-                                              )}
-                                            </span>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    </PopoverBody>
-                                  </Popover>
                                 </span>
                               </td>
                             </tr>

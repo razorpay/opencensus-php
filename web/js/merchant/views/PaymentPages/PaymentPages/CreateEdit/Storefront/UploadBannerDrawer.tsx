@@ -94,8 +94,6 @@ const convertToBase64 = async (url: string): Promise<string> => {
 };
 
 const RenderBannerSection = ({
-  storefront,
-  handleBannerSwitchChange,
   onImageUpload,
   bannerData,
   handleReorder,
@@ -107,32 +105,6 @@ const RenderBannerSection = ({
 }) => {
   return (
     <Box height="500px">
-      {storefront.entity.settings?.base_config?.banner_feature_enabled && (
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          marginBottom="spacing.6"
-          paddingTop="spacing.4"
-        >
-          <Text weight="regular" color="surface.text.gray.subtle" variant="body" size="medium">
-            Turn on banner preview
-          </Text>
-
-          <Switch
-            accessibilityLabel="storefront-banner-switch"
-            isChecked={storefront.entity.settings?.base_config?.banner_feature_enabled}
-            onChange={({ isChecked }) => {
-              handleBannerSwitchChange(isChecked);
-              track.bannerPreviewCheckboxClicked({
-                storefrontId: storefront?.id,
-                isNewStoreFront: Boolean(!storefront?.id),
-                isChecked,
-              });
-            }}
-          />
-        </Box>
-      )}
       <LineItems
         title="Upload banner images"
         subTitle={
@@ -399,8 +371,6 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
           <BottomSheetHeader title="Add store banner" />
           <BottomSheetBody>
             <RenderBannerSection
-              storefront={storefront}
-              handleBannerSwitchChange={handleBannerSwitchChange}
               onImageUpload={onImageUpload}
               bannerData={bannerData}
               handleReorder={handleReorder}
@@ -439,8 +409,6 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
           </Box>
 
           <RenderBannerSection
-            storefront={storefront}
-            handleBannerSwitchChange={handleBannerSwitchChange}
             onImageUpload={onImageUpload}
             bannerData={bannerData}
             handleReorder={handleReorder}

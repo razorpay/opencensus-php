@@ -7,9 +7,16 @@ type LineItemsProps = {
   subTitle?: string | React.ReactNode;
   rightChildren?: React.ReactNode;
   extraItems?: React.ReactNode;
+  isMobile?: boolean;
 };
 
-const LineItems: React.FC<LineItemsProps> = ({ title, subTitle, rightChildren, extraItems }) => {
+const LineItems: React.FC<LineItemsProps> = ({
+  title,
+  subTitle,
+  rightChildren,
+  extraItems,
+  isMobile,
+}) => {
   return (
     <Box
       display="flex"
@@ -21,6 +28,7 @@ const LineItems: React.FC<LineItemsProps> = ({ title, subTitle, rightChildren, e
       borderWidth="thin"
       borderStyle="solid"
       borderColor="surface.border.gray.muted"
+      marginBottom={isMobile ? 'spacing.8' : 'spacing.0'}
     >
       <Box display="flex" alignItems="center" justifyContent="space-between" gap="spacing.3">
         <Box

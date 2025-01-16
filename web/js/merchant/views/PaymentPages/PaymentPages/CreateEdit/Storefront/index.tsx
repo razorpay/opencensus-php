@@ -690,7 +690,19 @@ const StoreFront = ({
           Page settings
         </BladeButton>
       ) : (
-        <BladeButton variant="secondary" color="primary" size="xsmall" icon={SettingsIcon} />
+        <BladeButton
+          variant="secondary"
+          color="primary"
+          size="xsmall"
+          icon={SettingsIcon}
+          onClick={() => {
+            setIsPageSettingsOpen(true);
+            track.pageSettingsClicked({
+              storefrontId: id ?? undefined,
+              isNewStorefront: Boolean(isCreate),
+            });
+          }}
+        />
       )}
       {!isMobile ? (
         <BladeButton variant="primary" color="primary" size="medium" onClick={onSubmit} isFullWidth>
@@ -819,10 +831,16 @@ const StoreFront = ({
                     )}
                     {isStorefrontV1Enabled ? (
                       <SuspenseWithLoader>
-                        <Box display="flex" flexDirection="column" gap="spacing.8" marginTop="32px">
+                        <Box
+                          display="flex"
+                          flexDirection="column"
+                          gap={isMobile ? 'spacing.0' : 'spacing.8'}
+                          marginTop="32px"
+                        >
                           <AddBuisnessDetails
                             handleClick={handleBuisnessDetailsClick}
                             openBuisnessDetailsDrawer={openBuisnessDetailsDrawer}
+                            isMobile={isMobile}
                           />
                           <AddBannerDetails
                             handleClick={handleAddBannerClick}

@@ -155,13 +155,18 @@ export const validateStorefront = (storefront: PaymentPagesStorefrontType) => {
     isValid = false;
     error = 'Storefront name cannot be empty!';
   }
-  if (!storefront.entity.contactEmail) {
+  if (!storefront.entity.contactEmail && !storefront.entity.contactPhone) {
     isValid = false;
-    error = 'Contact email cannot be empty!';
-  }
-  if (!storefront.entity.contactPhone) {
-    isValid = false;
-    error = 'Contact phone cannot be empty!';
+    error = 'Contact email and contact phone cannot be empty!';
+  } else {
+    if (!storefront.entity.contactEmail) {
+      isValid = false;
+      error = 'Contact email cannot be empty!';
+    }
+    if (!storefront.entity.contactPhone) {
+      isValid = false;
+      error = 'Contact phone cannot be empty!';
+    }
   }
   if (storefront.entity.products.length === 0) {
     isValid = false;
