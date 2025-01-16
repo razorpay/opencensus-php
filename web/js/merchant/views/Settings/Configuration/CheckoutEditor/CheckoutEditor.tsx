@@ -264,6 +264,9 @@ const CheckoutEditor = ({
         alignItems="flex-start"
         justifyContent="space-between"
         gap="spacing.11"
+        height={{
+          l: '70vh',
+        }}
       >
         <Box
           flex="2"
@@ -271,21 +274,29 @@ const CheckoutEditor = ({
           flexDirection="column"
           gap="spacing.4"
           backgroundColor="surface.background.gray.intense"
-          padding="spacing.3"
           maxWidth="600px"
+          height="100%"
         >
-          {showFeatures && (
-            <Features
-              isCustomMessageFeatureEnabled={isCustomMessageFeatureEnabled}
-              extraConfig={extraConfig}
-            />
-          )}
-          {showStyling && <CheckoutStyles trustedBadge={trustedBadge} />}
-          {showPaymentConfiguration && <PaymentConfiguration />}
-          {!suggestion && <Suggestion />}
-          {!suggestion && showFeatures && <Suggestion />}
+          <Box
+            display="flex"
+            flexDirection="column"
+            gap="spacing.4"
+            padding="spacing.3"
+            overflowY="auto"
+            flex="1"
+          >
+            {showFeatures && (
+              <Features
+                isCustomMessageFeatureEnabled={isCustomMessageFeatureEnabled}
+                extraConfig={extraConfig}
+              />
+            )}
+            {showStyling && <CheckoutStyles trustedBadge={trustedBadge} />}
+            {showPaymentConfiguration && <PaymentConfiguration />}
+            {!suggestion && <Suggestion />}
+            <ConfigFooter />
+          </Box>
           <ConfigControls />
-          <ConfigFooter />
         </Box>
 
         <CheckoutDemo />

@@ -1,15 +1,16 @@
-import { Box, Link, Text, TextInput } from '@razorpay/blade/components';
 import React from 'react';
+import { Box, Link, Text, TextInput } from '@razorpay/blade/components';
+
 import { useCheckoutEditor } from './context';
 
 const Suggestion: React.FC = () => {
   const [suggestionText, setSuggestionText] = React.useState('');
   const { handleSuggestionSubmit } = useCheckoutEditor();
   return (
-    <Box marginTop={'44px'}>
+    <Box marginTop="44px">
       <Text>Didn’t find the feature you are looking for?</Text>
-      <Box display={'flex'} gap={'12px'} marginTop={'12px'}>
-        <Box width={'100%'}>
+      <Box display="flex" gap="12px" marginTop="12px">
+        <Box width="100%">
           <TextInput
             placeholder="Add suggestion"
             label=""

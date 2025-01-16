@@ -12,7 +12,7 @@ export const Wrapper = styled.div`
   border-radius: ${({ theme }: StyledProps) => theme.border.radius['2xlarge']}px;
   background-color: ${({ theme }: StyledProps) => theme.colors.surface.background.gray.subtle};
   box-shadow: 0px 0px 24px 0px rgba(0, 0, 0, 0.05) inset;
-  height: 550px;
+  height: 100%;
   position: relative;
 `;
 
