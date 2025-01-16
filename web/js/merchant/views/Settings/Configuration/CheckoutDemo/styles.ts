@@ -83,7 +83,7 @@ export const MobileBackground = styled.div(
   ({ backgroundImg }: { backgroundImg: string }) => `
   pointer-events: none;
   position: absolute;
-  z-index: 50;
+  z-index: 1;
   display: flex;
   width: 280px;
   height: 580px;
