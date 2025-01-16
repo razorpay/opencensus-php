@@ -212,9 +212,7 @@ const MagicIntelligenceTab = ({
   return (
     <div className="magic-intelligence">
       <div className="header-wrapper">
-        <div className="font-20 font-bold heading">
-          Reduce RTO orders with {isMagicXPublicappCodEnabled ? 'Checkout360' : 'Magic Checkout'}
-        </div>
+        <div className="font-20 font-bold heading">Reduce RTO orders with Magic Checkout</div>
         <div className="font-14 subtext">
           {isMagicXPublicappCodEnabled
             ? 'Disable COD option for high RTO risk customers'

@@ -9,7 +9,7 @@ const MagicXStoreSettings: React.FC = () => {
     <Wrapper>
       <Header>Checkout Settings</Header>
       {/**
-       * This banner was added for public app approval. We do not need it for Checkout360.
+       * This banner was added for public app approval. We do not need it for Magic Checkout.
        * Commenting out incase we need to show this banner in future
        */}
       {/* {checkMagicConfigurationFlow() && <MagicXBanner isStoreSettingPage />} */}

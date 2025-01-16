@@ -43,7 +43,7 @@ describe('MagicX Settings Form Component', () => {
   test('should render specific fields for all', async () => {
     render(<App />);
 
-    const appEnabledField = await screen.findByText('Enable Checkout360');
+    const appEnabledField = await screen.findByText('Enable Magic Checkout');
     const emailField = await screen.findByText('Email Field');
     const modalColorField = await screen.findByText('Theme Color');
     const loginMandatoryField = await screen.findByText('Mandatory OTP');
@@ -54,7 +54,7 @@ describe('MagicX Settings Form Component', () => {
     expect(loginMandatoryField).toBeInTheDocument();
   });
 
-  //For Checkout360 flow , we wont be supporting checkout type as of initial rollout. Skipped but not removed incase needed for future versions
+  //For Magic Checkout flow , we wont be supporting checkout type as of initial rollout. Skipped but not removed incase needed for future versions
   test.skip('should render flow type field only for plus plan merchants', async () => {
     const customState = {
       magic_settings: {
@@ -98,7 +98,7 @@ describe('MagicX Settings Form Component', () => {
     const emailFieldDropdown = screen.getByRole('combobox');
     const themeColor = container.querySelector(`input[name="themeColor"]`);
 
-    expect(screen.getByRole('switch', { name: 'Disable Checkout360' })).toBeChecked();
+    expect(screen.getByRole('switch', { name: 'Disable Magic Checkout' })).toBeChecked();
     expect(screen.getByRole('switch', { name: 'Make OTP optional' })).toBeChecked();
     expect(emailFieldDropdown.textContent).toBe('Optional');
     expect(themeColor).toHaveValue('#ffffff');

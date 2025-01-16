@@ -186,35 +186,4 @@ describe('NavLinkItem', () => {
     expect(screen.getByText('Konnect')).toBeInTheDocument();
     expect(screen.queryByAltText('Konnect')).not.toBeInTheDocument();
   });
-
-  test('should render `Magic Checkout` with title `Checkout360` if user has completed C360 onboarding', () => {
-    renderApp({
-      props: {
-        title: 'Magic Checkout',
-        product_id: 'magic_checkout',
-        user: {
-          isC360OnboardingCompleted: true,
-        },
-      },
-    });
-
-    expect(screen.getByText('Checkout360')).toBeInTheDocument();
-    expect(screen.queryByAltText('Magic Checkout')).not.toBeInTheDocument();
-  });
-
-  test('should render `Magic Checkout` with title `Magic Checkout` if user has not completed C360 onboarding', () => {
-    renderApp({
-      props: {
-        title: 'Magic Checkout',
-        product_id: 'magic_checkout',
-        user: {
-          isC360OnboardingToBeResumed: false,
-          isC360OnboardingCompleted: false,
-        },
-      },
-    });
-
-    expect(screen.getByText('Magic Checkout')).toBeInTheDocument();
-    expect(screen.queryByAltText('Checkout360')).not.toBeInTheDocument();
-  });
 });

@@ -8,7 +8,7 @@ import {
 } from '@razorpay/blade/components';
 
 export const C360_ONBOARDING_HREF = 'https://easy.razorpay.com/pg3/onboarding';
-export const C360_CONTACT_SALES_HREF = 'mailto:checkout360-support@razorpay.com';
+export const C360_CONTACT_SALES_HREF = 'mailto:magic-checkout-support@razorpay.com';
 
 export const C360_ONBOARDING_CTA = { START: 'Start Set-Up', RESUME: 'Resume Set-Up' };
 export const C360_CONTACT_SALES_CTA = 'Contact Sales';
@@ -31,9 +31,9 @@ export const ROUTES = {
 };
 
 export const DOCS_LINKS = {
-  COD: 'https://razorpay.com/docs/payments/checkout360/configure-cod/',
-  RTO: 'https://razorpay.com/docs/payments/checkout360/rto-intelligence/',
-  CHECKOUT: 'https://razorpay.com/docs/payments/checkout360/fast-checkout/',
+  COD: 'https://razorpay.com/docs/payments/cod-magic-checkout/configure-cod/',
+  RTO: 'https://razorpay.com/docs/payments/cod-magic-checkout/rto-intelligence/',
+  CHECKOUT: 'https://razorpay.com/docs/payments/cod-magic-checkout/fast-checkout/',
 };
 
 export const WELCOME_SECTION_TITLE = 'What does this all-in-one solution give you?';

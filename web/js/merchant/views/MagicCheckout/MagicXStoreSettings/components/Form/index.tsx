@@ -132,13 +132,13 @@ const Form = ({ settings, showNotification, updateSopcMetafields, updateMagicSet
         flexDirection="column"
       >
         <Box width="100%" display="flex" paddingY="spacing.4">
-          <Box width="50%">Enable Checkout360</Box>
+          <Box width="50%">Enable Magic Checkout</Box>
           <Box>
             <Switch
               onChange={() => handleSwitchChange('status')}
               isChecked={formState.status}
               name="appEnabled"
-              accessibilityLabel={`${formState.status ? 'Disable' : 'Enable'} Checkout360`}
+              accessibilityLabel={`${formState.status ? 'Disable' : 'Enable'} Magic Checkout`}
             />
           </Box>
         </Box>
@@ -152,7 +152,7 @@ const Form = ({ settings, showNotification, updateSopcMetafields, updateMagicSet
         flexDirection="column"
       >
         {/**
-         * For Checkout360 flow , permlinks will be the only checkout type.
+         * For Magic Checkout flow , permlinks will be the only checkout type.
          * Commenting for future ref incase of change in requirements.
          */}
         {/* {isPlusPlan && (
@@ -295,8 +295,8 @@ const Form = ({ settings, showNotification, updateSopcMetafields, updateMagicSet
       <Box display="flex" alignItems="center" justifyContent="space-between">
         <Box maxWidth="75%">
           <Text>
-            Upon clicking "Save Settings", you will be redirected to your Shopify admin and
-            Checkout360 will be enabled on your live theme
+            Upon clicking "Save Settings", you will be redirected to your Shopify admin and Magic
+            Checkout will be enabled on your live theme
           </Text>
         </Box>
         <Button

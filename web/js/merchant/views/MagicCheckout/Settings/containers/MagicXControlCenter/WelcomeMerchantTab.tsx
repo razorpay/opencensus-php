@@ -45,10 +45,15 @@ export const WelcomeMerchantTab = ({ user }) => {
       >
         <C360BannerImage src={c360Banner} alt="" role="presentation" />
         <Box position="absolute" top="36px" left="36px">
-          <img src={c360RzpLogo} alt="" role="presentation" style={{ marginBottom: '16px' }} />
+          <img
+            src={c360RzpLogo}
+            alt=""
+            role="presentation"
+            style={{ marginBottom: '16px', maxWidth: '220px' }}
+          />
           <Text size="small" weight="regular" color="surface.text.staticWhite.normal">
             Boost buyer intent, reduce fake orders, &amp;
-            <br /> increase pre-paid order share on Checkout360
+            <br /> increase pre-paid order share on Magic Checkout
           </Text>
         </Box>
         <ShopifyBadge>

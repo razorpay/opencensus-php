@@ -77,17 +77,6 @@ const NavLinkItem = ({
   const isNoCodeMonetizationExperimentOn = getNoCodeMonetizationExperiment();
   const pricingPlanForMerchant = getPricingPlan(user, isNoCodeMonetizationExperimentOn);
 
-  // Checkout360 experience
-  if (abExperiments?.magicx_publicapp_cod?.variables?.result === 'on') {
-    title =
-      (user?.isC360OnboardingToBeResumed ||
-        user?.isC360OnboardingCompleted ||
-        user?.isC360OnboardingStarted) &&
-      product_id === 'magic_checkout'
-        ? 'Checkout360'
-        : title;
-  }
-
   const noCodeMonetizationApps = ['Payment Links', 'Payment Pages', 'Invoices', 'Razorpay.me Link'];
 
   const onNavLinkItemClick = () => {

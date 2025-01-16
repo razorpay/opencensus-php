@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NavLink, Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
@@ -17,10 +17,7 @@ import magicCheckoutRoutesV2 from 'merchant/views/MagicCheckout/MagicCheckoutRou
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
 import { RCOD_APP_NAME, SOPC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
-import {
-  MAGIC_DASHBOARD_REVAMP_EXPERIMENT,
-  MAGICX_PUBLICAPP_COD_EXPERIMENT,
-} from 'merchant/views/MagicCheckout/constants';
+import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 
 import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 import { isRouteAuthorised } from 'merchant/views/MagicCheckout/utils/genericRouteCheck';
@@ -31,13 +28,6 @@ const getTabName = (tabName, dashboardView, abExperiments) => {
     (dashboardView === SOPC_APP_NAME || dashboardView === RCOD_APP_NAME)
   ) {
     return 'Analytics';
-  }
-  if (
-    tabName === 'Magic Dashboard' &&
-    (dashboardView === SOPC_APP_NAME || dashboardView === RCOD_APP_NAME) &&
-    abExperiments?.[MAGICX_PUBLICAPP_COD_EXPERIMENT]?.variables?.result === 'on'
-  ) {
-    return 'Checkout360';
   }
   return tabName;
 };

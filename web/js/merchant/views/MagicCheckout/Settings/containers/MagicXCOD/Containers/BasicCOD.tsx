@@ -201,7 +201,7 @@ const BasicCOD = ({
             <Link href={BASIC_COD_SETUP_GUIDE.docs} target="_blank" size="small">
               Setup Guide
             </Link>{' '}
-            for detailed steps or contact support at checkout360-support@razorpay.com
+            for detailed steps or contact support at magic-checkout-support@razorpay.com
           </span>
         }
         isFullWidth

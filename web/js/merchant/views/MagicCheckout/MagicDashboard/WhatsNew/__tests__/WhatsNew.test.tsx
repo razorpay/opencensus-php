@@ -34,7 +34,7 @@ describe('WhatsNew Component', () => {
     expect(getByText(quickBuyTitle)).toBeInTheDocument();
   });
 
-  it('Should render coupons & Checkout360 title but should not render quickbuy for shopify platform(magicX)', () => {
+  it('Should render coupons & Magic Checkout title but should not render quickbuy for shopify platform(magicX)', () => {
     const initialState = {
       magicCheckout: {
         platform: PLATFORMS.SHOPIFY,
@@ -44,7 +44,7 @@ describe('WhatsNew Component', () => {
     (useMagicExperiment as jest.Mock).mockReturnValue(true);
     const { getByText, queryByText } = render(<WhatsNew />, initialState);
 
-    expect(getByText('What’s new in Checkout360')).toBeInTheDocument();
+    expect(getByText('What’s new in Magic Checkout')).toBeInTheDocument();
     expect(getByText(couponsTitle)).toBeInTheDocument();
     expect(queryByText(quickBuyTitle)).not.toBeInTheDocument();
   });

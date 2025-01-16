@@ -40,7 +40,7 @@ export const OnboardedMerchantTab = () => {
       <OnboardedMerchantTabHeader>
         <Box display="flex" flexDirection="column" gap="spacing.3">
           <Heading size="xlarge" weight="semibold">
-            Welcome to Checkout360
+            Welcome to Magic Checkout
           </Heading>
           <Text weight="regular" color="surface.text.gray.subtle">
             Manage & Configure COD rules, Checkout settings, RTO prediction, and other features here

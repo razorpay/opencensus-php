@@ -35,7 +35,7 @@ export const Facts: Fact[] = [
 ];
 
 // Get Started
-const SHOPIFY_APP_NAME = 'Razorpay COD & Checkout360 App';
+const SHOPIFY_APP_NAME = 'Razorpay COD & Magic Checkout App';
 export const GetStartedCards = {
   appUpdateNotice: `Note: Please update the ${SHOPIFY_APP_NAME} on Shopify to create Payment and Shipping rules.`,
   payment: {

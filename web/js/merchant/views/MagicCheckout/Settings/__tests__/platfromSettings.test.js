@@ -52,7 +52,7 @@ describe('PlatformSettings', () => {
     });
   });
 
-  test('should have title `Checkout360 Settings` if user has onboarded C360', async () => {
+  test('should have title `Magic Checkout Settings` if user has onboarded C360', async () => {
     const customState = {
       ...initState,
       session: {
@@ -66,7 +66,9 @@ describe('PlatformSettings', () => {
     renderAppWithRouter({ state: customState });
     await waitFor(() => {
       expect(screen.queryByText(/Platform Settings/)).not.toBeInTheDocument();
-      expect(screen.queryByText(/Checkout360 Settings/)).toBeInTheDocument();
+      expect(
+        screen.queryByText(/Magic Checkout \(Formerly Checkout360\) Settings/),
+      ).toBeInTheDocument();
     });
   });
 
@@ -84,7 +86,9 @@ describe('PlatformSettings', () => {
     renderAppWithRouter({ state: customState });
     await waitFor(() => {
       expect(screen.queryByText(/Platform Settings/)).toBeInTheDocument();
-      expect(screen.queryByText(/Checkout360 Settings/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/Magic Checkout \(Formerly Checkout360\) Settings/),
+      ).not.toBeInTheDocument();
     });
   });
 });

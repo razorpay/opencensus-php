@@ -86,17 +86,6 @@ function transformDataWithRoutes(data, routes, { user, abExperiments, isConfigTa
               }),
           })
         ) {
-          if (abExperiments?.magicx_publicapp_cod?.variables?.result === 'on') {
-            if (
-              (user?.isC360OnboardingToBeResumed ||
-                user?.isC360OnboardingCompleted ||
-                user?.isC360OnboardingStarted) &&
-              product.product_id === 'magic_checkout'
-            ) {
-              product.title = 'Checkout360';
-            }
-          }
-
           acc.push({
             ...product,
             href: PRODUCTS_DATA[product.product_id]?.getRef

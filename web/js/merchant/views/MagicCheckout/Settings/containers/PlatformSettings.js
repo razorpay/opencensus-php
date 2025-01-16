@@ -115,11 +115,14 @@ const PlatformSettings = ({
           {ACCESS_ROLES.includes(user.role) ? (
             <div className="padding-16 bg-settings platform-heading-container">
               <div className="font-bold font-20 platform-heading">
-                {user.isC360OnboardingCompleted ? 'Checkout360' : 'Platform'} Settings
+                {user.isC360OnboardingCompleted
+                  ? 'Magic Checkout (Formerly Checkout360)'
+                  : 'Platform'}{' '}
+                Settings
               </div>
               {user.isC360OnboardingCompleted && (
                 <StyledHelperText>
-                  Checkout360 activated. Set up COD and other configurations here.
+                  Magic Checkout activated. Set up COD and other configurations here.
                 </StyledHelperText>
               )}
               <PlatformSubText

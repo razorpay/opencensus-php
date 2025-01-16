@@ -21,7 +21,7 @@ const SetupAndSettings: React.FC<NestedVerticalTabProps> = ({ settings, magicChe
 
   const customRouteCheck = (item, user) => {
     /**
-     * Checkout360 Experience
+     * Magic Checkout Experience
      * Splitz experiment in use: `magicx_publicapp_cod`
      * When the experiment in ON:
      * -> if user has not completed C360 onboarding, we change the route label and
@@ -36,8 +36,8 @@ const SetupAndSettings: React.FC<NestedVerticalTabProps> = ({ settings, magicChe
     ) {
       if (!user.isC360OnboardingCompleted) {
         // We need to check both label values for stability across component re-renders
-        if (item.label === 'Control Center' || item.label === 'Checkout360') {
-          item.label = 'Checkout360';
+        if (item.label === 'Control Center' || item.label === 'Magic Checkout') {
+          item.label = 'Magic Checkout';
           return true;
         } else {
           return false;

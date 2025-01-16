@@ -209,7 +209,7 @@ const MagicXCOD = ({ settings, updateMagicSettings, showNotification, fetchShipp
                         >
                           Activate
                         </Link>
-                        Checkout360 for this to work.
+                        Magic Checkout for this to work.
                       </Text>
                     </Box>
                   )}

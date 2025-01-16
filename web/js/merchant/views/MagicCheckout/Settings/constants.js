@@ -288,7 +288,7 @@ export const SWITCH_TEXTS = {
     },
     codIntelligence: {
       header: 'Enable COD Intelligence?',
-      desc: 'Realtime review of COD orders will be turned on. Checkout360 will decide which customer sees COD option based on their past buying history.',
+      desc: 'Realtime review of COD orders will be turned on. Magic Checkout will decide which customer sees COD option based on their past buying history.',
       secondaryCtaLabel: 'Cancel',
       primaryCtaLabel: 'Enable COD Intelligence',
     },

@@ -46,8 +46,6 @@ function MerchantNavLinks(props) {
 
   const { abExperiments } = useSplitzService();
   const showMagicKonnectTab = abExperiments?.magic_konnect?.variables?.result === 'on';
-  const isMagicXPublicappCodEnabled =
-    abExperiments?.magicx_publicapp_cod?.variables?.result === 'on';
   const showMyDevicesTab = abExperiments?.my_devices?.variables?.result === 'on';
   const isOmniJkFlow = isJKOfflineMerchant(org, user);
   useEffect(() => {
@@ -367,14 +365,7 @@ function MerchantNavLinks(props) {
         <MagicCheckoutNavLink>
           {(onClick) => (
             <MainNavLink
-              label={
-                (props.user.isC360OnboardingToBeResumed ||
-                  props.user.isC360OnboardingCompleted ||
-                  props.user.isC360OnboardingStarted) &&
-                isMagicXPublicappCodEnabled
-                  ? 'Checkout360'
-                  : 'Magic Checkout'
-              }
+              label={'Magic Checkout'}
               icon="i i-magic-checkout"
               type="product"
               to={routes.magicCheckout}

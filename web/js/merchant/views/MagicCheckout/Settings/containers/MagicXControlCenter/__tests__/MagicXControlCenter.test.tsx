@@ -37,7 +37,7 @@ describe('OnboardedMerchantTab', () => {
 
   test('should render onboarded user screen when user has completed C360 onboarding', () => {
     render(<App />, { session: { user: { isC360OnboardingCompleted: true } } });
-    const title = screen.getByText(/Welcome to Checkout360/i);
+    const title = screen.getByText(/Welcome to Magic Checkout/i);
     expect(title).toBeInTheDocument();
   });
 });

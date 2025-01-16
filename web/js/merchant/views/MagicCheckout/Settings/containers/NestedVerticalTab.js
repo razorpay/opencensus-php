@@ -47,7 +47,7 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
           <div className="tabs-container display-flex flex--column">
             {(isMagicConfigurationFlow ? CONFIG_TABS : TABS)?.[platform]?.map((item, index) => {
               /**
-               * Checkout360 Experience
+               * Magic Checkout Experience
                * Splitz experiment in use: `magicx_publicapp_cod`
                * When the experiment in ON:
                * -> if user has not completed C360 onboarding, we change the route label and
@@ -62,8 +62,8 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
               ) {
                 if (!user.isC360OnboardingCompleted) {
                   // We need to check both label values for stability across component re-renders
-                  if (item.label === 'Control Center' || item.label === 'Checkout360') {
-                    item.label = 'Checkout360';
+                  if (item.label === 'Control Center' || item.label === 'Magic Checkout') {
+                    item.label = 'Magic Checkout';
                   } else {
                     return null;
                   }

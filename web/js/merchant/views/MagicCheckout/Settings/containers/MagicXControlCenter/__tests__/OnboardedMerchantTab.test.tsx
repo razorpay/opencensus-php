@@ -31,7 +31,7 @@ describe('OnboardedMerchantTab', () => {
 
   test('should render', () => {
     render(<App />);
-    const title = screen.getByText(/Welcome to Checkout360/i);
+    const title = screen.getByText(/Welcome to Magic Checkout/i);
     expect(title).toBeInTheDocument();
   });
 });
