@@ -308,5 +308,11 @@ return array(
     'insightx' => [
         'url' => env('INSIGHTX_HOST_URL'),
         'timeout' => 5,
+    ],
+    'omni' => [
+        'url' => env('OMNI_HOST_URL'),
+        'secret' => env('OMNI_SECRET'),
+        'timeout' => 20,
     ]
+
 );

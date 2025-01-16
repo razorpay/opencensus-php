@@ -215,6 +215,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/ezetap/void', 'MerchantController@ezetapVoidApi')->name('ezetap_void_api');
         Route::post('/ezetap/refund', 'MerchantController@ezetapRefundApi')->name('ezetap_refund_api');
         Route::get('/ezetap/receipt/{razorpayReferenceId}', 'MerchantController@ezetapReceiptApi')->name('ezetap_receipt_api');
+        Route::get('/pos/devices', 'MerchantController@fetchPosPaymentsDevices')->name('fetch_pos_payments_devices');
+        Route::patch('/pos/devices/{id}/settings', 'MerchantController@updateDeviceSettings')->name('update_device_settings');
 
         Route::get('/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
         Route::get('/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');

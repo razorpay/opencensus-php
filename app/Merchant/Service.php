@@ -2,7 +2,9 @@
 
 namespace App\Merchant;
 
+use App\Services\Omni\OmniClient;
 use Auth;
+use Config;
 use Uuid;
 use Hash;
 use Queue;
@@ -323,6 +325,16 @@ class Service extends Base\Service
             Constants::RECEIPT_IMAGE_TYPE => Constants::MONOCHROME_ONE_BIT
         );
         return $this->requestRazorpayPosForReceipt($base_url . Constants::EZETAP_RECEIPT_ENDPOINT, $inputBody);
+    }
+
+    public function fetchPosPaymentsDevices()
+    {
+        return (new OmniClient())->fetchPosPaymentsDevices();
+    }
+
+    public function updateDeviceSettings($deviceId, $input)
+    {
+        return (new OmniClient())->updateDeviceSettings($deviceId, $input);
     }
 
     public function fetchAppKeys($merchantId)

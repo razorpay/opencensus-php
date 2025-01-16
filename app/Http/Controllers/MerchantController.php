@@ -60,6 +60,21 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $keys);
     }
 
+    public function fetchPosPaymentsDevices() {
+
+        list($error, $keys) = (new Merchant\Service)->fetchPosPaymentsDevices();
+
+        return AppResponse::jsonResponse($error, $keys);
+    }
+
+    public function updateDeviceSettings($id) {
+        $input = Input::all();
+
+        list($error, $keys) = (new Merchant\Service)->updateDeviceSettings($id, $input);
+
+        return AppResponse::jsonResponse($error, $keys);
+    }
+
     public function ezetapRefundApi()
     {
         $input = Input::all();

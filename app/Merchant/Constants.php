@@ -300,6 +300,9 @@ class Constants
     const MONOCHROME_ONE_BIT = "MONOCHROME_ONE_BIT";
     const EZETAP_RECEIPT_ENCODED_IMAGE = 'encodedImageString';
     const EZETAP_RECEIPT_ENDPOINT = '/api/2.0/receipt/image/fetch/omni';
+    const EZETAP_FETCH_POS_DEVICES_ENDPOINT = '/api/2.0/pos/devices/';
+
+    const EZETAP_FETCH_POS_DEVICE_SETTINGS_ENDPOINT = '/api/2.0/pos/devices/%s/settings';
     const RAZORPAY_RECEIPT_ENCODED_IMAGE_RESPONSE = 'receipt_encoded_image';
     const EZETAP_RECEIPT_ERROR = 'errorMessage';
     const HEADERS = [
