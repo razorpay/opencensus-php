@@ -504,7 +504,8 @@ function MerchantNavLinks(props) {
         additionalCondition={() =>
           isExperimentEnabled(abExperiments?.insight_x_experiment) &&
           user.isOrgRZP &&
-          user.isCountryIndia
+          user.isCountryIndia &&
+          !isMobileResolution()
         }
       />
       <MainNavLink

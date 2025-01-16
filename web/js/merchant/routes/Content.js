@@ -2679,7 +2679,8 @@ class Content extends Component {
                   return (
                     isExperimentEnabled(this.props.splitz?.abExperiments.insight_x_experiment) &&
                     user.isOrgRZP &&
-                    user.isCountryIndia
+                    user.isCountryIndia &&
+                    !isMobileResolution()
                   );
                 }}
               >

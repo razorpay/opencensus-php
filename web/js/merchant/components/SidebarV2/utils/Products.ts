@@ -391,7 +391,8 @@ export const PRODUCTS_DATA = {
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       isExperimentEnabled(abExperiments.insight_x_experiment) &&
       user.isOrgRZP &&
-      user.isCountryIndia,
+      user.isCountryIndia &&
+      !isMobileResolution(),
   },
 };
 
