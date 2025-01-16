@@ -38,7 +38,7 @@ class Core extends Base\Core
             Constants::CREDIT_BALANCE_TYPE => MerchantBalanceType::FEE_CREDIT
         ],
         Credits\Type::AMOUNT => [
-            Constants::TRANSACTOR_EVENT => Constants::MERCHANT_AMOUNT_CREDIT_LOADING,
+            Constants::TRANSACTOR_EVENT => Constants::MERCHANT_AMOUNT_CREDIT_LOADING_V2,
             Constants::CREDIT_BALANCE_TYPE => MerchantBalanceType::AMOUNT_CREDIT
         ],
     ];
@@ -136,12 +136,12 @@ class Core extends Base\Core
         return $transactionMessage;
     }
 
-    public function createReverseShadowLedgerEntries(CreditEntity $creditLogs, $payment, $amountCreditsSplitEnabled=false)
+    public function createReverseShadowLedgerEntries(CreditEntity $creditLogs, $payment)
     {
         $transactionMessage = [];
         if($creditLogs->getType() === Credits\Type::AMOUNT )
         {
-            $transactionMessage = $this->createTransactionMessageForMerchantAmountCreditLoading($creditLogs, $amountCreditsSplitEnabled);
+            $transactionMessage = $this->createTransactionMessageForMerchantAmountCreditLoading($creditLogs);
         }
         else
         {
@@ -158,16 +158,11 @@ class Core extends Base\Core
         $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
     }
 
-    public function createTransactionMessageForMerchantAmountCreditLoading(CreditEntity $creditLogs, $amountCreditsSplitEnabled=false): array
+    public function createTransactionMessageForMerchantAmountCreditLoading(CreditEntity $creditLogs): array
     {
         $credit_type= self::CREDIT_TYPES[Credits\Type::AMOUNT];
 
         $transactorEvent = $credit_type[Constants::TRANSACTOR_EVENT];
-
-        if($amountCreditsSplitEnabled === true)
-        {
-            $transactorEvent = Constants::MERCHANT_AMOUNT_CREDIT_LOADING_V2;
-        }
 
         $amount =  abs($creditLogs->getValue());
 
@@ -187,12 +182,9 @@ class Core extends Base\Core
             Constants::TENANT                       => Constants::TENANT_PG
         );
 
-        if($amountCreditsSplitEnabled === true)
-        {
-            $msg[Constants::IDENTIFIERS] = [
-                Constants::CREDIT_ID => $creditLogs->getId(),
-            ];
-        }
+        $msg[Constants::IDENTIFIERS] = [
+            Constants::CREDIT_ID => $creditLogs->getId(),
+        ];
 
         return $msg;
     }

@@ -456,18 +456,12 @@ class Core extends Base\Core
                 return;
             }
 
-            $amountCreditsSplitEnabled = false;
             if ($creditsLog->getType() === Credits\Type::AMOUNT)
             {
-                $amountCreditsSplitEnabled = $this->isAmountCreditsSplitEnabled($creditsLog->getMerchantId());
-
-                if ($amountCreditsSplitEnabled === true)
-                {
-                    $this->createAmountCreditsAccountInLedger($creditsLog->merchant, $creditsLog);
-                }
+                $this->createAmountCreditsAccountInLedger($creditsLog->merchant, $creditsLog);
             }
 
-            (new ReverseShadowCreditLoading\Core())->createReverseShadowLedgerEntries($creditsLog, $payment, $amountCreditsSplitEnabled);
+            (new ReverseShadowCreditLoading\Core())->createReverseShadowLedgerEntries($creditsLog, $payment);
         }
         catch(\Exception $e)
         {
@@ -481,16 +475,6 @@ class Core extends Base\Core
                 ]);
             throw $e;
         }
-    }
-
-    private function isAmountCreditsSplitEnabled($merchantId)
-    {
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.amount_credits_split_in_ledger_experiment_id'),
-        ];
-
-        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
     }
 
     private function createAmountCreditsAccountInLedger($merchant, $creditsLog)

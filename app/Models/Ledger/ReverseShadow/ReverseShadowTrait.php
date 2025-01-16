@@ -468,11 +468,6 @@ trait ReverseShadowTrait
                     Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
                     Constants::FUND_ACCOUNT_TYPE => [Constants::MERCHANT_FEE_CREDITS]
                 ],
-                // PG Merchant Amount Credit Account
-                [
-                    Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
-                    Constants::FUND_ACCOUNT_TYPE => [Constants::REWARD]
-                ],
                 // PG Merchant Split Account Amount Credit Account
                 [
                     Constants::ACCOUNT_TYPE => [Constants::PAYABLE],

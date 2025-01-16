@@ -85,30 +85,7 @@ class Core extends Base\Core
 
         $amountCreditsAccounts = $this->getValidAmountCreditsAccounts($merchantAccounts);
 
-        try
-        {
-            $splitzAmountRevampResponse = $this->app['splitzService']->evaluateRequest([
-                'id' => $transfer->getMerchantId(),
-                'experiment_id' => $this->app['config']->get('app.amount_credits_split_in_ledger_experiment_id'),
-            ]);
-
-            $variant = $splitzAmountRevampResponse['response']['variant']['name'] ?? '';
-
-            $amountCreditsSplitEnabled = ($variant === 'enable');
-        }
-        catch (\Throwable $e)
-        {
-            $amountCreditsSplitEnabled = false;
-        }
-
-        $this->trace->info(TraceCode::TRANSFER_AMOUNT_CREDITS_V2_EXPERIMENT_EVALUTATION, [
-            'merchant_id' => $transfer->getMerchantId(),
-            'is_exp_enabled' => $amountCreditsSplitEnabled,
-            'balances' => $merchantAccountBalances,
-            'credit_accounts' => $amountCreditsAccounts,
-        ]);
-
-        $moneyParams = $this->generateMoneyParamsForTransferDebit($transfer, $merchantAccountBalances, $fee, $tax, $amountCreditsSplitEnabled);
+        $moneyParams = $this->generateMoneyParamsForTransferDebit($transfer, $merchantAccountBalances, $fee, $tax);
 
         $additionalParams = $this->fetchRulesForTransferDebit($transfer, $merchantAccountBalances, $fee, $tax);
 
@@ -116,8 +93,7 @@ class Core extends Base\Core
 
         $transactionMessage[LedgerConstants::MONEY_PARAMS] = $moneyParams;
 
-        if (($amountCreditsSplitEnabled === true) &&
-            ($merchantAccountBalances[LedgerConstants::MERCHANT_AMOUNT_CREDITS] >= $transfer->getAmount()))
+        if (($merchantAccountBalances[LedgerConstants::MERCHANT_AMOUNT_CREDITS] >= $transfer->getAmount()))
         {
             $additionalParams[LedgerConstants::CREDIT_ACCOUNTING] = LedgerConstants::AMOUNT_CREDITS_REDEMPTION_V2;
 
@@ -131,7 +107,7 @@ class Core extends Base\Core
         return $transactionMessage;
     }
 
-    public function generateMoneyParamsForTransferDebit(Transfer\Entity $transfer, $merchantAccountBalances, $fee, $tax, $amountCreditsSplitEnabled = false): array
+    public function generateMoneyParamsForTransferDebit(Transfer\Entity $transfer, $merchantAccountBalances, $fee, $tax): array
     {
         $moneyParams = [];
 
@@ -150,11 +126,6 @@ class Core extends Base\Core
             $moneyParams[LedgerConstants::MERCHANT_PAYABLE_AMOUNT]    = strval($amount);
             $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
             $moneyParams[LedgerConstants::RAZORPAY_REWARDS]           = strval($amount);
-
-            if ($amountCreditsSplitEnabled === false)
-            {
-                $moneyParams[LedgerConstants::AMOUNT_CREDITS]         = strval($amount);
-            }
         }
         else if ($this->isFeeCredits($feeCredits, $fee + $tax) === true)
         {
@@ -547,35 +518,19 @@ class Core extends Base\Core
     {
         $ledgerService = $this->app['ledger'];
 
-        $response = $this->app['splitzService']->evaluateRequest([
-            'id'            => $transfer->getMerchantId(),
-            'experiment_id' => $this->app['config']->get('app.amount_credits_split_in_ledger_experiment_id'),
-        ]);
-
-        $variant = $response['response']['variant']['name'] ?? '';
-
-        $amountCreditsSplitEnabled = $variant === 'enable';
-
         $merchantAccountBalances = [];
 
         $amountCreditsAccounts = [];
 
-        if ($variant == "enable")
-        {
-            $merchantAccounts = $this->getMerchantAccounts($ledgerService, $transfer->getMerchantId());
+        $merchantAccounts = $this->getMerchantAccounts($ledgerService, $transfer->getMerchantId());
 
-            $merchantAccountBalances = $this->getMerchantAccountBalancesMap($merchantAccounts);
+        $merchantAccountBalances = $this->getMerchantAccountBalancesMap($merchantAccounts);
 
-            $amountCreditsAccounts = $this->getValidAmountCreditsAccounts($merchantAccounts);
-        }
-        else
-        {
-            $merchantAccountBalances = $this->getMerchantAccountBalances($ledgerService, $transfer->getMerchantId());
-        }
+        $amountCreditsAccounts = $this->getValidAmountCreditsAccounts($merchantAccounts);
 
         list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($transfer);
 
-        $moneyParams = $this->generateMoneyParamsForCustomerWalletLoadingDebitV2($transfer, $merchantAccountBalances, $fee, $tax, $amountCreditsSplitEnabled);
+        $moneyParams = $this->generateMoneyParamsForCustomerWalletLoadingDebitV2($transfer, $merchantAccountBalances, $fee, $tax);
 
         $additionalParams = $this->fetchRulesForTransferDebit($transfer, $merchantAccountBalances, $fee, $tax);
 
@@ -606,8 +561,7 @@ class Core extends Base\Core
             Constants::TENANT                        => Constants::TENANT_PG,
         );
 
-        if ($amountCreditsSplitEnabled &&
-            ($merchantAccountBalances[LedgerConstants::MERCHANT_AMOUNT_CREDITS] >= $transfer->getAmount()))
+        if (($merchantAccountBalances[LedgerConstants::MERCHANT_AMOUNT_CREDITS] >= $transfer->getAmount()))
         {
             $journalData[Constants::DYNAMIC_MONEY_PARAMS] = $this->getDynamicMoneyParams($amountCreditsAccounts, $transfer->getAmount());;
 
@@ -672,7 +626,7 @@ class Core extends Base\Core
         return $moneyParams;
     }
 
-    public function generateMoneyParamsForCustomerWalletLoadingDebitV2(Transfer\Entity $transfer, $merchantAccountBalances, $fee, $tax, $amountCreditsSplitEnabled): array
+    public function generateMoneyParamsForCustomerWalletLoadingDebitV2(Transfer\Entity $transfer, $merchantAccountBalances, $fee, $tax): array
     {
         $moneyParams = [];
 
@@ -695,11 +649,6 @@ class Core extends Base\Core
             $moneyParams[LedgerConstants::MERCHANT_PAYABLE_AMOUNT]    = strval($amount);
 
             $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
-
-            if ($amountCreditsSplitEnabled === false)
-            {
-                $moneyParams[LedgerConstants::AMOUNT_CREDITS]             = strval($amount);
-            }
 
             $moneyParams[LedgerConstants::RAZORPAY_REWARDS]           = strval($amount);
         }
