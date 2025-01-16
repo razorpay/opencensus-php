@@ -638,15 +638,30 @@ class Service extends Base\Service
         return $variant === $mode;
     }
 
+    public function isStandardCheckoutEnabledForPPMerchant($merchantId): bool
+    {
+        
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => 'PhebFAHyYd05lT'
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        return $variant === 'enable';
+    }
+
+
     public function getCustomerByMerchantType($customerIssuer) {
 
         $customerContact = $customerIssuer->getContact();
 
         $merchantForCustomerCreation = $this->merchant;
 
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::ENABLE_STANDARD_CHECKOUT_MERCHANTS_ON_PUSH_TOKEN_PROVISIONING, $this->mode);
+        $standardCheckoutEnabledPP = $this->isStandardCheckoutEnabledForPPMerchant($merchantForCustomerCreation->getId());
 
-        if(strtolower($variant) === 'on')
+        if($standardCheckoutEnabledPP)
             $merchantForCustomerCreation = $this->repo->merchant->fetchMerchantFromId(Merchant\Account::SHARED_ACCOUNT);
 
         if(strlen($customerContact) > 10 && $this->checkIsCustomCheckoutEnabledForMerchant(
@@ -668,7 +683,7 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::TOKEN_PUSH_CUSTOMER_INFO, [
-            'variant' => $variant,
+            'variant' => $standardCheckoutEnabledPP,
             'merchantForCustomerCreation' => $merchantForCustomerCreation['id'],
             'customer' => $customer['id']]);
         return $customer;
@@ -2647,9 +2662,9 @@ class Service extends Base\Service
 
         $merchantForCustomerCreation = $this->merchant;
 
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::ENABLE_STANDARD_CHECKOUT_MERCHANTS_ON_PUSH_TOKEN_PROVISIONING, $this->mode);
+        $standardCheckoutEnabledPP = $this->isStandardCheckoutEnabledForPPMerchant($merchantForCustomerCreation->getId());
 
-        if(strtolower($variant) === 'on')
+        if($standardCheckoutEnabledPP)
             $merchantForCustomerCreation = $this->repo->merchant->fetchMerchantFromId(Merchant\Account::SHARED_ACCOUNT);
 
         $customer =  (new Customer\Core)->createLocalCustomer([
@@ -2658,7 +2673,7 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::TOKEN_PUSH_CUSTOMER_INFO, [
-            'variant' => $variant,
+            'variant' => $standardCheckoutEnabledPP,
             'merchantForCustomerCreation' => $merchantForCustomerCreation['id'],
             'customer' => $customer['id']]);
         return $customer;
