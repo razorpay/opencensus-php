@@ -48,7 +48,9 @@ use RZP\Gateway\Base\Metric as BaseMetric;
 use RZP\Models\Customer\Token\Entity as TokenEntity;
 use RZP\Models\CardMandate\CardMandateNotification;
 use Illuminate\Support\Facades\Cache;
+use RZP\Models\Merchant\Methods;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Models\Order\Entity as OrderEntity;
 
 class Service extends Base\Service
 {
@@ -2777,5 +2779,56 @@ class Service extends Base\Service
         $payment->localToken()->associate($clonedToken);
 
         return $clonedToken->toArrayPublic();
+    }
+
+    public function internalRecurringMethodDetailsFetch($input)
+    {
+        $order = (new OrderEntity())->forceFill($input);
+
+        $data = [
+            "order_id" => $order->getId(),
+        ];
+
+        $this->trace->info(TraceCode::RECURRING_METHOD_DETAILS_FETCH,
+            [
+                'order_id' => $order->getId(),
+                'method' => $order->getMethod(),
+            ]
+        );
+
+        if ($order->getMethod() === Methods\Entity::UPI and $order->upiMandate !== null)
+        {
+            $upiMandate = $order->upiMandate;
+
+            $data['token'] = [
+                'frequency'  => $upiMandate->getFrequency(),
+                'max_amount' => $upiMandate->getMaxAmount(),
+                'expire_at'  => $upiMandate->getEndTime(),
+                'recurring_type' => $upiMandate->getRecurringType(),
+                'recurring_value' => $upiMandate->getRecurringValue(),
+            ];
+        }
+        else if($order->getMethod() === Methods\Entity::CARD or $order->getMethod() === Methods\Entity::EMANDATE)
+        {
+
+            $tokenEntity = $order->getTokenRegistration();
+
+            if (isset($tokenEntity)) {
+
+                $tokenData = $tokenEntity->toArrayTokenFields(null);
+
+                $data['token'] = $tokenData;
+
+            }
+        }
+
+        $this->trace->info(TraceCode::RECURRING_METHOD_DETAILS_FETCH,
+            [
+                'order_id' => $order->getId(),
+                'data' => $data,
+            ]
+        );
+
+        return $data;
     }
 }

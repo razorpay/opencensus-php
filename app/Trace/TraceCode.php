@@ -965,6 +965,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT               = 'GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT';
     const GATEWAY_VALIDATE_CUSTOMER_RESPONSE                    = 'GATEWAY_VALIDATE_CUSTOMER_RESPONSE';
 
+    const RECURRING_METHOD_DETAILS_FETCH = 'RECURRING_METHOD_DETAILS_FETCH';
     const ORDER_CREATION_INITIATED                              = 'ORDER_CREATION_INITIATED';
     const ORDER_CREATE_REQUEST                                  = 'ORDER_CREATE_REQUEST';
     const ORDER_CREATED                                         = 'ORDER_CREATED';

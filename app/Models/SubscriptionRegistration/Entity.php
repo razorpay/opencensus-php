@@ -247,6 +247,8 @@ class Entity extends Base\PublicEntity
 
         $tokenArray[self::FIRST_PAYMENT_AMOUNT] = $this->getAmount();
 
+        $tokenArray[self::FREQUENCY] = $this->getFrequency();
+
         return $tokenArray;
     }
 

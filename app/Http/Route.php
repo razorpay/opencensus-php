@@ -4771,6 +4771,7 @@ class Route
         'token_fetch_cryptogram_internal'         => ['post',        'internal/tokens/service_provider_tokens/token_transactional_data',  'TokenController@fetchCryptoGramInternal'         ],
         'token_fetch_card_internal'               => ['post',        'internal/tokens/card',                                      'TokenController@fetchTokenCardInternal'                   ],
         'token_create_optimizer_internal'         => ['post',        'internal/tokens/optimizer',                                'TokenController@createTokenOptimizerInternal' ],
+        'internal_recurring_method_details_fetch' => ['post',        'internal/tokens/recurring_method_details/fetch',           'TokenController@internalRecurringMethodDetailsFetch'],
         'token_delete'                            => ['post',        'tokens/delete',                                            'TokenController@delete'                                   ],
         'token_status'                            => ['post',        'internal/tokens/status',                                   'TokenController@updateStatus'                             ],
         'update_token_on_authorized'              => ['post',        'internal/tokens/update_on_authorized',                     'TokenController@updateTokenOnAuthorized'                  ],
@@ -5995,6 +5996,7 @@ class Route
         'token_fetch_cryptogram_internal',
         'token_fetch_card_internal',
         'token_create_optimizer_internal',
+        'internal_recurring_method_details_fetch',
         'payment_calculate_fees_with_gateway',
         'merchant_bulk_update_pricing_cron',
         'subscription_registration_nach_migration',
@@ -18131,6 +18133,7 @@ class Route
             'token_fetch_cryptogram_internal',
             'token_fetch_card_internal',
             'token_create_optimizer_internal',
+            'internal_recurring_method_details_fetch',
             'internal_token_create',
             'update_token_on_authorized',
             'internal_transactions'
