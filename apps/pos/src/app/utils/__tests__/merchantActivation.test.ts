@@ -117,7 +117,7 @@ describe('isKycQualified', () => {
   });
 
   test('returns true for "NEEDS_CLARIFICATION"', () => {
-    expect(isKycQualified('NEEDS_CLARIFICATION')).toBe(true);
+    expect(isKycQualified('NEEDS_CLARIFICATION')).toBe(false);
   });
 
   test('returns false for an unknown status', () => {

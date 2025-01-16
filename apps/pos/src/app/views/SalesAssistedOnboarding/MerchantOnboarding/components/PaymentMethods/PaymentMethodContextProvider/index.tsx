@@ -280,17 +280,26 @@ const populateBrandEmiFormWithModularConfigData = (
 
 const deriveMethodTypeFromModularConfig = (
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse,
-) => {
+): {
+  paymentMethodType: PaymentMethodFormType;
+  aquisitionModelFields: ModularOnboardingField | null;
+} => {
   const component = getComponentFromStep({
     modularConfig,
     step: 'pricing_step',
     component: 'acquisition_model_component',
   });
   if (component) {
-    const methodType = isStringValue(component?.fields[0]) && component?.fields[0].stringValue;
-    return methodType;
+    const methodType =
+      isStringValue(component?.fields[0]) &&
+      (component?.fields[0].stringValue as PaymentMethodFormType);
+    const aquisitionModelFields = component?.fields[0];
+    return {
+      paymentMethodType: methodType || PaymentMethodFormType.AGGREGATOR,
+      aquisitionModelFields,
+    };
   }
-  return PaymentMethodFormType.AGGREGATOR;
+  return { paymentMethodType: PaymentMethodFormType.AGGREGATOR, aquisitionModelFields: null };
 };
 
 const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }): JSX.Element => {
@@ -305,6 +314,9 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
 
   const [paymentMethodType, setPaymentMethodType] = useState<PaymentMethodFormType>(
     PaymentMethodFormType.AGGREGATOR,
+  );
+  const [aquisitionModelFields, setAquisitionModelFields] = useState<ModularOnboardingField | null>(
+    null,
   );
   const [methodForm, setMethodForm] = useState<PaymentMethodForm>(
     createDefaultForm(paymentMethodType),
@@ -672,11 +684,12 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
       }
       const newForm = populateFormWithModularConfigData(contextValue.methodForm, modularConfig);
 
-      const initialMethodType = deriveMethodTypeFromModularConfig(
-        modularConfig,
-      ) as PaymentMethodFormType;
+      const { paymentMethodType: initialMethodType, aquisitionModelFields } =
+        deriveMethodTypeFromModularConfig(modularConfig);
+
       if (initialMethodType) {
         setPaymentMethodType(initialMethodType);
+        setAquisitionModelFields(aquisitionModelFields);
       }
       const newNach = populateNACHFormWithModularConfigData(modularConfig);
       setNachForm(newNach);
@@ -713,6 +726,7 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
         setIsOpen={setModelIsOpen}
         setFormType={setPaymentMethodTypeHandler}
         acquisitionModelField={paymentMethodType}
+        acquisitionModelFields={aquisitionModelFields}
       />
       {shouldRenderComponent() ? <RenderComponent {...contextValue} /> : null}
     </>

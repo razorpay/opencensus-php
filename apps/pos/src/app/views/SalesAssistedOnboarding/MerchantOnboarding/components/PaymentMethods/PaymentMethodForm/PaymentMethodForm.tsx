@@ -248,7 +248,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
                           type="number"
                           size="medium"
                           label=""
-                          isDisabled={!isMDREditEnabled}
+                          isDisabled={!isMDREditEnabled || field?.isDisabled}
                           value={field.value}
                           onChange={(e) => onFieldInputChange(key, e.value)}
                           suffix={'%'}
@@ -300,7 +300,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
               marginBottom="spacing.5"
             >
               <Checkbox
-                isDisabled={isFormDisabled}
+                isDisabled={isFormDisabled || field?.isDisabled}
                 name={key}
                 size="medium"
                 helpText={field.description}
@@ -314,7 +314,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
                   <TextInput
                     size="medium"
                     label=""
-                    isDisabled={!isVASEditEnabled}
+                    isDisabled={!isVASEditEnabled || field?.isDisabled}
                     value={field.value}
                     onChange={(e) => onFieldInputChange(key, e.value)}
                     suffix="%"

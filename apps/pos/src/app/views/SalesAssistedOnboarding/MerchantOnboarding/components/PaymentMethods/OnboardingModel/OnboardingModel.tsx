@@ -18,17 +18,26 @@ import {
   L1_FUNNEL_STAGE,
   L2_FUNNEL_STAGE,
 } from 'apps/pos/src/services/analytics/types';
+import { ModularOnboardingField } from 'apps/pos/src/app/types/modular';
 
+type OnboardingModelProps = {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+  setFormType: (formType: PaymentMethodFormType) => void;
+  acquisitionModelField: PaymentMethodFormType;
+  acquisitionModelFields: ModularOnboardingField | null;
+};
 const OnboardingModel = ({
   isOpen,
   setIsOpen,
   setFormType,
   acquisitionModelField,
-}): JSX.Element => {
+  acquisitionModelFields,
+}:OnboardingModelProps): JSX.Element => {
   const [paymentMethodFormType, setPaymentMethodFormType] = useState<PaymentMethodFormType>(
     acquisitionModelField || PaymentMethodFormType.AGGREGATOR,
   );
-
+  
   const onDismissClick = () => {
     trackEvent({
       eventName: ANALYTICS_EVENTS.ICON,
@@ -88,12 +97,13 @@ const OnboardingModel = ({
     setPaymentMethodFormType(acquisitionModelField);
   }, [acquisitionModelField]);
 
+  
   return (
     <BottomSheet zIndex={99999} isOpen={isOpen} onDismiss={onDismissClick}>
       <BottomSheetHeader title="Select Onboarding Model" />
       <BottomSheetBody>
         <Box padding="spacing.4">
-          <RadioGroup onChange={onRadioButtonChange} value={paymentMethodFormType}>
+          <RadioGroup onChange={onRadioButtonChange} value={paymentMethodFormType} isDisabled={acquisitionModelFields?.isDisabled}>
             <Radio testID="aggregator-model" value={PaymentMethodFormType.AGGREGATOR}>
               Aggregator Model
             </Radio>
