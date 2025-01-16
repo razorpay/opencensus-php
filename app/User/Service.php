@@ -1546,7 +1546,7 @@ class Service extends Base\Service
 
         if (!empty($error))
         {
-            $this->cache->put($cacheKey, $data, AppConstants::USER_MERCHANT_DETAILS_CACHE_TTL);
+            $this->cache->put($cacheKey, $data, Config::get('app.cache_ttl.user_merchant_details'));
         }
 
         return [$error, $data];
@@ -3136,7 +3136,7 @@ class Service extends Base\Service
 
         if ($error === null)
         {
-            Cache::put($cacheKey, $genericUser, AppConstants::USER_CACHE_TTL);
+            Cache::put($cacheKey, $genericUser, Config::get('app.cache_ttl.user'));
         }
 
         return [$error, $genericUser];
@@ -4057,7 +4057,7 @@ class Service extends Base\Service
 
         try {
             $redirectionUrl = $this->getRedirectionUrl($details, $org, $data);
-            Cache::put($redirectionUrlCacheKey, $redirectionUrl, AppConstants::REDIRECTION_URL_BASED_ON_PERSONA_CACHE_TTL);
+            Cache::put($redirectionUrlCacheKey, $redirectionUrl, Config::get('app.cache_ttl.redirection_url_based_on_persona'));
         } catch (\Exception $e) {
             $this->trace->error(TraceCode::GET_REDIRECTION_URL_ERROR, [
                 'error' => $e->getMessage()

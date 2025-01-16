@@ -647,41 +647,6 @@ class Service extends Base\Service
         return null;
     }
 
-    private function getPreSignupDetailsCacheKey($merchantId)
-    {
-        return session()->getId().':presignup_details:' . $merchantId;
-    }
-
-    public function getPreSignupDetailsWithCache($merchantId): array
-    {
-        $cacheKey = $this->getPreSignupDetailsCacheKey($merchantId);
-
-        $data = $this->app['cache']->get($cacheKey);
-
-        if (!empty($data))
-        {
-            return $data;
-        }
-
-        try {
-            $data = $this->getPreSignupDetails($merchantId);
-
-            if (!empty($data))
-            {
-                $this->app['cache']->put($cacheKey, $data, AppConstants::PRE_SIGNUP_DETAILS_CACHE_TTL);
-            }
-        } catch (\Exception $e) {
-            $data = [
-                'contact_name' => '',
-            ];
-
-            $this->trace->error(TraceCode::PRE_SIGNUP_DETAILS_FETCH_ERROR, [
-                'exception' => $e->getMessage()
-            ]);
-        }
-
-        return $data;
-    }
     /**
      * returns the presignup data for a merchant
      * if the merchant is referred (submerchant)
@@ -860,6 +825,7 @@ class Service extends Base\Service
     {
         return session()->getId().':partner_intent:' . $merchantId;
     }
+
     public function getPartnerIntentWithCache($merchantId=null)
     {
         $merchantId = $merchantId ?? Session::get('current_merchant_id');
@@ -896,7 +862,7 @@ class Service extends Base\Service
 
         if (!empty($data))
         {
-            $this->app['cache']->put($cacheKey, $data, AppConstants::PARTNER_INTENT_CACHE_TTL);
+            $this->app['cache']->put($cacheKey, $data, Config::get('app.cache_ttl.partner_intent'));
         }
 
         return $data;
@@ -977,7 +943,7 @@ class Service extends Base\Service
 
         if (!empty($data))
         {
-            $this->app['cache']->put($cacheKey, $data, AppConstants::MERCHANT_TAGS_CACHE_TTL);
+            $this->app['cache']->put($cacheKey, $data, Config::get('app.cache_ttl.merchant_tags'));
         }
 
         return $data;
@@ -1075,7 +1041,7 @@ class Service extends Base\Service
 
         if (!empty($data))
         {
-            $this->app['cache']->put($cacheKey, $data, AppConstants::MERCHANT_FEATURES_CACHE_TTL);
+            $this->app['cache']->put($cacheKey, $data, Config::get('app.cache_ttl.merchant_features'));
         }
 
         return $data;
@@ -1243,7 +1209,7 @@ class Service extends Base\Service
 
         if (!empty($data))
         {
-            $this->app['cache']->put($cacheKey, $data, AppConstants::MERCHANT_ACTIVE_CAMPAIGNS_CACHE_TTL);
+            $this->app['cache']->put($cacheKey, $data, Config::get('app.cache_ttl.merchant_active_campaigns'));
         }
 
         return $data;

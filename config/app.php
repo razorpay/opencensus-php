@@ -309,6 +309,19 @@ return array(
         'url' => env('INSIGHTX_HOST_URL'),
         'timeout' => 5,
     ],
+  
+    'cache_ttl' => [
+        'user'  => env('USER_CACHE_TTL', 60),
+        'merchant_tags' => env('MERCHANT_TAGS_CACHE_TTL', 60),
+        'partner_intent'    => env('PARTNER_INTENT_CACHE_TTL', 60),
+        'merchant_details'  => env('MERCHANT_DETAILS_CACHE_TTL', 60),
+        'merchant_features' => env('MERCHANT_FEATURES_CACHE_TTL', 60),
+        'pre_signup_details'    => env('PRE_SIGNUP_DETAILS_CACHE_TTL', 60),
+        'user_merchant_details' => env('USER_MERCHANT_DETAILS_CACHE_TTL', 60),
+        'merchant_active_campaigns' => env('MERCHANT_ACTIVE_CAMPAIGNS_CACHE_TTL', 60),
+        'redirection_url_based_on_persona'  => env('REDIRECTION_URL_BASED_ON_PERSONA_CACHE_TTL', 60),
+    ],
+  
     'omni' => [
         'url' => env('OMNI_HOST_URL'),
         'secret' => env('OMNI_SECRET'),

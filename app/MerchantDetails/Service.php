@@ -115,7 +115,7 @@ class Service extends Base\Service
 
     public function fetchDetails($merchantId = null)
     {
-        $merchantDetails = $this->getDetailsFromAPIWithCache($merchantId);
+        $merchantDetails = $this->getDetailsFromAPI($merchantId);
 
         $merchantDetails['submitted'] = (int) ($merchantDetails['submitted'] ?? 0);
 
@@ -144,7 +144,7 @@ class Service extends Base\Service
     {
         if ($merchantDetails === null)
         {
-            $merchantDetails = $this->getDetailsFromAPIWithCache($merchantId);
+            $merchantDetails = $this->getDetailsFromAPI($merchantId);
         }
 
         $presignupDetails = [];
@@ -216,7 +216,7 @@ class Service extends Base\Service
 
         try {
             $merchantDetails = $this->getDetailsFromAPI($merchantId);
-            Cache::put($cacheKey, $merchantDetails, Constants::MERCHANT_DETAILS_CACHE_TTL);
+            Cache::put($cacheKey, $merchantDetails, Config::get('app.cache_ttl.merchant_details'));
         } catch (\Exception $e) {
             $merchantDetails = [];
             $this->trace->info(TraceCode::MERCHANT_DETAILS_FETCH_ERROR, [

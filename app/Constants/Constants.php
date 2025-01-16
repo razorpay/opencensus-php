@@ -16,23 +16,6 @@ class Constants {
 
     const DESTINATION_PHP_BE            = "dashboard_php";
 
-    const USER_CACHE_TTL    = 30;
-    const PRE_SIGNUP_DETAILS_CACHE_TTL = 30;
-    const USER_MERCHANT_DETAILS_CACHE_TTL = 30;
-
-    const MERCHANT_DETAILS_CACHE_TTL = 30;
-    const MERCHANT_TAGS_CACHE_TTL = 30;
-
-    const MERCHANT_FEATURES_CACHE_TTL = 30;
-
-    const MERCHANT_ACTIVE_CAMPAIGNS_CACHE_TTL = 30;
-
-    const PARTNER_INTENT_CACHE_TTL = 30;
-
-    const ORG_DETAILS_CACHE_TTL = 60;
-
-    const REDIRECTION_URL_BASED_ON_PERSONA_CACHE_TTL = 30;
-
     const DESTINATION   = "destination";
 
     const REDIRECT_TO   = "redirect_to";
