@@ -91,6 +91,7 @@ type Getters = {
   isRRNSearchEnabled: boolean;
   isMagicCouponEngineEnabled: boolean;
   isMoreInternationalMethodsEnabledForVAS: boolean;
+  isCreditSelfServeDisabled: boolean;
   isPayerNameEnabled: boolean;
   isPgLegderReverseShadowEnabled: boolean;
 };

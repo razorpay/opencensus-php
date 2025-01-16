@@ -73,6 +73,12 @@ function ReserveBalance({
     );
   }
 
+  const showReserveBalanceSelfServeButton =
+    !user.isOrgAxis &&
+    user.isReserveBalanceSelfServeEnabled &&
+    [rolesList.OWNER, rolesList.ADMIN].includes(user.role) &&
+    !user.isCreditSelfServeDisabled;
+
   return (
     <Card>
       <CardHeader>
@@ -114,34 +120,32 @@ function ReserveBalance({
             </>
           )}
 
-          {!user.isOrgAxis &&
-            user.isReserveBalanceSelfServeEnabled &&
-            [rolesList.OWNER, rolesList.ADMIN].includes(user.role) && (
-              <Box display="flex" gap="spacing.3" alignItems="center">
-                <WithdrawButton
-                  title="Reserve Balance"
-                  credits={balance}
-                  type="reserve_balance"
-                  submitHandler={fetchReserveBalanceAfterWithdrawal}
-                />
-                <div>
-                  <Button
-                    variant="secondary"
-                    isDisabled={mode !== 'live'}
-                    onClick={() => handlAddFunds('reserve')}
-                  >
-                    Add Funds
-                  </Button>
-                  {mode !== 'live' ? (
-                    <Popover align="bottom" theme="dark">
-                      <PopoverBody>
-                        You cannot add funds in test mode. Switch to live mode to add funds.
-                      </PopoverBody>
-                    </Popover>
-                  ) : null}
-                </div>
-              </Box>
-            )}
+          {showReserveBalanceSelfServeButton ? (
+            <Box display="flex" gap="spacing.3" alignItems="center">
+              <WithdrawButton
+                title="Reserve Balance"
+                credits={balance}
+                type="reserve_balance"
+                submitHandler={fetchReserveBalanceAfterWithdrawal}
+              />
+              <div>
+                <Button
+                  variant="secondary"
+                  isDisabled={mode !== 'live'}
+                  onClick={() => handlAddFunds('reserve')}
+                >
+                  Add Funds
+                </Button>
+                {mode !== 'live' ? (
+                  <Popover align="bottom" theme="dark">
+                    <PopoverBody>
+                      You cannot add funds in test mode. Switch to live mode to add funds.
+                    </PopoverBody>
+                  </Popover>
+                ) : null}
+              </div>
+            </Box>
+          ) : null}
         </Box>
         {ticketGenerated ||
         (ticketStatusData.ticket_status === 'Processing' &&

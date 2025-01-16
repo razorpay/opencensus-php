@@ -33,9 +33,11 @@ function WithdrawButton({ title, type, credits, submitHandler }: WithdrawButtonP
   } = useSplitzService();
 
   const isPrefundWithdrawalEnabled = isExperimentEnabled(pre_fund_withdrawal);
+
+  const showWithdrawButton = isPrefundWithdrawalEnabled && user.isPgLegderReverseShadowEnabled;
   return (
     <>
-      {isPrefundWithdrawalEnabled && user.isPgLegderReverseShadowEnabled ? (
+      {showWithdrawButton ? (
         <Box
           width={{
             base: '100%',

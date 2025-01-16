@@ -2109,6 +2109,10 @@ export default class User {
     return this.isOrgFeatureEnabled('display_upi_payer_name');
   }
 
+  get isCreditSelfServeDisabled() {
+    return this.isFeatureEnabled('block_credit_self_serve');
+  }
+
   get isPgLegderReverseShadowEnabled() {
     return this.isFeatureEnabled('pg_ledger_reverse_shadow');
   }

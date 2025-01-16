@@ -146,6 +146,11 @@ function CreditDetails({
     analyticsTrack(clickHistoryCreditsGA(title));
   };
 
+  const showSelfServeButtons =
+    isSelfServeEnabled(type) &&
+    [rolesList.OWNER, rolesList.ADMIN].includes(user.role) &&
+    !user.isCreditSelfServeDisabled;
+
   return (
     <Card>
       <CardHeader>
@@ -177,7 +182,7 @@ function CreditDetails({
             value={i18nifyConvertToMajorUnit(totalCredits, user.merchant.currency)}
             currency={user.merchant.currency}
           />
-          {isSelfServeEnabled(type) && [rolesList.OWNER, rolesList.ADMIN].includes(user.role) ? (
+          {showSelfServeButtons ? (
             <Box display="flex" flexWrap="wrap" gap="spacing.3">
               <WithdrawButton
                 title={title}
