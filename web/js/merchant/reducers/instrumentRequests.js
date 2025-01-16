@@ -1292,8 +1292,6 @@ export default function instrumentRequestsReducer(state = initialState, action) 
           lodashset(stateClone, `${path}.fade_comment`, s.fade_comment);
         }
       });
-      lodashset(stateClone, 'intermediateInstrument', null);
-      lodashset(stateClone, 'leafInstrument', null);
       lodashset(stateClone, 'loading', false);
       return stateClone;
     }

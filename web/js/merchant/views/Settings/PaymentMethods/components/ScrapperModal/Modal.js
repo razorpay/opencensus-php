@@ -7,7 +7,7 @@ import TermsAndCondition from 'merchant/views/Settings/PaymentMethods/components
 import { WEBSITE_FIELDS } from 'merchant/views/Settings/PaymentMethods/constants';
 import { showNotification as showNotificationReducer } from 'merchant_common/reducers/notifications';
 import { connect } from 'react-redux';
-import { getUnverifiedFields, getVerifiedNames, updatedWebsiteDetailsValues } from './utils';
+import { getAllFields, getVerifiedNames, updatedWebsiteDetailsValues } from './utils';
 import WebsiteDetailsModal from './websiteDetail';
 import { bindActionCreators, compose } from 'redux';
 
@@ -128,12 +128,12 @@ const ScrapperModal = ({ isOpen, handleModal, showNotification, props }) => {
   };
   const handleSubmitRequest = () => {
     const verifiedFields = getVerifiedNames(collectInfo);
-    const unverifiedFields = getUnverifiedFields(collectInfo);
+    const allFields = getAllFields(collectInfo);
     setApiLoading(true);
     const payload = {
       instruments: [props.instrument?.path],
       ...(verifiedFields?.length && { verified_fields: verifiedFields }),
-      ...unverifiedFields,
+      ...allFields,
     };
 
     saveMerchantDetails(payload);

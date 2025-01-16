@@ -143,13 +143,11 @@ export const getVerifiedNames = (data) => {
   return data.filter((item) => item.verification_status === true).map((item) => item.name);
 };
 
-export const getUnverifiedFields = (data) => {
-  return data
-    .filter((item) => item.verification_status !== true)
-    .reduce((result, item) => {
-      if (item.value) {
-        result[item.name] = item.value;
-      }
-      return result;
-    }, {});
+export const getAllFields = (data) => {
+  return data.reduce((result, item) => {
+    if (item.value) {
+      result[item.name] = item.value;
+    }
+    return result;
+  }, {});
 };

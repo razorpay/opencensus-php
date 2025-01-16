@@ -21,6 +21,8 @@ import {
   cancelMerchantInstrumentRequest,
   reinitiateMerchantInstrumentRequest,
   fetchMerchantInstruments,
+  clearIntermediateInstrument,
+  clearLeafInstrument,
   fetchRequestedInstruments,
   getIirDiscrepancies,
   setInstrument,
@@ -145,6 +147,8 @@ class LeafListItem extends React.Component {
           message: `${instrument.name} requested successfully`,
         });
         this.props.history.replace('/');
+        this.props.clearIntermediateInstrument();
+        this.props.clearLeafInstrument();
         setTimeout(() => {
           this.props.history.replace('/payment-methods');
         }, 10);
@@ -288,6 +292,8 @@ class LeafListItem extends React.Component {
             })
             .then(() => {
               this.props.history.replace('/');
+              this.props.clearIntermediateInstrument();
+              this.props.clearLeafInstrument();
               return setTimeout(() => {
                 this.props.history.replace('/payment-methods');
               }, 10);
@@ -672,6 +678,8 @@ const mapDispatchToProps = (dispatch) => {
       openModal,
       closeModal,
       fetchMerchantInstruments,
+      clearIntermediateInstrument,
+      clearLeafInstrument,
       fetchRequestedInstruments,
       getIirDiscrepancies,
       setInstrument,
