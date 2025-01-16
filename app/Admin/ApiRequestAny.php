@@ -245,6 +245,10 @@ class ApiRequestAny
                             $headers[Headers::ADMIN_USER_PERMISSION] = Request::header(Headers::ADMIN_USER_PERMISSION);
                         }
 
+        if (empty( Request::header('x-case-type')) == false ){
+            $headers[Headers::X_CASE_TYPE] = Request::header('x-case-type');
+        };
+
         // === Request options
 
         $this->options = [
