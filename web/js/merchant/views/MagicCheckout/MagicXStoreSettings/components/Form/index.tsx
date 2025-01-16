@@ -15,7 +15,10 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import Input from 'common/new-ui/Input';
-import { updateSopcMetafields } from 'merchant/reducers/magicCheckout/magicSettings/actions';
+import {
+  updateMagicSettings,
+  updateSopcMetafields,
+} from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import magicXReducer, { INITIAL_STATE } from 'merchant/reducers/magicCheckout/magicXStoreSettings';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -23,8 +26,12 @@ import { postMagicXStoreSettings } from './api';
 import { transformFormtoServerData, transformServerDataToForm, validateForm } from './helpers';
 import { ColorPickerWrapper } from './styled';
 
-const Form = ({ settings, showNotification, updateSopcMetafields }) => {
+const Form = ({ settings, showNotification, updateSopcMetafields, updateMagicSettings }) => {
   const [formState, dispatch] = useReducer(magicXReducer, INITIAL_STATE);
+  const { one_cc_international_shipping, platform, shop_id } = settings;
+  const [internationalShippingEnabled, setInternationalShippingEnabled] = useState(
+    one_cc_international_shipping,
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -64,6 +71,10 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
     });
   };
 
+  const handleInternationalShippingChange = () => {
+    setInternationalShippingEnabled((isShippingEnabled) => !isShippingEnabled);
+  };
+
   const getShopifyDomain = () =>
     settings.shop_id?.includes('myshopify.com')
       ? settings.shop_id
@@ -78,9 +89,23 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
     }
 
     const transformedData = transformFormtoServerData(formState);
+    const promises = [postMagicXStoreSettings(transformedData)];
+
+    if (internationalShippingEnabled !== one_cc_international_shipping) {
+      promises.push(
+        updateMagicSettings(
+          {
+            shop_id: shop_id,
+            platform,
+            one_cc_international_shipping: internationalShippingEnabled,
+          },
+          false,
+        ),
+      );
+    }
 
     setIsSaving(true);
-    postMagicXStoreSettings(transformedData)
+    Promise.all(promises)
       .then(() => {
         updateSopcMetafields(transformedData);
         showNotification({ type: 'success', message: 'Settings saved successfully' });
@@ -220,6 +245,27 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
         gap="spacing.7"
         flexDirection="column"
       >
+        <Box width="100%" display="flex" paddingY="spacing.4">
+          <Box width="50%">International Shipping</Box>
+          <Box>
+            <Switch
+              onChange={handleInternationalShippingChange}
+              isChecked={internationalShippingEnabled}
+              name="internationalShipping"
+              accessibilityLabel="International Shipping"
+            />
+          </Box>
+        </Box>
+      </Box>
+      <Divider />
+
+      <Box
+        display="flex"
+        maxWidth="500px"
+        paddingY="spacing.7"
+        gap="spacing.7"
+        flexDirection="column"
+      >
         <Box width="100%" display="flex" alignItems="center">
           <Box width="50%">Cart Selector</Box>
           <Box width="50%">
@@ -274,6 +320,7 @@ const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
       showNotification,
+      updateMagicSettings,
       updateSopcMetafields,
     },
     dispatch,
