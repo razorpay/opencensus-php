@@ -21,7 +21,7 @@ const MerchantOverviewComponent: React.FC<IMerchantOverview & CommonWidgetProps>
   const settlementFeatures =
     props?.data?.hero_card_data?.settlement?.settlement_config_details?.features;
   const isCurrentBalance =
-    typeof props?.data?.hero_card_data?.settlement?.current_balance === 'number';
+    typeof props?.data?.hero_card_data?.settlement?.current_balance === 'string';
   const blocked = settlementFeatures ? isBlocked(settlementFeatures) : false;
 
   const splitz = useSplitzService();
