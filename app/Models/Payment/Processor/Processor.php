@@ -14172,9 +14172,7 @@ public function checkFeeBearerRoutingOnNbPlusRearch(Merchant\Entity $merchant): 
         'variant'     => $variant,
         'mode'        => $this->mode,
         'feature'     => $featureFlag,
-        'feeee'       => $fee,
-        'lalalala101010alala1q1010'=> $response,
-        '$variant === variant_on' => $variant === 'variant_on',
+        'fee'       => $fee,
     ]);
 
     // Return true if the feature variant is 'on', otherwise return false

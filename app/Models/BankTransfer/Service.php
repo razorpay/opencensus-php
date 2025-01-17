@@ -223,6 +223,16 @@ class Service extends Base\Service
 
 
         }
+        
+        if ($provider === Provider:: RBL)
+        {
+            $this->trace->error(
+                TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR, [
+                    'Request' => $input
+                ]);
+
+            throw new Exception\BadRequestValidationFailureException(TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR);  
+        }
 
         if ($input['gateway'] === Gateway::YESBANK || strpos($input['input']['payee_ifsc'], "YESB") === 0 )
         {
@@ -231,12 +241,7 @@ class Service extends Base\Service
                     'Request' => $input
                 ]);
 
-            return array(
-                "error" => array(
-                    "code" => TraceCode::YESBANK_GATEWAY_UNEXPECTED_PAYMENT_ERROR,
-                    "description" => "Payment Method not allowed for the gateway",
-                )
-            );
+            throw new Exception\BadRequestValidationFailureException(TraceCode::YESBANK_GATEWAY_UNEXPECTED_PAYMENT_ERROR);
         }
 
         $response = $this->processValidationRequest($input, $provider);

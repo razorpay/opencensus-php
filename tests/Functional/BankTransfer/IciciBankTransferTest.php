@@ -187,6 +187,9 @@ class IciciBankTransferTest extends TestCase
 
     public function testBankTransferIciciMigration()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $accountNumber = $this->getIciciVaBankAccount();
 
         $terminalAttributes = [ 'id' =>'GENERICBANKRBL', 'gateway' => Gateway::BT_RBL, 'gateway_merchant_id' => '0001046' ];

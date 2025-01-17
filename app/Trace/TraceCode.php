@@ -5609,6 +5609,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const GATEWAY_REFUND_ENTITY_FETCH_ERROR                     = 'GATEWAY_REFUND_ENTITY_FETCH_ERROR';
 
+    const RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR                 = 'RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR';
+
     const FTA_FAILURE_REPORT_INITIATED                          = 'FTA_FAILURE_REPORT_INITIATED';
     const FTA_FAILURE_REPORT_FILE_CREATED                       = 'FTA_FAILURE_REPORT_FILE_CREATED';
 

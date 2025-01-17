@@ -250,8 +250,27 @@ class BankTransferController extends Controller
         }
         catch (BadRequestValidationFailureException $e)
         {
-            $this->trace->traceException($e);
 
+
+            if (TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR === $e ->getMessage()){
+                return array(
+                    "error" => array(
+                        "code" => TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR,
+                        "description" => "Payment Method not allowed for the gateway",
+                    )
+                );
+            }
+            
+            if (TraceCode::YESBANK_GATEWAY_UNEXPECTED_PAYMENT_ERROR === $e ->getMessage()){
+                return array(
+                    "error" => array(
+                        "code" => TraceCode::YESBANK_GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+                        "description" => "Payment Method not allowed for the gateway",
+                    )
+                );
+            }
+
+            $this->trace->traceException($e);
             return ApiResponse::json(['Status' => 'Failure.'], 400);
         }
         catch (\Throwable $e)
