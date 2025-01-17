@@ -18629,6 +18629,7 @@ class Route
 
         'razorassist' => [
             'internal_create_risk_action',
+            'workflow_action_get_multiple',
             'merchant_fetch_internal_users',
             'email_user_status_for_email_update',
             'merchant_edit_email_self_serve',
