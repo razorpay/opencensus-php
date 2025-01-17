@@ -50,25 +50,12 @@ const AddedBrandInfo = ({
           </Box>
         ))}
       </Box>
-
-      <Button
-        icon={PlusIcon}
-        iconPosition="left"
-        isFullWidth
-        variant="tertiary"
-        color="primary"
-        size="medium"
-        onClick={addBrandHandler}
-        isLoading={isUpdateModularLoading}
-        isDisabled={isFormDisabled}
-      >
-        Add New Brand
-      </Button>
       <Box
         backgroundColor="surface.background.gray.intense"
         padding="spacing.5"
         display="flex"
         position="fixed"
+        gap={'spacing.4'}
         left="0px"
         right="0px"
         bottom="0px"
@@ -77,6 +64,19 @@ const AddedBrandInfo = ({
         width="100%"
         zIndex={1}
       >
+        <Button
+          icon={PlusIcon}
+          iconPosition="left"
+          isFullWidth
+          variant="tertiary"
+          color="primary"
+          size="medium"
+          onClick={addBrandHandler}
+          isLoading={isUpdateModularLoading}
+          isDisabled={isFormDisabled}
+        >
+          Add New Brand
+        </Button>
         <Button onClick={submitHandler} variant="primary" isFullWidth isDisabled={false}>
           Save All
         </Button>

@@ -407,6 +407,7 @@ export const getSelectedStoreName = (storeTypeField?: ModularOnboardingField): s
 
 export const updateValuesForUncheckedRates = (formValues: Record<string, unknown>) => {
   const formValuesCopy = { ...formValues };
+  // this for loop handles the case where the user has unchecked the checkbox for a rate field eg: if vas_cc_emi_rate_enabled_field is unchecked, then vas_cc_emi_rate_field should be set to null
   for (const key in formValuesCopy) {
     if (key.endsWith('_enabled_field')) {
       const baseKey = key.replace('_enabled_field', '_field');
@@ -414,6 +415,15 @@ export const updateValuesForUncheckedRates = (formValues: Record<string, unknown
         formValuesCopy[baseKey] = null;
       }
     }
+  }
+  // this part handles unchecking for brand emi and emi plus rate fields
+  if (formValuesCopy[PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD] === false) {
+    formValuesCopy[PaymentMethodsFieldKeyNames.BRAND_EMI_CC_RATE_FIELD] = null;
+    formValuesCopy[PaymentMethodsFieldKeyNames.BRAND_EMI_DC_RATE_FIELD] = null;
+  }
+  if (formValuesCopy[PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD] === false) {
+    formValuesCopy[PaymentMethodsFieldKeyNames.EMI_PLUS_CC_RATE_FIELD] = null;
+    formValuesCopy[PaymentMethodsFieldKeyNames.EMI_PLUS_DC_RATE_FIELD] = null;
   }
   return formValuesCopy;
 };

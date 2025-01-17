@@ -13,6 +13,8 @@ interface PaymentMethodFormValue {
   isHidden: boolean;
   description: string;
   title: string;
+  shouldShowCheckbox?: boolean;
+  shouldShowValueInput?: boolean;
 }
 
 export interface PaymentMethodFormStringValue extends PaymentMethodFormValue {
@@ -44,9 +46,11 @@ export const enum PaymentMethodsFieldKeyNames {
   CUSTOM_RATES_ENABLED_FIELD = 'custom_rates_enabled_field',
   MDR_VAS_PRICING_FIELD = 'mdr_vas_pricing_field',
   CUSTOM_PRICING_PROOF = 'custom_pricing_proof',
-  BRAND_EMI_RATE_FIELD = 'brand_emi_rate_field',
+  BRAND_EMI_CC_RATE_FIELD = 'brand_emi_cc_rate_field',
+  BRAND_EMI_DC_RATE_FIELD = 'brand_emi_dc_rate_field',
+  EMI_PLUS_CC_RATE_FIELD = 'emi_plus_cc_rate_field',
+  EMI_PLUS_DC_RATE_FIELD = 'emi_plus_dc_rate_field',
   BRAND_EMI_RATE_ENABLED_FIELD = 'brand_emi_rate_enabled_field',
-  EMI_PLUS_RATE_FIELD = 'emi_plus_rate_field',
   EMI_PLUS_RATE_ENABLED_FIELD = 'emi_plus_rate_enabled_field',
 }
 
@@ -59,8 +63,12 @@ export type DirectModelForm = {
   [PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD]: PaymentMethodFormStringValue;
   [PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD]: PaymentMethodFormStringValue;
   [PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD]: PaymentMethodFormDocumentValue;
-  [PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_FIELD]: PaymentMethodFormStringValue;
-  [PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_FIELD]: PaymentMethodFormStringValue;
+  [PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD]: PaymentMethodFormStringValue;
+  [PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD]: PaymentMethodFormStringValue;
+  [PaymentMethodsFieldKeyNames.BRAND_EMI_CC_RATE_FIELD]: PaymentMethodFormStringValue;
+  [PaymentMethodsFieldKeyNames.BRAND_EMI_DC_RATE_FIELD]: PaymentMethodFormStringValue;
+  [PaymentMethodsFieldKeyNames.EMI_PLUS_CC_RATE_FIELD]: PaymentMethodFormStringValue;
+  [PaymentMethodsFieldKeyNames.EMI_PLUS_DC_RATE_FIELD]: PaymentMethodFormStringValue;
 };
 
 export type AggregatorModelForm = DirectModelForm & {

@@ -78,13 +78,31 @@ const createDefaultForm = (type: PaymentMethodFormType): PaymentMethodForm => {
     isHidden: false,
     description: '',
     title: '',
+    shouldShowCheckbox: true,
+    shouldShowValueInput: true,
   };
 
   let tempForm: DirectModelForm | AggregatorModelForm = {
     [PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD]: { ...defaultFormValue },
     [PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD]: { ...defaultFormValue },
-    [PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_FIELD]: { ...defaultFormValue },
-    [PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_FIELD]: { ...defaultFormValue },
+    [PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD]: { ...defaultFormValue },
+    [PaymentMethodsFieldKeyNames.BRAND_EMI_CC_RATE_FIELD]: {
+      ...defaultFormValue,
+      shouldShowCheckbox: false,
+    },
+    [PaymentMethodsFieldKeyNames.BRAND_EMI_DC_RATE_FIELD]: {
+      ...defaultFormValue,
+      shouldShowCheckbox: false,
+    },
+    [PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD]: { ...defaultFormValue },
+    [PaymentMethodsFieldKeyNames.EMI_PLUS_CC_RATE_FIELD]: {
+      ...defaultFormValue,
+      shouldShowCheckbox: false,
+    },
+    [PaymentMethodsFieldKeyNames.EMI_PLUS_DC_RATE_FIELD]: {
+      ...defaultFormValue,
+      shouldShowCheckbox: false,
+    },
     [PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD]: {
       checked: true,
       value: [],
@@ -94,6 +112,8 @@ const createDefaultForm = (type: PaymentMethodFormType): PaymentMethodForm => {
       isHidden: false,
       description: '',
       title: '',
+      shouldShowCheckbox: false,
+      shouldShowValueInput: false,
     },
   };
 
@@ -157,6 +177,24 @@ const getFieldCheckedStatus = ({ field, defaultValues }: GetFieldValueProps) => 
   return value;
 };
 
+const shouldShowCheckbox = (field: ModularOnboardingField) => {
+  const hideCheckboxFields = [
+    PaymentMethodsFieldKeyNames.BRAND_EMI_CC_RATE_FIELD,
+    PaymentMethodsFieldKeyNames.BRAND_EMI_DC_RATE_FIELD,
+    PaymentMethodsFieldKeyNames.EMI_PLUS_CC_RATE_FIELD,
+    PaymentMethodsFieldKeyNames.EMI_PLUS_DC_RATE_FIELD,
+  ];
+  return !hideCheckboxFields.includes(field.name as PaymentMethodsFieldKeyNames);
+};
+
+const shouldShowValueInput = (field: ModularOnboardingField) => {
+  const hideValueBoxFields = [
+    PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD,
+    PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD,
+  ];
+  return !hideValueBoxFields.includes(field.name as PaymentMethodsFieldKeyNames);
+};
+
 const populateFormWithModularConfigData = (
   form: PaymentMethodForm,
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse,
@@ -192,6 +230,10 @@ const populateFormWithModularConfigData = (
         }
       }
     }
+    const getFieldTitle = (key: string) => {
+      if (key === PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD) return 'Brand EMI';
+      if (key === PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD) return 'EMI Plus';
+    };
     fields?.forEach((f) => {
       if (f && f.name && f.meta) {
         formCopy.form[f.name] = {
@@ -202,7 +244,9 @@ const populateFormWithModularConfigData = (
           isDisabled: f.isDisabled,
           isHidden: f.isHidden,
           description: f.meta.description,
-          title: f.meta.title,
+          title: f.meta.title || getFieldTitle(f.name),
+          shouldShowCheckbox: shouldShowCheckbox(f),
+          shouldShowValueInput: shouldShowValueInput(f),
         };
       }
       if (formCopy.form[f.name].value === 'false') formCopy.form[f.name].value = false;
@@ -486,11 +530,17 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
       newForm[PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD].checked = true;
       newForm[PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD].value = true;
     }
-    if (key === PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_FIELD) {
+    if (
+      key === PaymentMethodsFieldKeyNames.BRAND_EMI_CC_RATE_FIELD ||
+      key === PaymentMethodsFieldKeyNames.BRAND_EMI_DC_RATE_FIELD
+    ) {
       newForm[PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD].checked = true;
       newForm[PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD].value = true;
     }
-    if (key === PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_FIELD) {
+    if (
+      key === PaymentMethodsFieldKeyNames.EMI_PLUS_CC_RATE_FIELD ||
+      key === PaymentMethodsFieldKeyNames.EMI_PLUS_DC_RATE_FIELD
+    ) {
       newForm[PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD].checked = true;
       newForm[PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD].value = true;
     }
@@ -509,8 +559,10 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
     if (
       key === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD ||
       key === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD ||
-      key === PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_FIELD ||
-      key === PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_FIELD
+      key === PaymentMethodsFieldKeyNames.BRAND_EMI_CC_RATE_FIELD ||
+      key === PaymentMethodsFieldKeyNames.BRAND_EMI_DC_RATE_FIELD ||
+      key === PaymentMethodsFieldKeyNames.EMI_PLUS_CC_RATE_FIELD ||
+      key === PaymentMethodsFieldKeyNames.EMI_PLUS_DC_RATE_FIELD
     ) {
       const updatedForm = autoCheckVasRateEnabledFields(key, newForm);
       setMethodFormValue('form', updatedForm);
