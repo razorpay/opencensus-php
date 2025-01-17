@@ -338,6 +338,9 @@ class Job implements ShouldQueue
                 catch (\Throwable $e)
                 {
                     $this->trace->traceException($e);
+                } finally
+                {
+                    $this->beforeJobKillCleanUp();
                 }
 
                 $this->trace->error(TraceCode::QUEUE_JOB_TIMEOUT, [
