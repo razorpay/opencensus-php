@@ -185,9 +185,10 @@ export function deactivateStorefront(id) {
   });
 }
 
-export function activatePaymentPage(id, data) {
+export function activatePaymentPage(id, data, isStorefront) {
+  const url = `${isStorefront ? 'stores' : 'payment_pages'}/${id}/activate`;
   return merchantFetch({
-    url: `payment_pages/${id}/activate`,
+    url,
     method: 'patch',
     data,
     headers: {

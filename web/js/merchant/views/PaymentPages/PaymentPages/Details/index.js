@@ -421,7 +421,8 @@ class Details extends React.Component {
           isCompleted={isCompleted}
           handleClose={this.props.closeModal}
           handleClick={(data) => {
-            return activatePaymentPage(this.state.paymentPageEntity.id, data)
+            const { isStorefrontPage } = this.props;
+            return activatePaymentPage(this.state.paymentPageEntity.id, data, isStorefrontPage)
               .then((resp) => {
                 if (resp.data) {
                   const newPaymentPageEntity = {

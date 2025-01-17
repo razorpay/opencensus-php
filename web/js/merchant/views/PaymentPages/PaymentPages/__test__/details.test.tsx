@@ -103,6 +103,32 @@ describe('Payment Pages -> Details page (storefront)', () => {
       expect(within(panelBody).getByText('Inactive')).toBeInTheDocument();
     }
   });
+
+  test('activation of expired storefront', async () => {
+    const { container } = renderApp();
+    let panelBody: HTMLElement | null = null;
+    let confirmButton;
+    await waitForLoadingToFinish();
+    await waitFor(() => {
+      expect(screen.getByText('Page URL')).toBeInTheDocument();
+      expect(screen.getByText('Page Status')).toBeInTheDocument();
+      expect(screen.getByText('Created by')).toBeInTheDocument();
+    });
+    const activateButton = screen.getByRole('button', { name: 'Activate' });
+    await userEvent.click(activateButton);
+    expect(screen.getByText('Activate Storefront?')).toBeInTheDocument();
+    confirmButton = screen.getByText('Yes, activate');
+    await userEvent.click(confirmButton);
+    await waitFor(() => {
+      expect(screen.getByText(/is now active/i)).toBeInTheDocument();
+    });
+    panelBody = container.querySelector('.panel-body');
+    expect(panelBody).toBeInTheDocument();
+    if (panelBody) {
+      expect(within(panelBody).getByText('Active')).toBeInTheDocument();
+    }
+  });
+
   test('duplicate page flow - storefront', async () => {
     const { history, container } = renderApp();
 
