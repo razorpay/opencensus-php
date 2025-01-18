@@ -85,6 +85,7 @@ describe('PaymentRefund', () => {
     });
 
     test('should render open disputes', () => {
+      mockAbExperiments.payments_extra_refund_details = { variables: { result: 'on' } };
       const { rerender } = render(
         <App
           payment={{
@@ -98,7 +99,6 @@ describe('PaymentRefund', () => {
           initialState: {
             session: {
               user: {
-                isPaymentsExtraRefundDetailsEnabled: true,
                 isRefundAllowed: true,
                 isOrgAllowedFunctionality: () => false,
               },
@@ -209,12 +209,12 @@ describe('PaymentRefund', () => {
     });
 
     describe('When refund is allowed', () => {
+      mockAbExperiments.payments_extra_refund_details = { variables: { result: 'on' } };
       const renderApp = (ui) => {
         render(ui, {
           initialState: {
             session: {
               user: {
-                isPaymentsExtraRefundDetailsEnabled: true,
                 isRefundAllowed: true,
                 isOrgAllowedFunctionality: () => true,
               },

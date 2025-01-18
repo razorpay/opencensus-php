@@ -32,11 +32,11 @@ const initProps = {
 };
 
 const renderApp = (props, state) => {
+  mockAbExperiments.payments_extra_refund_details = { variables: { result: 'on' } };
   return render(<RefundDetails {...initProps} {...props} />, {
     initialState: state ?? {
       session: {
         user: {
-          isPaymentsExtraRefundDetailsEnabled: true,
           isRefundAllowed: true,
           isOrgAllowedFunctionality: () => true,
         },

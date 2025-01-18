@@ -12,7 +12,6 @@ getStateSpy.mockImplementation(() => {
   clonedStore.session.user = {
     ...clonedStore.session.user,
     isRefundAllowed: true,
-    isPaymentsExtraRefundDetailsEnabled: true,
     isOrgAllowedFunctionality: jest.fn(() => true),
   };
   return clonedStore;
@@ -53,5 +52,6 @@ export const defaultProps = {
 };
 
 export const App = (props) => {
+  mockAbExperiments.payments_extra_refund_details = { variables: { result: 'on' } };
   return <PaymentRefund {...defaultProps} {...props} />;
 };

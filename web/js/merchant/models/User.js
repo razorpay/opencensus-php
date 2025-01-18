@@ -679,10 +679,6 @@ export default class User {
     return isEnabled;
   }
 
-  get isStoresEnabled() {
-    return this.getExpStatus('stores');
-  }
-
   get isQRCodeProductEnabled() {
     return this.isFeatureEnabled('qr_codes');
   }
@@ -737,20 +733,8 @@ export default class User {
     return this.getExpStatus('pp_magic_setting');
   }
 
-  get isPaymentPageOnboardingRedirectionEnabled() {
-    return this.getExpStatus('pp_onboarding_redirection_exp');
-  }
-
-  get isPaymentPageCustomDomainShowRemoveEnabled() {
-    return this.getExpStatus('pp_custom_domain_show_remove');
-  }
-
   get isPaymentPageStorefrontEnabled() {
     return this.isOrgRZP && getSplitzExperimentVariant('pp_ecommerce')?.variables?.result === 'on';
-  }
-
-  get isInvoiceCreateFlowUXOptimizationEnabled() {
-    return this.getExpStatus('inv_create_flow_ux');
   }
 
   get isRTBProgramEnabled() {
@@ -1320,10 +1304,6 @@ export default class User {
 
   get missedOrderPLBanner() {
     return this.getExpStatus('missed_order_pl_banner');
-  }
-
-  get isPaymentsExtraRefundDetailsEnabled() {
-    return this.getExpStatus('payments_extra_refund_details');
   }
 
   get isEmandateNonzeroAmountEnabled() {

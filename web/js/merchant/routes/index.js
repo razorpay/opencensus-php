@@ -14,6 +14,7 @@ import {
 } from 'merchant_common/routes';
 
 import lazy from './LazyLoader';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const InstantSettlementDetails = lazy(() =>
   import(
@@ -633,12 +634,14 @@ const entityModalsMap = {
     component: StoresProductsCreate,
     additionalCondition: (user, extraConfig) =>
       user.isAllowedView('stores') &&
-      user.isStoresEnabled &&
+      isExperimentEnabled(extraConfig?.splitz?.abExperiments.stores) &&
       !extraConfig?.i18?.isConfigTagEnabled('stores.stores'),
   },
   '/stores/products/:product_id': {
     component: StoresProductsCreate,
-    additionalCondition: (user) => user.isAllowedView('stores') && user.isStoresEnabled,
+    additionalCondition: (user, extraConfig) =>
+      user.isAllowedView('stores') &&
+      isExperimentEnabled(extraConfig?.splitz?.abExperiments.stores),
   },
   '/partners/submerchants/:submerchantId(acc_.+)/activation': {
     component: SubmerchantActivationContainer,

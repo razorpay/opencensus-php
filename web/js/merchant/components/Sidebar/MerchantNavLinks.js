@@ -255,7 +255,7 @@ function MerchantNavLinks(props) {
           to={routes.stores}
           additionalCondition={(currentUser) =>
             currentUser.isAllowedView('stores') &&
-            currentUser.isStoresEnabled &&
+            isExperimentEnabled(abExperiments?.stores) &&
             !isConfigTagEnabled('stores.stores')
           }
           isNew={true}

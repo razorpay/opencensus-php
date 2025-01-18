@@ -29,6 +29,8 @@ import i18nHeroMain from 'assets/payment_pages/i18n_hero_main.svg';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 import { NOT_SKIP } from 'merchant/constants/payments';
+import { isExperimentEnabled } from 'common/splitz/utils';
+import { withSplitzService } from 'common/splitz';
 
 export const LANDING_PAGE_DESC = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]:
@@ -57,6 +59,10 @@ export const HERO_IMAGE_MAP = {
 })
 class PaymentPagesOnBoarding extends React.Component {
   getNextBtnProp = (sliderProps) => () => {
+    const { abExperiments } = this.props.splitz || {
+      abExperiments: {},
+    };
+
     return (
       <FeatureEnableSliderButton
         isLocalEnabler
@@ -67,7 +73,7 @@ class PaymentPagesOnBoarding extends React.Component {
         additionalTrackData={{
           is_creation_redirection_enabled:
             // eslint-disable-next-line react/no-this-in-sfc
-            this.props.user.isPaymentPageOnboardingRedirectionEnabled,
+            isExperimentEnabled(abExperiments?.pp_onboarding_redirection),
         }}
       />
     );
@@ -79,6 +85,9 @@ class PaymentPagesOnBoarding extends React.Component {
 
   closeOnboarding = (val = '') => {
     const { user, paymentPageProductOnBoarding, closeOnboarding, history } = this.props;
+    const { abExperiments } = this.props.splitz || {
+      abExperiments: {},
+    };
 
     if (user.isPaymentPagesEnabled && !paymentPageProductOnBoarding.isTour) {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.PP, false);
@@ -95,7 +104,7 @@ class PaymentPagesOnBoarding extends React.Component {
       For an experiment being run 50% where on the click of skip/get started, rather
       than landing on the list view, the user is redirected to the create flow
     */
-    if (user.isPaymentPageOnboardingRedirectionEnabled) {
+    if (isExperimentEnabled(abExperiments?.pp_onboarding_redirection)) {
       history.push('/paymentpages/new');
     }
   };
@@ -106,6 +115,9 @@ class PaymentPagesOnBoarding extends React.Component {
 
   render() {
     const { active, paymentPageProductOnBoarding, user, org } = this.props;
+    const { abExperiments } = this.props.splitz || {
+      abExperiments: {},
+    };
 
     const description =
       LANDING_PAGE_DESC[org.custom_code] || LANDING_PAGE_DESC[ORG_CUSTOM_CODE_MAP.RAZORPAY];
@@ -118,7 +130,9 @@ class PaymentPagesOnBoarding extends React.Component {
           afterSlide={getOnBoardingSliderDots({
             paymentPageProductOnBoarding,
             closeOnboarding: this.closeOnboarding,
-            isCreationRedirectionEnabled: user.isPaymentPageOnboardingRedirectionEnabled,
+            isCreationRedirectionEnabled: isExperimentEnabled(
+              abExperiments?.pp_onboarding_redirection,
+            ),
           })}
         >
           {(sliderProps) => (
@@ -196,4 +210,4 @@ export function getIsPaymentPagesEnabled({ user, paymentPages, loading }) {
   return false;
 }
 
-export default withRouter(PaymentPagesOnBoarding);
+export default withSplitzService(withRouter(PaymentPagesOnBoarding));

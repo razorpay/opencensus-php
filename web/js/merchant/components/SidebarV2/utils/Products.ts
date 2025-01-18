@@ -237,8 +237,10 @@ export const PRODUCTS_DATA = {
   stores: {
     bladeIcon: StorefrontIcon,
     icon: 'i-store-product',
-    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
-      user.isAllowedView('stores') && user.isStoresEnabled && !isConfigTagEnabled('stores.stores'),
+    additionalCondition: (user: any, { abExperiments, isConfigTagEnabled }: ExtraConfig): boolean =>
+      user.isAllowedView('stores') &&
+      isExperimentEnabled(abExperiments.stores) &&
+      !isConfigTagEnabled('stores.stores'),
   },
   payment_pages: {
     bladeIcon: PaymentPagesIcon,

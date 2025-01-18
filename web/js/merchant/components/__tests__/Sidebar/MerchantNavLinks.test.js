@@ -28,6 +28,12 @@ const defaultProps = {
   isChargeAtWillEnabled: false,
 };
 
+const variantOn = { variables: { result: 'on' } };
+let mockAbExperiments = {};
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({ abExperiments: mockAbExperiments }),
+}));
+
 jest.mock('merchant/components/Sidebar/helpers', () => ({
   getIsBankingEnabled: jest.fn(),
   isJKOfflineMerchant: jest.fn(),
@@ -106,7 +112,9 @@ describe('test for MerchantNavLinks component', () => {
         updatedState.session.user.isAllowedMultiple.mockImplementation(() => true);
       }
       if (label === 'Stores') {
-        jest.spyOn(user, 'isStoresEnabled', 'get').mockReturnValue(true);
+        mockAbExperiments = {
+          stores: variantOn,
+        };
       }
       updatedState.session.user.isAllowedView.mockImplementation(() => true);
       renderApp({ props, updatedState });

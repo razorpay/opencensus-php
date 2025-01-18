@@ -646,6 +646,38 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'stores',
+        experimentId: {
+          beta: 'Pirv5Qn3rEAHRl',
+          production: 'PirHpxTMoDj823',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
+        uniqueHashKey: 'pp_onboarding_redirection',
+        experimentId: {
+          beta: 'PjeAi30h3xDT03',
+          production: 'PjbbR9CKnFmY1X',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'assisted_financing',
         experimentId: {
           beta: 'NVwyOLc893cct0',
@@ -929,6 +961,22 @@ export const splitzConfig: SplitzInitConfig = {
           experimentId: {
             beta: 'N9OMSAws8YoLFh',
             production: 'N9NqlcqaRrtYdf',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
+          uniqueHashKey: 'payments_extra_refund_details',
+          experimentId: {
+            beta: 'Pjdb3qRRkiZNLr',
+            production: 'PjbZD844F653MW',
           },
           defaultVariant: {
             name: 'variables',
@@ -2028,6 +2076,27 @@ export const splitzConfig: SplitzInitConfig = {
           experimentId: {
             beta: 'NYeAdZxMitXwPO',
             production: 'NYe7P2aTFDwvZQ',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      routesToMatch: ['/invoices'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'inv_create_flow_ux',
+          experimentId: {
+            beta: 'Pjclx1qmXcKtpU',
+            production: 'PjbVSARccRwJIe',
           },
           defaultVariant: {
             name: 'variables',

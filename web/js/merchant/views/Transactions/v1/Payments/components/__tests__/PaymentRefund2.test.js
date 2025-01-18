@@ -16,11 +16,11 @@ describe('PaymentRefund', () => {
   });
 
   const renderApp = (ui) => {
+    mockAbExperiments.payments_extra_refund_details = { variables: { result: 'on' } };
     render(ui, {
       initialState: {
         session: {
           user: {
-            isPaymentsExtraRefundDetailsEnabled: true,
             isRefundAllowed: true,
             isOrgAllowedFunctionality: () => true,
           },

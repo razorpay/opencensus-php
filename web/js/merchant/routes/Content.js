@@ -1763,7 +1763,8 @@ class Content extends Component {
             element={
               <RouteGuard
                 additionalCondition={(_user) =>
-                  _user.isAllowedView('stores') && _user.isStoresEnabled
+                  _user.isAllowedView('stores') &&
+                  isExperimentEnabled(this.props.splitz?.abExperiments.stores)
                 }
               >
                 <Stores />

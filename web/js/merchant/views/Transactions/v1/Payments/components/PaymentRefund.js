@@ -17,6 +17,7 @@ import { makeIdLink } from 'merchant/views/Transactions/v1/Refunds/Utils';
 import { getInitiatePointAndPageAndScreenName } from 'merchant/views/Transactions/v1/utils';
 
 import IssueRefund from './IssueRefund';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 /*
  * Design:
@@ -162,6 +163,7 @@ const PaymentRefund = ({
 }) => {
   const { abExperiments } = useSplitzService();
   const { refund_gateway_data } = abExperiments || { refund_gateway_data: undefined };
+  const { payments_extra_refund_details } = abExperiments || {};
   const isRefundGatewayDataEnabled = refund_gateway_data?.variables?.result === 'on';
   const showStatusInfo = isOptimizerView && isRefundGatewayDataEnabled;
   const { status: paymentStatus, refund_status: refundStatus, error_reason: errorReason } = payment;
@@ -300,7 +302,7 @@ const PaymentRefund = ({
               <span>Payment auto refunded because of billing address mismatch</span>
             </Definition>
           )}
-          <ShowWhen additionalCondition={(user) => user.isPaymentsExtraRefundDetailsEnabled}>
+          <ShowWhen additionalCondition={() => isExperimentEnabled(payments_extra_refund_details)}>
             <RefundDetails items={refunds.items} />
           </ShowWhen>
           <div className="m-t" />

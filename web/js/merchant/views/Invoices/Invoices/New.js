@@ -72,6 +72,8 @@ import PickCurrency from 'merchant/views/Invoices/Invoices/components/PickCurren
 import debounce from 'common/utils/debounce';
 import { removeTaxForNonINRItems, TAX_DIVISOR } from './helpers';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { isExperimentEnabled } from 'common/splitz/utils';
+import { withSplitzService } from 'common/splitz';
 
 function validate(values) {
   const errors = {
@@ -329,12 +331,15 @@ class InvoicesNewContainer extends Component {
     let promises = [];
     let invoiceDataFromFetch;
     props = props || this.props;
-    console.log(props);
     const invoiceId = props.params.id;
     const searchQuery = getURLQueryParams(props.location.search);
     this.isIntentDuplicate = false;
-    const isCreateFlowUXOptimizationEnabled =
-      props.session.user.isInvoiceCreateFlowUXOptimizationEnabled;
+    const { abExperiments } = this.props.splitz || {
+      abExperiments: {},
+    };
+    const isCreateFlowUXOptimizationEnabled = isExperimentEnabled(
+      abExperiments?.inv_create_flow_ux,
+    );
 
     if (invoiceId) {
       promises.push(
@@ -2429,4 +2434,4 @@ class InvoicesNewContainer extends Component {
   }
 }
 
-export default withRouter(InvoicesNewContainer);
+export default withSplitzService(withRouter(InvoicesNewContainer));
