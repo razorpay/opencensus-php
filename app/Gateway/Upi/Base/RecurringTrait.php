@@ -55,6 +55,19 @@ trait RecurringTrait
     public function redirectCallbackIfRequired(array $response, $content, $headers)
     {
         $details = $this->getRecurringDetailsFromServerCallback($response);
+
+        if ((isset($response['data']['upi']) === true) and
+            (isset($response['data']['upi']['merchant_reference']) === true))
+        {
+            $merchantReference = $response['data']['upi']['merchant_reference'];
+            $details = [
+                Entity::PAYMENT_ID      => substr($merchantReference, 0, 14),
+                Constants::ENVIRONMENT  => substr($merchantReference, 14, 1),
+                Constants::ACTION       => substr($merchantReference, 15, 6),
+                Constants::ATTEMPT      => substr($merchantReference, 21),
+            ];
+        }
+
         $env     = $details[Constants::ENVIRONMENT] ?? 0;
 
         // Env=1 signifies its a dark payment

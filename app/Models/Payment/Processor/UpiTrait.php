@@ -433,9 +433,11 @@ trait UpiTrait
 
         if(($action === Payment\Action::CALLBACK) and ($this->isUpiRecurringPayment($input['payment']) === true))
         {
-            if((isset($input['upi']) === true) and ($input['upi']['flow'] === 'intent')) {
+            if((isset($input['upi']) === true) and ($input['upi']['flow'] === 'intent') and
+                ($input['upi']['internal_status'] === 'authorize_initiated')) {
                 $input['gateway']['data']['upi']['vpa'] = $input['upi']['vpa'];
             }
+
             $action = Payment\Action::RECURRING_CALLBACK;
         }
 
