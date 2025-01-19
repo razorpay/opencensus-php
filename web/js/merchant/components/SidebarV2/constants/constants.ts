@@ -81,3 +81,17 @@ export const SIDEEBAR_PRODUCTS_TITLES = {
   assisted_financing: 'Assisted Financing',
   insight_x: 'InsightX',
 };
+
+export const ROUTE_L1_PRODUCTS_TITLES = {
+  payments: 'Payments',
+  transfers: 'Transfers',
+  reversals: 'Reversals',
+  platformfee: 'Platform Fee',
+  accounts: 'Accounts',
+  batchupload: 'Batch Upload',
+};
+
+export const ROUTE_ACCOUNTS_L2_PRODUCTS_TITLES = {
+  razorpay: 'Razorpay',
+  optimizer: 'Optimizer',
+};

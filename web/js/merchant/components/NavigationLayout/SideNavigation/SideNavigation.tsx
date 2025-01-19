@@ -133,17 +133,53 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
     });
   };
 
-  //Currently we have only single level of nesting
-  if (items) {
+  if (items && items.length > 0) {
     return (
-      <SideNavLevel>
-        <div onClick={trackNavItemClick}>
-          <SideNavLink icon={icon} isActive={active} as={Link} title={title}></SideNavLink>
-          {/* {items.map((child) => (
-          <NavItem key={child.title} {...child} />
-        ))} */}
-        </div>
-      </SideNavLevel>
+      <div onClick={trackNavItemClick}>
+        <SideNavLink icon={icon} isActive={active} as={Link} title={title} href={items[0].href}>
+          <SideNavLevel>
+            {items.map((child) => {
+              const {
+                items: childItems,
+                title: childTitle,
+                href: childHref,
+                icon: childIcon,
+              } = child;
+              if (!childItems) {
+                return (
+                  <SideNavLink
+                    as={Link}
+                    isActive={isItemActive(child, location.pathname)}
+                    title={childTitle}
+                    href={childHref}
+                    icon={childIcon}
+                  />
+                );
+              }
+              return (
+                <SideNavLink
+                  icon={childIcon}
+                  isActive={active}
+                  as={Link}
+                  title={childTitle}
+                  href={undefined}
+                >
+                  <SideNavLevel>
+                    {childItems.map((subChild) => (
+                      <SideNavLink
+                        as={Link}
+                        isActive={isItemActive(subChild, location.pathname)}
+                        title={subChild.title}
+                        href={subChild.href}
+                      />
+                    ))}
+                  </SideNavLevel>
+                </SideNavLink>
+              );
+            })}
+          </SideNavLevel>
+        </SideNavLink>
+      </div>
     );
   }
 

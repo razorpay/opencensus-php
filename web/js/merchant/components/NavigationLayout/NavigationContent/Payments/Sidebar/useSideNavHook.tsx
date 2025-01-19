@@ -8,6 +8,7 @@ import {
   CUSTOMERS_PRODUCTS,
   COMMON_PRODUCTS,
   ProductTypeProp,
+  getL1ProductItems,
 } from 'merchant/components/SidebarV2/utils/Products';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { useLocation } from 'react-router-dom';
@@ -86,6 +87,9 @@ function transformDataWithRoutes(data, routes, { user, abExperiments, isConfigTa
               }),
           })
         ) {
+          if (PRODUCTS_DATA[product.product_id]?.items?.length > 0) {
+            product.items = getL1ProductItems(product.product_id, user);
+          }
           acc.push({
             ...product,
             href: PRODUCTS_DATA[product.product_id]?.getRef

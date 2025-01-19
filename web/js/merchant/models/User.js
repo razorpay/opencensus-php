@@ -1044,6 +1044,10 @@ export default class User {
     return this.isOrgRZP && this.isCountryIndia;
   }
 
+  get isOptimizerRouteEnabled() {
+    return this.isFeatureEnabled('optimizer_route');
+  }
+
   get isSodexoInstrumentEnabled() {
     return getSplitzExperimentVariant('sodexo_instrument')?.variables?.result === 'on';
   }

@@ -11,6 +11,7 @@ import {
   CustomersIcon,
   DashboardIcon,
   FileTextIcon,
+  type IconComponent,
   MagicCheckoutIcon,
   MyAccountIcon,
   OffersIcon,
@@ -34,12 +35,17 @@ import {
   TrendingUpIcon,
   WalletIcon,
   ZapIcon,
+  LayoutIcon,
 } from '@razorpay/blade/components';
 
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
 import { isMobileResolution } from 'common/utils/rzp-utils';
-import { SIDEEBAR_PRODUCTS_TITLES } from 'merchant/components/SidebarV2/constants/constants';
+import {
+  SIDEEBAR_PRODUCTS_TITLES,
+  ROUTE_L1_PRODUCTS_TITLES,
+  ROUTE_ACCOUNTS_L2_PRODUCTS_TITLES,
+} from 'merchant/components/SidebarV2/constants/constants';
 import { ConfigTagType } from 'merchant/constants/tags';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import {
@@ -56,6 +62,49 @@ export type ExtraConfig = {
   abExperiments: any;
   isConfigTagEnabled: (path: ConfigTagType) => boolean;
 };
+
+const ROUTE_L1_PRODUCTS_DATA = [
+  {
+    title: ROUTE_L1_PRODUCTS_TITLES.payments,
+    href: '/route/payments',
+    icon: LayoutIcon,
+  },
+  {
+    title: ROUTE_L1_PRODUCTS_TITLES.transfers,
+    href: '/route/transfers',
+    icon: LayoutIcon,
+  },
+  {
+    title: ROUTE_L1_PRODUCTS_TITLES.platformfee,
+    href: '/route/platformfee',
+    icon: LayoutIcon,
+  },
+  {
+    title: ROUTE_L1_PRODUCTS_TITLES.reversals,
+    href: '/route/reversals',
+    icon: LayoutIcon,
+  },
+  {
+    title: ROUTE_L1_PRODUCTS_TITLES.accounts,
+    href: '/route/accounts',
+    icon: LayoutIcon,
+    items: [
+      {
+        title: ROUTE_ACCOUNTS_L2_PRODUCTS_TITLES.razorpay,
+        href: '/route/accounts',
+      },
+      {
+        title: ROUTE_ACCOUNTS_L2_PRODUCTS_TITLES.optimizer,
+        href: '/route/optimizer/accounts',
+      },
+    ],
+  },
+  {
+    title: ROUTE_L1_PRODUCTS_TITLES.batchupload,
+    href: '/route/batchuploads',
+    icon: LayoutIcon,
+  },
+];
 
 export const PRODUCTS_DATA = {
   home: {
@@ -217,6 +266,7 @@ export const PRODUCTS_DATA = {
     icon: 'i-route',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('marketplace') && !isConfigTagEnabled('route.marketplace'),
+    items: ROUTE_L1_PRODUCTS_DATA,
   },
   payment_button: {
     bladeIcon: PaymentButtonsIcon,
@@ -491,3 +541,30 @@ export const CUSTOMERS_PRODUCTS = [
     tags: ['New'],
   },
 ];
+
+interface L1ProductItem {
+  title: string;
+  href: string;
+  icon: IconComponent;
+  items?: { title: string; href: string }[];
+}
+
+const getRouteL1Products = (items: L1ProductItem[], user: any) => {
+  if (!user?.isOrgCurlec) {
+    return [...items];
+  }
+  return items.filter((product) => product.title !== ROUTE_L1_PRODUCTS_TITLES.batchupload);
+};
+
+export const getL1ProductItems = (productId: string, user: any) => {
+  switch (productId) {
+    // Only for Optimizer merchants where route is enabled we will show L1 items on Route Product
+    case 'route':
+      if (user?.isOptimizerEnabled && user?.isOptimizerRouteEnabled) {
+        return getRouteL1Products(PRODUCTS_DATA[productId]?.items, user);
+      }
+      return [];
+    default:
+      return PRODUCTS_DATA[productId]?.items || [];
+  }
+};
