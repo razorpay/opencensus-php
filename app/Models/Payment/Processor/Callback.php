@@ -692,6 +692,14 @@ trait Callback
             $shouldLateAuthorize = true;
         }
 
+        if (($this->isLateAuthEnabled($payment->getMerchantId())) and
+            ($payment->getStatus() === Payment\Status::FAILED) and
+            ($s2sCallback === true) and
+            ($payment->isUpi()))
+        {
+            $shouldLateAuthorize = true;
+        }
+
         $this->updateAndNotifyPaymentAuthorized($data, $shouldLateAuthorize);
     }
 
@@ -1655,6 +1663,46 @@ trait Callback
                     TraceCode::INSUFFICIENT_FUND_TNG_SKIP_VERIFY_RESPONSE_FAILURE);
             }
         }
+        return false;
+    }
+
+    /** Returns true for the merchants if late auth needs to be set in callback
+     * @param $merchantId
+     * @return bool
+     */
+    protected function isLateAuthEnabled($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $this->app['config']->get('app.update_upi_late_auth_status'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'enable')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SPLITZ_ERROR
+            );
+        }
+
         return false;
     }
 }
