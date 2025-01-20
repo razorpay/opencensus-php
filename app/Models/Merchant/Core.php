@@ -131,6 +131,7 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
 use Throwable;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 
 class Core extends Base\Core
 {
@@ -9550,6 +9551,22 @@ class Core extends Base\Core
         if ($this->isRegularSubmerchant($merchant) === false)
         {
             return false;
+        }
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $properties = [
+            'id'            => $merchantDetails->getMerchantId(),
+            'experiment_id' => $this->app['config']->get('app.enable_pos_for_api_submerchants'),
+        ];
+
+        $isExperimentEnabled = $this->isSplitzExperimentEnable($properties, 'enable');
+
+        if ($isExperimentEnabled) {
+            if ($merchantDetails->getActivationStatus() === Constants::ACTIVATED && $merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID)
+            {
+                return true;
+            }
         }
 
         if ($merchant->isTagAddedBasedOnPrefix(Constants::POS_PARTNERSHIP_TAG_PREFIX) === false)
