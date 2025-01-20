@@ -18708,6 +18708,7 @@ class Route
             'pricing_fetch_plan',
             'payment_transfer',
             'transfer_transaction_create',
+            'payment_fetch_by_id_internal',
         ]
     ];
 
