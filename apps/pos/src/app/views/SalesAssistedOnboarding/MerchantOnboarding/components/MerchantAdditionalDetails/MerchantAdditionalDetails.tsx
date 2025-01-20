@@ -28,6 +28,21 @@ import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/Mercha
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 import { isKycQualified } from 'apps/pos/src/app/utils/merchantActivation';
 
+const ContinueButton = ({ isDisabled, isFullWidth, isLoading }) => {
+  return (
+    <Button
+      isDisabled={isDisabled}
+      isFullWidth={isFullWidth}
+      isLoading={isLoading}
+      type="submit"
+      iconPosition="right"
+      icon={ArrowRightIcon}
+    >
+      Continue to next step
+    </Button>
+  );
+};
+
 const MerchantAdditionalDetails = (): JSX.Element | null => {
   const toast = useToast();
   const navigate = useNavigate();
@@ -169,21 +184,6 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
     });
   };
 
-  const renderContinueBtn = () => {
-    return (
-      <Button
-        isDisabled={isFormDisabled || !isValid}
-        type="submit"
-        isFullWidth={isMobile}
-        iconPosition="right"
-        icon={ArrowRightIcon}
-        isLoading={isUpdateModularLoading}
-      >
-        Continue to next step
-      </Button>
-    );
-  };
-
   if (isModularLoading)
     return (
       <Box
@@ -218,8 +218,8 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
       <Box maxWidth={isMobile ? '768px' : '540px'}>
         <form noValidate onSubmit={handleSubmit(onSubmit)}>
           <Box display="flex" flexDirection="column" gap="spacing.7">
-            {additionalDetailsFields?.map((item) =>
-              item.isHidden ? null : (
+            {additionalDetailsFields?.map((item) => {
+              return !item.isHidden && !item.isInternal ? (
                 <FormField
                   key={item.name}
                   type={item?.meta?.dataType ?? ''}
@@ -237,8 +237,8 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
                   onRadioBtnChangeCallback={onRadioBtnChange}
                   onDropdownChangeCallback={onDropdownChange}
                 />
-              ),
-            )}
+              ) : null;
+            })}
           </Box>
           {isMobile ? (
             <Box
@@ -252,10 +252,20 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
               right="0px"
               zIndex="1"
             >
-              {renderContinueBtn()}
+              <ContinueButton
+                isDisabled={isFormDisabled || !isValid}
+                isFullWidth={isMobile}
+                isLoading={isUpdateModularLoading}
+              />
             </Box>
           ) : (
-            <Box marginTop="spacing.9">{renderContinueBtn()}</Box>
+            <Box marginTop="spacing.9">
+              <ContinueButton
+                isDisabled={isFormDisabled || !isValid}
+                isFullWidth={isMobile}
+                isLoading={isUpdateModularLoading}
+              />
+            </Box>
           )}
         </form>
       </Box>

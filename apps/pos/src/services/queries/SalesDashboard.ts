@@ -259,6 +259,7 @@ export const MODULAR_CONFIG = gql`
     isDisabled
     isRequired
     isHidden
+    isInternal
     meta {
       title
       description

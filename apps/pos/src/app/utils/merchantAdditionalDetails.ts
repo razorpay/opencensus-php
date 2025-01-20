@@ -27,7 +27,7 @@ export const getInitialMerchantAdditionalDetails = ({
   if (!additionalDetailsComponent) return null;
   const fields = additionalDetailsComponent.fields;
   const allFieldValues = fields
-    .filter((field) => !field.isHidden)
+    .filter((field) => !field.isHidden && !field.isInternal)
     .reduce((acc, field) => {
       if (!acc[field.name]) {
         acc[field.name] = isStringValue(field) ? field.stringValue : '';
