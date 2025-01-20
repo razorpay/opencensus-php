@@ -54,6 +54,7 @@ use RZP\Mail\User\AccountVerification;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Merchant\Core as MerchantCore;
+use AuthzAdmin\Client\Model as AuthzAdminModel;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Services\Segment\XSegmentClient;
 use RZP\Models\Merchant\Attribute\Type;
@@ -10829,6 +10830,14 @@ class UserTest extends TestCase
 
         $this->disableRazorXTreatmentCAC();
 
+        $this->mockSplitzDisableCAC($merchant['id']);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        $authzAdminClientMock->shouldNotReceive('adminAPIListPolicy');
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
         $mappingData = [
             'user_id'     => $user->getId(),
             'merchant_id' => $merchant->getId(),
@@ -10855,9 +10864,77 @@ class UserTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertArrayHasKey(Constants::PERMISSIONS, $response['merchants'][1]);
+        $this->assertEquals(UserRolePermissionsMap::getRolePermissions(Role::OWNER), $response['merchants'][1]['permissions']);
+    }
 
-        return $response;
+    public function testGetBankingUserWithPermissionsCACEnabled()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        $authzAdminClientMock->shouldReceive('adminAPIListPolicy')
+            ->withArgs(function($paginationToken, $resourceGroupIdList, $resourceIdList, $roleId, $serviceIdList, $permissionIdList, $roleNames, $orgId){
+
+                $this->assertEquals('*', $paginationToken);
+                $this->assertNull($resourceGroupIdList);
+                $this->assertNull($resourceIdList);
+                $this->assertNull($roleId);
+                $this->assertNotEmpty($serviceIdList);
+                $this->assertNull($permissionIdList);
+                $this->assertNotEmpty($roleNames);
+                $this->assertEquals('razorpayx', $orgId);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1ListPolicyResponse([
+                'pagination_token'  => null,
+                'count'             => 2,
+                'items'             => [
+                    new AuthzAdminModel\V1ExpandedPolicy([
+                        'name'  => 'view_payout'
+                    ]),
+                    new AuthzAdminModel\V1ExpandedPolicy([
+                        'name'  => 'create_payout'
+                    ]),
+                ]
+            ]));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->testData[__FUNCTION__] = $this->testData['testGetBankingUserWithPermissions'];
+
+        $dataToReplace = [
+            'request' => [
+                'method'    => 'GET',
+                'url'       => '/users/' . $user->getId(),
+                'server'     => [
+                    'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                    'HTTP_X-Request-Origin'         => 'https://x.razorpay.com',
+                ],
+            ]
+        ];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest($dataToReplace);
+
+        $this->assertEquals([
+            'view_payout',
+            'create_payout'
+        ], $response['merchants'][1]['permissions']);
     }
 
     public function testGetBankingUserWithPermissionsForSubMerchant()
