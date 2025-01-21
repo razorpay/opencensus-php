@@ -1789,10 +1789,6 @@ class UserTest extends TestCase
 
     public function testLogin()
     {
-        Mail::fake();
-
-        $this->enableRazorXTreatmentForRazorX();
-
         $user = $this->fixtures->create('user', ['password' => 'hello123']);
 
         $testData = & $this->testData[__FUNCTION__];
@@ -1810,17 +1806,6 @@ class UserTest extends TestCase
 
         $response = $this->startTest();
 
-        Mail::assertQueued(Login::class, function ($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertArrayHasKey('orgHostname', $viewData);
-            $this->assertArrayHasKey('browserDetails', $viewData);
-            $this->assertArrayHasKey('loginAt', $viewData);
-            $this->assertEquals('emails.user.login', $mail->view);
-
-            return true;
-        });
 
         $this->assertFalse(isset($response['invitations']));
         $this->assertFalse(isset($response['settings']));
@@ -2167,9 +2152,6 @@ class UserTest extends TestCase
 
         $this->app->instance('dcs_config_service', $dcsConfigServiceMock);
 
-        Mail::fake();
-
-        $this->enableRazorXTreatmentForRazorX();
 
         $user = $this->fixtures->create('user', ['password' => 'hello123']);
 
@@ -2187,18 +2169,6 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $response = $this->startTest();
-
-        Mail::assertQueued(Login::class, function ($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertArrayHasKey('orgHostname', $viewData);
-            $this->assertArrayHasKey('browserDetails', $viewData);
-            $this->assertArrayHasKey('loginAt', $viewData);
-            $this->assertEquals('emails.user.login', $mail->view);
-
-            return true;
-        });
 
         $this->assertFalse(isset($response['invitations']));
         $this->assertFalse(isset($response['settings']));
@@ -2224,9 +2194,6 @@ class UserTest extends TestCase
 
         $this->app->instance('dcs_config_service', $dcsConfigServiceMock);
 
-        Mail::fake();
-
-        $this->enableRazorXTreatmentForRazorX();
 
         $user = $this->fixtures->create('user', ['password' => 'hello123']);
 
@@ -2245,18 +2212,6 @@ class UserTest extends TestCase
 
         $response = $this->startTest();
 
-        Mail::assertQueued(Login::class, function ($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertArrayHasKey('orgHostname', $viewData);
-            $this->assertArrayHasKey('browserDetails', $viewData);
-            $this->assertArrayHasKey('loginAt', $viewData);
-            $this->assertEquals('emails.user.login', $mail->view);
-
-            return true;
-        });
-
         $this->assertFalse(isset($response['invitations']));
         $this->assertFalse(isset($response['settings']));
         $this->assertFalse(isset($response['merchants'][0]['methods']));
@@ -2264,10 +2219,6 @@ class UserTest extends TestCase
 
     public function testLoginWithCountryCode()
     {
-        Mail::fake();
-
-        $this->enableRazorXTreatmentForRazorX();
-
         $user = $this->fixtures->create('user', ['password' => 'hello123']);
 
         $merchant = $this->fixtures->create('merchant', [
@@ -2301,17 +2252,6 @@ class UserTest extends TestCase
 
         $this->assertEquals('IN', $response['merchants'][0]['country_code']);
         $this->assertEquals('SG', $response['merchants'][1]['country_code']);
-
-        Mail::assertQueued(Login::class, function ($mail) {
-            $viewData = $mail->viewData;
-
-            $this->assertArrayHasKey('orgHostname', $viewData);
-            $this->assertArrayHasKey('browserDetails', $viewData);
-            $this->assertArrayHasKey('loginAt', $viewData);
-            $this->assertEquals('emails.user.login', $mail->view);
-
-            return true;
-        });
 
         $this->assertFalse(isset($response['invitations']));
         $this->assertFalse(isset($response['settings']));

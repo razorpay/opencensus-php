@@ -1526,15 +1526,6 @@ class Core extends Base\Core
             ]
         );
 
-        $loginMailNotificationEnabled = (new Merchant\Core())->isRazorxExperimentEnable($user->getId(),
-            RazorxTreatment::USER_LOGIN_EMAIL_NOTIFICATION);
-
-        // inform the user about the login activity (only if the email is verified and Razorx exp is enabled)
-        if (($user->getConfirmedAttribute() === true) and ($loginMailNotificationEnabled === true))
-        {
-            $this->sendLoginMailToUser($user, $browserDetails);
-        }
-
         $orgId = $this->app['basicauth']->getOrgId();
 
         if(empty($orgId) === true)
@@ -1641,32 +1632,6 @@ class Core extends Base\Core
             return null;
         }
 
-    }
-
-    /**
-     * @param Entity $user
-     * @param array|null $browserDetails
-     * @return void
-     */
-    private function sendLoginMailToUser(Entity $user, ?array $browserDetails)
-    {
-        $orgId = $this->app['basicauth']->getOrgId();
-
-        $orgId =  Org\Entity::verifyIdAndStripSign($orgId);
-
-        $orgHostname = $this->app['basicauth']->getOrgHostName();
-
-        $loginAt = Carbon::now('UTC')->isoFormat('lll');
-
-        // send login notification for Razorpay org only
-        if ($orgId === Org\Entity::RAZORPAY_ORG_ID)
-        {
-            $this->trace->info(TraceCode::SEND_USER_LOGIN_EMAIL_ATTEMPT, [Entity::USER_ID => $user->getId()]);
-
-            $loginMail = new UserMail\Login($user, $orgHostname, $browserDetails, $loginAt);
-
-            Mail::queue($loginMail);
-        }
     }
 
     public function getLoginSignupOtpPayload(array $input, string $action)
