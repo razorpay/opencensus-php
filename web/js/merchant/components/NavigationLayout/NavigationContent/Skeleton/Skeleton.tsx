@@ -181,7 +181,12 @@ export const TopNavigationSkeleton: React.FC = () => {
       </Box>
     </>
   ) : (
-    <TopNav zIndex="101">
+    <TopNav
+      zIndex="101"
+      // @ts-ignore
+      height="56px"
+      flexShrink="0"
+    >
       <TopNavBrand>
         <RazorpayLogo />
       </TopNavBrand>

@@ -57,15 +57,17 @@ const GrowthPage: React.FC<GrowthPageProps> = ({ title, description, actions, im
       display="flex"
       flexDirection={{ base: 'column', m: 'column', l: 'row' }}
       alignItems="center"
-      justifyContent="center"
+      justifyContent={{ base: 'center', m: 'center', l: 'space-between' }}
       paddingX={{ base: 'spacing.4' }}
       paddingY={{ base: 'spacing.4', m: '154px', l: '154px' }}
       backgroundColor={'surface.background.gray.intense'}
+      maxWidth={{ base: '100%', m: '100%', l: '1200px' }}
+      margin={{ base: 'spacing.0', m: 'spacing.0', l: ['spacing.0', 'auto'] }}
     >
       <Box
         order={{ base: 1, m: 1, l: 2 }}
         width="100%"
-        maxWidth={{ base: '296px', m: '456px', l: '356px', xl: '456px' }}
+        maxWidth={{ base: '296px', m: '456px', l: '456px', xl: '456px' }}
         height="auto"
         marginBottom={{ base: 'spacing.6', m: 'spacing.6', l: 'spacing.0' }}
       >
@@ -87,7 +89,8 @@ const GrowthPage: React.FC<GrowthPageProps> = ({ title, description, actions, im
         justifyContent="center"
         alignItems={{ base: 'center', m: 'center', l: 'flex-start' }}
         textAlign={{ base: 'center', m: 'center', l: 'left' }}
-        marginRight={{ base: 'spacing.0', m: '60px', l: '80px', xl: '160px' }}
+        marginRight={{ base: 'spacing.0', m: '16px', l: '16px', xl: '16px' }}
+        maxWidth={{ base: '100%', m: '100%', l: '584px' }}
       >
         <Heading
           as="h1"

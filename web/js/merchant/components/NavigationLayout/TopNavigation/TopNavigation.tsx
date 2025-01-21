@@ -349,7 +349,7 @@ const TopNavigation = ({
   }
 
   return (
-    <TopNav zIndex="101">
+    <TopNav zIndex="101" height="56px" flexShrink="0">
       <TopNavBrand>
         <RazorpayLogo />
       </TopNavBrand>
@@ -427,37 +427,43 @@ const TopNavigation = ({
         </TabNav>
       </TopNavContent>
       <TopNavActions>
-        {shouldShowSearch && <UniversalSearch isConnectedNavigation={true} />}
+        <Box
+          display="flex"
+          gap="spacing.3"
+          width={{ base: 'auto', m: `${shouldShowSearch ? '300px' : 'auto'}`, l: 'auto' }}
+        >
+          {shouldShowSearch && <UniversalSearch isConnectedNavigation={true} />}
 
-        {/* TODO: Check how to ecosystem downtime on mobile post initlal release */}
-        {showEcosystemDowntimeButton && (
-          <EcosystemDowntimes
-            mode={mode}
-            showMobileNav={showMobileNav}
-            isRTUXHomepage={false}
-            isConnectedNavigation={true}
-          />
-        )}
+          {/* TODO: Check how to ecosystem downtime on mobile post initlal release */}
+          {showEcosystemDowntimeButton && (
+            <EcosystemDowntimes
+              mode={mode}
+              showMobileNav={showMobileNav}
+              isRTUXHomepage={false}
+              isConnectedNavigation={true}
+            />
+          )}
 
-        {/* TODO: Check how to handle announcement on mobile post initlal release */}
-        {showAnnouncementButton && (
-          <GrowthAssetEB FallbackComponent={ErrorFallbackComponent}>
-            {user.isWhatsNewLazyEnabled ? (
-              <NotificationIcon showMobileNav={showMobileNav} {...commonProps} />
-            ) : (
-              <ShowWhen
-                additionalCondition={
-                  () => !org.features.includes('disable_announcements') // If the org features array include "disable_announcements" then we hide "Announcement Tab".
-                }
-              >
-                <SuspenseWithLoader type="default">
-                  <WhatsNew showMobileNav={showMobileNav} {...commonProps} />
-                </SuspenseWithLoader>
-              </ShowWhen>
-            )}
-          </GrowthAssetEB>
-        )}
-        <ProfileDropdown showMobileNav={showMobileNav} mode={mode} {...commonProps} />
+          {/* TODO: Check how to handle announcement on mobile post initlal release */}
+          {showAnnouncementButton && (
+            <GrowthAssetEB FallbackComponent={ErrorFallbackComponent}>
+              {user.isWhatsNewLazyEnabled ? (
+                <NotificationIcon showMobileNav={showMobileNav} {...commonProps} />
+              ) : (
+                <ShowWhen
+                  additionalCondition={
+                    () => !org.features.includes('disable_announcements') // If the org features array include "disable_announcements" then we hide "Announcement Tab".
+                  }
+                >
+                  <SuspenseWithLoader type="default">
+                    <WhatsNew showMobileNav={showMobileNav} {...commonProps} />
+                  </SuspenseWithLoader>
+                </ShowWhen>
+              )}
+            </GrowthAssetEB>
+          )}
+          <ProfileDropdown showMobileNav={showMobileNav} mode={mode} {...commonProps} />
+        </Box>
       </TopNavActions>
     </TopNav>
   );

@@ -29,7 +29,7 @@ const FTUXBanner = ({ handleClose }) => {
     ({ theme }: { theme: Theme }) => `
     padding: ${theme.spacing[8]}px ${theme.spacing[7]}px ${theme.spacing[7]}px;
     display: flex;
-    margin: ${theme.spacing[5]}px ${theme.spacing[5]}px ${theme.spacing[0]}px;
+    margin: ${theme.spacing[5]}px ${theme.spacing[5]}px;
     align-items: center;
     background-color: ${theme.colors.popup.background.subtle};
     border-radius: ${theme.border.radius['large']}px;

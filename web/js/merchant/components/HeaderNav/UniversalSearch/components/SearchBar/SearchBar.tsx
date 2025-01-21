@@ -47,14 +47,16 @@ const SearchBar = forwardRef(
 
     if (isConnectedNavigation) {
       return (
-        <SearchInput
-          label=""
-          placeholder="Search payment products, settings, and more"
-          value={searchQuery}
-          onChange={handleChange.bind(null, 'change')}
-          onFocus={handleFocus}
-          onClick={trackSearchBarClicked}
-        />
+        <Box width={{ base: 'auto', l: 'auto', xl: '355px' }}>
+          <SearchInput
+            label=""
+            placeholder="Search payment products, settings, and more"
+            value={searchQuery}
+            onChange={handleChange.bind(null, 'change')}
+            onFocus={handleFocus}
+            onClick={trackSearchBarClicked}
+          />
+        </Box>
       );
     }
 
