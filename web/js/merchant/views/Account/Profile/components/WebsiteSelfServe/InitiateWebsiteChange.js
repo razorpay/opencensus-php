@@ -10,12 +10,15 @@ import {
   List,
   ListItem,
 } from '@razorpay/blade/components';
+import wwwImg from 'assets/www.svg';
 
 import { zIndicesMap } from 'common/constant';
+import { useMobile } from 'common/hooks/useMobile';
 import ModalHeader from 'common/ui/ModalHeader';
 import TwoFactorVerificaionContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
+import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
 
 import { FLOWS } from './Constants';
 import UpdateWebsiteDetails from './UpdateWebsiteDetails';
@@ -23,6 +26,7 @@ import UpdateWebsiteDetails from './UpdateWebsiteDetails';
 function InitiateWebsiteChange(props) {
   const context = useContext(TwoFactorVerificaionContext);
   const [isBladeModalOpen, setIsBladeModalOpen] = useState(true);
+  const isMobile = useMobile(mobileBreakoints);
 
   const onContactVerified = () => {
     const { user } = props;
@@ -138,32 +142,41 @@ function InitiateWebsiteChange(props) {
           props.closeModal();
           setIsBladeModalOpen(false);
         }}
-        size="medium"
+        size="large"
         zIndex={zIndicesMap.modalOverlay}
       >
         <BladeModalHeader title={title} />
-        <BladeModalBody>
-          <Box display="flex" justifyContent="center" alignItems="center" margin="spacing.6">
-            <img src="https://cdn.razorpay.com/static/assets/website-self-serve/Website-change.svg" />
+        <BladeModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            minHeight={isMobile ? 'none' : '440px'}
+            justifyContent="center"
+            alignItems="center"
+            padding="spacing.6"
+          >
+            <Box display="flex" justifyContent="center" alignItems="center" margin="spacing.6">
+              <img height="148px" width="148px" src={wwwImg} />
+            </Box>
+            <Alert
+              title="Please note:"
+              description={
+                <List variant="ordered">
+                  <ListItem>
+                    The product/services that you are selling on the website/app should fall under “
+                    {titleCase(props.user.business_category)}” category.
+                  </ListItem>
+                  <ListItem>
+                    If your website/app belongs to a different category, please create a new
+                    Razorpay account.
+                  </ListItem>
+                </List>
+              }
+              color="information"
+              isDismissible={false}
+              isFullWidth
+            />
           </Box>
-          <Alert
-            title="Please note:"
-            description={
-              <List variant="ordered">
-                <ListItem>
-                  The product/services that you are selling on the website/app should fall under “
-                  {titleCase(props.user.business_category)}” category.
-                </ListItem>
-                <ListItem>
-                  If your website/app belongs to a different category, please create a new Razorpay
-                  account.
-                </ListItem>
-              </List>
-            }
-            color="information"
-            isDismissible={false}
-            isFullWidth
-          />
         </BladeModalBody>
         <BladeModalFooter>
           <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">

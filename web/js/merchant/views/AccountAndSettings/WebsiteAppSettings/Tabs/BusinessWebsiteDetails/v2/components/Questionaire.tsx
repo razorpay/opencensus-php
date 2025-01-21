@@ -3,7 +3,7 @@ import { Box, Button, Text, Heading, Chip, ChipGroup, TextInput } from '@razorpa
 
 import { Environments, ShowNotificationType } from 'common/typings';
 
-import { PolicyPageCreationQuestionaire, defaultPolicyPageCreationFormField } from './constants';
+import { PolicyPageCreationQuestionaire } from './constants';
 import { getQuestionaireDetailsFromPolicyPagesToBeGenerated } from './utils';
 import useModalComponents from '../hooks/useModalComponents';
 import { usePolicyPagesDetails } from '../hooks/usePolicyPagesDetails';
@@ -22,6 +22,7 @@ import {
   getMerchantWebsiteDetailsPayload,
   getWebsiteCount,
 } from '../utils';
+import CreatePolicyPagesIllustration from './assets/createPolicyPages.svg';
 
 const sensitiveKeys = [
   WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER,
@@ -148,101 +149,137 @@ function Questionare({
   };
 
   return (
-    <Modal isOpen={isOpen} onDismiss={onGoBack} snapPoints={snapPoints} size="medium">
+    <Modal isOpen={isOpen} onDismiss={onGoBack} snapPoints={snapPoints} size="large">
       <ModalHeader />
       <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
-        <Box paddingX={isMobile ? 'none' : 'spacing.8'} paddingY={isMobile ? 'none' : 'spacing.7'}>
-          <Box marginBottom="spacing.7">
-            <Heading size="small" weight="semibold">
-              Create policy pages with {org.business_name}
-            </Heading>
-            <Text size="medium" color="surface.text.gray.muted">
-              {isEmpty
-                ? `We’ll be creating the ‘Terms and Conditions’ page using your given details`
-                : `Awesome! We’ll need a couple of details from you to create this page for you`}
-            </Text>
+        <Box
+          display="flex"
+          flexDirection="row"
+          minHeight={isMobile ? 'none' : '509px'}
+          height="509px"
+          overflowY="auto"
+        >
+          <Box
+            paddingX={isMobile ? 'none' : 'spacing.8'}
+            paddingY={isMobile ? 'none' : 'spacing.7'}
+            flex="2"
+          >
+            <Box marginBottom="spacing.7">
+              <Heading size="small" weight="semibold">
+                Create policy pages with {org.business_name}
+              </Heading>
+              <Text size="medium" color="surface.text.gray.muted">
+                {isEmpty
+                  ? `We’ll be creating the ‘Terms and Conditions’ page using your given details`
+                  : `Awesome! We’ll need a couple of details from you to create this page`}
+              </Text>
+            </Box>
+            {isEmpty ? null : (
+              <Box
+                width="100%"
+                display="flex"
+                flexDirection="column"
+                overflow="scroll"
+                gap="spacing.5"
+                paddingLeft="spacing.1"
+                paddingBottom="spacing.1"
+              >
+                <>
+                  {PolicyPageCreationQuestionaire.map((question) => {
+                    return (
+                      questionaireMapping[question.questionId] && (
+                        <Box key={question.questionId}>
+                          <Text
+                            size="small"
+                            variant="body"
+                            weight="semibold"
+                            color="surface.text.gray.subtle"
+                            marginBottom="spacing.3"
+                            testID={`question-${question.questionId}`}
+                          >
+                            {question.value}
+                          </Text>
+                          <ChipGroup
+                            accessibilityLabel="Test"
+                            onChange={onChipChange}
+                            value={formState[question.questionId].value}
+                            selectionType="single"
+                            name={question.questionId}
+                            size="xsmall"
+                            testID={`chips-${question.questionId}`}
+                            validationState={formState[question.questionId].valid}
+                            errorText="Please select an option"
+                          >
+                            {question.options.map((option) => {
+                              return (
+                                <Chip value={option.value} key={option.value}>
+                                  {option.value}
+                                </Chip>
+                              );
+                            })}
+                          </ChipGroup>
+                        </Box>
+                      )
+                    );
+                  })}
+                  {questionaireMapping[WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER] && (
+                    <Box width="99%">
+                      <TextInput
+                        label="Enter your support contact number"
+                        placeholder="Phone number"
+                        type="telephone"
+                        name={WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER}
+                        onChange={handleTextInputChange}
+                        value={
+                          formState[WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER].value
+                        }
+                        validationState={
+                          formState[WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER].valid
+                        }
+                        errorText="Please enter a valid contact number"
+                        testID="support-contact-number"
+                      />
+                    </Box>
+                  )}
+                  {questionaireMapping[WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL] && (
+                    <Box width="99%" marginTop="spacing.3">
+                      <TextInput
+                        label="Enter your support email ID"
+                        placeholder="Email ID"
+                        type="email"
+                        name={WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL}
+                        onChange={handleTextInputChange}
+                        value={formState[WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL].value}
+                        validationState={
+                          formState[WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL].valid
+                        }
+                        errorText="Please enter a valid email id"
+                        testID="support-email"
+                      />
+                    </Box>
+                  )}
+                </>
+              </Box>
+            )}
           </Box>
-          {isEmpty ? null : (
+          {!isMobile && (
             <Box
-              width="100%"
+              backgroundColor="surface.background.sea.subtle"
+              flex="1"
               display="flex"
+              position="sticky"
+              top="spacing.0"
               flexDirection="column"
-              overflow="scroll"
-              gap="spacing.5"
-              paddingLeft="spacing.1"
-              paddingBottom="spacing.1"
+              gap="spacing.3"
+              alignItems="center"
+              justifyContent="flex-end"
+              padding="spacing.0"
+              paddingLeft="spacing.4"
+              borderTopRightRadius="large"
             >
-              <>
-                {PolicyPageCreationQuestionaire.map((question) => {
-                  return (
-                    questionaireMapping[question.questionId] && (
-                      <Box key={question.questionId}>
-                        <Text
-                          size="small"
-                          variant="body"
-                          weight="semibold"
-                          color="surface.text.gray.subtle"
-                          marginBottom="spacing.3"
-                          testID={`question-${question.questionId}`}
-                        >
-                          {question.value}
-                        </Text>
-                        <ChipGroup
-                          accessibilityLabel="Test"
-                          onChange={onChipChange}
-                          value={formState[question.questionId].value}
-                          selectionType="single"
-                          name={question.questionId}
-                          size="xsmall"
-                          testID={`chips-${question.questionId}`}
-                          validationState={formState[question.questionId].valid}
-                          errorText="Please select an option"
-                        >
-                          {question.options.map((option) => {
-                            return (
-                              <Chip value={option.value} key={option.value}>
-                                {option.value}
-                              </Chip>
-                            );
-                          })}
-                        </ChipGroup>
-                      </Box>
-                    )
-                  );
-                })}
-                {questionaireMapping[WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER] && (
-                  <Box width="50%">
-                    <TextInput
-                      label="Enter your support contact number"
-                      placeholder="Phone number"
-                      type="telephone"
-                      name={WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER}
-                      onChange={handleTextInputChange}
-                      value={formState[WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER].value}
-                      validationState={
-                        formState[WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER].valid
-                      }
-                      errorText="Please enter a valid contact number"
-                      testID="support-contact-number"
-                    />
-                  </Box>
-                )}
-                {questionaireMapping[WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL] && (
-                  <Box width="50%" marginTop="spacing.3">
-                    <TextInput
-                      label="Enter your support email ID"
-                      placeholder="Email ID"
-                      type="email"
-                      name={WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL}
-                      onChange={handleTextInputChange}
-                      value={formState[WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL].value}
-                      validationState={formState[WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL].valid}
-                      errorText="Please enter a valid email id"
-                      testID="support-email"
-                    />
-                  </Box>
-                )}
-              </>
+              <Box>
+                <img src={CreatePolicyPagesIllustration} />
+              </Box>
             </Box>
           )}
         </Box>

@@ -22,7 +22,6 @@ import styled from 'styled-components';
 
 import { Environments, ShowNotificationType } from 'common/typings';
 
-import DisclaimerModal from './DisclaimerModal';
 import PreviewPagesIllustration from './assets/previewPagesIllustration.svg';
 import { PolicyPageContent } from './utils';
 import useModalComponents from '../hooks/useModalComponents';
@@ -35,6 +34,7 @@ import {
   WebsiteUpdateAutomationStatus,
 } from '../types';
 import { extractTextFromHtmlElement, snapPoints } from '../utils';
+import { policyPagePublishDisclaimer } from './constants';
 
 const SkeletonWrapper = styled.div(
   ({ theme }) => `
@@ -172,50 +172,29 @@ function PreviewPages({
 
   const isPublishing = publishMutation.isLoading || consentMutation.isLoading;
 
-  return isDisclaimerOpen ? (
-    <DisclaimerModal
-      isDisclaimerOpen={isDisclaimerOpen}
-      setIsDisclaimerOpen={setIsDisclaimerOpen}
-      isMobile={isMobile}
-    />
-  ) : (
+  return (
     <Modal isOpen={isOpen} onDismiss={onGoBack} snapPoints={snapPoints} size="large">
       <ModalHeader />
       <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
         <Box
           display="flex"
           flexDirection="row"
-          minHeight={isMobile ? 'none' : '400px'}
-          height="560px"
+          minHeight={isMobile ? 'none' : '509px'}
+          height="509px"
           overflowY="auto"
         >
           <Box
             paddingX={isMobile ? 'none' : 'spacing.8'}
             paddingY={isMobile ? 'none' : 'spacing.7'}
-            minHeight="560px"
             flex="2"
           >
             <Box>
               <Heading size="small" weight="semibold">
-                Please review the policy pages created for your business
+                Review your policy pages
               </Heading>
-              <Text size="medium" color="surface.text.gray.muted" marginBottom="spacing.7">
-                We have created these pages based on your given details.
+              <Text size="medium" color="surface.text.gray.muted" marginBottom="spacing.4">
+                We’ve created these using your given details
               </Text>
-            </Box>
-            <Box backgroundColor="transparent" width="100%" overflow="scroll">
-              <Box
-                display="flex"
-                flexDirection="row"
-                gap="spacing.3"
-                alignItems="center"
-                marginBottom="spacing.7"
-              >
-                <Badge icon={CheckIcon} color="information">
-                  Created by Razorpay
-                </Badge>
-                <Divider thickness="thick" variant="subtle" />
-              </Box>
             </Box>
             {isFetching || isError ? (
               <SkeletonWrapper>
@@ -304,11 +283,31 @@ function PreviewPages({
                     errorText="Please agree to the terms to proceed"
                     isChecked={isConsentChecked}
                   >
-                    I understand that the content provided is not legal advice, and by using them I
-                    agree to{' '}
-                    <Link variant="button" onClick={() => setIsDisclaimerOpen(true)}>
-                      this disclaimer
-                    </Link>
+                    <Text color="surface.text.gray.subtle">
+                      I understand that the content provided is not legal advice, and by using them
+                      I agree to{' '}
+                      <b>
+                        <Link
+                          variant="button"
+                          onClick={() => setIsDisclaimerOpen(!isDisclaimerOpen)}
+                        >
+                          this disclaimer.
+                        </Link>
+                      </b>
+                      {isDisclaimerOpen ? (
+                        <>
+                          <Divider
+                            thickness="thin"
+                            variant="muted"
+                            margin="spacing.6"
+                            marginX="spacing.0"
+                          />
+                          <Text color="surface.text.gray.subtle">
+                            {policyPagePublishDisclaimer}
+                          </Text>
+                        </>
+                      ) : null}
+                    </Text>
                   </Checkbox>
                 </Box>
               </>
@@ -316,7 +315,6 @@ function PreviewPages({
           </Box>
           {!isMobile && (
             <Box
-              padding="spacing.6"
               backgroundColor="surface.background.sea.subtle"
               flex="1"
               display="flex"
@@ -326,7 +324,9 @@ function PreviewPages({
               gap="spacing.3"
               alignItems="center"
               justifyContent="flex-end"
-              paddingBottom="spacing.0"
+              padding="spacing.0"
+              paddingLeft="spacing.4"
+              borderTopRightRadius="large"
             >
               <Box>
                 <img src={PreviewPagesIllustration} />

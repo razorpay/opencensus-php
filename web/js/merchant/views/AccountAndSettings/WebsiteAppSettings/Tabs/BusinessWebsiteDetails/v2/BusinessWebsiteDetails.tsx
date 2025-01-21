@@ -107,6 +107,7 @@ const BusinessWebsiteDetails: React.FC<BusinessWebsiteDetailsProps> = ({
           openModal={openModal}
           closeModal={closeModal}
           isBladeRevamp={true}
+          isMobile={isMobile}
           {...(actionOn === WebsiteUpdateActionOn.ADDITIONAL_WEBSITE
             ? {
                 flowType: FLOWS.ADDITIONAL_WEBSITE,

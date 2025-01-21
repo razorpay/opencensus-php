@@ -8,6 +8,7 @@ import useModalComponents from '../hooks/useModalComponents';
 import { track } from '../tracking';
 import { WebsitePolicyPages } from '../types';
 import { getWebsiteCount, snapPoints } from '../utils';
+import CompletedPagesIllustration from './assets/completedPolicyPages.svg';
 
 export interface PolicyPagesCompleteProps {
   isOpen: boolean;
@@ -46,33 +47,57 @@ function CompletedPolicyPages({
   }, [isOpen]);
 
   return (
-    <Modal isOpen={isOpen} onDismiss={onDismiss} snapPoints={snapPoints} size="medium">
+    <Modal isOpen={isOpen} onDismiss={onDismiss} snapPoints={snapPoints} size="large">
       <ModalHeader />
       <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
-        <Box
-          display="flex"
-          flexDirection="row"
-          minHeight={isMobile ? 'none' : '400px'}
-          paddingX={isMobile ? 'none' : 'spacing.8'}
-          paddingY={isMobile ? 'none' : 'spacing.7'}
-        >
-          <Box display="flex" flexDirection="column" flex="2" gap="spacing.8">
-            <Box display="flex" flexDirection="column" gap="spacing.4" testID="completed-pages">
-              <Box marginBottom="spacing.7">
-                <Heading size="small" weight="semibold">
-                  You are all done! 🙌
-                </Heading>
-                <Text size="medium" color="surface.text.gray.muted">
-                  Please find the links to your policy pages below.
-                </Text>
+        <Box display="flex" flexDirection="row" minHeight={isMobile ? 'none' : '509px'}>
+          <Box
+            paddingX={isMobile ? 'none' : 'spacing.8'}
+            paddingY={isMobile ? 'none' : 'spacing.7'}
+            flex="2"
+          >
+            <Box display="flex" flexDirection="column" flex="2" gap="spacing.8">
+              <Box
+                display="flex"
+                flexDirection="column"
+                gap={isMobile ? 'spacing.4' : 'spacing.7'}
+                testID="completed-pages"
+              >
+                <Box>
+                  <Heading size="small" weight="semibold">
+                    You are all done! 🙌
+                  </Heading>
+                  <Text size="medium" color="surface.text.gray.muted">
+                    Please find the links to your policy pages below.
+                  </Text>
+                </Box>
+                {missingPagesKeys.map((page) => {
+                  const { Icon, title } = PolicyPageContent[page];
+                  const { value } = missingPages[page];
+                  return <CardDetails Icon={Icon} key={page} title={title} value={value} />;
+                })}
               </Box>
-              {missingPagesKeys.map((page) => {
-                const { Icon, title } = PolicyPageContent[page];
-                const { value } = missingPages[page];
-                return <CardDetails Icon={Icon} key={page} title={title} value={value} />;
-              })}
             </Box>
           </Box>
+          {!isMobile && (
+            <Box
+              backgroundColor="surface.background.sea.subtle"
+              flex="1"
+              display="flex"
+              position="sticky"
+              top="spacing.0"
+              flexDirection="column"
+              gap="spacing.3"
+              alignItems="center"
+              justifyContent="flex-end"
+              padding="spacing.0"
+              borderTopRightRadius="large"
+            >
+              <Box>
+                <img src={CompletedPagesIllustration} />
+              </Box>
+            </Box>
+          )}
         </Box>
       </ModalBody>
       <ModalFooter>

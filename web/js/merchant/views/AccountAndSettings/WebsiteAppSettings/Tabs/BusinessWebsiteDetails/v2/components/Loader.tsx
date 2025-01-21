@@ -21,8 +21,8 @@ const Loader: React.FC<LoaderProps> = ({ isMobile, onClick, variant, isOpen, onD
   const { Content, lottieAnimation } = loaderVariant[variant];
 
   return (
-    <Modal isOpen={isOpen} onDismiss={onDismiss} size="medium" snapPoints={snapPoints}>
-      <ModalBody>
+    <Modal isOpen={isOpen} onDismiss={onDismiss} snapPoints={snapPoints} size="large">
+      <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
         <Box
           display="flex"
           flexDirection="column"
@@ -31,6 +31,7 @@ const Loader: React.FC<LoaderProps> = ({ isMobile, onClick, variant, isOpen, onD
           gap="spacing.4"
           padding="spacing.5"
           testID={`loader-${variant}`}
+          minHeight={isMobile ? 'auto' : '586px'}
         >
           <Box>
             <Lottie

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowRightIcon, Box, Button, Heading, Text, Link } from '@razorpay/blade/components';
 
 import { User } from 'common/typings';
@@ -93,9 +93,8 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
         <Box
           display="flex"
           flexDirection="row"
-          minHeight={isMobile ? 'none' : '400px'}
-          height="560px"
-          overflowY="auto"
+          minHeight={isMobile ? 'none' : '509px'}
+          height="509px"
         >
           <Box
             paddingX={isMobile ? 'none' : 'spacing.8'}
@@ -104,6 +103,7 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
             flex="2"
             gap="spacing.8"
             paddingY={isMobile ? 'none' : 'spacing.7'}
+            overflowY="auto"
           >
             <Box
               display="flex"
@@ -186,6 +186,7 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
               alignItems="center"
               flexDirection="column"
               gap="spacing.3"
+              borderTopRightRadius="large"
             >
               <HorizontalLineWithText>
                 <span>Recommended</span>
@@ -193,7 +194,7 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
               <SuggestionsBox type="ADD_MISSING">
                 <Box position="relative" padding="spacing.5">
                   <Text size="large" weight="medium">
-                    Create Policy pages with {org.business_name} in 2 mins! ⚡️
+                    Create all missing policy pages with {org.business_name} in 2 mins! ⚡️
                   </Text>
                   <Link
                     variant="button"

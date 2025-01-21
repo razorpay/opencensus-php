@@ -26,8 +26,8 @@ const MainPageLivenessError: React.FC<LoaderProps> = ({
   const websiteUrl = mainPageFormState?.[MainFormFields.URL].value;
 
   return (
-    <Modal isOpen={isOpen} onDismiss={onDismiss} size="medium" snapPoints={snapPoints}>
-      <ModalBody>
+    <Modal isOpen={isOpen} onDismiss={onDismiss} snapPoints={snapPoints} size="large">
+      <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
         <Box
           display="flex"
           flexDirection="column"
@@ -36,6 +36,7 @@ const MainPageLivenessError: React.FC<LoaderProps> = ({
           gap="spacing.4"
           padding="spacing.5"
           testID="loader-liveness-error"
+          minHeight={isMobile ? 'auto' : '586px'}
         >
           <Box>
             <Lottie

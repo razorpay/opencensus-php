@@ -105,12 +105,10 @@ describe('PreviewPages', () => {
     renderApp();
     expect(
       screen.getByRole('heading', {
-        name: 'Please review the policy pages created for your business',
+        name: 'Review your policy pages',
       }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText('We have created these pages based on your given details.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('We’ve created these using your given details')).toBeInTheDocument();
   });
 
   it('should render policy pages preview on mobile', () => {
@@ -119,12 +117,10 @@ describe('PreviewPages', () => {
     });
     expect(
       screen.getByRole('heading', {
-        name: 'Please review the policy pages created for your business',
+        name: 'Review your policy pages',
       }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText('We have created these pages based on your given details.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('We’ve created these using your given details')).toBeInTheDocument();
   });
 
   it('should render error message when there is an error', () => {
@@ -262,43 +258,24 @@ describe('PreviewPages', () => {
       renderApp();
       await userEvent.click(
         screen.getByRole('button', {
-          name: 'this disclaimer',
+          name: 'this disclaimer.',
         }),
       );
       expect(screen.getByText(policyPagePublishDisclaimer)).toBeInTheDocument();
     });
 
-    it('should dismiss disclaimer on ack cta', async () => {
+    it('should toggle visiblity of disclaimer on ack cta', async () => {
       renderApp();
       await userEvent.click(
         screen.getByRole('button', {
-          name: 'this disclaimer',
+          name: 'this disclaimer.',
         }),
       );
       const disclaimerContent = screen.getByText(policyPagePublishDisclaimer);
       expect(disclaimerContent).toBeInTheDocument();
       await userEvent.click(
         screen.getByRole('button', {
-          name: 'Okay, got it',
-        }),
-      );
-      await waitFor(() => {
-        expect(disclaimerContent).not.toBeInTheDocument();
-      });
-    });
-
-    it('should dismiss disclaimer close cta', async () => {
-      renderApp();
-      await userEvent.click(
-        screen.getByRole('button', {
-          name: 'this disclaimer',
-        }),
-      );
-      const disclaimerContent = screen.getByText(policyPagePublishDisclaimer);
-      expect(disclaimerContent).toBeInTheDocument();
-      await userEvent.click(
-        screen.getByRole('button', {
-          name: 'Close',
+          name: 'this disclaimer.',
         }),
       );
       await waitFor(() => {
