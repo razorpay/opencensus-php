@@ -1,6 +1,7 @@
 import errorService from '@razorpay/universe-utils/errorService';
-import { captureErrorOnAnalytics, capturePrometheusMetric, Metrics } from 'common/utils/analytics';
+
 import { getPathForMetrics } from 'common/new-ui/ErrorBoundary/utils';
+import { captureErrorOnAnalytics, capturePrometheusMetric, Metrics } from 'common/utils/analytics';
 
 function extractPersona() {
   const {
@@ -77,6 +78,10 @@ export function initSentry(appName) {
         dsn: window.SENTRY_DSN,
         beforeSend: (event, hint) => {
           if (hint?.originalException?.code === 'UNKNOWN_ERROR_CODE') {
+            return null;
+          }
+          // Do not capture errors in local and redirector environment
+          if (['local', 'redirector'].includes(environment)) {
             return null;
           }
 
