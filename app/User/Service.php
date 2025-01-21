@@ -1645,7 +1645,11 @@ class Service extends Base\Service
         }
 
         $currentMerchantId = $currentMerchant->id;
+
+        $this->setSplitzVariantBulkData($currentMerchant);
+
         $merchantDetailService = new MerchantDetails\Service;
+
 
         $data["pre_signup"] = $merchantDetailService->getDetailsFromAPIWithCache($currentMerchantId);
 
@@ -4441,9 +4445,26 @@ class Service extends Base\Service
             }
         }
 
+        $finalExperimentIds = [];
+
+        // ignore already evaluated experiments
+        foreach ($experimentIds as $experimentId)
+        {
+            if (! array_key_exists($experimentId, $this->splitzExprimentData))
+            {
+                $finalExperimentIds[] = $experimentId;
+            }
+        }
+
+        if (empty($finalExperimentIds))
+        {
+            // all the experiments are already evaluated.
+            return;
+        }
+
         $data = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariantBulk(
             $currentMerchantId,
-            $experimentIds,
+            $finalExperimentIds,
             [AppConstants::HTTP_CLIENT => $this->httpClient],
             AppConstants::SPLITZ_BULK_EVALUATE_PATH
         );
