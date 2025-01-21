@@ -15,7 +15,14 @@ import Settlement from './Settlement';
 import SettlementLoader from './Settlement/Loader';
 import { getUcsAliasFromQueryKey, track } from 'merchant/widgets/utils';
 import { getAnalyticsHeroCardStateIdentifier } from '../utils';
-import { SETTLEMENT_HOLD_FEATURE } from 'merchant/views/Settlements/components/utils';
+import {
+  isSettlementSOHBlockEnabled,
+  SETTLEMENT_HOLD_FEATURE,
+} from 'merchant/views/Settlements/components/utils';
+import { isRiskFoh, isRiskDisabled } from './Settlement/utils';
+import SettlementBlockedSOH from './Settlement/SettlementBlockedSOH';
+import { useSplitzService } from 'common/splitz';
+import { Box } from '@razorpay/blade/components';
 
 const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
   queryKey,
@@ -31,6 +38,10 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
   const screen = getUcsAliasFromQueryKey(queryKey) ?? '';
   const widgetId = `merchantDashboard.${screen}.${type}.${id}`;
   const [settlementConfig, setSettlementConfig] = useState<settlementConfig>({});
+  const splitz = useSplitzService();
+  const isRiskNonTransactedFoh = isRiskFoh() && data?.hero_card_data?.is_transacted === false;
+  const hasCurrentBalance = typeof data?.hero_card_data?.settlement?.current_balance === 'string';
+
   useEffect(() => {
     if (!isLoading && !isRetrying) {
       const properties = {
@@ -58,7 +69,18 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
 
       const features = data?.hero_card_data?.settlement?.settlement_config_details?.features;
       let updatedConfig = {};
-      if (features?.global_hold_config) {
+      if (isRiskNonTransactedFoh) {
+        updatedConfig = {
+          source: SETTLEMENT_HOLD_FEATURE.FOH,
+          status: true,
+        };
+      } else if (isRiskDisabled() && !isRiskFoh()) {
+        updatedConfig = {
+          source: SETTLEMENT_HOLD_FEATURE.DISABLED_LIVE,
+          status: true,
+          sub_title: 'We have disabled your account.',
+        };
+      } else if (features?.global_hold_config) {
         updatedConfig = {
           source: SETTLEMENT_HOLD_FEATURE.FOH,
           status: true,
@@ -117,6 +139,17 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
   } = hero_card_data;
 
   const settlementState = getAnalyticsHeroCardStateIdentifier(hero_card_data);
+
+  if (isSettlementSOHBlockEnabled(splitz) && (isRiskNonTransactedFoh || isRiskDisabled())) {
+    return (
+      <SettlementBlockedSOH
+        settlementConfig={settlementConfig}
+        bankUpdate={false}
+        isFohRiskDisabled={isRiskDisabled() && !isRiskFoh()}
+        hasCurrentBalance={hasCurrentBalance}
+      />
+    );
+  }
 
   return isSettlement && settlement ? (
     <Settlement

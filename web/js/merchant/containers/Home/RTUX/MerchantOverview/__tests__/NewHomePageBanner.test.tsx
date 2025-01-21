@@ -7,6 +7,7 @@ import { bladeTheme } from '@razorpay/blade/tokens';
 import { useMobile } from 'common/hooks/useMobile';
 import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
 import { BladeProvider } from '@razorpay/blade/components';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const variantOn = {
   settlements_soh_block: { variables: { result: 'on' } },
@@ -25,6 +26,7 @@ jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
 }));
 
+const queryClient = new QueryClient();
 describe('SettlementBlockedSOH Component', () => {
   beforeEach(() => {
     (useMobile as jest.Mock).mockImplementation((breakpoints) => breakpoints === mobileBreakoints);
@@ -34,10 +36,14 @@ describe('SettlementBlockedSOH Component', () => {
     const props = {
       bankUpdate: true,
       settlementConfig: SOH_MOCK,
+      isFohRiskDisabled: false,
+      hasCurrentBalance: false,
     };
     const { container } = render(
       <BladeProvider themeTokens={bladeTheme}>
-        <SettlementBlockedSOH {...props} />
+        <QueryClientProvider client={queryClient}>
+          <SettlementBlockedSOH {...props} />
+        </QueryClientProvider>
       </BladeProvider>,
     );
 
@@ -53,10 +59,14 @@ describe('SettlementBlockedSOH Component', () => {
     const props = {
       bankUpdate: false,
       settlementConfig: SOH_MOCK,
+      isFohRiskDisabled: false,
+      hasCurrentBalance: false,
     };
     const { container } = render(
       <BladeProvider themeTokens={bladeTheme}>
-        <SettlementBlockedSOH {...props} />
+        <QueryClientProvider client={queryClient}>
+          <SettlementBlockedSOH {...props} />
+        </QueryClientProvider>
       </BladeProvider>,
     );
     expect(screen.getByText(SOH_MOCK.sub_title)).toBeInTheDocument();
@@ -67,10 +77,14 @@ describe('SettlementBlockedSOH Component', () => {
     const props = {
       bankUpdate: false,
       settlementConfig: SOH_MOCK_2,
+      isFohRiskDisabled: false,
+      hasCurrentBalance: false,
     };
     const { container } = render(
       <BladeProvider themeTokens={bladeTheme}>
-        <SettlementBlockedSOH {...props} />
+        <QueryClientProvider client={queryClient}>
+          <SettlementBlockedSOH {...props} />
+        </QueryClientProvider>
       </BladeProvider>,
     );
     expect(screen.getByText(SOH_MOCK_2.sub_title)).toBeInTheDocument();
@@ -81,10 +95,14 @@ describe('SettlementBlockedSOH Component', () => {
     const props = {
       bankUpdate: false,
       settlementConfig: FOH_MOCK,
+      isFohRiskDisabled: false,
+      hasCurrentBalance: false,
     };
     const { container } = render(
       <BladeProvider themeTokens={bladeTheme}>
-        <SettlementBlockedSOH {...props} />
+        <QueryClientProvider client={queryClient}>
+          <SettlementBlockedSOH {...props} />
+        </QueryClientProvider>
       </BladeProvider>,
     );
     expect(screen.getByText(FOH_MOCK.sub_title)).toBeInTheDocument();
@@ -96,10 +114,14 @@ describe('SettlementBlockedSOH Component', () => {
     const props = {
       bankUpdate: false,
       settlementConfig: BLOCK_MOCK,
+      isFohRiskDisabled: false,
+      hasCurrentBalance: false,
     };
     render(
       <BladeProvider themeTokens={bladeTheme}>
-        <SettlementBlockedSOH {...props} />
+        <QueryClientProvider client={queryClient}>
+          <SettlementBlockedSOH {...props} />
+        </QueryClientProvider>
       </BladeProvider>,
     );
     expect(screen.getByText(BLOCK_MOCK.sub_title)).toBeInTheDocument();

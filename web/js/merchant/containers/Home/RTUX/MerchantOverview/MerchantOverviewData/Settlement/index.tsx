@@ -27,7 +27,7 @@ import { getSettlementConfig } from './utils';
 import SettlementBlockedSOH from './SettlementBlockedSOH';
 import { isSettlementSOHBlockEnabled } from 'merchant/views/Settlements/components/utils';
 import { useSplitzService } from 'common/splitz';
-import { User } from 'common/typings';
+
 interface SettlementProps extends ISettlement, IAnalyticsProperties, settlementConfig {
   bankUpdate?: boolean;
   settlementConfig: settlementConfig | null;
@@ -58,6 +58,7 @@ const Settlement: React.FC<SettlementProps> = ({
   const isSohBlock = settlementConfig?.status;
   const isMobile = useMobile(mobileBreakoints);
   const splitz = useSplitzService();
+  const hasCurrentBalance = typeof current_balance === 'string';
   return (
     <Box
       display="flex"
@@ -66,7 +67,12 @@ const Settlement: React.FC<SettlementProps> = ({
       marginX={{ base: 'spacing.2', l: 'spacing.4' }}
     >
       {isSettlementSOHBlockEnabled(splitz) && isSohBlock ? (
-        <SettlementBlockedSOH settlementConfig={settlementConfig} bankUpdate={!!bankUpdate} />
+        <SettlementBlockedSOH
+          settlementConfig={settlementConfig}
+          bankUpdate={!!bankUpdate}
+          isFohRiskDisabled={false}
+          hasCurrentBalance={hasCurrentBalance}
+        />
       ) : (
         <>
           <Box

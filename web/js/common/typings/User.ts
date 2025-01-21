@@ -162,6 +162,7 @@ type UserProperties = {
     };
   };
   tags: string[];
+  live: boolean;
   is_pgos_merchant: boolean;
   configTags: any;
   logo_url?: string;

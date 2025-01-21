@@ -1,4 +1,5 @@
 import { render } from 'test-utils';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import HelpSection from '../HelpSection';
 
@@ -13,17 +14,25 @@ jest.mock('merchant/views/TicketSupport/utils', () => ({
     emit: jest.fn(),
   },
 }));
+const queryClient = new QueryClient();
 
 describe('HelpSection Component', () => {
   test('should not render Support component for non-Indian users', () => {
     const { getByTestId } = render(
-      <HelpSection
-        history={{ location: { pathname: '/' } }}
-        isHelpWidgetVisible={true}
-        user={{
-          isCountryIndia: false,
-        }}
-      />,
+      <QueryClientProvider client={queryClient}>
+        <HelpSection
+          history={{ location: { pathname: '/' } }}
+          isHelpWidgetVisible={true}
+          user={{
+            isCountryIndia: false,
+            live: true,
+            merchant: {
+              hold_funds: false,
+            },
+            tags: ['MS_risk_review_onhold'],
+          }}
+        />
+      </QueryClientProvider>,
     );
     expect(getByTestId('component-wrapper')).toBeEmptyDOMElement();
   });

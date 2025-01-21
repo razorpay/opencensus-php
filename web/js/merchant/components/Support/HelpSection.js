@@ -9,11 +9,14 @@ import { useSplitzService } from 'common/splitz';
 import { analyticsTrack } from 'common/utils/analytics';
 import { removeCookie, getCookie } from 'common/utils/cookies';
 import { TicketSystemEmitter } from 'merchant/care/init';
+import { useFohTicket } from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/store';
 import { fetchTicketsRaisedByAgents } from 'merchant/reducers/config';
 import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGatingUtils';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 
 import { fireCustomEvent, getPosActivationStatus } from './utils';
+import { blockTicketCreationFoh } from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils';
+import { isSettlementSOHBlockEnabled } from 'merchant/views/Settlements/components/utils';
 
 const Support = lazy(() =>
   import(/* webpackChunkName: 'frontend-care' */ '@razorpay/frontend-care'),
@@ -43,6 +46,9 @@ const HelpSection = ({
   isHelpWidgetVisible,
 }) => {
   const splitz = useSplitzService();
+  const { fohTicketStatus } = useFohTicket();
+  const hideTicketCreation =
+    isSettlementSOHBlockEnabled(splitz) && blockTicketCreationFoh(user, fohTicketStatus);
   const handleError = ({ error = 'CARE ERROR', rank = Ranks.P2 } = {}) => {
     errorService.captureError(error, {
       tags: {
@@ -190,7 +196,9 @@ const HelpSection = ({
           isDev={isDev}
           isPartnerDashboard={isPartnerDashboard}
           hideSupportIcon={!isHelpWidgetVisible}
-          hideTicketCreationCTA={checkEligibilityForFeeBasedGating(user) || !user.activation_status}
+          hideTicketCreationCTA={
+            checkEligibilityForFeeBasedGating(user) || !user.activation_status || hideTicketCreation
+          }
           handleClose={handleSupportClose}
         />
       </Suspense>

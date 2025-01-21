@@ -124,6 +124,7 @@ export const SETTLEMENT_HOLD_FEATURE = {
   FOH: 'FOH', //FOH: Funds on Hold
   HOLD: 'SOH', //SOH: Settlement on Hold
   BLOCK: 'Block', //BLOCK: Settlement Blocked
+  DISABLED_LIVE: 'DISABLED_LIVE', //DISABLED_LIVE: Live is disabled in case of RISK FOH
 };
 
 export const SETTLEMENT_HOLD_CTA_TEXT = {
@@ -214,3 +215,6 @@ export const BADGE_INFO = {
 export const isBlocked = (feature) => {
   return feature?.hold.status || feature?.global_hold_config.status || feature?.block?.status;
 };
+
+export const getFOHDisabledLiveText = (ticketId) =>
+  `This means that you will no longer be able to accept new transactions. To assist in resolving this issue, please respond over the Ticket ID: ${ticketId}. You can call us from your registered number at 08068838200, using your Ticket ID ${ticketId} as the PIN.`;

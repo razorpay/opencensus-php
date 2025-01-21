@@ -32,6 +32,13 @@ import {
 } from './utils';
 import moment from 'moment/moment';
 
+import {
+  fireContactSupportFohEvent,
+  showContactSupport,
+} from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils';
+import { useFohTicket } from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/store';
+import useFohTicketData from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/useFohTicketData';
+
 export const BannerWrapper = styled.div(
   ({ theme }) => `
     padding: ${theme.spacing[6]}px;
@@ -62,6 +69,8 @@ const SettlementsBannerV2 = ({
 
   const splitz = useSplitzService();
   const isExpEnabled = isSettlementSOHBlockEnabled(splitz);
+  const { fohTicketId, fohTicketStatus } = useFohTicket();
+  const { isLoading } = useFohTicketData();
 
   const feature = settlementConfig?.data?.config?.features;
   const isSOH = settlementConfig?.data?.config?.features?.hold?.status;
@@ -97,6 +106,10 @@ const SettlementsBannerV2 = ({
   const handleContactSupport = (title) => {
     closeModal();
 
+    if (isFOH && showContactSupport(fohTicketStatus) && fohTicketId) {
+      fireContactSupportFohEvent(fohTicketId);
+      return;
+    }
     window.rzpAnalytics?.({
       eventCategory: 'Settlement Revamp',
       eventAction: 'Contact Support',
@@ -216,7 +229,7 @@ const SettlementsBannerV2 = ({
       primary: {
         text: SETTLEMENT_HOLD_CTA_TEXT.CONTACT_SUPPORT,
         onClick: () => {
-          handleContactSupport(title);
+          !isLoading && handleContactSupport(title);
         },
       },
     };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { data, BannerType, trackBannerDisplayed, isBankAccountReq } from './config';
 import { Alert, Box } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
@@ -16,6 +16,13 @@ import {
 } from 'merchant/views/Settlements/components/utils';
 import { useSplitzService } from 'common/splitz';
 import { description } from 'common/ui/item/pair';
+import { trackBankAccountUpdateEvent } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/utils/track';
+import {
+  fireContactSupportFohEvent,
+  showContactSupport,
+} from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils';
+import { useFohTicket } from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/store';
+import useFohTicketData from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/useFohTicketData';
 
 export interface BannerProps {
   type: BannerType;
@@ -36,6 +43,8 @@ const Banner = ({
   bankAccountChangeStatus,
 }: BannerProps): JSX.Element | null => {
   const splitz = useSplitzService();
+  const { fohTicketId, fohTicketStatus } = useFohTicket();
+  const { isLoading } = useFohTicketData();
 
   useEffect(() => {
     trackBannerDisplayed(type);
@@ -44,6 +53,17 @@ const Banner = ({
   if (!bankAccount && isBankAccountReq(type)) {
     return null;
   }
+
+  const contactSupport = () => ({
+    onClick: (): void => {
+      trackBankAccountUpdateEvent({
+        objectName: 'Banner Contact Support',
+        actionName: 'Clicked',
+      });
+      fireContactSupportFohEvent(fohTicketId);
+    },
+    text: 'Contact support',
+  });
 
   const getAlertProps = () => {
     const commonProps = {
@@ -66,6 +86,11 @@ const Banner = ({
           color,
           title: settlementConfig?.sub_title || DEFAULT_SETTLEMENT_TITLE.FOH,
           description: DEFAULT_SETTLEMENT_SUB_TITLE.FOH,
+          actions: {
+            ...(showContactSupport(fohTicketStatus) && fohTicketId && !isLoading
+              ? { primary: { ...contactSupport() } }
+              : undefined),
+          },
         };
       case BannerType.BLOCK:
         return {

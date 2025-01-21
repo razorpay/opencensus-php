@@ -135,8 +135,8 @@ function CreditDetails({
     analyticsTrack(clickHistoryCreditsGA(title));
   };
 
-  const showSelfServeButtons = [rolesList.OWNER, rolesList.ADMIN].includes(user.role) &&
-    !user.isCreditSelfServeDisabled;
+  const showSelfServeButtons =
+    [rolesList.OWNER, rolesList.ADMIN].includes(user.role) && !user.isCreditSelfServeDisabled;
 
   return (
     <Card>

@@ -3,6 +3,7 @@ import { ArrowRightIcon, Link } from '@razorpay/blade/components';
 import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
 import { currencySymbols } from 'common/utils/rzp-utils';
+import { fireCustomEvent } from 'merchant/components/Support/utils';
 import { ROUTES, TEXT_CONTENT } from 'merchant/containers/Home/RTUX/MerchantOverview/constants';
 import {
   IGetTodaySingleSettlementContent,
@@ -21,6 +22,7 @@ import {
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { track } from 'merchant/widgets/utils';
+import { getUser } from 'shell/commonStore';
 
 // returns data in this format: February 7
 export function getFormattedDateFromTimestamp(timestamp: number): string {
@@ -478,4 +480,58 @@ export const getSettlementStatusImage = (status: string) => {
     default:
       return null;
   }
+};
+
+export const fireContactSupportFohEvent = (ticketId: string) => {
+  fireCustomEvent({
+    event: 'open-contact-support',
+    data: {
+      contactNumber: '08068838200',
+      ticketId: ticketId,
+    },
+  });
+};
+
+export const RISK_FOH_TAGS = [
+  'MS_risk_review_onhold',
+  'Risk_review_onhold',
+  'SC_risk_review_onhold',
+  'XRisk_AML_onhold',
+  'XRisk_onhold',
+];
+
+export const RISK_DISABLE_TAGS = [
+  'MS_risk_review_disable_live',
+  'Risk_review_disable_live',
+  'SC_risk_review_disable_live',
+  'XRisk_AML_Disable_live',
+  'XRisk_disable_live',
+];
+
+const hasTags = (userTags: string[] | undefined, tagsList: string[]): boolean => {
+  return userTags?.some((tag) => tagsList.includes(tag)) ?? false;
+};
+
+export const isRiskFoh = (): boolean => {
+  const user = getUser();
+  return hasTags(user.tags, RISK_FOH_TAGS) && !!user.merchant?.hold_funds;
+};
+
+export const isRiskDisabled = (): boolean => {
+  const user = getUser();
+  return hasTags(user.tags, RISK_DISABLE_TAGS) && !user.live;
+};
+
+export const showContactSupport = (ticketStatus) => {
+  return (isRiskFoh() || isRiskDisabled()) && ticketStatus !== 'Closed';
+};
+
+export const blockTicketCreationFoh = (user, fohTicketStatus) => {
+  const ticketStatus =
+    fohTicketStatus !== 'Closed' && fohTicketStatus !== 'Auto Closed' && fohTicketStatus !== '';
+  const isRiskFohMerchant =
+    user.tags?.some((tag) => RISK_FOH_TAGS.includes(tag)) && user.merchant?.hold_funds;
+  const isRiskDisableMerchant =
+    user.tags?.some((tag) => RISK_DISABLE_TAGS.includes(tag)) && !user.live;
+  return ticketStatus && (isRiskFohMerchant || isRiskDisableMerchant);
 };

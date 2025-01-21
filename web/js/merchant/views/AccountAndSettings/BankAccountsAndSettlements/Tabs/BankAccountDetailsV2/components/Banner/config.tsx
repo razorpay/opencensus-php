@@ -8,6 +8,15 @@ import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import React from 'react';
 import { BannerProps } from './Banner';
 import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
+import {
+  fireContactSupportFohEvent,
+  showContactSupport,
+  isRiskFoh,
+  isRiskDisabled,
+} from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils';
+import { useFohTicket } from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/store';
+import { fetchFohTicketData } from 'merchant/containers/Home/RTUX/MerchantOverview/utils';
+import useFohTicketData from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/useFohTicketData';
 
 export enum BannerType {
   SUCCESS = 'success',
@@ -44,16 +53,20 @@ const commonData = {
   isDismissible: false,
 };
 
-const contactSupport = {
+const contactSupport = (isFoh?: boolean, fohTicketId?: string, fohTicketStatus?: string) => ({
   onClick: (): void => {
     trackBankAccountUpdateEvent({
       objectName: 'Banner Contact Support',
       actionName: 'Clicked',
     });
-    CreateTicketEmitter.emit('create-ticket', 'tickets');
+    if (isFoh && showContactSupport(fohTicketStatus) && fohTicketId) {
+      fireContactSupportFohEvent(fohTicketId);
+    } else {
+      CreateTicketEmitter.emit('create-ticket', 'tickets');
+    }
   },
   text: 'Contact support',
-};
+});
 
 const underReviewTimeBreachedAgainActions = {
   actions: {
@@ -106,6 +119,8 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
     SOH,
     RISK_FOH,
   } = BannerType;
+  const { fohTicketId, fohTicketStatus } = useFohTicket();
+  const { isLoading } = useFohTicketData();
 
   const maskedAccountNumber = bankAccount?.account_number
     ? `***${bankAccount.account_number.slice(-3)}`
@@ -145,6 +160,7 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
         color: 'information',
         ...commonData,
         ...underReviewTimeBreachedAgainActions,
+        actions: undefined,
       };
     case INACTIVE_SETTLEMENT_UNDER_REVIEW:
       return {
@@ -167,6 +183,7 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
         color: 'information',
         ...commonData,
         ...underReviewTimeBreachedAgainActions,
+        actions: undefined,
       };
     case ACTIVE_SETTLEMENT_NC:
       return {
@@ -233,7 +250,7 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
         ...commonData,
         actions: {
           primary: {
-            ...contactSupport,
+            ...contactSupport(true, fohTicketId, fohTicketStatus),
           },
         },
       };

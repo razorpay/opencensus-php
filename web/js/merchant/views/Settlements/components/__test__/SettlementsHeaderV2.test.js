@@ -26,6 +26,14 @@ jest.mock(
   }),
 );
 
+jest.mock(
+  'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils',
+  () => ({
+    isRiskFoh: jest.fn().mockReturnValue(false),
+    isRiskDisabled: jest.fn().mockReturnValue(false),
+  }),
+);
+
 window.session_id = `12345`;
 
 const state = {

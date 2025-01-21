@@ -12,13 +12,22 @@ import {
   DotIcon,
   Text,
   Heading,
+  useTheme,
 } from '@razorpay/blade/components';
+import { makeSpace } from '@razorpay/blade/utils';
 import { useMobile } from 'common/hooks/useMobile';
 import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
 import { settlementConfig } from 'merchant/containers/Home/RTUX/MerchantOverview/types';
-import { StyledImage } from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils';
+import {
+  fireContactSupportFohEvent,
+  isRiskDisabled,
+  isRiskFoh,
+  showContactSupport,
+  StyledImage,
+} from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils';
 import Image from 'assets/paper-dart-blocked.png';
 import {
+  getFOHDisabledLiveText,
   SETTLEMENT_HOLD_BANK_UPDATE_MESSAGE,
   SETTLEMENT_HOLD_CONTACT_SUPPORT_MESSAGE,
   SETTLEMENT_HOLD_CTA_TEXT,
@@ -31,26 +40,35 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { closeModal } from 'merchant_common/reducers/modals';
-
+import { useFohTicket } from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/store';
+import useFohTicketData from './useFohTicketData';
 interface SettlementBlockedSOHProps extends settlementConfig {
   bankUpdate: boolean;
   settlementConfig: settlementConfig | null;
+  isFohRiskDisabled: boolean;
+  hasCurrentBalance: boolean;
 }
-
 const SettlementBlockedSOH: React.FC<SettlementBlockedSOHProps> = ({
   bankUpdate,
   settlementConfig,
+  isFohRiskDisabled = false,
+  hasCurrentBalance = false,
 }) => {
   const isMobile = useMobile(mobileBreakoints);
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const isHold = settlementConfig?.source === SETTLEMENT_HOLD_FEATURE.HOLD;
   const isFoh = settlementConfig?.source === SETTLEMENT_HOLD_FEATURE.FOH;
   const isBlock = settlementConfig?.source === SETTLEMENT_HOLD_FEATURE.BLOCK;
-
   const soh_cta_link = ROUTES_INFO.BANK_ACCOUNT_DETAILS;
   const defaultHeading = isBlock ? SETTLEMENTS_BLOCK_TITLE : SETTLEMENT_HOLD_PRIMARY_TEXT;
   let currentStatus: string = '';
+  const { fohTicketId, fohTicketStatus } = useFohTicket();
+  const { isLoading } = useFohTicketData();
   // First prefernce is FOH, only check for SOH when FOH is not enabled
+  if (isFohRiskDisabled) {
+    currentStatus = SETTLEMENT_HOLD_FEATURE.DISABLED_LIVE;
+  }
   // Showing different message for SOH in case the cta_text is not 'Update Bank Details'  if (!isFoh && isHold && settlementConfig?.cta_text != SETTLEMENT_HOLD_CTA_TEXT.CONTACT_SUPPORT)
   if (!isFoh && isHold && settlementConfig?.cta_text !== SETTLEMENT_HOLD_CTA_TEXT.CONTACT_SUPPORT) {
     currentStatus = SETTLEMENT_HOLD_FEATURE.HOLD;
@@ -58,10 +76,12 @@ const SettlementBlockedSOH: React.FC<SettlementBlockedSOHProps> = ({
   const handleClick = (url) => {
     navigate(url);
   };
-
   const handleContactSupport = () => {
     closeModal();
-
+    if (showContactSupport(fohTicketStatus) && fohTicketId) {
+      fireContactSupportFohEvent(fohTicketId);
+      return;
+    }
     if (window.rzpTicketSystem) {
       CreateTicketEmitter.emit('create-ticket', 'tickets');
     }
@@ -167,10 +187,53 @@ const SettlementBlockedSOH: React.FC<SettlementBlockedSOHProps> = ({
             </Box>
           </>
         );
+      case SETTLEMENT_HOLD_FEATURE.DISABLED_LIVE:
+        return (
+          <Box display="flex" flexDirection="row" justifyContent="space-between" width="100%">
+            <Box flex="4" display="flex" flexDirection="column" justifyContent="center">
+              <Box display="flex" gap="spacing.5" alignItems="flex-start">
+                <Box flexShrink="0" marginTop="spacing.2">
+                  <AlertTriangleIcon
+                    size={!isMobile ? 'xlarge' : 'large'}
+                    color="interactive.icon.negative.subtle"
+                  />
+                </Box>
+                <Heading size={isMobile ? 'medium' : 'large'} weight="semibold">
+                  {settlementConfig?.sub_title}
+                </Heading>
+              </Box>
+              <Box borderRadius="large" margin="spacing.4" paddingLeft="spacing.8">
+                <Text weight="medium" color="surface.text.gray.subtle" size="medium">
+                  {getFOHDisabledLiveText(fohTicketId ? fohTicketId : '')}
+                </Text>
+                <Button
+                  marginTop="spacing.6"
+                  onClick={() => {
+                    handleContactSupport();
+                  }}
+                  isLoading={isLoading}
+                >
+                  {SETTLEMENT_HOLD_CTA_TEXT.CONTACT_SUPPORT}
+                </Button>
+              </Box>
+            </Box>
+            <Box
+              flex="2"
+              marginY={
+                hasCurrentBalance ? makeSpace(-theme.spacing[6]) : makeSpace(-theme.spacing[8])
+              }
+              display={{ base: 'none', l: 'flex' }}
+              alignItems="flex-end"
+              width="340px"
+            >
+              <img src={Image} alt="Status_Image" style={{ width: '340px', maxHeight: '100%' }} />
+            </Box>
+          </Box>
+        );
       default:
         return (
-          <>
-            <Box flex="4">
+          <Box display="flex" flexDirection="row" justifyContent="space-between" width="100%">
+            <Box flex="4" display="flex" flexDirection="column" justifyContent="center">
               <Box display="flex" gap="spacing.5" alignItems="flex-start">
                 <Box flexShrink="0" marginTop="spacing.2">
                   <AlertTriangleIcon
@@ -191,15 +254,25 @@ const SettlementBlockedSOH: React.FC<SettlementBlockedSOHProps> = ({
                   onClick={() => {
                     handleContactSupport();
                   }}
+                  isLoading={(isRiskFoh() || isRiskDisabled()) && isLoading}
                 >
                   {SETTLEMENT_HOLD_CTA_TEXT.CONTACT_SUPPORT}
                 </Button>
               </Box>
             </Box>
-            <Box flex="2" display={{ base: 'none', l: 'block' }}>
-              <StyledImage src={Image} alt="Status_Image" />
+            <Box
+              flex="2"
+              // this is to fix the image alignment issue on FOH card
+              marginY={
+                hasCurrentBalance ? makeSpace(-theme.spacing[6]) : makeSpace(-theme.spacing[8])
+              }
+              display={{ base: 'none', l: 'flex' }}
+              alignItems="flex-end"
+              width="340px"
+            >
+              <img src={Image} alt="Status_Image" style={{ width: '340px', maxHeight: '100%' }} />
             </Box>
-          </>
+          </Box>
         );
     }
   };
@@ -213,5 +286,4 @@ const SettlementBlockedSOH: React.FC<SettlementBlockedSOHProps> = ({
     </Box>
   );
 };
-
 export default SettlementBlockedSOH;
