@@ -1431,6 +1431,8 @@ class Constants
 
     const PG_LEDGER_REVERSE_SHADOW = 'pg_ledger_reverse_shadow';
 
+    const BLOCK_CREDIT_SELF_SERVE  = 'block_credit_self_serve';
+
     const CLS_ONBOARDING_INPROGRESS = 'cls_onboarding_inprogress';
 
     const PG_LEDGER_RAMP_ON_HOLD = "pg_ledger_ramp_on_hold";

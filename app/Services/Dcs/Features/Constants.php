@@ -211,7 +211,7 @@ class Constants
     const KycVerificationForVas                       = 'kyc_verification_for_vas';
     const PersonalisationV3Disabled                   = 'personalisation_v3_disabled';
     const PassCustomUdfFss                            = 'pass_custom_udf_fss';
-
+    const BlockSelfCreditServe                        = 'block_credit_self_serve';
     // magic checkout dcs features
     const OneCcEnabled                  = 'one_cc_enabled';
     const OneCcDualCheckout             = 'one_cc_dual_checkout';
@@ -548,6 +548,8 @@ class Constants
         self::OtherPaymentGatewayConfigured               => "rzp/pg/merchant/terminals/banking_program/Identifier",
         self::VendorOnboardingEnabled                     => "rzp/x/merchant/vendor_experience/VendorExperience",
         self::VendorExperienceEnabled                     => "rzp/x/merchant/vendor_experience/VendorExperience",
+        self::BlockSelfCreditServe                        => "rzp/pg/merchant/ledger/Features",
+
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -816,6 +818,8 @@ class Constants
         APIFeaturesConstants::EXTERNAL_PA_VAS                              => self::OtherPaymentGatewayConfigured,
         APIFeaturesConstants::VENDOR_ONBOARDING_ENABLED                    => self::VendorOnboardingEnabled,
         APIFeaturesConstants::VENDOR_EXPERIENCE_ENABLED                    => self::VendorExperienceEnabled,
+        APIFeaturesConstants::BLOCK_CREDIT_SELF_SERVE                      => self::BlockSelfCreditServe,
+
     ];
 
     /**
@@ -872,6 +876,7 @@ class Constants
         self::VendorOnboardingEnabled                 => 'client',
         self::BuyerProtectionSignedUp                 => 'direct',
         self::VendorExperienceEnabled                 => 'client',
+        self::BlockSelfCreditServe                    => 'direct',
     ];
 
     /**

@@ -3820,7 +3820,17 @@ class Service extends Base\Service
 
     public function fundAdditionTPV(array $input)
     {
+        $merchant = app('basicauth')->getMerchant();
+
         $merchantCore = new Merchant\Core;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::BLOCK_CREDIT_SELF_SERVE) === true) {
+            throw new Exception\LogicException(
+                "Merchant has the Self Credit Service feature disabled. Operation not allowed.",
+                ErrorCode::BAD_REQUEST_MERCHANT_HAS_CREDIT_SELF_SERVICE_ENABLED,
+            );
+        }
+
 
         $this->trace->info(Tracecode::FUND_ADDITION_REQUEST, $input);
 
@@ -14221,6 +14231,16 @@ class Service extends Base\Service
             throw new Exception\LogicException(
                 "PG LEDGER REVERSE SHADOW feature flag is not enabled.",
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+                [
+                    'merchant_id' => $mid
+                ]
+            );
+        }
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::BLOCK_CREDIT_SELF_SERVE) === true) {
+            throw new Exception\LogicException(
+                "Merchant has the Self Credit Service feature disabled. Operation not allowed.",
+                ErrorCode::BAD_REQUEST_MERCHANT_HAS_CREDIT_SELF_SERVICE_ENABLED,
                 [
                     'merchant_id' => $mid
                 ]
