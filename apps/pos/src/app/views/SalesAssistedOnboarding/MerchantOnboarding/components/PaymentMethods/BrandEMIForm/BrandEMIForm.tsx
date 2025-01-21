@@ -246,7 +246,7 @@ const BrandEMIForm = ({
             type={brandNameField?.meta?.dataType ?? 'select'}
             rules={{ required: brandNameField?.meta?.validations?.[0].type === 'isRequired' }}
             errorText="Please select brand name"
-            isDisabled={false}
+            isDisabled={isFormDisabled}
             defaultValue={''}
             selectOptions={brandNames ?? []}
             onDropdownChangeCallback={onDropdownChange}
@@ -276,10 +276,13 @@ const BrandEMIForm = ({
                         optionalBrandFields,
                       })}
                       errorText={getFieldErrorText({ item, errors })}
-                      isDisabled={isFieldDisabled({
-                        fieldName: item.name,
-                        merchantGstField: merchantGstNumber,
-                      })}
+                      isDisabled={
+                        isFormDisabled ||
+                        isFieldDisabled({
+                          fieldName: item.name,
+                          merchantGstField: merchantGstNumber,
+                        })
+                      }
                       defaultValue={getDefaultValue({
                         fieldName: item.name,
                         merchantGstField: merchantGstNumber,

@@ -23,6 +23,7 @@ const props: AddedBrandInfoProps = {
     },
   ],
   isUpdateModularLoading: false,
+  isBrandEmiCcDcEnabled: true,
 };
 describe('<AddedBrandInfo/>', () => {
   test('should show the added brands', () => {
@@ -57,10 +58,16 @@ describe('<AddedBrandInfo/>', () => {
   });
   test('should call add new brand handler when clicked', async () => {
     render(<AddedBrandInfo {...props} />);
-    const addBrandBtn = screen.getByRole('button', { name: /add new brand/i });
+    const addBrandBtn = screen.getByRole('button', { name: /Add new brand/i });
     expect(addBrandBtn).toBeInTheDocument();
     await userEvent.click(addBrandBtn);
     expect(props.addBrandHandler).toHaveBeenCalled();
+  });
+  test('should disable add new brand handler when brand emi cc and dc rate field are disbabled', async () => {
+    const mockProps: AddedBrandInfoProps = { ...props, isBrandEmiCcDcEnabled: false };
+    render(<AddedBrandInfo {...mockProps} />);
+    const addBrandBtn = screen.getByRole('button', { name: /add new brand/i });
+    expect(addBrandBtn).toBeDisabled();
   });
   test('should delete a brand when clicked on delete icon', async () => {
     render(<AddedBrandInfo {...props} />);

@@ -58,6 +58,7 @@ export enum PricingStepComponents {
   MDR_VAS_RATES_COMPONENT = 'mdr_vas_rates_component',
   VAS_RATES_COMPONENT = 'vas_rates_component',
   BRAND_EMI_COMPONENT = 'brand_emi_component',
+  ACQUISITION_MODEL_COMPONENT = 'acquisition_model_component',
 }
 export type DirectModelForm = {
   [PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD]: PaymentMethodFormStringValue;
@@ -96,5 +97,6 @@ export enum MODULAR_PRICING_FIELDS {
   FETCH_FIELDS_FOR_BRAND = 'fetch_fields_for_brand',
   BRAND_DETAILS_SUMMARY = 'brand_details_summary',
   RESET_BRAND_DETAILS_FIELD = 'reset_brand_details_field',
+  ACQUISITION_MODEL_FIELD = 'acquisition_model_field',
   MODULAR_CALLBACK = 'modular_callback',
 }

@@ -364,6 +364,44 @@ export const getBrandEmiField = ({ modularConfig, fieldName }: GetBrandEmiField)
   });
 };
 
+export const getBrandEmiCcDcEnabledStatus = (
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null,
+): boolean => {
+  if (!modularConfig) return false;
+  let acquisitionModel: PaymentMethodFormType = PaymentMethodFormType.DIRECT;
+  const acquisitionModelField = getFieldFromComponent({
+    modularConfig,
+    component: PricingStepComponents.ACQUISITION_MODEL_COMPONENT,
+    fieldName: MODULAR_PRICING_FIELDS.ACQUISITION_MODEL_FIELD,
+    step: MODULAR_PRICING_FIELDS.PRICING_STEP,
+  });
+  if (!acquisitionModelField) return false;
+  if (isStringValue(acquisitionModelField)) {
+    acquisitionModel = acquisitionModelField.stringValue as PaymentMethodFormType;
+  }
+  let pricingComponent =
+    acquisitionModel === PaymentMethodFormType.DIRECT
+      ? PricingStepComponents.VAS_RATES_COMPONENT
+      : PricingStepComponents.MDR_VAS_RATES_COMPONENT;
+  const brandEmiCcRateField = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_PRICING_FIELDS.PRICING_STEP,
+    component: pricingComponent,
+    fieldName: PaymentMethodsFieldKeyNames.BRAND_EMI_CC_RATE_FIELD,
+  });
+  const brandEmiDcRateField = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_PRICING_FIELDS.PRICING_STEP,
+    component: pricingComponent,
+    fieldName: PaymentMethodsFieldKeyNames.BRAND_EMI_DC_RATE_FIELD,
+  });
+  if (brandEmiCcRateField && brandEmiDcRateField) {
+    //basically, if both fields are disabled, then the brand emi form should be disabled
+    return brandEmiCcRateField.isDisabled && brandEmiDcRateField.isDisabled ? false : true;
+  }
+  return false;
+};
+
 interface GetAllAddedBrandsParams {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
 }

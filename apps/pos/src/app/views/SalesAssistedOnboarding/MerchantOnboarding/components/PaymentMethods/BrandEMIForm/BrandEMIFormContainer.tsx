@@ -11,6 +11,7 @@ import BrandEMIForm from 'apps/pos/src/app/views/SalesAssistedOnboarding/Merchan
 import {
   getAllAddedBrands,
   getAllBrandEmiFields,
+  getBrandEmiCcDcEnabledStatus,
   getBrandEmiField,
 } from 'apps/pos/src/app/utils/paymentsAndServices';
 import {
@@ -48,6 +49,8 @@ const BrandEMIFormContainer = ({
   const { updateModularConfig, handleProceedToNextComponent } = handlers;
   const [brandFields, setBrandFields] = useState<ModularOnboardingField[]>([]);
   const [brandOptionalFields, setBrandOptionalFields] = useState<ModularOnboardingField[]>([]);
+
+  const isBrandEmiCcDcEnabled = getBrandEmiCcDcEnabledStatus(modularConfig);
 
   const resetBrandFields = () => {
     setBrandFields([]);
@@ -177,7 +180,7 @@ const BrandEMIFormContainer = ({
           merchantGstNumber={getMerchantGstDetails().gstNumber}
           gstErrorMsg={getMerchantGstDetails().gstError}
           resetBrandRelatedFields={resetBrandFields}
-          isFormDisabled={isFormDisabled}
+          isFormDisabled={isFormDisabled || !isBrandEmiCcDcEnabled}
         />
       </ErrorBoundary>
     </Box>

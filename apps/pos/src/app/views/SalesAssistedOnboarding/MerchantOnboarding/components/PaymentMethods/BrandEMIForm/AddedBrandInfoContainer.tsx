@@ -10,7 +10,11 @@ import { AvailableComponents, MODULES } from 'apps/pos/src/app/types/common';
 import AddedBrandInfo from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/PaymentMethods/BrandEMIForm/AddedBrandInfo';
 import { MODULAR_PRICING_FIELDS } from 'apps/pos/src/app/types/PaymentsAndService';
 import { isStringValue } from 'apps/pos/src/app/utils/modularTypeResolvers';
-import { getAllAddedBrands, getBrandEmiField } from 'apps/pos/src/app/utils/paymentsAndServices';
+import {
+  getAllAddedBrands,
+  getBrandEmiCcDcEnabledStatus,
+  getBrandEmiField,
+} from 'apps/pos/src/app/utils/paymentsAndServices';
 import { analyticsTypes, trackEvent } from 'apps/pos/src/services/analytics';
 
 interface AddedBrandInfoContainerProps {
@@ -22,6 +26,8 @@ const AddedBrandInfoContainer = ({
   const { states, handlers } = useOnboardingContext();
   const { modularConfig, isUpdateModularLoading } = states;
   const { handleProceedToNextComponent, updateModularConfig } = handlers;
+
+  const isBrandEmiCcDcEnabled = getBrandEmiCcDcEnabledStatus(modularConfig);
 
   const redirectToBrandEMIForm = () => {
     handleProceedToNextComponent({
@@ -125,6 +131,7 @@ const AddedBrandInfoContainer = ({
           brands={getAllAddedBrands({ modularConfig }) ?? []}
           isUpdateModularLoading={isUpdateModularLoading}
           isFormDisabled={isFormDisabled}
+          isBrandEmiCcDcEnabled={isBrandEmiCcDcEnabled}
         />
       </ErrorBoundary>
     </Box>
