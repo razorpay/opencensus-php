@@ -43,16 +43,6 @@ class Entity extends QrCode\Entity
 
     const SHARED_ID = 'FallbackQrCode';
 
-    /**
-     * Relations to ignore while checking existence of associated entities
-     * while saving current entity.
-     *
-     * @var array
-     */
-    protected $ignoredRelations = [
-        // Required as customer entity will be created via CMS and may not be present in API DB
-        ConstantsEntity::CUSTOMER,
-    ];
 
     protected $fillable = [
         self::PROVIDER,
