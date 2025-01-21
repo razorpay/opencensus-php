@@ -113,7 +113,8 @@ export const getDateRangeValues = (option: string): [Date, Date] => {
     case durationOptionKeys.LAST_7_DAYS:
       return [moment().subtract(7, 'days').toDate(), moment().subtract(1, 'day').toDate()];
     case durationOptionKeys.LAST_30_DAYS:
-      return [moment().subtract(30, 'days').toDate(), moment().subtract(1, 'day').toDate()];
+      // starts from 30 days ago and should be start of the week (monday)
+      return [moment().subtract(30, 'days').isoWeekday(1).toDate(), moment().toDate()];
     default:
       return [moment().subtract(7, 'days').toDate(), moment().subtract(1, 'day').toDate()];
   }

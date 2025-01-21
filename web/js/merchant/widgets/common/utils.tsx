@@ -100,17 +100,24 @@ export function formatXAxis(
   point: PointType['x'],
   schema: ChartSchemaType['x'],
   unit?: DateRangeValues,
+  nextPossiblePoint?: PointType['x'],
+  isCustomRange = false,
 ) {
   const { type } = schema;
   if (type === 'timestamp') {
     if (unit === durationOptionKeys.LAST_30_DAYS) {
-      const startDate = moment(Number(point) * 1000);
       // MomentJS week is ending on Saturday, we want a week to run from Monday-Sunday
-      const endOfWeekTimestamp = moment(Number(point) * 1000)
-        .endOf('week')
-        .add(1, 'day');
-      const currentTimestamp = moment();
-      const endDate = endOfWeekTimestamp > currentTimestamp ? currentTimestamp : endOfWeekTimestamp;
+      const startDate = moment(Number(point) * 1000);
+      let endDate = moment();
+
+      if (!isCustomRange) {
+        const endOfWeekTimestamp = moment(Number(point) * 1000)
+          .endOf('week')
+          .add(1, 'day');
+        endDate = endOfWeekTimestamp > endDate ? endDate : endOfWeekTimestamp;
+      } else {
+        endDate = nextPossiblePoint ? moment.unix(Number(nextPossiblePoint)) : endDate;
+      }
       return `${startDate.format(getTimestampFormat(unit))} - ${endDate.format(
         getTimestampFormat(unit),
       )}`;
@@ -142,20 +149,40 @@ export const getChartData = (
   labels: Array<string>;
   datasets: Array<Dataset>;
 } => {
-  if (unit === durationOptionKeys.CUSTOM) {
-    const fromDate = moment.unix(+chartData.data[0].points[0].x),
-      toDate = moment.unix(+chartData.data[0].points[chartData.data[0].points.length - 1].x);
-    if (fromDate.isSame(toDate, 'day')) {
+  let isCustomRange = false;
+  let lastDateInRange: PointType['x'];
+
+  if (unit === durationOptionKeys.CUSTOM && chartData.type === 'line') {
+    isCustomRange = true;
+
+    const pointset = chartData.data[0].points;
+    const fromDate = moment.unix(+pointset[0].x);
+    const lastDate = moment.unix(+pointset[pointset.length - 1].x);
+
+    if (fromDate.isSame(lastDate, 'day')) {
       unit = durationOptionKeys.TODAY;
-    } else if (toDate.diff(fromDate, 'days') <= 7) {
+    } else if (lastDate.diff(fromDate, 'days') < 14) {
       unit = durationOptionKeys.LAST_7_DAYS;
     } else {
       unit = durationOptionKeys.LAST_30_DAYS;
+      chartData.data.forEach((dataSet) => dataSet.points.pop());
+      lastDateInRange = `${lastDate.unix()}`;
     }
   }
-  const labels = chartData.data[0].points.map((point) =>
-    formatXAxis(point.x, chartData.schema.x, unit),
-  );
+
+  const labels = chartData.data[0].points.map((point, index, points) => {
+    if (isCustomRange && unit === durationOptionKeys.LAST_30_DAYS && chartData.type === 'line') {
+      const nextPossiblePoint = points[index + 1]
+        ? moment(+points[index + 1].x * 1000) // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
+            .subtract(1, 'day')
+            .unix()
+            .toString()
+        : lastDateInRange;
+      return formatXAxis(point.x, chartData.schema.x, unit, nextPossiblePoint, isCustomRange);
+    }
+    return formatXAxis(point.x, chartData.schema.x, unit);
+  });
+
   const datasets: Array<Dataset> = chartData.data.map((dataSet) => ({
     label: dataSet.label,
     data: dataSet.points.map((point) => formatYAxis(point.y, chartData.schema.y)),
