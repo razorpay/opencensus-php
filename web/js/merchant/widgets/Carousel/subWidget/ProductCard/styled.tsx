@@ -2,7 +2,6 @@ import styled, { css, keyframes } from 'styled-components';
 
 const slideIn = keyframes`
   0% { height: 0px; opacity:0 }
-  40% { height: 0px; opacity:0 }
   100% { height: 20px; opacity:1 }
 `;
 

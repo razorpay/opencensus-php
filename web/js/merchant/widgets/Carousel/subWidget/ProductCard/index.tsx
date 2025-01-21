@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { ArrowUpRightIcon, Box, Text, Heading } from '@razorpay/blade/components';
+import { ArrowUpRightIcon, Box, Text } from '@razorpay/blade/components';
 import { ProductCardWidgetProps } from 'merchant/widgets/Carousel/subWidget/ProductCard/types';
 import { AnimatedBox } from 'merchant/widgets/Carousel/subWidget/ProductCard/styled';
 import { CommonWidgetProps } from 'merchant/widgets/types';
@@ -18,7 +18,6 @@ export const ProductCardWidget: React.FC<
   description,
   actions,
   background_img,
-  styles,
   isLoading,
   analyticsProperties = {},
 }) => {
@@ -26,13 +25,10 @@ export const ProductCardWidget: React.FC<
   const isMobile = useMobile();
   const navigate = useNavigate();
 
-  if (isLoading) return <ProductCardWidgetLoader styles={styles} />;
+  if (isLoading) return <ProductCardWidgetLoader />;
 
   const [firstAction] = actions;
   const navigationKey = firstAction?.action ?? '';
-
-  const isShownOnHover = styles?.show_on_hover ?? true;
-  const isToggleResponsive = styles?.toggle_responsive ?? false;
 
   const { screen, widgetId } = analyticsProperties;
   const subWidgetId = `${widgetId}.${type}.${id}`;
@@ -45,7 +41,7 @@ export const ProductCardWidget: React.FC<
   };
 
   const handleProductCardWidgetClick = () => {
-    if (isMobile && isShownOnHover) {
+    if (isMobile) {
       if (/^http/i.test(navigationKey)) {
         window.open(navigationKey, '_blank');
       } else {
@@ -68,22 +64,21 @@ export const ProductCardWidget: React.FC<
   return (
     <div onClick={handleProductCardWidgetClick}>
       <Box
-        onMouseEnter={() => !isMobile && isShownOnHover && setIsCardHovered(true)}
-        onMouseLeave={() => !isMobile && isShownOnHover && setIsCardHovered(false)}
+        onMouseEnter={!isMobile ? () => setIsCardHovered(true) : undefined}
+        onMouseLeave={!isMobile ? () => setIsCardHovered(false) : undefined}
         testID="product-card-widget"
-        width={styles?.width ?? '284px'}
-        height={styles?.height ?? '416px'}
+        width="284px"
+        height="416px"
         display="flex"
-        flexDirection={isToggleResponsive ? { base: 'column', s: 'row', xl: 'column' } : 'column'}
-        borderRadius={styles?.border_radius ?? 'medium'}
+        flexDirection="column"
+        borderRadius="medium"
         overflow="hidden"
       >
         <Box
           backgroundImage={getBackgroundImage(background_img)}
           backgroundSize="cover"
           backgroundPosition="center center"
-          height={isToggleResponsive ? { base: '100%', s: 'auto', xl: '100%' } : '100%'}
-          width={isToggleResponsive ? { base: '100%', s: '200px', xl: '100%' } : undefined}
+          height="100%"
         />
         <Box
           width="100%"
@@ -94,16 +89,20 @@ export const ProductCardWidget: React.FC<
           gap="spacing.3"
         >
           <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Heading size="medium">{title}</Heading>
-            {isShownOnHover && isMobile ? (
-              <ArrowUpRightIcon color="surface.icon.gray.muted" />
-            ) : null}
+            <Text size="large" weight="semibold">
+              {title}
+            </Text>
+            {isMobile ? <ArrowUpRightIcon color="surface.icon.gray.muted" /> : null}
           </Box>
-          <Text marginBottom="spacing.3" color="surface.text.gray.muted">
+          <Text
+            marginBottom="spacing.3"
+            color="surface.text.gray.muted"
+            truncateAfterLines={!isCardHovered ? 2 : undefined}
+          >
             {description}
           </Text>
           <Box>
-            {(isCardHovered && !isMobile) || !isShownOnHover ? (
+            {isCardHovered && !isMobile ? (
               <AnimatedBox>
                 {actions.map((action) => (
                   <Fragment key={action.title}>
