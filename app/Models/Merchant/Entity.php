@@ -1295,6 +1295,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Dcs\Features\Constants::LRSImportFeeBreakup) === true);
     }
 
+    public function isPACBImport() : bool
+    {
+        return ($this->isLRSFlowEnabled() || $this->isLRSTravelCitiFlowEnabled() || $this->isJpmcImportFlowEnabled() || $this->isOpgspImportSettlementEnabled());
+    }
+
     public function isAVSEnabled(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::AVS) === true);

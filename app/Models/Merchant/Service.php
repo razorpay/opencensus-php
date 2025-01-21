@@ -2094,8 +2094,27 @@ class Service extends Base\Service
 
         $data['tags'] = $merchant->tagNames();
 
+        //PACB_Tagging on admin dashboard
+        try {
+            if ($this->auth->isAdminAuth() && $this->evaluateSplitzExperimentforPACBTagging($merchantId)) {
+                $new_tag = "";
+                if ($this->merchant->isPACBImport()) {
+                    $entityOwnerIds = $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchant->getId())->toArray();
+                    $new_tag = empty($entityOwnerIds) ? "PACB_I_D" : "PACB_I_M";
+                    array_push($data['tags'], $new_tag);
+                } elseif ($this->isOpgspEnabled($merchantId)) {
+                    $new_tag = "PACB_E";
+                    array_push($data['tags'], $new_tag);
+                }
+            }
+        } catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_PACB_TAGGING_SPILTZ_ERROR
+            );
+        }
         $merchantAov = $merchant->merchantDetail->avgOrderValue;
-
         if (empty($merchantAov) === false)
         {
             $data['merchant_details']['avg_order_min'] = $merchantAov->getMinAov();
@@ -2116,6 +2135,35 @@ class Service extends Base\Service
         $data['is_submerchant'] = (new Merchant\AccessMap\Core())->isSubMerchant($merchantId);
 
         return $data;
+    }
+
+    public function evaluateSplitzExperimentforPACBTagging($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_pacb_tagging_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === 'variant_on';
+
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_PACB_TAGGING_SPILTZ_ERROR
+            );
+        }
+        return false;
     }
 
     public function getAdditionalDetailsFromASV(string $merchantId)
@@ -13826,16 +13874,16 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if ($merchant->isInternational() === false)
-        {
-            return false;
-        }
-
         $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
             $merchantId, CE::CURRENCY_CLOUD);
         if (isset($mii) === true)
         {
             return true;
+        }
+
+        if ($merchant->isInternational() === false)
+        {
+            return false;
         }
 
         $methods = $merchant->methods;
