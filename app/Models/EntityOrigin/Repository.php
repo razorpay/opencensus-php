@@ -29,7 +29,9 @@ class Repository extends BaseRepository
                             ->where(Entity::ENTITY_ID, $entityId)
                             ->first();
 
-        if (is_null($entityOrigin) === true)
+        $fallbackRemoved = $this->checkFallbackRemoved();
+
+        if (is_null($entityOrigin) === true and $fallbackRemoved === false)
         {
             $entityOrigin = $this->newQueryAndResetEntityConnection(function () use ($entityType, $entityId)
             {
@@ -56,8 +58,9 @@ class Repository extends BaseRepository
                               ->where(Entity::ENTITY_ID, $entityId)
                               ->first();
 
+        $fallbackRemoved = $this->checkFallbackRemoved();
 
-        if (is_null($entityOrigin) === true)
+        if (is_null($entityOrigin) === true and $fallbackRemoved === false)
         {
             $entityOrigin = $this->newQueryAndResetEntityConnection(function () use ($entityType, $entityId)
             {
@@ -101,5 +104,15 @@ class Repository extends BaseRepository
         $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
 
         return $variant === true ? ConnectionType::DATA_WAREHOUSE_MERCHANT :ConnectionType::PAYMENT_FETCH_REPLICA;
+    }
+
+    protected function checkFallbackRemoved()
+    {
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_entity_origin_fallback_experiment_id'),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
     }
 }

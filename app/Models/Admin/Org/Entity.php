@@ -6,11 +6,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Base;
 use RZP\Models\Base\Traits\RevisionableTrait;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\User\Metric;
+use RZP\Models\Admin\Org\Hostname as OrgHostname;
 use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Trace\TraceCode;
@@ -431,6 +434,22 @@ class Entity extends Base\Entity
 
     public function getPrimaryHostName()
     {
+        $app = App::getFacadeRoot();
+
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $app['config']->get('app.splitz_org_slave_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        if ($variant === true)
+        {
+            $orgHostname = (new OrgHostname\Repository())->getHostsByOrgIdFromSlave($this->getId());
+
+            return $orgHostname->getHostName();
+        }
+
         return $this->hostnames()->first()->getHostName();
     }
 

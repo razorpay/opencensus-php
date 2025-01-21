@@ -1155,6 +1155,8 @@ return array(
 
     'splitz_harvester_query_partnership_experiment_id'  => env('SPLITZ_HARVESTER_QUERY_PARTNERSHIP_EXPERIMENT_ID'),
 
+    'splitz_entity_origin_fallback_experiment_id'       => env('SPLITZ_ENTITY_ORIGIN_FALLBACK_EXPERIMENT_ID'),
+
     'splitz_merchant_acq_harvester_query_experiment_id' => env('SPLITZ_MERCHANT_ACQ_HARVESTER_QUERY_EXPERIMENT_ID'),
 
     'splitz_merchant_transacted_harvester_query_experiment_id' => env('SPLITZ_MERCHANT_TRANSACTED_HARVESTER_QUERY_EXPERIMENT_ID'),
@@ -1164,6 +1166,8 @@ return array(
     'splitz_payout_harvester_query_experiment_id'       => env('SPLITZ_PAYOUT_HARVESTER_QUERY_EXPERIMENT_ID'),
 
     'splitz_insufficient_balance_experiment_id'          => env('SPLITZ_INSUFFICIENT_BALANCE_EXPERIMENT_ID'),
+
+    'splitz_org_slave_experiment_id'                    => env('SPLITZ_ORG_SLAVE_EXPERIMENT_ID'),
 
     'qr_code_v1_failed_payment_experiment' => env('QRCODEV1_FAILED_PAYMENT_EXPERIMENT'),
 

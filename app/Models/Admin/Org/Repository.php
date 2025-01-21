@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Admin\Org;
 
+use App;
 use Carbon\Carbon;
 
+use RZP\Base\ConnectionType;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org\Hostname;
@@ -11,6 +13,8 @@ use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Permission;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 class Repository extends Base\Repository
 {
@@ -73,10 +77,22 @@ class Repository extends Base\Repository
 
         $hostnameOrgId = $orgHostName->dbColumn(Hostname\Entity::ORG_ID);
         $hostnameAttr = $orgHostName->dbColumn(Hostname\Entity::HOSTNAME);
+
+        $app = App::getFacadeRoot();
+
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $app['config']->get('app.splitz_org_slave_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        $query = $variant === true ? $this->newQueryWithConnection($this->getSlaveConnection()) : $this->newQuery();
+
         try
         {
             // Join the orgs, and org_hostname table to get the org with the given hostname
-            return $this->newQuery()
+            return $query
                 ->select($orgColumnNames)
                 ->join($orgHostnamesTable, $orgId, '=', $hostnameOrgId)
                 ->where($hostnameAttr, '=', $hostname)
@@ -166,5 +182,99 @@ class Repository extends Base\Repository
                     ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, $hostname);
         }
 
+    }
+
+    public function findOrFailPublic($id, $columns = ['*'], string $connectionType = null)
+    {
+        if (isset($connectionType) === true)
+        {
+            return parent::findOrFailPublic($id,$columns,  $connectionType);
+        }
+
+        $connectionSlaveType = $this->getConnectionType();
+
+        if (isset($connectionSlaveType) === true)
+        {
+            return parent::findOrFailPublic($id,$columns,  $connectionSlaveType);
+        }
+
+        return parent::findOrFailPublic($id, $columns, $connectionType);
+    }
+
+    public function findByPublicId($id, string $connectionType = null)
+    {
+        if (isset($connectionType) === true)
+        {
+            return parent::findByPublicId($id,  $connectionType);
+        }
+
+        $connectionSlaveType = $this->getConnectionType();
+
+        if (isset($connectionSlaveType) === true)
+        {
+            return parent::findByPublicId($id,  $connectionSlaveType);
+        }
+
+        return parent::findByPublicId($id,  $connectionType);
+    }
+
+    public function findOrFail($id, $columns = array('*'), string $connectionType = null)
+    {
+        if (isset($connectionType) === true)
+        {
+            return parent::findOrFail($id,$columns,  $connectionType);
+        }
+
+        $connectionSlaveType = $this->getConnectionType();
+
+        if (isset($connectionSlaveType) === true)
+        {
+            return parent::findOrFail($id,$columns,  $connectionSlaveType);
+        }
+
+        return parent::findOrFail($id,$columns,  $connectionType);
+    }
+
+    public function find($id, $columns = ['*'], string $connectionType = null)
+    {
+        if (isset($connectionType) === true)
+        {
+            return parent::find($id,$columns,  $connectionType);
+        }
+
+        $connectionSlaveType = $this->getConnectionType();
+
+        if (isset($connectionSlaveType) === true)
+        {
+            return parent::find($id,$columns,  $connectionSlaveType);
+        }
+
+        return parent::find($id,$columns,  $connectionType);
+    }
+
+    protected function getConnectionType()
+    {
+        $app = App::getFacadeRoot();
+
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $app['config']->get('app.splitz_org_slave_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        try
+        {
+            if ($variant === true)
+            {
+                return $this->getSlaveConnection();
+            }
+        }
+        catch (\Throwable $e)
+        {
+            return null;
+        }
+        
+        return null;
     }
 }
