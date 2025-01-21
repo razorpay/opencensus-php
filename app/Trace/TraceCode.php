@@ -4570,6 +4570,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const IDEAL_LEDGER_DATA                                         = 'IDEAL_LEDGER_DATA';
     const IDEAL_LEDGER_PROCESS_FAILED                               = 'IDEAL_LEDGER_PROCESS_FAILED';
 
+    const PG_LEDGER_FETCH_MERCHANT_ACCOUNTS_RETRY_ATTEMPT           = 'PG_LEDGER_FETCH_MERCHANT_ACCOUNTS_RETRY_ATTEMPT';
+
+
+
     const GRATIS_TO_POSTPAID_INPUT                              = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                             = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                           = 'GRATIS_TO_POSTPAID_RESPONSE';
@@ -4905,7 +4909,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const NOCODEAPPS_PAYMENT_CALLBACK_SPLITZ_VARIANT            = 'NOCODEAPPS_PAYMENT_CALLBACK_SPLITZ_VARIANT';
     const NOCODEAPPS_PAYMENT_CALLBACK_SPLITZ_ERROR              = 'NOCODEAPPS_PAYMENT_CALLBACK_SPLITZ_ERROR';
-    
+
     const ARRAY_KEY_MATCH_EXCEPTION                             = 'ARRAY_KEY_MATCH_EXCEPTION';
 
     const CHARGE_COLLECTIONS_TRANSACTION_CREATE_REQUEST         = 'CHARGE_COLLECTIONS_TRANSACTION_CREATE_REQUEST';

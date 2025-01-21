@@ -206,7 +206,7 @@ trait ReverseShadowTrait
 
         $retryAttempts = 0;
 
-        while ($retryAttempts <= LedgerReverseShadowConstants::MAX_RETRY_COUNT)
+        while ($retryAttempts <= LedgerReverseShadowConstants::MAX_RETRY_COUNT_FETCH_MERCHANT_ACCOUNT)
         {
             try
             {
@@ -227,10 +227,17 @@ trait ReverseShadowTrait
                         if ($responseCode >= 500)
                         {
                             $retryAttempts++;
-                            if ($retryAttempts > LedgerReverseShadowConstants::MAX_RETRY_COUNT)
+                            if ($retryAttempts > LedgerReverseShadowConstants::MAX_RETRY_COUNT_FETCH_MERCHANT_ACCOUNT)
                             {
                                 throw $e;
                             }
+
+                            $this->trace->info(
+                                TraceCode::PG_LEDGER_FETCH_MERCHANT_ACCOUNTS_RETRY_ATTEMPT,
+                                [
+                                    'retry_count'  => $retryAttempts,
+                                ]
+                            );
 
                             continue;
 
@@ -239,6 +246,24 @@ trait ReverseShadowTrait
                             throw $e;
                         }
                     }
+                }
+
+                if (strpos($e->getMessage(), 'cURL error 28') !== false)
+                {
+                    $retryAttempts++;
+                    if ($retryAttempts > LedgerReverseShadowConstants::MAX_RETRY_COUNT_FETCH_MERCHANT_ACCOUNT)
+                    {
+                        throw $e;
+                    }
+
+                    $this->trace->info(
+                        TraceCode::PG_LEDGER_FETCH_MERCHANT_ACCOUNTS_RETRY_ATTEMPT,
+                        [
+                            'retry_count'  => $retryAttempts,
+                        ]
+                    );
+
+                    continue;
                 }
 
                 throw $e;
