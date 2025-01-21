@@ -36,6 +36,7 @@ class Provider
     const RBL_JSW   = 'rbl_jsw';
     const HDFC_ECMS = 'hdfc_ecms';
     const AXIS      = 'axis';
+    const IDFC      = 'idfc';
     const AXIS_RTPL = 'axis_rtpl';
     const BANK_ACCOUNT_RTPL_PREFIX = '2213';
 
@@ -63,10 +64,14 @@ class Provider
         self::HDFC_ECMS => 'HDFC0000113',
         self::RBL_JSW   => 'RATN0000001',
         self::AXIS      => 'UTIB000RAZP',
-        self::AXIS_RTPL => 'UTIB0RTPLTD'
+        self::AXIS_RTPL => 'UTIB0RTPLTD',
+        self::IDFC      => 'IDFB0020101'
     ];
 
-    const AXIS_COMMON_IFSC = 'UTIB0CCH274';
+    const AXIS_COMMON_IFSC = 'UTIB0CCH274'; // THIS IS PAYROLL VA ifsc
+
+    const IDFC_COMMON_IFSC ='IDFB0020101'; // THIS IS PAYROLL VA ifsc
+    const IDFC_VA_PREFIX = '3141';
 
     // The default details are fixed by each provider, most specifically
     // the IFSC code where the virtual accounts are said to be located.
@@ -98,6 +103,9 @@ class Provider
         self::AXIS => [
             BankAccount::IFSC_CODE => self::IFSC[self::AXIS],
         ],
+        self::IDFC => [
+            BankAccount::IFSC_CODE => self::IFSC[self::IDFC],
+        ],
         self::AXIS_RTPL => [
             BankAccount::IFSC_CODE => self::IFSC[self::AXIS_RTPL],
         ]
@@ -112,7 +120,8 @@ class Provider
         self::KOTAK,
         self::ICICI,
         self::RBL,
-        self::AXIS
+        self::AXIS,
+        self::IDFC,
     ];
 
     const TEST_PROVIDERS = [
@@ -151,6 +160,9 @@ class Provider
         self::AXIS => [
             '*',
         ],
+        self::IDFC => [
+            '*',
+        ],
         self::AXIS_RTPL => [
             '*',
         ]
@@ -163,6 +175,7 @@ class Provider
     const VALIDATE_CALLBACK_PROVIDERS = [
         self::AXIS,
         self::AXIS_RTPL,
+        self::IDFC,
     ];
 
     const COLLECTX_UPI_PROVIDERS = [

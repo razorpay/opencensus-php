@@ -69,6 +69,26 @@ class Validator extends Base\Validator
         'Corp_code'                         => 'nullable|string',
     ];
 
+    public static $idfcRulesForValidationApi = [
+        'txnAmt'                            => 'required|string',
+        'VANum'                             => 'required|string',
+        'bankRef'                           => 'required|string',
+        'remitterAc'                        => 'required|string',
+        'remitterBankifsc'                  => 'nullable|string', // typo in bank doc, not available in IMPS mode for now
+        'remiterName'                       => 'nullable|string', // typo in bank doc
+    ];
+
+    public static $idfcRulesForNotificationApi = [
+        'creditGenerationTime'              => 'required|string',
+        'batchAmt'                          => 'required|string',
+        'productCode'                       => 'required|string',
+        'vaNumber'                          => 'required|string',
+        'utrNo'                             => 'required|string',
+        'remitterAccountNumber'             => 'required|string',
+        'ifscCode'                          => 'nullable|string', // remitter Ifsc code
+        'remitterName'                      => 'nullable|string',
+    ];
+
     public static $iciciRules = [
         'Virtual_Account_Number_Verification_IN'                    => 'required|array',
         'Virtual_Account_Number_Verification_IN.0.client_code'      => 'required|string',

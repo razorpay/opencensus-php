@@ -8201,6 +8201,18 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AXIS_VA_CALLBACK                                       = 'AXIS_VA_CALLBACK';
     const AXIS_VA_INVALID_CALLBACK_DATA                          = 'AXIS_VA_INVALID_CALLBACK_DATA';
 
+    // IDFC VA integration
+    const IDFC_VA_VALIDATION_CALLBACK                            = 'IDFC_VA_VALIDATION_CALLBACK';
+    const IDFC_VA_NOTIFICATION_CALLBACK                          = 'IDFC_VA_NOTIFICATION_CALLBACK';
+    const IDFC_VA_CALLBACK_INVALID_DATA                          = 'IDFC_VA_CALLBACK_INVALID_DATA';
+    const IDFC_VA_CALLBACK_DATA_ENCRYPTION_FAILED                = 'IDFC_BANK_CALLBACK_DATA_ENCRYPTION_FAILED';
+    const IDFC_VA_CALLBACK_DATA_DECRYPTION_FAILED                = 'IDFC_VA_CALLBACK_DATA_DECRYPTION_FAILED';
+    const IDFC_VA_CALLBACK_UNKNOWN_FAILURE                       = 'IDFC_VA_CALLBACK_UNKNOWN_FAILURE';
+    const IDFC_VA_MANUAL_REFUND_CREATION                         = 'IDFC_VA_MANUAL_REFUND_CREATION';
+    const IDFC_VA_VALIDATION_CALLBACK_SUCCESSFUL                 = 'IDFC_VA_VALIDATION_CALLBACK_SUCCESSFUL';
+    const IDFC_VA_NOTIFICATION_CALLBACK_SUCCESSFUL               = 'IDFC_VA_NOTIFICATION_CALLBACK_SUCCESSFUL';
+    const IDFC_METRIC_LOGGING_ERROR                             = 'IDFC_METRIC_LOGGING_ERROR';
+
     const TYPEFORM_PARSED_DATA                                  = 'TYPEFORM_PARSED_DATA';
     const TYPEFORM_WORKFLOW_TRIGGERED                           = 'TYPEFORM_WORKFLOW_TRIGGERED';
     const WORKFLOW_TAGS                                         = 'WORKFLOW_TAGS';

@@ -61,4 +61,22 @@ class Constants
     const TXN_CREATED_FIRE_WEBHOOK_SYNC = 'app.transaction_created_fire_webhook_sync';
 
     const CREDIT_ACCOUNT_NUMBER = 'creditAccountNumber';
+
+    // storing the mapping of IDFC product code to mode for fund loading va callbacks
+    const IDFC_PRODUCT_CODE_TO_MODE_MAPPING = [
+        'INEFT' => Mode::NEFT,
+        'IRTGS' => Mode::RTGS,
+        'IIMPS' => Mode::IMPS,
+        'IIFT'  => Mode::IFT,
+    ];
+
+    // Sensitive data for VA IDFC callback. Commenting as we need it now for testing purpose
+    const SENSITIVE_DATA_FOR_VA_IDFC_CALLBACK = [
+//        'remitterAc',
+//        'VANum',
+//        'poolingAccountNumber',
+//        'vaNumber',
+//        'remitterAccountNumber'
+    ];
+
 }

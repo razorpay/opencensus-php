@@ -358,14 +358,15 @@ trait RequestResponseFlowTrait
          * @param  string  $content
          * @return \Illuminate\Http\Response
          */
-        $response = $this->call(
+        $response = $response = $this->call(
             $request['method'],
             $request['url'],
-            $request['content'],
+            $request['raw'] ? [] : $request['content'], // Pass empty array for raw requests
             $request['cookies'],
             $request['files'],
             $request['server'],
-            $request['raw']);
+            $request['raw'] // Pass raw content here
+        );
 
         $this->response = $response;
 

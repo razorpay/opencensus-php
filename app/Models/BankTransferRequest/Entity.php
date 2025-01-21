@@ -293,6 +293,8 @@ class Entity extends Base\PublicEntity
             case 'bank_transfer_process':
             case 'bank_transfer_process_rbl':
             case 'bank_transfer_process_axis':
+            case 'bank_transfer_validate_idfc':
+            case 'bank_transfer_process_idfc':
             case 'bank_transfer_process_icici':
             case 'bank_transfer_process_hdfc_ecms':
                 $requestSource = [
@@ -333,6 +335,8 @@ class Entity extends Base\PublicEntity
             case 'bank_transfer_process_test':
             case 'bank_transfer_process_rbl_test':
             case 'bank_transfer_process_axis_test':
+            case 'bank_transfer_process_idfc_test':
+            case 'bank_transfer_validate_idfc_test':
                 $requestSource = [
                     'source'       => 'test',
                     'request_from' => 'test',

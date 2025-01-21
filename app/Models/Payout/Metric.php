@@ -144,6 +144,11 @@ final class Metric
     // 3600 seconds
     const PAYOUT_FAILURE_SLA = 7200;
 
+    // FUND loading metric
+    const FUND_LOADING_VA_CALLBACK = 'fund_loading_va_callback';
+    const FUND_LOADING_VA_CALLBACK_FAILURE = 'fund_loading_va_callback_failure';
+
+
     public static function pushStatusChangeMetrics(Entity $payout, string $previousStatus = null)
     {
         $currentStatus = $payout->getStatus();
