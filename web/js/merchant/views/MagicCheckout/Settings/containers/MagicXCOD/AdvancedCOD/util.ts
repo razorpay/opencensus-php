@@ -25,25 +25,11 @@ export const createNewRuleState = ({
   description: '',
 });
 
-type RuleValidator = (rule: Rule) => {
-  conditions: Partial<{
-    [groupID: string]: Partial<{
-      [conditionID: string]: {
-        fact?: string;
-        operator?: string;
-        value?: string;
-      };
-    }>;
-  }>;
-  actions: Partial<{
-    type: string;
-    params: string;
-  }>;
-};
-export const ruleValidator: RuleValidator = (rule) => {
+export const ruleValidator = (rule: Rule) => {
   const rootCondition = rule.condition;
   const conditionGroups = rootCondition.conditions;
-  const action = rule.actions[0];
+  const actionIndex = 0;
+  const action = rule.actions[actionIndex];
   const validation: any = {
     conditions: {},
     actions: {},
@@ -116,20 +102,25 @@ export const ruleValidator: RuleValidator = (rule) => {
   });
 
   // action validation
+  const actionErrors: any = {};
   if (!Boolean(action.type)) {
-    validation.actions.type = 'Select an action for the rule';
+    actionErrors.type = 'Select an action for the rule';
   } else {
     const paramsValue = action.params?.value;
     const ruleType = /shipping/.test(action.type.toLowerCase()) ? 'shipping' : 'payment';
 
     if (paramsValue && Array.isArray(paramsValue)) {
       if (paramsValue.length === 0) {
-        validation.actions.params =
+        actionErrors.params =
           ruleType === 'shipping' ? 'Select shipping methods' : 'Enter payment methods';
       } else if (paramsValue.some((val) => !Boolean(val)) && ruleType === 'payment') {
-        validation.actions.params = 'Enter comma separated payment methods';
+        actionErrors.params = 'Enter comma separated payment methods';
       }
     }
+  }
+
+  if (Object.keys(actionErrors).length > 0) {
+    validation.actions[actionIndex] = actionErrors;
   }
 
   return validation;

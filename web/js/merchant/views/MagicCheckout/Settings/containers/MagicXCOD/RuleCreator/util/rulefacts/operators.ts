@@ -11,7 +11,6 @@ export const operators: Record<OperatorValue, Operator> = {
   gt: { name: 'gt', label: 'greater than', value: 'gt' },
   ge: { name: 'ge', label: 'greater than or equal to', value: 'ge' },
   in: { name: 'in', label: 'in', value: 'in' },
-  contains: { name: 'contains', label: 'contains', value: 'contains' },
 };
 
 const factTypeToOperatorMap = {

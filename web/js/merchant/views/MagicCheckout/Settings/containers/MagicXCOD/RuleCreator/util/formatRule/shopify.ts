@@ -26,7 +26,7 @@ export const formatter: (rule: Rule) => ShopifyRule = (rule) => {
     if ('fact' in conditionOrGroup) {
       return {
         fact: conditionOrGroup.fact,
-        op: conditionOrGroup.operator,
+        op: conditionOrGroup.operator as any,
         val: conditionOrGroup.value,
       };
     } else {

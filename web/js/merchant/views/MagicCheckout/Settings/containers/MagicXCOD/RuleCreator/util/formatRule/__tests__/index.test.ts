@@ -82,16 +82,16 @@ describe('formatRule', () => {
             combinator: 'or',
             conditions: [
               {
-                fact: 'location',
+                fact: 'subtotal',
                 operator: 'eq',
-                value: 'BLR',
+                value: 300,
                 id: 'id3',
                 path: [1, 0],
               },
               {
-                fact: 'subscription',
-                operator: 'eq',
-                value: 'premium',
+                fact: 'customerEmail',
+                operator: 'in',
+                value: 'admin@store.com',
                 id: 'id4',
                 path: [1, 1],
               },
@@ -110,8 +110,8 @@ describe('formatRule', () => {
               { fact: 'discount', op: 'gt', val: 18 },
               {
                 any: [
-                  { fact: 'location', op: 'eq', val: 'BLR' },
-                  { fact: 'subscription', op: 'eq', val: 'premium' },
+                  { fact: 'subtotal', op: 'eq', val: 300 },
+                  { fact: 'customerEmail', op: 'in', val: 'admin@store.com' },
                 ],
               },
             ],

@@ -2,7 +2,7 @@ import { generateId } from 'merchant/views/MagicCheckout/Settings/containers/Mag
 
 import type {
   Action,
-  ConditionGroup,
+  ConditionGroupWithoutIds,
   Path,
   Rule,
 } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
@@ -32,7 +32,7 @@ export const createDefaultRule = (options: { defaultAction?: Action } = {}): Rul
   actions: options.defaultAction ? [options.defaultAction] : [{ type: '', params: { value: '' } }],
 });
 
-export const createDefaultConditionGroup = (path: Path): ConditionGroup => ({
+export const createDefaultConditionGroup = (path: Path): ConditionGroupWithoutIds => ({
   path,
   combinator: 'and',
   conditions: [

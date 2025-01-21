@@ -3,11 +3,12 @@ import { generateId } from 'merchant/views/MagicCheckout/Settings/containers/Mag
 
 import type {
   ConditionOrGroup,
+  ConditionOrGroupWithoutIds,
   Path,
 } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
 export const prepareConditionOrGroup = (
-  cg: ConditionOrGroup,
+  cg: ConditionOrGroupWithoutIds,
   options: { path: Path; idGenerator: () => string },
 ): ConditionOrGroup => {
   const { idGenerator = generateId, path } = options;
@@ -21,7 +22,7 @@ export const prepareConditionOrGroup = (
     cg.combinator = 'and';
   }
 
-  return cg;
+  return cg as ConditionOrGroup;
 };
 
 export const updatePathsOn = (cg: ConditionOrGroup): ConditionOrGroup => {

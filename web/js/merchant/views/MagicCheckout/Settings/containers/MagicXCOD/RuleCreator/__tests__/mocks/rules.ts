@@ -9,9 +9,9 @@ export const sampleRule: Rule = {
       {
         id: 'cond1',
         path: [0],
-        fact: 'product_tag',
-        operator: 'eq',
-        value: 'denim',
+        fact: 'customerEmail',
+        operator: 'in',
+        value: 'admin@store.com,member@store.com',
       },
       {
         id: 'group1',
@@ -21,9 +21,9 @@ export const sampleRule: Rule = {
           {
             id: 'cond2',
             path: [1, 0],
-            fact: 'location',
+            fact: 'amount',
             operator: 'eq',
-            value: 'BLR',
+            value: 30,
           },
           {
             id: 'cond3',

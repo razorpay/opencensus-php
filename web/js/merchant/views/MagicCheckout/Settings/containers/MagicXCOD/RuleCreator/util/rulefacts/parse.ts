@@ -1,9 +1,12 @@
 import { getOperatorsForFactType } from './operators';
 import { validators } from './validators';
 
-import type { Fact } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
+import type {
+  Fact,
+  PropFact,
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
-export const parseFacts = (facts: Array<Fact>): Array<Fact> => {
+export const parseFacts = (facts: Array<PropFact>): Array<Fact> => {
   return facts.map((fact) => {
     const { defaultOperator, validator } = fact;
     const operators = getOperatorsForFactType(fact.type);

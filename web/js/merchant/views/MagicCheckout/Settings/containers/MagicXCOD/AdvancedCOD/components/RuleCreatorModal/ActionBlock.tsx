@@ -25,17 +25,19 @@ export const ActionBlock: React.FC<ActionBlockProps> = ({ type, shippingProfiles
   const { rule } = useRule();
   const { validationResult } = useRuleValidation();
   const mutations = useRuleMutations();
-  const ruleActionType = rule.actions[0].type;
+  const actionIdx = 0; // since we're having only single action
+  const ruleActionType = rule.actions[actionIdx].type;
   const actionTypes = allActionTypes[type];
+  const validation = validationResult.actions[actionIdx];
 
   const shouldShowParamsSelect = /show_specific|hide_specific/.test(ruleActionType.toLowerCase());
   const handleTypeSelect = (type: string) => {
-    mutations.actions.update('type', type);
+    mutations.actions.update('type', type, actionIdx);
 
     if (!/hide_specific|show_specific/.test(type.toLowerCase())) {
-      mutations.actions.update('params', {});
+      mutations.actions.update('params', {}, actionIdx);
     } else {
-      mutations.actions.update('params', { value: [] });
+      mutations.actions.update('params', { value: [] }, actionIdx);
     }
   };
 
@@ -66,8 +68,8 @@ export const ActionBlock: React.FC<ActionBlockProps> = ({ type, shippingProfiles
                     <SelectInput
                       accessibilityLabel="Select action"
                       placeholder="Select action"
-                      errorText={validationResult.actions?.type}
-                      validationState={validationResult.actions?.type ? 'error' : 'none'}
+                      errorText={validation?.type}
+                      validationState={validation?.type ? 'error' : 'none'}
                       name="type"
                       defaultValue={ruleActionType}
                       onChange={({ values }) => {
@@ -96,11 +98,11 @@ export const ActionBlock: React.FC<ActionBlockProps> = ({ type, shippingProfiles
                         accessibilityLabel="Select shipping methods"
                         placeholder="Select shipping methods"
                         name="action"
-                        errorText={validationResult.actions?.params}
-                        validationState={validationResult.actions?.params ? 'error' : 'none'}
-                        defaultValue={rule.actions[0].params?.value || []}
+                        errorText={validation?.params}
+                        validationState={validation?.params ? 'error' : 'none'}
+                        defaultValue={rule.actions[actionIdx].params?.value}
                         onChange={({ values }) => {
-                          mutations.actions.update('params', { value: values });
+                          mutations.actions.update('params', { value: values }, 0);
                         }}
                       />
                       <DropdownOverlay>
@@ -121,13 +123,17 @@ export const ActionBlock: React.FC<ActionBlockProps> = ({ type, shippingProfiles
                     placeholder="For multiple methods, enter comma separated values. e.g. Razorpay, COD"
                     accessibilityLabel="Enter payment methods"
                     name="params"
-                    errorText={validationResult.actions?.params}
-                    validationState={validationResult.actions?.params ? 'error' : 'none'}
-                    defaultValue={rule.actions[0].params?.value?.join(',') || ''}
-                    onChange={({ name, value = '' }) => {
-                      mutations.actions.update(name, {
-                        value: value.split(',').map((val) => val.trim()),
-                      });
+                    errorText={validation?.params}
+                    validationState={validation?.params ? 'error' : 'none'}
+                    defaultValue={rule.actions[actionIdx].params?.value?.join(',') || ''}
+                    onChange={({ value = '' }) => {
+                      mutations.actions.update(
+                        'params',
+                        {
+                          value: value.split(',').map((val) => val.trim()),
+                        },
+                        actionIdx,
+                      );
                     }}
                   />
                 ))}

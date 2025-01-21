@@ -11,13 +11,13 @@ import {
 
 import type {
   Rule,
-  ConditionOrGroup,
   Path,
+  ConditionOrGroupWithoutIds,
 } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
 type AddConditionOrGroup = (
   rule: Rule,
-  conditionOrGroup: ConditionOrGroup,
+  conditionOrGroup: ConditionOrGroupWithoutIds,
   parentPath: Path,
   options?: {
     idGenerator?: () => string;
@@ -40,7 +40,7 @@ export const add: AddConditionOrGroup = (
       path: conditionOrGroup.path ?? [...parentPath, parent.conditions.length],
     }),
   );
-  return { ...rule };
+  return { condition: { ...rule.condition }, actions: rule.actions };
 };
 
 type RemoveConditionOrGroup = (rule: Rule, path: Path) => Rule;
@@ -70,7 +70,7 @@ export const remove: RemoveConditionOrGroup = (rule, path) => {
     parent.conditions = [...parent.conditions, ...rest];
   }
 
-  return { ...rule };
+  return { condition: { ...rule.condition }, actions: rule.actions };
 };
 
 type UpdateConditionOrGroup = (rule: Rule, prop: string, value: any, path: Path) => Rule;
@@ -91,5 +91,5 @@ export const update: UpdateConditionOrGroup = (rule, prop, value, path) => {
     }
   }
 
-  return { ...rule };
+  return { condition: { ...rule.condition }, actions: rule.actions };
 };

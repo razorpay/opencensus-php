@@ -1,17 +1,14 @@
-import type {
-  ValidationResult,
-  Fact,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
+import type { Fact } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
-export const stringValidator = (value: unknown): boolean | ValidationResult => {
+export const stringValidator = (value: unknown): boolean | string => {
   if (!Boolean(value)) {
-    return { valid: false, reasons: ['Value cannot be empty'] };
+    return 'Value cannot be empty';
   }
 
   return true;
 };
 
-export const numberValidator = (value: unknown): boolean | ValidationResult => {
+export const numberValidator = (value: unknown): boolean | string => {
   try {
     // using parseFloat to support all numerical values
     // this may include decimal values like `discountPercentage`
@@ -19,25 +16,25 @@ export const numberValidator = (value: unknown): boolean | ValidationResult => {
     const num = parseFloat(value as string);
 
     if (!num) {
-      return { valid: false, reasons: ['Please enter a number'] };
+      return 'Please enter a number';
     }
 
     return true;
   } catch (err) {
-    return { valid: false, reasons: [] };
+    return false;
   }
 };
 
-export const booleanValidator = (value: unknown): boolean | ValidationResult => {
+export const booleanValidator = (value: unknown): boolean | string => {
   const val = typeof value === 'string' ? value.toLowerCase().trim() : '';
   if (val === 'false' || val === 'true' || val === 'yes' || val === 'no') {
     return true;
   }
 
-  return { valid: false, reasons: [] };
+  return false;
 };
 
-export const validators: Record<Fact['type'], (value: unknown) => boolean | ValidationResult> = {
+export const validators: Record<Fact['type'], (value: unknown) => boolean | string> = {
   string: stringValidator,
   number: numberValidator,
   boolean: booleanValidator,

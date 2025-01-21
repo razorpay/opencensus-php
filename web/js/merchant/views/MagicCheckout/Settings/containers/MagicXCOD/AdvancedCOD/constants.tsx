@@ -2,12 +2,12 @@ import * as React from 'react';
 import { Box, Link, EditIcon, TrashIcon, PackageIcon, CashIcon } from '@razorpay/blade/components';
 
 import type { Rule } from 'merchant/reducers/magicCheckout/magicxACODRules/types';
-import type { Fact } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
+import type { PropFact } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
 export const DOCUMENTATION_LINK =
   'https://razorpay.com/docs/payments/cod-checkout360/shopify/configure-cod/#advanced';
 
-export const Facts: Fact[] = [
+export const Facts: PropFact[] = [
   { name: 'quantity', label: 'Quantity', type: 'number' },
   { name: 'subtotal', label: 'Cart Total Before Discount', type: 'number' },
   { name: 'weight', label: 'Weight', type: 'number' },

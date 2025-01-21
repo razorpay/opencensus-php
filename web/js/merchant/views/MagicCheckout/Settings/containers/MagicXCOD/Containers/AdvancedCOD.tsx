@@ -12,8 +12,15 @@ import {
 import { api } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/api';
 import { GetStarted } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/GetStarted';
 import AdvancedCODTable from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/Table';
-import { createNewRuleState } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/util';
+import { Facts } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/constants';
+import {
+  createNewRuleState,
+  ruleValidator,
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/util';
 import RuleCreator from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Containers/RuleCreatorContainer';
+import { RuleCreatorEngine } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator';
+import { toJSON } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/util/json';
+import { parseShopifyRule } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/util/parse';
 import { DisplayNotificationTxt } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -41,6 +48,7 @@ const AdvancedCOD = ({
   }, [rules]);
   const hasRules = rules.length > 0;
   const isAppUpdateRequired = ruleLimits.shipping === 0 && ruleLimits.payment === 0;
+  const defaultRule = useMemo(() => parseShopifyRule(toJSON(ruleToEdit?.rule || '')), [ruleToEdit]);
 
   // helper functions
   const notify = (type, message) =>
@@ -153,14 +161,21 @@ const AdvancedCOD = ({
         </Box>
       </Box>
       {isModalOpen && (
-        <RuleCreator
-          isOpen={isModalOpen}
-          setIsOpen={setIsModalOpen}
-          isProcessingReq={isProcessingReq}
-          apiRule={ruleToEdit}
-          createRule={formActions.createRule}
-          updateRule={formActions.updateRule}
-        />
+        <RuleCreatorEngine
+          defaultRule={defaultRule}
+          facts={Facts}
+          sizeLimit="40kb"
+          validator={ruleValidator}
+        >
+          <RuleCreator
+            isOpen={isModalOpen}
+            setIsOpen={setIsModalOpen}
+            isProcessingReq={isProcessingReq}
+            apiRule={ruleToEdit}
+            createRule={formActions.createRule}
+            updateRule={formActions.updateRule}
+          />
+        </RuleCreatorEngine>
       )}
     </>
   );

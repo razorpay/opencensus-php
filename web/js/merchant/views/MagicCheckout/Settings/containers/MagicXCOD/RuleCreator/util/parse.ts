@@ -4,29 +4,28 @@ import type {
   Rule,
   ShopifyRule,
   SRConditionGroup,
-  Condition,
-  ConditionGroup,
+  ConditionOrGroup,
   Path,
 } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
-const parseSRConditionGroup = (cg: SRConditionGroup, path: Path = []): Rule['condition'] => {
+const parseSRConditionGroup = (cg: SRConditionGroup, path: Path = []): ConditionOrGroup => {
   const combinator = 'all' in cg ? 'and' : 'or';
-  const conditions: Array<Condition | ConditionGroup> = (
-    cg[combinator === 'and' ? 'all' : 'any'] || []
-  ).map((item, index) => {
-    const currPath = [...path, index];
-    if ('fact' in item) {
-      return {
-        id: generateId(),
-        path: currPath,
-        fact: item.fact,
-        operator: item.op,
-        value: item.val,
-      };
-    } else {
-      return parseSRConditionGroup(item, currPath);
-    }
-  });
+  const conditions: Array<ConditionOrGroup> = (cg[combinator === 'and' ? 'all' : 'any'] || []).map(
+    (item, index) => {
+      const currPath = [...path, index];
+      if ('fact' in item) {
+        return {
+          id: generateId(),
+          path: currPath,
+          fact: item.fact,
+          operator: item.op,
+          value: item.val,
+        };
+      } else {
+        return parseSRConditionGroup(item, currPath);
+      }
+    },
+  ) as any;
 
   return {
     id: path.length === 0 ? 'root' : generateId(),
@@ -45,6 +44,6 @@ export const parseShopifyRule = (shopifyRule: ShopifyRule): Rule => {
 
   return {
     actions,
-    condition: ruleCondition,
+    condition: ruleCondition as any,
   };
 };

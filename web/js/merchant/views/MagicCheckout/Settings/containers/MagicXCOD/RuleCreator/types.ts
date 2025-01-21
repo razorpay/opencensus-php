@@ -1,19 +1,22 @@
-// entities
+import React from 'react';
+
+// facts
 export type Fact = {
-  // key properties
   name: string;
   label: string;
   type: 'number' | 'string' | 'boolean';
-  operators?: Array<Operator>;
-
-  // optional
+  operators: Array<Operator>;
+  defaultOperator: Operator;
+  validator: any;
+  // optionals
   valueEditorType?: string;
-  defaultOperator?: Operator;
   values?: OptionList;
   defaultValue?: any;
   placeholder?: string;
-  validator?: (value: unknown) => boolean | ValidationResult;
 };
+
+export type PropFact = Pick<Fact, 'name' | 'label' | 'type'> &
+  Partial<Omit<Fact, 'name' | 'label' | 'type'>>;
 
 // options
 export type Option = {
@@ -29,74 +32,105 @@ export type OptionGroup = {
 
 export type OptionList = Array<Option> | Array<OptionGroup>;
 
-export type OperatorValue = 'eq' | 'lt' | 'le' | 'gt' | 'ge' | 'in' | 'contains';
-export type Operator =
-  | { name: 'eq'; label: 'equals'; value: 'eq' }
-  | { name: 'lt'; label: 'less than'; value: 'lt' }
-  | { name: 'le'; label: 'less than or equal to'; value: 'le' }
-  | { name: 'gt'; label: 'greater than'; value: 'gt' }
-  | { name: 'ge'; label: 'greater than or equal to'; value: 'ge' }
-  | { name: 'in'; label: 'in'; value: 'in' }
-  | { name: 'contains'; label: 'contains'; value: 'contains' };
+// operators
+export type OperatorValue = 'eq' | 'lt' | 'le' | 'gt' | 'ge' | 'in';
+export type Operator = {
+  [K in OperatorValue]: { name: K; value: K; label: string };
+}[OperatorValue];
 
 // condition and condition groups
 export type Path = number[];
 
 export type Combinator = 'and' | 'or';
 export type Condition = {
-  path?: Path;
-  id?: string;
+  path: Path;
+  id: string;
   fact: string;
-  operator: Operator['value'];
-  value: any;
-};
+} & (
+  | { operator: 'lt' | 'le' | 'gt' | 'ge'; value: number }
+  | { operator: 'in'; value: string }
+  | { operator: 'eq'; value: number | boolean | string }
+);
+export type ConditionWithoutIds = Omit<Condition, 'id' | 'path'> &
+  Partial<Pick<Condition, 'id' | 'path'>>;
 
 export type ConditionGroup = {
-  path?: Path;
-  id?: string;
+  path: Path;
+  id: string;
   combinator: Combinator;
   conditions: Array<Condition | ConditionGroup>;
 };
+export type ConditionGroupWithoutIds = {
+  path?: Path;
+  id?: string;
+  combinator: Combinator;
+  conditions: Array<ConditionWithoutIds | ConditionGroupWithoutIds>;
+};
 
 export type ConditionOrGroup = Condition | ConditionGroup;
+export type ConditionOrGroupWithoutIds = ConditionWithoutIds | ConditionGroupWithoutIds;
 
-// validation
-export type ValidationResult = {
-  valid: boolean;
-  reasons: Array<string>;
-};
-
-export type ValidationMap = Record<string, boolean | ValidationResult>;
-
-export type ConditionValidator = (condition: Condition) => boolean | ValidationResult;
-
-export type RuleValidator = (rule: Rule) => {
-  condition: boolean | ValidationMap;
-  actions: any;
-};
+export type MutableConditionOrGroupProps = 'combinator' | 'fact' | 'operator' | 'value';
 
 // actions
 export type Action<
   T extends string = string,
-  P extends Record<string, any> = Record<string, any>,
+  P extends Record<string, unknown> = Record<'value', any>,
 > = {
   type: T;
   params?: P;
 };
 
+export type MutableActionProps = 'type' | 'params';
+
 // rules
-export type Rule = {
-  condition: ConditionGroup;
+export type Rule<Type extends 'partial' | undefined = undefined> = {
+  condition: Type extends 'partial' ? ConditionGroupWithoutIds : ConditionGroup;
   actions: Array<Action>;
 };
+
+export type RuleSize = {
+  limit: number;
+  size: number;
+  usage: number;
+};
+
+export type RuleSizeInKb = number | `${number}kb`;
+
+// validation
+export type ConditionValidation = Partial<{
+  fact: string | undefined;
+  operator: string | undefined;
+  value: string | undefined;
+}>;
+
+export type ConditionGroupValidation = {
+  [conditionID: string]: ConditionValidation;
+};
+
+export type RuleValidationResult = {
+  conditions: {
+    [id: string]: ConditionGroupValidation;
+  };
+  actions: {
+    [idx: string]: {
+      type: string;
+      params: string;
+    };
+  };
+};
+
+export type RuleValidator = (rule: Rule) => RuleValidationResult;
 
 // SR = ShopifyRule
 export type SRCombinator = 'all' | 'any';
 export type SRCondition = {
   fact: string;
-  op: Operator['value'];
-  val: any;
-};
+} & (
+  | { op: 'lt' | 'le' | 'gt' | 'ge'; val: number }
+  | { op: 'in'; val: string }
+  | { op: 'eq'; val: number | boolean | string }
+);
 export type SRConditionGroup = Partial<{
   [K in SRCombinator]: Array<SRConditionOrGroup>;
 }>;
@@ -109,7 +143,45 @@ export type ShopifyRule = {
   ruleFacts: Record<string, never>;
 };
 
-// react context
-export type RuleCreatorContextType = {
-  [prop: string]: any;
+// react components and context
+export type RCEngineProps = {
+  facts: PropFact[];
+  sizeLimit: RuleSizeInKb;
+  defaultRule?: Rule;
+  validator: RuleValidator;
+  children: React.ReactNode;
 };
+
+type ValidateRuleFunction = (rule: Rule) => boolean;
+
+export type RCEngineContext = {
+  rule: Rule;
+  facts: Fact[];
+  ruleSize: RuleSize;
+  validationResult: RuleValidationResult;
+  validateRule: ValidateRuleFunction;
+  validator: (rule: Rule) => RuleValidationResult;
+  ruleMutations: {
+    addCondition: (conditionOrGroup: ConditionOrGroupWithoutIds, parentPath: Path) => void;
+    updateCondition: (prop: MutableConditionOrGroupProps, value: any, path: Path) => void;
+    removeCondition: (path: Path) => void;
+    addAction: (action: Action) => void;
+    updateAction: (prop: 'type' | 'params', value: any, index: number) => void;
+    removeAction: (index: number) => void;
+  };
+};
+
+// component/context utils
+export type UseRuleInternal = (props: RCEngineProps) => [
+  {
+    rule: Rule;
+    size: RuleSize;
+  },
+  RCEngineContext['ruleMutations'],
+];
+
+export type UseFactsInternal = (props: RCEngineProps) => Fact[];
+
+export type UseValidationInternal = (
+  props: RCEngineProps,
+) => [RuleValidationResult, ValidateRuleFunction];

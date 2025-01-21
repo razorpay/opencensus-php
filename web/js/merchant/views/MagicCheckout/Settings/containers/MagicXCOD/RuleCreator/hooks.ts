@@ -1,65 +1,68 @@
-import { useRCInternalState } from './components/RuleCreator';
-import { byteLength, getUsagePercentage } from './size';
-import * as actionMutations from './util/actions/mutations';
-import * as cgMutations from './util/conditions/mutations';
-import { formatRule } from './util/formatRule';
-import { toString } from './util/json';
+import { useContext, useState } from 'react';
 
-import type { Rule, Action, ConditionOrGroup, Path } from './types';
+import { RCEngineContext } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/context/RuleCreatorContext';
+import {
+  RCEngineContext as RCEngineContextType,
+  RuleValidationResult,
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
+
+function assertContext(
+  ctx: RCEngineContextType | null,
+  hook: string,
+): asserts ctx is RCEngineContextType {
+  if (!ctx) {
+    throw new Error(`Please use ${hook} within RuleCreatorEngine.`);
+  }
+}
 
 export const useRule = () => {
-  const { rule, ruleSize } = useRCInternalState();
-  return { rule, ruleSize };
+  const ctx = useContext(RCEngineContext);
+
+  assertContext(ctx, 'useRule');
+
+  return {
+    rule: ctx.rule,
+    ruleSize: ctx.ruleSize,
+  };
 };
 
 export const useRuleFacts = () => {
-  const { ruleFacts } = useRCInternalState();
-  return { ruleFacts };
+  const ctx = useContext(RCEngineContext);
+
+  assertContext(ctx, 'useRuleFacts');
+
+  return {
+    ruleFacts: ctx.facts,
+  };
 };
 
 export const useRuleValidation = () => {
-  const { rule, validationResult, validator, setState } = useRCInternalState();
+  const ctx = useContext(RCEngineContext);
 
-  const validate = () => {
-    const errors = validator(rule);
-    const isValid =
-      Object.keys(errors.conditions).length === 0 && Object.keys(errors.actions).length === 0;
-    setState({ validationResult: errors });
+  assertContext(ctx, 'useRuleValidation');
 
-    return isValid;
-  };
+  const { rule, validationResult, validateRule } = ctx;
+  const validate = () => validateRule(rule);
 
   return { validationResult, validate };
 };
 
 export const useRuleMutations = () => {
-  const { rule, setRule, setState } = useRCInternalState();
+  const ctx = useContext(RCEngineContext);
 
-  const setRuleWithMeta = (rule: Rule) => {
-    const size = byteLength(toString(formatRule(rule)));
-    const usage = getUsagePercentage(size, '40kb'); // hardcoding limit for now
+  assertContext(ctx, 'useRuleMutations');
 
-    setState({
-      rule,
-      ruleSize: {
-        usage,
-        value: size,
-      },
-    });
-  };
-
+  const ruleMutation = ctx.ruleMutations;
   const mutations = {
     conditions: {
-      add: (conditionOrGroup: ConditionOrGroup, parentPath: Path) =>
-        setRuleWithMeta(cgMutations.add(rule, conditionOrGroup, parentPath)),
-      remove: (path: Path) => setRuleWithMeta(cgMutations.remove(rule, path)),
-      update: (prop: string, value: any, path: Path) =>
-        setRuleWithMeta(cgMutations.update(rule, prop, value, path)),
+      add: ruleMutation.addCondition,
+      update: ruleMutation.updateCondition,
+      remove: ruleMutation.removeCondition,
     },
     actions: {
-      add: (action: Action) => setRule(actionMutations.add(rule, action)),
-      update: (prop: any, value: any, index?: number) =>
-        setRule(actionMutations.update(rule, prop, value, index)),
+      add: ruleMutation.addAction,
+      update: ruleMutation.updateAction,
+      remove: ruleMutation.removeAction,
     },
   };
 

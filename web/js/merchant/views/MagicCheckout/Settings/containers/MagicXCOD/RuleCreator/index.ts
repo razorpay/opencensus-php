@@ -1,1 +1,5 @@
-export { RuleCreator } from './components/RuleCreator';
+// components
+export { RuleCreatorEngine } from './components/RuleCreator';
+
+// hooks
+export * from './hooks';

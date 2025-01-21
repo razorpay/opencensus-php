@@ -9,6 +9,7 @@ import { generateId } from 'merchant/views/MagicCheckout/Settings/containers/Mag
 import type {
   Condition,
   ConditionGroup,
+  ConditionWithoutIds,
   Rule,
 } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/types';
 
@@ -20,7 +21,7 @@ beforeEach(() => {
 
 describe('add', () => {
   it('adds a new condition to the root condition group', () => {
-    const newCondition: Condition = {
+    const newCondition: ConditionWithoutIds = {
       fact: 'price',
       operator: 'gt',
       value: 100,
@@ -40,7 +41,7 @@ describe('add', () => {
   });
 
   it('adds a new condition to a nested condition group', () => {
-    const newCondition: Condition = {
+    const newCondition: ConditionWithoutIds = {
       fact: 'category',
       operator: 'eq',
       value: 'clothing',
@@ -60,7 +61,7 @@ describe('add', () => {
   });
 
   it('returns the same rule if the parent path is not a condition group', () => {
-    const newCondition: Condition = {
+    const newCondition: ConditionWithoutIds = {
       fact: 'rating',
       operator: 'lt',
       value: 3,
