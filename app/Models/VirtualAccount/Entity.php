@@ -20,6 +20,7 @@ use RZP\Models\OfflinePayment;
 use RZP\Models\Order\Repository as OrderRepository;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Constants\Entity as ConstantsEntity;
 
 /**
  * @property Vpa\Entity          $vpa
@@ -80,6 +81,17 @@ class Entity extends Base\PublicEntity
     const SOURCE               = 'source';
 
     const PAYEE_ACCOUNT        = 'payee_account';
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
+    ];
 
     protected $fillable = [
         self::NAME,

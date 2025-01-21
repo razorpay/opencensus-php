@@ -560,4 +560,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::CATEGORY);
     }
+
+    public function getFillableAttributes()
+    {
+        return $this->fillable;
+    }
 }

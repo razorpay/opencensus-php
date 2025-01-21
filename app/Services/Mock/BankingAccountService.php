@@ -12,6 +12,7 @@ use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\BankingAccount\Gateway\Fields;
 use RZP\Models\BankingAccount\Gateway\Yesbank;
+use RZP\Models\BankingAccount\Gateway\Idfc;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\BankingAccount\Gateway\Rbl as RblGateway;
 use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
@@ -142,6 +143,20 @@ class BankingAccountService
                         RblGateway\Fields::AUTH_PASSWORD  => 'encryption_iv_123',
                         RblGateway\Fields::CLIENT_ID      => 'client_123',
                         RblGateway\Fields::CLIENT_SECRET  => 'client_pass',
+                    ]
+                ];
+            case Channel::IDFC:
+                return [
+                    'id'                => 'bas30000000000',
+                    'corp_id'           => '',
+                    'user_id'           => '',
+                    'urn'               => '',
+                    'account_number'    => $accountNumber,
+                    Fields::CREDENTIALS => [
+                        Idfc\Fields::transferClientId   => 'encryption_iv_123',
+                        Idfc\Fields::transferKid        => 'client_123',
+                        Idfc\Fields::transferSource     => 'client_pass',
+                        Idfc\Fields::hexEncryptionKey   => 'CORP123',
                     ]
                 ];
             default:

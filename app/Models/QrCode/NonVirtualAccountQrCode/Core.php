@@ -20,6 +20,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
+use RZP\Services\TerminalsService;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\QrPaymentRequest\Type;
 use RZP\Models\Order\Entity as Order;
@@ -27,11 +28,13 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Reconciliator\Base\Reconciliate;
+use \RZP\Models\Terminal\Type as TerminalType;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\QrPayment\Service as QrPaymentService;
 use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\QrCodeConfig\Service as QrCodeConfigService;
+use RZP\Models\BharatQr\Service as BharatQrService;
 
 class Core extends QrCode\Core
 {
@@ -83,6 +86,84 @@ class Core extends QrCode\Core
 
         return $qrCode;
 
+    }
+
+    public function createTerminalForSingleStack(array $input)
+    {
+        $terminal = null;
+        try
+        {
+            $vpa = strtolower($input['vpa']);
+            $gateway = $this->fetchGatewayFromVpa($vpa);
+            $terminalData = [
+                TerminalEntity::VPA => $vpa
+            ];
+
+            /***
+             *  This code is specifically written for the `upi_rzpapb` gateway and may not be compatible with other gateways.
+             */
+            $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway,$terminalData);
+
+            if(empty($terminal) === true)
+            {
+                [$identifiers,$features] = $this->getCreateTerminalRequestForSingleStack($input);
+                $terminal = $this->app['terminals_service']->initiateOnboarding($input['merchant_id'],$gateway,$identifiers,$features);
+            }
+            else if($terminal->getMerchantId() !== $input['merchant_id'])
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::QR_CODE_TERMINAL_CREATION_FAILED, ['message' => $ex->getMessage()]);
+            throw $ex;
+
+        }
+
+        return $terminal;
+    }
+
+    public function getCreateTerminalRequestForSingleStack(array $input):array
+    {
+        $identifiers = [
+            TerminalEntity::GATEWAY_MERCHANT_ID2 => $input[TerminalEntity::VPA],
+            TerminalEntity::GATEWAY_MERCHANT_ID => $input['merchant_id'],
+            TerminalEntity::VPA => $input[TerminalEntity::VPA]
+        ];
+
+        $features = [
+            TerminalType::OFFLINE           => '1',
+            TerminalType::PAY               => '1',
+            TerminalType::NON_RECURRING     => '1',
+            TerminalType::COLLECT           => '1',
+        ];
+
+        return [$identifiers,$features];
+    }
+
+    public function createRequestForAddingDeviceIdToQr(array $input,$qrCode):array
+    {
+        $requestArray = [
+            'identifier'=>[
+                'trId'=>null,
+                 Entity::MERCHANT_ID => $input[Entity::MERCHANT_ID],
+                'qr_code_id'  => $qrCode['id'],
+            ],
+            Entity::DEVICE_ID   => $input[Entity::DEVICE_ID],
+        ];
+
+        return $requestArray;
+    }
+    public function createQrCodeInputForSingleStack(array $input):array
+    {
+        $requestArray = [
+            Entity::VPA => $input[Entity::VPA],
+            'qrString'=> $input[Entity::QR_STRING],
+            Entity::MERCHANT_ID => $input[Entity::MERCHANT_ID],
+        ];
+
+        return $requestArray;
     }
 
     public function buildQrCodeForMerchant(array $input, array $additionalData = null)
@@ -235,8 +316,10 @@ class Core extends QrCode\Core
 
         // Rebuild the URL with updated query
         $parts['query'] = http_build_query($queryParams);
-        return $parts['scheme'] . '://' . $parts['host'] . $parts['path'] . '?' . $parts['query'];
+        return urldecode($parts['scheme'] . '://' . $parts['host'] . $parts['path'] . '?' . $parts['query']);
     }
+
+
 
     public function addStaticQRinQRCodeConfig($qrCode, $inputTerminal = null)
     {
@@ -252,10 +335,8 @@ class Core extends QrCode\Core
             return null;
         }
 
-        $gatewayVariant = $this->app->razorx->getTreatment($gateway, RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS, $this->mode);
 
-        if (strtolower($gatewayVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
-        {
+        if ((new BharatQrService())->checkIfQrGatewayUnrecognizedPaymentProcess($gateway) === false) {
             return null;
         }
 

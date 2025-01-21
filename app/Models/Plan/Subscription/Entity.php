@@ -21,6 +21,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Constants\Entity as ConstantsEntity;
 
 /**
  * @property Invoice\Entity     $invoice
@@ -149,6 +150,17 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::START_AT,
+    ];
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
     ];
 
     protected $fillable = [

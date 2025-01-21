@@ -59,10 +59,6 @@ class BankingUpiTest extends TestCase
                 'merchant_id' => '10000000000000',
             ]
         );
-
-        $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
-
-        $this->getDedicatedTerminalSplitzResponseForVariantON();
     }
 
     public function mockUpsResponse()
@@ -218,6 +214,14 @@ class BankingUpiTest extends TestCase
 
     public function testPayerNameForPaymentOnDynamicQRCode() :void
     {
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'off',
+            ]
+        );
+
         $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
 
         $this->createQrCode(

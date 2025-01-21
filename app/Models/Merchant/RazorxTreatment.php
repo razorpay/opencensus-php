@@ -392,21 +392,18 @@ final class RazorxTreatment
     const BT_RBL_CREATE_VIRTUAL_ACCOUNT = 'bt_rbl_create_virtual_account';
     const SC_STOP_QR_AS_RECEIVER_FOR_VIRTUAL_ACCOUNT = 'sc_stop_qr_as_receiver_for_virtual_account';
 
-    // This experiment COLLECTX_LIVE_ON_BANK_ACCOUNTS would be enabled for merchants who are live on bank accounts for collectx
-    // Since there could be merchants who are live on UPI but not on Bank Account, VAs should be created accordingly
-    const COLLECTX_LIVE_ON_BANK_ACCOUNTS = "collectx_live_on_bank_accounts";
-
     const COLLECTX_AXIS_PAYMENT_TRANSFER_RAMP_UP = "collectx_axis_payment_transfer_ramp_up";
 
     // this experiment is to disable webhooks for collectx merchants
     const COLLECTX_DISABLE_WEBHOOKS = "collectx_disable_webhooks";
 
+    // this experiment is to enable webhooks via worker flow
+    const COLLECTX_WORKER_FLOW = "collectx_worker_flow";
+
     const COLLECTX_RBL_MERCHANTS_VA_CREATION_BLOCK = "collectx_rbl_merchants_va_creation_block";
     const COLLECTX_RBL_PAYMENT_TRANSFER_RAMP_UP = "collectx_rbl_payment_transfer_ramp_up";
 
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
-
-    const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED = 'system_based_needs_clarification_not_matched';
 
     // to a/b test between offer tile vs subtext for cred
     const CRED_OFFER_SUBTEXT = 'cred_offer_subtext';
@@ -542,10 +539,6 @@ final class RazorxTreatment
     const HARVESTER_V2_MIGRATION = 'HARVESTER_V2_MIGRATION';
 
     const DRUID_MIGRATION = 'DRUID_MIGRATION';
-
-    const WHATCMS_EXPERIMENT = 'WHATCMS_EXPERIMENT';
-
-    const ESIGN_AADHAR_VERIFICATION = 'ESIGN_AADHAR_VERIFICATION';
 
     //Experiment for removal of extra fields in payment response
     const DISALLOW_ORG_DATA_IN_RESPONSE = 'disallow_org_data_in_response';
@@ -888,9 +881,6 @@ final class RazorxTreatment
     //Experiment to remove bank fetch call if balance is stale while creating CA payout and mark the payout to queued.
     const CA_PAYOUT_SKIP_BALANCE_FETCH = 'ca_payout_skip_balance_fetch';
 
-    //Experiment to create dedicated UPI terminal
-    const UPI_DEDICATED_TERMINAL = 'upi_dedicated_terminal';
-
     // Unexpected payment refund delay to T+1
     const UNEXPECTED_PAYMENT_REFUND_DELAY = 'unexpected_payment_refund_delay';
 
@@ -924,9 +914,6 @@ final class RazorxTreatment
 
     const CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER  = "card_subscriptions_international_handler";
 
-    const DISABLE_QR_CODE_ON_DEMAND_CLOSE = 'disable_qr_code_on_demand_close';
-
-    const QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS = 'qr_gateway_unrecognised_payment_process';
 
     // If true, it will select Optimizer mandate hub for card recurring payments.
     const ALLOW_OPTIMIZER_CARD_MANDATE_HUB = 'allow_optimizer_card_mandate_hub';
@@ -1038,7 +1025,7 @@ final class RazorxTreatment
      */
     const ENABLE_STANDARD_CHECKOUT_MERCHANTS_ON_PUSH_TOKEN_PROVISIONING = 'enable_standard_checkout_merchants_on_push_token_provisioning';
 
-    const QR_PAYMENT_PROCESS_RETRY = 'qr_payment_process_retry';
+
 
     /**
      * Razorx flag to skip callback for upi_icici BT(Beneficiary Timeout) cases
@@ -1083,10 +1070,6 @@ final class RazorxTreatment
      * Razorx flag to enable/disable validation on payee_account length during bank_transfer Callback
      */
     const PAYEE_ACCOUNT_LENGTH_VALIDATION = 'payee_account_length_validation';
-    /*
-    * Razorx flag is used to control versions(old/new) of otp unification for acs page
-    */
-    const OTP_UNIFICATION_ACS_PAGE  = 'otp_unification_acs_page';
     /*
      * Razorx flag to enable/disable three decimal currency check for invoice and plugins flow
      */

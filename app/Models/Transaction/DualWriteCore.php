@@ -280,6 +280,8 @@ class DualWriteCore extends Base\Core
                 case LedgerConstants::NEGATIVE_ADJUSTMENT:
                 case LedgerConstants::RAZORPAY_DISPUTE_REVERSAL:
                     $this->createAdjustmentAPILedger($journalResponse);
+                case LedgerConstants::IRCTC_PAYOUT_INITIATED:
+                    $this->createPayoutAPILedger($journalResponse);
             }
         }
         else if(isset($journalResponse[LedgerConstants::JOURNALS]) and is_array($journalResponse[LedgerConstants::JOURNALS]) === true)
@@ -458,31 +460,7 @@ class DualWriteCore extends Base\Core
 
         $transfer = $this->repo->transfer->findByPublicId($transactorPublicId);
 
-        $resource = $this->getTransactionMutexresource($transfer);
-
-        $txn = $this->mutex->acquireAndRelease(
-            $resource,
-            function () use ($transfer, $journalId, $fees, $tax, $feeCreditUsed, $amountCreditUsed)
-            {
-                return $this->repo->transaction(function () use ($transfer, $journalId, $fees, $tax, $feeCreditUsed, $amountCreditUsed) {
-
-                    $txnCore = new Core();
-
-                    list($txn, $feeSplit) = $txnCore->createTransferTransactionForDualWrite($transfer, $journalId, $fees, $tax, $feeCreditUsed, $amountCreditUsed, false);
-
-                    $transfer->transaction()->associate($txn);
-
-                    $transfer->save();
-
-                    return $txn;
-                });
-            },
-            self::ENTITY_TRANSACTION_CREATION_MUTEX_TTL,
-            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
-            self::ENTITY_TRANSACTION_CREATION_MUTEX_RETRIES,
-            self::ENTITY_TRANSACTION_CREATION_MUTEX_MIN_RETRY_DELAY,
-            self::ENTITY_TRANSACTION_CREATION_MUTEX_MAX_RETRY_DELAY
-        );
+        list($txn, $feeSplit) = (new Core())->createTransferTransactionForDualWrite($transfer, $journalId, $fees, $tax, $feeCreditUsed, $amountCreditUsed, false);
 
         $this->trace->info(TraceCode::CUSTOMER_TRANSFER_TRANSACTION_CREATED,
             [
@@ -1123,6 +1101,90 @@ class DualWriteCore extends Base\Core
             'id'         => $txn->getId(),
             'refund_id'  => $refundId,
         ]);
+    }
+
+    private function createPayoutAPILedger($journalResponse)
+    {
+        $transactorPublicId = $journalResponse[LedgerConstants::TRANSACTOR_ID];
+
+        $transactorEvent = $journalResponse[LedgerConstants::TRANSACTOR_EVENT];
+
+        [$merchantId, $fees, $tax, $feeCreditUsed, $amountCreditUsed, $refundCreditUsed] = $this->getMerchantIdCreditsAndPricingInfoFromJournalResponse($journalResponse);
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $properties = [
+            'request_data' => json_encode(["merchant_id" => $merchant->getId()]),
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.api_ledger_dual_write_rearch'),
+        ];
+
+        // dual write re-arch enabled for both child+parent if enabled for parent
+        $dualWriteRearchEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
+        if ($dualWriteRearchEnabled === false)
+        {
+            return;
+        }
+
+        /** @var \RZP\Models\Payout\Entity $payout */
+        $payout = $this->repo
+                ->payout->findByPublicId($transactorPublicId);
+
+        $resource = $this->getTransactionMutexresource($payout);
+
+        $journalId = $journalResponse['id'];
+
+        $txn = $this->mutex->acquireAndRelease(
+            $resource,
+            function () use ($payout, $journalId, $merchant,  $fees, $tax, $feeCreditUsed, $amountCreditUsed, $refundCreditUsed, $transactorEvent)
+            {
+                return $this->repo->transaction(function() use ($payout, $journalId, $merchant,  $fees, $tax, $feeCreditUsed, $amountCreditUsed, $refundCreditUsed, $transactorEvent)
+                {
+                    $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payout);
+
+                    if ((isset($txn) === true) and
+                        ($txn->isBalanceUpdated() === true))
+                    {
+                        return $txn;
+                    }
+
+                    if ((isset($txn) === true) and
+                        ($txn->getId() !== $journalId))
+                    {
+                        $journalId = $txn->getId();
+
+                        $this->trace->count(Metric::PG_LEDGER_API_TRANSACTION_JOURNAL_ID_MISMATCH,
+                            [
+                                LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
+                            ]
+                        );
+                    }
+
+                    $txnCore = new Core();
+
+                    list($txn, $feeSplit) = $txnCore->createPayoutTransactionForDualWrite($payout, $journalId,  $fees, $tax, $feeCreditUsed, $amountCreditUsed, $refundCreditUsed);
+
+                    return $txn;
+                });
+            },
+            self::ENTITY_TRANSACTION_CREATION_MUTEX_TTL,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            self::ENTITY_TRANSACTION_CREATION_MUTEX_RETRIES,
+            self::ENTITY_TRANSACTION_CREATION_MUTEX_MIN_RETRY_DELAY,
+            self::ENTITY_TRANSACTION_CREATION_MUTEX_MAX_RETRY_DELAY
+        );
+
+        $this->repo->saveOrFail($txn);
+
+        $this->trace->info(TraceCode::TRANSACTION_CREATED,
+            [
+                'payout_id'         => $payout->getId(),
+                'transaction_id'    => $txn->getId(),
+                'event'             => $transactorEvent,
+            ]);
+
+        return $txn;
     }
 
 }

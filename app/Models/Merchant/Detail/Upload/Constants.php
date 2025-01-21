@@ -67,4 +67,16 @@ class Constants
     const INTERNATIONAL = 'international';
     const IS_PERMISSION_ENABLED = 'is_permission_enabled';
     const ORG_DEFINED_FIELD_PERMISSION_ENABLED = 'org_defined_field_permission_enabled';
+
+    const GSTIN_NUMBER = 'gstin_number';
+    const BUSINESS_REGISTRATION_ADDRESS = 'business_registration_address';
+    const BUSINESS_REGISTRATION_CITY = 'business_registration_city';
+    const BUSINESS_REGISTRATION_STATE = 'business_registration_state';
+    const BUSINESS_REGISTRATION_POSTCODE = 'business_registration_postcode';
+    const BUSINESS_OPERATIONAL_ADDRESS = 'business_operational_address';
+    const BUSINESS_OPERATIONAL_CITY = 'business_operational_city';
+    const BUSINESS_OPERATIONAL_STATE = 'business_operational_state';
+    const BUSINESS_OPERATIONAL_POSTCODE = 'business_operational_postcode';
+    const BANK_ACCOUNT_HOLDER_NAME = 'bank_account_holder_name';
+    const BANK_IFSC_CODE = 'bank_ifsc_code';
 }

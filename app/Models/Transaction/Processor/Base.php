@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Models\Feature;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
@@ -513,6 +514,15 @@ abstract class Base extends BaseCore
             ($this->txn->source->balance->getType() !== Balance\Type::PRIMARY))
         {
             return;
+        }
+
+        // Setting reference3 to "disabled" only for payouts involving PG balances to avoid conflicts with RazorpayX payouts.
+        if(($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) &&
+            $this->txn->getType() === Transaction\Type::PAYOUT &&
+            isset($this->txn->source->balance) &&
+            in_array($this->txn->source->balance->getType(), Balance\Type::$pgBalances))
+        {
+            $this->txn->setReference3("disabled");
         }
 
         if(($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
@@ -1096,6 +1106,8 @@ abstract class Base extends BaseCore
         $amount = $this->txn->getCredits();
 
         $merchantId = $this->merchantBalance->merchant->getId();
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $reverseShadowMerchant = $merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW);
 
         $refundCreditsThreshold = $this->merchantBalance->merchant->getRefundCreditsThreshold();
 
@@ -1118,7 +1130,14 @@ abstract class Base extends BaseCore
         }
         else
         {
-            $refundCredits = $this->merchantBalance->getRefundCredits();
+            if ($reverseShadowMerchant)
+            {
+                $refundCredits = $this->repo->credits->getMerchantCreditsOfType($merchant->getId(), Credits\Type::REFUND);
+            }
+            else
+            {
+                $refundCredits = $this->merchantBalance->getRefundCredits();
+            }
         }
 
         $data = [
@@ -1147,9 +1166,16 @@ abstract class Base extends BaseCore
                 $data);
         }
 
-        $this->merchantBalance->subtractRefundCredits($amount, $negativeLimit);
+        if ($reverseShadowMerchant === false)
+        {
+            $this->merchantBalance->subtractRefundCredits($amount, $negativeLimit);
 
-        $newCredits = $this->merchantBalance->getRefundCredits();
+            $newCredits = $this->merchantBalance->getRefundCredits();
+        }
+        else
+        {
+            $newCredits = $refundCredits - $amount;
+        }
 
         $this->trace->info(TraceCode::MERCHANT_REFUND_CREDITS_DATA,
             [
@@ -1158,20 +1184,25 @@ abstract class Base extends BaseCore
                 'new_credits' => $newCredits,
                 'old_credits' => $refundCredits,
                 'method'      => 'updateRefundCredits',
+                'reverse_shadow' => $reverseShadowMerchant,
             ]);
 
-        (new Balance\NegativeReserveBalanceMailers())->sendNegativeBalanceMailIfApplicable(
-                                                        $this->merchantBalance->merchant,
-                                                        $refundCredits,
-                                                        $newCredits,
-                                                        $negativeLimit,
-                                                        'refund credits',
-                                                        $this->txn->getType());
+        if($reverseShadowMerchant === false) {
+            (new Balance\NegativeReserveBalanceMailers())->sendNegativeBalanceMailIfApplicable(
+                $this->merchantBalance->merchant,
+                $refundCredits,
+                $newCredits,
+                $negativeLimit,
+                'refund credits',
+                $this->txn->getType());
+        }
+
         //create a credit transaction for the same
         $this->createCreditTransaction($amount, Credits\Type::REFUND);
 
         // only check for credit threshold if it's not null
-        if ($refundCreditsThreshold !== null)
+
+        if ($refundCreditsThreshold !== null && $reverseShadowMerchant === false)
         {
             $this->sendRefundCreditAlertIfNeeded(
                 $amount, $refundCredits, $refundCreditsThreshold, $this->merchantBalance->merchant);

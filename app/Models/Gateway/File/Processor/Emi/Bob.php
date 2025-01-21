@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use App;
+use Mail;
 use Carbon\Carbon;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Emi;
@@ -11,7 +12,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Trace\TraceCode;
-
+use RZP\Mail\Emi as EmiMail;
 class Bob extends Base
 {
     const BANK_CODE   = IFSC::BARB;
@@ -147,6 +148,21 @@ class Bob extends Base
     protected function getFormattedAmount($amount)
     {
         return number_format($amount/100, 2, '.', '');
+    }
+
+    protected function sendEmiPassword($data)
+    {
+        $target = $this->gatewayFile->getTarget();
+
+        $recipients = $this->gatewayFile->getRecipients();
+
+        $emiPasswordMail = new EmiMail\BobPassword(
+            ucfirst($target),
+            $data['password'],
+            $recipients
+        );
+
+        Mail::queue($emiPasswordMail);
     }
 
 }

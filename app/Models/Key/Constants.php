@@ -20,6 +20,8 @@ class Constants
 
     const MERCHANT_ID = "merchantId";
 
+    const FUNCTION_NAME = "function_name";
+
     const MODE = "mode";
 
     const SPLITZ_EXPERIMENT= "experiment";

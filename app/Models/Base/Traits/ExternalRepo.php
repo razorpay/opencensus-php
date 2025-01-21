@@ -549,6 +549,21 @@ trait ExternalRepo
 
         $callerFunc = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]['function'];
 
+        if (empty($id))
+        {
+            $data = [
+                'model' => $this->entityName,
+                'attributes' => [
+                    'id'       => $id,
+                    'input'    => $input,
+                ],
+                'operation' => $callerFunc,
+            ];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+        }
+
         try
         {
             $entity = $class->fetchPaymentById($id);
@@ -569,9 +584,7 @@ trait ExternalRepo
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
+            $this->trace->warning(
                 TraceCode::FETCH_PAYMENT_VIA_ROUTE_SERVICE,
                 [
                     'id'         => $id,

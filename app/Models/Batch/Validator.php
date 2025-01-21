@@ -1354,6 +1354,7 @@ class Validator extends Base\Validator
         Header::UPI_ONBOARDED_TERMINAL_EDIT_BILLING_LABEL     =>
             'sometimes|boolean|prohibited_if:' . Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY . ',' . Gateway::UPI_ICICI,
         Header::UPI_ONBOARDED_TERMINAL_EDIT_MOBILE_NUMBER     => 'sometimes|boolean',
+        Header::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING         => 'sometimes|boolean',
     ];
 
     protected static $linkedAccountBatchUploadRules = [

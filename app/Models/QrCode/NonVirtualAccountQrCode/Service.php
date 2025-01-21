@@ -120,6 +120,63 @@ class Service extends QrCode\Service
         return $qrCode->toArrayPublic();
     }
 
+    public function createTerminalAndMapQrToDevice(array $input):array
+    {
+        $response = [];
+
+        try
+        {
+            (new Validator())->validateInput('createQrForSingleStack',$input);
+
+            $this->setMerchantContextForQrCreate($input);
+
+            $terminal = (new Core())->createTerminalForSingleStack($input);
+
+            $inputArray = (new Core())->createQrCodeInputForSingleStack($input);
+
+            $qrCode = $this->createQrForMerchant($inputArray);
+
+            $inputArray = (new Core())->createRequestForAddingDeviceIdToQr($input,$qrCode);
+
+            $setDeviceResponse = $this->setDeviceIdForQr($inputArray);
+
+            if(empty($setDeviceResponse['error']) === false)
+            {
+                $response =  [
+                    'status' => 'FAILED',
+                    'error' => [
+                        'error_code' => $setDeviceResponse['error']['code'],
+                        'description' => $setDeviceResponse['error']['description']
+                    ],
+                ];
+            }
+            else
+            {
+                $response = [
+                    'status' => 'SUCCESS',
+                    'error' => 'null',
+                ];
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            //which error code to be thrown here?
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::CREATE_TERMINAL_AND_MAPPING_DEVICE_FAILED, $input);
+
+            $response = [
+                'status' => 'FAILED',
+                'error'  => [
+                    'error_code' => $ex->getCode(),
+                    'description' => $ex->getMessage()
+                ]
+            ];
+        }
+
+
+        return $response;
+
+    }
+
     public function createQrForMerchant($input)
     {
         $startTimeMs = microtime(true) * 1000;
@@ -328,14 +385,14 @@ class Service extends QrCode\Service
         $id           = $input['identifier']['qr_code_id'] ?? null;
         $referenceID  = $input['identifier']['trId'] ?? null;
         $deviceId     = $input['device_id'];
-        $merchantId   = $input['identifier']['merchant_id'] ?? null;
+//        $merchantId   = $input['identifier']['merchant_id'] ?? null;
         try
         {
             $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
             $this->mode            = Mode::LIVE;
 
             //check if identifier is present if not then throw exception
-            if((empty($id) and empty($referenceID)) or empty($merchantId))
+            if(empty($id) and empty($referenceID))
             {
                 $this->trace->info(TraceCode::BAD_REQUEST_IDENTIFIER_NOT_FOUND, [
                     'message' => 'BAD_REQUEST_IDENTIFIER_NOT_FOUND',
@@ -386,8 +443,8 @@ class Service extends QrCode\Service
             }
 
             //check if the device id is already mapped to any qr code
-            //$qrCodeExists = (new Repository())->findByDeviceId($deviceId);
-            $qrCodeExists = (new Repository())->findByMerchantAndDeviceId($merchantId,$deviceId);
+            $qrCodeExists = (new Repository())->findByDeviceId($deviceId);
+//            $qrCodeExists = (new Repository())->findByMerchantAndDeviceId($merchantId,$deviceId);
             if ($qrCodeExists->count()>=1)
             {
                 $this->trace->info(TraceCode::BAD_REQUEST_DEVICE_ID_ALREADY_MAPPED, [
@@ -515,7 +572,7 @@ class Service extends QrCode\Service
                 'input' => $input
             ]);
         $deviceId = $input['device_id'];
-        $merchantId  = $input['merchant_id'];
+//        $merchantId  = $input['merchant_id'];
         $exception=null;
         try{
 
@@ -532,8 +589,8 @@ class Service extends QrCode\Service
             $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
             $this->mode            = Mode::LIVE;
 
-            //            $qrCodes =(new Repository())->findByDeviceId($deviceId);
-            $qrCodes = (new Repository())->findByMerchantAndDeviceId($merchantId,$deviceId);
+                        $qrCodes =(new Repository())->findByDeviceId($deviceId);
+//            $qrCodes = (new Repository())->findByMerchantAndDeviceId($merchantId,$deviceId);
 
             //check if device_id is mapped to any qr code
             if($qrCodes->isEmpty())
@@ -971,15 +1028,6 @@ class Service extends QrCode\Service
         $this->trace->info(TraceCode::QR_CODE_CLOSE_REQUEST, ['id' => $id]);
 
         $errorMessage = null;
-
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE, $this->mode);
-
-        if ((strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
-            and ($this->merchant->isFeatureEnabled(FeatureConstants::CLOSE_QR_ON_DEMAND) === false))
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
-        }
-
         try
         {
             $qrCode = (new Repository())->findByPublicIdAndMerchant($id, $this->merchant);
@@ -989,12 +1037,12 @@ class Service extends QrCode\Service
                 return $qrCode->toArrayPublic();
             }
 
-            if ((strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON) and
-                (((str_contains($qrCode['qr_string'], '@icici') === true) or
-                  ($qrCode->isRazorpayPosQrCode()===true))===false))
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
-            }
+//             (Comment from Pullak) Commented this section of code to re-enable closing of DQRs for everybody, discussed with Product
+//            if ((((str_contains($qrCode['qr_string'], '@icici') === true) or
+//                  ($qrCode->isRazorpayPosQrCode()===true))===false))
+//            {
+//                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
+//            }
 
             $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODES_CLOSE_QR_CODE], function () use ($qrCode, $closeReason) {
                 return (new Core)->close($qrCode, $closeReason);

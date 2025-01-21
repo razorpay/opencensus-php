@@ -22,6 +22,8 @@ final class Metric
     const TRANSACTION_LEGACY_REQUEST_LATENCY_MILLISECONDS         = 'transaction_legacy_request_latency_ms';
     const TRANSACTION_READ_API_LEDGER_CLS_MERCHANT                = 'transaction_read_api_ledger_cls_merchant';
     const TRANSACTION_WRITE_API_LEDGER_CLS_MERCHANT               = 'transaction_write_api_ledger_cls_merchant';
+    const X_TRANSACTION_READ_API_LEDGER_MERCHANT                  = 'x_transaction_read_api_ledger_merchant';
+    const X_TRANSACTION_WRITE_API_LEDGER_MERCHANT                 = 'x_transaction_write_api_ledger_merchant';
 
     const TRANSACTION_CREATED_EVENT_DISPATCH_TIME                 = 'transaction_created_event_dispatch_time';
 

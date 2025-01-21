@@ -24,11 +24,7 @@ class Utility
     {
         if ($isAdmin === true)
         {
-            $requestId = $this->app['request']->getTaskId();
-
-            $merchantId = $requestId;
-
-            return $this->checkSplitzExperimentStatus($merchantId);
+            return true;
         }
 
         $pgLedgerReverseShadow = $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
@@ -37,19 +33,7 @@ class Utility
             return false;
         }
 
-        return $this->checkSplitzExperimentStatus($merchant->getMerchantId());
-    }
-
-    public function checkSplitzExperimentStatus(string $merchantId) : bool
-    {
-        $properties = [
-            "id" => $merchantId,
-            "experiment_id" => $this->app['config']->get('app.splitz_merchant_cls_balance_read_experiment_id'),
-        ];
-
-        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        return $variant;
+        return true;
     }
 
 }

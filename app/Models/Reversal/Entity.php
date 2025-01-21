@@ -17,6 +17,7 @@ use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Entity extends Base\PublicEntity
 {
@@ -67,6 +68,17 @@ class Entity extends Base\PublicEntity
     protected $entity = 'reversal';
 
     protected $generateIdOnCreate = true;
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
+    ];
 
     protected $fillable = [
         self::AMOUNT,
@@ -504,6 +516,6 @@ class Entity extends Base\PublicEntity
 
     public function setIgnoreRelationsForPayoutServiceReversals()
     {
-        $this->ignoredRelations = [self::ENTITY];
+        $this->ignoredRelations[] = self::ENTITY;
     }
 }

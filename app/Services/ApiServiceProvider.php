@@ -862,6 +862,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPaymentsCrossBorderClient();
 
+        $this->registerCrossBorderImportServiceClient();
+
         $this->registerPhonepeDowntimeService();
 
         $this->registerDowntimeSlackNotificationService();
@@ -2599,6 +2601,19 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             }
 
             return new PaymentsCrossBorderClient();
+        });
+    }
+
+    protected function registerCrossBorderImportServiceClient()
+    {
+        $this->app->singleton('cross_border_import_service', function($app)
+        {
+            if ($app['config']->get('applications.cross_border_import_service.mock') === true)
+            {
+                return new Mock\CrossBorderImportServiceClient();
+            }
+
+            return new CrossBorderImportServiceClient();
         });
     }
 

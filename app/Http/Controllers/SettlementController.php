@@ -1014,7 +1014,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->getHoldReasonCodeMappingsInternal($input);
+        $data = $this->service()->getHoldReasonCodeMappings($input);
 
         return ApiResponse::json($data);
     }

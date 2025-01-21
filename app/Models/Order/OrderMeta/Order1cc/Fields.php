@@ -51,6 +51,8 @@ class Fields
 
     const PROMOTIONS_SOURCE                 = 'source';
 
+    const PROMOTIONS_FIELDS                 = 'fields';
+
     //Customer Details Fields
     const CUSTOMER_DETAILS_ID               = 'id';
     const CUSTOMER_DETAILS_NAME             = 'name';

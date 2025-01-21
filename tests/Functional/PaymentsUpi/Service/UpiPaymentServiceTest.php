@@ -1083,6 +1083,47 @@ class UpiPaymentServiceTest extends TestCase
             ->will($this->returnCallback($closure));
     }
 
+    protected function setMockSplitzTreatment(array $Experiments = [])
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) use ($Experiments) {
+                if (array_key_exists($input['experiment_id'], $Experiments) === true)
+                {
+                    $result = ($Experiments[$input['experiment_id']] ?? null) === 'on' ? 'on' : 'off';
+                    return [
+                        "response" => [
+                            "variant" => [
+                                "variables" => [
+                                    [
+                                        "key" => "result",
+                                        "value" => $result
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ];
+                }
+
+                return [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    "key" => "result",
+                                    "value" => "off"
+                                ]
+                            ]
+                        ]
+                    ]
+                ];
+            });
+    }
+
     /**
      * returns a mock response of the razorx request
      *

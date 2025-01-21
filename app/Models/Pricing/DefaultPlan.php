@@ -1261,6 +1261,29 @@ class DefaultPlan
                 'created_at'          => time(),
                 'updated_at'          => time(),
             ],
+            // Rs 5 for payout value < Rs 1k for payouts with method = upi.
+            // ( IDFC (Account Type : Direct) rules for UPI payouts)
+            [
+                'id'                  => 'Bbg7eYLaaadsL1',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PRIVATE_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'payouts_filter'      => null,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::IDFC,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
             // Rs 9 for payout value between Rs 1k and 25k for payouts with method = upi.
             // (  YESBANK (Account Type : Direct) rules for UPI payouts)
             [
@@ -1284,6 +1307,29 @@ class DefaultPlan
                 'created_at'          => time(),
                 'updated_at'          => time(),
             ],
+            // Rs 9 for payout value between Rs 1k and 25k for payouts with method = upi.
+            // (  IDFC (Account Type : Direct) rules for UPI payouts)
+            [
+                'id'                  => 'Bbg7eYLaaaesL2',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PRIVATE_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 900,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100000,
+                'amount_range_max'    => 2500000,
+                'payouts_filter'      => null,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::IDFC,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
             // Rs 15 for payout value > Rs 25k for payouts with method = upi.
             // ( YESBANK (Account Type : Direct) rules for UPI payouts)
             [
@@ -1303,6 +1349,29 @@ class DefaultPlan
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
                 'account_type'        => AccountType::DIRECT,
                 'channel'             => Channel::YESBANK,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 15 for payout value > Rs 25k for payouts with method = upi.
+            // ( IDFC (Account Type : Direct) rules for UPI payouts)
+            [
+                'id'                  => 'Bbg7eYLaaafsL3',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PRIVATE_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 2500000,
+                'amount_range_max'    => \RZP\Models\Base\ExtendedValidations::MYSQL_SIGNED_BIGINT_MAX,
+                'payouts_filter'      => null,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::IDFC,
                 'expired_at'          => null,
                 'created_at'          => time(),
                 'updated_at'          => time(),
@@ -1664,6 +1733,28 @@ class DefaultPlan
                 'created_at'          => time(),
                 'updated_at'          => time(),
             ],
+            // Rs 5 for payout value < Rs 1k for payouts with method = upi.
+            [
+                'id'                  => 'Bbg7eYLaaajsL4',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'payouts_filter'      => null,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::IDFC,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
             // Rs 9 for payout value between Rs 1k and 25k for payouts with method = upi.
             // (  YESBANK (Account Type : Direct) rules for UPI payouts)
             [
@@ -1687,6 +1778,28 @@ class DefaultPlan
                 'created_at'          => time(),
                 'updated_at'          => time(),
             ],
+            // Rs 9 for payout value between Rs 1k and 25k for payouts with method = upi.
+            [
+                'id'                  => 'Bbg7eYLaaaksL5',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 900,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100000,
+                'amount_range_max'    => 2500000,
+                'payouts_filter'      => null,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::IDFC,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
             // Rs 15 for payout value > Rs 25k for payouts with method = upi.
             // (  YESBANK (Account Type : Direct) rules for UPI payouts)
             [
@@ -1706,6 +1819,29 @@ class DefaultPlan
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
                 'account_type'        => AccountType::DIRECT,
                 'channel'             => Channel::YESBANK,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+
+            // Rs 15 for payout value > Rs 25k for payouts with method = upi.
+            [
+                'id'                  => 'Bbg7eYLaaalsL6',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'auth_type'           => BasicAuth\Type::PROXY_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 2500000,
+                'amount_range_max'    => \RZP\Models\Base\ExtendedValidations::MYSQL_SIGNED_BIGINT_MAX,
+                'payouts_filter'      => null,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::IDFC,
                 'expired_at'          => null,
                 'created_at'          => time(),
                 'updated_at'          => time(),
@@ -2266,6 +2402,25 @@ class DefaultPlan
                 'created_at'          => time(),
                 'updated_at'          => time(),
             ],
+            [
+                'id'                  => 'Bbg7e4oKCgidfc',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'auth_type'           => BasicAuth\Type::PRIVATE_AUTH,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 900,
+                'amount_range_active' => false,
+                'payouts_filter'      => null,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'account_type'        => AccountType::DIRECT,
+                'channel'             => Channel::IDFC,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ]
         ];
     }
 

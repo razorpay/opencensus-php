@@ -18,6 +18,7 @@ use RZP\Models\QrCode\Constants;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Models\UpiTransferRequest;
 use RZP\Models\VirtualAccount\Metric;
+use RZP\Gateway\Upi\Base\Entity as UpiBaseEntity;
 
 class Service extends Base\Service
 {
@@ -170,12 +171,22 @@ class Service extends Base\Service
 
     private function isIciciQrCodePayment($gatewayResponse, $gateway): bool
     {
-        if (($gateway === Payment\Gateway::UPI_ICICI) and
-            (isset($gatewayResponse[Fields::MERCHANT_TRAN_ID]) === true))
+        if ($gateway === Payment\Gateway::UPI_ICICI)
         {
-            $merchantTranID = $gatewayResponse[Fields::MERCHANT_TRAN_ID];
+            $merchantTranID = $gatewayResponse['data']['upi'][UpiBaseEntity::MERCHANT_REFERENCE]
+                ?? $gatewayResponse[Fields::MERCHANT_TRAN_ID]
+                ?? null;
 
-            return (str_ends_with($merchantTranID, QrCode\Constants::QR_CODE_V2_TR_SUFFIX));
+            if(empty($merchantTranID) === true)
+            {
+                return false;
+            }
+
+            if(str_ends_with($merchantTranID, QrCode\Constants::QR_CODE_V2_TR_SUFFIX) === true)
+            {
+                return true;
+            }
+            return false;
         }
 
         return false;

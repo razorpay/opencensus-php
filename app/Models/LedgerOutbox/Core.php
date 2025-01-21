@@ -338,54 +338,29 @@ class Core extends Base\Core
     private function handleOndemandSettlementEventsOnAcknowledgment($response, $journal, bool $accountAlreadyExistsForCapitalInNewLedger) {
         $transactorIdVal = $response[LedgerConstants::TRANSACTOR_ID];
         $event = $response[LedgerConstants::TRANSACTOR_EVENT];
+
+        $traceableData = [
+            LedgerConstants::TRANSACTOR_EVENT       => $event,
+            LedgerConstants::TRANSACTOR_ID          => $transactorIdVal,
+            Constants::SOURCE                       => Constants::ACK_WORKER
+        ];
+
         try
         {
             $entityId = $this->determineEntityIDFromTransactorID($transactorIdVal);
-            $txn = (new OndemandCore)->handleLedgerEventsOnAcknowledgment($journal, $transactorIdVal, $event, $entityId, $accountAlreadyExistsForCapitalInNewLedger);
-            if($txn === null)
-            {
-                $this->trace->info(TraceCode::CAPITAL_PG_LEDGER_TRANSACTION_NOT_CREATED,
-                    [
-                        LedgerConstants::TRANSACTOR_EVENT       => $event,
-                        LedgerConstants::TRANSACTOR_ID          => $transactorIdVal,
-                        Constants::SOURCE                       => Constants::ACK_WORKER
-                    ]
-                );
-            }
-            else
-            {
-                $txnId = $txn->getId();
 
-                $this->trace->info(TraceCode::CAPITAL_PG_LEDGER_CREATE_TRANSACTION_SUCCESS,
-                    [
-                        LedgerConstants::API_TRANSACTION_ID     => $txnId,
-                        LedgerConstants::TRANSACTOR_EVENT       => $event,
-                        LedgerConstants::TRANSACTOR_ID          => $transactorIdVal,
-                        Constants::SOURCE                       => Constants::ACK_WORKER
-                    ]
-                );
+            (new OndemandCore)->handleLedgerEventsOnAcknowledgment($journal, $transactorIdVal, $event, $entityId,
+                $accountAlreadyExistsForCapitalInNewLedger);
 
-                $this->trace->count(Metric::PG_LEDGER_CREATE_TRANSACTION_SUCCESS, [
-                    LedgerConstants::TRANSACTOR_EVENT   => $event,
-                    Constants::SOURCE                   => Constants::ACK_WORKER
-                ]);
-            }
-            $this->softDelete($response[LedgerConstants::TRANSACTOR_ID], $response[LedgerConstants::TRANSACTOR_EVENT]);
+            $this->trace->info(TraceCode::ONDEMAND_SETTLEMENT_LEDGER_ACKNOWLEDGEMENT_SUCCESS, $traceableData);
+
+            $this->softDelete($transactorIdVal, $event);
         }
         catch (Exception $e)
         {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::PG_LEDGER_ACK_WORKER_FAILURE,
-            );
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PG_LEDGER_ACK_WORKER_FAILURE, $traceableData);
 
-            $this->trace->count(Metric::PG_LEDGER_ACK_WORKER_FAILURE,
-                [
-                    LedgerConstants::TRANSACTOR_EVENT       => $event,
-                    LedgerConstants::TRANSACTOR_ID          => $transactorIdVal,
-                    Constants::SOURCE                       => Constants::ACK_WORKER
-                ]);
+            $this->trace->count(Metric::PG_LEDGER_ACK_WORKER_FAILURE, $traceableData);
         }
     }
 
@@ -574,6 +549,12 @@ class Core extends Base\Core
             case "setlodrvrsl":
                 $res[Constants::TYPE] = Constants::ONDEMAND_SETTLEMENT;
                 return $res;
+            case "pout":
+                $res[Constants::TYPE] = Constants::PAYOUT;
+                return $res;
+            case "rds":
+                $res[Constants::TYPE] = Constants::RDS;
+                return $res;
             default:
                 $res[Constants::TYPE] = "";
                 return $res;
@@ -684,6 +665,21 @@ class Core extends Base\Core
                             constants::SOURCE                   => constants::ACK_WORKER,
 
                         ]);
+
+                        // Emit a separate metric for specific IRCTC Payout events
+                        if (in_array($transactorEvent, [
+                            LedgerConstants::IRCTC_PAYOUT_INITIATED,
+                            LedgerConstants::IRCTC_PAYOUT_PROCESSED,
+                            LedgerConstants::IRCTC_RDS_BALANCE_UPDATED
+                        ])) {
+                            $this->trace->count(Metric::IRCTC_PAYOUTS_CLS_NON_RECOVERABLE_ERROR, [
+                                constants::ERROR_MESSAGE            => $errorMessage,
+                                constants::ERROR_TYPE               => constants::NON_RECOVERABLE_ERROR,
+                                LedgerConstants::TRANSACTOR_ID      => $transactorId,
+                                LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
+                                constants::SOURCE                   => constants::ACK_WORKER,
+                            ]);
+                        }
 
                         // Soft deleting this record from outbox as the error is not recoverable and will
                         // fail when retried via cron as well
@@ -854,7 +850,7 @@ class Core extends Base\Core
 
             $refundId = $reversal->toArray()['entity_id'];
 
-            $txn = $this->repo->transaction->findByEntityId($refundId, $this->merchant);
+            $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($refundId);
 
             if($txn === null)
             {
@@ -893,42 +889,46 @@ class Core extends Base\Core
                 $this->dispatchToSettlementFromJournalIfApplicableForReversal($journal);
             }
 
-            $txn = (new Reversal\Core)->createReversalTransaction($reversal, $journalId);
-
+            //$txn = (new Reversal\Core)->createReversalTransaction($reversal, $journalId);
+            $reversal->setAttribute(Reversal\Entity::TRANSACTION_ID, $journalId);
         }
-        else if($transactionType === Constants::PAYMENT)
-        {
-            $payment = $this->repo
-                ->payment
+        else if($transactionType === Constants::PAYOUT && in_array($this->merchant->getMerchantId(), LedgerConstants::IRCTC_MIDS)) {
+            /** @var \RZP\Models\Payout\Entity $payout */
+            $payout = $this->repo
+                ->payout
                 ->findByPublicIdAndMerchant($transactorPublicId, $this->merchant, []);
 
-            $dualWriteRearchEnabled = $this->isAPILedgerDualWriteRearchSplitzEnabled($payment->merchant);
+            $resource = $this->getTransactionMutexresource($payout);
 
-            if ($dualWriteRearchEnabled === true)
-            {
-                if($transactorEvent === LedgerConstants::MERCHANT_CAPTURED)
-                {
-                    // dispatch for dual write job
-                    $this->pushTxnDataToKafkaForAPIDualWrite($journal, $payment->getId());
-                }
-            }
-            else
-            {
-                if($transactorEvent === LedgerConstants::GATEWAY_CAPTURED)
-                {
-                    $txn = $this->createTransactionFromAuthorisedPaymentInReverseShadow($payment, $transactorPublicId);
-                }
+            $this->mutex->acquireAndRelease(
+                $resource,
+                function () use ($payout, $journal, $journalId) {
+                    $this->repo->transaction(function () use ($payout, $journalId, $journal) {
+                        // Create FTA and update Payout Txn ID
+                        $payoutProcessor = new \RZP\Models\Payout\Processor\DownstreamProcessor\Base();
+                        $payoutProcessor->createFundTransferAttempt($payout, $payout->merchant->bankAccount);
 
-                if($transactorEvent === LedgerConstants::MERCHANT_CAPTURED)
-                {
-                    $txn = $this->createTransactionFromCapturedPaymentInReverseShadow($payment, $journalId, $transactorEvent);
+                        $updateData = [
+                            \RZP\Models\Payout\Entity::TRANSACTION_ID => $journalId,
+                        ];
+                        $this->repo->payout->updatePayout($payout->getId(), $payout->merchant->getId(), $updateData);
 
-                    // Todo: Once transaction in API is decomposed, we need to set fee and tax to payment entity
-                    // and save it as that is curretly taken care of by the transaction module.
-                }
-            }
+                        $this->dispatchToSettlementFromJournalIfApplicableForPayout($journal, $payout);
 
+                        $dualWriteRearchEnabled = $this->isAPILedgerDualWriteRearchSplitzEnabled($payout->merchant);
 
+                        if ($dualWriteRearchEnabled === true) {
+                            // dispatch for dual write job
+                            $this->pushTxnDataToKafkaForAPIDualWrite($journal, $payout->getId());
+                        } else {
+                            $txnCore = new Transaction\Core();
+                            list($txn, $feeSplit) = $txnCore->createFromPayout($payout);
+
+                            $payout->transaction()->associate($txn);
+                            $payout->save();
+                        }
+                    });
+                });
         }
         else if($transactionType === Constants::CREDIT_LOADING)
         {
@@ -939,6 +939,7 @@ class Core extends Base\Core
 
             return null;
         }
+
         else if($transactionType === Constants::RESERVE_BALANCE_LOADING)
         {
             [$creditJournalId, $debitJournalId] = $this->determineJournalIdForAPITransaction($journal, "merchant_balance", "merchant_reserve_balance" );
@@ -971,14 +972,8 @@ class Core extends Base\Core
                     ]);
             }
 
-            $txn = $this->repo->transaction(function() use ($adjustment, $creditJournalId)
+            $txn = $this->repo->transaction(function() use ($journal, $adjustment, $creditJournalId)
             {
-                $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($adjustment);
-
-                if (isset($txn) === true)
-                {
-                    return $txn;
-                }
 
                 [$balance, $sendReserveBalanceMail] = (new Balance\Core())->createOrFetchReserveBalance($adjustment->merchant,
                     Type::RESERVE_PRIMARY, $this->mode);
@@ -990,11 +985,14 @@ class Core extends Base\Core
 
                 $adjustment->balance()->associate($balance);
 
-                $txn = (new Transaction\Core)->createFromAdjustment($adjustment, $creditJournalId);
+                $filteredCreditJournal = array_filter($journal, function ($item) use ($creditJournalId) {
+                    return $item['id'] === $creditJournalId;
+                });
+
+                $txn = $this->transformJournalResponseToTransactionEntityBase($filteredCreditJournal);
+                $txn->accountBalance()->associate($balance);
 
                 $adjustment->setStatus(Status::PROCESSED);
-
-                $this->repo->saveOrFail($txn);
 
                 $this->repo->saveOrFail($adjustment);
 
@@ -1025,6 +1023,7 @@ class Core extends Base\Core
 
             return $txn;
         }
+
         else if(($transactionType === Constants::TRANSFER) && ($transactorEvent === LedgerConstants::CUSTOMER_WALLET_LOADING))
         {
             $transfer = $this->repo->transfer->findByPublicId($transactorPublicId);
@@ -1536,7 +1535,7 @@ class Core extends Base\Core
                         if($transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED || $transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED)
                         {
                             $entityId = $this->determineEntityIDFromTransactorID($transactorId);
-                            $txn = (new OndemandCore)->handleLedgerEventsOnAcknowledgment($journal, $transactorId, $transactorEvent, $entityId, false);
+                            (new OndemandCore)->handleLedgerEventsOnAcknowledgment($journal, $transactorId, $transactorEvent, $entityId, false);
                         }
                         else if($isBulkJournal === true)
                         {
@@ -2129,6 +2128,10 @@ class Core extends Base\Core
 
             $txn = $this->transformJournalResponseToTransactionEntityForCustomerTransfer($journal, $transfer);
 
+            $transfer->setAttribute(Transfer\Entity::TRANSACTION_ID, $txn->getId());
+
+            $this->repo->saveOrFail($transfer);
+
             $status = $bucketCore->shouldProcessViaNewService($txn->getMerchantId());
 
             if ($status === true)
@@ -2194,6 +2197,20 @@ class Core extends Base\Core
             {
                 $bucketCore->publishForSettlement($virtualReversalTransaction);
             }
+    }
+
+    private function dispatchToSettlementFromJournalIfApplicableForPayout($journal, $payout)
+    {
+        $bucketCore = new Bucket\Core;
+
+        $virtualReversalTransaction = $this->transformJournalResponseToTransactionEntityForPayout($journal, $payout);
+
+        $status = $bucketCore->shouldProcessViaNewService($virtualReversalTransaction->getMerchantId());
+
+        if ($status === true)
+        {
+            $bucketCore->publishForSettlement($virtualReversalTransaction);
+        }
     }
 
     public function findTransferPaymentFromNotes($transfer)

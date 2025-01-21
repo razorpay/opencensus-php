@@ -120,18 +120,10 @@ class Generator extends Base\Core
             $this->options[self::BANKING] = $entity->isBalanceTypeBanking();
         }
 
-        $bankAccountLiveOnCollectX = $this->app->razorx->getTreatment($entity->merchant->getId(),
-            Merchant\RazorxTreatment::COLLECTX_LIVE_ON_BANK_ACCOUNTS,
-            $this->mode);
-
-        if ($bankAccountLiveOnCollectX === 'on')
+        if($entity->merchant->isFeatureEnabled(Constants::COLLECTX_ENABLED) === true)
         {
-            if($entity->merchant->isFeatureEnabled(Constants::COLLECTX_ENABLED) === true)
-            {
-                $this->options[self::COLLECTX_VA] = true;
-            }
+            $this->options[self::COLLECTX_VA] = true;
         }
-
 
         $bankAccount = $this->buildBankAccountEntity($entity);
 

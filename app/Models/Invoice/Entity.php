@@ -28,6 +28,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Constants\Entity as ConstantsEntity;
 
 /**
  * @property Subscription\Entity             $subscription
@@ -262,7 +263,9 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $ignoredRelations = [
-        self::ORDER
+        self::ORDER,
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
     ];
 
     protected $validOperations = [

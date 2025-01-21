@@ -13,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Upi\Mozart;
 use RZP\Gateway\Base\Verify;
+use RZP\Http\Request\Requests;
 use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
 use RZP\Gateway\Upi\Base\Type;
@@ -36,6 +37,7 @@ use RZP\Models\Payment\Verify\Action as VerifyAction;
 class Gateway extends Base\Gateway
 {
     use Processor\UpiTrait;
+    use RecurringTrait;
 
     // set Upi Aquirer as null for all upi gateways.
     const ACQUIRER = null;
@@ -1340,6 +1342,52 @@ class Gateway extends Base\Gateway
                     'Invalid gateway passed for processing mandate callback');
 
         }
+    }
+
+    /**
+     * @throws Exception\LogicException
+     */
+    protected function getActualPaymentIdFromServerCallback(array $response)
+    {
+        if (isset($response['data']['terminal']['gateway']) === true)
+        {
+            return $this->getPaymentIdFromServerCallback($response, $response['data']['terminal']['gateway']);
+        }
+    }
+
+    public function isRunningOnDark(): bool
+    {
+        $url = $this->app['config']->get('applications.mozart.live.url');
+
+        return starts_with($url, 'https://mozart-dark.razorpay.com');
+    }
+
+    protected function sendProxyRequestToDark($url, $content, $headers)
+    {
+        $method = 'POST';
+
+        $options = [
+            'timeout'           => 30,
+            'connect_timeout'   => 10,
+        ];
+
+        $headers = flatten_array($headers);
+
+        try
+        {
+            $response = Requests::request(
+                $url,
+                $headers,
+                $content,
+                $method,
+                $options);
+        }
+        catch (\WpOrg\Requests\Exception $e)
+        {
+            throw $e;
+        }
+
+        return $response;
     }
 
     public function getPaymentIdFromServerCallback(array $response, $gateway)

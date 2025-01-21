@@ -2626,7 +2626,7 @@ class UpiIciciAutoRecurringTest extends TestCase
 
     public function testAutoRecurringPaymentSubsequentDebitCallbackRetry()
     {
-        $this->mockSplitzTreatmentForAutopayPricing('variant_on', 'variant_on');
+        $this->mockSplitzTreatmentForAutopayDebitRetries('variant_on');
 
         Carbon::setTestNow(Carbon::parse('first day of this month', 'UTC'));
 
@@ -2994,7 +2994,7 @@ class UpiIciciAutoRecurringTest extends TestCase
 
     public function testAutoRecurringNotifyFailsAndCancelMandateAndToken()
     {
-        $this->mockSplitzTreatmentForAutopayPricing('variant_on', 'variant_on');
+        $this->mockSplitzTreatmentForAutopayDebitRetries('variant_on');
 
         $this->createDbUpiMandate();
 

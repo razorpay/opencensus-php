@@ -302,6 +302,9 @@ class CreatePayments extends Migration
             $table->string(Payment::PUBLIC_KEY)
                   ->nullable();
 
+            $table->string(Payment::DeviceId)
+                ->nullable();
+
             $table->index(Payment::STATUS);
             $table->index(Payment::WALLET);
             $table->index(Payment::TWO_FACTOR_AUTH);

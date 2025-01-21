@@ -82,6 +82,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
 use RZP\Models\PaymentsUpi;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
+use RZP\Constants\Entity as ConstantsEntity;
 /**
  * @property Subscription\Entity    $subscription
  * @property Invoice\Entity         $invoice
@@ -117,6 +118,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const BASE_AMOUNT_REFUNDED  = 'base_amount_refunded';
+    const AMOUNT_CAPTURED       = 'amount_captured';
     const AMOUNT_TRANSFERRED    = 'amount_transferred';
     const AMOUNT_PAIDOUT        = 'amount_paidout';
     const TWO_FACTOR_AUTH       = 'two_factor_auth';
@@ -427,6 +429,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REFUND_UNEXPECTED_PAYMENT = 'refund_unexpected_payment';
 
     protected $fillable = [
+        self::AMOUNT_CAPTURED,
         self::ID,
         self::AMOUNT,
         self::METHOD,
@@ -464,6 +467,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     ];
 
     protected $visible = [
+        self::AMOUNT_CAPTURED,
         self::ID,
         self::PUBLIC_ID,
         self::DeviceId,
@@ -571,6 +575,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ID,
         self::ENTITY,
         self::AMOUNT,
+        self::AMOUNT_CAPTURED,
         self::CURRENCY,
         self::BASE_AMOUNT,
         self::BASE_CURRENCY,
@@ -624,7 +629,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::UPI,
         self::UPI_METADATA,
         self::REWARD,
-        self::REWARD_ID
+        self::REWARD_ID,
+        self::AMOUNT_CAPTURED
     ];
 
     protected $webhook = [
@@ -884,6 +890,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AMOUNT_PAIDOUT,
         self::FEE,
         self::TAX,
+        self::AMOUNT_CAPTURED,
     ];
 
     protected $casts = [
@@ -929,7 +936,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected $lateBalanceUpdate = false;
 
     protected $ignoredRelations = [
-        self::ORDER
+        self::ORDER,
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER
     ];
 
     protected array $sensitiveFields = [
@@ -1315,6 +1324,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setAmount(int $amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setAmountCaptured(int $amountCaptured){
+        $this->setAttribute(self::AMOUNT_CAPTURED, $amountCaptured);
     }
 
     public function setBaseAmount(int $amount)
@@ -3767,6 +3780,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAmount() - $this->getAmountRefunded();
     }
 
+    public function getAmountCaptured()
+    {
+
+        if($this->getAttribute(self::AMOUNT_CAPTURED) == null){
+            return $this->getAttribute(self::AMOUNT);
+        }
+        return $this->getAttribute(self::AMOUNT_CAPTURED);
+    }
+
     public function getBaseAmountUnrefunded()
     {
         return $this->getBaseAmount() - $this->getBaseAmountRefunded();
@@ -6015,7 +6037,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
 // --------------- Relation to other entity section ends -----------------------
 
-    public function refundAmount($amount, $baseAmount)
+    public function refundAmount($amount, $baseAmount, $partialcaptureflag=null)
     {
         if ((is_int($amount) === false) or
             (is_int($baseAmount) === false))
@@ -6030,9 +6052,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $amountUnrefunded = $this->getAmountUnrefunded();
 
+        $amountcaptured = $this->getAmountCaptured();
+
+        //for partial capture usecase
+        $amountEligibleforRefund = $amountcaptured - $this->getAmountRefunded();
+
         if ($amount < $amountUnrefunded)
         {
             $this->setRefundStatus(RefundStatus::PARTIAL);
+            if($partialcaptureflag && $amount == $amountEligibleforRefund){
+                $this->setRefundStatus(RefundStatus::FULL);
+
+                $this->setStatus(Payment\Status::REFUNDED);
+            }
         }
         else if ($amount === $amountUnrefunded)
         {
@@ -7088,8 +7120,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             and $this->isFeeBearerCustomer())
         {
 
-            if ($this->getTransactionReadCLSSplitzResponse($this->getMerchantId()) === 'enable'
-                and $this->merchant->isFeatureEnabled(Features::PG_LEDGER_REVERSE_SHADOW) === true)
+            if ($this->merchant->isFeatureEnabled(Features::PG_LEDGER_REVERSE_SHADOW) === true)
             {
                 $txn = (new Transaction\Repository())->findByEntityIdWithoutMerchantTidb($this->getId());
                 $data[self::FEE] = $txn->getFee();
@@ -7118,19 +7149,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setConvenienceFeeAttributesForDashboard($data);
 
         return $data;
-    }
-
-    public function getTransactionReadCLSSplitzResponse($merchantId)
-    {
-        $app = \App::getFacadeRoot();
-
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $app['config']->get('app.transaction_read_experiment'),
-        ];
-        $response = $app['splitzService']->evaluateRequest($properties);
-
-        return $response['response']['variant']['name'] ?? '';
     }
 
     /**

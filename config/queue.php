@@ -95,6 +95,10 @@ return [
         'test'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_LIVE_QUEUE'),
         'live'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_LIVE_QUEUE'),
     ],
+    'account_statement_dual_write' => [
+        'test'       => env('AWS_ACCOUNT_STATEMENT_DUAL_WRITE_LIVE_QUEUE'),
+        'live'       => env('AWS_ACCOUNT_STATEMENT_DUAL_WRITE_LIVE_QUEUE'),
+    ],
     'payout_usage_event_processing' => [
         'test'       => env('AWS_PAYOUT_USAGE_EVENT_PROCESSING_LIVE_QUEUE'),
         'live'       => env('AWS_PAYOUT_USAGE_EVENT_PROCESSING_LIVE_QUEUE'),
@@ -125,6 +129,9 @@ return [
     'on_hold_payouts_process' => [
         'test'       =>  env('AWS_ON_HOLD_PAYOUTS_PROCESS_TEST_QUEUE'),
         'live'       =>  env('AWS_ON_HOLD_PAYOUTS_PROCESS_LIVE_QUEUE')
+    ],
+    'process_collectx_transfer' => [
+        'live'       =>  env('AWS_PROCESS_COLLECTX_TRANSFER_LIVE_QUEUE')
     ],
     'partner_bank_on_hold_payouts_process' => [
         'test'       =>  env('AWS_PARTNER_BANK_ON_HOLD_PAYOUTS_PROCESS_TEST_QUEUE'),

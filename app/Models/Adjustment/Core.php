@@ -325,7 +325,17 @@ class Core extends Base\Core
         {
             if ($source->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
             {
-                (new ReverseShadowAdjustmentsCore())->createLedgerEntryForManualAdjustmentReverseShadow($adjustment, $source->getPublicId());
+                $sourceId = $source->getPublicId();
+
+                // override source_id for customer_wallet_payout_adjustment flow, as we require transactor_id to be
+                //adjustment_id in the journal.
+                if ($adjustmentType == Constants::CUSTOMER_WALLET_PAYOUT_ADJUSTMENT) {
+                    $sourceId = $adjustment->getPublicId();
+                }
+
+                $journal = (new ReverseShadowAdjustmentsCore())->createLedgerEntryForManualAdjustmentReverseShadow($adjustment, $sourceId);
+
+                $adjustment->setTransactionId($journal[LedgerConstants::ID]);
 
                 $adjustment->setStatus(Status::PROCESSED);
             }

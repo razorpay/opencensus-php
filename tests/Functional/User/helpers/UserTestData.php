@@ -8909,5 +8909,19 @@ return [
                 'is_merchant_entities_empty' => true
             ],
         ],
+    ],
+
+    'testCreateMerchantForExistingOrphanUserWithEmailAndMobile' => [
+        'request' => [
+            'url'       => '/users/merchants',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+            ],
+        ],
     ]
 ];

@@ -5195,36 +5195,61 @@ GROUP BY
     {
         $properties = [
             "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
+            "experiment_id" => $this->app['config']->get('app.splitz_merchant_transacted_harvester_query_experiment_id'),
         ];
-
         $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
 
         try
         {
             if ($variant === true)
             {
+                $startTidbTimeMs = round(microtime(true) * 1000);
                 $result = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+                    ->select(DB::raw("/*+ MAX_EXECUTION_TIME(30000) */ `".Entity::MERCHANT_ID."`"))
                     ->from(\DB::raw('`payments`'))
                     ->where(Entity::MERCHANT_ID, "=", $merchantId)
-                    ->where(Entity::BASE_AMOUNT, ">", 0)
                     ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
                     ->limit(1)
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();;
+                $endTidbTimeMs = round(microtime(true) * 1000);
+
+                $tidbQueryDuration = $endTidbTimeMs - $startTidbTimeMs;
+
+                $this->trace->histogram(Metric::TIDB_QUERY_HAS_MERCHANT_TRANSACTED_PROCESSING_TIME, $tidbQueryDuration);
+
+                $this->trace->info(TraceCode::TIDB_QUERY_DURATION,
+                    [
+                        'time_taken_tidb' => $tidbQueryDuration,
+                        'result_query' => $result,
+                    ]
+                );
+
             }
             else
             {
+                $startTimeMs = round(microtime(true) * 1000);
                 $result = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
                     ->from(\DB::raw('`payments` FORCE INDEX (payments_merchant_id_status_created_at_index_all_replicas)'))
                     ->where(Entity::MERCHANT_ID, "=", $merchantId)
-                    ->where(Entity::BASE_AMOUNT, ">", 0)
                     ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
                     ->limit(1)
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();;
+                $endTimeMs = round(microtime(true) * 1000);
+
+                $queryDuration = $endTimeMs - $startTimeMs;
+
+                $this->trace->histogram(Metric::HARVESTER_QUERY_HAS_MERCHANT_TRANSACTED_PROCESSING_TIME, $queryDuration);
+
+                $this->trace->info(TraceCode::HARVESTER_QUERY_DURATION,
+                    [
+                        'time_taken_harvester' => $queryDuration,
+                        'result_query' => $result,
+                    ]
+                );
             }
 
             if (empty($result) === true)
@@ -5282,7 +5307,7 @@ GROUP BY
 
           unset($payment['_transaction_updated_at']);
 
-          unset($payment['device_id']);
+//          unset($payment['device_id']);
 
           parent::saveOrFail($payment, $options);
 

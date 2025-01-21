@@ -32,7 +32,9 @@ class Utility
     {
         $app = App::getFacadeRoot();
 
-        if ($app->runningInQueue() === false)
+        $routeName = $app['api.route']->getCurrentRouteName() ?? '';
+
+        if ($app->runningInQueue() === false && $routeName !== 'payment_transfer')
         {
             // If this flow is invoked via cron APIs, we will not be retrying it. This retry functionality
             // is supported only for transfers processed done via the workers (see TransferProcess.php and

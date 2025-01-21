@@ -1577,7 +1577,7 @@ class TransferTest extends TestCase
                 'merchant_id' =>'10000000000000',
                 'name' =>'Harshil',
                 'expiry_month' =>12,
-                'expiry_year' =>2024,
+                'expiry_year' =>2034,
                 'iin' =>'401200',
                 'last4' =>'3335',
                 'length' =>'16',
@@ -4131,11 +4131,13 @@ class TransferTest extends TestCase
     {
         (new Admin\Service())->setConfigKeys([Admin\ConfigKey::ROUTE_SERVICE_ENABLED => 1]);
 
+        $this->fixtures->create('settlement', ['id' => 'P1aV1cjfsJuNf9', 'utr' => 'utrabc123', 'amount' => 1000]);
+
         $transferId = 'abcdefg1234567';
 
         $data = $this->testData['testFetchTransferProxyAuth'];
 
-        $data['request']['url'] = '/transfers/' . 'abcdefg1234567' . '?expand[]=transaction.settlement';
+        $data['request']['url'] = '/transfers/' . 'abcdefg1234567' . '?expand[]=transaction.settlement&expand[]=recipient_settlement';
 
         $this->ba->privateAuth();
 
@@ -4144,6 +4146,11 @@ class TransferTest extends TestCase
         $expected = [
             'id'            => 'trf_abcdefg1234567',
             'amount'        => 1000,
+            'recipient_settlement' => [
+                'id'     => 'setl_P1aV1cjfsJuNf9',
+                'amount' => 1000,
+                'utr'    => 'utrabc123'
+            ]
         ];
 
         $this->assertArraySelectiveEquals($expected, $response);
@@ -4156,6 +4163,17 @@ class TransferTest extends TestCase
         $repo = App::getFacadeRoot()['repo'];
 
         $transfer = $repo->transfer->findOrFailPublic('trf_abcdefg1234567');
+
+        $this->assertEquals('abcdefg1234567', $transfer->getId());
+    }
+
+    public function testExternalTransferRepoFindOrFailWithMerchantId()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::ROUTE_SERVICE_ENABLED => 1]);
+
+        $repo = App::getFacadeRoot()['repo'];
+
+        $transfer = $repo->transfer->findByIdAndMerchantId('abcdefg1234567', '10000000000000');
 
         $this->assertEquals('abcdefg1234567', $transfer->getId());
     }

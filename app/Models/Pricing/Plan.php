@@ -452,6 +452,8 @@ class Plan extends PublicCollection
 
         $yesbankRulePresent = false;
 
+        $idfcRulePresent = false;
+
         /** @var Entity $rule */
         foreach ($this->items as $rule)
         {
@@ -469,7 +471,7 @@ class Plan extends PublicCollection
             }
         }
 
-        return [$rblRulePresent, $iciciRulePresent, $axisRulePresent, $yesbankRulePresent];
+        return [$rblRulePresent, $iciciRulePresent, $axisRulePresent, $yesbankRulePresent, $idfcRulePresent];
     }
 
     public function hasBankingSharedAccountFreePayoutRule(): bool

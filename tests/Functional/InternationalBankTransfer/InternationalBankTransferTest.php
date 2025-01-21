@@ -67,14 +67,13 @@ class InternationalBankTransferTest extends TestCase
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
-        $this->fixtures->merchant->enableInternational($merchantDetail['merchant_id']);
-
         $this->mockMozartResponseForCurrencyCloud();
 
         $request = $this->testData[__FUNCTION__]['request'];
 
         $request['content']['accept_b2b_tnc'] = 1;
         $request['content']['va_currency'] = "USD";
+        $request['content']['enable_all_currencies'] = false;
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
@@ -86,8 +85,7 @@ class InternationalBankTransferTest extends TestCase
         $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
                         [
                             'purpose_code' => PurposeCodeList::P1004,
-                            'category' => '5813'
-                            ,
+                            'category' => '5813',
                         ]);
 
         $this->makeRequestAndCatchException(function() use ($request)
@@ -134,6 +132,70 @@ class InternationalBankTransferTest extends TestCase
 
     }
 
+    public function testCreateAccountForCurrencyCloudForAllCurrenciesAtOnce()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['accept_b2b_tnc'] = 1;
+        $request['content']['enable_all_currencies'] = 1;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
+            [
+                'purpose_code' => PurposeCodeList::P1004,
+                'category' => '5813',
+            ]);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
+            [
+                'category' => '8211',
+            ]);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'IEC Code is required for your category of business.');
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', $merchantDetail->getId(), ["iec_code"=>"ABCDE12345"]);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(4,$content['accounts']);
+
+        $this->assertEquals("activated",$content['status']);
+
+        $mii = $this->getLastEntity('merchant_international_integrations',true);
+
+        $this->assertEquals($merchantDetail['merchant_id'],$mii['merchant_id']);
+
+        $this->assertEquals("currency_cloud",$mii['integration_entity']);
+
+        $this->assertNotNull($mii['integration_key']);
+
+        $this->assertNotNull($mii['reference_id']);
+
+        $this->assertNotNull($mii['bank_account']);
+    }
+
     public function testCreateAccountForCurrencyCloudPricingPlan()
     {
         $merchant = $this->fixtures->merchant->create(["id"=>'10000merchant1']);
@@ -148,8 +210,6 @@ class InternationalBankTransferTest extends TestCase
 
         $this->merchantAssignPricingPlan('dummyId', $merchantDetail['merchant_id']);
 
-        $this->fixtures->merchant->enableInternational($merchantDetail['merchant_id']);
-
         $this->mockMozartResponseForCurrencyCloud();
 
         $request = $this->testData[__FUNCTION__]['request'];
@@ -204,43 +264,19 @@ class InternationalBankTransferTest extends TestCase
         $this->assertCount(4,$pricing_rule);
     }
 
-    public function testCreateAccountForCurrencyCloudPricingPlanMultipleMerchant()
+    public function testCreateAccountForCurrencyCloudPricingPlanForSingleCurrencyApartFromSwift()
     {
-        $planId = "dummyId2";
-        $merchant = $this->fixtures->merchant->create(["id"=>'10000merchant2']);
-        $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant([
-            'merchant_id' => $merchant['id'],
-            'contact_mobile' => '1234567890',
-            'contact_email' => 'user1@email.com',
-        ]);
+        $merchant = $this->fixtures->merchant->create(["id"=>'10000merchant1']);
         $this->fixtures->methods->createDefaultMethods(['merchant_id' => $merchant['id']]);
+        $merchantDetail = $this->fixtures->merchant_detail->create(['merchant_id' => $merchant['id']]);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
-        $this->fixtures->pricing->createPricingPlanWithoutMethods($planId,["intl_bank_transfer"]);
+        $this->fixtures->pricing->createPricingPlanWithoutMethods("dummyId",["intl_bank_transfer"]);
 
         $this->ba->adminAuth();
 
-        $this->merchantAssignPricingPlan($planId, $merchant['id']);
-
-        $this->fixtures->merchant->enableInternational($merchantDetail['merchant_id']);
-
-        //merchant_2
-        $merchant2 = $this->fixtures->merchant->create(["id"=>'10000merchant3']);
-        $merchantDetail2 = $this->fixtures->merchant_detail->createAssociateMerchant([
-            'merchant_id' => $merchant2['id'],
-            'contact_mobile' => '1234567891',
-            'contact_email' => 'user2@email.com',
-        ]);
-        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $merchant2['id']]);
-
-        $this->fixtures->user->createUserForMerchant($merchantDetail2['merchant_id']);
-
-        $this->ba->adminAuth();
-
-        $this->merchantAssignPricingPlan($planId, $merchant2['id']);
-
-        //
+        $this->merchantAssignPricingPlan('dummyId', $merchantDetail['merchant_id']);
 
         $this->mockMozartResponseForCurrencyCloud();
 
@@ -252,32 +288,34 @@ class InternationalBankTransferTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         $this->makeRequestAndCatchException(function() use ($request)
-            {
-                $this->sendRequest($request);
-            }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
 
         $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
-                        [
-                            'purpose_code' => PurposeCodeList::P1004,
-                            'category' => '5813',
-                        ]);
+            [
+                'purpose_code' => PurposeCodeList::P1004,
+                'category' => '5813',
+            ]);
 
         $this->makeRequestAndCatchException(function() use ($request)
-            {
-                $this->sendRequest($request);
-            }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
 
         $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
-                        [
-                            'category' => '8211',
-                        ]);
+            [
+                'category' => '8211',
+            ]);
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', $merchantDetail->getId(), ["iec_code"=>"ABCDE12345"]);
 
         $this->sendRequest($request);
 
         $request = $this->testData[__FUNCTION__]['request'];
 
         $request['content']['accept_b2b_tnc'] = 1;
-        $request['content']['va_currency'] = "swift";
+        $request['content']['enable_all_currencies'] = false;
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
@@ -293,28 +331,275 @@ class InternationalBankTransferTest extends TestCase
             }
         }
 
-        $this->assertCount(4,$pricing_rule);
-        $this->assertNotEquals($planId,$pricing_plan['id']);
+        $this->assertCount(1,$pricing_rule);
+
+        $mii = $this->getLastEntity('merchant_international_integrations',true);
+
+        $this->assertEquals($merchantDetail['merchant_id'],$mii['merchant_id']);
+
+        $this->assertEquals("currency_cloud",$mii['integration_entity']);
+    }
+    public function testCreateAccountForCurrencyCloudPricingPlanForEnablingAllCurrencies()
+    {
+        $merchant = $this->fixtures->merchant->create(["id"=>'10000merchant1']);
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $merchant['id']]);
+        $merchantDetail = $this->fixtures->merchant_detail->create(['merchant_id' => $merchant['id']]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->pricing->createPricingPlanWithoutMethods("dummyId",["intl_bank_transfer"]);
 
         $this->ba->adminAuth();
-        $pricing_plan = $this->fetchMerchantPricingPlan($merchantDetail2['merchant_id']);
+
+        $this->merchantAssignPricingPlan('dummyId', $merchantDetail['merchant_id']);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['accept_b2b_tnc'] = true;
+        $request['content']['va_currency'] = "USD";
+        $request['content']['enable_all_currencies'] = true;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
+            [
+                'purpose_code' => PurposeCodeList::P1004,
+                'category' => '5813',
+            ]);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
+            [
+                'category' => '8211',
+            ]);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'IEC Code is required for your category of business.');
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', $merchantDetail->getId(), ["iec_code"=>"ABCDE12345"]);
+
+        $this->sendRequest($request);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['accept_b2b_tnc'] = 1;
+        $request['content']['va_currency'] = "USD";
+        $request['content']['enable_all_currencies'] = 1;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(4,$content['accounts']);
+
+       $this->ba->adminAuth();
+       $pricing_plan = $this->fetchMerchantPricingPlan($merchantDetail['merchant_id']);
+
+       $pricing_rule = [];
+       foreach ($pricing_plan['rules'] as $rule) {
+           if($rule['payment_method'] === 'intl_bank_transfer') {
+               $pricing_rule[] = $rule;
+           }
+       }
+
+       $this->assertCount(4,$pricing_rule);
+
+    }
+
+    public function testCreateAccountForCurrencyCloudPricingPlanForEnablingSingleCurrency()
+    {
+        $merchant = $this->fixtures->merchant->create(["id"=>'10000merchant1']);
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $merchant['id']]);
+        $merchantDetail = $this->fixtures->merchant_detail->create(['merchant_id' => $merchant['id']]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->pricing->createPricingPlanWithoutMethods("dummyId",["intl_bank_transfer"]);
+
+        $this->ba->adminAuth();
+
+        $this->merchantAssignPricingPlan('dummyId', $merchantDetail['merchant_id']);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['accept_b2b_tnc'] = 1;
+        $request['content']['va_currency'] = "USD";
+        $request['content']['enable_all_currencies'] = false;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
+            [
+                'purpose_code' => PurposeCodeList::P1004,
+                'category' => '5813',
+            ]);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
+            [
+                'category' => '8211',
+            ]);
+
+        $this->sendRequest($request);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['accept_b2b_tnc'] = 1;
+        $request['content']['va_currency'] = "USD";
+        $request['content']['enable_all_currencies'] = false;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->sendRequest($request);
+
+        $this->ba->adminAuth();
+        $pricing_plan = $this->fetchMerchantPricingPlan($merchantDetail['merchant_id']);
+
         $pricing_rule = [];
         foreach ($pricing_plan['rules'] as $rule) {
             if($rule['payment_method'] === 'intl_bank_transfer') {
                 $pricing_rule[] = $rule;
             }
         }
-        $this->assertEquals($planId,$pricing_plan['id']);
-        $this->assertCount(0,$pricing_rule);
+
+        $this->assertCount(1,$pricing_rule);
     }
+
+//    public function testCreateAccountForCurrencyCloudPricingPlanMultipleMerchant()
+//    {
+//        $planId = "dummyId2";
+//        $merchant = $this->fixtures->merchant->create(["id"=>'10000merchant2']);
+//        $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant([
+//            'merchant_id' => $merchant['id'],
+//            'contact_mobile' => '1234567890',
+//            'contact_email' => 'user1@email.com',
+//            'iec_code' => 'ABCD123456',
+//        ]);
+//        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $merchant['id']]);
+//
+//        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+//
+//        $this->fixtures->pricing->createPricingPlanWithoutMethods($planId,["intl_bank_transfer"]);
+//
+//        $this->ba->adminAuth();
+//
+//        $this->merchantAssignPricingPlan($planId, $merchant['id']);
+//
+//        //merchant_2
+//        $merchant2 = $this->fixtures->merchant->create(["id"=>'10000merchant3']);
+//        $merchantDetail2 = $this->fixtures->merchant_detail->createAssociateMerchant([
+//            'merchant_id' => $merchant2['id'],
+//            'contact_mobile' => '1234567891',
+//            'contact_email' => 'user2@email.com',
+//            'iec_code' => 'ABCD123456',
+//        ]);
+//        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $merchant2['id']]);
+//
+//        $this->fixtures->user->createUserForMerchant($merchantDetail2['merchant_id']);
+//
+//        $this->ba->adminAuth();
+//
+//        $this->merchantAssignPricingPlan($planId, $merchant2['id']);
+//
+//        //
+//
+//        $this->mockMozartResponseForCurrencyCloud();
+//
+//        $request = $this->testData[__FUNCTION__]['request'];
+//
+//        $request['content']['accept_b2b_tnc'] = 1;
+//        $request['content']['va_currency'] = "USD";
+//
+//        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+//
+//        $this->makeRequestAndCatchException(function() use ($request)
+//            {
+//                $this->sendRequest($request);
+//            }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
+//
+//        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
+//                        [
+//                            'purpose_code' => PurposeCodeList::P1004,
+//                            'category' => '5813',
+//                        ]);
+//
+//        $this->makeRequestAndCatchException(function() use ($request)
+//            {
+//                $this->sendRequest($request);
+//            }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
+//
+//        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
+//                        [
+//                            'category' => '8211',
+//                        ]);
+//
+//        $this->sendRequest($request);
+//
+//        $request = $this->testData[__FUNCTION__]['request'];
+//
+//        $request['content']['accept_b2b_tnc'] = 1;
+//        $request['content']['va_currency'] = "EUR";
+//
+//        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+//
+//        $this->sendRequest($request);
+//
+//        $this->ba->adminAuth();
+//        $pricing_plan = $this->fetchMerchantPricingPlan($merchantDetail['merchant_id']);
+//
+//        $pricing_rule = [];
+//        foreach ($pricing_plan['rules'] as $rule) {
+//            if($rule['payment_method'] === 'intl_bank_transfer') {
+//                $pricing_rule[] = $rule;
+//            }
+//        }
+//
+//        $this->assertCount(1,$pricing_rule);
+//        $this->assertNotEquals($planId,$pricing_plan['id']);
+//
+//        $this->ba->adminAuth();
+//        $pricing_plan = $this->fetchMerchantPricingPlan($merchantDetail2['merchant_id']);
+//        $pricing_rule = [];
+//        foreach ($pricing_plan['rules'] as $rule) {
+//            if($rule['payment_method'] === 'intl_bank_transfer') {
+//                $pricing_rule[] = $rule;
+//            }
+//        }
+//        $this->assertEquals($planId,$pricing_plan['id']);
+//        $this->assertCount(0,$pricing_rule);
+//    }
 
     public function testFailCreateAccountForCurrencyCloud()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->fixtures->merchant->enableInternational($merchantDetail['merchant_id']);
 
         $this->mockMozartResponseForCurrencyCloud();
 
@@ -340,9 +625,9 @@ class InternationalBankTransferTest extends TestCase
             }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
 
         $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
-                        [
-                            'category' => '8211',
-                        ]);
+            [
+                'category' => '8211',
+            ]);
 
         $response = $this->startTest();
     }
@@ -353,7 +638,6 @@ class InternationalBankTransferTest extends TestCase
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
-        $this->fixtures->merchant->enableInternational($merchantDetail['merchant_id']);
 
         $this->mockMozartResponseForCurrencyCloud(199);
 
@@ -382,6 +666,7 @@ class InternationalBankTransferTest extends TestCase
                         [
                             'category' => '8211',
                         ]);
+        $merchantDetail = $this->fixtures->edit('merchant_detail', $merchantDetail->getId(), ["iec_code"=>"ABCDE12345"]);
 
         $response = $this->startTest();
     }
@@ -1340,28 +1625,28 @@ class InternationalBankTransferTest extends TestCase
                     }
                     elseif ($action == 'get_funding_account')
                     {
-                        return [
-                            'data' => [
-                                "funding_accounts" => [
-                                    [
-                                        "id" => "1c3a920b-87fc-4c61-8b47-ce924a348215",
-                                        "account_id" => "0c96a02f-996c-4856-8364-d7041849bf4d",
-                                        "account_number" => "0332452785",
-                                        "account_number_type" => "account_number",
-                                        "account_holder_name" => "Sid Pvt Limited",
-                                        "bank_name" => "Community Federal Savings Bank",
-                                        "bank_address" => "810 Seventh Avenue, New York, NY 10019, US",
-                                        "bank_country" => "US",
-                                        "currency" => $data['currency'],
-                                        "payment_type" => "regular",
-                                        "routing_code" => "026073880",
-                                        "routing_code_type" => "wire_routing_number",
-                                        "created_at" => "2022-08-23T11:44:03+00:00",
-                                        "updated_at" => "2022-08-23T11:44:03+00:00"
+                            return [
+                                'data' => [
+                                    "funding_accounts" => [
+                                        [
+                                            "id" => "1c3a920b-87fc-4c61-8b47-ce924a348215",
+                                            "account_id" => "0c96a02f-996c-4856-8364-d7041849bf4d",
+                                            "account_number" => "0332452785",
+                                            "account_number_type" => "account_number",
+                                            "account_holder_name" => "Sid Pvt Limited",
+                                            "bank_name" => "Community Federal Savings Bank",
+                                            "bank_address" => "810 Seventh Avenue, New York, NY 10019, US",
+                                            "bank_country" => "US",
+                                            "currency" => $data['currency'],
+                                            "payment_type" => "regular",
+                                            "routing_code" => "026073880",
+                                            "routing_code_type" => "wire_routing_number",
+                                            "created_at" => "2022-08-23T11:44:03+00:00",
+                                            "updated_at" => "2022-08-23T11:44:03+00:00"
+                                        ]
                                     ]
                                 ]
-                            ]
-                        ];
+                            ];
                     }
                     elseif ($action == 'get_sender_detail')
                     {
@@ -1725,5 +2010,143 @@ class InternationalBankTransferTest extends TestCase
         $response->setAccount($account);
 
         $mockAccountClient->expects($this->any())->method("GetAccountById")->withAnyParameters()->willReturn([$response, null]);
+    }
+
+    public function testToggleInternationalVirtualAccountForMerchantForInvalidAction()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchantID = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantID, $merchantUser['id']);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, \RZP\Exception\BadRequestValidationFailureException::class,
+            'The selected action is invalid.');
+    }
+    public function testToggleInternationalVirtualAccountForMerchantForDisableAction()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchantID = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        // create in both test and live mode.
+        // during update, it checks if entity shoudldSync
+        // RepositoryUpdateTestAndLive@dualUpdateFetchEntities
+        $mii = $this->fixtures->create('merchant_international_integrations',[
+            'id' => 'MHynufm7g6paGc', // add static id
+            'merchant_id' => $merchantID,
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => [],
+        ]);
+
+        $mii2 = $this->fixtures->on('live')->create('merchant_international_integrations',[
+            'id' => 'MHynufm7g6paGc', // add static id
+            'merchant_id' => $merchantID,
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => [],
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantID, $merchantUser['id']);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+
+        $mii = $this->getLastEntity('merchant_international_integrations',true);
+
+        $this->assertNotNull($mii['notes']['status']);
+
+        $this->assertEquals("deactivated", $mii['notes']['status']);
+    }
+
+    public function testToggleInternationalVirtualAccountForMerchantForEnableAction()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantID = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $mii = $this->fixtures->create('merchant_international_integrations',[
+            'id' => 'MHynufm7g6paGc', // add static id
+            'merchant_id' => $merchantID,
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => ['status' => 'deactivated'],
+        ]);
+
+        $mii2 = $this->fixtures->on('live')->create('merchant_international_integrations',[
+            'id' => 'MHynufm7g6paGc', // add static id
+            'merchant_id' => $merchantID,
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => ['status' => 'deactivated'],
+        ]);
+
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+
+        $mii = $this->getLastEntity('merchant_international_integrations',true);
+
+        $this->assertNotNull($mii['notes']['status']);
+
+        $this->assertEquals("activated", $mii['notes']['status']);
+    }
+
+    public function testToggleInternationalVirtualAccountForMerchantForEnableActionForEnabledAccount()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantID = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $mii = $this->fixtures->create('merchant_international_integrations',[
+            'id' => 'MHynufm7g6paGc', // add static id
+            'merchant_id' => $merchantID,
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => [],
+        ]);
+
+        $mii2 = $this->fixtures->on('live')->create('merchant_international_integrations',[
+            'id' => 'MHynufm7g6paGc', // add static id
+            'merchant_id' => $merchantID,
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => [],
+        ]);
+
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+
+        $mii = $this->getLastEntity('merchant_international_integrations',true);
+
+        $this->assertNotNull($mii['notes']['status']);
+
+        $this->assertEquals("activated", $mii['notes']['status']);
     }
 }

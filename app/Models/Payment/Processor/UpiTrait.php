@@ -17,6 +17,7 @@ use RZP\Models\Payment\UpiMetadata\Entity;
 use RZP\Models\PaymentsUpi\PayerAccountType;
 use RZP\Models\Payment\UpiMetadata\Contants;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Payment\UpiMetadata\InternalStatus;
 
 trait UpiTrait
 {
@@ -71,9 +72,11 @@ trait UpiTrait
 
     public function isUpiRecurringPayment($input): bool
     {
-        return ((isset($input[Method::UPI]) === true) and
-                (isset($input[Payment\Entity::RECURRING]) === true) and
-                ((bool) $input[Payment\Entity::RECURRING] === true));
+        return ((isset($input[Method::UPI]) === true or
+                ((isset($input[Payment\Entity::METHOD]) === true) and
+                ($input[Payment\Entity::METHOD] === Method::UPI))) and
+            (isset($input[Payment\Entity::RECURRING]) === true) and
+            ((bool) $input[Payment\Entity::RECURRING] === true));
     }
 
     public function getUpiExpiryTime($input)
@@ -384,6 +387,9 @@ trait UpiTrait
                                                 string $action,
                                                 array $gatewayData)
     {
+
+        $this->modifyActionForRecurringIfApplicable($gatewayData, $action);
+
         // set metadata in gatewayData array for authorize action.
         if ($action === Payment\Action::AUTHORIZE)
         {
@@ -410,6 +416,40 @@ trait UpiTrait
             throw $ex;
         }
         return $response;
+    }
+
+    protected function isUpiInitialRecurringPayment(array $input): bool
+    {
+        return (($input[Entity::PAYMENT][Payment\Entity::RECURRING] === true) and
+            ($input[Entity::PAYMENT][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL));
+    }
+
+    protected function modifyActionForRecurringIfApplicable(array &$input, &$action)
+    {
+        if (($action === Payment\Action::AUTHORIZE) and ($this->isUpiInitialRecurringPayment($input) === true))
+        {
+            $action = Payment\Action::AUTHENTICATE;
+        }
+
+        if(($action === Payment\Action::CALLBACK) and ($this->isUpiRecurringPayment($input['payment']) === true))
+        {
+            if((isset($input['upi']) === true) and ($input['upi']['flow'] === 'intent') and
+                ($input['upi']['internal_status'] === 'authorize_initiated')) {
+                $input['gateway']['data']['upi']['vpa'] = $input['upi']['vpa'];
+            }
+
+            $action = Payment\Action::RECURRING_CALLBACK;
+        }
+
+        if(($action === Payment\Action::VERIFY) and ($this->isUpiRecurringPayment($input['payment']) === true))
+        {
+            $action = Payment\Action::VERIFY_RECURRING;
+        }
+
+        if ($action === Payment\Action::MANDATE_CANCEL)
+        {
+            $action = Payment\Action::REVOKE;
+        }
     }
 
     /**

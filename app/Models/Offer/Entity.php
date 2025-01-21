@@ -122,6 +122,15 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_NETWORK
     ];
 
+    /**
+     * Routes for which we allow creation/updation of platform offers
+     */
+    protected $platformOfferWriteRoutes = [
+        'offer_create',
+        'offer_create_bulk',
+        'offer_update'
+    ];
+
     // This parameter stores the intent of the customer to save the card for
     // tokenization when payment was initiated.
     protected bool $isCardSaved = false;
@@ -367,9 +376,20 @@ class Entity extends Base\PublicEntity
 
     protected function stripMerchantRelationIfApplicable()
     {
-        if ($this->isPlatformOffer() === true)
+        $currentRoute = app('api.route')->getCurrentRouteName();
+
+        $isAdminAuth = app('basicauth')->isAdminAuth();
+
+        if (($this->isPlatformOffer() === true) and
+            (in_array($currentRoute, $this->platformOfferWriteRoutes) === true) and
+            ($isAdminAuth === true))
         {
             $merchant = $this->merchant;
+
+            if ($merchant === null)
+            {
+                return null;
+            }
 
             $this->merchant()->dissociate();
 

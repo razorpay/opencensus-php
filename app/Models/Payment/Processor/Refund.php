@@ -2009,6 +2009,9 @@ trait Refund
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_INVALID_STATUS, null,null, 'Payment status should be authorized but here the status is '. $payment->getStatus());
                 }
 
+                $merchant= $this->repo->merchant->fetchMerchantFromId($payment->getMerchantId());
+                $partialCaptureFlag = $this->merchant->isFeatureEnabled(RefundConstants::PARTIAL_CAPTURE_FEATURE);
+
                 $this->trace->info(
                     TraceCode::REFUND_PAYMENT_UPDATE_INITIATED,
                     [
@@ -2056,7 +2059,7 @@ trait Refund
                     }
 
                     // update the payment entity for refund
-                    $this->payment->refundAmount($refundAmount, $refundBaseAmount);
+                    $this->payment->refundAmount($refundAmount, $refundBaseAmount,$partialCaptureFlag);
                 }
                 // amount will be negative for compensatory actions
                 else
@@ -2269,17 +2272,6 @@ trait Refund
         return $this->getDiscountIfApplicable($payment, $refundAmount);
     }
 
-    public function getRefundCreationDataClsBalanceSplitzResponse($merchantId)
-    {
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.refund_creation_data_cls_balance_experiment'),
-        ];
-        $response = $this->app['splitzService']->evaluateRequest($properties);
-
-        return $response['response']['variant']['name'] ?? '';
-    }
-
     // Fetches refund creation related data of the payment for FE apps
     //
     // Reference : https://docs.google.com/document/d/134CGvpRknoACraReuAVB7EAtUCmYRA4GYfu_cLhnm5w/edit?usp=sharing
@@ -2317,11 +2309,10 @@ trait Refund
         ];
 
         $lowBalance = false;
-        $useClsBalance = $this->getRefundCreationDataClsBalanceSplitzResponse($this->merchant->getId()) === 'enable';
         try
         {
 
-            $refund = $this->buildRefundEntity($payment, $buildInput, null, null, $useClsBalance);
+            $refund = $this->buildRefundEntity($payment, $buildInput, null, null, true);
 
             if ($refund->isRefundSpeedInstant() === true)
             {
@@ -2388,7 +2379,7 @@ trait Refund
 
                 $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
 
-                $this->refundBalanceChecks($refund, $useClsBalance);
+                $this->refundBalanceChecks($refund, true);
             }
             catch (\Throwable $ex)
             {

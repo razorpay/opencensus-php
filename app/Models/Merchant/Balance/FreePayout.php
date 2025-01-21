@@ -54,6 +54,9 @@ class FreePayout
     // Setting default count to 0 for connected banking users
     const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB1 = 0;
 
+    // Setting default count to 0 for connected banking users
+    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_IDFC_SLAB1 = 0;
+
     const DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB2       = 0;
 
     const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB2   = 250;
@@ -66,6 +69,9 @@ class FreePayout
     // Setting default count to 0 for connected banking users
     const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB2 = 0;
 
+    // Setting default count to 0 for connected banking users
+    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_IDFC_SLAB2 = 0;
+
     const DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB3         = 0;
 
     const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB3     = 0;
@@ -75,6 +81,8 @@ class FreePayout
     const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_AXIS_SLAB3    = 0;
 
     const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB3 = 0;
+
+    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_IDFC_SLAB3 = 0;
 
     // Count of the number of free shared account payouts allowed per merchant in a month.
     const FREE_SHARED_ACCOUNT_PAYOUTS_COUNT             = 'free_shared_account_payouts_count';

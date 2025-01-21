@@ -18,6 +18,10 @@ class ApiKeyGetRequest extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string id = 1;</code>
      */
     protected $id = '';
+    /**
+     * Generated from protobuf field <code>optional bool not_expired = 2;</code>
+     */
+    protected $not_expired = null;
 
     /**
      * Constructor.
@@ -26,6 +30,7 @@ class ApiKeyGetRequest extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $id
+     *     @type bool $not_expired
      * }
      */
     public function __construct($data = NULL) {
@@ -51,6 +56,38 @@ class ApiKeyGetRequest extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>optional bool not_expired = 2;</code>
+     * @return bool
+     */
+    public function getNotExpired()
+    {
+        return isset($this->not_expired) ? $this->not_expired : false;
+    }
+
+    public function hasNotExpired()
+    {
+        return isset($this->not_expired);
+    }
+
+    public function clearNotExpired()
+    {
+        unset($this->not_expired);
+    }
+
+    /**
+     * Generated from protobuf field <code>optional bool not_expired = 2;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setNotExpired($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->not_expired = $var;
 
         return $this;
     }

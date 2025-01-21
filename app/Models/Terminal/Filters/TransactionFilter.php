@@ -447,8 +447,7 @@ class TransactionFilter extends Terminal\Filter
             if (($payment->isBharatQr() === true) and
                 ($payment->isFlowIntent() === false))
             {
-                if (((new \RZP\Models\QrCode\NonVirtualAccountQrCode\Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled(
-                            $this->input['merchant']->getId()) === true) and ($terminal->isQrV2Terminal() === true))
+                if ($terminal->isQrV2Terminal() === true)
                 {
                     return true;
                 }
@@ -980,8 +979,7 @@ class TransactionFilter extends Terminal\Filter
         }
         if ($this->input['payment']->isBharatQr() === true)
         {
-            if (((new \RZP\Models\QrCode\NonVirtualAccountQrCode\Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled(
-                        $this->input['merchant']->getId()) === true) and ($terminal->isQrV2Terminal() === true))
+            if ($terminal->isQrV2Terminal() === true)
             {
                 return true;
             }

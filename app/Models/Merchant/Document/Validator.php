@@ -49,7 +49,8 @@ class Validator extends Base\Validator
         Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
         Entity::FILE          => 'required|file|mimes:pdf,jpeg,jpg,png,jfif,heic,heif',
         'is_partner_kyc'      => 'sometimes|boolean',
-        'upload_only'         => 'sometimes|boolean'
+        'upload_only'         => 'sometimes|boolean',
+        'product'             => 'sometimes|string',
     ];
 
     protected static $uploadDocumentWithoutFileTypeRules = [
@@ -57,6 +58,7 @@ class Validator extends Base\Validator
         Entity::FILE          => 'required|file',
         'is_partner_kyc'      => 'sometimes|boolean',
         'upload_only'         => 'sometimes|boolean',
+        'product'             => 'sometimes|string',
     ];
 
     protected static $aadharUploadRules = [

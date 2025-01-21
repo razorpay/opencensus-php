@@ -326,6 +326,10 @@ class Service
         {
             $authDetails['merchant_id'] =  $entityId;
         }
+        else if ($entity === 'merchant')
+        {
+            $authDetails['merchant_id'] = $entityId;
+        }
 
         if (empty($authDetails) === false)
         {

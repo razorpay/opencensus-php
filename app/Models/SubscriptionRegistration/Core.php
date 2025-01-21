@@ -82,6 +82,12 @@ class Core extends Base\Core
                 $validator->validateFrequencyAndMaxAmountCardRecurring($input);
                 $subscriptionRegistration->setFrequency($input[Entity::FREQUENCY] ?? Entity::AS_PRESENTED);
             }
+
+            if ($this->isOptimizerRecurringPayment($merchant))
+            {
+                $validator->validateFrequencyAndMaxAmountCardRecurring($input);
+                $subscriptionRegistration->setFrequency($input[Entity::FREQUENCY] ?? Entity::AS_PRESENTED);
+            }
         }
 
         if ($subscriptionRegistration->getMethod() === Payment\Method::WALLET)
@@ -1527,5 +1533,45 @@ class Core extends Base\Core
         $this->trace->count(BatchMetric::BATCH_REQUESTS_TOTAL, $dimensions);
 
         return (new Batch\ResponseEntity)->fill($batchResponse);
+    }
+
+    private function isOptimizerRecurringPayment($merchant) : bool
+    {
+        if($merchant->isFeatureEnabled('raas') === false){
+            return false;
+        }
+
+        $mode = 'enable';
+
+        $merchantID = $this->merchant->getId();
+
+        try
+        {
+            $properties = [
+                'id'            => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.enabled_rearch_optimizer_recurring_flow'),
+                'request_data'  => json_encode(['merchant_id' => $merchantID]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::OPTIMIZER_MERCHANT_RECURRING_REARCH_ENABLE_EXPERIMENT, [
+                'splitz_output' => $variant,
+                'response' => $response,
+            ]);
+
+            return $variant === $mode;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::OPTIMIZER_MERCHANT_RECURRING_REARCH_ENABLE_EXPERIMENT_ERROR, [
+                'merchant_id'   => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.enabled_rearch_optimizer_recurring_flow') ?? null,
+            ]);
+
+            return false;
+        }
     }
 }

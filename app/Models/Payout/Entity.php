@@ -61,6 +61,7 @@ use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\BankingAccountService\Channel as BASChannel;
 use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
+use RZP\Constants\Entity as ConstantsEntity;
 
 /**
  * @property Customer\Entity        $customer
@@ -187,6 +188,8 @@ class Entity extends Base\PublicEntity
     const FETCH_FUND_ACCOUNT_INFO_SUCCESS = 'fetch_fund_account_info_success';
     const FUND_ACCOUNT_INFO               = 'fund_account_info';
     const FETCH_PRICING_INFO_SUCCESS      = 'fetch_pricing_info_success';
+    const PRICING_INPUT                   = 'pricing_input';
+    const PRICING_INPUT_REDIS_KEY         = 'pricing_input_redis_key';
 
     const VA_TO_VA_INFO                                   = 'va_to_va_info';
     const PRICING_RULE_INFO                               = 'pricing_rule_info';
@@ -961,6 +964,8 @@ class Entity extends Base\PublicEntity
 
     protected $ignoredRelations = [
         'destination',
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
     ];
 
     public $payoutServiceResponse;
@@ -2474,7 +2479,7 @@ class Entity extends Base\PublicEntity
 
         $attributes[self::BANKING_ACCOUNT_ID] = optional($this->bankingAccount)->getPublicId();
 
-        //In case of CAs implemented in BAS (ICICI, Axis, Yesbank, RBL Migration) banking_account_id is fetched from banking account service.
+        //In case of CAs implemented in BAS (ICICI, Axis, Yesbank, RBL, IDFC Migration) banking_account_id is fetched from banking account service.
         //banking_account_id is cached for subsequent calls
         if (empty($attributes[self::BANKING_ACCOUNT_ID]) === true and
             $this->isBalanceAccountTypeDirect() === true and

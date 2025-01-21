@@ -128,6 +128,16 @@ class Repository extends Base\Repository
             {
                 $iinEntity = new Entity();
 
+                //remove bin service attributes that are not a part of IIN entity
+                $fillableAttributes = $iinEntity->getFillableAttributes();
+
+                foreach ($binServiceIINEntity as $attribute => $value)
+                {
+                    if (!in_array($attribute, $fillableAttributes)) {
+                        unset($binServiceIINEntity[$attribute]);
+                    }
+                }
+
                 return $iinEntity->forceFill($binServiceIINEntity);
             }
         }

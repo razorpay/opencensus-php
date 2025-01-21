@@ -7751,4 +7751,14 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR,
         ],
     ],
+
+    'testFetchSourceEventInfoForPsPayout' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts_internal/{id}/source_event_info',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ]
 ];

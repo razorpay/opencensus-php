@@ -560,7 +560,7 @@ class TerminalAuthenticationTest extends TestCase
             'number'            => '6073849700004947',
             'name'              => 'Test user',
             'expiry_month'      => '12',
-            'expiry_year'       => '2024',
+            'expiry_year'       => '2034',
             'cvv'               => '566',
         );
 
@@ -724,7 +724,7 @@ class TerminalAuthenticationTest extends TestCase
             'number'       => '41476700000006',
             'name'         => 'Harshil',
             'expiry_month' => '12',
-            'expiry_year'  => '2024',
+            'expiry_year'  => '2034',
             'cvv'          => '566'
         ];
 

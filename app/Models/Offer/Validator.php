@@ -73,8 +73,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $adminFetchRules = [
-        'offer_id'          => 'required|unsigned_id',
-        Entity::MERCHANT_ID => 'sometimes|unsigned_id',
+        'offer_id'          => 'required|alpha_num|size:14',
+        Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
         'page'              => 'required|int|in:1',
         'page_size'         => 'required|int|in:1'
     ];

@@ -1607,6 +1607,17 @@ return [
         ],
     ],
 
+    'cross_border_import_service' => [
+        'mock'      => env('CROSS_BORDER_IMPORT_SERVICE_MOCK', false),
+        'username' => env('CROSS_BORDER_IMPORT_SERVICE_USERNAME','cross-border-import'),
+        'password' => env('CROSS_BORDER_IMPORT_SERVICE_PASSWORD','RANDOM_CBI_PASSWORD'),
+        'secret'   => env('CROSS_BORDER_IMPORT_SERVICE_SECRET'),
+        'url'      => [
+            'live' => env('CROSS_BORDER_IMPORT_SERVICE_LIVE_URL'),
+            'test' => env('CROSS_BORDER_IMPORT_SERVICE_TEST_URL'),
+        ],
+    ],
+
     'pspx'  => [
       'username'  => env('PSPX_SERVICE_API_USERNAME'),
       'password'  => env('PSPX_SERVICE_API_PASSWORD'),

@@ -5563,6 +5563,9 @@ class SettlementOndemandTest extends TestCase
 
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
 
+        $reversal = $this->getDbLastEntity('reversal');
+        $this->assertEquals($journal['id'], $reversal->transaction_id);
+
         $reversal = $this->getLastEntity('reversal', true);
 
         $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => 'setlod'.$reversal['id'].'-ondemand_settlement_reversed']);
@@ -5622,9 +5625,7 @@ class SettlementOndemandTest extends TestCase
 
         $txn = $this->getDbLastEntity('transaction');
 
-        $this->assertNotNull($txn);
-
-        $this->assertEquals($journal['id'], $txn->getId(), 'transaction id does not match with api_txn_id');
+        $this->assertNull($txn);
 
         $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
 
@@ -5654,9 +5655,7 @@ class SettlementOndemandTest extends TestCase
 
         $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
 
-        $this->assertNotNull($txn);
-
-        $this->assertEquals($journal['id'], $txn->getId(), 'transaction id does not match with api_txn_id');
+        $this->assertNull($txn);
 
         $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
 
@@ -5697,9 +5696,7 @@ class SettlementOndemandTest extends TestCase
 
         $actualLedgerOutboxEntry = json_decode($payload, true);
 
-        $this->assertNotNull($txn);
-
-        $this->assertEquals($journal['id'], $txn->getId(), 'transaction id does not match with api_txn_id');
+        $this->assertNull($txn);
 
         $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
 
@@ -5868,19 +5865,11 @@ class SettlementOndemandTest extends TestCase
 
         $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
 
-        $this->assertNotNull($txn);
+        $this->assertNull($txn);
 
-        $this->assertEquals($journal['id'], $txn->getId(), 'transaction id does not match with api_txn_id');
         $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
-        $this->assertEquals($ondemandSettlementId, 'setlod_'.$txn['entity_id']);
-        $this->assertEquals($journal['id'], $txn->getId());
-        $this->assertEquals($journal['ledger_entry'][2]['amount'], $txn['fee']);
-        $this->assertEquals($journal['ledger_entry'][3]['amount'], $txn['tax']);
-        $this->assertEquals($journal['ledger_entry'][1]['amount'], $txn['amount']);
-        $this->assertEquals($journal['ledger_entry'][1]['amount'], $txn['amount']-$txn['fee']-$txn['tax']);
 
         $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
-
     }
 
     protected function mockSns($creditTxnPayload)

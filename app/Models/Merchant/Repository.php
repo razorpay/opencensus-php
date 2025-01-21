@@ -1864,23 +1864,6 @@ class Repository extends Base\Repository
         return $query;
     }
 
-    public function FetchRecordFromAllDBs(string $id)
-    {
-        try
-        {
-            $testEntity = $this->newQueryWithConnection(Mode::TEST)->find($id);
-            $liveEntity = $this->newQueryWithConnection(Mode::LIVE)->find($id);
-            $asvEntity = $this->newQueryWithConnection(Connection::ASV_WRITER)->find($id);
-            return array($testEntity, $liveEntity, $asvEntity);
-        }
-        catch(\Throwable $ex)
-        {
-            $this->trace->error(TraceCode::AMC_LINKED_ACCOUNT_CREATION_DEBUG_ERROR_LOGS, [
-                'wda_migration_error' => $ex->getMessage(),
-            ]);
-        }
-    }
-
     /**
      * @param array $applicationIds
      *
@@ -3591,7 +3574,7 @@ class Repository extends Base\Repository
 
                 } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
 
-                $this->resetConnectionOnModels($results, $this->getReportingReplicaConnection());
+                $this->resetConnectionOnModels($results, $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT));
 
                 return $results;
             }

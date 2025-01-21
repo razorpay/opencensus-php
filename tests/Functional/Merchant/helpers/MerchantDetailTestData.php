@@ -6751,6 +6751,106 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    'testFetchAdditionalBusinessDetailsForMerchantMetadataForEasyPayOrg' => [
+        'request'  => [
+            'content' => [
+                'merchant_id' => ''
+            ],
+            'url'     => '/merchant/{id}/business/detail',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testSaveAdditionalBusinessDetailsForMerchantMetadataSuccessForEasyPayOrg' => [
+        'request'  => [
+            'content' => [
+                'metadata' => ['org_defined_merchant_fields' =>
+                    [[
+                        "id" => 'field1',
+                        "name" => 'RM Emp No',
+                        "type" => 'string',
+                        "value" => 'testName'
+                    ],
+                        [
+                            "id" => 'field2',
+                            "name" => 'RM Name',
+                            "type" => 'string',
+                            "value" => 'testName'
+                        ],
+                        [
+                            "id" => 'field3',
+                            "name" => 'PSM Emp No.',
+                            "type" => 'string',
+                            "value" => 'testName'
+                        ],
+                        [
+                            "id" => 'field4',
+                            "name" => 'PSM Name',
+                            "type" => 'string',
+                        ],
+                        [
+                            "id" => 'field5',
+                            "name" => 'Business Segment',
+                            "type" => 'string',
+                        ],
+                        [
+                            "id" => 'field6',
+                            "name" => 'Regional/Segment Head',
+                            "type" => 'string',
+                        ]]
+                ]
+            ],
+            'url'     => '/merchant/{id}/business/detail',
+            'method'  => 'POST',
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'metadata' => ['org_defined_merchant_fields' =>
+                    [[
+                        "id" => 'field1',
+                        "name" => 'RM Emp No',
+                        "type" => 'string',
+                        "value" => 'testName'
+                    ],
+                        [
+                            "id" => 'field2',
+                            "name" => 'RM Name',
+                            "type" => 'string',
+                            "value" => 'testName'
+                        ],
+                        [
+                            "id" => 'field3',
+                            "name" => 'PSM Emp No.',
+                            "type" => 'string',
+                            "value" => 'testName'
+                        ],
+                        [
+                            "id" => 'field4',
+                            "name" => 'PSM Name',
+                            "type" => 'string',
+                        ],
+                        [
+                            "id" => 'field5',
+                            "name" => 'Business Segment',
+                            "type" => 'string',
+                        ],
+                        [
+                            "id" => 'field6',
+                            "name" => 'Regional/Segment Head',
+                            "type" => 'string',
+                        ]]
+                ]
+            ],
+        ],
+    ],
 
     'testSaveMerchantDetailsForPartnerMerchant' => [
         'request'   => [

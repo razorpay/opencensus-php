@@ -660,16 +660,14 @@ class Service extends Base\Service
         if (isset($user[Entity::EMAIL]) === true)
         {
             $merchantInputData[Merchant\Entity::EMAIL]            = $user[Entity::EMAIL];
-            $merchantInputData[Merchant\Entity::SIGNUP_VIA_EMAIL] = 1;
         }
-        else
+
+        if (isset($user[Entity::CONTACT_MOBILE]) === true)
         {
-            if (isset($user[Entity::CONTACT_MOBILE]))
-            {
-                $merchantDetailInputData[Entity::CONTACT_MOBILE]      = $user[Entity::CONTACT_MOBILE];
-                $merchantInputData[Merchant\Entity::SIGNUP_VIA_EMAIL] = 0;
-            }
+            $merchantDetailInputData[Entity::CONTACT_MOBILE]      = $user[Entity::CONTACT_MOBILE];
         }
+
+        $merchantInputData[Merchant\Entity::SIGNUP_VIA_EMAIL] = $user[Entity::SIGNUP_VIA_EMAIL] === 1 ? 1 : 0;
 
         if (isset($input[Merchant\Constants::PARTNER_INTENT]))
         {

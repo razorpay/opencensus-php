@@ -103,12 +103,29 @@ class Core extends Base\Core
             return $this->checkQrPaymentStatusThroughGatewayModuleForUpiRzpapb($qrCode, $terminal);
         }
 
-        $qrVariant = strtolower(
-                $this->app->razorx->getTreatment(
-                    $terminal->getGateway(),
-                    RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
-                    $this->mode
-                )) === RazorxTreatment::RAZORX_VARIANT_ON;
+        $properties = [
+            'id'            => $terminal->getGateway(),
+            'experiment_id' => $this->app->config->get('app.qr_code_create_refactor_gateway'),
+            'request_data'  => json_encode(['gateway' => $terminal->getGateway()]),
+        ];
+        $response   = $this->app['splitzService']->evaluateRequest($properties);
+
+        $this->app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'experiment_id' => $properties['experiment_id'],
+            'gateway'   => $terminal->getGateway(),
+            '$response'     => $response
+        ]);
+
+        $qrVariant = false; // Default value
+        $variables = $response['response']['variant']['variables'] ?? [];
+        foreach ($variables as $variable) {
+            $key = $variable['key'] ?? '';
+            $value = $variable['value'] ?? '';
+            if ($key === 'result' && $value === 'on') {
+                $qrVariant = true;
+                break; // Stop looping once the condition is met
+            }
+        }
 
         if ($qrVariant === true)
         {

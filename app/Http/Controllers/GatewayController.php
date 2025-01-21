@@ -362,6 +362,12 @@ class GatewayController extends Controller
 
         $input = $this->preProcessServerCallback($gateway, $input, $gatewayDriver);
 
+        if ((isset($input['data']['upi_mandate']) === true) and
+            (isset($input['data']['upi_mandate']['status']) === true))
+        {
+            $input['upi_mandate'] = $input['data']['upi_mandate'];
+        }
+
         if ((isset($input['upi_mandate']) === true) and
             (isset($input['upi_mandate']['status']) === true))
         {
@@ -398,6 +404,11 @@ class GatewayController extends Controller
             }
         }
 
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input, $gatewayDriver);
+        $postInput = [
+            'gateway' => $input,
+        ];
+
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
         if ((Gateway::isUpiRecurringSupportedGateway($gatewayDriver) === true) and
@@ -423,7 +434,16 @@ class GatewayController extends Controller
             }
         }
 
-        $paymentId = $gateway->getPaymentIdFromServerCallback($input, $gatewayDriver);
+        if ($routeName !== 'gateway_payment_callback_recurring')
+        {
+            $qrResponse = (new QrGatewayModule($this->app))->checkForQrPaymentProcessing($input, $gatewayDriver, $paymentId);
+
+            if (is_null($qrResponse) === false)
+            {
+                $this->logCallbackResponseTime($startTime, $gatewayDriver, false, true);
+                return $gateway->postProcessServerCallback($postInput);
+            }
+        }
 
         $paymentRepo = $this->app['repo']->payment;
 
@@ -450,10 +470,6 @@ class GatewayController extends Controller
         {
             [$payment, $mode] = $paymentRepo->fetchPaymentLiveOrTestModeWithGateway($paymentId, $gatewayDriver);
         }
-
-        $postInput = [
-            'gateway' => $input,
-        ];
 
         if ($this->shouldSkipOptimizerCardsCallback($gatewayDriver, $payment) === true)
         {
@@ -502,19 +518,7 @@ class GatewayController extends Controller
                 }
                 else
                 {
-                    if (QrGatewayModule::checkIfOldGatewayProcessedThroughNewQrPaymentProcessingFlow($gatewayDriver) === true)
-                    {
-                        $data = (new QrPayment\Service())
-                            ->processQrPaymentCallbackThroughNewGatewayAdapterForExistingGateways(
-                                $gatewayDriver,
-                                $input['data'],
-                                $input['success']
-                            );
-                    }
-                    else
-                    {
-                        $data = $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, true);
-                    }
+                    $data = $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, true);
 
                     $this->logCallbackResponseTime($startTime, $gatewayDriver, false, true);
                 }
@@ -698,103 +702,37 @@ class GatewayController extends Controller
      */
     protected function processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, $isCallback = false)
     {
-        // First if mode is not found from payment repo, we will check with QR repo
-        $qrRepo = $this->app['repo']->qr_code;
-
-        $suffixLength = strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX);
-
-        $gatewayClass = $this->app['gateway']->gateway($gatewayDriver);
-
-        $isQrV2Payment = false;
-        $terminal = null;
-        // this checks will only be applicable for static QR code. For dynamic QR code,
-        // bank will send the ref id generated during QR creation
-        if ((strlen($paymentId) >= ($suffixLength + QrCode\Entity::ID_LENGTH)) and
-            (str_ends_with($paymentId, QrCode\Constants::QR_CODE_V2_TR_SUFFIX)))
+        // We are disabling unexpected payments for some gateways,
+        // this is either for new gateways or to delay refunds
+        if (Gateway::isUnexpectedPaymentOnCallbackDisabled($gatewayDriver) === true)
         {
-            if (method_exists($gatewayClass, 'getQrPaymentMerchantReference') === true)
-            {
-                $paymentId = $gatewayClass->getQrPaymentMerchantReference($paymentId);
-            }
-            else
-            {
-                $paymentId = substr($paymentId, 0, QrCode\Entity::ID_LENGTH);
-            }
+            unset($input['payment']['vpa']);
 
-            $isQrV2Payment = true;
-        }
-        else
-        {
-            $gatewayClass = $this->app['gateway']->gateway($gatewayDriver);
-            $data         = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
-
-            $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData($gatewayDriver, $data['terminal']);
-
-            if (($terminal !== null) and ($terminal->isQrV2Terminal() === true) and
-                ((new QrPayment\Core)->checkPaymentViaQRv1($terminal->merchant) === false))
-            {
-                $isQrV2Payment = true;
-
-                $staticQrId = (new BharatQr\Service)->updateQrCodeInCallbackIfApplicable($input, $terminal);
-
-                if ($staticQrId !== null)
-                {
-                    $paymentId     = $staticQrId;
-                }
-            }
+            $this->trace->info(TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK, [
+                'input'         => $input,
+                'gateway'       => $gatewayDriver,
+                'unexpected'    => 1,
+                'skipped'       => 1,
+            ]);
+            // Throw expection
+            throw new Exception\RuntimeException('Unexpected payment on callback is not supported',[
+                'gateway' => $gatewayDriver,
+            ]);
         }
 
-        $mode = $qrRepo->determineLiveOrTestModeByMerchantReference($paymentId);
-
-        if ($mode !== null)
+        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === true)
         {
-            $this->app['basicauth']->setModeAndDbConnection($mode);
+            $this->trace->info(TraceCode::UPI_UNEXPECTED_PAYMENT_CREATION_SKIPPED, [
+                'payment_id'    => $paymentId,
+                'message'       => 'unexpected payment creation skipped due to length being 14'
+            ]);
 
-            if ($isQrV2Payment === true)
-            {
-                $this->trace->info(TraceCode::QR_PAYMENT_GATEWAY_CALLBACK, $input);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_UNEXPECTED_PAYMENT_CREATION_SKIPPED);
 
-                $data = (new BharatQr\Service)->processPayment($input, $gatewayDriver);
-            }
-            else
-            {
-                $data = (new QrCode\Upi\Service)->processPayment($input, $paymentId, $gatewayDriver);
-            }
+            return [];
         }
-        else
-        {
-            // We are disabling unexpected payments for some gateways,
-            // this is either for new gateways or to delay refunds
-            if (Gateway::isUnexpectedPaymentOnCallbackDisabled($gatewayDriver) === true)
-            {
-                unset($input['payment']['vpa']);
 
-                $this->trace->info(TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK, [
-                    'input'         => $input,
-                    'gateway'       => $gatewayDriver,
-                    'unexpected'    => 1,
-                    'skipped'       => 1,
-                ]);
-                // Throw expection
-                throw new Exception\RuntimeException('Unexpected payment on callback is not supported',[
-                    'gateway' => $gatewayDriver,
-                ]);
-            }
-
-            if (UniqueIdEntity::verifyUniqueId($paymentId, false) === true)
-            {
-                $this->trace->info(TraceCode::UPI_UNEXPECTED_PAYMENT_CREATION_SKIPPED, [
-                    'payment_id'    => $paymentId,
-                    'message'       => 'unexpected payment creation skipped due to length being 14'
-                ]);
-
-                $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_UNEXPECTED_PAYMENT_CREATION_SKIPPED);
-
-                return [];
-            }
-
-            $data = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver, $isCallback);
-        }
+        $data = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver, $isCallback);
 
         return $data;
     }
@@ -2154,9 +2092,44 @@ class GatewayController extends Controller
         }
     }
 
+    // Determines if autopay callback should be preprocessed by UPS
+    protected function shouldPreProcessUpiRecurringThroughUpiPaymentService($gateway, $mode)
+    {
+        try {
+
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_rearch_pre_process'),
+                'request_data'  => json_encode(['gateway' => $gateway]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            return ($variant === 'variant_on' or $gateway === Payment\Gateway::UPI_RZPAPB);
+
+        } catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::UPI_AUTOPAY_GATEWAY_REARCH_SPLITZ_FAILED, [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return false;
+    }
+
     // Determines if callback should be preprocessed by UPS
     protected function shouldPreProcessThroughUpiPaymentService($gateway, $mode = null)
     {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if(($routeName === 'gateway_payment_callback_recurring') and
+            (Payment\Gateway::isUpiRecurringSupportedGateway($gateway) === true)) {
+            return $this->shouldPreProcessUpiRecurringThroughUpiPaymentService($gateway, $mode);
+        }
+
         if (Payment\Gateway::isOnlyUpiPaymentServiceGateway($gateway) === true)
         {
             return true;
@@ -2378,6 +2351,13 @@ class GatewayController extends Controller
 
         if ((isset($input['ResponseCode']) === true) and
             ($input['ResponseCode'] === "BT"))
+        {
+            return true;
+        }
+
+        if ((isset($input["error"]) === true) and
+            (isset($input["error"]["gateway_error_code"]) === true) and
+            ($input["error"]["gateway_error_code"] === "BT"))
         {
             return true;
         }

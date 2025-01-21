@@ -41,6 +41,7 @@ class UpiMandateTransformer extends UpiTransformer
                 break;
 
             case Action::AUTHORIZE:
+            case Action::DEBIT:
                 $this->processResponseForAuthorize();
                 break;
         }
@@ -70,8 +71,9 @@ class UpiMandateTransformer extends UpiTransformer
     protected function processResponseForAuthenticate()
     {
         $app = \App::getFacadeRoot();
+        $action = $this->context->getAction() ?? $this->input['action'];
 
-        if ($this->context->getAction() === Action::AUTHENTICATE)
+        if ($action === Action::AUTHENTICATE)
         {
             $this->item->setStatus(Status::CREATED);
 
@@ -82,7 +84,7 @@ class UpiMandateTransformer extends UpiTransformer
             }
             $this->updateMetadataFromResponse();
         }
-        else if ($this->context->getAction() === Action::CALLBACK)
+        else if (($action === Action::CALLBACK) or ($action === Action::RECURRING_CALLBACK))
         {
             $this->item->setStatus(Status::CREATED);
 
@@ -116,7 +118,7 @@ class UpiMandateTransformer extends UpiTransformer
 
             $this->updateMetadataFromResponse();
         }
-        else if ($this->context->getAction() === Action::VERIFY)
+        else if ($action === Action::VERIFY)
         {
             $this->item->setStatus(Status::CREATED);
 

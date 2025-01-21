@@ -22,6 +22,7 @@ class Constants
     ];
 
     const FIELD_DETAILS = 'field_details';
+    const GROUP_NAME    = 'group_name';
     const SUBMIT        = 'submit';
     const TYPE          = 'type';
     const TEXT          = 'text';

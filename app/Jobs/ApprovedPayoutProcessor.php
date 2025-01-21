@@ -32,6 +32,8 @@ class ApprovedPayoutProcessor extends Job
 
     const MAX_RETRIES = 2;
 
+    // Max Job Execution Time is 48s (worse case scenario)
+    const RETRY_INTERVAL = 50;
     /**
      * Create a new job instance.
      * @param string $mode
@@ -139,8 +141,6 @@ class ApprovedPayoutProcessor extends Job
     {
         if ($this->attempts < self::MAX_RETRIES)
         {
-            $this->data['attempts'] = $this->attempts + 1;
-
             $this->trace->info(TraceCode::PAYOUT_ASYNC_APPROVE_PROCESSOR_RETRY, [
                 'merchant_id'        => $this->merchantId,
                 'retry_attempt'      => $this->attempts,
@@ -148,7 +148,7 @@ class ApprovedPayoutProcessor extends Job
             ]);
 
             // not calling release here, since data needs to be changed for the job. Can figure out later if there is a way to use release with updated data
-            ApprovedPayoutProcessor::dispatch($this->mode, $this->data, $this->payoutId, $this->isApproved);
+            ApprovedPayoutProcessor::dispatch($this->mode, $this->data, $this->payoutId, $this->isApproved)->delay(self::RETRY_INTERVAL);
         }
         else
         {

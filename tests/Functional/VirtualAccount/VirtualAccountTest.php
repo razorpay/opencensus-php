@@ -399,21 +399,6 @@ class VirtualAccountTest extends TestCase
         ];
         $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
 
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if ($featureFlag === (RazorxTreatment::COLLECTX_LIVE_ON_BANK_ACCOUNTS))
-                {
-                    return 'on';
-                }
-
-                return 'control';
-            });
-
         $response = $this->startTest();
 
         $expectedResponse = $this->testData[__FUNCTION__]['response']['content'];

@@ -1913,6 +1913,22 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testAdminFetchOfferByInvalidIdValidationFailure()
+    {
+        $offersEngineMock = Mockery::mock('RZP\Services\OffersEngine', [$this->app])
+                                   ->makePartial()
+                                   ->shouldAllowMockingProtectedMethods();
+
+        $offersEngineMock->shouldReceive('sendRequest')
+                         ->times(0);
+
+        $this->app['offers_engine'] = $offersEngineMock;
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+    }
+
     public function testFetchOffersDiscountForSubscription()
     {
         $offer = $this->fixtures->create('offer', [

@@ -141,6 +141,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const UPDATE_BRAND_DEALER_DETAILS            = 'update_brand_dealer_details';
     const INITIATE_POS_ONBOARDING                = 'initiate_pos_onboarding';
 
+    const GET_VCIP_LINK                          = 'get_vcip_link';
+
     const ONBOARDING_ROUTES = [self::ONBOARDING_GET, self::ONBOARDING_SAVE, self::ONBOARDING_CREATE_OR_FETCH, self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2];
 
     const PGOS_OWNED_FIELDS = [
@@ -319,6 +321,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::FETCH_BRAND_DEALER_DETAILS                    => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchBrandDealerDetails',
         self::UPDATE_BRAND_DEALER_DETAILS                   => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdateBrandDealerDetails',
         self::INITIATE_POS_ONBOARDING                       => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/InitiatePosOnboarding',
+        self::GET_VCIP_LINK                                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetVcipLink',
     ];
 
     // timeout in seconds

@@ -113,7 +113,6 @@ use RZP\Models\Ledger\ReverseShadow as LedgerReverseShadow;
 use Symfony\Component\HttpFoundation;
 use RZP\Services\UfhService;
 
-
 class Service extends Base\Service
 {
     use FraudDetector;
@@ -1231,8 +1230,6 @@ class Service extends Base\Service
      */
     public function forceAuthorizePayment($id, $input)
     {
-        (new Payment\Validator)->validateInput('force_authorize_payment', $input);
-
         $method = $input['payment']['method'];
 
         switch($method)
@@ -1582,6 +1579,9 @@ class Service extends Base\Service
 
                         $payment->card()->associate($card);
                     }
+                    if (isset($paymentMap['amount_captured'])) {
+                        $payment->setAmountCaptured($paymentMap['amount_captured']);
+                    }
 
                     return $payment;
                 },
@@ -1778,6 +1778,21 @@ class Service extends Base\Service
             $this->merchant = $payment->merchant;
 
             $this->auth->setMerchant($this->merchant);
+        }
+
+        if ((new Transfer\Service())->isPaymentTransferRearchExpEnabled($id, $this->merchant->getId(), $input))
+        {
+            $resp = $this->app['route']->createPaymentTransfer($id, $input);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_TRANSFER_RESPONSE_VIA_ROUTE_SERVICE,
+                [
+                    'input'      => $input,
+                    'response'   => $resp,
+                ]
+            );
+
+            return $resp;
         }
 
         try
@@ -2558,11 +2573,7 @@ class Service extends Base\Service
 
         $isReverseShadowMerchant = empty($merchant) === false ? $merchant->isFeatureEnabled(Features::PG_LEDGER_REVERSE_SHADOW) : false;
 
-        $requestId = empty($merchant) === false ? $merchant->getId() : $this->app['request']->getTaskId();
-
-        $readExp = $this->getTransactionReadSplitzResponse($requestId) === 'enable';
-
-        if($isReverseShadowMerchant === true and $readExp === true)
+        if($isReverseShadowMerchant === true)
         {
             $ledgerDualWrite = true;
 
@@ -2696,17 +2707,6 @@ class Service extends Base\Service
         return $entity;
     }
 
-    public function getTransactionReadSplitzResponse($merchantId)
-    {
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.transaction_read_experiment'),
-        ];
-        $response = $this->app['splitzService']->evaluateRequest($properties);
-
-        return $response['response']['variant']['name'] ?? '';
-    }
-
     public function getPaymentTimeline(string $id, array $input = []): array
     {
         $id = Entity::stripSignWithoutValidation($id);
@@ -2739,42 +2739,35 @@ class Service extends Base\Service
 
         $txn = null;
 
-        $requestId = $this->app['request']->getTaskId();
-
-        $readExp = $this->getTransactionReadSplitzResponse($requestId) === 'enable';
-
-        if($readExp === true)
+        if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
+            and (in_array(Payment\Entity::TRANSACTION, $input[Base\Repository::EXPAND]) === true
+                or in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
         {
-            if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
-                and (in_array(Payment\Entity::TRANSACTION, $input[Base\Repository::EXPAND]) === true
-                    or in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
+            array_delete(Payment\Entity::TRANSACTION, $input['expand']);
+
+            $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($id);
+
+            if (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true
+                    and empty($txn) === false)
             {
-                array_delete(Payment\Entity::TRANSACTION, $input['expand']);
+                array_delete('transaction.settlement', $input['expand']);
 
-                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($id);
-
-                if (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true
-                        and empty($txn) === false)
+                if (empty($txn->getSettlementId()) === false)
                 {
-                    array_delete('transaction.settlement', $input['expand']);
+                    $settlement = $this->repo->settlement->find($txn->getSettlementId());
 
-                    if (empty($txn->getSettlementId()) === false)
+                    if (empty($settlement) === false)
                     {
-                        $settlement = $this->repo->settlement->find($txn->getSettlementId());
-
-                        if (empty($settlement) === false)
-                        {
-                            $txn['settlement'] = $settlement->toArrayPublic();
-                        }
-                        else
-                        {
-                            $txn['settlement'] = null;
-                        }
+                        $txn['settlement'] = $settlement->toArrayPublic();
                     }
                     else
                     {
                         $txn['settlement'] = null;
                     }
+                }
+                else
+                {
+                    $txn['settlement'] = null;
                 }
             }
         }
@@ -9202,33 +9195,53 @@ class Service extends Base\Service
      */
     public function addExperimentDetailsInGatewayOtpPostFormData(array &$input): void
     {
-        $merchantId = $input["merchant_id"] ?? "";
-        $otpUnificationAcsPageVariant = $this->app['razorx']->getTreatment(
-            $merchantId,
-            RazorxTreatment::OTP_UNIFICATION_ACS_PAGE,
-            $this->app['rzp.mode'],
-        );
-
-        $input['experiments']['otp_unification_acs_page'] = $otpUnificationAcsPageVariant;
+        $input['experiments']['otp_unification_acs_page'] = 'variant_on';
     }
 
-    private function shouldCreateQrPaymentFromUnexpectedUpiPayment(string $gateway)
+
+    /**
+     * @param string $gateway
+     * @return bool
+     */
+    private function shouldCreateQrPaymentFromUnexpectedUpiPayment(string $gateway): bool
     {
-        $variant = $this->app->razorx->getTreatment($gateway, Merchant\RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE, Mode::LIVE);
+        try{
+            $properties = [
+                'id'            => $gateway,
+                'experiment_id' => $this->app->config->get('app.recon_unexpected_qr_payment_via_upi_route'),
+                'request_data'  => json_encode(['gateway' => $gateway]),
+            ];
+            $response   = $this->app['splitzService']->evaluateRequest($properties);
 
-        $this->trace->info(
-            TraceCode::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE,
-            [
-                'gateway'           => $gateway,
-                'variant'           => $variant
-            ]
-        );
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'gateway'   => $gateway,
+                '$response'     => $response
+            ]);
 
-        if (strtolower($variant) === 'on')
+            if ($response['response']['variant'] !== null)
+            {
+                $variables = $response['response']['variant']['variables'] ?? [];
+
+                foreach ($variables as $variable)
+                {
+                    $key   = $variable['key'] ?? '';
+                    $value = $variable['value'] ?? '';
+                    if ($key === 'result' && $value === 'on')
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (\Throwable $e)
         {
-            return true;
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE_ERROR
+            );
         }
-
         return false;
     }
 

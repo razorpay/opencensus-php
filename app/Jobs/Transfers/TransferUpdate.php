@@ -12,8 +12,8 @@ use RZP\Trace\TraceCode;
 
 class TransferUpdate extends Job
 {
-    const RETRY_INTERVAL    = 300;
-    const MAX_RETRY_ATTEMPT = 3;
+    const RETRY_INTERVAL    = 30;
+    const MAX_RETRY_ATTEMPT = 15;
 
     protected $input;
 
@@ -102,8 +102,14 @@ class TransferUpdate extends Job
 
     protected function checkRetry()
     {
-        // check if retry is needed
+        if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
+        {
+            $this->delete();
+        }
+        else
+        {
+            $this->release(self::RETRY_INTERVAL);
+        }
     }
-
 }
 

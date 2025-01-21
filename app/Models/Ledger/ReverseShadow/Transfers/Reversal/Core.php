@@ -91,29 +91,6 @@ class Core extends Base\Core
         return $moneyParams;
     }
 
-    public function getReversalDebitJournalPayloadBalanceSplitzResponse($merchantId)
-    {
-        try
-        {
-            $properties = [
-                'id'            => $merchantId,
-                'experiment_id' => $this->app['config']->get('app.reversal_debit_journal_payload_harvester_balance_experiment'),
-            ];
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            return $response['response']['variant']['name'] ?? '';
-        }
-        catch(\Throwable $e)
-        {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
-                'merchant_id'   => $merchantId,
-            ]);
-
-            return '';
-        }
-
-    }
-
     public function generateMoneyParamsForReversalDebit(RefundEntity $refund): array
     {
         $moneyParams = [];
@@ -135,17 +112,7 @@ class Core extends Base\Core
 
         $txnType = Transaction\Type::REFUND;
 
-        $tiDBBalanceFetch = $this->getReversalDebitJournalPayloadBalanceSplitzResponse($refund->merchant->getId()) === 'enable';
-
-        if ($tiDBBalanceFetch === true)
-        {
-            $balance = (new Balance\Repository())->getMerchantBalanceByTypeTiDBOrFail($refund->merchant->getId(), RefundConstants::PRIMARY);
-        }
-        else
-        {
-            $balance = $refund->merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
-        }
-
+        $balance = (new Balance\Repository())->getMerchantBalanceByTypeTiDBOrFail($refund->merchant->getId(), RefundConstants::PRIMARY);
 
         $balanceConfigCore = new Balance\BalanceConfig\Core();
 
@@ -183,19 +150,7 @@ class Core extends Base\Core
 
         list($reversalAndRefundJournalIds, $producerKey) = $this->createPayloadForAPITransactionCreation([[$reversal,$refund]],$sourceRefund, $journals, $isCustomerRefundApplicable, $isRearchRefund);
 
-        if ($this->isMerchantEnabledForTxnDualWrite($reversal->merchant))
-        {
-            $this->setTxnIdsInSourceEntities($reversalAndRefundJournalIds);
-
-            $this->pushTransferReversalDataToKafkaForAPIDualWrite($reversalAndRefundJournalIds, $journals);
-        }
-        else
-        {
-            \Event::dispatch(new TransactionalClosureEvent(function () use ($reversalAndRefundJournalIds, $producerKey) {
-
-                $this->dispatchForTransferReversalTransactionCreation($reversalAndRefundJournalIds);
-            }));
-        }
+        $this->setTxnIdsInSourceEntities($reversalAndRefundJournalIds);
 
         $this->dispatchToSettlementFromJournalIfApplicable($reversalAndRefundJournalIds, $journals);
 
@@ -243,25 +198,14 @@ class Core extends Base\Core
 
         list($reversalAndRefundJournalIds, $producerKey) = $this->createPayloadForAPITransactionCreation($results, $customerRefund, $journals, true, $isRearchRefund);
 
-        if ($this->isMerchantEnabledForTxnDualWrite($sourcePayment->merchant))
-        {
-            $this->pushTransferReversalDataToKafkaForAPIDualWrite($reversalAndRefundJournalIds, $journals);
-        }
-        else
-        {
-            \Event::dispatch(new TransactionalClosureEvent(function () use ($reversalAndRefundJournalIds) {
-
-                $this->dispatchForTransferReversalTransactionCreation($reversalAndRefundJournalIds);
-
-            }));
-        }
+        $this->setTxnIdsInSourceEntities($reversalAndRefundJournalIds);
 
         $this->dispatchToSettlementFromJournalIfApplicable($reversalAndRefundJournalIds, $journals);
 
         return $reversalAndRefundJournalIds;
     }
 
-    private function createPayloadForAPITransactionCreation( $results, RefundEntity $sourceRefund, $journals, $isCustomerRefundApplicable, $isRearchRefund = false)
+    public function createPayloadForAPITransactionCreation( $results, RefundEntity $sourceRefund, $journals, $isCustomerRefundApplicable, $isRearchRefund = false)
     {
 
         $segregatedJournalsByReversalId = [];
@@ -309,6 +253,11 @@ class Core extends Base\Core
             $refund = $refundsByReversalId[$reversalId]['refund'];
 
             [$creditJournalId, $debitJournalId] = $this->determineJournalIdForAPITransaction($transferReversalJournals, "merchant_balance", "merchant_balance");
+
+            if($debitJournalId==='' || isset($debitJournalId)===false)
+            {
+                [$creditJournalId, $debitJournalId] = $this->determineJournalIdForAPITransaction($transferReversalJournals, "merchant_refund_credits", "merchant_balance");
+            }
 
             $reversalTransactionPayload[] = [
                 "transfer_reversal_id" => $reversal->getId(),
@@ -548,131 +497,20 @@ class Core extends Base\Core
 
     }
 
-    private function isMerchantEnabledForTxnDualWrite($merchant)
-    {
-        $properties = [
-            'request_data' => json_encode(["merchant_id" => $merchant->getId()]),
-            'id'            => $merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.api_ledger_dual_write_rearch'),
-        ];
-
-        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
-    }
-
-    private function pushTransferReversalDataToKafkaForAPIDualWrite($reversalAndRefundJournalIds, $journals)
-    {
-        if (($this->app->runningUnitTests() === true))
-        {
-            return;
-        }
-
-        $producerKey =  '';  // check if needed
-
-        $data = [
-            'payload_api'=>[
-                'id' => md5(json_encode($reversalAndRefundJournalIds)),
-                'reversal_and_refund_journal_ids' => $reversalAndRefundJournalIds,
-                'journals' => $journals
-            ]
-        ];
-
-        $message = [
-            LedgerConstants::KAFKA_MESSAGE_DATA       => $data,
-            LedgerConstants::KAFKA_MESSAGE_TASK_NAME  => LedgerConstants::DUAL_WRITE_TRANSACTION_FOR_API_EVENTS
-        ];
-
-        $topic = env('DUAL_WRITE_TRANSACTION_FOR_API_EVENTS', LedgerConstants::DUAL_WRITE_TRANSACTION_FOR_API_EVENTS);
-
-        try
-        {
-            $kafkaProducer = (new KafkaProducer($topic, stringify($message)));
-
-            $kafkaProducer->Produce();
-
-            $this->trace->info(TraceCode::KAFKA_TRANSFER_REVERSAL_API_TXN_PUSH_SUCCESS, [
-                LedgerConstants::PRODUCER_KEY => $producerKey,
-                LedgerConstants::TOPIC        => $topic,
-                LedgerConstants::MESSAGE      => $message
-            ]);
-
-            $this->trace->count(Metric::KAFKA_TRANSFER_REVERSAL_API_TXN_PUSH_SUCCESS, [
-                LedgerConstants::TOPIC        => $topic,
-            ]);
-
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->count(Metric::KAFKA_TRANSFER_REVERSAL_API_TXN_PUSH_FAILURE, [
-                LedgerConstants::TOPIC        => $topic,
-            ]);
-
-            $this->trace->traceException(
-                $ex,
-                500,
-                TraceCode::KAFKA_TRANSFER_REVERSAL_API_TXN_PUSH_FAILURE,
-                [
-                    LedgerConstants::PRODUCER_KEY => $producerKey,
-                    LedgerConstants::TOPIC        => $topic,
-                    LedgerConstants::MESSAGE      => $message
-                ]);
-
-            throw $ex;
-        }
-    }
-
     private function setTxnIdsInSourceEntities($reversalAndRefundJournalIds)
     {
         $reversals = $reversalAndRefundJournalIds['reversals'];
-
-        $isRearchRefund = $reversalAndRefundJournalIds["is_rearch_refund"];
 
         foreach ($reversals as $item)
         {
             $reversalId             = $item["transfer_reversal_id"];
             $reversalJournalId      = $item["transfer_reversal_journal_id"];
-            $dummyRefundId          = $item["refund_id"];
-            $dummyRefundJournalId   = $item["refund_journal_id"];
 
             $reversal = $this->repo->reversal->findOrFail($reversalId);
 
             $reversal->setTransactionId($reversalJournalId);
 
             $this->repo->saveOrFail($reversal);
-
-            if($isRearchRefund)
-            {
-                $dummyRefund = (new Refund\Repository())->fetchExternalRefundById($dummyRefundId, '', [], true);
-            }
-            else
-            {
-                $dummyRefund = $this->repo->refund->findOrFail($dummyRefundId);
-            }
-
-            $dummyRefund->setTransactionId($dummyRefundJournalId);
-
-            $this->repo->refund->saveOrFail($dummyRefund);
-        }
-
-        $isRearchRefund = $reversalAndRefundJournalIds["is_rearch_refund"];
-
-        $customerRefundId =  $input["customer_refund_id"] ?? "";
-
-        if($customerRefundId !== "")
-        {
-            if($isRearchRefund)
-            {
-                $customerRefund = (new Refund\Repository())->fetchExternalRefundById($customerRefundId, '', [], true);
-            }
-            else
-            {
-                $customerRefund = $this->repo->refund->findOrFail($customerRefundId);
-            }
-
-            $customerRefundJournalId = $input["customer_refund_journal_id"];
-
-            $customerRefund->setTransactionId($customerRefundJournalId);
-
-            $this->repo->refund->saveOrFail($customerRefund);
         }
     }
 }

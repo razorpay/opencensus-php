@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer\AppToken;
 
 use RZP\Models\Base;
+use RZP\Constants\Entity as ConstantsEntity;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Customer\Entity as CustomerEntity;
@@ -27,6 +28,17 @@ class Entity extends Base\PublicEntity
     protected $entity           = 'app_token';
 
     protected $generateIdOnCreate = true;
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
+    ];
 
     protected $fillable = [
         self::ID,
@@ -83,5 +95,4 @@ class Entity extends Base\PublicEntity
     {
         return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity);
     }
-
 }

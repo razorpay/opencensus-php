@@ -11155,12 +11155,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/dcs-php-sdk.git",
-                "reference": "60254554515ecbfd91ca6f5ccd86e64be500af5c"
+                "reference": "f9715d520e4637a8b705676211c4d99410d491ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/60254554515ecbfd91ca6f5ccd86e64be500af5c",
-                "reference": "60254554515ecbfd91ca6f5ccd86e64be500af5c",
+                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/f9715d520e4637a8b705676211c4d99410d491ef",
+                "reference": "f9715d520e4637a8b705676211c4d99410d491ef",
                 "shasum": ""
             },
             "require": {
@@ -11208,7 +11208,7 @@
                 "dcs-php-sdk",
                 "razorpay"
             ],
-            "time": "2024-12-11T11:37:54+00:00"
+            "time": "2025-01-08T05:33:41+00:00"
         },
         {
             "name": "razorpay/ec2-metadata",
@@ -19636,17 +19636,17 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "razorpay/razorpay": 20,
         "php-http/guzzle7-adapter": 20,
-        "razorpay/upi-clients": 20,
-        "razorpay/oauth": 20,
-        "razorpay/hodor": 20,
-        "symfony/mailgun-mailer": 20,
-        "symfony/http-client": 20,
-        "razorpay/dcs-php-sdk": 20,
         "razorpay/config-proto": 20,
+        "razorpay/dcs-php-sdk": 20,
+        "razorpay/hodor": 20,
+        "razorpay/oauth": 20,
+        "razorpay/razorpay": 20,
         "razorpay/redis-counting-semaphore": 20,
-        "roave/no-leaks": 20
+        "razorpay/upi-clients": 20,
+        "roave/no-leaks": 20,
+        "symfony/http-client": 20,
+        "symfony/mailgun-mailer": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
@@ -19663,6 +19663,6 @@
         "ext-pdo": "*",
         "ext-sodium": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }

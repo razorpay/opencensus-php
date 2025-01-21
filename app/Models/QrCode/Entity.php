@@ -18,6 +18,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Order\Repository as OrderRepository;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Status as QrStatus;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Entity extends Base\PublicEntity
 {
@@ -145,7 +146,9 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $ignoredRelations = [
-        'source'
+        'source',
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
     ];
 
     // --------------------- RELATIONS ---------------------

@@ -6,7 +6,7 @@ use RZP\Services\Route\Api as BaseRoute;
 
 class Route extends BaseRoute
 {
-    protected function fetchTransferByIdInternalRequest(string $transferId): array
+    protected function fetchTransferByIdInternalRequest(string $transferId, string $merchantId = null): array
     {
         return [
             'id' => $transferId,
@@ -17,6 +17,8 @@ class Route extends BaseRoute
             'merchant_id' => '10000000000000',
             'to_id' => '10000000000001',
             'to_type' => 'merchant',
+            'recipient_settlement_id' => 'P1aV1cjfsJuNf9',
+            'settlement_status' => 'settled'
         ];
     }
 

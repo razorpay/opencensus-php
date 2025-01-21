@@ -13,7 +13,6 @@ use RZP\Constants\Mode as EnvMode;
 use RZP\Jobs\EsSync;
 use RZP\Jobs\PayoutUsageEventProcessing;
 use RZP\Models\Admin\Permission\Name as Permission;
-use RZP\Models\FeeRecovery;
 use RZP\Services\Mock\DataLakePresto;
 use RZP\Services\Mock\Stork;
 use \WpOrg\Requests\Response;
@@ -3129,74 +3128,6 @@ class PayoutTest extends OAuthTestCase
 
         Queue::assertPushed(EsSync::class, 1);
     }
-
-    public function testDualWriteForPayoutServiceCAPayoutFeeRecovery()
-    {
-        /** @var Balance\Entity $secondBankingBalance */
-        $secondBankingBalance = $this->fixtures->on('live')->create(
-            'balance',
-            [
-                'type'             => 'banking',
-                'merchant_id'      => '10000000000000',
-                'balance'          => 1000,
-                'account_type'     => "direct",
-                'channel'          => 'rbl',
-            ]);
-        $id = $secondBankingBalance->getId();
-
-        $payoutData = [
-            'id' => "randomid111112",
-            'merchant_id' => "10000000000000",
-            'fund_account_id' => "100000000000fa",
-            'method' => "fund_transfer",
-            'reference_id' => null,
-            'balance_id' => $id ,
-            'user_id' => "random_user123",
-            'batch_id' => null,
-            'idempotency_key' => "random_key",
-            'purpose' => "refund",
-            'narration' => "Batman",
-            'purpose_type' => "refund",
-            'amount' => 2000000,
-            'currency' => "INR",
-            'notes' => "{}",
-            'fees' => 10,
-            'tax' => 33,
-            'status' => "initiated",
-            'fts_transfer_id' => 60,
-            'transaction_id' => "KHTaWqqBKwrVTM",
-            'channel' => "yesbank",
-            'utr' => "933815383814",
-            'failure_reason' => null,
-            'remarks' => "Check the status by calling getStatus API.",
-            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
-            'scheduled_at' => null,
-            'queued_at' => null,
-            'mode' => "IMPS",
-            'fee_type' => "free_payout",
-            'workflow_feature' => null,
-            'origin' => 1,
-            'status_code' => null,
-            'cancellation_user_id' => null,
-            'registered_name' => "SUSANTA BHUYAN",
-            'queued_reason' => "beneficiary_bank_down",
-            'on_hold_at' => 1663092113,
-            'created_at' => 1000000000,
-            'updated_at' => 1000000002,
-        ];
-
-        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
-        $this->ba->payoutInternalAppAuth('live');
-        $this->startTest();
-
-        /** @var Payout\Entity $payout */
-        $payout = $this->getDbLastEntity('payout', 'live');
-
-        /** @var FeeRecovery\Entity $feeRecovery */
-        $feeRecovery = $this->getDbLastEntity('fee_recovery','live')->toArray();
-        $this->assertEquals($feeRecovery['entity_id'], $payout['id']);
-    }
-
 
     public function testDualWriteForPayoutServicePayoutWithApiIdempotencyKeyNotPresent()
     {
@@ -8971,6 +8902,33 @@ class PayoutTest extends OAuthTestCase
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals('Batman', $payoutAttempt['narration']);
+    }
+
+    public function testFtsAppPayoutsFundAccountDedupe()
+    {
+        $this->liveSetUp();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['activated' => 0]);
+
+        $this->ba->appAuthTest($this->config['applications.fts.secret']);
+
+        $this->startTest();
+
+        $payout1 = $this->getLastEntity('payout', true);
+
+        $fundAccountCountBefore = count($this->getDbEntities('fund_account'));
+
+        $this->ba->appAuthTest($this->config['applications.fts.secret']);
+
+        $this->startTest();
+
+        $payout2 = $this->getLastEntity('payout', true);
+
+        $fundAccountCountAfter = count($this->getDbEntities('fund_account'));
+
+        $this->assertEquals($payout1['fund_account_id'],$payout2['fund_account_id']);
+
+        $this->assertEquals($fundAccountCountBefore, $fundAccountCountAfter);
     }
 
     public function testCreateCompositePayoutPettyCash()
@@ -29307,6 +29265,43 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['pricing_rule_id'], 'custompricing1');
     }
 
+    public function testCreatePayoutForIrctcMerchants() {
+
+        $this->ba->cronAuth();
+
+        $irctcmid = "OGJDenfkpc6whP";
+
+        $this->fixtures->merchant->createAccount($irctcmid);
+
+        $this->fixtures->create('balance', [
+            'type'           => 'primary',
+            'account_type'   => 'shared',
+            'merchant_id'    => $irctcmid,
+        ]);
+
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::PG_LEDGER_REVERSE_SHADOW
+        ], $irctcmid);
+
+        $this->fixtures->merchant->edit($irctcmid, ['activated' => true, 'live' => true]);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($payoutAttempt);
+        $this->assertNull($transaction);
+        $this->assertEquals($payout['merchant_id'], "OGJDenfkpc6whP");
+        $this->assertEquals($payout['amount'], "1000");
+        $this->assertEquals($payout['purpose_type'], "settlement");
+        $this->assertEquals($payout['status'], "processing");
+
+    }
+
     public function testPayoutCreateForSharedWhenBankingRuleNotPresentInCustomPricingPlan()
     {
         $mid = random_alphanum_string(14);
@@ -45246,7 +45241,7 @@ class PayoutTest extends OAuthTestCase
         // Set up splitz experiment as enabled
         $splitzResp = [
             "response" => [
-                "variant" => [ "name" => "enabled" ]
+                "variant" => ["name" => "enabled"]
             ]
         ];
 
@@ -45261,11 +45256,11 @@ class PayoutTest extends OAuthTestCase
         $secondBankingBalance = $this->fixtures->on('live')->create(
             'balance',
             [
-                'type'             => 'banking',
-                'merchant_id'      => '10000000000000',
-                'balance'          => 1000,
-                'account_type'     => "direct",
-                'channel'          => 'rbl',
+                'type' => 'banking',
+                'merchant_id' => '10000000000000',
+                'balance' => 1000,
+                'account_type' => "direct",
+                'channel' => 'rbl',
             ]);
         $id = $secondBankingBalance->getId();
 
@@ -45288,7 +45283,7 @@ class PayoutTest extends OAuthTestCase
             'fund_account_id' => "100000000000fa",
             'method' => "fund_transfer",
             'reference_id' => null,
-            'balance_id' => $id ,
+            'balance_id' => $id,
             'user_id' => "random_user123",
             'batch_id' => null,
             'idempotency_key' => "random_key",
@@ -45323,6 +45318,32 @@ class PayoutTest extends OAuthTestCase
             'updated_at' => 1000000002,
         ];
 
+        $payoutLogData1 = [
+            'id' => 'Pj1jHVGlKZBcbc',
+            'created_at' => 1000000001,
+            'updated_at' => 1000000001,
+            'payout_id' => 'randomid111112',
+            'event' => 'created',
+            'from' => 'create_request_submitted',
+            'to' => 'created',
+            'mode' => 'SYSTEM',
+            'triggered_by' => 'SYSTEM'
+        ];
+
+        $payoutLogData2 = [
+            'id' => 'Pj1jHAZb7KHBo9',
+            'created_at' => 1000000002,
+            'updated_at' => 1000000002,
+            'payout_id' => 'randomid111112',
+            'event' => 'initiated',
+            'from' => 'created',
+            'to' => 'initiated',
+            'mode' => 'SYSTEM',
+            'triggered_by' => 'SYSTEM',
+        ];
+
+        \DB::connection('test')->table('ps_payout_logs')->insert($payoutLogData1);
+        \DB::connection('test')->table('ps_payout_logs')->insert($payoutLogData2);
         \DB::connection('test')->table('ps_payouts')->insert($payoutData);
         $this->ba->payoutInternalAppAuth('live');
         $this->startTest();
@@ -45333,8 +45354,6 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals('recovered', $updated_fr1->getStatus());
 
-        $feeRecovery = $this->getDbLastEntity('fee_recovery','live')->toArray();
-        $this->assertEquals($feeRecovery['entity_id'], $payout['id']);
     }
 
     public function testDualWriteForPayoutServiceCAPayoutFeeRecoveryFailedStatus()
@@ -45428,9 +45447,6 @@ class PayoutTest extends OAuthTestCase
         $updated_fr1 = $this->getDbEntity('fee_recovery', ['id' => $fr1->getId()], 'live');
 
         $this->assertEquals('unrecovered', $updated_fr1->getStatus());
-
-        $feeRecovery = $this->getDbLastEntity('fee_recovery','live')->toArray();
-        $this->assertEquals($feeRecovery['entity_id'], $payout['id']);
     }
 
     public function testTriggerPayoutPropertiesEventViaMicroservice()
@@ -45458,6 +45474,197 @@ class PayoutTest extends OAuthTestCase
 
         $this->testCreatePayout();
 
+    }
+
+    public function testFeeRecoveryForInitiatedFailedPayouts()
+    {
+        // Set up splitz experiment as enabled
+        $splitzResp = [
+            "response" => [
+                "variant" => [ "name" => "enabled" ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue('fee_recovery_dual_write_flow'))
+            ->andReturn($splitzResp);
+
+        /** @var Balance\Entity $secondBankingBalance */
+        $secondBankingBalance = $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => '10000000000000',
+                'balance'          => 1000,
+                'account_type'     => "direct",
+                'channel'          => 'rbl',
+            ]);
+        $id = $secondBankingBalance->getId();
+
+        $payoutData = [
+            'id' => "randomid111112",
+            'merchant_id' => "10000000000000",
+            'fund_account_id' => "100000000000fa",
+            'method' => "fund_transfer",
+            'reference_id' => null,
+            'balance_id' => $id ,
+            'user_id' => "random_user123",
+            'batch_id' => null,
+            'idempotency_key' => "random_key",
+            'purpose' => "",
+            'narration' => "Batman",
+            'purpose_type' => "payout",
+            'amount' => 2000000,
+            'currency' => "INR",
+            'notes' => "{}",
+            'fees' => 10,
+            'tax' => 33,
+            'status' => "failed",
+            'fts_transfer_id' => 60,
+            'transaction_id' => "KHTaWqqBKwrVTM",
+            'channel' => "yesbank",
+            'utr' => "933815383814",
+            'failure_reason' => null,
+            'remarks' => "none",
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'scheduled_at' => null,
+            'queued_at' => null,
+            'mode' => "IMPS",
+            'fee_type' => "free_payout",
+            'workflow_feature' => null,
+            'origin' => 1,
+            'status_code' => null,
+            'cancellation_user_id' => null,
+            'registered_name' => "Bruce Wayne",
+            'queued_reason' => "beneficiary_bank_down",
+            'on_hold_at' => 1663092113,
+            'created_at' => 1000000000,
+            'updated_at' => 1000000005,
+        ];
+
+        $payoutLogData1 = [
+            'id' => 'Pj1jHVGlKZBcbc',
+            'created_at' => 1000000001,
+            'updated_at' => 1000000001,
+            'payout_id' => 'randomid111112',
+            'event' => 'created',
+            'from' => 'create_request_submitted',
+            'to' => 'created',
+            'mode'=>'SYSTEM',
+            'triggered_by'=>'SYSTEM'
+        ];
+
+        $payoutLogData2 = [
+            'id' => 'Pj1jHAZb7KHBo9',
+            'created_at' => 1000000002,
+            'updated_at' => 1000000002,
+            'payout_id' => 'randomid111112',
+            'event' => 'initiated',
+            'from' => 'created',
+            'to' => 'initiated',
+            'mode'=>'SYSTEM',
+            'triggered_by'=>'SYSTEM',
+        ];
+
+        \DB::connection('test')->table('ps_payout_logs')->insert($payoutLogData1);
+        \DB::connection('test')->table('ps_payout_logs')->insert($payoutLogData2);
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $this->ba->payoutInternalAppAuth('live');
+        $this->startTest();
+
+        $fr = $this->getDbEntity('fee_recovery', [
+            'entity_id' => $payoutData['id']
+        ], 'live');
+
+        $this->assertEquals($payoutData['id'], $fr->getEntityId());
+        $this->assertEquals('credit', $fr->getType());
+    }
+
+    public function testFeeRecoveryForNonInitiatedFailedPayouts()
+    {
+        // Set up splitz experiment as enabled
+        $splitzResp = [
+            "response" => [
+                "variant" => [ "name" => "enabled" ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue('fee_recovery_dual_write_flow'))
+            ->andReturn($splitzResp);
+
+        $payoutData = [
+            'id' => "randomid111112",
+            'merchant_id' => "10000000000000",
+            'fund_account_id' => "100000000000fa",
+            'method' => "fund_transfer",
+            'reference_id' => null,
+            'balance_id' => $id ,
+            'user_id' => "random_user123",
+            'batch_id' => null,
+            'idempotency_key' => "random_key",
+            'purpose' => "",
+            'narration' => "Batman",
+            'purpose_type' => "payout",
+            'amount' => 2000000,
+            'currency' => "INR",
+            'notes' => "{}",
+            'fees' => 10,
+            'tax' => 33,
+            'status' => "failed",
+            'fts_transfer_id' => 60,
+            'transaction_id' => "KHTaWqqBKwrVTM",
+            'channel' => "yesbank",
+            'utr' => "933815383814",
+            'failure_reason' => null,
+            'remarks' => "none",
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'scheduled_at' => null,
+            'queued_at' => null,
+            'mode' => "IMPS",
+            'fee_type' => "free_payout",
+            'workflow_feature' => null,
+            'origin' => 1,
+            'status_code' => null,
+            'cancellation_user_id' => null,
+            'registered_name' => "Bruce Wayne",
+            'queued_reason' => "beneficiary_bank_down",
+            'on_hold_at' => 1663092113,
+            'created_at' => 1000000000,
+            'updated_at' => 1000000005,
+        ];
+
+        $payoutLogData1 = [
+            'id' => 'Pj1jHVGlKZBcbc',
+            'created_at' => 1000000001,
+            'updated_at' => 1000000001,
+            'payout_id' => 'randomid111112',
+            'event' => 'created',
+            'from' => 'create_request_submitted',
+            'to' => 'created',
+            'mode'=>'SYSTEM',
+            'triggered_by'=>'SYSTEM'
+        ];
+
+
+        \DB::connection('test')->table('ps_payout_logs')->insert($payoutLogData1);
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $this->ba->payoutInternalAppAuth('live');
+        $this->startTest();
+
+        $fr = $this->getDbEntity('fee_recovery', [
+            'entity_id' => $payoutData['id']
+        ], 'live');
+
+        $this->assertEquals(null, $fr);
     }
 
     /*

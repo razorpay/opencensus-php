@@ -78,9 +78,11 @@ abstract class Base extends BaseProcessor
             BaseReconciliate::RECONCILED_AT => $time,
         ];
 
-        $merchant = $entity->merchant;
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        // Transaction is not updated for CLS MIDs because transaction does not exist in api hot storage and
+        // the ART dual write updates will flow by the event streaming events to CLS Makeshift.
+        //change here hotfix : fetch txn from tiDB & check ref3 enabled
+        $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($entity->getId());
+        if ($txn !== null && $txn->getReference3() === "enabled")
         {
             (new SubReconciliate())->sendPaymentReconNFCDataToCLS($entity, $data);
 

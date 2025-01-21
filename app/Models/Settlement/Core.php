@@ -860,7 +860,7 @@ class Core extends Base\Core
         }
 
         // if a parent is present use Parent's schedules
-        if($setSchedulesFromParentConfig) {
+        if($setSchedulesFromParentConfig && $parentMerchantID!=='EtHJCtiuRSZRCz') {
             $parentReq = [
                 'merchant_id' => $parentMerchantID
             ];

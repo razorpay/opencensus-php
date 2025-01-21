@@ -1852,7 +1852,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BUSINESS_GSTIN_MISMATCH = 'The given GSTIN does not belong to the Business PAN provided. Please provide a different GSTIN';
     const BAD_REQUEST_SUSPICIOUS_TRANSACTION  = 'Transaction blocked. Please reach out to support.';
 
-    const DUPLICATE_PAYOUT_CREATION_ATTEMPT  = 'Similar request <payout_id> in progress. Retry after <custom_interval> or use a unique identifier.';
+    const DUPLICATE_PAYOUT_CREATION_ATTEMPT  = 'Similar request <payout_id> in progress. Retry after <custom_interval> seconds or use a unique identifier.';
 
     const SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE = 'Your Razorpay merchant account creation is in progress. Please retry the action after sometime.';
 

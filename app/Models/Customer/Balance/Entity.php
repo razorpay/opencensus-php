@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
@@ -29,12 +30,24 @@ class Entity extends Base\PublicEntity
     const MONTHLY_USAGE     = 'monthly_usage';
     const MAX_BALANCE       = 'max_balance';
     const LAST_LOADED_AT    = 'last_loaded_at';
+    const FEE_CREDITS       = 'fee_credits';
 
     protected $entity = 'customer_balance';
 
     protected $primaryKey = self::CUSTOMER_ID;
 
     const MAX_BALANCE_DEFAULT = 2000000;
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
+    ];
 
     protected $fillable = [
         self::BALANCE,
@@ -144,6 +157,11 @@ class Entity extends Base\PublicEntity
     public function getBalance()
     {
         return $this->getAttribute(self::BALANCE);
+    }
+
+    public function getFeeCredits()
+    {
+        return $this->getAttribute(self::FEE_CREDITS);
     }
 
     public function getMaxbalance()

@@ -745,6 +745,7 @@ class Gateway
         self::UPI_RZPAPB,
         self::AMEX,
         self::UPI_RZPAXIS,
+        self::LYRA,
     ];
 
     const FORCE_AUTHORIZE_FAILED_SYNC_GATEWAYS = [
@@ -3989,6 +3990,7 @@ class Gateway
         Gateway::CHECKOUT_DOT_COM,
         Gateway::PAYU,
         Gateway::UPI_AXIS,
+        Gateway::UPI_RZPAPB,
     ];
 
     public static $cardMandateGateways = [
@@ -4005,6 +4007,7 @@ class Gateway
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
         Gateway::UPI_AXIS,
+        Gateway::UPI_RZPAPB,
     ];
 
     public static $recurringCardNetworks = [

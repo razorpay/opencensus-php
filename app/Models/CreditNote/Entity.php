@@ -4,6 +4,7 @@ namespace RZP\Models\CreditNote;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Plan\Subscription;
@@ -35,6 +36,17 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected static $sign = 'crnt';
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
+    ];
 
     protected $visible = [
         self::ID,

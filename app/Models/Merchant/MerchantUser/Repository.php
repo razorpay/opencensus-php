@@ -467,6 +467,42 @@ class Repository extends Base\Repository
                      ->toArray();
     }
 
+    public function fetchUserIdAndOrgIdFromMerchantId($merchantId, string $mode = null)
+    {
+        /*
+         * SQL Equivalent:
+            SELECT
+                merchant_users.user_id, merchants.org_id
+            FROM
+                merchant_users
+            INNER JOIN
+                merchants
+            ON
+                merchant_users.merchant_id = merchants.id
+            WHERE
+                merchants.id = '$merchantId';
+         */
+
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+
+        $merchantIdColumn           = $this->repo->merchant->dbColumn(MerchantEntity::ID);
+        $merchantOrgIdColumn         = $this->repo->merchant->dbColumn(MerchantEntity::ORG_ID);
+
+        $muUserIdColumn             = $this->repo->merchant_user->dbColumn(Entity::USER_ID);
+        $muMerchantIdColumn         = $this->repo->merchant_user->dbColumn(Entity::MERCHANT_ID);
+
+        $userAttrs = [
+            $muUserIdColumn,
+            $merchantOrgIdColumn
+        ];
+
+        return  $query
+            ->select($userAttrs)
+            ->join(Table::MERCHANT, $muMerchantIdColumn, '=', $merchantIdColumn)
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->first();
+    }
+
     public function checkUserForMerchantIds(array $merchantIds, string $userId): Base\PublicCollection
     {
         $userIdCol = $this->dbColumn(Entity::USER_ID);
@@ -541,7 +577,7 @@ class Repository extends Base\Repository
             ->where(Entity::PRODUCT, '=', $product)
             ->first();
     }
-    
+
     public function deleteByMerchantIdAndRole(string $merchantId, string $role): int
     {
         return $this->newQuery()

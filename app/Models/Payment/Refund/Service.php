@@ -2513,17 +2513,6 @@ class Service extends Base\Service
         return $refund;
     }
 
-    public function getRefundReversalTxnFetchSplitzResponse($merchantId)
-    {
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.refund_reversal_txn_experiment'),
-        ];
-        $response = $this->app['splitzService']->evaluateRequest($properties);
-
-        return $response['response']['variant']['name'] ?? '';
-    }
-
     public function createRefundReversal(string $refundId, array $input)
     {
         try
@@ -2537,17 +2526,9 @@ class Service extends Base\Service
 
                     $processor = $this->getNewProcessor($refund->merchant);
 
-                    if ($this->getRefundReversalTxnFetchSplitzResponse($refund->merchant->getId()) === 'enable')
-                    {
-                        $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($refundId);
-                        $refund->setFee($txn->getFee());
-                        $refund->setTax($txn->getTax());
-                    }
-                    else
-                    {
-                        $refund->setFee($refund->transaction->getFee());
-                        $refund->setTax($refund->transaction->getTax());
-                    }
+                    $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($refundId);
+                    $refund->setFee($txn->getFee());
+                    $refund->setTax($txn->getTax());
 
                     switch ($input['event'])
                     {

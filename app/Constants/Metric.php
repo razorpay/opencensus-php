@@ -313,6 +313,8 @@ class Metric
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_NOT_FOUND = 'settlement_ondemand_feature_config_max_limit_not_found';
 
     const BANK_TRANSFER_CREATE_PROCESS_JOB_INIT_COUNT            = 'bank_transfer_create_process_job_init_count';
+    const HARVESTER_QUERY_HAS_MERCHANT_TRANSACTED_PROCESSING_TIME = 'harvester_query_has_merchant_transacted_processing_time';
+    const TIDB_QUERY_HAS_MERCHANT_TRANSACTED_PROCESSING_TIME      = 'tidb_query_has_merchant_transacted_processing_time';
 
     const OPGSP_UFH_FILE_PUSH                                   = 'opgsp_ufh_file_push';
     const OPGSP_BEAM_PUSH                                       = 'opgsp_beam_push';
@@ -320,6 +322,9 @@ class Metric
     const OPGSP_IMPORT_NO_SETTLEMENTS_FOUND                     = 'opgsp_import_no_settlements_found';
     const API_DECOMP_ENTITY_FETCH                               = 'api_decomp_entity_fetch';
     const API_DECOMP_PARAMETERS                                 = 'api_decomp_parameters';
+
+    const IRCTC_PAYOUTS_CLS_NON_RECOVERABLE_ERROR               = 'IRCTC_PAYOUTS_CLS_NON_RECOVERABLE_ERROR';
+
     const API_DECOMP_AUTH_DISTRIBUTION                          = 'api_decomp_auth_distribution';
     const INTERNAL_ORDER_PAYMENTS_FETCH_ERROR                   = 'internal_order_payments_fetch_error';
 
@@ -330,5 +335,7 @@ class Metric
 
     const CREDCASE_REQUEST_FAILED = 'credcase_request_failed';
     const CREDCASE_REQUEST_LATENCY_MS = 'credcase_request_latency_milliseconds.histogram';
+
+    const CMS_REQUEST_DURATION_MS = 'cms_request_duration_ms.histogram';
 
 }

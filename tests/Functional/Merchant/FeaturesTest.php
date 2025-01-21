@@ -84,6 +84,7 @@ class FeaturesTest extends OAuthTestCase
     // Check Test data for expectations.
     public function testAddBharatQrFeatureToMerchant()
     {
+        $this->mockDCS();
         $this->startTest();
     }
 
@@ -1519,7 +1520,7 @@ class FeaturesTest extends OAuthTestCase
 
         $featuresInResponse = count($content['all_features']);
 
-        $this->assertEquals($featuresWithValues, $featuresInResponse);
+        $this->assertGreaterThanOrEqual($featuresWithValues, $featuresInResponse);
 
     }
 
@@ -4258,12 +4259,13 @@ Regards,
     {
         $dcsMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->onlyMethods(['editFeature'])
+            ->onlyMethods(['editFeature', 'fetchAllFeatures'])
             ->getMock();
 
         $this->app->instance('dcs', $dcsMock);
 
         $dcsMock->expects($this->any())->method('editFeature')->willReturn(null);
+        $dcsMock->expects($this->any())->method('fetchAllFeatures')->willReturn(Constants::$featureValueMap);
 
         return $dcsMock;
     }

@@ -137,6 +137,8 @@ class Ledger
 
     const REQUEST_TIMEOUT = 60; // In seconds
 
+    const FETCH_BY_ENTITIES_AND_MERCHANT_ID_REQUEST_TIMEOUT = 5; // In seconds
+
     const RESPONSE_CODE          = 'code';
     const RESPONSE_BODY          = 'body';
 
@@ -864,7 +866,7 @@ class Ledger
     public function fetchAccountsByEntitiesAndMerchantID($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['fetchByEntitiesAndMerchantID'],
-            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure, self::FETCH_BY_ENTITIES_AND_MERCHANT_ID_REQUEST_TIMEOUT);
     }
 
     /**
@@ -911,9 +913,10 @@ class Ledger
         string $method,
         array $body = [],
         array $headers = [],
-        bool $throwExceptionOnFailure = false): array
+        bool $throwExceptionOnFailure = false,
+        int $timeout = self::REQUEST_TIMEOUT): array
     {
-        $request = $this->generateRequest($endpoint, $method, $body, $headers);
+        $request = $this->generateRequest($endpoint, $method, $body, $headers, $timeout);
 
         $response = $this->sendLedgerRequest($request);
 
@@ -1115,7 +1118,7 @@ class Ledger
      *
      * @return array
      */
-    protected function generateRequest(string $endpoint, string $method, array $body, array $headers): array
+    protected function generateRequest(string $endpoint, string $method, array $body, array $headers, int $timeout): array
     {
         $url = '';
 
@@ -1152,7 +1155,7 @@ class Ledger
         }
 
         $options = [
-            'timeout' => self::REQUEST_TIMEOUT,
+            'timeout' => $timeout,
             'auth'    => [
                 $this->key,
                 $this->secret

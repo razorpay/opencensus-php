@@ -149,6 +149,8 @@ class Constants
     const RISK_DETAILS                      = 'risk_details';
     const ADDITIONAL_ONBOARDING_DETAILS     = 'additional_onboarding_details';
     const PG_ONBOARDING                     = 'pg_onboarding';
+    const MANUAL_REKYC                      = "manual_rekyc";
+    const REKYC_STATUS                      = "rekyc_status";
 
     // For Route no doc KYC feature.
     const UNREGISTERED_AND_PROPRIETORSHIP   = 'unregistered_and_proprietorship';
@@ -183,6 +185,7 @@ class Constants
     const EVENT_TYPE                                    = 'event_type';
     const CMMA_EVENT_NEEDS_CLARIFICATION                = 'case_needs_clarification';
     const CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY = 'CMMA_CASE_EVENTS_TOPIC_NAME';
+    const ALLOWED_NEXT_REKYC_STATUSES                   = 'allowed_next_rekyc_statuses';
 
     const ACTIVATION_FORM_SUBMISSION_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY = 'ACTIVATION_FORM_SUBMISSION_EVENTS_TOPIC_NAME';
 
@@ -620,6 +623,11 @@ class Constants
     const BUSINESS_APP_USERNAME = 'business_app_username';
     const BUSINESS_APP_PASSWORD = 'business_app_password';
 
+    const MERCHANT_REKYC_UPDATE = 'merchant_rekyc_update';
+    const MERCHANT_DETAILS_PATCH = 'merchant_details_patch';
+
+    const REKYC_UPDATE_TAG = 'rekyc_update';
+
     //Encryper business website comment on workflow request start with following
     const ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER = 'business_website_credentials_.';
 
@@ -817,6 +825,12 @@ class Constants
     const POS_ACTIVATION_STATUS    = 'pos_activation_status';
     const IS_POS_DETAILS_SUBMITTED = 'is_pos_details_submitted';
     const ONBOARDING_TYPE          = 'onboarding_type';
+    const UBO_DECLARATION          = 'ubo_declaration';
+    const DECLARE_UBO              = 'declare_ubo';
+    const UBO_SHAREHOLDER_NAME      = 'ubo_shareholder_name';
+    const UBO_SHAREHOLDER_ADDRESS   = 'ubo_shareholder_address';
+    const UBO_SHAREHOLDER_COUNTRY   = 'ubo_shareholder_country';
+    const UBO_SHAREHOLDER_OWNERSHIP = 'ubo_shareholder_ownership';
 
     const SHOP_FRONT_IMAGE    = 'shop_front';
     const SHOP_INTERIOR_IMAGE = 'shop_interior';

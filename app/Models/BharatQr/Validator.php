@@ -60,7 +60,7 @@ class Validator extends Base\Validator
         GatewayResponseParams::AMOUNT                => 'required|integer|min:0',
         GatewayResponseParams::NOTES                 => 'sometimes|string',
         GatewayResponseParams::TRANSACTION_TIME      => 'sometimes|epoch',
-        GatewayResponseParams::PAYEE_VPA             => 'sometimes|string',
+        GatewayResponseParams::PAYEE_VPA             => 'sometimes|nullable|string',
         GatewayResponseParams::PAYER_ACCOUNT_TYPE    => 'sometimes|string',
         GatewayResponseParams::GATEWAY_MERCHANT_ID   => 'sometimes|string',
         GatewayResponseParams::PAYER_NAME            => 'sometimes|string'

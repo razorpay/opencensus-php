@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Base;
 
 use Razorpay\Trace\Logger;
+use RZP\Gateway\Mozart\Gateway as MozartGateway;
 
 class Anomalies
 {
@@ -21,7 +22,7 @@ class Anomalies
 
     protected $level = Logger::WARNING;
 
-    public function __construct(Gateway $context)
+    public function __construct(MozartGateway|Gateway $context)
     {
         $this->context = $context;
     }

@@ -106,6 +106,7 @@ class VerificationDetailsTransformer extends Base\Transformer
         "failed"            => "failed",
         "captured"          => "captured",
         "initiated"         => "captured",
+        "staled"            => "captured"
     ];
 
     public function __construct()

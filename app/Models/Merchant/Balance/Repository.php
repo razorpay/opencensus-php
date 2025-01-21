@@ -380,7 +380,7 @@ class Repository extends Base\Repository
 
     public function getMerchantBalanceByTypeTiDB(string $merchantId, string $balanceType)
     {
-        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
 
         $entity= $query->merchantIdAndType($merchantId, $balanceType)
                          ->first();

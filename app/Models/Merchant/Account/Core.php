@@ -61,6 +61,10 @@ class Core extends Merchant\Core
 
         (new Validator)->validateInput('create', $input);
 
+        if (isset($input['account_details']['business_type']) && $input['account_details']['business_type'] === Detail\BusinessType::INDIVIDUAL) {
+            $input['account_details']['business_type'] = Detail\BusinessType::NOT_YET_REGISTERED;
+        }
+
         $this->blockLinkedAccountCreationIfApplicable($parentMerchant);
 
         $merchantDetailsInput    = $this->getMerchantDetailsFromInput($input);
@@ -471,20 +475,6 @@ class Core extends Merchant\Core
                 ]);
 
                 array_push($successfulLA, $amcBankAccount->getBusinessName());
-
-                list($testEntity, $liveEntity, $asvEntity) = $this->repo->merchant->FetchRecordFromAllDBs($linkedAccount->getId());
-                $this->trace->info(TraceCode::AMC_LINKED_ACCOUNT_CREATION_DEBUG_LOGS,[
-                    "id"     => $linkedAccount->getId(),
-                    "testEntity empty" => empty($testEntity),
-                    "liveEntity empty" => empty($liveEntity),
-                    "asvEntity empty" => empty($asvEntity),
-                    "testEntity name" => empty($testEntity) === false ? $testEntity->getName() : null,
-                    "liveEntity name" => empty($liveEntity) === false ? $liveEntity->getName() : null,
-                    "asvEntity name" => empty($asvEntity) === false ? $asvEntity->getName() : null,
-                    "live db txn level" => $this->repo->transactionLevelOnConnection(Mode::LIVE),
-                    "asv db txn level" => $this->repo->transactionLevelOnConnection(Connection::ASV_WRITER),
-                    "test db txn level" => $this->repo->transactionLevelOnConnection(Mode::TEST)
-                ]);
             }
             catch( \Exception $e)
             {

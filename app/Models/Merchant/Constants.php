@@ -2053,4 +2053,20 @@ Razorpay';
 
     const SET_METHOD_MUTEX_SUFFIX="SET_METHODS";
 
+    const BALANCE_FETCH_V2_RESPONSE_FIELDS = [
+        Balance\Entity::ID,
+        Balance\Entity::ENTITY,
+        Balance\Entity::BALANCE,
+        Balance\Entity::AVAILABLE_BALANCE,
+        Balance\Entity::CURRENCY,
+        Balance\Entity::ACCOUNT_NUMBER,
+        Balance\Entity::ACCOUNT_TYPE,
+        Balance\Entity::CHANNEL,
+        Balance\Entity::LAST_FETCHED_AT,
+    ];
+
+    const BALANCE_FETCH_V2_RESPONSE_KEY_MAPPING = [
+        Balance\Entity::LAST_FETCHED_AT => 'last_refreshed',
+        Balance\Entity::CHANNEL         => 'bank'
+    ];
 }

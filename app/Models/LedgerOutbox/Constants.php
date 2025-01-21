@@ -96,4 +96,7 @@ class Constants
         self::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED,
         self::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED
     ];
+
+    const PAYOUT = "PAYOUT";
+    const RDS = "rds";
 }

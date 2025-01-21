@@ -24,7 +24,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use RZP\Models\Merchant\Acs\Traits\AsvUpdateTimeStamp;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
+use RZP\Trace\TraceCode;
 
 /**
  * Class Entity

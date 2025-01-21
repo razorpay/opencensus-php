@@ -130,7 +130,8 @@ class Processor
                 TraceCode::PS_CA_FEE_RECOVERY_FLOW_INIT,
                 [
                     "payout_previous_status" => $previousStatus,
-                    "payout_current_status" => $apiPayout->getStatus()
+                    "payout_current_status" => $apiPayout->getStatus(),
+                    "payout_id" => $payoutId,
                 ]
             );
 

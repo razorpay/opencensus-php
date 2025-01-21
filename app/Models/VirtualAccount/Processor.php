@@ -931,6 +931,56 @@ abstract class Processor extends Base\Core
         }
     }
 
+    public function verifyPayerUsingTPVForCollectX(VirtualAccount\Entity $virtualAccount, array $input) : bool
+    {
+        $allowedPayers = $virtualAccount->virtualAccountTpv()->get();
+
+        if ($allowedPayers->count() === 0)
+        {
+            return true;
+        }
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_PAYMENT_PAYER_VALIDATION_INITIATED,
+            [
+                'id' => $virtualAccount->getPublicId(),
+            ]
+        );
+
+        $payerDetails = [
+            BankAccount\Entity::IFSC            => substr($input['payer_ifsc'], 0, 4),
+            BankAccount\Entity::ACCOUNT_NUMBER  => $input['payer_account']
+        ];
+
+        foreach ($allowedPayers as $allowedPayer)
+        {
+            $allowedPayerDetails = $allowedPayer->entity->getVirtualAccountTpvData(true);
+
+            $allowedPayerDetails['account_number'] = ltrim($allowedPayerDetails['account_number'],'0');
+            $payerDetails['account_number']        = ltrim($payerDetails['account_number'],'0');
+
+            $payerIfsc = $payerDetails[BankAccount\Entity::IFSC];
+
+            if ($payerIfsc === null or $payerIfsc === '') {
+                $allowedPayerDetails[BankAccount\Entity::IFSC] = $payerIfsc;
+            }
+
+            if (empty(array_diff($payerDetails, $allowedPayerDetails)) === true)
+            {
+                return true;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_PAYMENT_PAYER_VALIDATION_FAILED,
+            [
+                'id' => $virtualAccount->getPublicId(),
+            ]
+        );
+
+        return false;
+    }
+
     protected function setUnexpectedReason(Base\PublicEntity $entity, string $unexpectedReason)
     {
         if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) or

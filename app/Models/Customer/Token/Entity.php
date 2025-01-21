@@ -36,6 +36,7 @@ use RZP\Models\SubscriptionRegistration\Entity as SubscriptionRegistrationEntity
 use RZP\Models\Customer;
 use RZP\Constants\Mode;
 use RZP\Models\Base\Traits\ExternalOwner;
+use RZP\Constants\Entity as ConstantsEntity;
 
 /**
  * @property Vpa\Entity  $vpa
@@ -64,6 +65,7 @@ class Entity extends Base\PublicEntity
     const METHOD                    = 'method';
     const CARD_ID                   = 'card_id';
     const CARD_MANDATE_ID           = 'card_mandate_id';
+    const MANDATE_ID                = 'mandate_id';
     const VPA_ID                    = 'vpa_id';
     const CARD                      = 'card';
     const NETWORK                   = 'network';
@@ -254,6 +256,17 @@ class Entity extends Base\PublicEntity
     protected $entity           = 'token';
 
     protected $generateIdOnCreate = true;
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
+    ];
 
     protected $fillable = [
         self::ID,
@@ -1789,5 +1802,38 @@ class Entity extends Base\PublicEntity
     public function isUpi()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
+    }
+
+    public function updateOptimizerNotes($mandateID)
+    {
+        $notes = [
+            self::SOURCE => "optimizer",
+            "mandate_id" => $mandateID,
+        ];
+
+        $this->setNotes($notes);
+    }
+
+    public function setOptimizerMandateDetails($input)
+    {
+        if(empty($input["notes"]) === false)
+        {
+            $this->setNotes($input["notes"]);
+        }
+
+        if(empty($input["recurring"]) === false && $input["recurring"] === true)
+        {
+            $this->setRecurring($input["recurring"]);
+        }
+
+        $this->setRecurringStatus(RecurringStatus::CONFIRMED);
+
+        $this->setAttribute(self::TERMINAL_ID, $input["terminal_id"]);
+
+        $this->setMaxAmountAttribute($input["max_amount"]);
+
+        $this->setAttribute(self::METHOD, $input["method"]);
+
+        $this->setAttribute(self::FREQUENCY, $input["frequency"]);
     }
 }

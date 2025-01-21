@@ -1574,6 +1574,20 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postMerchantReKycUpdate()
+    {
+        // This controller would be called in case of approval on maker checker workflow for update in rekyc status
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::POST_MERCHANT_REKYC_UPDATE, [
+            '$input' => $input,
+        ]);
+
+        $response = $this->service(E::MERCHANT_DETAIL)->postMerchantReKycUpdate($input);
+    
+        return ApiResponse::json($response);
+    }
+    
     public function postApplyCoupon()
     {
         $input = Request::all();
@@ -4619,6 +4633,13 @@ class MerchantController extends Controller
     public function createMerchantBalanceRelatedEntities($merchantId)
     {
         $response = $this->service(E::MERCHANT)->createMerchantBalanceEntities($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchUserIdAndOrgIdFromMerchantId($merchantId)
+    {
+        $response = $this->service(E::MERCHANT)->fetchUserIdAndOrgIdFromMerchantId($merchantId);
 
         return ApiResponse::json($response);
     }

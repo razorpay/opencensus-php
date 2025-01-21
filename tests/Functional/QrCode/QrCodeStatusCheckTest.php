@@ -81,6 +81,8 @@ class QrCodeStatusCheckTest extends TestCase
         $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
 
         $this->vpaTerminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+
+        $this->config['gateway.mock_upi_mozart'] = true;
     }
 
     /**
@@ -2853,5 +2855,4 @@ class QrCodeStatusCheckTest extends TestCase
         $this->assertNull($qrPaymentRequest);
         $this->assertNull($upi);
     }
-
 }

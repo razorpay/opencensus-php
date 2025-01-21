@@ -201,8 +201,9 @@ class PgosCdcEventsJob extends Job
             return $shorterDelays[$attempt - 1];
         }
 
-        // Cap the sleep duration at 300 seconds for larger attempts
-        return min(($attempt - count($shorterDelays)) * 60, 300);
+
+        // Cap the sleep duration at 30 seconds for larger attempts
+        return min(($attempt - count($shorterDelays)) * 60, 30);
     }
 
 }

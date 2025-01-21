@@ -565,6 +565,7 @@ class Service extends Base\Service
                     DEConstants::MERCHANT_ID => $merchantId,
                     User\Entity::EMAIL       => $email,
                     DEConstants::USER_ID     => $user->getId(),
+                    User\Entity::PRODUCT     => $input[User\Entity::PRODUCT] ?? '',
                 ];
 
                 $response = $this->pgosProxyController->handlePGOSProxyRequests('send_otp', $body, $merchant);
@@ -658,6 +659,25 @@ class Service extends Base\Service
 
         return $isExpEnabled;
     }
+
+    /**
+     * Updates the merchant's re-KYC status upon maker-checker workflow approval.
+     *
+     * @param array $input The input data containing the re-KYC status.
+     * @return void
+     * @throws BadRequestValidationFailureException
+     * @throws Exception\ServerErrorException
+     * @throws BadRequestException
+     */
+    public function postMerchantReKycUpdate(array $input)
+    {
+        $service = new Merchant\Service();
+        $merchantId = $this->merchant->getMerchantId();
+
+        $details = $service->getAdditionalDetailsFromASV($merchantId);
+        $service->transitionToNextRekycStatus($merchantId, $details, $input['rekyc_status']);
+    }
+
 
     /**
      * @throws BadRequestValidationFailureException

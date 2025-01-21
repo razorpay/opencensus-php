@@ -332,6 +332,8 @@ class PreProcess extends Base\Mock\Server
             UpiEntity::STATUS_CODE          => $data['TxnStatus'],
             UpiEntity::NPCI_REFERENCE_ID    => $data['BankRRN'],
             UpiEntity::MERCHANT_REFERENCE   => $data['merchantTranId'],
+            UPIEntity::GATEWAY_TIMESTAMP    => $data['TxnCompletionDate'] ?? null
+
         ]);
 
         $response->setPayment([
@@ -340,8 +342,9 @@ class PreProcess extends Base\Mock\Server
         ]);
 
         $response->setTerminal([
-            Terminal\Entity::GATEWAY_MERCHANT_ID   => $data['merchantId'],
+            Terminal\Entity::GATEWAY_MERCHANT_ID   => $data['merchantId'] ?? $data['PayerVA'],
             Terminal\Entity::GATEWAY               => 'upi_icici',
+            UpiEntity::VPA                         => $data['PayerVA'],
         ]);
 
         if ($data['TxnStatus'] === 'FAILURE')

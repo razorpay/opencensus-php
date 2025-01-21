@@ -4,6 +4,7 @@ namespace RZP\Models\RiskWorkflowAction;
 
 use RZP\Models\Merchant\Action;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Models\Admin\Permission\Name as AdminPermission;
 
 class Constants
 {
@@ -19,6 +20,14 @@ class Constants
     const RISK_WORKFLOW_TAGS     = 'workflow_tags';
     const TRIGGER_COMMUNICATION  = 'trigger_communication';
     const CLEAR_RISK_TAGS        = 'clear_risk_tags';
+    const FOH_HOLD               = 'HOLD';
+    const FOH_RELEASE            = 'RELEASE';
+    const FOH_SETTELMENT_PERMISSIONS = [
+        AdminPermission::EXECUTE_MERCHANT_HOLD_FUNDS_BULK,
+        AdminPermission::EDIT_MERCHANT_HOLD_FUNDS,
+        AdminPermission::EDIT_MERCHANT_RELEASE_FUNDS,
+        AdminPermission::MERCHANT_RISK_ALERT_FOH
+    ];
 
     // Risk source
     const RISK_SOURCE_MYSTERY_SHOPPING      = 'mystery_shopping';

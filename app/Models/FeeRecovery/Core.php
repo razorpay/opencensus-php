@@ -158,16 +158,27 @@ class Core extends Base\Core
 
         $payoutStatus = $payout->getStatus();
 
-        // We shall make a new entry in the fee_recovery table of type credit when
+        // We shall make a new entry in the fee_recovery table of type credit when payout status is either failed
+        // or reversed, and initiated_at is not null
         if ($payoutStatus === Payout\Status::FAILED)
         {
-            $feeRecovery = $this->createFeeRecoveryEntityForSource($payout);
+            if($payout->getInitiatedAt() !== null){
+                $feeRecovery = $this->createFeeRecoveryEntityForSource($payout);
 
-            $featureEnabled = (new \RZP\Models\Merchant\Credits\Service())->isRzpxFeeCreditEnabledForMerchant($payout->merchant);
+                $featureEnabled = (new \RZP\Models\Merchant\Credits\Service())->isRzpxFeeCreditEnabledForMerchant($payout->merchant);
 
-            if($featureEnabled === true and $payout->getFeeType() === null)
-            {
-                $this->recoverFeeRecoveryEntryViaFeeCredit($payout, $feeRecovery);
+                if($featureEnabled === true and $payout->getFeeType() === null)
+                {
+                    $this->recoverFeeRecoveryEntryViaFeeCredit($payout, $feeRecovery);
+                }
+            }
+            else{
+                $this->trace->info(
+                    TraceCode::FEE_RECOVERY_NON_INITIATED_FAILED_PAYOUT,
+                    [
+                        'payout_id'        => $payout->getId(),
+
+                    ]);
             }
         }
         else if ($payoutStatus === Payout\Status::REVERSED)
@@ -866,6 +877,7 @@ class Core extends Base\Core
         switch($balance->getChannel())
         {
             case Channel::AXIS:
+            case Channel::IDFC:
                 $payoutMode = Payout\Mode::NEFT;
                 break;
 

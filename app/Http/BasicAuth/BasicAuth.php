@@ -2023,7 +2023,7 @@ class BasicAuth
 
     public function isAdminExperienceServiceApp()
     {
-        return $this->internalApp === 'admin-experience-service';
+        return (($this->getInternalApp() === 'admin-experience-service') || ($this->getInternalApp() === 'aes_service'));
     }
 
     public function isMobApp()
@@ -2195,13 +2195,19 @@ class BasicAuth
 
     public function isAesApp(): bool
     {
-        return ($this->getInternalApp() === 'admin-experience-service');
+        return (($this->getInternalApp() === 'admin-experience-service') || ($this->getInternalApp() === 'aes_service'));
     }
 
     public function isCrossBorderApp(): bool
     {
         return ($this->getInternalApp() === 'payments_cross_border_service');
     }
+
+    public function isCrossBorderImportApp(): bool
+    {
+        return ($this->getInternalApp() === 'cross_border_import_service');
+    }
+
 
     public function isWorkflowsServiceApp(): bool
     {

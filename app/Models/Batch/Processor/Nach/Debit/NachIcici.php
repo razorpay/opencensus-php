@@ -16,7 +16,7 @@ use RZP\Gateway\Enach\Npci\Combined\Icici\Debit\DebitFileHeadings as Headings;
 class NachIcici extends Base
 {
     protected $gateway  = Gateway::NACH_ICICI;
-    
+
     protected $acquirer = Gateway::ACQUIRER_ICIC;
 
     protected function getDataFromRow(array & $row): array
@@ -150,18 +150,18 @@ class NachIcici extends Base
 
         return $payment;
     }
-    
+
     protected function updateGatewayPaymentEntity($content, $payment)
     {
         if ($payment->getGateway() !== Gateway::ENACH_NPCI_NETBANKING)
         {
             return;
         }
-        
+
         try
         {
             $gatewayPayment = $this->getGatewayPayment($payment->getId());
-            
+
             $this->saveGatewayEntity($content, $gatewayPayment);
         }
         catch (\Throwable $exception)
@@ -171,24 +171,24 @@ class NachIcici extends Base
                     "merchant_id" => $payment->getMerchantId(),
                     "payment_id"  => $payment->getId()
                 ]);
-            
+
             $gatewayPayment = $this->fetchGatewayPayment($payment->getId());
-            
+
             if($gatewayPayment === null)
             {
                 $gatewayPayment = $this->createGatewayEntity($payment);
-                
+
                 $this->saveGatewayEntity($content, $gatewayPayment);
             }
         }
     }
-    
+
     protected function saveGatewayEntity($content, $gatewayPayment)
     {
         $attrs = $this->getGatewayAttributes($content);
-        
+
         $gatewayPayment->fill($attrs);
-        
+
         $this->repo->saveOrFail($gatewayPayment);
     }
 
@@ -224,14 +224,34 @@ class NachIcici extends Base
     {
         return Status::bankMappedStatus($status);
     }
-    
+
     // emandate rearch changes: for citi changes
     public function fetchGatewayDetails(& $content)
     {
         $content['type'] = 'nach';
-        
+
         $content['sub_type'] = 'debit';
-        
+
         $content['gateway'] = 'nach_icici';
+    }
+
+    public function shouldSendToBatchService(): bool
+    {
+        $experimentId = $this->app['config']->get('app.migrate_nach_icic_batch_service_experiment');
+
+        $properties = [
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        return (strtolower($variant) === 'enable');
     }
 }

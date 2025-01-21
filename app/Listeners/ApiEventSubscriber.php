@@ -5,6 +5,7 @@ namespace RZP\Listeners;
 use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Event;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout;
@@ -798,7 +799,51 @@ class ApiEventSubscriber extends Base\Core
 
     protected function isForNocodeApps(Payment\Entity $payment): bool
     {
-        return $payment->hasOrder() === true and ($payment->order->getProductType() === ProductType::PAYMENT_STORE);
+        if (!$payment->hasOrder()) {
+            return false;
+        }
+
+        $productType = $payment->order->getProductType();
+
+        if ($productType === ProductType::PAYMENT_STORE) {
+            return true;
+        }
+
+        if ($productType === ProductType::PAYMENT_PAGE) {
+            return $this->shouldSendPPCallbackToNoCodeAppsService($payment->getMerchantId());
+        }
+
+        return false;
+    }
+
+
+    private function shouldSendPPCallbackToNoCodeAppsService(string $merchantId): bool
+    {
+        try {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app->config->get('app.nocodeapps_payment_callback_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId, 'mode' => $this->mode]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::NOCODEAPPS_PAYMENT_CALLBACK_SPLITZ_VARIANT, [
+                'merchant_id' => $merchantId,
+                'variant' => $variant,
+            ]);
+
+            return $variant === 'variant_on';
+        } catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::NOCODEAPPS_PAYMENT_CALLBACK_SPLITZ_ERROR
+            );
+        }
+
+        return false;
     }
 
 

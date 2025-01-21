@@ -48,7 +48,9 @@ use RZP\Gateway\Base\Metric as BaseMetric;
 use RZP\Models\Customer\Token\Entity as TokenEntity;
 use RZP\Models\CardMandate\CardMandateNotification;
 use Illuminate\Support\Facades\Cache;
+use RZP\Models\Merchant\Methods;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Models\Order\Entity as OrderEntity;
 
 class Service extends Base\Service
 {
@@ -622,23 +624,66 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function checkIsCustomCheckoutEnabledForMerchant($merchantId, $mode): bool
+    {
+
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => 'PTqos03FUZtHsd'
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        return $variant === $mode;
+    }
+
+    public function isStandardCheckoutEnabledForPPMerchant($merchantId): bool
+    {
+        
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => 'PhebFAHyYd05lT'
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        return $variant === 'enable';
+    }
+
+
     public function getCustomerByMerchantType($customerIssuer) {
+
+        $customerContact = $customerIssuer->getContact();
 
         $merchantForCustomerCreation = $this->merchant;
 
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::ENABLE_STANDARD_CHECKOUT_MERCHANTS_ON_PUSH_TOKEN_PROVISIONING, $this->mode);
+        $standardCheckoutEnabledPP = $this->isStandardCheckoutEnabledForPPMerchant($merchantForCustomerCreation->getId());
 
-        if(strtolower($variant) === 'on')
+        if($standardCheckoutEnabledPP)
             $merchantForCustomerCreation = $this->repo->merchant->fetchMerchantFromId(Merchant\Account::SHARED_ACCOUNT);
 
+        if(strlen($customerContact) > 10 && $this->checkIsCustomCheckoutEnabledForMerchant(
+                $merchantForCustomerCreation->getId(),
+                'enable'
+        )){
+                $customerContact = substr($customerContact, -10);
+
+                $existingCustomer =  $this->repo->customer->findByContactAndMerchant($customerContact, $merchantForCustomerCreation);
+                if($existingCustomer !== null) {
+                    return $existingCustomer;
+                }
+        }
+
         $customer =  (new Customer\Core)->createLocalCustomer([
-            Customer\Entity::CONTACT       => $customerIssuer->getContact(),
+            Customer\Entity::CONTACT       => $customerContact,
             Customer\Entity::EMAIL         => $customerIssuer->getEmail(),
         ], $merchantForCustomerCreation, false);
 
         $this->trace->info(
             TraceCode::TOKEN_PUSH_CUSTOMER_INFO, [
-            'variant' => $variant,
+            'variant' => $standardCheckoutEnabledPP,
             'merchantForCustomerCreation' => $merchantForCustomerCreation['id'],
             'customer' => $customer['id']]);
         return $customer;
@@ -2617,9 +2662,9 @@ class Service extends Base\Service
 
         $merchantForCustomerCreation = $this->merchant;
 
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::ENABLE_STANDARD_CHECKOUT_MERCHANTS_ON_PUSH_TOKEN_PROVISIONING, $this->mode);
+        $standardCheckoutEnabledPP = $this->isStandardCheckoutEnabledForPPMerchant($merchantForCustomerCreation->getId());
 
-        if(strtolower($variant) === 'on')
+        if($standardCheckoutEnabledPP)
             $merchantForCustomerCreation = $this->repo->merchant->fetchMerchantFromId(Merchant\Account::SHARED_ACCOUNT);
 
         $customer =  (new Customer\Core)->createLocalCustomer([
@@ -2628,7 +2673,7 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::TOKEN_PUSH_CUSTOMER_INFO, [
-            'variant' => $variant,
+            'variant' => $standardCheckoutEnabledPP,
             'merchantForCustomerCreation' => $merchantForCustomerCreation['id'],
             'customer' => $customer['id']]);
         return $customer;
@@ -2690,5 +2735,115 @@ class Service extends Base\Service
             }
         }
         return false;
+    }
+
+    public function createTokenOptimizerInternal($input)
+    {
+
+        if (empty($input['payment_id']) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_TOKEN_ID
+            );
+        }
+
+        $paymentId = $input['payment_id'];
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        if ($payment->getMethod() == "card" && empty($input['token_id']) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_TOKEN_ID
+            );
+        }
+
+
+        $clonedToken = null;
+
+        $updateDetails = $input['fields'];
+
+        $tokenCore = (new Token\Core);
+
+        if ($payment->getMethod() === "card")
+        {
+            $tokenId = $input['token_id'];
+
+            $token = $this->repo->token->findOrFail($tokenId);
+
+            $clonedToken = $tokenCore->cloneToken($token, $payment);
+
+        }else if ($payment->getMethod() === "upi" || $payment->getMethod() === "emandate")
+        {
+            $customer = $this->repo->customer->findOrFail($input['customer_id']);
+
+            $createInput = [
+                "method" => $payment->getMethod(),
+                "terminal_id" => $updateDetails['terminal_id'],
+                "max_amount" => $updateDetails['max_amount'],
+                "frequency" => $updateDetails['frequency'],
+            ];
+
+            $clonedToken = $tokenCore->create($customer, $createInput, null, false);
+        }
+
+        $clonedToken->setOptimizerMandateDetails($updateDetails);
+
+        $this->repo->token->saveOrFail($clonedToken);
+
+        $payment->localToken()->associate($clonedToken);
+
+        return $clonedToken->toArrayPublic();
+    }
+
+    public function internalRecurringMethodDetailsFetch($input)
+    {
+        $order = (new OrderEntity())->forceFill($input);
+
+        $data = [
+            "order_id" => $order->getId(),
+        ];
+
+        $this->trace->info(TraceCode::RECURRING_METHOD_DETAILS_FETCH,
+            [
+                'order_id' => $order->getId(),
+                'method' => $order->getMethod(),
+            ]
+        );
+
+        if ($order->getMethod() === Methods\Entity::UPI and $order->upiMandate !== null)
+        {
+            $upiMandate = $order->upiMandate;
+
+            $data['token'] = [
+                'frequency'  => $upiMandate->getFrequency(),
+                'max_amount' => $upiMandate->getMaxAmount(),
+                'expire_at'  => $upiMandate->getEndTime(),
+                'recurring_type' => $upiMandate->getRecurringType(),
+                'recurring_value' => $upiMandate->getRecurringValue(),
+            ];
+        }
+        else if($order->getMethod() === Methods\Entity::CARD or $order->getMethod() === Methods\Entity::EMANDATE)
+        {
+
+            $tokenEntity = $order->getTokenRegistration();
+
+            if (isset($tokenEntity)) {
+
+                $tokenData = $tokenEntity->toArrayTokenFields(null);
+
+                $data['token'] = $tokenData;
+
+            }
+        }
+
+        $this->trace->info(TraceCode::RECURRING_METHOD_DETAILS_FETCH,
+            [
+                'order_id' => $order->getId(),
+                'data' => $data,
+            ]
+        );
+
+        return $data;
     }
 }
