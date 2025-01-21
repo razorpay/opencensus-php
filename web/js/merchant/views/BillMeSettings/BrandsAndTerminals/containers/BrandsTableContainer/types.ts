@@ -13,8 +13,8 @@ export type Brand = {
 };
 
 export type BrandsResponse = {
-  brands: {
-    brands: Brand[];
+  storeBrands: {
+    storeBrands: Brand[];
     limit: number;
     offset: number;
     total: number;
@@ -22,7 +22,7 @@ export type BrandsResponse = {
 };
 
 export type BrandByIdResponse = {
-  brandById: Brand;
+  storeBrandById: Brand;
 };
 
 export type BrandSearchColumnType = 'BRAND_NAME';

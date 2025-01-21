@@ -1,12 +1,12 @@
 import { gql } from 'graphql-tag';
 
 export const CREATE_BRAND_MUTATION = gql`
-  mutation BrandCreate($logo: String, $name: String!, $description: String) {
-    brandCreate(logo: $logo, name: $name, description: $description) {
+  mutation StoreBrandCreate($logo: String, $name: String!, $description: String) {
+    storeBrandCreate(logo: $logo, name: $name, description: $description) {
       code
       success
       message
-      brand {
+      storeBrand {
         id
         name
         logo
@@ -17,12 +17,12 @@ export const CREATE_BRAND_MUTATION = gql`
 `;
 
 export const UPDATE_BRAND_MUTATION = gql`
-  mutation BrandUpdate($id: ID!, $logo: String, $name: String, $description: String) {
-    brandUpdate(id: $id, logo: $logo, name: $name, description: $description) {
+  mutation StoreBrandUpdate($id: ID!, $logo: String, $name: String, $description: String) {
+    storeBrandUpdate(id: $id, logo: $logo, name: $name, description: $description) {
       code
       success
       message
-      brand {
+      storeBrand {
         id
         name
         logo
@@ -33,8 +33,8 @@ export const UPDATE_BRAND_MUTATION = gql`
 `;
 
 export const GET_PRE_SIGNED_URL_MUTATION = gql`
-  mutation BrandLogoPreSignedUrl($filename: String!) {
-    brandLogoPreSignedUrl(filename: $filename) {
+  mutation StoreBrandLogoPreSignedUrl($filename: String!) {
+    storeBrandLogoPreSignedUrl(filename: $filename) {
       code
       success
       message

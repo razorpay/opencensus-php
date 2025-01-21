@@ -21,16 +21,7 @@ import StoreGroupsContainer from 'merchant/views/StoreSettings/StoresList/contai
 import { useStoreGroupsStore } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/stores/storeGroupsStore';
 import StoresTableContainer from 'merchant/views/StoreSettings/StoresList/containers/StoresTableContainer';
 import { useStoresTablePayloadStore } from 'merchant/views/StoreSettings/StoresList/containers/StoresTableContainer/stores/storesTablePayloadStore';
-
-const PAGE_BREADCRUMBS: BreadCrumbType[] = [
-  {
-    label: 'Account & Settings',
-    href: '/account-settings',
-  },
-  {
-    label: 'Store settings',
-  },
-];
+import { PAGE_BREADCRUMBS } from './constants';
 
 const StoresList = (): React.ReactElement => {
   const queryClient = useQueryClient();

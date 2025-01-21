@@ -78,7 +78,7 @@ describe('BrandModalComponent', () => {
     (useQuery as jest.Mock).mockReturnValue({
       ...BRAND_INFO_MOCK_QUERY_RESPONSE,
       data: {
-        brandById: {
+        storeBrandById: {
           id: '1234',
           name: 'Test Brand Name',
           description: 'Test Brand Description',

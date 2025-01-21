@@ -41,14 +41,14 @@ describe('BrandsTableContainer', () => {
       .mockReturnValueOnce({
         refetch,
         data: {
-          brands: BRANDS_RESPONSE,
+          storeBrands: BRANDS_RESPONSE,
         },
         isFetching: false,
       })
       .mockReturnValue({
         refetch: jest.fn().mockReturnValue({
           data: {
-            brandById: BRAND_BY_ID_RESPONSE,
+            storeBrandById: BRAND_BY_ID_RESPONSE,
           },
           isFetching: false,
         }),

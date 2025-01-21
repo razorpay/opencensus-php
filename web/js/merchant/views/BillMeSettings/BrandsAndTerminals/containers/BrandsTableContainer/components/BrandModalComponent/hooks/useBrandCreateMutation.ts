@@ -10,7 +10,7 @@ import type {
 } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/types';
 
 type BrandCreateResponse = {
-  brandCreate: {
+  storeBrandCreate: {
     code: number;
     success: boolean;
     message: string;
@@ -40,11 +40,11 @@ const useBrandCreateMutation = ({
         return response;
       },
       onSettled: (response) => {
-        if (!response?.brandCreate?.success) {
+        if (!response?.storeBrandCreate?.success) {
           toast.show({
             type: 'informational',
             color: 'negative',
-            content: response?.brandCreate?.message,
+            content: response?.storeBrandCreate?.message,
           });
         } else {
           toast.show({

@@ -6,7 +6,7 @@ export const BRAND_BY_ID_RESPONSE = {
 };
 
 export const BRANDS_RESPONSE = {
-  brands: [BRAND_BY_ID_RESPONSE],
+  storeBrands: [BRAND_BY_ID_RESPONSE],
   total: 10,
   offset: 0,
   limit: 10,

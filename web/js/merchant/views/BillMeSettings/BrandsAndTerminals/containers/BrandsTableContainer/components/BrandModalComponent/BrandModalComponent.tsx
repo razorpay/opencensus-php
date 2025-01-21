@@ -105,7 +105,7 @@ const BrandModalComponent = ({
         variables: { id: selectedBrandId },
       }),
     onSuccess: (brandInfoResponse) => {
-      fetchAndUpdateBrandPayload(brandInfoResponse?.brandById || {});
+      fetchAndUpdateBrandPayload(brandInfoResponse?.storeBrandById || {});
     },
     onError: () => {
       onCloseModal();
@@ -137,9 +137,11 @@ const BrandModalComponent = ({
     if (key === 'logo') {
       if (value) {
         isBrandLogoUploadingRef.current = true;
-        const { brandLogoPreSignedUrl } = await getLogoPreSignedUrl((value as BladeFile)?.name);
-        const presignedUrl = brandLogoPreSignedUrl?.preSignedUrlInfo?.presignedUrl;
-        if (brandLogoPreSignedUrl.success) {
+        const { storeBrandLogoPreSignedUrl } = await getLogoPreSignedUrl(
+          (value as BladeFile)?.name,
+        );
+        const presignedUrl = storeBrandLogoPreSignedUrl?.preSignedUrlInfo?.presignedUrl;
+        if (storeBrandLogoPreSignedUrl.success) {
           try {
             // Upload the file to the S3 bucket with the presigned URL
             const response = await fetch(presignedUrl, {
@@ -150,7 +152,8 @@ const BrandModalComponent = ({
               },
             });
             if (response.status === 200) {
-              updatedBrandInfo.documentId = brandLogoPreSignedUrl?.preSignedUrlInfo?.documentId;
+              updatedBrandInfo.documentId =
+                storeBrandLogoPreSignedUrl?.preSignedUrlInfo?.documentId;
               const uploadedFile = value as BladeFile;
               uploadedFile.status = 'success';
               updatedBrandInfo.logo = uploadedFile;
@@ -203,7 +206,7 @@ const BrandModalComponent = ({
     brandPayload,
     modifiedFieldsMap,
     onSuccessHandler,
-    selectedBrandInfo: brandInfoResponse?.brandById!,
+    selectedBrandInfo: brandInfoResponse?.storeBrandById!,
   });
 
   const handleModalDismiss = () => {
@@ -279,7 +282,9 @@ const BrandModalComponent = ({
               </Box>
             ) : (
               <>
-                {brandInfoResponse && <BrandInfo selectedBrandInfo={brandInfoResponse.brandById} />}
+                {brandInfoResponse && (
+                  <BrandInfo selectedBrandInfo={brandInfoResponse.storeBrandById} />
+                )}
                 {shouldShowEditForm && (
                   <>
                     <Divider marginY="spacing.4" />

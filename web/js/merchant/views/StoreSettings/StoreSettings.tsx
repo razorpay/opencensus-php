@@ -14,6 +14,9 @@ const StoresList = lazy(
 const StoreDetails = lazy(
   () => import(/* webpackChunkName: "StoreDetails" */ 'merchant/views/StoreSettings/StoreDetails'),
 );
+const StoreCreateOrEdit = lazy(
+  () => import(/* webpackChunkName: "StoreCreateOrEdit" */ './StoreCreateOrEdit'),
+);
 
 const StoreSettings = (): React.ReactElement => {
   const getRefRoute = (routePath: string) => {
@@ -40,6 +43,14 @@ const StoreSettings = (): React.ReactElement => {
                 element={
                   <RouteGuard>
                     <StoreDetails />
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path={getRefRoute(ROUTES_INFO.STORE_CREATE)}
+                element={
+                  <RouteGuard>
+                    <StoreCreateOrEdit />
                   </RouteGuard>
                 }
               />

@@ -178,6 +178,9 @@ const StoreFilter = ({ onSelectStores, selectedStores }: StoreFilterProps): Reac
   };
 
   const renderStores = () => {
+    if (shouldTriggerRefetch && isStoresFetching) {
+      return renderLoader(STORES_LIST_LOADER);
+    }
     if (isErrorInFetchingStoresList) {
       return renderInfo(STORES_FETCH_ERROR_MESSAGE);
     }

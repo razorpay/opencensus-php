@@ -11,7 +11,7 @@ import type {
 } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/types';
 
 type BrandUpdateResponse = {
-  brandUpdate: {
+  storeBrandUpdate: {
     code: number;
     success: boolean;
     message: string;
@@ -61,11 +61,11 @@ const useBrandUpdateMutation = ({
         return response;
       },
       onSettled: (response) => {
-        if (!response?.brandUpdate?.success) {
+        if (!response?.storeBrandUpdate?.success) {
           toast.show({
             type: 'informational',
             color: 'negative',
-            content: response?.brandUpdate?.message,
+            content: response?.storeBrandUpdate?.message,
           });
         } else {
           toast.show({

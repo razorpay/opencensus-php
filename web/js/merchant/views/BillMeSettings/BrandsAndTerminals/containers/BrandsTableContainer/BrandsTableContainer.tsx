@@ -65,8 +65,8 @@ const BrandsTableContainer = (): React.ReactElement => {
     setBrandModalInfo({ ...brandModalInfo, operationType });
   };
 
-  const totalItemCount = brandsResponse?.brands?.total ?? 0;
-  const brandsData = brandsResponse?.brands?.brands ?? [];
+  const totalItemCount = brandsResponse?.storeBrands?.total ?? 0;
+  const brandsData = brandsResponse?.storeBrands?.storeBrands ?? [];
 
   const applyFilters = () => {
     if (!brandsFilterPayload.offset) {

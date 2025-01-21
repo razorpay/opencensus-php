@@ -1,11 +1,50 @@
+import { TERMINAL_BIT_OPTIONS } from './common/constants';
+
+type TerminalBitOptions = keyof typeof TERMINAL_BIT_OPTIONS;
+
+type TerminalInfo = {
+  licenseKey: string;
+  macAddress: string;
+  ipAddress: string;
+  version: string;
+  bit: TerminalBitOptions;
+};
+
+type TerminalDates = {
+  updatedAt: string;
+};
+
+type TerminalTransactionDates = {
+  lastTransactionAt: string;
+};
+
+export type Terminal = {
+  id: string;
+  store: Store;
+  isActive: boolean;
+  name: string;
+  terminalInfo: TerminalInfo;
+  dates: TerminalDates;
+  transactionDates: TerminalTransactionDates;
+};
+
 export type CustomField = {
   title: string;
   value: string;
 };
-
-export type ContactType = {
-  number: string;
-  countryCode: string;
+export type Store = {
+  id: string;
+  name: string;
+  address: Address;
+  brand: Brand;
+  storeInfo: StoreInfo;
+  business: Business;
+  isActive: boolean;
+  registeredFrom: string;
+  dates: Dates;
+  platform: string;
+  contact: Contact;
+  customFields: CustomField[];
 };
 
 export type Address = {
@@ -39,24 +78,16 @@ export type Business = {
 
 export type Dates = {
   createdAt: string;
-  deletedAt: any;
+  deletedAt: string | null;
   updatedAt: string;
 };
 
-export type Store = {
-  id: string;
-  name: string;
-  address: Address;
-  brand: Brand;
-  storeInfo: StoreInfo;
-  business: Business;
-  isActive: boolean;
-  registeredFrom: string;
-  dates: Dates;
-  platform: string;
-  contact: {
-    primary: ContactType;
-    secondary: ContactType;
-  };
-  customFields: CustomField[];
+export type Phone = {
+  countryCode: string;
+  number: string;
+};
+
+export type Contact = {
+  primary: Phone;
+  secondary: Phone;
 };

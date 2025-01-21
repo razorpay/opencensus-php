@@ -16,20 +16,9 @@ import BrandsTableContainer from 'merchant/views/BillMeSettings/BrandsAndTermina
 import TerminalsTableContainer from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/TerminalsTableContainer';
 import { useBrandsTablePayloadStore } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/stores/brandsTablePayloadStore';
 import { useTerminalsTablePayloadStore } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/TerminalsTableContainer/stores/terminalsTablePayloadStore';
-import Breadcrumbs, {
-  BreadCrumbType,
-} from 'merchant/views/BillMeSettings/common/components/Breadcrumbs';
+import Breadcrumbs from 'merchant/views/BillMeSettings/common/components/Breadcrumbs';
 import ErrorPage from 'merchant/views/BillMeSettings/common/components/ErrorPage';
-
-const PAGE_BREADCRUMBS: BreadCrumbType[] = [
-  {
-    label: 'Account & Settings',
-    href: '/account-settings',
-  },
-  {
-    label: 'BillMe settings',
-  },
-];
+import { PAGE_BREADCRUMBS } from './constants';
 
 const BrandsAndTerminals = (): React.ReactElement => {
   const { resetBrandsPayloadFilters } = useBrandsTablePayloadStore();

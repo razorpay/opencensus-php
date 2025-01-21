@@ -15,11 +15,11 @@ const useBrandPreSignedUrlMutation = () => {
       return response;
     },
     onSettled: (response) => {
-      if (!response?.brandLogoPreSignedUrl?.success) {
+      if (!response?.storeBrandLogoPreSignedUrl?.success) {
         toast.show({
           type: 'informational',
           color: 'negative',
-          content: response?.brandLogoPreSignedUrl?.message,
+          content: response?.storeBrandLogoPreSignedUrl?.message,
         });
       }
     },
