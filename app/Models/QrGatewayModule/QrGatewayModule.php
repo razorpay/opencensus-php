@@ -6,17 +6,18 @@ use App;
 use Cache;
 use Carbon\Carbon;
 
+use RZP\Models\QrCode;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Models\BharatQr;
+use RZP\Models\QrPayment;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Payment\Gateway;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\QrCode\Entity as QrCodeEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
-use RZP\Gateway\Upi\Base\IntentParams as IntentParams;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVaQrCodeEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\InvoiceDetails as InvoiceDetails;
-use RZP\Trace\TraceCode;
 
 /**
  * This class is to be used by all QR Code and QR Payment related operations to communicate with Mozart.
@@ -43,6 +44,157 @@ class QrGatewayModule
             $this->mode = Mode::LIVE;
             $this->app['rzp.mode'] = Mode::LIVE;
         }
+    }
+
+    public function checkForQrPaymentProcessing(array $input, $gatewayDriver, $paymentId)
+    {
+        $this->trace->info(
+            TraceCode::QR_PAYMENT_CALLBACK_CHECK_INIT,
+            [
+                'gateway'            => $gatewayDriver,
+                'merchant_reference' => $paymentId,
+            ]
+        );
+
+        $data = null;
+
+        if (static::checkIfOldGatewayProcessedThroughNewQrPaymentProcessingFlow($gatewayDriver) === true)
+        {
+            $data = (new QrPayment\Service())
+                ->processQrPaymentCallbackThroughNewGatewayAdapterForExistingGateways(
+                    $gatewayDriver,
+                    $input['data'],
+                    $input['success']
+                );
+        }
+        else
+        {
+            $data = $this->processExistingGatewayCallbackThroughOldFlow($input, $paymentId, $gatewayDriver);
+        }
+
+        if (empty($data) === false)
+        {
+            $this->trace->info(
+                TraceCode::QR_PAYMENT_CALLBACK_CHECK_COMPLETE,
+                [
+                    'gateway'            => $gatewayDriver,
+                    'merchant_reference' => $paymentId,
+                    'response'           => $data,
+                ]
+            );
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::QR_PAYMENT_CALLBACK_CHECK_FAILED,
+                [
+                    'gateway'            => $gatewayDriver,
+                    'merchant_reference' => $paymentId,
+                ]
+            );
+        }
+
+        return $data;
+    }
+
+    protected function processExistingGatewayCallbackThroughOldFlow($input, $paymentId, $gatewayDriver)
+    {
+        $this->trace->info(
+            TraceCode::QR_PAYMENT_CALLBACK_CHECK_FINDING_QR_CODE,
+            [
+                'merchant_reference' => $paymentId,
+                'gateway'            => $gatewayDriver,
+            ]
+        );
+
+        $data = null;
+
+        // First if mode is not found from payment repo, we will check with QR repo
+        $qrRepo = $this->app['repo']->qr_code;
+
+        $suffixLength = strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX);
+
+        $gatewayClass = $this->app['gateway']->gateway($gatewayDriver);
+
+        $isQrV2Payment = false;
+
+        $terminal = null;
+
+        // this checks will only be applicable for static QR code. For dynamic QR code,
+        // bank will send the ref id generated during QR creation
+        if ((strlen($paymentId) >= ($suffixLength + QrCode\Entity::ID_LENGTH)) and
+            (str_ends_with($paymentId, QrCode\Constants::QR_CODE_V2_TR_SUFFIX)))
+        {
+            if (method_exists($gatewayClass, 'getQrPaymentMerchantReference') === true)
+            {
+                $paymentId = $gatewayClass->getQrPaymentMerchantReference($paymentId);
+            }
+            else
+            {
+                $paymentId = substr($paymentId, 0, QrCode\Entity::ID_LENGTH);
+            }
+
+            $isQrV2Payment = true;
+        }
+        else
+        {
+            $gatewayClass = $this->app['gateway']->gateway($gatewayDriver);
+            if (method_exists($gatewayClass, 'getParsedDataFromUnexpectedCallback') === false)
+            {
+                return null;
+            }
+
+            $parsedData   = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
+
+            if (empty($parsedData['terminal']) === true)
+            {
+                return null;
+            }
+
+            $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData($gatewayDriver, $parsedData['terminal']);
+
+            if (($terminal !== null) and ($terminal->isQrV2Terminal() === true) and
+                ((new QrPayment\Core)->checkPaymentViaQRv1($terminal->merchant) === false))
+            {
+                $isQrV2Payment = true;
+
+                $staticQrId = (new BharatQr\Service)->updateQrCodeInCallbackIfApplicable($input, $terminal);
+
+                if ($staticQrId !== null)
+                {
+                    $paymentId = $staticQrId;
+                }
+            }
+        }
+
+        $mode = $qrRepo->determineLiveOrTestModeByMerchantReference($paymentId);
+
+        if ($mode !== null)
+        {
+            $this->trace->info(
+                TraceCode::QR_PAYMENT_CALLBACK_CHECK_FOUND_QR_CODE,
+                [
+                    'gateway'            => $gatewayDriver,
+                    'merchant_reference' => $paymentId,
+                    'is_qr_v2_payment'   => $isQrV2Payment,
+                ]
+            );
+
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            if ($isQrV2Payment === true)
+            {
+                $this->trace->info(TraceCode::QR_PAYMENT_GATEWAY_CALLBACK, $input);
+
+                $data = (new BharatQr\Service)->processPayment($input, $gatewayDriver);
+            }
+            else
+            {
+                $data = (new QrCode\Upi\Service)->processPayment($input, $paymentId, $gatewayDriver);
+            }
+        }
+
+        return $data;
     }
 
     public function generateIntentQr(QrCodeEntity $qrCode, TerminalEntity $terminal): array

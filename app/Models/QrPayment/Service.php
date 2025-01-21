@@ -440,10 +440,25 @@ class Service extends Base\Service
         // process non-existing payment callback
         if (empty($mode) === false)
         {
+            $this->trace->info(
+                TraceCode::QR_PAYMENT_CALLBACK_CHECK_FOUND_QR_CODE,
+                [
+                    'gateway'            => $gateway,
+                    'qr_code_id'         => $qrCode?->getId(),
+                ]
+            );
+
             return $this->processQrPaymentForNewGatewayFlow($qrCode, $resp, $gateway, $success);
         }
 
-        return $this->processNonQrCallback($resp, $gateway);
+        $this->trace->info(
+            TraceCode::QR_PAYMENT_CALLBACK_CHECK_QR_CODE_NOT_FOUND,
+            [
+                'gateway'            => $gateway,
+            ]
+        );
+
+        return null;
     }
 
     public function processQrPaymentForNewGatewayFlow($qrCode, $input, $gateway, $success, $isQrStatusCheck = false)
@@ -547,9 +562,25 @@ class Service extends Base\Service
     // 2. Check using qr code config
     protected function findQrCodeForQrPayment(array $gatewayResponse, string $gateway)
     {
-        $merchantReference = $gatewayResponse['upi']['merchant_reference'];
+        $merchantReference = $gatewayResponse['upi']['merchant_reference'] ?? null;
 
-        [$qrCode, $mode] = $this->app['repo']->qr_code->returnLiveOrTestModeQrCodeByMerchantReference($merchantReference);
+        $this->trace->info(
+            TraceCode::QR_PAYMENT_CALLBACK_CHECK_FINDING_QR_CODE,
+            [
+                'merchant_reference' => $merchantReference,
+                'gateway'            => $gateway,
+            ]
+        );
+
+        if (empty($merchantReference) === true)
+        {
+            $qrCode = null;
+            $mode   = null;
+        }
+        else
+        {
+            [$qrCode, $mode] = $this->app['repo']->qr_code->returnLiveOrTestModeQrCodeByMerchantReference($merchantReference);
+        }
 
         if (empty($mode) === false)
         {
@@ -559,6 +590,11 @@ class Service extends Base\Service
         }
         else
         {
+            if (empty($gatewayResponse['terminal']) === true)
+            {
+                return [null, null];
+            }
+
             $terminal = $this->findTerminalByGatewayAndTerminalData($gateway, $gatewayResponse['terminal']);
 
             if (($terminal !== null) and ($terminal->isQrV2Terminal() === true))
