@@ -448,7 +448,7 @@ class RefundModal extends Component {
     const amount = rupeesToPaise(payable_amount, payment.currency);
     let balance = isBalanceSource ? data?.balance : data?.refund_credits;
 
-    if (user?.isRefundCreditSelfServeEnabled && user?.isRefundSourceFallbackEnabled) {
+    if (user?.isRefundSourceFallbackEnabled) {
       balance = Math.max(data?.balance || 0, data?.refund_credits || 0);
     }
 
@@ -576,7 +576,7 @@ class RefundModal extends Component {
                     Your account does not have sufficient balance to instantly refund this payment.
                     &nbsp;
                     <span>
-                      {user.isRefundCreditSelfServeEnabled && user.isRefundSourceFallbackEnabled ? (
+                      {user.isRefundSourceFallbackEnabled ? (
                         <Link to="/credits" target="_blank" rel="noreferrer noopener">
                           Add Credits &nbsp; <i className="i i-external-link" />
                         </Link>

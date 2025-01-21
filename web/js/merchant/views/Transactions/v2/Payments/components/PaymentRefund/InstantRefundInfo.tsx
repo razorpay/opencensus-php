@@ -56,7 +56,7 @@ export const renderHelperAlerts = ({
             <Text size="small" color="surface.text.gray.subtle">
               Your account does not have sufficient balance to instantly refund this payment &nbsp;
               <span>
-                {user.isRefundCreditSelfServeEnabled && user.isRefundSourceFallbackEnabled ? (
+                {user.isRefundSourceFallbackEnabled ? (
                   <RouterLink to="/credits" target="_blank" rel="noreferrer noopener">
                     Add Credits&nbsp;
                     <i className="i i-external-link" />

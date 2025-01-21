@@ -1121,14 +1121,6 @@ export default class User {
     );
   }
 
-  get isFeeCreditSelfServeEnabled() {
-    return this.getExpStatus('fee_credit_self_serve');
-  }
-
-  get isRefundCreditSelfServeEnabled() {
-    return this.getExpStatus('refund_credit_self_serve');
-  }
-
   get isRefundSourceFallbackEnabled() {
     return this.getExpStatus('refund_source_fallback_enabled');
   }

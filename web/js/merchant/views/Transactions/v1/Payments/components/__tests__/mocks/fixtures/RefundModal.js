@@ -85,7 +85,6 @@ export const session = {
     merchants: {},
     isSingleReconEnabled: true,
     isOptimizerEnabled: true,
-    isRefundCreditSelfServeEnabled: true,
     isRefundSourceFallbackEnabled: true,
   },
   org: {},

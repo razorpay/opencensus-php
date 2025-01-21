@@ -26,7 +26,7 @@ export const calculateHasEnoughFunds = ({
   const amount = convertToMinorUnit(payableAmount, { currency: payment.currency });
 
   let balance = isBalanceSource ? data?.balance : data?.refund_credits;
-  if (user.isRefundCreditSelfServeEnabled && user.isRefundSourceFallbackEnabled) {
+  if (user.isRefundSourceFallbackEnabled) {
     balance = Math.max(data?.balance || 0, data?.refund_credits || 0);
   }
 

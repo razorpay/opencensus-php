@@ -122,17 +122,6 @@ function CreditDetails({
     });
   };
 
-  const isSelfServeEnabled = (creditType) => {
-    switch (creditType) {
-      case 'fee':
-        return user.isFeeCreditSelfServeEnabled;
-      case 'refund':
-        return user.isRefundCreditSelfServeEnabled;
-      default:
-        return false;
-    }
-  };
-
   const handleViewHistory = () => {
     selfServeTrackInitiate(getAnalyticsData('view', type));
     openModal({
@@ -146,9 +135,7 @@ function CreditDetails({
     analyticsTrack(clickHistoryCreditsGA(title));
   };
 
-  const showSelfServeButtons =
-    isSelfServeEnabled(type) &&
-    [rolesList.OWNER, rolesList.ADMIN].includes(user.role) &&
+  const showSelfServeButtons = [rolesList.OWNER, rolesList.ADMIN].includes(user.role) &&
     !user.isCreditSelfServeDisabled;
 
   return (
