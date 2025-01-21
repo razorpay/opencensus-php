@@ -194,6 +194,8 @@ class Entity extends Base\PublicEntity
 
     const OLD_BANK_FORMAT = 'old_bank_format';
 
+    const APPLIED_OFFERS     = 'applied_offers';
+
     //paginated fetch params
     const FROM         = 'from';
     const TO           = 'to';
