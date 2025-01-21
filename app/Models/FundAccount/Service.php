@@ -432,6 +432,7 @@ class Service extends Base\Service
                 ($this->auth->isCapitalCollectionsApp() === true) or
                 ($this->isFundManagementPayoutInitiateWorker() === true) or
                 ($this->auth->isVendorExperienceApp() === true) or
+                ($this->auth->isFTSApp() === true) or
                 ($this->auth->isXperienceApp() === true));
     }
 

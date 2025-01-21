@@ -1851,6 +1851,60 @@ return [
         ],
     ],
 
+    'testFtsAppPayoutsFundAccountDedupe' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Dummy Saha',
+                        'ifsc'           => 'HDFC0000077',
+                        'account_number' => '3434000111000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Uptime Merchant',
+                        'email'   => 'test@razorpay.com',
+                        'contact' => '1234567890',
+                        'type'    => 'customer',
+                        'notes'   => [
+                            'note_key' => 'uptime test merchant'
+                        ],
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
     'testCustomerWalletPayoutWithNarrationAsArray' => [
         'request'  => [
             'url'     => '/customers/cust_100000customer/payouts',

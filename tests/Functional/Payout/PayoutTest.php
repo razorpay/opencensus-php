@@ -8904,6 +8904,33 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('Batman', $payoutAttempt['narration']);
     }
 
+    public function testFtsAppPayoutsFundAccountDedupe()
+    {
+        $this->liveSetUp();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['activated' => 0]);
+
+        $this->ba->appAuthTest($this->config['applications.fts.secret']);
+
+        $this->startTest();
+
+        $payout1 = $this->getLastEntity('payout', true);
+
+        $fundAccountCountBefore = count($this->getDbEntities('fund_account'));
+
+        $this->ba->appAuthTest($this->config['applications.fts.secret']);
+
+        $this->startTest();
+
+        $payout2 = $this->getLastEntity('payout', true);
+
+        $fundAccountCountAfter = count($this->getDbEntities('fund_account'));
+
+        $this->assertEquals($payout1['fund_account_id'],$payout2['fund_account_id']);
+
+        $this->assertEquals($fundAccountCountBefore, $fundAccountCountAfter);
+    }
+
     public function testCreateCompositePayoutPettyCash()
     {
         $this->fixtures->user->createUserForMerchantONLiveAndTest('10000000000000', ['id'=> '20000000000000', 'email'=> 'random@gmail.com'], 'owner');
