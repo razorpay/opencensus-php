@@ -3,6 +3,7 @@
 // This file should be deleted after full shell roll-out and import statements should be updated to point to the shell
 
 export {
+  graphqlClient,
   graphqlRequestQuery,
   graphqlRequestMutation,
   graphqlRequest,

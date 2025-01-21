@@ -40,3 +40,12 @@ export function getMode(merchantId?: string): string {
   const _mode = getItem(`rzp_mode--${merchantId}`) || mode;
   return _mode;
 }
+
+// eslint-disable-next-line consistent-return
+export const deepClone = (obj) => {
+  try {
+    return JSON.parse(JSON.stringify(obj));
+  } catch (err) {
+    console.log('Deepclone error: ', err);
+  }
+};

@@ -28,9 +28,11 @@ export const AVERAGE_SALES = 'Avg. Bill Value';
 export const TOTAL_TRANSACTIONS = 'Total Bills Generated';
 
 export enum DurationRange {
-  Last7Days = '7',
-  Last30Days = '30',
-  Last90Days = '90',
+  // Since, old BillMe service is handling a max of 90 days range,
+  // we are setting the range from start date (start of the day) + 1 to end date (end of the day)
+  Last7Days = '6',
+  Last30Days = '29',
+  Last90Days = '89',
   Custom = 'custom',
 }
 
@@ -145,3 +147,7 @@ export const zIndicesMap = {
   modalOverlay: 1001,
   dropdownOverlay: 1002,
 };
+
+export const ERROR_PAGE_DESCRIPTION = 'We are facing some issues. Please try again later.';
+
+export const MAX_DATE_FOR_DATE_PICKER = new Date();

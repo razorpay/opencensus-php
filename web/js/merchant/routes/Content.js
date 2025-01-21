@@ -959,14 +959,15 @@ class Content extends Component {
               </RouteGuard>
             }
           />
-          <Route
+          {/* Comment BillMe route from OneNav as it is added in Dashboard SideNav */}
+          {/* <Route
             path="billme/*"
             element={
               <RouteGuard additionalCondition={() => isConnectedNavigation}>
                 <ConnectedNavigationContent />
               </RouteGuard>
             }
-          />
+          /> */}
           <Route
             path="rize/*"
             element={

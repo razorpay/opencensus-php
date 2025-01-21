@@ -1,8 +1,8 @@
 import React from 'react';
 
 import RetryOnError from '@apps/digital-bills/src/common/components/RetryOnError';
-import renderWithWrappers from '@apps/digital-bills/src/utils/testing/renderWithWrappers';
-import { userEvent } from '@apps/digital-bills/src/utils/testing/test-utils';
+import renderWithWrappers from '@apps/digital-bills/src/services/test/renderWithWrappers';
+import { userEvent } from '@apps/digital-bills/src/services/test/test-utils';
 
 describe('RetryOnError', () => {
   test('should render RetryOnError with passed in prop values', async () => {

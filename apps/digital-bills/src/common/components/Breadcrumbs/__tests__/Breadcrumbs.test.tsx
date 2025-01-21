@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import { Route, Routes } from 'react-router-dom';
 
 import Breadcrumbs from '@apps/digital-bills/src/common/components/Breadcrumbs';
-import renderWithWrappers from '@apps/digital-bills/src/utils/testing/renderWithWrappers';
+import renderWithWrappers from '@apps/digital-bills/src/services/test/renderWithWrappers';
 
 const mocks = { breadcrumbs: [{ label: 'Home' }, { label: 'PageA' }] };
 

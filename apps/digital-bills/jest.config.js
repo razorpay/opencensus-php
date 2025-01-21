@@ -10,7 +10,7 @@ module.exports = {
   transformIgnorePatterns: [
     '/node_modules/(?!(?:.pnpm/)?(@commander|@razorpay|copy-anything|is-what|@table-library)).*/',
   ],
-  setupFilesAfterEnv: ['<rootDir>/utils/testing/jest-setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/services/test/jest-setup.js'],
   coverageDirectory: 'coverage',
   moduleNameMapper: {
     // Since jest doesn't know how to resolve these static assets, we mock them
