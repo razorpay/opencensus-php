@@ -1,6 +1,5 @@
-import React, { useRef, useState, useCallback } from 'react';
-import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
+import React, { useEffect, useState } from 'react';
+import Cropper, { getInitialCropFromCroppedAreaPercentages } from 'react-easy-crop';
 import {
   Box,
   Button,
@@ -17,13 +16,28 @@ import {
   BottomSheetHeader,
 } from '@razorpay/blade/components';
 import { CropWrapper, DragWrapperDesktop, DragWrapperMobile } from './styled';
+import { getCroppedImg } from './utils';
+import Loader from 'common/ui/Loader';
+import { IBannerImage } from 'merchant/reducers/paymentPages/types';
+
+interface CropDimensions {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface Crop {
+  x: number;
+  y: number;
+}
 
 interface ImageCropperProps {
   imageSrc: string;
-  onCropComplete: (croppedFile: File) => void;
   onCancel: () => void;
-  onApply: () => void;
+  onApply: (croppedImageFile: File, croppedArea: CropDimensions) => void;
   isMobile: boolean;
+  selectedBanner: IBannerImage;
 }
 
 interface RenderFooterButtonsProps {
@@ -43,27 +57,49 @@ const RenderFooterButtons: React.FC<RenderFooterButtonsProps> = ({ onCancel, onA
 interface RenderCropperProps {
   imageSrc: string;
   crop: Crop;
-  onCropComplete: (crop: PixelCrop) => void;
-  onCropChange: (crop: Crop) => void;
-  onImageLoaded: (image: HTMLImageElement) => void;
+  onCropComplete: (croppedArea: CropDimensions, croppedAreaPixels: CropDimensions) => void;
+  zoom: number;
+  setZoom: React.Dispatch<React.SetStateAction<number>>;
+  setCrop: (crop: Crop) => void;
+  isMobile?: boolean;
+  setCropSize: React.Dispatch<React.SetStateAction<{ width: number; height: number }>>;
+  setMediaSize: React.Dispatch<
+    React.SetStateAction<{
+      width: number;
+      height: number;
+      naturalWidth: number;
+      naturalHeight: number;
+    }>
+  >;
 }
 
 const RenderCropper: React.FC<RenderCropperProps> = ({
   imageSrc,
   crop,
   onCropComplete,
-  onCropChange,
-  onImageLoaded,
+  zoom,
+  setZoom,
+  setCrop,
+  isMobile,
+  setCropSize,
+  setMediaSize,
 }) => {
   return (
     <CropWrapper>
-      <ReactCrop
-        src={imageSrc}
+      <Cropper
+        image={imageSrc}
         crop={crop}
-        ruleOfThirds
-        onImageLoaded={onImageLoaded}
-        onComplete={onCropComplete}
-        onChange={onCropChange}
+        zoom={zoom}
+        aspect={4 / 3}
+        onCropChange={setCrop}
+        onCropComplete={onCropComplete}
+        onZoomChange={setZoom}
+        cropSize={{
+          width: isMobile ? 360 : 984,
+          height: isMobile ? 124 : 180,
+        }}
+        setCropSize={setCropSize}
+        setMediaSize={setMediaSize}
       />
     </CropWrapper>
   );
@@ -71,78 +107,89 @@ const RenderCropper: React.FC<RenderCropperProps> = ({
 
 const ImageCropper: React.FC<ImageCropperProps> = ({
   imageSrc,
-  onCropComplete,
   onCancel,
   onApply,
   isMobile,
+  selectedBanner,
 }) => {
-  const [crop, setCrop] = useState<Crop>({
-    unit: '%',
-    x: 0,
-    y: 0,
-    width: 50,
-    height: 50,
+  const [crop, setCrop] = useState<Crop>({ x: 0, y: 0 });
+  const [rotation, setRotation] = useState<number>(0);
+  const [zoom, setZoom] = useState<number>(1);
+  const [shouldRenderCropper, setShouldRenderCropper] = useState<boolean>(false);
+  const [cropSize, setCropSize] = useState<{ width: number; height: number }>({
+    width: 0,
+    height: 0,
   });
-  const imageRef = useRef<HTMLImageElement | null>(null);
+  const [croppedArea, setCroppedArea] = useState<CropDimensions>(
+    selectedBanner && selectedBanner.selected_area
+      ? selectedBanner.selected_area
+      : { x: 0, y: 0, width: 0, height: 0 },
+  );
 
-  const generateCroppedImage = async (
-    image: HTMLImageElement,
-    crop: PixelCrop,
-    fileName: string,
-  ): Promise<File | null> => {
+  const [croppedImageFile, setCroppedImageFile] = useState<File | null>(null);
+
+  const [mediaSize, setMediaSize] = useState<{
+    width: number;
+    height: number;
+    naturalWidth: number;
+    naturalHeight: number;
+  }>({
+    width: 0,
+    height: 0,
+    naturalWidth: 0,
+    naturalHeight: 0,
+  });
+  const handleCropComplete = async (
+    croppedArea: CropDimensions,
+    croppedAreaPixels: CropDimensions,
+  ) => {
     try {
-      const canvas = document.createElement('canvas');
-      const scaleX = image.naturalWidth / image.width || 1;
-      const scaleY = image.naturalHeight / image.height || 1;
-      canvas.width = crop?.width || 0;
-      canvas.height = crop?.height || 0;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        throw new Error('Failed to get canvas context');
-      }
-
-      ctx.drawImage(
-        image,
-        crop?.x * scaleX || 0,
-        crop?.y * scaleY || 0,
-        (crop?.width || 0) * scaleX,
-        (crop?.height || 0) * scaleY,
-        0,
-        0,
-        crop?.width || 0,
-        crop?.height || 0,
-      );
-
-      return new Promise((resolve, reject) => {
-        canvas.toBlob((blob) => {
-          if (!blob) {
-            reject(new Error('Canvas is empty or could not create a blob'));
-            return;
-          }
-          resolve(new File([blob], fileName, { type: 'image/jpeg' }));
-        }, 'image/jpeg');
-      });
-    } catch (error) {
-      console.error('Error generating cropped image:', error);
-      return null;
+      const croppedImageFile = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
+      setCroppedArea(croppedArea);
+      setCroppedImageFile(croppedImageFile);
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  const handleImageLoad = useCallback((image: HTMLImageElement) => {
-    imageRef.current = image;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShouldRenderCropper(true);
+    }, 300);
+    return () => clearTimeout(timer);
   }, []);
 
-  const handleCropChange = useCallback((crop: Crop) => {
+  const computePrevSelectedArea = () => {
+    const desiredCroppedAreaPercentages = {
+      x: selectedBanner?.selected_area?.x ?? 0,
+      y: selectedBanner?.selected_area?.y ?? 0,
+      width: 100,
+      height: 35,
+    };
+
+    const { crop, zoom } = getInitialCropFromCroppedAreaPercentages(
+      desiredCroppedAreaPercentages,
+      mediaSize,
+      0,
+      cropSize,
+      1,
+      3,
+    );
     setCrop(crop);
-  }, []);
-
-  const handleCropComplete = async (crop: PixelCrop) => {
-    if (imageRef.current && crop.width && crop.height) {
-      const croppedFile = await generateCroppedImage(imageRef.current, crop, 'croppedImage.jpeg');
-      if (croppedFile) onCropComplete(croppedFile);
-    }
+    setZoom(zoom);
   };
+
+  useEffect(() => {
+    if (
+      selectedBanner &&
+      mediaSize.width &&
+      mediaSize.height &&
+      cropSize.width &&
+      cropSize.height
+    ) {
+      computePrevSelectedArea();
+    }
+  }, [mediaSize, cropSize, selectedBanner]);
 
   if (isMobile) {
     return (
@@ -172,8 +219,12 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
               imageSrc={imageSrc}
               crop={crop}
               onCropComplete={handleCropComplete}
-              onCropChange={handleCropChange}
-              onImageLoaded={handleImageLoad}
+              zoom={zoom}
+              setZoom={setZoom}
+              setCrop={setCrop}
+              isMobile={isMobile}
+              setMediaSize={setMediaSize}
+              setCropSize={setCropSize}
             />
           </Box>
         </BottomSheetBody>
@@ -198,7 +249,11 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                 type="button"
                 variant="primary"
                 key="submit"
-                onClick={onApply}
+                onClick={() => {
+                  if (croppedImageFile) {
+                    onApply(croppedImageFile, croppedArea);
+                  }
+                }}
               >
                 Save
               </Button>
@@ -213,28 +268,45 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
     <Modal isOpen={true} onDismiss={onCancel} size="large">
       <ModalHeader title="Set the store banner" />
       <ModalBody>
-        <DragWrapperDesktop>
-          <FullScreenEnterIcon color="currentColor" />
-          <Text
-            color="surface.text.staticWhite.normal"
-            variant="body"
-            size="small"
-            weight="regular"
-          >
-            Drag to set the cover
-          </Text>
-        </DragWrapperDesktop>
-        <RenderCropper
-          imageSrc={imageSrc}
-          crop={crop}
-          onCropComplete={handleCropComplete}
-          onCropChange={handleCropChange}
-          onImageLoaded={handleImageLoad}
-        />
+        {shouldRenderCropper ? (
+          <>
+            <DragWrapperDesktop>
+              <FullScreenEnterIcon color="currentColor" />
+              <Text
+                color="surface.text.staticWhite.normal"
+                variant="body"
+                size="small"
+                weight="regular"
+              >
+                Drag to set the cover
+              </Text>
+            </DragWrapperDesktop>
+            <RenderCropper
+              imageSrc={imageSrc}
+              crop={crop}
+              onCropComplete={handleCropComplete}
+              zoom={zoom}
+              setZoom={setZoom}
+              setCrop={setCrop}
+              isMobile={isMobile}
+              setMediaSize={setMediaSize}
+              setCropSize={setCropSize}
+            />
+          </>
+        ) : (
+          <Loader />
+        )}
       </ModalBody>
       <ModalFooter>
         <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
-          <RenderFooterButtons onApply={onApply} onCancel={onCancel} />
+          <RenderFooterButtons
+            onApply={() => {
+              if (croppedImageFile) {
+                onApply(croppedImageFile, croppedArea);
+              }
+            }}
+            onCancel={onCancel}
+          />
         </Box>
       </ModalFooter>
     </Modal>

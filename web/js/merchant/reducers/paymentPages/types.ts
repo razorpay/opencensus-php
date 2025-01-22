@@ -65,6 +65,13 @@ export interface StoreFrontMetaData {
   user_id: string;
 }
 
+export interface CropDimensions {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface IBannerImage {
   id?: string;
   original: string;
@@ -73,6 +80,7 @@ export interface IBannerImage {
   enabled: boolean;
   title?: string;
   description?: string;
+  selected_area?: CropDimensions;
 }
 
 export interface IStorefrontResponse {

@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 import { Alert, Box, Button, ChevronRightIcon, Switch, Text } from '@razorpay/blade/components';
 import LineItems from './LineItems';
-import UploadBannerDrawer from './UploadBannerDrawer';
 import {
   editStorefront,
   PaymentPagesStorefrontType,
 } from 'merchant/reducers/paymentPages/storefront';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+
+const UploadBannerDrawer = lazy(
+  () => import(/* webpackChunkName: 'StorefrontV1UploadBanner' */ './UploadBannerDrawer'),
+);
 
 interface IAddBannerDetailsProps {
   handleClick: (val: boolean) => void;
@@ -35,6 +40,35 @@ const RightChildren: React.FC<IRightChildrenProps> = ({ handleClick }) => (
   />
 );
 
+interface BannerSwitchProps {
+  isChecked: boolean | undefined;
+  onSwitchChange: (isChecked: boolean) => void;
+}
+
+const BannerSwitch: React.FC<BannerSwitchProps> = ({ isChecked, onSwitchChange }) => {
+  return (
+    <Box
+      display="flex"
+      justifyContent="space-between"
+      alignItems="center"
+      borderTopWidth="thin"
+      borderTopColor="surface.border.gray.muted"
+      borderTopStyle="solid"
+      paddingTop="spacing.4"
+    >
+      <Text weight="regular" color="surface.text.gray.subtle" variant="body" size="medium">
+        Turn on banner preview
+      </Text>
+
+      <Switch
+        isChecked={isChecked}
+        accessibilityLabel="storefront-banner-switch"
+        onChange={({ isChecked }) => onSwitchChange(isChecked)}
+      />
+    </Box>
+  );
+};
+
 const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
   handleClick,
   openAddBannerDrawer,
@@ -55,8 +89,12 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
   };
 
   const handleBannerSwitchChange = (isChecked: boolean) => {
+    track.bannerPreviewCheckboxClicked({
+      storefrontId: storefront?.id,
+      isNewStoreFront: Boolean(!storefront?.id),
+      isChecked,
+    });
     handleBannerSetting(isChecked);
-    handleClick(true);
   };
 
   const handleAlertPrimaryClick = () => {
@@ -77,45 +115,18 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
   return (
     <>
       {openAddBannerDrawer ? (
-        <UploadBannerDrawer handleClose={() => handleClick(false)} storefront={storefront} />
+        <SuspenseWithLoader>
+          <UploadBannerDrawer handleClose={() => handleClick(false)} storefront={storefront} />
+        </SuspenseWithLoader>
       ) : (
         <LineItems
           title="Add store banner"
           rightChildren={<RightChildren handleClick={handleClick} />}
           extraItems={
-            <>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                borderTopWidth="thin"
-                borderTopColor="surface.border.gray.muted"
-                borderTopStyle="solid"
-                paddingTop="spacing.4"
-              >
-                <Text
-                  weight="regular"
-                  color="surface.text.gray.subtle"
-                  variant="body"
-                  size="medium"
-                >
-                  Turn on banner preview
-                </Text>
-
-                <Switch
-                  accessibilityLabel="storefront-banner-switch"
-                  isChecked={storefront.entity.settings?.base_config?.banner_feature_enabled}
-                  onChange={({ isChecked }) => {
-                    handleBannerSwitchChange(isChecked);
-                    track.bannerPreviewCheckboxClicked({
-                      storefrontId: storefront?.id,
-                      isNewStoreFront: Boolean(!storefront?.id),
-                      isChecked,
-                    });
-                  }}
-                />
-              </Box>
-            </>
+            <BannerSwitch
+              isChecked={storefront?.entity?.settings?.base_config?.banner_feature_enabled ?? false}
+              onSwitchChange={handleBannerSwitchChange}
+            />
           }
           isMobile={isMobile}
         />

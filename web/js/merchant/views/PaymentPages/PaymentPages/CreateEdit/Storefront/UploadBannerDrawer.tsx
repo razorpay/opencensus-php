@@ -31,7 +31,8 @@ import {
   PaymentPagesStorefrontType,
 } from 'merchant/reducers/paymentPages/storefront';
 import lazy from 'merchant/routes/LazyLoader';
-import { IBannerImage } from 'merchant/reducers/paymentPages/types';
+import { CropDimensions, IBannerImage } from 'merchant/reducers/paymentPages/types';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const BannerList = lazy(
   () => import(/* webpackChunkName: 'StorefrontV1BannerList' */ './BannerList'),
@@ -149,7 +150,6 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
 }) => {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [croppedImageFile, setCroppedImageFile] = useState<File | null>(null);
   const [bannerData, setBannerData] = useState<Array<IBannerImage>>(banner_images || []);
   const [selectedBanner, setSelectedBanner] = useState<IBannerImage | null>(null);
   const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
@@ -178,17 +178,13 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
     };
   };
 
-  const handleCropComplete = (croppedFile: File) => {
-    setCroppedImageFile(croppedFile);
-  };
-
   const handleBannerChange = (newBannerData: IBannerImage[]) => {
     setBannerData(newBannerData);
     editStorefront('banner_images', newBannerData);
     setSelectedBanner(null);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (croppedImageFile: File, croppedArea: CropDimensions) => {
     if (!croppedImageFile) return;
     const validationError = validateFile(croppedImageFile);
     if (validationError) {
@@ -216,6 +212,7 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
                       ...banner,
                       original: originalUrl,
                       cropped: croppedUrl,
+                      selected_area: croppedArea,
                     };
                   }
                   return banner;
@@ -227,6 +224,7 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
                     cropped: croppedUrl,
                     position,
                     enabled: true,
+                    selected_area: croppedArea,
                   });
                 }
                 handleBannerChange(updatedBannerData);
@@ -265,6 +263,7 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
                 return {
                   ...banner,
                   cropped: cropped,
+                  selected_area: croppedArea,
                 };
               }
               return banner;
@@ -421,16 +420,18 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
         </PaymentPagesDrawer>
       )}
       {imageSrc && (
-        <ImageCropper
-          imageSrc={imageSrc}
-          onCropComplete={handleCropComplete}
-          onCancel={() => {
-            setImageSrc(null);
-            setSelectedBanner(null);
-          }}
-          onApply={handleSubmit}
-          isMobile={isMobile}
-        />
+        <SuspenseWithLoader>
+          <ImageCropper
+            imageSrc={imageSrc}
+            onCancel={() => {
+              setImageSrc(null);
+              setSelectedBanner(null);
+            }}
+            selectedBanner={selectedBanner}
+            onApply={handleSubmit}
+            isMobile={isMobile}
+          />
+        </SuspenseWithLoader>
       )}
       {openDeleteModal &&
         (isMobile ? (

@@ -103,7 +103,8 @@
     "xss": "1.0.11",
     "yup": "0.29.3",
     "zustand": "3.1.2",
-    "jspdf-autotable": "3.8.2"
+    "jspdf-autotable": "3.8.2",
+    "react-easy-crop": "5.0.0"
   },
   "scripts": {
     "unit-tests": "NODE_PATH=./js mocha 'test/**/*.js' --full-trace --require @babel/register",

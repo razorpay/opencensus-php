@@ -657,18 +657,7 @@ export const CropWrapper = styled.div`
   max-width: 984px;
   height: auto;
   max-height: 498px;
-
-  .ReactCrop {
-    width: 100%;
-    max-height: 498px;
-  }
-
-  .ReactCrop__image {
-    width: 100%;
-    height: auto;
-    max-height: 498px;
-    object-fit: cover;
-  }
+  position: relative;
 `;
 export const DragWrapper = styled.div<{
   theme: Theme;

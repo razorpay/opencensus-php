@@ -146,3 +146,15 @@ interface ShowNotificationOptions {
 }
 
 export type ShowNotificationType = (data: ShowNotificationOptions) => void;
+
+export interface FlipOptions {
+  horizontal: boolean;
+  vertical: boolean;
+}
+
+export interface PixelCrop {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
