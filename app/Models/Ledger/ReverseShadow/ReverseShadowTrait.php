@@ -20,6 +20,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Base\Entity;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Transaction;
+use Illuminate\Support\Str;
 use RZP\Models\Payment\Status;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Merchant\Balance;
@@ -216,6 +217,25 @@ trait ReverseShadowTrait
             }
             catch (\Throwable $e)
             {
+
+                if (Str::contains($e->getMessage(), "cURL error 28: Operation timed out", true))
+                {
+                    $retryAttempts++;
+                    if ($retryAttempts > LedgerReverseShadowConstants::MAX_RETRY_COUNT_FETCH_MERCHANT_ACCOUNT)
+                    {
+                        throw $e;
+                    }
+
+                    $this->trace->info(
+                        TraceCode::PG_LEDGER_FETCH_MERCHANT_ACCOUNTS_RETRY_ATTEMPT,
+                        [
+                            'retry_count'  => $retryAttempts,
+                        ]
+                    );
+
+                    continue;
+                }
+
                 if (method_exists($e, 'getData'))
                 {
                     $data = $e->getData();
@@ -246,24 +266,6 @@ trait ReverseShadowTrait
                             throw $e;
                         }
                     }
-                }
-
-                if (strpos($e->getMessage(), 'cURL error 28') !== false)
-                {
-                    $retryAttempts++;
-                    if ($retryAttempts > LedgerReverseShadowConstants::MAX_RETRY_COUNT_FETCH_MERCHANT_ACCOUNT)
-                    {
-                        throw $e;
-                    }
-
-                    $this->trace->info(
-                        TraceCode::PG_LEDGER_FETCH_MERCHANT_ACCOUNTS_RETRY_ATTEMPT,
-                        [
-                            'retry_count'  => $retryAttempts,
-                        ]
-                    );
-
-                    continue;
                 }
 
                 throw $e;
