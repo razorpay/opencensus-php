@@ -1059,6 +1059,7 @@ class Header
 
 
     // Pricing Rules Addition Headers
+    const PRICING_RULE_PLAN_ID                  = 'plan_id';
     const PRICING_RULE_PLAN_NAME                = 'plan_name';
     const PRICING_RULE_MERCHANT_ID              = 'merchant_id';
     const PRICING_RULE_PRODUCT                  = 'product';
@@ -4905,12 +4906,12 @@ class Header
         Type::BUY_PRICING_ASSIGN => [
             self::INPUT => [
                 self::TERMINAL_ID,
-                self::PRICING_RULE_PLAN_NAME,
+                self::PRICING_RULE_PLAN_ID,
                 self::TERMINAL_CREATION_NETWORK_CATEGORY,
             ],
             self::OUTPUT => [
                 self::TERMINAL_ID,
-                self::PRICING_RULE_PLAN_NAME,
+                self::PRICING_RULE_PLAN_ID,
                 self::TERMINAL_CREATION_NETWORK_CATEGORY,
             ]
         ],
