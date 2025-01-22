@@ -2237,4 +2237,50 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->assertEqualsCanonicalizing($eventList, $expectedEventList);
         $this->assertEquals(5, $actualEzetapNotificationCallCount);
     }
+
+    public function testEzetapDeviceNoficationForSingleStackPayment()
+    {
+        $this->setMockSplitzTreatment(
+            [
+                'M25grFTOPZEGQS' => 'on',
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on',
+                'P1ihasxhcDs1ZE' => 'off'
+            ]
+        );
+        $this->config['applications.ezetap-notification.mock'] = true;
+        $this->fixtures->merchant->addFeatures(['omni_single_stack']);
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_airtel_offline_terminal',
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        );
+        $actualEzetapNotificationCallCount =0 ;
+        $eventList =[] ;
+        $expectedEventList = [
+            'qr_code.credited',
+        ];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount,$eventList);
+        $this->createPricingForOffline();
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type' => 'upi_qr',
+                'vpa'   => 'testvpaoffline@mairtel',
+            ],
+            headers: [
+                'X-Razorpay-Request-Source' => 'ezetap'
+            ]
+        );
+        $this->runQrCodeEntityAssertions('test');
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel', 'hdnOrderID' => 'Random78']);
+
+        $this->runQrPaymentEntityAssertions();
+        $this->assertEqualsCanonicalizing($eventList,$expectedEventList);
+        $this->assertEquals(1, $actualEzetapNotificationCallCount);
+    }
 }

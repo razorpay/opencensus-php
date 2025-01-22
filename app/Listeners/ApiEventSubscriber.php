@@ -613,7 +613,15 @@ class ApiEventSubscriber extends Base\Core
 
         $this->dispatchEventToStork($payload);
 
-        $this->dispatchEventToEzetapNotification($payload);
+        if($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
+        else
+        {
+            $DevicePayload = $this->getQrCodePaymentPayloadForDevice($payment);
+            $this->dispatchEventToEzetapDevice($DevicePayload);
+        }
     }
 
 
@@ -794,7 +802,11 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
 
         $this->dispatchPaymentCaptureEvent($payment);
-        $this->dispatchEventToEzetapNotification($payload);
+
+        if($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
     }
 
     protected function isForNocodeApps(Payment\Entity $payment): bool
@@ -1072,7 +1084,11 @@ class ApiEventSubscriber extends Base\Core
 
         $this->dispatchEventToStork($payload);
 
-        $this->dispatchEventToEzetapNotification($payload);
+        if($qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
+
     }
 
     protected function onQrCodeCredited(Payment\Entity $payment)
@@ -1085,12 +1101,15 @@ class ApiEventSubscriber extends Base\Core
 
         $this->dispatchEventToStork($payload);
 
-        $this->dispatchEventToEzetapNotification($payload);
-
         $gateway=$payment->getGateway();
 
-        if($this->checkIfGatewayEnabledToSendDeviceNotification($gateway) === true){
-            //need to add Spitz Experiment here for triggering specific to upi_jkbank gateway
+        if($qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
+
+        if($this->checkIfGatewayEnabledToSendDeviceNotification($gateway) === true or $qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) === true)
+        {
             $DevicePayload = $this->getQrCodePaymentPayloadForDevice($payment);
             $this->dispatchEventToEzetapDevice($DevicePayload);
         }
@@ -1346,7 +1365,10 @@ class ApiEventSubscriber extends Base\Core
         $this->event = 'refund.created';
         $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
 
-        $this->dispatchEventToEzetapNotification($payload);
+        if($refund->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
     }
 
     protected function onInPersonRefundProcessed(RefundEntity $refund)
@@ -1355,7 +1377,10 @@ class ApiEventSubscriber extends Base\Core
         $this->event = 'refund.processed';
         $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
 
-        $this->dispatchEventToEzetapNotification($payload);
+        if($refund->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
     }
 
     protected function onInPersonRefundFailed(RefundEntity $refund)
@@ -1364,7 +1389,10 @@ class ApiEventSubscriber extends Base\Core
         $this->event = 'refund.failed';
         $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
 
-        $this->dispatchEventToEzetapNotification($payload);
+        if($refund->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
     }
 
     protected function onRefundFailed(RefundEntity $refund)
@@ -1825,40 +1853,40 @@ class ApiEventSubscriber extends Base\Core
 
     public function checkIfGatewayEnabledToSendDeviceNotification(string $gateway) : bool
     {
-       try{
-               $properties = [
-                   'id'            => $gateway,
-                   'experiment_id' => $this->app->config->get('app.ezetap_device_notification_gateway_enabled'),
-                   'request_data'  => json_encode(['gateway' => $gateway]),
-               ];
-               $response   = $this->app['splitzService']->evaluateRequest($properties);
+        try{
+            $properties = [
+                'id'            => $gateway,
+                'experiment_id' => $this->app->config->get('app.ezetap_device_notification_gateway_enabled'),
+                'request_data'  => json_encode(['gateway' => $gateway]),
+            ];
+            $response   = $this->app['splitzService']->evaluateRequest($properties);
 
-               $this->app->trace->info(TraceCode::SPLITZ_RESPONSE, [
-                   'experiment_id' => $properties['experiment_id'],
-                   'gateway'       => $gateway,
-                   '$response'     => $response
-               ]);
+            $this->app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'gateway'       => $gateway,
+                '$response'     => $response
+            ]);
 
-               $experimentResult = false; // Default value
-               $variables = $response['response']['variant']['variables'] ?? [];
-               foreach ($variables as $variable) {
-                   $key = $variable['key'] ?? '';
-                   $value = $variable['value'] ?? '';
-                   if ($key === 'result' && $value === 'on') {
-                       $experimentResult = true;
-                       break;
-                   }
-               }
-               return $experimentResult;
-       }catch (\Exception $e){
-           $this->trace->traceException(
-               $e,
-               null,
-               TraceCode::SPLITZ_ERROR
-           );
-           return false;
-       }
-           return false;
+            $experimentResult = false; // Default value
+            $variables = $response['response']['variant']['variables'] ?? [];
+            foreach ($variables as $variable) {
+                $key = $variable['key'] ?? '';
+                $value = $variable['value'] ?? '';
+                if ($key === 'result' && $value === 'on') {
+                    $experimentResult = true;
+                    break;
+                }
+            }
+            return $experimentResult;
+        }catch (\Exception $e){
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SPLITZ_ERROR
+            );
+            return false;
+        }
+        return false;
     }
 
     protected function getVirtualAccountPaymentPayload(Payment\Entity $payment)
