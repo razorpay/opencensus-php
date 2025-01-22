@@ -42,6 +42,7 @@ use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Settlement\Ondemand\Service as Service;
 use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use RZP\Models\Pricing\Feature as PricingFeature;
+use RZP\Services\FTS\Constants as FTSConstants;
 use RZP\Jobs\SettlementOndemand\UpdateOndemandTriggerJob;
 use RZP\Models\Ledger\ReverseShadow\Capital\Core as ReverseShadowCapitalCore;
 use RZP\Models\Settlement\Ondemand\Constants as SettlementOndemandConstants;
@@ -56,6 +57,11 @@ class Core extends Base\Core
 
     const ONDEMAND_PAYOUT_REVERSED_EVENT  = 'ondemand_payout.reversed';
 
+    const MODE_BUFFER_TIME = 1800;
+
+    /**
+     * @throws BadRequestException
+     */
     public function createSettlementOndemand(array $input, Merchant\Entity $merchant, User\Entity $user = null, array $requestDetails = [])
     {
         if ($input[Entity::AMOUNT] > $merchant->primaryBalance->getBalance())
@@ -827,49 +833,32 @@ class Core extends Base\Core
         return [false, $featureConfig->getMaxLimitPerWorkingDay(), $featureConfig->getMaxLimitPerWorkingDay() - $amountSettledForMerchant];
     }
 
-    private function getGlobalConfigs()
+    public function getSmartSettlementConfig(): array
     {
-        if ($this->shouldRetrieveGlobalConfigFromCapitalEs() === true)
-        {
-            $response = $this->app['capital_early_settlements']->getFeatureConfig('global');
-            $featureConfig = $response['global_feature_config'];
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
-            return [
-                ConfigKey::ODS_CAPPING_CHECK_REQUIRED => (bool) $featureConfig['global_limit_check_required'],
-                ConfigKey::ODS_GLOBAL_LIMIT => (int) $featureConfig['global_limit'],
-                ConfigKey::ODS_CAPPING_SCALE_FACTOR => (float) $featureConfig['global_limit_capping_scale_factor'],
-                ConfigKey::ODS_CAPPED_MID_LIST => explode(',', $featureConfig['global_limit_capped_merchant_ids'])
-            ];
-        }
+        $time = $currentTime + self::MODE_BUFFER_TIME;
+        $isCurrentTimeOutsideBankingHours = (new OndemandPayout\Core)->isOutsideBankingHoursUpdated($currentTime);
+        $isOutsideBankingHours = (new OndemandPayout\Core)->isOutsideBankingHoursUpdated($time);
+
+        $shouldEnableSmartSettlement = $isCurrentTimeOutsideBankingHours && $isOutsideBankingHours;
 
         return [
-            ConfigKey::ODS_CAPPING_CHECK_REQUIRED => (bool) ConfigKey::get(ConfigKey::ODS_CAPPING_CHECK_REQUIRED, false),
-            ConfigKey::ODS_GLOBAL_LIMIT => (int) ConfigKey::get(ConfigKey::ODS_GLOBAL_LIMIT, 0),
-            ConfigKey::ODS_CAPPING_SCALE_FACTOR => (float) ConfigKey::get(ConfigKey::ODS_CAPPING_SCALE_FACTOR, 100),
-            ConfigKey::ODS_CAPPED_MID_LIST => ConfigKey::get(ConfigKey::ODS_CAPPED_MID_LIST, []),
+            'smart_settlement' => $shouldEnableSmartSettlement ? 'active'  : 'inactive',
         ];
     }
 
-    private function shouldRetrieveGlobalConfigFromCapitalEs()
+    private function getGlobalConfigs()
     {
-        $request = ['experiment_id' => $this->app['config']->get('app.feature_config_from_capital_es_experiment_id')];
-        $response = $this->app['splitzService']->evaluateRequest($request);
+        $response = $this->app['capital_early_settlements']->getFeatureConfig('global');
+        $featureConfig = $response['global_feature_config'];
 
-        $variables = $response['response']['variant']['variables'] ?? [];
-        if (is_array($variables) === false)
-        {
-            return false;
-        }
-
-        foreach ($variables as $variable)
-        {
-            if (is_array($variable) === true && $variable['key'] === 'read_global_config' && $variable['value'] === 'on')
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return [
+            ConfigKey::ODS_CAPPING_CHECK_REQUIRED => (bool) $featureConfig['global_limit_check_required'],
+            ConfigKey::ODS_GLOBAL_LIMIT => (int) $featureConfig['global_limit'],
+            ConfigKey::ODS_CAPPING_SCALE_FACTOR => (float) $featureConfig['global_limit_capping_scale_factor'],
+            ConfigKey::ODS_CAPPED_MID_LIST => explode(',', $featureConfig['global_limit_capped_merchant_ids'])
+        ];
     }
 
     protected function getTransactionMutexresource(Base\Entity $baseEntity)

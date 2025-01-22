@@ -1257,6 +1257,8 @@ return array(
 
     'enable_payout_ikey_required_feature_flag_experiment_id' => env('ENABLE_PAYOUT_IKEY_REQUIRED_FEATURE_FLAG_EXPERIMENT_ID'),
 
+    'enable_smart_settlement_ods_experiment_id' => env('ENABLE_SMART_SETTLEMENT_ODS_EXPERIMENT_ID'),
+
     'enable_intl_va_async' => env('ENABLE_INTERNATIONAL_VIRTUAL_ACCOUNT_ASYNC'),
 
     'cross_border_import_rearch_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_EXPERIMENT_ID'),

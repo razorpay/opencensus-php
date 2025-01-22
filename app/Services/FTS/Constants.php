@@ -158,6 +158,22 @@ final class Constants
 
     const RTGS_REVISED_CUTOFF_MINUTE_MAX = 30;
 
+    const AXIS_RTGS_CUTOFF_HOUR_MIN      = 2;
+
+    const AXIS_NEFT_CUTOFF_HOUR_MIN      = 2;
+
+    const AXIS_RTGS_CUTOFF_MINUTE_MIN    = 0;
+
+    const AXIS_NEFT_CUTOFF_MINUTE_MIN    = 0;
+
+    const AXIS_RTGS_CUTOFF_HOUR_MAX      = 21;
+
+    const AXIS_RTGS_CUTOFF_MINUTE_MAX    = 30;
+
+    const AXIS_NEFT_CUTOFF_HOUR_MAX      = 21;
+
+    const AXIS_NEFT_CUTOFF_MINUTE_MAX    = 30;
+
     const NEFT_CUTOFF_HOUR_MIN           = 8;
 
     const NEFT_CUTOFF_HOUR_MAX           = 18;

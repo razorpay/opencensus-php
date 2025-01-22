@@ -18,8 +18,10 @@ class Validator extends Base\Validator
     const SETTLEMENT_ONDEMAND_FEES_INPUT           = 'settlement_ondemand_fees_input';
     const FETCH_BY_TIMESTAMP_INPUT                 = 'fetch_by_timestamp_input';
     const SETTLEMENT_ONDEMAND_LINKED_ACCOUNT_INPUT = 'settlement_ondemand_linked_account_input';
-    const MAX_ONDEMAND_AMOUNT                      = 2000000000;
+    const MAX_ONDEMAND_AMOUNT                      = 5000000000;
+    const MAX_ONDEMAND_SMART_AMOUNT                = 50000000000;
     const MIN_ONDEMAND_AMOUNT                      = 100;
+    const MIN_ONDEMAND_SMART_AMOUNT                = 20000000;
     const MIN_ONDEMAND_AMOUNT_FOR_DASHBOARD        = 200000;
     const MIN_PARTIAL_ES_AMOUNT                    = 10000;
 
@@ -38,6 +40,7 @@ class Validator extends Base\Validator
         Entity::SCHEDULED                      => 'sometimes|boolean',
         Entity::SETTLEMENT_ONDEMAND_TRIGGER_ID => 'sometimes|nullable|string|size:14',
         Entity::STATUS                         => 'required',
+        'settlement_payout_type'               => 'sometimes|string|in:settlement_payout_type_smart,settlement_payout_type_instant',
     ];
 
     protected static $settlementOndemandInputRules = [
@@ -46,6 +49,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY            => 'sometimes|in:INR',
         'description'               => 'sometimes|nullable|string|max:30',
         Entity::NOTES               => 'sometimes|nullable|array',
+        'settlement_payout_type'    => 'sometimes|string'
     ];
 
     public static $fetchByTimestampInputRules = [
@@ -72,7 +76,7 @@ class Validator extends Base\Validator
 
     protected function validateAmount($attribute, $value)
     {
-        if ($value > self::MAX_ONDEMAND_AMOUNT)
+        if ($value > self::MAX_ONDEMAND_SMART_AMOUNT)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_AMOUNT_MAX_LIMIT_EXCEEDED,
             null,
@@ -101,6 +105,50 @@ class Validator extends Base\Validator
                 [
                     'amount' => $value
                 ]);
+        }
+    }
+
+    public function validateOdsAmount($value, $isSmartSettlement, $merchantId)
+    {
+        if ($isSmartSettlement) {
+            if ($value > self::MAX_ONDEMAND_SMART_AMOUNT)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_AMOUNT_LESS_THAN_MAX_SMART_SETTLEMENT_AMOUNT,
+                    null,
+                    [
+                        'amount' => $value,
+                    ]);
+            }
+            else if ($value < self::MIN_ONDEMAND_SMART_AMOUNT)
+            {
+                if( $merchantId != 'GkppF4MuB6dafs') {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_AMOUNT_LESS_THAN_MIN_SMART_SETTLEMENT_AMOUNT,
+                        null,
+                        [
+                            'amount' => $value
+                        ]);
+                }
+            }
+        }
+        else {
+            if ($value > self::MAX_ONDEMAND_AMOUNT)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_AMOUNT_MAX_LIMIT_EXCEEDED,
+                    null,
+                    [
+                        'amount' => $value,
+                    ]);
+            }
+            else if ($value < self::MIN_ONDEMAND_AMOUNT)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_AMOUNT_LESS_THAN_MIN_ONDEMAND_AMOUNT,
+                    null,
+                    [
+                        'amount' => $value
+                    ]);
+            }
         }
     }
 

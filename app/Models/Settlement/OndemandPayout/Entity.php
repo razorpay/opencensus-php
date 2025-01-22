@@ -46,6 +46,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::MODE,
         self::INITIATED_AT,
         self::PROCESSED_AT,
         self::REVERSED_AT,
@@ -56,6 +57,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::CREATED_AT,
     ];
+
 
     protected $fillable = [
         self::MERCHANT_ID,
@@ -220,6 +222,29 @@ class Entity extends Base\PublicEntity
         return [
             self::ID                    => $arr[self::ID],
             self::ENTITY                => $arr[self::ENTITY],
+//            self::MODE                  => $arr[self::MODE],
+            self::INITIATED_AT          => $arr[self::INITIATED_AT],
+            self::PROCESSED_AT          => $arr[self::PROCESSED_AT],
+            self::REVERSED_AT           => $arr[self::REVERSED_AT],
+            self::AMOUNT                => $arr[self::AMOUNT],
+            'amount_settled'            => $this->getPayoutAmount(),
+            self::FEES                  => $arr[self::FEES],
+            self::TAX                   => $arr[self::TAX],
+            self::UTR                   => $arr[self::UTR],
+            self::STATUS                => $arr[self::STATUS],
+            self::CREATED_AT            => $arr[self::CREATED_AT],
+        ];
+    }
+
+    public function toArrayPublicWithExpand()
+    {
+        $arr = parent::toArrayPublicWithExpand();
+
+        return [
+            self::ID                    => $arr[self::ID],
+            self::ENTITY                => $arr[self::ENTITY],
+            self::MODE                  => $arr[self::MODE],
+            self::FAILURE_REASON        => $arr[self::FAILURE_REASON],
             self::INITIATED_AT          => $arr[self::INITIATED_AT],
             self::PROCESSED_AT          => $arr[self::PROCESSED_AT],
             self::REVERSED_AT           => $arr[self::REVERSED_AT],
