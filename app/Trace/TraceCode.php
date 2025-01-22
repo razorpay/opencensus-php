@@ -12629,6 +12629,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CROSS_BORDER_IMPORT_API_JPMC_VALIDATIONS_MISMATCH         = 'CROSS_BORDER_IMPORT_API_JPMC_VALIDATIONS_MISMATCH';
     const API_JPMC_VALIDATION_ERROR                                 = 'API_JPMC_VALIDATION_ERROR';
 
+    const DCS_RESPONSE = 'DCS_RESPONSE';
+    const DCS_FEATURES = 'DCS_FEATURES';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

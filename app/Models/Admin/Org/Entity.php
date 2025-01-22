@@ -520,6 +520,8 @@ class Entity extends Base\Entity
 
         $cacheTags = Feature\Entity::getCacheTagsForNames($this->entity, $this->getId());
 
+        $this->getTrace()->info(TraceCode::DCS_RESPONSE, ['cacheTTL' => $cacheTtl, 'cacheTags' => $cacheTags]);
+
         $apiResponse = $this->features()
                             ->remember($cacheTtl)
                             ->cacheTags($cacheTags)
@@ -531,7 +533,11 @@ class Entity extends Base\Entity
                            ->pluck(Feature\Entity::NAME)
                            ->toArray();
 
+        $this->getTrace()->info(TraceCode::DCS_RESPONSE, ['dcsResponse'=>$dcsResponse]);
+
         $this->loadedFeatures = $this->mergeUniqueArrays($apiResponse, $dcsResponse);
+
+        $this->getTrace()->info(TraceCode::DCS_RESPONSE, ['loadedFeatures'=>$this->loadedFeatures]);
 
         return $this->loadedFeatures;
     }
