@@ -324,22 +324,18 @@ class Core extends Base\Core
 
     public function savePGOSDataToAPI(array $data)
     {
-        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+        $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-        if ($splitzResult === 'variables')
-        {
-            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
+        // if data contains these keys, save the data to stakeholders
+        // irrespective of if it is a PGOS merchant or not
+        $skipPGOSCheckForFields = ['aadhaar_esign_status', 'aadhaar_verification_with_pan_status', 'bvs_probe_id'];
 
-            // if data contains these keys, save the data to stakeholders
-            // irrespective of if it is a PGOS merchant or not
-            $skipPGOSCheckForFields = ['aadhaar_esign_status', 'aadhaar_verification_with_pan_status', 'bvs_probe_id'];
-
-            // dual write only for below merchants
-            // merchants for whom pgos is serving onboarding requests
-            // merchants who are not completely activated
-            if (($merchant->getService() === MerchantConstants::PGOS or
-                array_intersect_key(array_flip($skipPGOSCheckForFields), $data)) and
-                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+        // dual write only for below merchants
+        // merchants for whom pgos is serving onboarding requests
+        // merchants who are not completely activated
+        if (($merchant->getService() === MerchantConstants::PGOS or
+            array_intersect_key(array_flip($skipPGOSCheckForFields), $data)) and
+            $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
             {
                 $stakeholders = (new Repository())->fetchStakeholders($data["merchant_id"]);
 
@@ -366,6 +362,5 @@ class Core extends Base\Core
 
                 }
             }
-        }
     }
 }

@@ -11120,17 +11120,13 @@ class Core extends Base\Core
     //so we are only editing the record and not creating it
     public function savePGOSDataToAPI(array $data)
     {
-        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::ID], 'pgos_migration_dual_writing_exp_id');
+        $merchant = $this->repo->merchant->find($data[Entity::ID]);
 
-        if ($splitzResult === 'variables')
-        {
-            $merchant = $this->repo->merchant->find($data[Entity::ID]);
-
-            // dual write only for below merchants
-            // merchants for whom pgos is serving onboarding requests
-            // merchants who are not completely activated
-            if ($merchant->getService() === Merchant\Constants::PGOS and
-                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+        // dual write only for below merchants
+        // merchants for whom pgos is serving onboarding requests
+        // merchants who are not completely activated
+        if ($merchant->getService() === Merchant\Constants::PGOS and
+            $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
             {
                 unset($data[Entity::ID]);
 
@@ -11156,7 +11152,6 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($merchant);
             }
-        }
     }
 
     public function getMerchantActivationDetails(string $merchantId)

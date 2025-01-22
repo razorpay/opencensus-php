@@ -12269,22 +12269,18 @@ class Core extends Base\Core
     //so we are only editing the record and not creating it
     public function savePGOSDataToAPI(array $data)
     {
-        $splitzResult = $this->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+        $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-        if ($splitzResult === 'variables')
-        {
-            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
+        // if data contains these keys, save the data to stakeholders
+        // irrespective of if it is a PGOS merchant or not
+        $skipPGOSCheckForFields = ['poa_verification_status'];
 
-            // if data contains these keys, save the data to stakeholders
-            // irrespective of if it is a PGOS merchant or not
-            $skipPGOSCheckForFields = ['poa_verification_status'];
-
-            // dual write only for below merchants
-            // merchants for whom pgos is serving onboarding requests
-            // merchants who are not completely activated
-            if (($merchant->getService() === Merchant\Constants::PGOS or
-                array_intersect_key(array_flip($skipPGOSCheckForFields), $data)) and
-                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+        // dual write only for below merchants
+        // merchants for whom pgos is serving onboarding requests
+        // merchants who are not completely activated
+        if (($merchant->getService() === Merchant\Constants::PGOS or
+            array_intersect_key(array_flip($skipPGOSCheckForFields), $data)) and
+            $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
             {
                 $merchantDetails = $this->repo->merchant_detail->getByMerchantId($data['merchant_id']);
 
@@ -12350,8 +12346,6 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($merchantDetails);
             }
-        }
-
     }
 
     /**

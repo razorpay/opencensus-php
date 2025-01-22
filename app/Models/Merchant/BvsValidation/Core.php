@@ -669,39 +669,34 @@ class Core extends Base\Core
 
     public function savePGOSDataToAPI(array $data)
     {
-        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::OWNER_ID], 'pgos_migration_dual_writing_exp_id');
+        $merchant = $this->repo->merchant->find($data[Entity::OWNER_ID]);
 
-        if ($splitzResult === 'variables')
+        // dual write only for below merchants
+        // merchants for whom pgos is serving onboarding requests
+        // merchants who are not completely activated
+        if ($merchant->getService() === Merchant\Constants::PGOS and
+            $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
         {
-            $merchant = $this->repo->merchant->find($data[Entity::OWNER_ID]);
+            $validation = $this->repo->bvs_validation->find($data[Entity::VALIDATION_ID]);
 
-            // dual write only for below merchants
-            // merchants for whom pgos is serving onboarding requests
-            // merchants who are not completely activated
-            if ($merchant->getService() === Merchant\Constants::PGOS and
-                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+            $data[Entity::OWNER_TYPE] = Constant::MERCHANT;
+
+            $data[Entity::PLATFORM] = Constant::PG;
+
+            if (empty($validation) === false)
             {
-                $validation = $this->repo->bvs_validation->find($data[Entity::VALIDATION_ID]);
+                $validation->edit($data);
 
-                $data[Entity::OWNER_TYPE] = Constant::MERCHANT;
+                $this->repo->bvs_validation->saveOrFail($validation);
+            }
+            else
+            {
+                $validation = new Entity;
 
-                $data[Entity::PLATFORM] = Constant::PG;
+                $validation->build($data);
 
-                if (empty($validation) === false)
-                {
-                    $validation->edit($data);
+                $this->repo->bvs_validation->saveOrFail($validation);
 
-                    $this->repo->bvs_validation->saveOrFail($validation);
-                }
-                else
-                {
-                    $validation = new Entity;
-
-                    $validation->build($data);
-
-                    $this->repo->bvs_validation->saveOrFail($validation);
-
-                }
             }
         }
     }

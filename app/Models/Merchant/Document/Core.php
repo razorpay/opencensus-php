@@ -811,23 +811,19 @@ class Core extends Base\Core
 
     public function savePGOSDataToAPI(array $data)
     {
-        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+        $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-        if ($splitzResult === 'variables')
-        {
-            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
+        // dual write only for below merchants
+        // merchants for whom pgos is serving onboarding requests
+        // merchants who are not completely activated
+        // or offline eligible merchant with offline not activated yet
 
-            // dual write only for below merchants
-            // merchants for whom pgos is serving onboarding requests
-            // merchants who are not completely activated
-            // or offline eligible merchant with offline not activated yet
+        $service = new Merchant\Service();
+        $activationStatus = $merchant->merchantDetail->getActivationStatus();
+        $isRekycMerchant = $service->isRekycMerchant($data[Entity::MERCHANT_ID],$activationStatus);
 
-            $service = new Merchant\Service();
-            $activationStatus = $merchant->merchantDetail->getActivationStatus();
-            $isRekycMerchant = $service->isRekycMerchant($data[Entity::MERCHANT_ID],$activationStatus);
-
-            if (($merchant->getService() === Merchant\Constants::PGOS and $activationStatus != Detail\Status::ACTIVATED) or
-                (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant) or $isRekycMerchant)
+        if (($merchant->getService() === Merchant\Constants::PGOS and $activationStatus != Detail\Status::ACTIVATED) or
+            (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant) or $isRekycMerchant)
             {
                 $document = $this->repo->merchant_document->findDocumentByFileStoreId($data[Entity::FILE_STORE_ID]);
 
@@ -866,7 +862,6 @@ class Core extends Base\Core
 
                 }
             }
-        }
     }
 
 
