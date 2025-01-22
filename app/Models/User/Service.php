@@ -284,8 +284,6 @@ class Service extends Base\Service
 
             $merchantId = $data['id'];
 
-            $easyOnboardingExperiment = (new Merchant\Core)->isRazorxExperimentEnable($merchantId,Merchant\RazorxTreatment::EMAIL_EASY_ONBOARDING_SIGNUP);
-
             if (empty($signupCampaign) === false)
             {
                 $ddInput = [

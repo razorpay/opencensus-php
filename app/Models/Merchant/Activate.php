@@ -559,10 +559,7 @@ class Activate extends Base\Core
 
     protected function shouldOnboardToLedger(Entity $merchant): bool
     {
-        $isExperimentEnabledForLedgerPGMerchant = (new Merchant\Core)->isRazorxExperimentEnable($merchant->getId(),
-            RazorxTreatment::LEDGER_ONBOARDING_PG_MERCHANT);
-
-        if($isExperimentEnabledForLedgerPGMerchant === true and $merchant->getCountry() === "IN")
+        if($merchant->getCountry() === "IN")
         {
             // If merchant is not transfer parent or child merchant -> should auto onboard it
             // If merchant is transfer parent -> should auto onboard it
@@ -716,7 +713,6 @@ class Activate extends Base\Core
     {
         if($merchant->getOrgId() === OrgEntity::AXIS_ORG_ID)
         {
-            $this->sendActivationEmailForAxisOrg($merchant);
             return;
         }
 
@@ -748,45 +744,6 @@ class Activate extends Base\Core
                 Mail::queue(new AccountActivationConfirmation($merchant->getId()));
             }
         }
-    }
-
-    private function sendActivationEmailForAxisOrg($merchant)
-    {
-        $isAxisWrapperEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
-            RazorxTreatment::AXIS_WRAPPER_ENABLED);
-
-        if($isAxisWrapperEnabled === false)
-        {
-            return;
-        }
-
-        $org = $merchant->org;
-        $dashboardUrl = $this->app['config']->get('applications.dashboard.url');
-
-        $data = [
-            DEConstants::MERCHANT             => [
-                Merchant\Entity::NAME          => $merchant->getName(),
-                Merchant\Entity::BILLING_LABEL => $merchant->getBillingLabel(),
-                Merchant\Entity::EMAIL         => $merchant->getEmail(),
-                DEConstants::ORG               => [
-                    DEConstants::HOSTNAME => $org->getPrimaryHostName(),
-                    Merchant\Detail\Entity::BUSINESS_NAME => $org->getBusinessName()
-                ],
-                'dashboard_url'                => $dashboardUrl
-            ],
-        ];
-
-        $mail = new AxisActivation($data, $org->toArray());
-
-        Mail::queue($mail);
-
-        /*
-         * sending out password reset email to the merchants, since password was created by the system
-         */
-        $input = [
-            "email" => $merchant->getEmail()
-        ];
-        (new UserService)->postResetPassword($input);
     }
 
     /**

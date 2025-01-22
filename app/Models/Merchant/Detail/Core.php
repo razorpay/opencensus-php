@@ -1366,7 +1366,6 @@ class Core extends Base\Core
 
     public function handlePluginDetails(Merchant\Entity $merchant, $businessWebsite)
     {
-
         $topic = env('WHATCMS_KAFKA_TOPIC_NAME');
 
         $event = [
@@ -2676,39 +2675,6 @@ class Core extends Base\Core
         }
 
         $this->autoUpdateMerchantActivationFlows($merchant, $merchantDetails);
-
-        if ($isRiskyMerchant === true or $merchantDetails->getActivationFlow() === ActivationFlow::BLACKLIST)
-        {
-            return;
-        }
-
-        $isExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchant->getId(),
-                                                                              RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
-        if ($isExperimentEnabled === false)
-        {
-            return;
-        }
-
-        if ($merchantDetails->isUnregisteredBusiness() === true)
-        {
-            $isAutoKycEnabled = (new Merchant\Core)->isAutoKycEnabled($merchantDetails, $merchant);
-
-            $canProcessInstantActivation = $this->canProcessInstantActivation($merchantDetails);
-
-            if (($isAutoKycEnabled === true) and
-                ($canProcessInstantActivation === true))
-            {
-                // in case of unregistered business if pan is verified then instantly activate merchant
-                (new Detail\ActivationFlow\Whitelist())->process($merchant);
-            }
-        }
-        else
-        {
-            // $activationFlow will be an instance of the ActivationFlowInterface
-            $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
-
-            $activationFlow->process($merchant);
-        }
     }
 
     protected function handleFlowForRiskyMerchant(Merchant\Entity $merchant, Entity $merchantDetails, $action, $orgId = null)
@@ -3547,20 +3513,6 @@ class Core extends Base\Core
             $merchantDetails->reviewer()->associate($reviewer);
         }
 
-        $updatedLiteOnboardingExpt = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchant->getId(),
-            RazorxTreatment::UPDATED_LITE_ONBOARDING);
-
-        if ($updatedLiteOnboardingExpt === true)
-        {
-            $promoterPanName = $merchantDetails->getPromoterPanName();
-
-            if ($promoterPanName !== null)
-            {
-                $merchantDetails->setBankAccountName($promoterPanName);
-            }
-        }
-
         $merchantDetails->edit($input);
 
         $kycClarificationReasons = Tracer::inspan(['name' => HyperTrace::GET_UPDATED_KYC_CLARIFICATION_REASONS], function() use ($input, $merchantDetails) {
@@ -3607,19 +3559,12 @@ class Core extends Base\Core
         }
         else
         {
-            $liteOnboardingExpt = (new Merchant\Core)->isRazorxExperimentEnable(
-                $merchant->getId(),
-                RazorxTreatment::LITE_ONBOARDING);
+            $aovInput = [
+                AvgOrderValue\Entity::MIN_AOV => -1,
+                AvgOrderValue\Entity::MAX_AOV => -1,
+            ];
 
-            if ($liteOnboardingExpt === true)
-            {
-                $aovInput = [
-                    AvgOrderValue\Entity::MIN_AOV => -1,
-                    AvgOrderValue\Entity::MAX_AOV => -1,
-                ];
-
-                (new AvgOrderValue\Core)->createOrEditAvgOrderValue($merchantDetails, $aovInput);
-            }
+            (new AvgOrderValue\Core)->createOrEditAvgOrderValue($merchantDetails, $aovInput);
         }
 
         $this->repo->saveOrFail($merchant);
@@ -3945,17 +3890,6 @@ class Core extends Base\Core
     {
         try
         {
-            $variant = $this->app->razorx->getTreatment(
-                $merchant->getId(),
-                RazorxTreatment::BVS_MANUAL_VERIFICATION_DATA,
-                $this->app['basicauth']->getMode() ?? "live"
-            );
-
-            if (strcmp($variant, Constant::ON) != 0)
-            {
-                return;
-            }
-
             if (!isset($data))
             {
                 $data = [];
@@ -8057,30 +7991,6 @@ class Core extends Base\Core
             $this->trace->traceException($e);
         }
 
-        if ($merchantDetails->getBusinessType() === BusinessType::PARTNERSHIP
-            and $merchantDetails->merchant->isNoDocOnboardingEnabled() === false)
-        {
-            $isExperimentEnabledForPartnershipBiz = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                                                                                                  RazorxTreatment::AUTO_KYC_PARTNERSHIP);
-
-            if ($isExperimentEnabledForPartnershipBiz === false)
-            {
-                return false;
-            }
-        }
-
-        if ($merchantDetails->getBusinessType() === BusinessType::TRUST
-            or $merchantDetails->getBusinessType() === BusinessType::SOCIETY)
-        {
-            $isExperimentEnabledForTrustSocietyAutoKyc = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                                                                                                       RazorxTreatment::AUTO_KYC_TRUST_SOCIETY);
-
-            if ($isExperimentEnabledForTrustSocietyAutoKyc === false)
-            {
-                return false;
-            }
-        }
-
         return true;
     }
 
@@ -8165,25 +8075,6 @@ class Core extends Base\Core
             }
         }
 
-        if ((in_array($businessType, BusinessType::getCOIApplicableBusinessTypes(), true) === true) && ($type == Constant::CERTIFICATE_OF_INCORPORATION))
-        {
-            $isExperimentEnabledForCOI = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                                                                                       RazorxTreatment::AUTO_KYC_COI);
-
-            $this->trace->info(TraceCode::COI_EXPERIMENT, [
-                "merchantId"                 => $merchantDetails->getMerchantId(),
-                "isExperimentEnabledForCOI"  => $isExperimentEnabledForCOI,
-                "type"                       => $type,
-                "merchant_activation_status" => $merchantDetails->getActivationStatus(),
-                "bizzType"                   => $businessType,
-            ]);
-
-            if ($isExperimentEnabledForCOI === false)
-            {
-                return $defaultValue;
-            }
-        }
-
         $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
             $merchantDetails->getMerchantId(),
             $type,
@@ -8213,17 +8104,6 @@ class Core extends Base\Core
     protected function verifyMerchantDetailCondition(Entity $merchantDetails, string $key, array $in)
     {
         $isAadhaarEsignRequired = $this->isAadhaarEsignVerificationRequired($merchantDetails);
-
-        if ($isAadhaarEsignRequired === true and $key === DetailEntity::POA_VERIFICATION_STATUS)
-        {
-            $isExperimentEnabled = $this->mcore->isRazorxExperimentEnable(
-                $merchantDetails->getMerchantId(), RazorxTreatment::POA_VERIFICATION_AUTO_KYC);
-
-            if ($isExperimentEnabled === false)
-            {
-                return false;
-            }
-        }
 
         $this->trace->info(TraceCode::AUTO_KYC_PARSER_DEBUG, [
             'merchant_id'  => $merchantDetails->getId(),
@@ -11368,9 +11248,8 @@ class Core extends Base\Core
                     array_key_exists($businessType, BusinessType::$businessTypeExperiments))
                 {
                     $experimentName            = BusinessType::$businessTypeExperiments[$businessType];
-                    $isRazorxExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable(
-                        $merchantId,
-                        $experimentName);
+                    $isRazorxExperimentEnabled = array_key_exists($experimentName, BusinessType::$fullyRampedRazorxExp);
+
 
                     $this->trace->info(
                         TraceCode::RAZORX_EXPERIMENT_RESULT,

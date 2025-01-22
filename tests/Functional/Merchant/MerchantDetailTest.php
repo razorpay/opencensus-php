@@ -6340,8 +6340,6 @@ Team Razorpay', '+911234567890');
 
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
-        $this->mockRazorX(__FUNCTION__, 'BVS_MANUAL_VERIFICATION_DATA', 'on', $merchantId);
-
         $this->startTest();
 
         // Tests that a new row is added in bvs_validation table with common artefact_type for this merchant.
@@ -10063,11 +10061,6 @@ Team Razorpay',
                         return $value;
                     }
 
-                    if ($feature === RazorxTreatment::WHATSAPP_NOTIFICATIONS)
-                    {
-                        return $value;
-                    }
-
                     return 'off';
                 }));
     }
@@ -10584,8 +10577,6 @@ Team Razorpay',
     {
         Mail::fake();
 
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
-
         $merchant = $this->fixtures->merchant->create([
             'activated' => true,
             'name' => 'Test name'
@@ -10641,8 +10632,6 @@ Team Razorpay',
 
    private function setupMerchantWithMerchantDetails(array $predefinedMerchant = [], array $predefinedMerchantDetails = [], string $role = Role::OWNER)
     {
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
-
         $merchant = $this->fixtures->create('merchant', $predefinedMerchant);
 
         $merchantId = $merchant['id'];
@@ -11344,7 +11333,6 @@ You can now start accepting payments from https://www.example.com.
 
     protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data, $expectedStorkParametersForSMSTemplate)
     {
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 

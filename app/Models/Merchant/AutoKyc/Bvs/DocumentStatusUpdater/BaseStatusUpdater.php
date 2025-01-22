@@ -158,37 +158,16 @@ abstract class BaseStatusUpdater implements StatusUpdater
             }
         }
 
-        $isSystemBasedNeedsClarificationEnabled = (new MerchantCore())->isRazorxExperimentEnable(
-            $merchantId,
-            RazorxTreatment::SYSTEM_BASED_NEEDS_CLARIFICATION);
-
         $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_REQUEST, [
             'artefact_type'     => $this->artefactType,
-            'experiment_status' => $isSystemBasedNeedsClarificationEnabled,
             'bvs_validation_id' => $this->consumedValidationId,
             'merchant_id'       => $merchantId
         ]);
 
-        if ($isSystemBasedNeedsClarificationEnabled === true)
-        {
-            UpdateMerchantContext::dispatch(Mode::LIVE, $merchantId, $this->consumedValidationId);
 
-            return;
-        }
+        UpdateMerchantContext::dispatch(Mode::LIVE, $merchantId, $this->consumedValidationId);
 
-        $newActivationStatus = $this->getUpdatedActivationStatus();
-
-        $activationStatus = $this->merchantDetails->getActivationStatus();
-
-        if (($activationStatus !== $newActivationStatus) and
-            ($activationStatus === Status::UNDER_REVIEW))
-        {
-            $activationStatusData = [
-                DetailEntity::ACTIVATION_STATUS => $newActivationStatus
-            ];
-
-            (new Core())->updateActivationStatus($this->merchant, $activationStatusData, $this->merchant);
-        }
+        return;
     }
 
     protected function getVerifiedStatus()

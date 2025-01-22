@@ -2085,7 +2085,6 @@ class MerchantTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
 
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
 
         $merchant = $this->fixtures->merchant->edit($merchant['id'], ['country_code' => "MY"]);
         $response = (new Merchant\Activate)->updateLedger($merchant);
@@ -2151,7 +2150,6 @@ class MerchantTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
 
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
 
         $response = (new Merchant\Activate)->updateLedger($merchant);
 
@@ -2220,8 +2218,6 @@ class MerchantTest extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
-
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
 
         $response = (new Merchant\Activate)->updateLedger($merchant);
 
@@ -2305,8 +2301,6 @@ class MerchantTest extends TestCase
 
         $merchant       = $merchantDetail->merchant;
 
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
-
         $response = (new Merchant\Activate)->updateLedger($merchant);
 
         $feature = $this->getDbEntity('feature', ["name" => 'pg_ledger_reverse_shadow', "entity_id" => '10000000000040']);
@@ -2343,8 +2337,6 @@ class MerchantTest extends TestCase
         $this->mockDCS();
 
         $merchant       = $merchantDetail->merchant;
-
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
 
         $response = (new Merchant\Activate)->updateLedger($merchant);
 
@@ -4810,7 +4802,6 @@ class MerchantTest extends TestCase
     {
         Config(['services.bvs.mock' => true]);
 
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -4959,8 +4950,6 @@ class MerchantTest extends TestCase
     public function testUpdateBankAccountPennyTestingFailWorkflowOnHoldMerchantReject()
     {
         Config(['services.bvs.mock' => true]);
-
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $this->mockStorkForBankAccountUpdateOnHoldRejectionReason();
 
@@ -5265,8 +5254,6 @@ Team Razorpay',
         Config(['services.bvs.mock' => true]);
 
         $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
-
-        $this->enableRazorXTreatmentForFeature('whatsapp_notifications');
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -5715,8 +5702,6 @@ Team Razorpay',
     public function testUpdateBankAccountPennyTestingFailWorkflowReject()
     {
         Config(['services.bvs.mock' => true]);
-
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $this->setupWorkflowForBankAccountUpdate();
 
@@ -15096,8 +15081,6 @@ Team Razorpay',
 
         Config(['services.bvs.response' => 'failure']);
 
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
-
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
@@ -15193,8 +15176,6 @@ Team Razorpay',
         Config(['services.bvs.sync.flow' => true]);
 
         Config(['services.bvs.response' => 'failure']);
-
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -18021,7 +18002,6 @@ Team Razorpay',
 
     protected function mockStorkForTransactionLimitSelfServe()
     {
-        $this->enableRazorXTreatmentForFeature('whatsapp_notifications');
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -18470,7 +18450,6 @@ The same has been enabled for the account.
 
     protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data, $expectedStorkParametersForSMSTemplate = [])
     {
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 

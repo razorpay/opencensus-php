@@ -354,11 +354,6 @@ class SubMerchantBatchTest extends TestCase
         $this->app->razorx->method('getTreatment')
                           ->will($this->returnCallback(
                               function($mid, $feature, $mode) {
-                                  if ($feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY)
-                                  {
-                                      return 'on';
-                                  }
-
                                   return 'off';
                               }));
     }

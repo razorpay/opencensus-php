@@ -1322,14 +1322,7 @@ class FeaturesTest extends OAuthTestCase
             ->will($this->returnCallback(
                 function ($mid, $feature, $mode)
                 {
-                    if ($feature === RazorxTreatment::SHOW_FRIENDBUY_WIDGET)
-                    {
-                        return 'on';
-                    }
-                    else
-                    {
-                        return 'off';
-                    }
+                    return 'off';
 
                 }) );
     }
@@ -1915,7 +1908,6 @@ Regards,
 
     private function setupMerchantWithMerchantDetails()
     {
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $merchantId = self::ONBOARDING_MERCHANT_ID;
 

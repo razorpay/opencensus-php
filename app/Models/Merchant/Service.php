@@ -7591,17 +7591,6 @@ class Service extends Base\Service
 
         $dataProcessor = new DataProcessor();
 
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::HARVESTER_SEGREGATE_QUERIES,
-            $this->app['basicauth']->getMode() ?? "live"
-        );
-
-        if(strcmp($variant, Constants::RAZORX_EXPERIMENT_ON) != 0) {
-            $response = $this->app['eventManager']->query($input, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);
-
-            return $dataProcessor->processMerchantAnalyticsResponse($response);
-        }
 
         if(isset($input[Constants::AGGREGATIONS]) === false) {
             $response = $this->app['eventManager']->query($input, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);

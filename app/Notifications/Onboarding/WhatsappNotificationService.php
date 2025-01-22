@@ -19,15 +19,7 @@ class WhatsappNotificationService extends BaseNotificationService
         $isExperimentEnabled = true;
 
         $merchantCore = new Core();
-        //use the experiment if we need to block specific whatsapp templates
-        if (isset(Events::WHATSAPP_TEMPLATES_NEW_EXPERIMENTS[$this->event]) === true)
-        {
-            $experiment = Events::WHATSAPP_TEMPLATES_NEW_EXPERIMENTS[$this->event];
 
-            $merchant = $this->args[Constants::MERCHANT];
-
-            $isExperimentEnabled = $merchantCore->isRazorxExperimentEnable($merchant->getMerchantId(), $experiment);
-        }
         if (isset(Events::WHATSAPP_TEMPLATES_SPLITZ_EXPERIMENTS[$this->event]) === true)
         {
             $experimentKey = Events::WHATSAPP_TEMPLATES_SPLITZ_EXPERIMENTS[$this->event];

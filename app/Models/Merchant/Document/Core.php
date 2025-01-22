@@ -662,29 +662,7 @@ class Core extends Base\Core
         // If document type belong to the category of joint validation document,
         // we need to send both documents together in one request.
         // Currently, this is hidden behind experiment.
-        $isExperimentEnabledForJointValidation = (new Merchant\Core)->isRazorxExperimentEnable($merchant->getMerchantId(),
-            RazorxTreatment::AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION);
-
-        if ($isExperimentEnabledForJointValidation and Type::isJointValidationDocumentType($document->getDocumentType()) === true)
-        {
-            $this->trace->info(TraceCode::BVS_JOINT_VALIDATION_REQUEST, [
-                'performOcrWithBvs' => 'aadhaar front and back joint validation experiment.',
-                '$merchant' => $merchant->getMerchantId()
-                ]);
-            $factory = new requestDispatcher\Factory();
-
-            $requestDispatcher = $factory->getBvsRequestDispatcherForDocument(
-                $document, $merchant, $merchantDetails);
-
-            if(empty($requestDispatcher)===false)
-            {
-                $this->trace->debug(TraceCode::BVS_JOINT_VALIDATION_REQUEST, [
-                    'triggerBVSRequest' => 'request dispatcher non-empty.'
-                ]);
-                $requestDispatcher->triggerBVSRequest();
-            }
-        }
-        else if (Type::isPoaDocument($document->getDocumentType()) === true)
+        if (Type::isPoaDocument($document->getDocumentType()) === true)
         {
             $this->performPoaOcrWithBvs($document, $merchantDetails,$merchant);
         }

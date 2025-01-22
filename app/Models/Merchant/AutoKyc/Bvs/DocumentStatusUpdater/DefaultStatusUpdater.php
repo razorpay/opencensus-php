@@ -184,8 +184,6 @@ class DefaultStatusUpdater extends BaseStatusUpdater
                 'bvs_validation_id'            => $this->consumedValidationId
             ]);
         }
-
-        $this->instantlyActivateMerchantIfApplicable($this->merchant, $this->merchantDetails);
     }
     /*
      This function is to check for validations before updating the artefact status in the merchant details table
@@ -233,42 +231,6 @@ class DefaultStatusUpdater extends BaseStatusUpdater
         $this->sendConsumedValidationResultEvent();
 
         $this->app['segment-analytics']->buildRequestAndSend();
-    }
-
-    protected function instantlyActivateMerchantIfApplicable($merchant, Detail\Entity $merchantDetails)
-    {
-        try
-        {
-            if ($this->artefactType !== Constant::PERSONAL_PAN)
-            {
-                return;
-            }
-
-            $isExperimentEnabled = (new MerchantCore())->isRazorxExperimentEnable($merchant->getId(),
-                                                                                  RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
-
-            if ($isExperimentEnabled === false)
-            {
-                return;
-            }
-
-            $isRiskyMerchant = (new Detail\DeDupe\Core())->isMerchantImpersonated($merchantDetails->merchant);
-
-            if ((new Detail\Core)->canActivateMerchant($merchantDetails, $isRiskyMerchant) === true)
-            {
-                (new Detail\ActivationFlow\Whitelist())->process($merchant);
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException($e, null,
-                                         TraceCode::UPDATE_MERCHANT_CONTEXT_JOB_ERROR,
-                                         [
-                                             'merchant_id' => $this->merchantId,
-                                             'method'      => __FUNCTION__
-                                         ]);
-
-        }
     }
 
     public function updateStatusToPending(): void
