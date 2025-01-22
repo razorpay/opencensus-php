@@ -11,11 +11,7 @@ export const fetchOptimizerAccounts = (
     url += `?account_id=${accountId}`;
   }
   if (count) {
-    if (url.includes('?')) {
-      url += `&skip=0&count=${count}`;
-    } else {
-      url += `?skip=0&count=${count}`;
-    }
+    url += `${url.includes('?') ? '&' : '?'}skip=0&count=${count}`;
   }
   const params = {
     url,
