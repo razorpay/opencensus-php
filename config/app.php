@@ -1235,6 +1235,8 @@ return array(
 
     'force_iin_fetch_from_api_for_recon' => env('FORCE_IIN_FETCH_FROM_API_FOR_RECON'),
 
+    'fetch_iin_from_bin_service' => env('FETCH_IIN_FROM_BIN_SERVICE'),
+
     'skip_optimizer_card_callback' => env('SKIP_OPTIMIZER_CARD_CALLBACK'),
 
     'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID'),

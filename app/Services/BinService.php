@@ -105,6 +105,39 @@ class BinService
         return [];
     }
 
+
+    public function fetchFromBinServiceAndAdaptResponse($iin)
+    {
+        // expand=true helps in fetching flows as well
+        $url = 'iins/' . $iin . '?expand=true';
+
+        // To be removed later, once made non-mandatory field in bin services
+        $namespace = 'RZP/IN/DEBIT';
+
+        $binServiceEntity = $this->sendRequest($url, Requests::GET, null, $namespace, BinService::FETCH_IIN);
+
+
+        if(isset($binServiceEntity) && !empty($binServiceEntity) && isset($binServiceEntity['iin']))
+        {
+            $responseEntity = $binServiceEntity;
+            $responseEntity = (new IINService())->transformBinServiceEntityToApiServiceEntity($responseEntity);
+
+            if(isset($binServiceEntity['mappedIin']) && $binServiceEntity['mappedIin'] !== $binServiceEntity['iin'])
+            {
+                $responseEntity['tokenised'] = true;
+                $responseEntity['card_iin'] = $binServiceEntity['mappedIin'];
+            }
+
+            return $responseEntity;
+        }
+
+        $this->trace->info(TraceCode::BIN_SERVICE_IIN_NOT_FOUND, [
+            'iin'       => $iin
+        ]);
+
+        return [];
+    }
+
     public function fetchTokenIINEntityFromBinService($iin, $readMode)
     {
         // expand=true helps in fetching flows as well

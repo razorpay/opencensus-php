@@ -143,13 +143,41 @@ class Service extends Base\Service
 
         try
         {
+            if($this->shouldRouteIINFetchToBinService($id) === true){
+                $iinSource = 'BIN_SERVICE';
+
+                $this->app['diag']->trackIINEvent(EventCode::BIN_API_INITIATION, null, null, $this->getCustomProperties($id, $iinSource));
+
+                $binService = new BinService();
+                $response = $binService->fetchFromBinServiceAndAdaptResponse($id);
+                $iin = (new IIN\Repository())->fillIinEntity($response);
+
+                if(isset($response) && isset($response['iin'])){
+                    $data = $this->getBasicDetails($iin);
+                    $data['card_iin'] = $response['card_iin'];
+                    $data['tokenised'] = $response['tokenised'];
+
+                    $data = $this->getPaymentFlows($data, $iin);
+
+                    $this->app['diag']->trackIINEvent(EventCode::BIN_API_SUCCESS, null, null, $this->getCustomProperties($id, $iinSource));
+                    (new Metric())->pushIinMetrics(Metric::BIN_API, Metric::SUCCESS, $iin, null, $iinSource);
+
+                    (new Metric())->pushIINResponseTimeMetrics($iin, Metric::BIN_API_RESPONSE_TIME, $startTime, $iinSource);
+                    return $data;
+                }
+
+                $this->app['diag']->trackIINEvent(EventCode::BIN_API_FAILURE, null, null, $this->getCustomProperties($id, $iinSource));
+            }
+
+            $startTime = microtime(true);
+
             $this->app['diag']->trackIINEvent(EventCode::BIN_API_INITIATION, null, null, $this->getCustomProperties($id));
 
             $input[Entity::IIN] = $id;
 
             (new Validator)->validateInput('fetch_iin', $input);
 
-            $token_iin = $this->repo->tokenised_iin->findbyTokenIin($id);
+            $token_iin = $this->repo->tokenised_iin->fetchTokenIINMappingFromRepo($id);
 
             $token_bin = null;
 
@@ -766,11 +794,12 @@ class Service extends Base\Service
         }
     }
 
-    protected function getCustomProperties($id)
+    protected function getCustomProperties($id, $source = null)
     {
         return  [
             'iin'           => $id,
             'merchant'      => $this->merchant->getId(),
+            'source'        => $source,
         ];
     }
 
@@ -1154,5 +1183,25 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+    private function shouldRouteIINFetchToBinService($iin)
+    {
+        if (Environment::isTestingEnvironment($this->app['env']) === true ||
+            Environment::isEnvironmentQA($this->app['env']) === true ||
+            Environment::isEnvironmentItf($this->app['env']) === true)
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $iin,
+            'experiment_id' => $this->app['config']->get('app.fetch_iin_from_bin_service'),
+            'request_data' => json_encode([
+                "bin" => $iin
+            ]),
+        ];
+
+        return (new Card\TokenisedIIN\Service())->checkIfSplitzExperimentIsEnabled($properties);
     }
 }

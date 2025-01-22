@@ -1459,7 +1459,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $iin = $this->payment->card->getIin();
 
-        if ($iin !== null && $this -> shouldForceIINFetchFromAPI($iin) === true)
+        $forceIINFetchFromAPI = $iin !== null && $this->shouldForceIINFetchFromAPI($iin);
+
+        if ($forceIINFetchFromAPI === true)
         {
             $this->paymentIin = $this->iinRepo->findOrFailAPIEntity($iin);
 
@@ -1523,7 +1525,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             'payment_iin' => $this->paymentIin]
         );
 
-        $this->repo->saveOrFail($this->paymentIin);
+        if($forceIINFetchFromAPI === true)
+        {
+            $this->repo->saveOrFail($this->paymentIin);
+        }
     }
 
     protected function shouldForceIINFetchFromAPI(string $bin)
