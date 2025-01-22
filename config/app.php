@@ -1243,8 +1243,6 @@ return array(
 
     'enable_feature_fetch_from_dcs_exp_id' => env('ENABLE_FEATURE_FETCH_FROM_DCS_EXP_ID'),
 
-    'pgrouter_order_payments_route_update'       => env('PG_ROUTER_ORDER_PAYMENTS_ROUTE_UPDATE'),
-
     'cls_onboarding_feature_fetch_exp_id' => env('CLS_ONBOARDING_FEATURE_FETCH_EXP_ID'),
 
     'gifu_card_upi_ds_refunds_exp_id' => env('GIFU_CARD_UPI_DS_REFUNDS_EXP_ID'),
@@ -1264,9 +1262,9 @@ return array(
     'cross_border_import_rearch_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_EXPERIMENT_ID'),
 
     'cross_border_import_rearch_shadow_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_SHADOW_EXPERIMENT_ID'),
-    
+
     'cross_border_pacb_tagging_experiment_id'   => env('CROSS_BORDER_PACB_TAGGING_EXPERIMENT_ID'),
-    
+
     'update_upi_late_auth_status'   => env('UPDATE_UPI_LATE_AUTH_STATUS')
 
 );

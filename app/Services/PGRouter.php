@@ -481,19 +481,7 @@ class PGRouter
 
     public function fetchOrderPayments(string $orderId, string $merchantId, $withCard = false)
     {
-        $endpoint = sprintf(self::PGRouterFetchOrderPayments, $orderId);
-
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.pgrouter_order_payments_route_update'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        if ($variant === true)
-        {
-            $endpoint = sprintf(self::PGRouterFetchReArchOrderPayments, $orderId);
-        }
+        $endpoint = sprintf(self::PGRouterFetchReArchOrderPayments, $orderId);
 
         $endpoint = $endpoint."?merchant_id=".$merchantId;
 
