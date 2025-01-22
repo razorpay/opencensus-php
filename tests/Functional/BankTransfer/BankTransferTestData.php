@@ -2873,6 +2873,61 @@ return [
         ],
     ],
 
+    'testValidateBankTransferIdfc' => [
+        'request' => [
+            'url'     => '/ecollect/validate/idfc/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_IDFC_SECRET',
+            ],
+            'content' => [
+                    "txnAmt" => "500.0",
+                    "VANum" => "IDF180120IDFCA0001",
+                    "bankRef" => "HDFB201907090000000112",
+                    "remiterName" => "aditi",
+                    "remitterAc" => "45612345678900987",
+                    "remitterBankifsc" => "HDFC0003981",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => '000',
+                'statusDesc' => 'Success',
+                'errorCode' => '000',
+                'errorDesc'   => "Success",
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testProcessBankTransferIdfc' => [
+        'request' => [
+            'url'     => '/ecollect/notify/idfc/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_IDFC_SECRET',
+            ],
+            'content' => [
+                "batchAmt" => "500.0",
+                "vaNumber" => "IDF180120IDFCA0001",
+                "utrNo" => "HDFB201907090000000112",
+                "remitterAccountNumber" => "45612345678900987",
+                "creditGenerationTime" => "24-SEP-19 04.50.40.360000 PM",
+                "remitterName" => "MR BHRAMHA",
+                "productCode" => "IIMPS",
+                "ifscCode" => "HDFC0003981",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'S',
+                'statusDesc' => 'Success',
+                'errorCode' => '000',
+                'errorDesc'   => "Success",
+                ]
+            ],
+            'status_code' => 200,
+        ],
     'testValidateBankTransferAxis' => [
         'request' => [
             'url'     => '/ecollect/validate/axis/test',

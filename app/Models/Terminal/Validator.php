@@ -158,6 +158,7 @@ class Validator extends Base\Validator
         Payment\Gateway::BT_RBL,
         Payment\Gateway::BT_HDFC_ECMS,
         Payment\Gateway::BT_AXIS,
+        Payment\Gateway::BT_IDFC,
         Payment\Gateway::WORLDLINE,
         Payment\Gateway::CRED,
         Payment\Gateway::TWID,
@@ -2492,6 +2493,15 @@ class Validator extends Base\Validator
         Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
+    protected static $btIdfcTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_idfc',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::TYPE                        => 'required|array',
+        Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
     protected static $btHdfcEcmsTerminalRules = [
         Entity::GATEWAY                     => 'required|in:bt_hdfc_ecms',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
@@ -2513,6 +2523,16 @@ class Validator extends Base\Validator
 
     protected static $btAxisEditTerminalRules = [
         Entity::GATEWAY                     => 'sometimes|in:bt_axis',
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::BANK_TRANSFER               => 'bail|sometimes|boolean|in:1',
+        Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $btIdfcEditTerminalRules = [
+        Entity::GATEWAY                     => 'sometimes|in:bt_idfc',
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',

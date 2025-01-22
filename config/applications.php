@@ -310,6 +310,10 @@ return [
         'x_corp_code' => env('AXIS_X_CORP_CODE', "9845"),
     ],
 
+    'idfc_va' => [
+        'org_token'   => env('IDFC_VA_SECRET'),
+    ],
+
     'rbl' => [
         'secret' => env('BANKING_ACCOUNT_RBL_WEBHOOK_SECRET'),
     ],

@@ -4491,7 +4491,7 @@ class Service extends Base\Service
             }
 
             $merchant = $this->repo->merchant->findOrFailPublic($input['merchant_id']);
-            
+
             if (empty($merchant))
             {
                 throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND);

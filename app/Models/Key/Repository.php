@@ -65,11 +65,17 @@ class Repository extends Base\Repository
         try {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
             $credcaseKeys = $this->app[Constants::CREDCASE_API]->list($merchantId, $mode, $expired);
+            return $this->app[Constants::CREDCASE_SERVICE]->fetchKeys($routeName, $credcaseKeys, $apiKeys);
         } catch (\Exception $e) {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['merchantId' => $merchantId], ["exception" => $e]]);
+            $this->trace->count(Metric::KEY_API_DB_RESPONSE_COUNT, [
+                    'route_name' => $routeName,
+                    'mode' => $mode,
+                    'function' => 'getFirstActiveKeyForMerchant',
+                ]
+            );
             return $apiKeys;
         }
-        return $this->app[Constants::CREDCASE_SERVICE]->fetchKeys($routeName, $credcaseKeys, $apiKeys);
     }
 
     public function getFirstActiveKeyForMerchant(string $merchantId)
@@ -92,13 +98,19 @@ class Repository extends Base\Repository
         }
         try {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
-            $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants($merchantId, $mode, 1, false);
+            $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants(array($merchantId), $mode, 1, false);
             $credcaseKey = isEmpty($credcaseKeys->getItems()) ? null : $credcaseKeys->getItems()->offsetGet(0);
+            return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiDBKey);
         } catch (\Exception $e) {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['merchantId' => $merchantId], ["exception" => $e]]);
+            $this->trace->count(Metric::KEY_API_DB_RESPONSE_COUNT, [
+                    'route_name' => $routeName,
+                    'mode' => $mode,
+                    'function' => 'getFirstActiveKeyForMerchant',
+                ]
+            );
             return $apiDBKey;
         }
-        return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiDBKey);
     }
 
     /**
@@ -128,11 +140,17 @@ class Repository extends Base\Repository
         try {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
             $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants($merchantIds, $mode, count($merchantIds), $expired);
+            return $this->app[Constants::CREDCASE_SERVICE]->fetchKeys($routeName, $credcaseKeys, $apiDBKeys);
         } catch (\Exception $e) {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['merchantId' => $merchantIds], ["exception" => $e]]);
+            $this->trace->count(Metric::KEY_API_DB_RESPONSE_COUNT, [
+                    'route_name' => $routeName,
+                    'mode' => $mode,
+                    'function' => 'getActiveKeysForMerchants',
+                ]
+            );
             return $apiDBKeys;
         }
-        return $this->app[Constants::CREDCASE_SERVICE]->fetchKeys($routeName, $credcaseKeys, $apiDBKeys);
     }
 
 
@@ -160,13 +178,19 @@ class Repository extends Base\Repository
         }
         try {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
-            $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants($merchantId, $mode, 1, false);
+            $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants(array($merchantId), $mode, 1, false);
             $credcaseKey = isEmpty($credcaseKeys->getItems()) ? null : $credcaseKeys->getItems()->offsetGet(0);
+            return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiDBKey);
         } catch (\Exception $e) {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['merchantId' => $merchantId], ["exception" => $e]]);
+            $this->trace->count(Metric::KEY_API_DB_RESPONSE_COUNT, [
+                    'route_name' => $routeName,
+                    'mode' => $mode,
+                    'function' => 'getLatestActiveKeyForMerchant',
+                ]
+            );
             return $apiDBKey;
         }
-        return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiDBKey);
     }
 
     public function findNotExpired($keyId)
@@ -194,11 +218,17 @@ class Repository extends Base\Repository
         try {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
             $credcaseKey = $this->app[Constants::CREDCASE_API]->getKeyByMerchantAndId($merchantId, $keyId);
+            return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiDBKey);
         } catch (\Exception $e) {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['merchantId' => $merchantId], ["exception" => $e]]);
+            $this->trace->count(Metric::KEY_API_DB_RESPONSE_COUNT, [
+                    'route_name' => $routeName,
+                    'mode' => $mode,
+                    'function' => 'findByMerchantIdAndKeyId',
+                ]
+            );
             return $apiDBKey;
         }
-        return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiDBKey);
     }
 
     public function getKeysForMerchantForLiveAndTestMode($merchantId, $mode, $expired = false)
@@ -208,7 +238,6 @@ class Repository extends Base\Repository
         if ($expired === false) {
             $query->notExpired();
         }
-
         $apiDBKeys = $query->get();
         return $this->getKeysForMerchantForLiveAndTestModeV2($apiDBKeys, $routeName, $merchantId, $mode, $expired);
     }
@@ -222,11 +251,17 @@ class Repository extends Base\Repository
         try {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
             $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants(array($merchantId), $mode, 10, $expired);
+            return $this->app[Constants::CREDCASE_SERVICE]->fetchKeys($routeName, $credcaseKeys, $apiDBKeys);
         } catch (\Exception $e) {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['merchantId' => $merchantId], ["exception" => $e]]);
+            $this->trace->count(Metric::KEY_API_DB_RESPONSE_COUNT, [
+                    'route_name' => $routeName,
+                    'mode' => $mode,
+                    'function' => 'getKeysForMerchantForLiveAndTestMode',
+                ]
+            );
             return $apiDBKeys;
         }
-        return $this->app[Constants::CREDCASE_SERVICE]->fetchKeys($routeName, $credcaseKeys, $apiDBKeys);
     }
 
     public function logKeysRepoCall($mode, $routeName, $functionName, $enable = false) {

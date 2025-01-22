@@ -197,6 +197,50 @@ class BankTransferController extends Controller
         return $this->processAxisBankTransfer(false);
     }
 
+    public function validateIdfcBankTransferLive()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
+
+        $request = Request::getContent();
+
+        return $this->service()->validateIdfcBankTransfer($request);
+    }
+
+    public function processIdfcBankTransferLive()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
+
+        $request = Request::getContent();
+
+        return $this->service()->processIdfcBankTransfer($request);
+    }
+
+    public function validateIdfcBankTransferTest()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);
+
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
+
+        $request = Request::getContent();
+
+        return $this->service()->validateIdfcBankTransfer($request);
+    }
+
+    public function processIdfcBankTransferTest()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);
+
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
+
+        $request = Request::getContent();
+
+        return $this->service()->processIdfcBankTransfer($request);
+    }
+
     public function processRblBankTransfer($validateReqToken = true)
     {
         // hardcoding this for now. We will fix this later.
@@ -260,7 +304,7 @@ class BankTransferController extends Controller
                     )
                 );
             }
-            
+
             if (TraceCode::YESBANK_GATEWAY_UNEXPECTED_PAYMENT_ERROR === $e ->getMessage()){
                 return array(
                     "error" => array(

@@ -1898,6 +1898,11 @@ trait Capture
                         $outboxerEvent = OrderOutboxConstants::ORDER_STATUS_PAID_EVENT;
                     }
 
+
+                    if ($payment->getOffer() !== null)
+                    {
+                        $input[Order\Entity::APPLIED_OFFERS] = [$payment->getOffer()->getId()];
+                    }
                     if ($isOrderOutboxEnabled === true)
                     {
                         $outbokerInput = [

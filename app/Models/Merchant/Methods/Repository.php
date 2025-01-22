@@ -15,7 +15,10 @@ class Repository extends Base\Repository
 {
     use CacheQueries;
 
-    use Base\RepositoryUpdateTestAndLive;
+    use Base\RepositoryUpdateTestAndLive
+    {
+        saveOrFail as saveOrFailTestAndLive;
+    }
 
     protected $entity = 'methods';
 
@@ -373,8 +376,31 @@ class Repository extends Base\Repository
             'options' => $options,
         ]);
 
-        //TODO: saveOrFail implementation is required for dualwrite flow and existing write flow for proxy call
         $this->saveOrFail($entity, $options);
+    }
+
+    public function saveOrFail($entity, array $options = array())
+    {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+
+        try
+        {
+            $this->trace->count(Methods\Metric::PAYMENT_METHODS_UPDATE_METRIC, $metricData);
+            $this->saveOrFailTestAndLive($entity, $options);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->Error(TraceCode::UPDATE_MERCHANT_METHODS_FAILED, ['exception' =>  $exception]);
+            $msg = $exception->getMessage();
+            if (str_contains($msg, "A row in test and live database do not match"))
+            {
+                $this->trace->count(Methods\Metric::PAYMENT_METHOD_DIFF_METRIC, $metricData);
+            }
+            $this->trace->count(Methods\Metric::PAYMENT_METHOD_UPDATE_FAILED_METRIC, $metricData);
+        }
     }
 
 }

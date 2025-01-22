@@ -331,6 +331,7 @@ class Metric
     const CREDCASE_READ_COUNT_MISMATCH = 'credcase_read_count_mismatch';
 
     const CREDCASE_READ_RESPONSE_MISMATCH = 'credcase_read_response_mismatch';
+    const KEY_API_DB_RESPONSE_COUNT = 'keys_api_db_response_count';
     const CREDCASE_KEY_READ_ROUTE_COUNT = 'credcase_key_read_count';
 
     const CREDCASE_REQUEST_FAILED = 'credcase_request_failed';

@@ -6,10 +6,13 @@ use App;
 use Cache;
 use Carbon\Carbon;
 use Database\DefaultConnection;
+use phpseclib\Crypt\AES;
+use RZP\Base\JitValidator;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\Environment;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Encryption\AESEncryption;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\ProcessCollectxTransfer;
 use RZP\Models\Bank\BankCodes;
@@ -221,9 +224,8 @@ class Service extends Base\Service
 
             return $this->handleCollectXCallback($input, $provider, $requestPayload);
 
-
         }
-        
+
         if ($provider === Provider:: RBL)
         {
             $this->trace->error(
@@ -231,7 +233,7 @@ class Service extends Base\Service
                     'Request' => $input
                 ]);
 
-            throw new Exception\BadRequestValidationFailureException(TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR);  
+            throw new Exception\BadRequestValidationFailureException(TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR);
         }
 
         if ($input['gateway'] === Gateway::YESBANK || strpos($input['input']['payee_ifsc'], "YESB") === 0 )
@@ -430,6 +432,7 @@ class Service extends Base\Service
         if ($virtualAccount === null) {
             return false;
         }
+
 
         // Check2: Check if experiment is enabled for the given merchant
         $isCollectxAxisExpEnabled = $this->isCollectxAxisExperimentEnabled($virtualAccount->getMerchantId());
@@ -2033,6 +2036,10 @@ class Service extends Base\Service
             ($routeName === 'bank_transfer_process_axis') or
             ($routeName === 'bank_transfer_process_axis_test') or
             ($routeName === 'bank_transfer_process_axis_internal') or
+            ($routeName === 'bank_transfer_validate_idfc') or
+            ($routeName === 'bank_transfer_process_idfc') or
+            ($routeName === 'bank_transfer_validate_idfc_test') or
+            ($routeName === 'bank_transfer_process_idfc_test') or
             $isCollectXValidation) {
 
             if (!isset($input[Entity::AMOUNT], $input[Entity::REQ_UTR], $input[Entity::PAYEE_ACCOUNT]) === true) {
@@ -2060,6 +2067,10 @@ class Service extends Base\Service
                 if (($routeName === 'bank_transfer_process_axis') or
                     ($routeName === 'bank_transfer_process_axis_test') or
                     ($routeName === 'bank_transfer_process_axis_internal') or
+                    ($routeName === 'bank_transfer_validate_idfc') or
+                    ($routeName === 'bank_transfer_process_idfc') or
+                    ($routeName === 'bank_transfer_validate_idfc_test') or
+                    ($routeName === 'bank_transfer_process_idfc_test') or
                     $isCollectXValidation) {
 
                     throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_DUPLICATE_BANK_TRANSFER_CALLBACK, $input);
@@ -2165,6 +2176,17 @@ class Service extends Base\Service
             case Provider::HDFC_ECMS :
 
                 unset($input['Remitter_Account_No'], $input['Account_Number']);
+                break;
+
+            case Provider::IDFC:
+
+                $sensitiveFieldsForIdfc = BankTransferConstants::SENSITIVE_DATA_FOR_VA_IDFC_CALLBACK;
+                foreach ($sensitiveFieldsForIdfc as $key) {
+                    if (isset($input[$key])) {
+                        unset($input[$key]);
+                    }
+                }
+
                 break;
 
             default:
@@ -3761,5 +3783,596 @@ class Service extends Base\Service
 
         return true;
     }
+
+    public function encryptIdfcBankCallbackData(array $inputData, $iv)
+    {
+        $data = json_encode($inputData);
+
+        if($data === false) {
+            return ;
+        }
+
+        // Decoding the Hexadecimal key to bytes
+        $skeySpec = hex2bin(env('IDFC_AES_ENCRYPTION_KEY'));
+
+        $params = $this->getAesEncrytionHeaders($skeySpec, $iv);
+
+        $encryptor = new AESEncryption($params);
+
+        $encryptedData = $encryptor->encrypt($data);
+
+        // Encrypting the payload
+        // Creating a final byte array, with iv length + length of encryptedBytes
+        $finalarray = $iv . $encryptedData;
+
+        // Encoding the combined IV and encrypted payload in Base64
+        $finalEncryptedPayload = base64_encode($finalarray);
+
+        return $finalEncryptedPayload;
+    }
+
+    public function decryptIdfcBankCallbackData(string $encrypted){
+        $skeySpec = hex2bin(env('IDFC_AES_ENCRYPTION_KEY'));
+
+        // Getting the IV from combined byte array
+        $iv = $this->getIvFromRequest($encrypted);
+        if ($iv === null) {
+            return null;
+        }
+
+        // Decoding the Base64 string to combined byte array
+        $encryptedCombinedBytes = base64_decode($encrypted);
+
+        // Get the encrypted bytes from combined array for decryption
+        $encryptedPayload = substr($encryptedCombinedBytes, 16);
+
+        // Decrypting the payload
+        $params = $this->getAesEncrytionHeaders($skeySpec, $iv);
+
+        $encryptor = new AESEncryption($params);
+
+        $decryptedText = $encryptor->decrypt($encryptedPayload);
+
+        return json_decode($decryptedText, true);
+    }
+
+    private function getAesEncrytionHeaders($secret, $iv) {
+        return [
+            AESEncryption::IV => $iv,
+            AESEncryption::MODE => AES::MODE_CBC,
+            AESEncryption::SECRET => $secret,
+        ];
+    }
+
+
+    public function getIvFromRequest(string $encrypted) {
+        // Decoding the Base64 string to combined byte array
+        $encryptedCombinedBytes = base64_decode($encrypted);
+
+        if ($encryptedCombinedBytes === false) {
+            return null;
+        }
+
+        // Getting the IV from combined byte array
+        return substr($encryptedCombinedBytes, 0, 16);
+    }
+
+    public function validateIdfcBankTransfer($request)
+    {
+        $this->trace->info(TraceCode::IDFC_VA_VALIDATION_CALLBACK,
+            ['request' => $request]);
+
+        $this->traceXFundLoadingMetricsBankWise("", Provider::IDFC);
+
+        try {
+            $iv = $this->getIvFromRequest($request);
+
+            if (empty($iv) === true)
+            {
+                $this->traceXFundLoadingMetricsBankWise(TraceCode::IDFC_VA_CALLBACK_DATA_ENCRYPTION_FAILED,
+                    Provider::IDFC);
+
+                $errorResp = [
+                    "status" => "F",
+                    "statusDesc" =>  "Failed",
+                    "errorCode" =>  "02",
+                    "errorDesc" => "INVALID_DATA"
+                ];
+
+                $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
+                    'message'   => 'empty iv',
+                    'response' => $errorResp
+                ]);
+
+                $encryptedRespone =  $this->encryptIdfcBankCallbackData($errorResp, $iv);
+
+                return response()->make($encryptedRespone, 401, ['Content-Type' => 'text/plain']);
+            }
+
+            $input = $this->decryptIdfcBankCallbackData($request);
+
+            $this->trace->info(TraceCode::IDFC_VA_VALIDATION_CALLBACK,
+                ['request' => $input]);
+
+            if($input === null)
+            {
+
+                $this->traceXFundLoadingMetricsBankWise(TraceCode::IDFC_VA_CALLBACK_DATA_DECRYPTION_FAILED,
+                    Provider::IDFC);
+
+                $errorResp = [
+                    "status" => "F",
+                    "statusDesc" =>  "Failed",
+                    "errorCode" =>  "02",
+                    "errorDesc" => "INVALID_DATA"
+                ];
+
+                $this->trace->error(TraceCode::IDFC_VA_CALLBACK_DATA_DECRYPTION_FAILED , [
+                    'message'   => 'decryption failed',
+                    'response' => $errorResp
+                ]);
+
+                $encryptedRespone =  $this->encryptIdfcBankCallbackData($errorResp, $iv);
+
+                return response()->make($encryptedRespone, 400, ['Content-Type' => 'text/plain']);
+            }
+
+            $inputList = $this->modifyIdfcDataToEntityForValidationApi($input);
+
+            $provider = $inputList['gateway_provider']['provider'];
+
+            $response = $this->saveRequestAndProcess($inputList['input'], $provider, false, $input);
+
+            if ($response['valid'] === false)
+            {
+                $this->traceXFundLoadingMetricsBankWise(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA,
+                    Provider::IDFC);
+
+                $errorResp = [
+                    "vaNum" => $inputList['input']['payee_account'],
+                    "bankRef" => $inputList['input']['transaction_id'],
+                    "status" => "F",
+                    "statusDesc" =>  "Failed",
+                    "errorCode" =>  "02",
+                    "errorDesc" => "INVALID_DATA"
+                ];
+
+                $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
+                    'message'   => 'invalid response from saveRequestAndProcess',
+                    'response' => $errorResp
+                ]);
+
+                $encryptedRespone = $this->encryptIdfcBankCallbackData($errorResp, $iv);
+
+                return response()->make($encryptedRespone, 400, ['Content-Type' => 'text/plain']);
+            }
+
+            $successResponse = [
+                "vANum"   => $inputList['input']['payee_account'],
+                "bankRef" => $inputList['input']['transaction_id'],
+                "status" => "000",
+                "statusDesc" => "Success",
+                "errorCode" => "000",
+                "errorDesc" => "Success"
+            ];
+
+            $encryptedRespone =  $this->encryptIdfcBankCallbackData($successResponse, $iv);
+
+            if($encryptedRespone == null){
+                $this->trace->error(TraceCode::IDFC_VA_CALLBACK_DATA_ENCRYPTION_FAILED, [
+                    'message'   => 'encryption failure at final response',
+                ]);
+
+                $this->traceXFundLoadingMetricsBankWise(TraceCode::IDFC_VA_CALLBACK_DATA_ENCRYPTION_FAILED,
+                    Provider::IDFC);
+
+                return response()->make($encryptedRespone, 500, ['Content-Type' => 'text/plain']);
+            }
+
+            $this->trace->info(TraceCode::IDFC_VA_VALIDATION_CALLBACK_SUCCESSFUL, [
+                'message'   => 'success response sent ',
+                'response' => $successResponse
+            ]);
+
+            return response()->make($encryptedRespone, 200, ['Content-Type' => 'text/plain']);
+
+        }
+        catch (BadRequestValidationFailureException $e)
+        {
+            $this->traceXFundLoadingMetricsBankWise(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA,
+                Provider::IDFC);
+
+            $this->trace->traceException($e);
+
+            $errorResp = [
+                "vaNum" => $inputList['input']['payee_account'],
+                "bankRef" => $inputList['input']['transaction_id'],
+                "status" => "F",
+                "statusDesc" =>  "Failed",
+                "errorCode" =>  "02",
+                "errorDesc" => "INVALID_DATA"
+            ];
+
+            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA , [
+                'response' => $errorResp
+            ]);
+
+            $encryptedRespone =  $this->encryptIdfcBankCallbackData($errorResp, $iv);
+
+            return response()->make($encryptedRespone, 400, ['Content-Type' => 'text/plain']);
+        }
+        catch (\Throwable $e)
+        {
+            $this->traceXFundLoadingMetricsBankWise(TraceCode::IDFC_VA_CALLBACK_UNKNOWN_FAILURE,
+                Provider::IDFC);
+
+            $this->trace->traceException($e);
+
+            $errorResp = [
+                "vaNum" => $inputList['input']['payee_account'],
+                "bankRef" => $inputList['input']['transaction_id'],
+                "status" => "F",
+                "statusDesc" =>  "Failed",
+                "errorCode" =>  "02",
+                "errorDesc" => "INVALID_DATA"
+            ];
+
+            $encryptedRespone =  $this->encryptIdfcBankCallbackData($errorResp, $iv);
+
+            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_UNKNOWN_FAILURE , [
+                'response' => $errorResp
+            ]);
+
+            return response()->make($encryptedRespone, 500, ['Content-Type' => 'text/plain']);
+        }
+    }
+
+    public function processIdfcBankTransfer($request)
+    {
+        $this->trace->info(TraceCode::IDFC_VA_NOTIFICATION_CALLBACK,
+            ['request' => $request]);
+
+        $this->traceXFundLoadingMetricsBankWise("", Provider::IDFC);
+
+        try {
+            $iv = $this->getIvFromRequest($request);
+
+            if (empty($iv) === true)
+            {
+                $this->traceXFundLoadingMetricsBankWise(TraceCode::IDFC_VA_CALLBACK_DATA_ENCRYPTION_FAILED,
+                    Provider::IDFC);
+
+                $errorResp = [
+                    "status" => "F",
+                    "statusDesc" =>  "Failed",
+                    "errorCode" =>  "02",
+                    "errorDesc" => "INVALID_DATA"
+                ];
+
+                $this->trace->error(TraceCode::IDFC_VA_CALLBACK_DATA_DECRYPTION_FAILED , [
+                    'message'   => 'iv is empty',
+                    'response' => $errorResp
+                ]);
+
+                $encryptedRespone =  $this->encryptIdfcBankCallbackData($errorResp, $iv);
+
+                return response()->make($encryptedRespone, 400, ['Content-Type' => 'text/plain']);
+            }
+
+            $input = $this->decryptIdfcBankCallbackData($request);
+
+            $this->trace->info(TraceCode::IDFC_VA_NOTIFICATION_CALLBACK,
+                ['request' => $input]);
+
+            if($input === null)
+            {
+                $this->traceXFundLoadingMetricsBankWise(TraceCode::IDFC_VA_CALLBACK_DATA_DECRYPTION_FAILED,
+                    Provider::IDFC);
+
+                $errorResp = [
+                    "status" => "F",
+                    "statusDesc" =>  "Failed",
+                    "errorCode" =>  "02",
+                    "errorDesc" => "INVALID_DATA"
+                ];
+
+                $encryptedRespone =  $this->encryptIdfcBankCallbackData($errorResp, $iv);
+
+                $this->trace->error(TraceCode::IDFC_VA_CALLBACK_DATA_DECRYPTION_FAILED , [
+                    'message'   => 'decryption failed',
+                    'response' => $errorResp
+                ]);
+
+                return response()->make($encryptedRespone, 400, ['Content-Type' => 'text/plain']);
+            }
+
+            $this->trace->info(TraceCode::IDFC_VA_NOTIFICATION_CALLBACK,
+                $this->removeSenderSensitiveInfoFromLogging($input, Provider::IDFC));
+
+            $inputList = $this->modifyIdfcDataToEntityForNotificationApi($input);
+
+            $provider = $inputList['gateway_provider']['provider'];
+
+            $this->saveRequestAndProcess($inputList['input'], $provider, false, $input);
+
+            $successResponse = [
+                "corRefNo"   => $inputList['input']['payee_account'],
+                "ReqrefNo" =>  $inputList['input']['transaction_id'],
+                "status" => "S",
+                "statusDesc" => "Success",
+                "errorCode" => "000",
+                "errorDesc" => "Success"
+            ];
+
+            $encryptedRespone =  $this->encryptIdfcBankCallbackData($successResponse, $iv);
+
+            if($encryptedRespone == null){
+
+                $this->trace->error(TraceCode::IDFC_VA_CALLBACK_DATA_ENCRYPTION_FAILED,
+                    [
+                        'message'   => 'encryption failure at final response',
+                    ]);
+
+                $this->traceXFundLoadingMetricsBankWise(TraceCode::IDFC_VA_CALLBACK_DATA_ENCRYPTION_FAILED,
+                    Provider::IDFC);
+
+                return response()->make($encryptedRespone, 500, ['Content-Type' => 'text/plain']);
+            }
+
+            $this->trace->info(TraceCode::IDFC_VA_NOTIFICATION_CALLBACK_SUCCESSFUL, [
+                'message'   => 'success response sent ',
+                'response' => $successResponse
+            ]);
+
+            return response()->make($encryptedRespone, 200, ['Content-Type' => 'text/plain']);
+
+        }
+        catch (BadRequestValidationFailureException $e)
+        {
+            $this->traceXFundLoadingMetricsBankWise(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA,
+                Provider::IDFC);
+
+            $this->trace->traceException($e);
+
+            $errorResp = [
+                "corRefNo"   => $inputList['input']['payee_account'],
+                "ReqrefNo" =>  $inputList['input']['transaction_id'],
+                "status" => "F",
+                "statusDesc" =>  "Failure",
+                "errorCode" =>  "1001",
+                "errorDesc" => "INVALID_DATA"
+            ];
+
+            $encryptedRespone =  $this->encryptIdfcBankCallbackData($errorResp, $iv);
+
+            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA , [
+                'response' => $errorResp
+            ]);
+
+            return response()->make($encryptedRespone, 400, ['Content-Type' => 'text/plain']);
+        }
+        catch (\Throwable $e) {
+            $this->traceXFundLoadingMetricsBankWise(TraceCode::IDFC_VA_CALLBACK_UNKNOWN_FAILURE,
+                Provider::IDFC);
+
+            $this->trace->traceException($e);
+
+            $errorResp = [
+                "corRefNo" => $inputList['input']['payee_account'],
+                "ReqrefNo" => $inputList['input']['transaction_id'],
+                "status" => "F",
+                "statusDesc" => "Failure",
+                "errorCode" => "1001",
+                "errorDesc" => "INVALID_DATA"
+            ];
+
+            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA , [
+                'response' => $errorResp,
+                'status_code' => 500,
+            ]);
+
+            $encryptedRespone = $this->encryptIdfcBankCallbackData($errorResp, $iv);
+
+            return response()->make($encryptedRespone, 500,['Content-Type' => 'text/plain']);
+        }
+    }
+
+    protected function traceXFundLoadingMetricsBankWise($traceCode, $bankName)
+    {
+        try {
+            if($bankName == Provider::IDFC){
+                $metric = empty($traceCode) ? \RZP\Models\Payout\Metric::FUND_LOADING_VA_CALLBACK : \RZP\Models\Payout\Metric::FUND_LOADING_VA_CALLBACK_FAILURE;
+
+                $this->trace->count(
+                    $metric,
+                    [
+                        'trace_code' => $traceCode,
+                        'route_name' => $this->app['api.route']->getCurrentRouteName()
+                    ]);
+            }
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::IDFC_METRIC_LOGGING_ERROR, [
+                'message' => $e->getMessage(),
+                'trace_code' => $traceCode,
+                'route_name' => $this->app['api.route']->getCurrentRouteName()
+            ]);
+        }
+    }
+
+    protected function modifyIdfcDataToEntityForValidationApi($input)
+    {
+        (new JitValidator)->setStrictFalse()->rules(Validator::$idfcRulesForValidationApi)->caller($this)->validate($input);
+
+        // Bank is not sending IFSC code in case of IMPS mode.
+        $mode = \RZP\Models\BankTransfer\Mode::NEFT;
+
+        $payerIfsc = $input['remitterBankifsc']?: "";
+
+        if($payerIfsc === "")
+        {
+            $mode = \RZP\Models\BankTransfer\Mode::IMPS;
+        }
+
+        $utr = $input['bankRef'];
+
+        if (($utr === null))
+        {
+            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
+                'message'   => 'utr is null',
+            ]);
+
+            throw new BadRequestValidationFailureException('INVALID_DATA');
+        }
+
+        $provider  = Provider::IDFC;
+
+        $payerAccount = $input['remitterAc'];
+
+        $payeeIfsc = Provider::IDFC_COMMON_IFSC;  // Payee IFSC code is hardcoded at our end
+
+        $payerName = $input['remiterName']??""; // spelling error in bank doc
+
+        $time = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $payeeAccount = $input['VANum'];
+
+        if(substr($payeeAccount, 0, 4) != Provider::IDFC_VA_PREFIX)
+        {
+            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
+                'message'   => 'invalid Va idfc account prefix',
+                'va_prefix' => substr($payeeAccount, 0, 4)
+            ]);
+
+            throw new BadRequestValidationFailureException('INVALID_DATA');
+        }
+
+        return array(
+            'input' => [
+                'request_type'  => 'validation',
+                'payee_account'  => $payeeAccount,
+                'payee_ifsc'     => $payeeIfsc,
+                'payer_account'  => $payerAccount,
+                'payer_name'     => $payerName,
+                'payer_ifsc'     => $payerIfsc,
+                'transaction_id' => $utr,
+                'amount'         => number_format($input['txnAmt'], 2, '.', ''),
+                'mode'           => $mode,
+                'time'           => $time,
+                'description'    => null,
+                'narration'      => $utr,
+            ],
+            'gateway_provider' => [
+                'provider'       => $provider,
+            ]);
+    }
+
+    protected function modifyIdfcDataToEntityForNotificationApi($input)
+    {
+        (new JitValidator)->setStrictFalse()->rules(Validator::$idfcRulesForNotificationApi)->caller($this)->validate($input);
+
+        // setting up the default mode, in case of mode is not available
+        $productCode = $input['productCode'];
+
+        if(BankTransferConstants::IDFC_PRODUCT_CODE_TO_MODE_MAPPING[$productCode]=== null)
+        {
+            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
+                'message'   => 'invalid product code in the request',
+                'productCode' => $productCode,
+            ]);
+
+            throw new BadRequestValidationFailureException('INVALID_DATA', null, $input);
+        }
+
+        $mode = BankTransferConstants::IDFC_PRODUCT_CODE_TO_MODE_MAPPING[$productCode];
+        $utr = $input['utrNo'];
+
+        if (($utr === null))
+        {
+            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
+                'message'   => 'utr is null',
+            ]);
+
+            throw new BadRequestValidationFailureException('INVALID_DATA', null, $input);
+        }
+
+        $provider  = Provider::IDFC;
+
+        $payerAccount = $input['remitterAccountNumber'];
+        $payeeAccount = $input['vaNumber'];
+        $payeeIfsc = Provider::IDFC_COMMON_IFSC;  // Payee IFSC code is hardcoded at our end
+
+        $payerIfsc = $input['ifscCode']?: "";
+
+        //$payerIfsc cannot be null for NEFT, RTGS and IFT mode. It can be null only for IMPS mode.
+        if($payerIfsc === "" && $mode !== \RZP\Models\BankTransfer\Mode::IMPS)
+        {
+            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
+                'message'   => 'payerIfsc is null',
+                'mode' => $mode,
+            ]);
+
+            throw new BadRequestValidationFailureException('INVALID_DATA');
+        }
+
+        try
+        {
+            $time = Carbon::createFromFormat(  'd-M-y h.i.s.u A', $input['creditGenerationTime'], Timezone::IST)->getTimestamp();
+        }
+        catch (\Throwable $e)
+        {
+
+            $this->trace->warning(TraceCode::AXIS_VA_INVALID_CALLBACK_DATA, [
+                'message' => 'invalid time format',
+                'time'  => $input['Req_dt_time'] ?: null,
+            ]);
+
+            $time = Carbon::now(Timezone::IST)->getTimestamp();
+        }
+
+        $payerName = $input['remitterName']??"";
+
+        if(substr($payeeAccount, 0, 4) != Provider::IDFC_VA_PREFIX)
+        {
+            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
+                'message'   => 'invalid Va idfc account prefix',
+                'va_prefix' => substr($payeeAccount, 0, 4)
+            ]);
+
+            throw new BadRequestValidationFailureException('INVALID_DATA');
+        }
+
+        // https://razorpay.slack.com/archives/C07PW1M7HAQ/p1737011718760019
+        // Check if the request is > 2 days old, reject the request if true
+        $diff = Carbon::now(Timezone::IST)->diff(Carbon::createFromTimestamp($time, Timezone::IST));
+        if($diff->days >= 2)
+        {
+            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
+                'message'   => 'Transaction older than 2 days',
+                'va_prefix' => substr($payeeAccount, 0, 4)
+            ]);
+
+            throw new BadRequestValidationFailureException('INVALID_DATA');
+        }
+
+        return array(
+            'input' => [
+                'request_type'  => 'notification',
+                'payee_account'  => $payeeAccount,
+                'payee_ifsc'     => $payeeIfsc,
+                'payer_account'  => $payerAccount,
+                'payer_ifsc'     => $payerIfsc,
+                'payer_name'     => $payerName,
+                'transaction_id' => $utr,
+                'amount'         => number_format($input['batchAmt'], 2, '.', ''),
+                'mode'           => $mode,
+                'time'           => $time,
+                'description'    => null,
+                'narration'      => $utr,
+            ],
+            'gateway_provider' => [
+                'provider'       => $provider,
+            ]);
+    }
+
 
 }

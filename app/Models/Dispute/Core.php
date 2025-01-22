@@ -690,21 +690,27 @@ class Core extends Base\Core
 
     public function handleLostDisputeRefunds(Entity $dispute, array $input)
     {
-        $acceptedDisputeAmount = $this->getAcceptedDisputeAmount($dispute, $input);
+        $acceptedDisputeAmount = $this->getAcceptedDisputeAmount($dispute, $input, RecoveryMethod::REFUND);
 
         $this->createRefundAndUpdateDispute($dispute, $acceptedDisputeAmount);
 
-        // In case DAO = true, we make a negative adjustment at dispute creation stage,
-        // which needs to be reversed now for refunds recovery method
+        // Computing currency based on getAmountDeducted
         if ($dispute->getDeductAtOnset() === true)
         {
-            $this->createPositiveAdjustmentAndUpdateDispute($dispute, $dispute->getAmountDeducted(), false);
+            $amountDeductedCurrency = '';
+            if ($dispute->getAmount()){
+                $amountDeductedCurrency = $dispute->getCurrency();
+            }
+            else{
+                $amountDeductedCurrency = $dispute->getBaseCurrency();
+            }
+            
+            $this->createPositiveAdjustmentAndUpdateDispute($dispute, $dispute->getAmountDeducted(), false, $amountDeductedCurrency);
         }
     }
-
     protected function handleLostDisputeAdjustments(Entity $dispute, array $input)
     {
-        $acceptedDisputeAmount = $this->getAcceptedDisputeAmount($dispute, $input);
+        $acceptedDisputeAmount = $this->getAcceptedDisputeAmount($dispute, $input, RecoveryMethod::ADJUSTMENT);
 
         if ($dispute->getAmountDeducted() === 0)
         {
@@ -733,9 +739,23 @@ class Core extends Base\Core
             }
 
             if (($dispute->getAmountDeducted() - $acceptedDisputeAmount) > 0)
-            {
-                $this->createPositiveAdjustmentAndUpdateDispute($dispute,
-                    $dispute->getAmountDeducted() - $acceptedDisputeAmount);
+            {   
+                
+                $amountDeductedCurrency = '';
+                if ($dispute->getBaseAmount()){
+                    $amountDeductedCurrency = $dispute->getBaseCurrency();
+                }
+                else{
+                    $amountDeductedCurrency = $dispute->getCurrency();
+                }
+
+            
+                $this->createPositiveAdjustmentAndUpdateDispute(
+                    $dispute,
+                    $dispute->getAmountDeducted() - $acceptedDisputeAmount,
+                    true,
+                    $amountDeductedCurrency
+                );
             }
         }
 
@@ -894,15 +914,17 @@ class Core extends Base\Core
         $this->setRecoveryStatusAndUnRecoveredAmount($dispute->getBaseAmount(), $newBalance, $dispute);
     }
 
-    protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0, bool $shouldResetDeductionSourceAttributes = true)
+    protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0, bool $shouldResetDeductionSourceAttributes = true, string $adjustmentCurrency=null)
     {
         if ($amount === 0)
         {
             $amount = $dispute->getAmountDeducted();
         }
-
+        if ($adjustmentCurrency === null) {
+            $adjustmentCurrency = $dispute->getBaseCurrency() ?: $dispute->getCurrency();
+        }
         $input = [
-            Adjustment\Entity::CURRENCY    => $dispute->getBaseCurrency() ?: $dispute->getCurrency(),
+            Adjustment\Entity::CURRENCY    => $adjustmentCurrency,
             Adjustment\Entity::AMOUNT      => $amount,
             Adjustment\Entity::DESCRIPTION => self::CREDIT_ADJUSTMENT_DESCRIPTION,
         ];
@@ -1009,18 +1031,27 @@ class Core extends Base\Core
                 ]);
         }
     }
-
-    protected function getAcceptedDisputeAmount(Entity $dispute, array $input)
+    protected function getAcceptedDisputeAmount(Entity $dispute, array $input, $recoveryMethod)
     {
-        $disputeBaseAmount = $dispute->getAmount() ?: $dispute->getBaseAmount();
-
-        if (isset($input[Entity::ACCEPTED_AMOUNT]) === false)
-        {
-            return $disputeBaseAmount;
+        if (!in_array($recoveryMethod, [RecoveryMethod::REFUND, RecoveryMethod::ADJUSTMENT])) {
+            throw new Exception\BadRequestValidationFailureException('Invalid recovery method');
         }
-
-        $dispute->getValidator()->validateAcceptedDisputeAmount($disputeBaseAmount, $input);
-
+    
+        if ($recoveryMethod === RecoveryMethod::REFUND) {
+            $disputeAmount = $dispute->getAmount();
+        } 
+        
+        if ($recoveryMethod === RecoveryMethod::ADJUSTMENT) {
+            $disputeAmount = $dispute->getBaseAmount();
+        }
+        
+    
+        if (!isset($input[Entity::ACCEPTED_AMOUNT])) {
+            return $disputeAmount;
+        }
+    
+        $dispute->getValidator()->validateAcceptedDisputeAmount($disputeAmount, $input);
+    
         return $input[Entity::ACCEPTED_AMOUNT];
     }
 

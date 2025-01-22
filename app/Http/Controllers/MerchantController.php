@@ -1584,10 +1584,8 @@ class MerchantController extends Controller
         ]);
 
         $response = $this->service(E::MERCHANT_DETAIL)->postMerchantReKycUpdate($input);
-    
         return ApiResponse::json($response);
     }
-    
     public function postApplyCoupon()
     {
         $input = Request::all();
