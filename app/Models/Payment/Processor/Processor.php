@@ -5145,8 +5145,20 @@ class Processor
             $payload[E::PAYMENT]['entity'][Payment\Entity::INVOICE_ID] = Invoice\Entity::getSignedId($invoiceId);
         }
 
-        $method = $payment->method;
 
+        $paymentContext = $payment->getMetadata('payment_context') ?? null;
+
+        if (empty($paymentContext['offer']) === false)
+        {
+            $payload[Constants\Entity::PAYMENT]['entity']['upi']['offer'] = $paymentContext['offer'];
+        }
+
+        if (empty($paymentContext['emi']) === false)
+        {
+            $payload[Constants\Entity::PAYMENT]['entity']['upi']['emi'] = $paymentContext['emi'];
+        }
+
+        $method = $payment->method;
         // we fetch gift_card details from reference17 and populate to the field 'gift_cards' in payments
         if (($method === Method::GIFT_CARDS) && ($payment->getReference17() !== null))
         {
