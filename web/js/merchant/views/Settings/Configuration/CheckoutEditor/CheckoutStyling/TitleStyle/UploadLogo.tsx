@@ -112,15 +112,17 @@ const UploadLogo: React.FC<UploadLogoProps> = ({ image, imageRaw, type }) => {
               accessibilityLabel="delete-logo"
             />
           </ImageSelectedWrapper>
-          <Text
-            variant="caption"
-            weight="medium"
-            size="medium"
-            color="surface.text.gray.muted"
-            marginTop="spacing.3"
-          >
-            Recommended aspect ratio 1:1. Max size 5MB.
-          </Text>
+          {type === 'logo' && (
+            <Text
+              variant="caption"
+              weight="medium"
+              size="medium"
+              color="surface.text.gray.muted"
+              marginTop="spacing.3"
+            >
+              Recommended aspect ratio 1:1.
+            </Text>
+          )}
         </Box>
       ) : (
         <Box width="100%">
@@ -133,15 +135,17 @@ const UploadLogo: React.FC<UploadLogoProps> = ({ image, imageRaw, type }) => {
             Upload Logo
           </Text>
           <ImageSelector onClick={onImageUpload} />
-          <Text
-            variant="caption"
-            weight="regular"
-            size="medium"
-            color="surface.text.gray.muted"
-            marginTop="spacing.3"
-          >
-            Recommended aspect ratio 1:1. Max size 5MB.
-          </Text>
+          {type === 'logo' && (
+            <Text
+              variant="caption"
+              weight="regular"
+              size="medium"
+              color="surface.text.gray.muted"
+              marginTop="spacing.3"
+            >
+              Recommended aspect ratio 1:1.
+            </Text>
+          )}
         </Box>
       )}
     </>

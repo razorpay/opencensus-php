@@ -579,7 +579,7 @@ export const Sections: SectionCardInterface[] = [
     additionalCondition:
       ({ extraConfig }: AdditionalContextInterface) =>
       (user: User): boolean =>
-        !isCheckoutV2SettingsAllowed(extraConfig) &&
+        !isCheckoutV2SettingsAllowed(extraConfig, user) &&
         (isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user, extraConfig)),
     subSections: [
       {
@@ -628,7 +628,7 @@ export const Sections: SectionCardInterface[] = [
     additionalCondition:
       ({ extraConfig }: AdditionalContextInterface) =>
       (user: User): boolean =>
-        isCheckoutV2SettingsAllowed(extraConfig) && isConfigurationViewAllowed(user),
+        isCheckoutV2SettingsAllowed(extraConfig, user) && isConfigurationViewAllowed(user),
     subSections: [
       {
         id: Checkout_V2_SettingsFields.CHECKOUT_STYLING,

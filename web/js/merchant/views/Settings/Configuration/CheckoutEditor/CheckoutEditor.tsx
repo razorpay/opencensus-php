@@ -298,7 +298,6 @@ const CheckoutEditor = ({
           </Box>
           <ConfigControls />
         </Box>
-
         <CheckoutDemo />
       </Box>
     </CheckoutEditorProvider>

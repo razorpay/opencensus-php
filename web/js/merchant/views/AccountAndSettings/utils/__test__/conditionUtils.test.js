@@ -550,6 +550,66 @@ describe('isCurlecPaypalOnboardingEnabled', () => {
   });
 });
 
+describe('isCheckoutV2SettingsAllowed', () => {
+  it('should return true when experiment is active and user is not from Malaysia', () => {
+    const extraConfig = {
+      abExperiments: {
+        checkout_editor_v2_preview: {
+          variables: {
+            result: 'on',
+          },
+        },
+      },
+    };
+    const user = {
+      isCountryMalaysia: false,
+    };
+    expect(conditionalUtils.isCheckoutV2SettingsAllowed(extraConfig, user)).toBe(true);
+  });
+
+  it('should return false when experiment is not active', () => {
+    const extraConfig = {
+      abExperiments: {
+        checkout_editor_v2_preview: {
+          variables: {
+            result: 'off',
+          },
+        },
+      },
+    };
+    const user = {
+      isCountryMalaysia: false,
+    };
+    expect(conditionalUtils.isCheckoutV2SettingsAllowed(extraConfig, user)).toBe(false);
+  });
+
+  it('should return false when user is from Malaysia', () => {
+    const extraConfig = {
+      abExperiments: {
+        checkout_editor_v2_preview: {
+          variables: {
+            result: 'on',
+          },
+        },
+      },
+    };
+    const user = {
+      isCountryMalaysia: true,
+    };
+    expect(conditionalUtils.isCheckoutV2SettingsAllowed(extraConfig, user)).toBe(false);
+  });
+
+  it('should return false when experiment is not defined', () => {
+    const extraConfig = {
+      abExperiments: {},
+    };
+    const user = {
+      isCountryMalaysia: false,
+    };
+    expect(conditionalUtils.isCheckoutV2SettingsAllowed(extraConfig, user)).toBe(false);
+  });
+});
+
 const testUtilsForJnkOmniFlow = ({ utilName, userProperty, additionalProperties, config = {} }) => {
   describe(`${utilName} - with JNK omni flow`, () => {
     test.each([

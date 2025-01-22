@@ -81,7 +81,7 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
         <StyledHeader className="scrollable-tab-header">
           <ShowWhen
             additionalCondition={(user) =>
-              isConfigurationViewAllowed(user) && isCheckoutV2SettingsAllowed(extraConfig)
+              isConfigurationViewAllowed(user) && isCheckoutV2SettingsAllowed(extraConfig, user)
             }
           >
             <NavLink to={ROUTES_INFO.CHECKOUT_STYLING}>
@@ -98,7 +98,7 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
           </ShowWhen>
           <ShowWhen
             additionalCondition={(user) =>
-              isConfigurationViewAllowed(user) && !isCheckoutV2SettingsAllowed(extraConfig)
+              isConfigurationViewAllowed(user) && !isCheckoutV2SettingsAllowed(extraConfig, user)
             }
           >
             <NavLink to={ROUTES_INFO.BRANDING}>Branding</NavLink>
@@ -111,7 +111,8 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
           </ShowWhen>
           <ShowWhen
             additionalCondition={(user) =>
-              isTrustedBadgeAllowed(user, extraConfig) && !isCheckoutV2SettingsAllowed(extraConfig)
+              isTrustedBadgeAllowed(user, extraConfig) &&
+              !isCheckoutV2SettingsAllowed(extraConfig, user)
             }
           >
             <NavLink to={ROUTES_INFO.TRUSTED_BADGE}>Trusted Badge</NavLink>
@@ -129,7 +130,9 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
                       path={getRefRoute(ROUTES_INFO.BRANDING)}
                       element={
                         <RouteGuard
-                          additionalCondition={() => !isCheckoutV2SettingsAllowed(extraConfig)}
+                          additionalCondition={() =>
+                            !isCheckoutV2SettingsAllowed(extraConfig, user)
+                          }
                           defaultPath={ROUTES_INFO.CHECKOUT_STYLING}
                         >
                           <StyledConfiguration showBranding />
@@ -140,7 +143,9 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
                       path={getRefRoute(ROUTES_INFO.FLASH_CHECKOUT)}
                       element={
                         <RouteGuard
-                          additionalCondition={() => !isCheckoutV2SettingsAllowed(extraConfig)}
+                          additionalCondition={() =>
+                            !isCheckoutV2SettingsAllowed(extraConfig, user)
+                          }
                           defaultPath={ROUTES_INFO.CHECKOUT_FEATURES}
                         >
                           <StyledConfiguration showFlashCheckout />
@@ -151,7 +156,9 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
                       path={getRefRoute(ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE)}
                       element={
                         <RouteGuard
-                          additionalCondition={() => !isCheckoutV2SettingsAllowed(extraConfig)}
+                          additionalCondition={() =>
+                            !isCheckoutV2SettingsAllowed(extraConfig, user)
+                          }
                           defaultPath={ROUTES_INFO.CHECKOUT_FEATURES}
                         >
                           <StyledConfiguration showSkipMandatorySummaryPage />
@@ -160,7 +167,9 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
                     />
                   </Routes>
                 </ShowWhen>
-                <ShowWhen additionalCondition={() => isCheckoutV2SettingsAllowed(extraConfig)}>
+                <ShowWhen
+                  additionalCondition={() => isCheckoutV2SettingsAllowed(extraConfig, user)}
+                >
                   <ShowWhen additionalCondition={(user) => isConfigurationViewAllowed(user)}>
                     <Routes>
                       <Route

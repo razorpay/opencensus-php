@@ -10,17 +10,22 @@ import TitleStyle from './CheckoutStyling/TitleStyle/TitleStyle';
 import RazorpayTrustesBadge from './CheckoutStyling/TrustedBadge/RazorpayTrustesBadge';
 import { isRazorpayTrustedBadgeActive } from './CheckoutStyling/TrustedBadge/utils';
 import { TrustedBadgeType } from './context/types';
+import { User } from 'common/typings';
 
 interface CheckoutStylesProps {
   trustedBadge: TrustedBadgeType;
+  user: User;
 }
-const CheckoutStyles: React.FC<CheckoutStylesProps> = ({ trustedBadge }: CheckoutStylesProps) => {
+const CheckoutStyles: React.FC<CheckoutStylesProps> = ({
+  trustedBadge,
+  user,
+}: CheckoutStylesProps) => {
   const isRTBActive = isRazorpayTrustedBadgeActive(trustedBadge);
   return (
     <>
       <FestivalTheme />
       <BrandColor />
-      {isRTBActive && <RazorpayTrustesBadge isActive={isRTBActive} />}
+      {isRTBActive && user?.isCountryIndia && <RazorpayTrustesBadge isActive={isRTBActive} />}
       <TitleStyle />
       <ButtonStyle />
       <FontStyle />
@@ -33,5 +38,6 @@ const CheckoutStyles: React.FC<CheckoutStylesProps> = ({ trustedBadge }: Checkou
 export default connect((state) => {
   return {
     trustedBadge: state.trustedBadge,
+    user: state.session.user,
   };
 })(CheckoutStyles);

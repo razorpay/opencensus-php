@@ -121,6 +121,6 @@ export const EDIT_LOGO_TITLE_HEADER_VALUE = {
 };
 
 export const TITLE_DEFAULT_VALUE = {
-  title: 'Title style',
-  subTitle: 'Choose a title style best for your logo (max 1 mb)',
+  title: 'Brand name and logo',
+  subTitle: 'Select a title style and include the brand name with logo, wordmark, or just the name',
 };

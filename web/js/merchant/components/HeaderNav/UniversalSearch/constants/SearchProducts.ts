@@ -864,7 +864,7 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
-      !isCheckoutV2SettingsAllowed(extraConfig) && isConfigurationViewAllowed(user),
+      !isCheckoutV2SettingsAllowed(extraConfig, user) && isConfigurationViewAllowed(user),
     apiCondition: false,
   },
   {
@@ -882,7 +882,7 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
-      isCheckoutV2SettingsAllowed(extraConfig) && isConfigurationViewAllowed(user),
+      isCheckoutV2SettingsAllowed(extraConfig, user) && isConfigurationViewAllowed(user),
     apiCondition: false,
   },
   {
@@ -897,7 +897,7 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
       isCheckoutV2PaymentConfigsEnabled(extraConfig) &&
-      isCheckoutV2SettingsAllowed(extraConfig) &&
+      isCheckoutV2SettingsAllowed(extraConfig, user) &&
       isConfigurationViewAllowed(user),
     apiCondition: false,
   },
@@ -908,7 +908,7 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
-      !isCheckoutV2SettingsAllowed(extraConfig) &&
+      !isCheckoutV2SettingsAllowed(extraConfig, user) &&
       isConfigurationViewAllowed(user) &&
       isFlashCheckoutAllowed(user, extraConfig),
     apiCondition: false,
@@ -926,7 +926,7 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
-      isCheckoutV2SettingsAllowed(extraConfig) &&
+      isCheckoutV2SettingsAllowed(extraConfig, user) &&
       isConfigurationViewAllowed(user) &&
       isFlashCheckoutAllowed(user, extraConfig),
     apiCondition: false,
@@ -938,7 +938,7 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
-      !isCheckoutV2SettingsAllowed(extraConfig) &&
+      !isCheckoutV2SettingsAllowed(extraConfig, user) &&
       isConfigurationViewAllowed(user) &&
       isSkipMandatorySummaryPageAllowed(extraConfig),
     apiCondition: false,
@@ -950,7 +950,7 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
-      isCheckoutV2SettingsAllowed(extraConfig) &&
+      isCheckoutV2SettingsAllowed(extraConfig, user) &&
       isConfigurationViewAllowed(user) &&
       isSkipMandatorySummaryPageAllowed(extraConfig),
     apiCondition: false,
@@ -962,7 +962,7 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
-      !isCheckoutV2SettingsAllowed(extraConfig) && isTrustedBadgeAllowed(user, extraConfig),
+      !isCheckoutV2SettingsAllowed(extraConfig, user) && isTrustedBadgeAllowed(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -972,7 +972,7 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
-      isCheckoutV2SettingsAllowed(extraConfig) && isTrustedBadgeAllowed(user, extraConfig),
+      isCheckoutV2SettingsAllowed(extraConfig, user) && isTrustedBadgeAllowed(user, extraConfig),
     apiCondition: false,
   },
   {

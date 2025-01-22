@@ -5,6 +5,7 @@ import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import User, { isOrgFeatureExist } from 'merchant/models/User';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
+import { User as Users } from 'common/typings';
 import { AdditionalContextInterface } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 
 export const isConfigurationViewAllowed = (user: User): boolean =>
@@ -19,8 +20,11 @@ export const isFlashCheckoutAllowed = (user: User, extraConfig: ExtraConfig): bo
 export const isSkipMandatorySummaryPageAllowed = (extraConfig: ExtraConfig): boolean =>
   !extraConfig.isConfigTagEnabled('account.mandate_summary');
 
-export const isCheckoutV2SettingsAllowed = (extraConfig: ExtraConfig): boolean => {
-  return isExperimentActive(extraConfig.abExperiments.checkout_editor_v2_preview);
+export const isCheckoutV2SettingsAllowed = (extraConfig: ExtraConfig, user: Users): boolean => {
+  return (
+    isExperimentActive(extraConfig.abExperiments.checkout_editor_v2_preview) &&
+    !user?.isCountryMalaysia
+  );
 };
 
 export const isCheckoutV2PaymentConfigsEnabled = (extraConfig: ExtraConfig): boolean => {
