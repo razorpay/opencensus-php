@@ -91,12 +91,17 @@ class CreateVirtualAccount extends React.Component {
   constructor(props) {
     super();
 
+    const {
+      abExperiments: { enable_smartcollect_vpa_option },
+    } = props.splitz;
+    const showVpaSC = isExperimentEnabled(enable_smartcollect_vpa_option);
+
     this.state = {
       notes: {},
       close_by: null,
       _internals: {
         hasBankAccount: !props.user.isVACreationBankAccountDisabled,
-        hasVPA: !props.isTestMode,
+        hasVPA: !props.isTestMode && showVpaSC,
       },
       isLoading: true,
       isUpdating: false,
