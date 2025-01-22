@@ -12,7 +12,7 @@ import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
 import Tooltip from 'common/ui/Tooltip';
 import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, decodeHTMLEntities } from 'common/utils/rzp-utils';
 import CopyLink from 'merchant/components/CopyLink';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import MagicCheckoutLabel from 'merchant/components/MagicCheckout/MagicCheckoutLabel';
@@ -537,40 +537,43 @@ export default class PaymentPagesV3Entity extends React.Component {
                 ) : null}
                 {!isBatchPaymentPages ? (
                   <div className="table-container">
-                    {paymentPageEntity?.payment_page_items?.map((pi, ix) => (
-                      <div className="table" key={ix}>
-                        <div>
-                          <b>{pi.item?.name ?? '--'}</b>
+                    {paymentPageEntity?.payment_page_items?.map((pi, ix) => {
+                      const itemName = decodeHTMLEntities(pi?.item?.name);
+                      return (
+                        <div className="table" key={ix}>
+                          <div>
+                            <b>{itemName}</b>
+                          </div>
+                          <div>
+                            <div className="title">Revenue</div>
+                            <Amount
+                              value={pi.total_amount_paid}
+                              currency={paymentPageEntity.currency}
+                            />
+                          </div>
+                          <div>
+                            <div className="title">Price</div>
+                            <Amount
+                              value={pi.item?.amount ?? 0}
+                              currency={paymentPageEntity.currency}
+                            />
+                          </div>
+                          <div className="item-details-units">
+                            <div className="title">Units Sold</div>
+                            <EditStock
+                              totalStock={pi.stock}
+                              quantitySold={pi.quantity_sold}
+                              editFn={editPaymentPage}
+                              paymentPageItemId={!isStorefrontPage ? pi.id : pi.catalog_id}
+                              trackerFn={this.trackStock}
+                              isRoleAllowedEdit={isRoleAllowedEdit}
+                              isStorefrontPage={isStorefrontPage}
+                              storefrontCatalogStatus={pi.catalog_status}
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <div className="title">Revenue</div>
-                          <Amount
-                            value={pi.total_amount_paid}
-                            currency={paymentPageEntity.currency}
-                          />
-                        </div>
-                        <div>
-                          <div className="title">Price</div>
-                          <Amount
-                            value={pi.item?.amount ?? 0}
-                            currency={paymentPageEntity.currency}
-                          />
-                        </div>
-                        <div className="item-details-units">
-                          <div className="title">Units Sold</div>
-                          <EditStock
-                            totalStock={pi.stock}
-                            quantitySold={pi.quantity_sold}
-                            editFn={editPaymentPage}
-                            paymentPageItemId={!isStorefrontPage ? pi.id : pi.catalog_id}
-                            trackerFn={this.trackStock}
-                            isRoleAllowedEdit={isRoleAllowedEdit}
-                            isStorefrontPage={isStorefrontPage}
-                            storefrontCatalogStatus={pi.catalog_status}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : null}
               </div>

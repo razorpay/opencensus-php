@@ -10,7 +10,11 @@ import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/Paymen
 import ShowWhen from 'merchant/components/ShowWhen';
 import Button from 'common/new-ui/Button';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties, getTableTemplateColumnsValue } from 'common/utils/rzp-utils';
+import {
+  decodeHTMLEntities,
+  getCommonAnalyticsProperties,
+  getTableTemplateColumnsValue,
+} from 'common/utils/rzp-utils';
 
 import { trackListActions } from 'merchant/views/PaymentPages/PaymentPages/ga';
 import track from './track';
@@ -120,13 +124,16 @@ export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }
                     <TableCell>
                       <table>
                         <tbody>
-                          {item?.payment_page_items?.slice(0, 2).map((pi, ix) => (
-                            <tr key={ix}>
-                              <td>
-                                <span class="item-ellipsis">{pi?.item?.name}</span>
-                              </td>
-                            </tr>
-                          ))}
+                          {item?.payment_page_items?.slice(0, 2).map((pi, ix) => {
+                            const itemName = decodeHTMLEntities(pi?.item?.name);
+                            return (
+                              <tr key={ix}>
+                                <td>
+                                  <span class="item-ellipsis">{itemName}</span>
+                                </td>
+                              </tr>
+                            );
+                          })}
                           {item?.payment_page_items?.length > 2 && (
                             <tr>
                               <td>

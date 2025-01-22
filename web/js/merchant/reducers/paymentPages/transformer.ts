@@ -4,12 +4,13 @@ import {
 } from 'merchant/views/PaymentPages/common/Products/utils';
 import { IPaymentPagesProduct, PaymentPagesStorefrontType } from './storefront';
 import { ICatalog, ILineItem, IStorefrontResponse } from './types';
+import { decodeHTMLEntities } from 'common/utils/rzp-utils';
 
 export const transformCatalog = (catalog: ICatalog): IPaymentPagesProduct => {
   return {
     id: catalog.id,
-    product_name: catalog.product_name,
-    description: catalog.description,
+    product_name: decodeHTMLEntities(catalog.product_name),
+    description: decodeHTMLEntities(catalog.description),
     // convert paise to rupees (number to string conversion)
     // this value will be used while editing a price field
     // we will format the number field in readable format, while displaying it

@@ -1989,3 +1989,9 @@ export const is2FaExperimentEnabled = (experimenets) =>
 export function getTableTemplateColumnsValue(...args) {
   return args.filter((value) => typeof value === 'string' && value !== '').join(' ') || undefined;
 }
+
+export const decodeHTMLEntities = (input) => {
+  const txt = document.createElement('textarea');
+  txt.innerHTML = input;
+  return txt.value;
+};

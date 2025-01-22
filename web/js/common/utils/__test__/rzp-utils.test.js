@@ -25,6 +25,7 @@ import {
   autoPrefixUrls,
   humanize,
   getMajorAmountFromMinorUnit,
+  decodeHTMLEntities,
 } from 'common/utils/rzp-utils';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 
@@ -962,5 +963,33 @@ describe('getMajorAmountFromMinorUnit', () => {
     expect(getMajorAmountFromMinorUnit(amount, currency)).toBe(expected);
     expect(convertToMajorUnit).toHaveBeenCalledWith(amount, { currency });
     expect(analyticsTrack).not.toHaveBeenCalled();
+  });
+});
+
+describe('decodeHTMLEntities', () => {
+  test('should decode HTML entities', () => {
+    const input = 'Test &amp; Test';
+    const expectedOutput = 'Test & Test';
+    expect(decodeHTMLEntities(input)).toBe(expectedOutput);
+  });
+
+  test('should return input if no HTML entities', () => {
+    const input = 'Test';
+    expect(decodeHTMLEntities(input)).toBe(input);
+  });
+
+  test('should handle empty input', () => {
+    const input = '';
+    expect(decodeHTMLEntities(input)).toBe(input);
+  });
+
+  test('should handle null input', () => {
+    const input = null;
+    expect(decodeHTMLEntities(input)).toBe(input);
+  });
+
+  test('should handle undefined input', () => {
+    const input = undefined;
+    expect(decodeHTMLEntities(input)).toBe(input);
   });
 });
