@@ -2286,6 +2286,10 @@ class Processor
                                 else {
                                     $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant, 'null', $card);
                                     $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input, $token);
+                                    if ( $card->getVault() === Card\Vault::HDFC)
+                                    {
+                                        $input[Payment\Entity::API_VAULT] = $card->getVault();
+                                    }
                                     if($this->inputCurrencyNotINR($input)){
                                         return false;
                                     }
