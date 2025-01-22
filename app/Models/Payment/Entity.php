@@ -5902,8 +5902,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $offerNotFoundInOE = false;
 
-        if ((new Offer\Core())->shouldRouteToOffersEngineForPayments(
-                $this->getMerchantId(), Offer\Constants::OFFERS_ENGINE_FETCH_EXP) === true)
+        if (app()->isEnvironmentQA() === false)
         {
             if ($this->relationLoaded('offers') === true)
             {

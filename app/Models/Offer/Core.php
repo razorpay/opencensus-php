@@ -1226,55 +1226,6 @@ class Core extends Base\Core
         return false;
     }
 
-    public function shouldRouteToOffersEngineForPayments(string $merchantId, $experiment, $throwError = false): bool
-    {
-        if (app()->runningUnitTests() === true)
-        {
-            return true;
-        }
-
-        if (($this->env === 'bvt' or $this->env === 'automation' or
-             $this->env === 'func' or $this->env === 'availability' or
-             $this->env === 'perf' or $this->env === 'perf2'))
-        {
-            return false;
-        }
-
-        try
-        {
-            $properties = [
-                "id"            => $merchantId,
-                "experiment_id" => $this->app['config']->get($experiment),
-                "request_data"  => json_encode(
-                    [
-                        'merchant_id' => $merchantId,
-                    ]),
-            ];
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            return $variant === 'variant_on';
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
-                [
-                    'msg' => $e->getMessage()
-                ]);
-
-            if ($throwError === true)
-            {
-                throw $e;
-            }
-        }
-
-        return false;
-    }
-
     /**
      * @param array $input
      * @param array $offers_array

@@ -69,7 +69,7 @@ trait ExternalOffersRepo
 
     public function findById($id, string $connectionType = null)
     {
-        if ($this->fetchByIdFromOE($id) === true)
+        if ($this->validateExternalFetchEnabled() === true)
         {
             try
             {
@@ -472,13 +472,6 @@ trait ExternalOffersRepo
         return ($this->validateExternalFetchEnabled() === true)
         && ($this->core->shouldRouteToOffersEngine(
             $merchantId, Constants::OFFERS_ENGINE_FETCH_EXP) === true);
-    }
-
-    private function fetchByIdFromOE(string $id): bool
-    {
-        return ($this->validateExternalFetchEnabled() === true)
-               && ($this->core->shouldRouteToOffersEngineForPayments(
-                    $id, Constants::OFFERS_ENGINE_ADMIN_FETCH_OFFERS_EXP) === true);
     }
 
     private function fetchRemainingFromAPI(array $offerIds, $offerEngineOffers)
