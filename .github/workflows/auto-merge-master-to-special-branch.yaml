@@ -159,7 +159,7 @@ jobs:
           SLACK_LINK_NAMES: true
           SLACKIFY_MARKDOWN: true
           SLACK_MESSAGE: |
-            Merge conflict detected in `${{ matrix.release_branch }}` branch. Manual intervention required. Please visit the Actions URL for more details.
+            Merge conflict detected while merging `${{ github.base_ref }}` into `${{ matrix.release_branch }}` in the `${{ github.repository }}` repository. Manual intervention required. Please visit the Actions URL for more details.
             Author: ${{ contains(steps.find_commit_author_in_slack.outputs.commit_author_slack_handle, '@') && steps.find_commit_author_in_slack.outputs.commit_author_slack_handle || format('<@{0}>', steps.find_commit_author_in_slack.outputs.commit_author_slack_handle) }} (${{ steps.merge.outputs.author }})
 
             ### Conflict details
