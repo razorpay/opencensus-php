@@ -36,6 +36,7 @@ import {
   WalletIcon,
   ZapIcon,
   LayoutIcon,
+  SparklesIcon,
 } from '@razorpay/blade/components';
 
 import { isExperimentEnabled } from 'common/splitz/utils';
@@ -439,6 +440,7 @@ export const PRODUCTS_DATA = {
     },
   },
   insight_x: {
+    bladeIcon: SparklesIcon,
     icon: 'i i-sparkles text-info',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       isExperimentEnabled(abExperiments.insight_x_experiment) &&
