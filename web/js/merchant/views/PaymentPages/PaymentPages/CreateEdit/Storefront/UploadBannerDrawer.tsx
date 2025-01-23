@@ -16,7 +16,6 @@ import {
   ModalHeader,
   ModalFooter,
   BottomSheetFooter,
-  Switch,
 } from '@razorpay/blade/components';
 import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
 import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
@@ -31,7 +30,7 @@ import {
   PaymentPagesStorefrontType,
 } from 'merchant/reducers/paymentPages/storefront';
 import lazy from 'merchant/routes/LazyLoader';
-import { CropDimensions, IBannerImage } from 'merchant/reducers/paymentPages/types';
+import { IBannerImage,CropDimensions } from 'merchant/reducers/paymentPages/types';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const BannerList = lazy(
@@ -94,6 +93,37 @@ const convertToBase64 = async (url: string): Promise<string> => {
   }
 };
 
+const isLessThanThreeItemsEnabled = (items: IBannerImage[]): boolean => {
+  if (items.length >= 3) {
+    const enabledCount = items.filter((item) => item.enabled).length;
+    return enabledCount < 3;
+  }
+  return true;
+};
+
+const processBannerData = (bannerData: IBannerImage[]) => {
+  if (bannerData.length <= 3) {
+    return bannerData
+      .map((banner) => ({ ...banner, isSwitchEnabled: true }))
+      .sort((a, b) => a.position - b.position);
+  } else {
+    const enabledCount = bannerData.filter((banner) => banner.enabled).length;
+    if (enabledCount === 3) {
+      return bannerData
+        .map((banner) => ({
+          ...banner,
+          isSwitchEnabled: banner.enabled ? true : false,
+        }))
+        .sort((a, b) => a.position - b.position);
+    } else if (enabledCount < 3) {
+      return bannerData
+        .map((banner) => ({ ...banner, isSwitchEnabled: true }))
+        .sort((a, b) => a.position - b.position);
+    }
+  }
+  return bannerData.sort((a, b) => a.position - b.position);
+};
+
 const RenderBannerSection = ({
   onImageUpload,
   bannerData,
@@ -110,7 +140,7 @@ const RenderBannerSection = ({
         title="Upload banner images"
         subTitle={
           <Text size="small" color="surface.text.gray.subtle">
-            Click to add up to 3 images
+            You can only show 3 banners at a time
           </Text>
         }
         rightChildren={
@@ -155,6 +185,13 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
   const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
 
   const onImageUpload = () => {
+    if (bannerData?.length >= 5) {
+      showNotification({
+        type: 'neutral',
+        message: 'You cannot upload more than 5 banners,delete to add new banner',
+      });
+      return;
+    }
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
     input.setAttribute('accept', 'image/png, image/jpeg, image/jpg');
@@ -179,8 +216,9 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
   };
 
   const handleBannerChange = (newBannerData: IBannerImage[]) => {
-    setBannerData(newBannerData);
-    editStorefront('banner_images', newBannerData);
+    const processData = processBannerData(newBannerData);
+    setBannerData(processData);
+    editStorefront('banner_images', processData);
     setSelectedBanner(null);
   };
 
@@ -223,31 +261,29 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
                     original: originalUrl,
                     cropped: croppedUrl,
                     position,
-                    enabled: true,
+                    enabled: isLessThanThreeItemsEnabled(updatedBannerData),
+                    isSwitchEnabled: isLessThanThreeItemsEnabled(updatedBannerData),
                     selected_area: croppedArea,
                   });
                 }
+                showNotification({
+                  type: 'success',
+                  message: 'Banner has been successfully uploaded.',
+                });
                 handleBannerChange(updatedBannerData);
               } else {
                 const errorMessage = 'Some network error occurred while uploading cropped image';
-                showNotification({
-                  type: 'error',
-                  message: errorMessage,
-                });
+                throw new Error(errorMessage);
               }
             });
           } else {
-            const errorMessage = 'Some network error occurred while uploading original image';
-            showNotification({
-              type: 'error',
-              message: errorMessage,
-            });
+            throw new Error('Some network error occurred while uploading original image');
           }
         })
         .catch(({ errors }) => {
           showNotification({
             type: 'error',
-            message: errors[0],
+            message: errors[0] || 'Network error while uploading image',
           });
         })
         .finally(() => {
@@ -267,6 +303,10 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
                 };
               }
               return banner;
+            });
+            showNotification({
+              type: 'success',
+              message: 'Banner has been successfully uploaded.',
             });
             handleBannerChange(updatedBannerData);
           } else {
@@ -293,8 +333,9 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
   const handleToggle = (val: boolean, banner: IBannerImage) => {
     const updatedBannerData = bannerData.filter((bannerD) => bannerD.cropped !== banner.cropped);
     const newBannerData = [...updatedBannerData, { ...banner, enabled: val }];
-    setBannerData(newBannerData);
-    editStorefront('banner_images', newBannerData);
+    const processData = processBannerData(newBannerData);
+    setBannerData(processData);
+    editStorefront('banner_images', processData);
   };
 
   const handleReplaceImage = (banner: IBannerImage) => {
@@ -320,6 +361,10 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
       const updatedBannerData = bannerData.filter(
         (bannerD) => bannerD.cropped !== selectedBanner.cropped,
       );
+      showNotification({
+        type: 'success',
+        message: 'Banner has been successfully deleted.',
+      });
       handleBannerChange(updatedBannerData);
     }
     setSelectedBanner(null);
@@ -329,17 +374,6 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
   const handleConfirmCancel = () => {
     setSelectedBanner(null);
     setOpenDeleteModal(false);
-  };
-
-  const handleBannerSwitchChange = (isChecked: boolean) => {
-    editStorefront('settings', {
-      ...storefront.entity.settings,
-      base_config: {
-        ...storefront.entity.settings.base_config,
-        banner_feature_enabled: isChecked,
-      },
-    });
-    handleClose();
   };
 
   const handleEditImage = (banner: IBannerImage) => {

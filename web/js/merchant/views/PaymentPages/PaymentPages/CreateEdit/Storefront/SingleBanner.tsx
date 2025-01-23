@@ -27,6 +27,7 @@ interface ISingleBannerProps {
   handleDeleteImage: () => void;
   handleEditImage: () => void;
   isMobile: boolean;
+  isSwitchEnabled: boolean;
 }
 
 const StyledBannerImage = styled.img`
@@ -82,6 +83,7 @@ const SingleBanner: React.ComponentType<SingleBannerProps> = SortableElement(
     isMobile,
     id,
     handleEditImage,
+    isSwitchEnabled,
   }) => {
     const [isSettingsDrawerOpen, setIsSettingsDrawerOpen] = useState(false);
 
@@ -141,6 +143,7 @@ const SingleBanner: React.ComponentType<SingleBannerProps> = SortableElement(
             </>
           )}
           <Switch
+            isDisabled={!isSwitchEnabled}
             accessibilityLabel={`${id}-storefront-toggle`}
             isChecked={enabled}
             onChange={({ isChecked }) => onToggleEnabled(isChecked)}

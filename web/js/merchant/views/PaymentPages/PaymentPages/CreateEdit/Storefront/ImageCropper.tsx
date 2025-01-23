@@ -7,7 +7,6 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
-  ToastContainer,
   FullScreenEnterIcon,
   Text,
   BottomSheet,
@@ -196,7 +195,6 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
       <BottomSheet isOpen={true} onDismiss={onCancel} zIndex={10000} snapPoints={[1, 1, 1]}>
         <BottomSheetHeader />
         <BottomSheetBody padding="spacing.0">
-          <ToastContainer />
           <Box
             display="flex"
             justifyContent="center"

@@ -1,11 +1,15 @@
 import React from 'react';
 import LineItems from './LineItems';
-import { Button, ChevronRightIcon } from '@razorpay/blade/components';
+import { Button, ChevronRightIcon, Text } from '@razorpay/blade/components';
 import BusinessDetailsDrawer from './BusinessDetailsDrawer';
+import { connect } from 'react-redux';
+import { PaymentPagesStorefrontType } from 'merchant/reducers/paymentPages/storefront';
+
 interface IAddBusinessDetailsProps {
   handleClick: (val: boolean) => void;
   openBuisnessDetailsDrawer?: boolean;
   isMobile?: boolean;
+  storefront?: PaymentPagesStorefrontType;
 }
 
 const RightChildren: React.FC<IAddBusinessDetailsProps> = ({ handleClick }) => {
@@ -24,7 +28,13 @@ const AddBuisnessDetails: React.FC<IAddBusinessDetailsProps> = ({
   handleClick,
   openBuisnessDetailsDrawer,
   isMobile,
+  storefront,
 }) => {
+  const isDetailsFilled =
+    storefront?.entity?.contactEmail &&
+    storefront?.entity?.contactEmail?.length > 0 &&
+    storefront?.entity?.contactPhone &&
+    storefront?.entity?.contactPhone?.length > 0;
   return (
     <>
       {openBuisnessDetailsDrawer ? (
@@ -35,13 +45,28 @@ const AddBuisnessDetails: React.FC<IAddBusinessDetailsProps> = ({
       ) : (
         <LineItems
           title="Add business details"
-          subTitle="Mandatory information"
+          subTitle={
+            <Text
+              color="interactive.text.notice.normal"
+              variant="body"
+              size="small"
+              weight="regular"
+              marginLeft={isDetailsFilled ? 'spacing.7' : 'spacing.0'}
+            >
+              Mandatory information
+            </Text>
+          }
           rightChildren={<RightChildren handleClick={handleClick} />}
           isMobile={isMobile}
+          isDetailsFilled={Boolean(isDetailsFilled)}
         />
       )}
     </>
   );
 };
 
-export default AddBuisnessDetails;
+const mapStateToProps = (state: any) => ({
+  storefront: state.paymentPageStorefront,
+});
+
+export default connect(mapStateToProps)(AddBuisnessDetails);

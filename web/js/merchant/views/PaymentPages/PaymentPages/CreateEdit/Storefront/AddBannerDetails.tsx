@@ -78,6 +78,7 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
   setShowBannerAlert,
   isMobile,
 }) => {
+  const isDetailsFilled = storefront.entity.banner_images?.length > 0;
   const handleBannerSetting = (val: boolean) => {
     editStorefront('settings', {
       ...storefront.entity.settings,
@@ -121,6 +122,17 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
       ) : (
         <LineItems
           title="Add store banner"
+          subTitle={
+            <Text
+              color="surface.text.gray.muted"
+              variant="body"
+              size="small"
+              weight="regular"
+              marginLeft={isDetailsFilled ? 'spacing.7' : 'spacing.0'}
+            >
+              This is an optional field
+            </Text>
+          }
           rightChildren={<RightChildren handleClick={handleClick} />}
           extraItems={
             <BannerSwitch
@@ -129,6 +141,7 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
             />
           }
           isMobile={isMobile}
+          isDetailsFilled={isDetailsFilled}
         />
       )}
       {showBannerAlert && (

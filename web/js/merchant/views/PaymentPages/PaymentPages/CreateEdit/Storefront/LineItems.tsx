@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Box, Switch, Text } from '@razorpay/blade/components';
+import { Box, CheckCircleIcon, Switch, Text } from '@razorpay/blade/components';
 
 type LineItemsProps = {
   title?: string | React.ReactNode;
@@ -8,6 +8,7 @@ type LineItemsProps = {
   rightChildren?: React.ReactNode;
   extraItems?: React.ReactNode;
   isMobile?: boolean;
+  isDetailsFilled?: boolean;
 };
 
 const LineItems: React.FC<LineItemsProps> = ({
@@ -16,6 +17,7 @@ const LineItems: React.FC<LineItemsProps> = ({
   rightChildren,
   extraItems,
   isMobile,
+  isDetailsFilled,
 }) => {
   return (
     <Box
@@ -37,12 +39,15 @@ const LineItems: React.FC<LineItemsProps> = ({
           alignItems="flex-start"
           justifyContent="space-between"
         >
-          <Text weight="semibold" color="surface.text.gray.normal" variant="body" size="large">
-            {title}
-          </Text>
-          <Text color="interactive.text.notice.normal" variant="body" size="small" weight="regular">
-            {subTitle}
-          </Text>
+          <Box display="flex" alignItems="center" gap="spacing.2">
+            {isDetailsFilled ? (
+              <CheckCircleIcon color="feedback.icon.positive.intense" size="medium" />
+            ) : null}
+            <Text weight="semibold" color="surface.text.gray.normal" variant="body" size="large">
+              {title}
+            </Text>
+          </Box>
+          {subTitle}
         </Box>
         {rightChildren}
       </Box>

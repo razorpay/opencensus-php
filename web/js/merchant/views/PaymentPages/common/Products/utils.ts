@@ -212,7 +212,9 @@ export const generateStorefrontRequest = (
     // support_email: 'test@gmail.com',
     // support_contact: '12345565',
     mode,
-    banner_images,
+    banner_images: banner_images.map(({ isSwitchEnabled, ...rest }) => {
+      return { ...rest };
+    }),
     // notes: {
     //   key1: 'Select your favourite Chocolate',
     // },

@@ -147,6 +147,7 @@ interface ShowNotificationOptions {
 
 export type ShowNotificationType = (data: ShowNotificationOptions) => void;
 
+export type FeedbackColors = 'information' | 'negative' | 'neutral' | 'notice' | 'positive';
 export interface FlipOptions {
   horizontal: boolean;
   vertical: boolean;

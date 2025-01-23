@@ -80,6 +80,7 @@ export interface IBannerImage {
   enabled: boolean;
   title?: string;
   description?: string;
+  isSwitchEnabled?: boolean;
   selected_area?: CropDimensions;
 }
 

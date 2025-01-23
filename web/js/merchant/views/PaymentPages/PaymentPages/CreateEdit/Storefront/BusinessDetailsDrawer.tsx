@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Box, Button, Heading, Text, TextArea, TextInput } from '@razorpay/blade/components';
+import {
+  Box,
+  Button,
+  Heading,
+  Text,
+  TextArea,
+  TextInput,
+  useToast,
+} from '@razorpay/blade/components';
 import {
   editStorefront,
   PaymentPagesStorefrontType,
@@ -10,6 +18,7 @@ import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
 import { validateContactDetails } from 'merchant/views/PaymentPages/common/Products/utils';
 import BusinessDetailsMobile from './BusinessDetailsMobile';
 import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 interface IBusinessDetailsDrawer {
   handleClose: () => void;
@@ -132,6 +141,7 @@ const BusinessDetailsDrawer = ({
   editStorefront,
   storefront,
 }: IBusinessDetailsDrawer): React.ReactElement => {
+  const toast = useToast();
   const [state, setState] = useState({
     contactEmail: entity?.contactEmail || '',
     contactPhone: entity?.contactPhone || '',
@@ -189,6 +199,10 @@ const BusinessDetailsDrawer = ({
     track.handleAddBuisnessDetailsSave({
       storefrontId: storefront?.id,
       isNewStoreFront: Boolean(!storefront?.id),
+    });
+    showNotification({
+      type: 'success',
+      message: 'Business details have been updated.',
     });
     handleClose();
   };
