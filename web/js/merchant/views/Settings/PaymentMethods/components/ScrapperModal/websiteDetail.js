@@ -132,47 +132,61 @@ const WebsiteDetailsModal = ({
     }
 
     return (
-      <>
+      <Box>
         {(allPagesVerified || initialStateOfFields.length) && groupedWebsiteDetails[type]
           ? groupedWebsiteDetails[type].map((item, idx) => {
               return (
-                <Box key={item.name} display="flex" alignItems="center" gap="spacing.4">
-                  <Box width="376px">
-                    <TextInput
-                      label={item.readableName}
-                      labelPosition="left"
-                      name={item.name}
-                      value={item.value || ''}
-                      validationState={
-                        !item.value ? 'error' : type === FIELD_STATUS.verified ? 'none' : 'error'
-                      }
-                      isDisabled={type === FIELD_STATUS.verified}
-                      onChange={handleFieldChange}
-                    />
+                <Box
+                  key={item.name}
+                  display="flex"
+                  justifyContent="space-between"
+                  gap="spacing.4"
+                  paddingBottom="spacing.6"
+                >
+                  <Box width="25%">
+                    <Text as="label" weight="semibold">
+                      {item.readableName}
+                    </Text>
                   </Box>
-                  {type !== FIELD_STATUS.verified ? (
-                    <Tooltip
-                      content={
-                        !initialStateOfFields[idx].value
-                          ? 'Page not found. Please add this page to your website or provide the correct URL.'
-                          : "Page found but doesn't meet requirements. Please update the content according to guidelines."
-                      }
-                      placement="right"
-                    >
-                      <Box>
-                        <InfoIcon size="xlarge" color="feedback.icon.notice.intense" />
-                      </Box>
-                    </Tooltip>
-                  ) : (
-                    <Box>
-                      <CheckCircleIcon size="xlarge" color="feedback.icon.positive.intense" />
+                  <Box width="73%" display="flex">
+                    <Box width="90%">
+                      <TextInput
+                        labelPosition="left"
+                        name={item.name}
+                        value={item.value || ''}
+                        validationState={
+                          !item.value ? 'error' : type === FIELD_STATUS.verified ? 'none' : 'error'
+                        }
+                        isDisabled={type === FIELD_STATUS.verified}
+                        onChange={handleFieldChange}
+                      />
                     </Box>
-                  )}
+                    {type !== FIELD_STATUS.verified ? (
+                      <Box marginLeft="spacing.4">
+                        <Tooltip
+                          content={
+                            !initialStateOfFields[idx].value
+                              ? 'Page not found. Please add this page to your website or provide the correct URL.'
+                              : "Page found but doesn't meet requirements. Please update the content according to guidelines."
+                          }
+                          placement="right"
+                        >
+                          <Box>
+                            <InfoIcon size="xlarge" color="feedback.icon.notice.intense" />
+                          </Box>
+                        </Tooltip>
+                      </Box>
+                    ) : (
+                      <Box marginLeft="spacing.4">
+                        <CheckCircleIcon size="xlarge" color="feedback.icon.positive.intense" />
+                      </Box>
+                    )}
+                  </Box>
                 </Box>
               );
             })
           : null}
-      </>
+      </Box>
     );
   };
 
@@ -201,7 +215,7 @@ const WebsiteDetailsModal = ({
               isFullWidth
             />
             <Box display="flex" flexDirection="column" gap="spacing.4">
-              <Text variant="body" weight="semibold" size="medium">
+              <Text variant="body" weight="semibold" size="large">
                 Needs Clarification
               </Text>
               {renderWebsiteFields(websiteDetails[DETAILS_TYPE.website], FIELD_STATUS.missing)}
@@ -212,7 +226,7 @@ const WebsiteDetailsModal = ({
           <>
             {unverifiedFieldLength !== 0 ? <Divider /> : null}
             <Box display="flex" flexDirection="column" gap="spacing.4">
-              <Text variant="body" weight="semibold" size="medium">
+              <Text variant="body" weight="semibold" size="large">
                 {unverifiedFieldLength === 0
                   ? 'All policy pages verified successfully'
                   : FIELD_STATUS.verified}
@@ -241,71 +255,96 @@ const WebsiteDetailsModal = ({
           switch (type) {
             case 'text':
               return (
-                <Box width="376px">
-                  <TextInput
-                    key={i}
-                    label={display_name}
-                    labelPosition="left"
-                    placeholder={placeholder}
-                    onChange={handleFieldChange}
-                    name={name}
-                  />
+                <Box key={name} width="100%" display="flex" justifyContent="space-between">
+                  <Box width="35%">
+                    <Text as="label" weight="semibold">
+                      {display_name}
+                    </Text>
+                  </Box>
+                  <Box width="60%">
+                    <TextInput
+                      key={i}
+                      placeholder={placeholder}
+                      onChange={handleFieldChange}
+                      name={name}
+                    />
+                  </Box>
                 </Box>
               );
             case 'textarea':
               return (
-                <Box width="376px">
-                  <TextArea
-                    key={i}
-                    label={display_name}
-                    labelPosition="left"
-                    placeholder={placeholder}
-                    size="large"
-                    numberOfLines={3}
-                    onChange={handleFieldChange}
-                    name={name}
-                  />
+                <Box key={name} width="100%" display="flex" justifyContent="space-between">
+                  <Box width="35%">
+                    <Text as="label" weight="semibold">
+                      {display_name}
+                    </Text>
+                  </Box>
+                  <Box width="60%">
+                    <TextArea
+                      key={i}
+                      placeholder={placeholder}
+                      size="large"
+                      numberOfLines={3}
+                      onChange={handleFieldChange}
+                      name={name}
+                    />
+                  </Box>
                 </Box>
               );
             case 'number':
               return (
-                <Box width="376px">
-                  <TextInput
-                    key={i}
-                    label={display_name}
-                    labelPosition="left"
-                    type="number"
-                    placeholder={placeholder}
-                    onChange={handleFieldChange}
-                    name={name}
-                  />
+                <Box key={name} width="100%" display="flex" justifyContent="space-between">
+                  <Box width="35%">
+                    <Text as="label" weight="semibold">
+                      {display_name}
+                    </Text>
+                  </Box>
+                  <Box width="60%">
+                    <TextInput
+                      key={i}
+                      type="number"
+                      placeholder={placeholder}
+                      onChange={handleFieldChange}
+                      name={name}
+                    />
+                  </Box>
                 </Box>
               );
             case 'date':
               return (
-                <Box width="376px">
-                  <DatePicker
-                    key={i}
-                    label={display_name}
-                    labelPosition="left"
-                    onChange={(date) =>
-                      handleFieldChange({ name, value: moment(date).format('YYYY-MM-DD') })
-                    }
-                    name={name}
-                  />
+                <Box key={name} width="100%" display="flex" justifyContent="start">
+                  <Box width="40%">
+                    <Text as="label" weight="semibold">
+                      {display_name}
+                    </Text>
+                  </Box>
+                  <Box width="30%">
+                    <DatePicker
+                      key={i}
+                      onChange={(date) =>
+                        handleFieldChange({ name, value: moment(date).format('YYYY-MM-DD') })
+                      }
+                      name={name}
+                    />
+                  </Box>
                 </Box>
               );
             default:
               return (
-                <Box width="376px">
-                  <TextInput
-                    key={i}
-                    label={display_name}
-                    labelPosition="left"
-                    placeholder={placeholder}
-                    onChange={handleFieldChange}
-                    name={name}
-                  />
+                <Box key={name} width="100%" display="flex" justifyContent="space-between">
+                  <Box width="35%">
+                    <Text as="label" weight="semibold">
+                      {display_name}
+                    </Text>
+                  </Box>
+                  <Box width="60%">
+                    <TextInput
+                      key={i}
+                      placeholder={placeholder}
+                      onChange={handleFieldChange}
+                      name={name}
+                    />
+                  </Box>
                 </Box>
               );
           }

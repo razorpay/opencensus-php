@@ -165,6 +165,17 @@ const PaymentMethodsV2 = ({
     return instruments.filter((instrument) => instrument?.additionalCondition?.(user) ?? true);
   }, [instruments]);
 
+  /**
+   * On every instrument unmount it is necessary to
+   * clear intermediate and leaf instruments for next view to load correctly
+   * */
+  useEffect(() => {
+    return () => {
+      clearIntermediateInstrument();
+      clearLeafInstrument();
+    };
+  }, []);
+
   useEffect(() => {
     const query = qs.parse(window.location.search);
     const instrumentAsQueryParam = query?.instrument;
