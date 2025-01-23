@@ -434,23 +434,9 @@ class Entity extends Base\Entity
 
     public function getPrimaryHostName()
     {
-        $app = App::getFacadeRoot();
+        $orgHostname = (new OrgHostname\Repository())->getHostsByOrgIdFromSlave($this->getId());
 
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $app['config']->get('app.splitz_org_slave_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        if ($variant === true)
-        {
-            $orgHostname = (new OrgHostname\Repository())->getHostsByOrgIdFromSlave($this->getId());
-
-            return $orgHostname->getHostName();
-        }
-
-        return $this->hostnames()->first()->getHostName();
+        return $orgHostname->getHostName();
     }
 
     public function isFeatureEnabled(string $featureName): bool

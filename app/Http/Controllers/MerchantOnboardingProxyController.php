@@ -339,7 +339,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::ONBOARDING_GET                            => 15,
         self::MERCHANT_SIGN_UP                          => 20,
         self::SALES_ASSISTED_MERCHANT_SIGN_UP           => 20,
-        self::MERCHANT_DOCUMENT_UPLOAD                  => 15,
+        self::MERCHANT_DOCUMENT_UPLOAD                  => 30,
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => 15,
         self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS   => 15,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2     => 15,

@@ -96,19 +96,11 @@ class Repository extends Base\Repository
 
     public function fetchBySourceAndAssociateMerchantForConnectionType($entity, $connectionType)
     {
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_upi_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         $query = $this->newQueryWithConnection($connectionType);
-        if ($variant === true){
-            $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ *"));
-        }
+
+        $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ *"));
 
         $txn = $query->where(Transaction\Entity::ENTITY_ID, '=', $entity->getId())
                      ->first();
@@ -119,6 +111,7 @@ class Repository extends Base\Repository
         }
 
         $entity->transaction()->associate($txn);
+
         $txn->source()->associate($entity);
 
         $txn->merchant()->associate($entity->merchant);
@@ -532,24 +525,14 @@ class Repository extends Base\Repository
     }
     public function filterMerchantsWithFirstTransactionAboveTimestamp(array $merchantIdList, int $timestamp)
     {
-        $properties = [
-            "id" => Base\UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
-        ];
-
-        $variant =  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         $query = $this->newQueryWithConnection($connectionType)
                       ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
                       ->groupBy(Entity::MERCHANT_ID);
-        if ($variant === true){
-            $query = $query->selectRaw('/*+ MAX_EXECUTION_TIME(60000) */ MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
+
+        $query = $query->selectRaw('/*+ MAX_EXECUTION_TIME(60000) */ MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
                            ->from(\DB::raw('`transactions` USE INDEX (transactions_merchant_id_created_at_id_index)'));
-        }else{
-            $query = $query->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID);
-        }
 
         return $query->having('first_created_at', '>=', $timestamp)
                      ->get()
@@ -628,14 +611,7 @@ class Repository extends Base\Repository
     public function fetchTotalAmountByTransactionTypeAboveThreshold(
         array $merchantIdList, string $type, int $threshold): array
     {
-        $properties = [
-            "id" => Base\UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
-        ];
-
-        $variant =  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $this->newQueryWithConnection($connectionType)
             ->where($this->dbColumn(Entity::TYPE), '=', $type)
@@ -650,7 +626,7 @@ class Repository extends Base\Repository
     public function fetchTotalAmountByTransactionTypeWithThresholdInRange(
         array $merchantIdList, string $type, int $threshold): array
     {
-        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
             ->where($this->dbColumn(Entity::TYPE), '=', $type)
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->groupBy(Entity::MERCHANT_ID)
@@ -2253,20 +2229,11 @@ class Repository extends Base\Repository
 
         $txnFetchStartTime      = microtime(true);
 
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_partnership_experiment_id'),
-        ];
-
-        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         $query = $this->newQueryWithConnection($connectionType);
 
-        if($variant === true){
-            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
-        }
+        $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
 
         $query = $query->where(Entity::MERCHANT_ID, $partner->getId())
                        ->where(Entity::BALANCE_ID, $commissionBalance->getId())
@@ -2849,22 +2816,11 @@ class Repository extends Base\Repository
             $createdAtColumn
         ];
 
-
-        $properties = [
-            "id" => Base\UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
-        ];
-
-        $variant = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT) : $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         $query = $this->newQueryWithConnection($connectionType);
-        if ($variant === true){
-            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ " . $merchantIdColumn));
-        }else{
-            $query = $query->select($selectColumn);
-        }
+
+        $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ " . $merchantIdColumn));
 
         return $query->where($this->dbColumn(Entity::TYPE), '=', 'payment')
                      ->where(Entity::MERCHANT_ID, '=', $merchantId)
@@ -2877,21 +2833,11 @@ class Repository extends Base\Repository
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $type = $this->dbColumn(Entity::TYPE);
 
-        $properties = [
-            "id" => Base\UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
-        ];
-
-        $variant =  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         $query = $this->newQueryWithConnection($connectionType);
-        if ($variant === true){
-            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ " . $merchantIdColumn));
-        }else{
-            $query = $query->select($merchantIdColumn);
-        }
+
+        $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ " . $merchantIdColumn));
 
         return $query->where($type, '=', 'payment')
                      ->where($merchantIdColumn, '=', $merchantId)
@@ -2910,7 +2856,7 @@ class Repository extends Base\Repository
 
     public function getDebitAndCreditValues($merchantId, $startTimestamp)
     {
-        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                       ->select(Entity::ID, Entity::DEBIT, Entity::CREDIT, Entity::BALANCE)
                       ->where(Entity::MERCHANT_ID, $merchantId)
                       ->where(Entity::CREATED_AT, '>=', $startTimestamp)
@@ -3227,14 +3173,7 @@ class Repository extends Base\Repository
 
     public function fetchPaymentTransactionFromPaymentFetchReplica($payment)
     {
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $this->newQueryWithConnection($connectionType)
             ->where(Entity::TYPE, ConstantEntity::PAYMENT)

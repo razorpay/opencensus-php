@@ -978,7 +978,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     public function getPaymentTransaction()
     {
-        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchantForConnectionType($this->payment, ConnectionType::PAYMENT_FETCH_REPLICA);
+        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchantForConnectionType($this->payment, ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $txn;
     }

@@ -443,22 +443,6 @@ trait ArchivedCore
 
     private function getArchivedEntityConnection()
     {
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_core_experiment_id'),
-        ];
-
-        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        if ($variant === true)
-        {
-            $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::DATA_WAREHOUSE_MERCHANT;
-        }
-        else
-        {
-            $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::PAYMENT_FETCH_REPLICA;
-        }
-
-        return $connection;
+        return $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::DATA_WAREHOUSE_MERCHANT;
     }
 }

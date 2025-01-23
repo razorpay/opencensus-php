@@ -37,9 +37,20 @@ class Repository extends Base\Repository
 
     public function getHostsByOrgIdFromSlave(string $orgId)
     {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::SLAVE))
-            ->where(Entity::ORG_ID, '=', $orgId)
-            ->get()
-            ->first();
+        try
+        {
+            return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::SLAVE))
+                ->where(Entity::ORG_ID, '=', $orgId)
+                ->get()
+                ->first();
+        }
+        catch (\Throwable $e)
+        {
+            return $this->newQuery()
+                ->where(Entity::ORG_ID, '=', $orgId)
+                ->get()
+                ->first();
+        }
+
     }
 }

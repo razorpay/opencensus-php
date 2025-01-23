@@ -78,16 +78,16 @@ class Repository extends Base\Repository
         $hostnameOrgId = $orgHostName->dbColumn(Hostname\Entity::ORG_ID);
         $hostnameAttr = $orgHostName->dbColumn(Hostname\Entity::HOSTNAME);
 
-        $app = App::getFacadeRoot();
+        $connectionSlaveType = $this->getConnectionType();
 
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $app['config']->get('app.splitz_org_slave_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $query = $variant === true ? $this->newQueryWithConnection($this->getSlaveConnection()) : $this->newQuery();
+        if (isset($connectionSlaveType) === true)
+        {
+            $query = $this->newQueryWithConnection($connectionSlaveType);
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
 
         try
         {
@@ -254,27 +254,13 @@ class Repository extends Base\Repository
 
     protected function getConnectionType()
     {
-        $app = App::getFacadeRoot();
-
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $app['config']->get('app.splitz_org_slave_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
         try
         {
-            if ($variant === true)
-            {
-                return $this->getSlaveConnection();
-            }
+            return $this->getSlaveConnection();
         }
         catch (\Throwable $e)
         {
             return null;
         }
-        
-        return null;
     }
 }

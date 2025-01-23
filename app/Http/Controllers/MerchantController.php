@@ -798,40 +798,29 @@ class MerchantController extends Controller
 
         $merchant = $this->app['basicauth']->getMerchant();
 
-        $showBalanceExp = 'off';
-
         if($merchant !== null && $merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === true)
         {
-            $showBalanceExp = App::getFacadeRoot()->razorx->getTreatment(
-                $merchant->getId(),
-                Merchant\RazorxTreatment::SHOW_BALANCE_FROM_CLS,
-                Mode::LIVE
-            );
+            $ledgerService = $this->app['ledger'];
 
-            if ($showBalanceExp === 'on')
+            $ledgerOutboxCore = new LedgerOutboxCore();
+
+            $accountBalanceMap = $ledgerOutboxCore->getMerchantAccountBalances($ledgerService, $merchant->getId());
+
+            if (isset($accountBalanceMap[LedgerConstants::MERCHANT_BALANCE]) === true)
             {
-                $ledgerService = $this->app['ledger'];
-
-                $ledgerOutboxCore = new LedgerOutboxCore();
-
-                $accountBalanceMap = $ledgerOutboxCore->getMerchantAccountBalances($ledgerService, $merchant->getId());
-
-                if (isset($accountBalanceMap[LedgerConstants::MERCHANT_BALANCE]) === true)
-                {
-                    $data[Balance\Entity::BALANCE] = floatval($accountBalanceMap[LedgerConstants::MERCHANT_BALANCE]);
-                }
-                if (isset($accountBalanceMap[LedgerConstants::MERCHANT_AMOUNT_CREDITS]) === true)
-                {
-                    $data[Balance\Entity::AMOUNT_CREDITS] =floatval($accountBalanceMap[LedgerConstants::MERCHANT_AMOUNT_CREDITS]);
-                }
-                if (isset($accountBalanceMap[LedgerConstants::MERCHANT_FEE_CREDITS]) === true)
-                {
-                    $data[Balance\Entity::FEE_CREDITS] = floatval($accountBalanceMap[LedgerConstants::MERCHANT_FEE_CREDITS]);
-                }
-                if (isset($accountBalanceMap[LedgerConstants::MERCHANT_REFUND_CREDITS]) === true)
-                {
-                    $data[Balance\Entity::REFUND_CREDITS] = floatval($accountBalanceMap[LedgerConstants::MERCHANT_REFUND_CREDITS]);
-                }
+                $data[Balance\Entity::BALANCE] = floatval($accountBalanceMap[LedgerConstants::MERCHANT_BALANCE]);
+            }
+            if (isset($accountBalanceMap[LedgerConstants::MERCHANT_AMOUNT_CREDITS]) === true)
+            {
+                $data[Balance\Entity::AMOUNT_CREDITS] =floatval($accountBalanceMap[LedgerConstants::MERCHANT_AMOUNT_CREDITS]);
+            }
+            if (isset($accountBalanceMap[LedgerConstants::MERCHANT_FEE_CREDITS]) === true)
+            {
+                $data[Balance\Entity::FEE_CREDITS] = floatval($accountBalanceMap[LedgerConstants::MERCHANT_FEE_CREDITS]);
+            }
+            if (isset($accountBalanceMap[LedgerConstants::MERCHANT_REFUND_CREDITS]) === true)
+            {
+                $data[Balance\Entity::REFUND_CREDITS] = floatval($accountBalanceMap[LedgerConstants::MERCHANT_REFUND_CREDITS]);
             }
         }
 
@@ -848,7 +837,7 @@ class MerchantController extends Controller
             $data[Balance\Entity::TYPE] === Balance\Type::PRIMARY &&
             $merchant !== null &&
             $merchant->isFeatureEnabled(Feature::OLD_CREDITS_FLOW) === false and
-            ($merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === false or $showBalanceExp !== 'on'))
+            ($merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === false))
         {
             $data[Balance\Entity::AMOUNT_CREDITS] = $repo->credits->getMerchantCreditsOfType($merchant->getId(), Credits\Type::AMOUNT);
         }
@@ -1584,6 +1573,7 @@ class MerchantController extends Controller
         ]);
 
         $response = $this->service(E::MERCHANT_DETAIL)->postMerchantReKycUpdate($input);
+
         return ApiResponse::json($response);
     }
     public function postApplyCoupon()

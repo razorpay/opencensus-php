@@ -694,6 +694,8 @@ class Core extends Base\Core
 
         $this->createRefundAndUpdateDispute($dispute, $acceptedDisputeAmount);
 
+        // In case DAO = true, we make a negative adjustment at dispute creation stage,
+        // which needs to be reversed now for refunds recovery method.
         // Computing currency based on getAmountDeducted
         if ($dispute->getDeductAtOnset() === true)
         {
@@ -704,7 +706,7 @@ class Core extends Base\Core
             else{
                 $amountDeductedCurrency = $dispute->getBaseCurrency();
             }
-            
+
             $this->createPositiveAdjustmentAndUpdateDispute($dispute, $dispute->getAmountDeducted(), false, $amountDeductedCurrency);
         }
     }
@@ -739,8 +741,8 @@ class Core extends Base\Core
             }
 
             if (($dispute->getAmountDeducted() - $acceptedDisputeAmount) > 0)
-            {   
-                
+            {
+
                 $amountDeductedCurrency = '';
                 if ($dispute->getBaseAmount()){
                     $amountDeductedCurrency = $dispute->getBaseCurrency();
@@ -749,7 +751,7 @@ class Core extends Base\Core
                     $amountDeductedCurrency = $dispute->getCurrency();
                 }
 
-            
+
                 $this->createPositiveAdjustmentAndUpdateDispute(
                     $dispute,
                     $dispute->getAmountDeducted() - $acceptedDisputeAmount,
@@ -1036,22 +1038,22 @@ class Core extends Base\Core
         if (!in_array($recoveryMethod, [RecoveryMethod::REFUND, RecoveryMethod::ADJUSTMENT])) {
             throw new Exception\BadRequestValidationFailureException('Invalid recovery method');
         }
-    
+
         if ($recoveryMethod === RecoveryMethod::REFUND) {
             $disputeAmount = $dispute->getAmount();
-        } 
-        
+        }
+
         if ($recoveryMethod === RecoveryMethod::ADJUSTMENT) {
             $disputeAmount = $dispute->getBaseAmount();
         }
-        
-    
+
+
         if (!isset($input[Entity::ACCEPTED_AMOUNT])) {
             return $disputeAmount;
         }
-    
+
         $dispute->getValidator()->validateAcceptedDisputeAmount($disputeAmount, $input);
-    
+
         return $input[Entity::ACCEPTED_AMOUNT];
     }
 

@@ -1611,26 +1611,6 @@ trait ReverseShadowTrait
         return $isExperimentEnabled;
     }
 
-    public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForPayments($merchant): bool
-    {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_PAYMENTS,
-            $this->mode ?? Mode::LIVE
-        );
-
-        $isExperimentEnabled = ($variant === 'on');
-
-        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK,
-            [
-                'merchant'               => $merchant->getId(),
-                'isExperimentEnabled'    => $isExperimentEnabled,
-                'type'                   => "payment"
-            ]);
-
-        return $isExperimentEnabled;
-    }
-
     /** getAPITxnIDForReverseShadowPayments returns the transaction Id
      * for reverse shadow payment
      * @param PaymentEntity $payment
@@ -1653,46 +1633,6 @@ trait ReverseShadowTrait
         }
 
         return null;
-    }
-
-    public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForAdjustments($merchant): bool
-    {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ADJUSTMENTS,
-            $this->mode ?? Mode::LIVE
-        );
-
-        $isExperimentEnabled = ($variant === 'on');
-
-        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK,
-            [
-                'merchant'               => $merchant->getId(),
-                'isExperimentEnabled'    => $isExperimentEnabled,
-                'type'                   => "adjustment"
-            ]);
-
-        return $isExperimentEnabled;
-    }
-
-    public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForReversals($merchant): bool
-    {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_REVERSALS,
-            $this->mode ?? Mode::LIVE
-        );
-
-        $isExperimentEnabled = ($variant === 'on');
-
-        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK,
-            [
-                'merchant'               => $merchant->getId(),
-                'isExperimentEnabled'    => $isExperimentEnabled,
-                'type'                   => "reversal"
-            ]);
-
-        return $isExperimentEnabled;
     }
     public function createTransactionEntityForPreFundWithdrawFromJournal($journalResponse, $merchant): TransactionEntity
     {

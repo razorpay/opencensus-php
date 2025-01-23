@@ -692,8 +692,6 @@ return array(
 
     'dcc_on_auto_subscription_payments_experiment_id' => env('DCC_ON_AUTO_SUBSCRIPTION_PAYMENTS_EXPERIMENT_ID'),
 
-    'partner_independent_kyc_exp_id' => env('PARTNER_INDEPENDENT_KYC_EXP_ID'),
-
     'optimise_submerchant_create_exp_id' => env('OPTIMISE_SUBMERCHANT_CREATE_EXP_ID'),
 
     'route_partnership_v1_guards_exp_id' => env('ROUTE_PARTNERSHIP_V1_GUARD_EXP_ID'),
@@ -1147,25 +1145,7 @@ return array(
 
     'merchant_activation_pos_activation_check_for_transfers_splitz_exp_id' => env('MERCHANT_ACTIVATION_POS_ACTIVATION_CHECK_FOR_TRANSFERS_SPLITZ_EXP_ID'),
 
-    'splitz_harvester_query_upi_experiment_id'          => env('SPLITZ_HARVESTER_QUERY_UPI_EXPERIMENT_ID'),
-
-    'splitz_harvester_query_core_experiment_id'         => env('SPLITZ_HARVESTER_QUERY_CORE_EXPERIMENT_ID'),
-
-    'splitz_harvester_query_partnership_experiment_id'  => env('SPLITZ_HARVESTER_QUERY_PARTNERSHIP_EXPERIMENT_ID'),
-
     'splitz_entity_origin_fallback_experiment_id'       => env('SPLITZ_ENTITY_ORIGIN_FALLBACK_EXPERIMENT_ID'),
-
-    'splitz_merchant_acq_harvester_query_experiment_id' => env('SPLITZ_MERCHANT_ACQ_HARVESTER_QUERY_EXPERIMENT_ID'),
-
-    'splitz_merchant_transacted_harvester_query_experiment_id' => env('SPLITZ_MERCHANT_TRANSACTED_HARVESTER_QUERY_EXPERIMENT_ID'),
-
-    'splitz_post_payment_harvester_query_experiment_id' => env('SPLITZ_POST_PAYMENT_HARVESTER_QUERY_EXPERIMENT_ID'),
-
-    'splitz_payout_harvester_query_experiment_id'       => env('SPLITZ_PAYOUT_HARVESTER_QUERY_EXPERIMENT_ID'),
-
-    'splitz_insufficient_balance_experiment_id'          => env('SPLITZ_INSUFFICIENT_BALANCE_EXPERIMENT_ID'),
-
-    'splitz_org_slave_experiment_id'                    => env('SPLITZ_ORG_SLAVE_EXPERIMENT_ID'),
 
     'qr_code_v1_failed_payment_experiment' => env('QRCODEV1_FAILED_PAYMENT_EXPERIMENT'),
 
@@ -1184,8 +1164,6 @@ return array(
     'fulcrum_recurring_initial_experiment' => env('FULCRUM_RECURRING_INITIAL_PAYMENT_EXP_ID'),
 
     'mecode_sihub_from_initial' => env('MECODE_SIHUB_FROM_INITIAL'),
-
-    'splitz_recurring_harvester_query_experiment_id' => env('SPLITZ_RECURRING_HARVESTER_QUERY_EXPERIMENT_ID'),
 
     'fulcrum_recurring_subsequent_experiment' => env('FULCRUM_RECURRING_SUBSEQUENT_PAYMENT_EXP_ID'),
 

@@ -298,6 +298,16 @@ class DEventsKafkaConsumer extends Command
 
             $conf->set('auto.offset.reset', 'largest');
         }
+        else if (count($topics) == 1 && str_contains($topics[0], 'partnerships') && str_contains($topics[0], 'api_outbox'))
+        {
+            $consumerGroup = env('PARTNERSHIP_API_OUTBOX_GROUP');
+
+            $conf->set('group.id', $consumerGroup);
+
+            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
+
+            $conf->set('auto.offset.reset', 'largest');
+        }
         else
         {
             if (count($topics) == 1 && $topics[0] == env('RAW_CONTACTS_KAFKA_TOPIC_NAME'))

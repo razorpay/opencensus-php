@@ -10454,18 +10454,6 @@ class Service extends Base\Service
             return $partnerCommissionConfig;
         }
 
-        $properties = [
-            'id'                   => $merchant->getId(),
-            'experiment_id'        => $this->app['config']->get('app.partner_independent_kyc_exp_id'),
-        ];
-
-        $isExpEnable = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
-
-        if($isExpEnable === false )
-        {
-            return $partnerCommissionConfig;
-        }
-
         if ($partnerType === Constants::RESELLER)
         {
             $activationStatus       = ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getActivationStatus() : null;

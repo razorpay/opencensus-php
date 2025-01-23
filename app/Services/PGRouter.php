@@ -856,7 +856,7 @@ class PGRouter
 
             $this->setNotificationInOrder($response, $order);
 
-            $entityOffers = (new EntityOfferRepository())->findByEntityIdAndType($order->getId(), 'offer');
+            $entityOffers = (new EntityOfferRepository())->findByEntityIdAndTypeFromSlave($order->getId(), 'offer');
 
             if (isset($response['body']['order_metas']) === true)
             {

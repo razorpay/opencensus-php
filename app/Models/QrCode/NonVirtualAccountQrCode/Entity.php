@@ -43,7 +43,6 @@ class Entity extends QrCode\Entity
 
     const SHARED_ID = 'FallbackQrCode';
 
-
     protected $fillable = [
         self::PROVIDER,
         self::REFERENCE,
