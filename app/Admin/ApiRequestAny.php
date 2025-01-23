@@ -136,6 +136,7 @@ class ApiRequestAny
         'xperience-edge',
         'abacus',
         'magic/shipping/shopify/sync',
+        'optimizer/linked_account',
         'admin_dashboard/blocks',
         'admin_dashboard/suggestions',
         'admin_dashboard/feedback',
