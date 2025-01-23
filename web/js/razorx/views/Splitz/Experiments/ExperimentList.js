@@ -9,7 +9,6 @@ import { SearchableSelectField } from 'razorx/components/ui/Field';
 import { statusPill } from 'razorx/helpers/data';
 import { splitzFetch } from 'razorx/helpers/fetch';
 import { notifyError } from 'razorx/components/Modal';
-
 // @observer
 
 class ExperimentList extends React.Component {
@@ -159,7 +158,20 @@ class ExperimentList extends React.Component {
             model={collection}
             fields={[
               ['ID', (item) => item.id],
-              ['Name', (item) => item.name],
+              [
+                'Name',
+                (item) => (
+                  <div className="flex-column">
+                    <span>{item.name}</span>
+                    {item.auto_terminate_at && item.to_be_terminated && (
+                      <div className="pill label-danger">
+                        Auto Termination:
+                        {formatDate(item.auto_terminate_at)}
+                      </div>
+                    )}
+                  </div>
+                ),
+              ],
               ['Status', (item) => statusPill(item.status)],
               [
                 'Project ID',

@@ -10,12 +10,17 @@ import { splitzFetch } from 'razorx/helpers/fetch';
 const EntityIds = 'Entity IDs';
 const SegmentIds = 'Segment';
 
-const dropDownProperties = [EntityIds, SegmentIds].map((item) => (
-  <option key={item} value={item}>
-    {item}
-  </option>
-));
-
+const getDropDownProperties = (experimentType) => {
+  const options = [EntityIds];
+  if (experimentType !== 'control_switch') {
+    options.push(SegmentIds);
+  }
+  return options.map((item) => (
+    <option key={item} value={item}>
+      {item}
+    </option>
+  ));
+};
 class WhitelistExperiment extends React.Component {
   state = {
     isSaving: false,
@@ -184,7 +189,7 @@ class WhitelistExperiment extends React.Component {
                     this.handleSelectedType(e, variant.id);
                   }}
                 >
-                  {dropDownProperties}
+                  {getDropDownProperties(this.props?.data?.type)}
                 </SelectField>
                 <br />
                 {selectedWhitelistTypes[variant.id] === EntityIds ||

@@ -161,6 +161,8 @@ class AddEditExperiment extends React.Component {
   };
 
   isInvalid(form) {
+    const { selectedType } = this.state;
+
     if (!this.state.selectedProject || !this.state.selectedProject.id) {
       return 'Please select a project';
     }
@@ -196,8 +198,11 @@ class AddEditExperiment extends React.Component {
       }
 
       weight = parseInt(weight, 10);
-      if (weight < 0 || weight > 100) {
+      if (weight < 0 || (weight > 100 && selectedType !== 'control_switch')) {
         return 'Variant weight value must be between 0 and 100(both included)';
+      }
+      if (selectedType === 'control_switch' && weight !== 0 && weight !== 100) {
+        return 'Control Switch variant weight must be either 0 or 100';
       }
       totalWeight += weight;
     }
@@ -435,6 +440,15 @@ class AddEditExperiment extends React.Component {
               defaultValue={isEdit ? data.type : 'ramping'}
               required
               disabled={!!this.props.data.id}
+              infoMsg={
+                <span>
+                  Experiments using A/B or Ramp will auto-terminate after 3 months{' '}
+                  <i
+                    className="i i-info-circle i-large"
+                    title="Ramp and A/B experiments auto-terminate 90 days after activation. Notifications are sent to the project's configured Slack channel or #splitz_communications if none is set"
+                  />
+                </span>
+              }
               onChange={(o) => {
                 const type = o.target.value;
                 this.setState({ selectedType: type });
@@ -472,6 +486,10 @@ class AddEditExperiment extends React.Component {
                 {
                   label: 'A/B',
                   value: 'split',
+                },
+                {
+                  label: 'Control Switch',
+                  value: 'control_switch',
                 },
               ].map((op, i) => (
                 <option key={i} value={op.value}>
@@ -541,183 +559,192 @@ class AddEditExperiment extends React.Component {
             ) : null}
             <br />
             <br />
-            <div style={{ border: '1px solid rgba(0,0,0,0.05)', padding: '25px' }}>
-              <div className="title" style={{ position: 'inherit', fontWeight: 'bold' }}>
-                Audience Rules
-              </div>
-              <SelectField
-                name="ruleType"
-                label="Rule Type"
-                defaultValue={isEdit ? this.state.ruleType : RULE_TYPE.simpleRule}
-                onChange={this.handleSelectChange}
-                required
-              >
-                {ruleTypeOptions}
-              </SelectField>
-              {this.state.ruleType === RULE_TYPE.simpleRule ? (
-                <>
+            {selectedType !== 'control_switch' && (
+              <>
+                <div style={{ border: '1px solid rgba(0,0,0,0.05)', padding: '25px' }}>
+                  <div className="title" style={{ position: 'inherit', fontWeight: 'bold' }}>
+                    Audience Rules
+                  </div>
                   <SelectField
-                    name="ruleCondition"
-                    label="Rule Condition"
-                    defaultValue={ruleCondition}
-                    value={ruleCondition}
-                    onChange={({ target: { value } }) => this.setState({ ruleCondition: value })}
+                    name="ruleType"
+                    label="Rule Type"
+                    defaultValue={isEdit ? this.state.ruleType : RULE_TYPE.simpleRule}
+                    onChange={this.handleSelectChange}
+                    required
                   >
-                    {['and', 'or'].map((op, i) => (
-                      <option key={i} value={op}>
-                        {op.toUpperCase()}
-                      </option>
-                    ))}
+                    {ruleTypeOptions}
                   </SelectField>
+                  {this.state.ruleType === RULE_TYPE.simpleRule ? (
+                    <>
+                      <SelectField
+                        name="ruleCondition"
+                        label="Rule Condition"
+                        defaultValue={ruleCondition}
+                        value={ruleCondition}
+                        onChange={({ target: { value } }) =>
+                          this.setState({ ruleCondition: value })
+                        }
+                      >
+                        {['and', 'or'].map((op, i) => (
+                          <option key={i} value={op}>
+                            {op.toUpperCase()}
+                          </option>
+                        ))}
+                      </SelectField>
 
-                  {rules.map((rule, i) => (
-                    <div key={i}>
-                      <div className="flex-row" style={{ alignItems: 'center' }}>
-                        <input
-                          type="text"
-                          placeholder="Key"
-                          value={rule.key}
-                          onChange={(e) => {
-                            const newRules = [...rules];
-                            newRules[i] = {
-                              ...newRules[i],
-                              key: e.target.value,
-                            };
-                            this.setState({
-                              rules: newRules,
-                            });
-                          }}
-                        />
-                        <PowerSelect
-                          options={Object.keys(ruleOperatorMap)}
-                          optionComponent={(op) => ruleOperatorMap[op.option]}
-                          searchEnabled={false}
-                          showClear={false}
-                          placeholder="operator"
-                          selected={ruleOperatorMap[rule.operator]}
-                          onChange={({ option }) => {
-                            const newRules = [...rules];
-                            newRules[i] = {
-                              ...newRules[i],
-                              operator: option,
-                            };
-                            this.setState({
-                              rules: newRules,
-                            });
-                          }}
-                        />
-                        {['belongsTo', 'doesNotBelongTo'].includes(rule.operator) ? (
-                          <SearchableSelectField
-                            name=""
-                            optionComponent={({ option }) => (
-                              <div>
-                                {option.name} - {option.id}
-                              </div>
+                      {rules.map((rule, i) => (
+                        <div key={i}>
+                          <div className="flex-row" style={{ alignItems: 'center' }}>
+                            <input
+                              type="text"
+                              placeholder="Key"
+                              value={rule.key}
+                              onChange={(e) => {
+                                const newRules = [...rules];
+                                newRules[i] = {
+                                  ...newRules[i],
+                                  key: e.target.value,
+                                };
+                                this.setState({
+                                  rules: newRules,
+                                });
+                              }}
+                            />
+                            <PowerSelect
+                              options={Object.keys(ruleOperatorMap)}
+                              optionComponent={(op) => ruleOperatorMap[op.option]}
+                              searchEnabled={false}
+                              showClear={false}
+                              placeholder="operator"
+                              selected={ruleOperatorMap[rule.operator]}
+                              onChange={({ option }) => {
+                                const newRules = [...rules];
+                                newRules[i] = {
+                                  ...newRules[i],
+                                  operator: option,
+                                };
+                                this.setState({
+                                  rules: newRules,
+                                });
+                              }}
+                            />
+                            {['belongsTo', 'doesNotBelongTo'].includes(rule?.operator) ? (
+                              <SearchableSelectField
+                                name=""
+                                optionComponent={({ option }) => (
+                                  <div>
+                                    {option.name} - {option.id}
+                                  </div>
+                                )}
+                                placeholder="Select a segment"
+                                searchIndices={['id', 'name']}
+                                trackBy="id"
+                                options={segments || []}
+                                selected={this.getSelectedSegment(rule.value)}
+                                onChange={(o) => {
+                                  const newRules = [...rules];
+                                  newRules[i] = {
+                                    ...newRules[i],
+                                    value: o.option.id,
+                                  };
+                                  this.setState({
+                                    rules: newRules,
+                                  });
+                                }}
+                                selectStyleProps={{
+                                  margin: '0',
+                                  width: '97%',
+                                }}
+                              />
+                            ) : (
+                              <input
+                                type="text"
+                                placeholder="Value"
+                                value={stringifyNull(rule.value)}
+                                onChange={(e) => {
+                                  const newRules = [...rules];
+                                  newRules[i] = {
+                                    ...newRules[i],
+                                    value: e.target.value,
+                                  };
+                                  this.setState({
+                                    rules: newRules,
+                                  });
+                                }}
+                              />
                             )}
-                            placeholder="Select a segment"
-                            searchIndices={['id', 'name']}
-                            trackBy="id"
-                            options={segments || []}
-                            selected={this.getSelectedSegment(rule.value)}
-                            onChange={(o) => {
-                              const newRules = [...rules];
-                              newRules[i] = {
-                                ...newRules[i],
-                                value: o.option.id,
-                              };
-                              this.setState({
-                                rules: newRules,
-                              });
-                            }}
-                            selectStyleProps={{
-                              margin: '0',
-                              width: '97%',
-                            }}
-                          />
-                        ) : (
-                          <input
-                            type="text"
-                            placeholder="Value"
-                            value={stringifyNull(rule.value)}
-                            onChange={(e) => {
-                              const newRules = [...rules];
-                              newRules[i] = {
-                                ...newRules[i],
-                                value: e.target.value,
-                              };
-                              this.setState({
-                                rules: newRules,
-                              });
-                            }}
-                          />
-                        )}
 
-                        <span
-                          style={{
-                            marginLeft: '2px',
-                            fontSize: '20px',
-                            width: '25px',
-                          }}
-                          className="cross"
+                            <span
+                              style={{
+                                marginLeft: '2px',
+                                fontSize: '20px',
+                                width: '25px',
+                              }}
+                              className="cross"
+                              onClick={() => {
+                                this.setState({
+                                  rules: rules.filter((r, index) => index !== i),
+                                });
+                              }}
+                            />
+                          </div>
+                          {i < rules.length - 1 && (
+                            <div className="flex-row" style={{ justifyContent: 'center' }}>
+                              <span
+                                style={{ margin: '8px' }}
+                                className="square-pills label-semi-muted"
+                              >
+                                {ruleCondition.toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      <br />
+                      <div className="flex-row" style={{ justifyContent: 'center' }}>
+                        <button
+                          type="button"
+                          className="btn btn--pill"
                           onClick={() => {
                             this.setState({
-                              rules: rules.filter((r, index) => index !== i),
+                              rules: [
+                                ...rules,
+                                {
+                                  operator: '',
+                                  key: '',
+                                  value: '',
+                                },
+                              ],
                             });
                           }}
-                        />
+                        >
+                          + Add Rule
+                        </button>
                       </div>
-                      {i < rules.length - 1 && (
-                        <div className="flex-row" style={{ justifyContent: 'center' }}>
-                          <span style={{ margin: '8px' }} className="square-pills label-semi-muted">
-                            {ruleCondition.toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  <br />
-                  <div className="flex-row" style={{ justifyContent: 'center' }}>
-                    <button
-                      type="button"
-                      className="btn btn--pill"
-                      onClick={() => {
-                        this.setState({
-                          rules: [
-                            ...rules,
-                            {
-                              operator: '',
-                              key: '',
-                              value: '',
-                            },
-                          ],
-                        });
-                      }}
-                    >
-                      + Add Rule
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <TextAreaField
-                    label="Complex Rules"
-                    placeholder="Enter your complex conditions here"
-                    value={this.state.complexRules}
-                    defaultValue={isEdit ? this.state.complex_rules : ''}
-                    onChange={this.handleComplexRuleChange}
-                  />
-                  <button
-                    type="button"
-                    onClick={this.formatJson}
-                    disabled={!this.state.isJsonValid}
-                  >
-                    Format JSON
-                  </button>
-                </>
-              )}
-            </div>
-            <br />
-            <br />
+                    </>
+                  ) : (
+                    <>
+                      <TextAreaField
+                        label="Complex Rules"
+                        placeholder="Enter your complex conditions here"
+                        value={this.state.complexRules}
+                        defaultValue={isEdit ? this.state.complex_rules : ''}
+                        onChange={this.handleComplexRuleChange}
+                      />
+                      <button
+                        type="button"
+                        onClick={this.formatJson}
+                        disabled={!this.state.isJsonValid}
+                      >
+                        Format JSON
+                      </button>
+                    </>
+                  )}
+                </div>
+                <br />
+                <br />
+              </>
+            )}
             <div style={{ border: '1px solid rgba(0,0,0,0.05)', padding: '25px' }}>
               <div className="title" style={{ position: 'inherit', fontWeight: 'bold' }}>
                 Variants*
@@ -771,6 +798,13 @@ class AddEditExperiment extends React.Component {
                             variants: newVariants,
                           });
                         }}
+                        infoMsg={
+                          selectedType === 'control_switch' && (
+                            <span>
+                              Weight percentage must be either 0 or 100 for Control Switch
+                            </span>
+                          )
+                        }
                       />
                     </div>
                     {variant.variables.map((variable, variableIndex) => (
@@ -844,28 +878,30 @@ class AddEditExperiment extends React.Component {
               })}
               <br />
               <div className="flex-row" style={{ justifyContent: 'center' }}>
-                <button
-                  type="button"
-                  className="btn btn--pill"
-                  onClick={() => {
-                    this.setState({
-                      variants: [
-                        ...variants,
-                        {
-                          name: '',
-                          variables: [
-                            {
-                              key: '',
-                              value: '',
-                            },
-                          ],
-                        },
-                      ],
-                    });
-                  }}
-                >
-                  + Add Variant
-                </button>
+                {(selectedType !== 'control_switch' || variants.length < 2) && (
+                  <button
+                    type="button"
+                    className="btn btn--pill"
+                    onClick={() => {
+                      this.setState({
+                        variants: [
+                          ...variants,
+                          {
+                            name: '',
+                            variables: [
+                              {
+                                key: '',
+                                value: '',
+                              },
+                            ],
+                          },
+                        ],
+                      });
+                    }}
+                  >
+                    + Add Variant
+                  </button>
+                )}
               </div>
             </div>
             <br />

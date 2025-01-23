@@ -1,3 +1,5 @@
+// stylelint-disable
+
 $timeline-green = #009c5c;
 $description-grey = #878787;
 $splitz-brown = #67595d;
@@ -26,6 +28,11 @@ $splitz-brown = #67595d;
 
   .flex-row
     display: flex
+
+  .flex-column
+    display: flex
+    flex-direction: column
+    gap: 8px
 
     > .flex-row-item:not(:last-of-type)
       margin-right: 24px

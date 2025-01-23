@@ -171,6 +171,14 @@ class ProjectDetails extends React.Component {
           <div>{data.pod}</div>
           <br />
 
+          <div className="flex-row">
+            <div className="flex-row-item">
+              <div className="label">Slack Channel</div>
+            </div>
+          </div>
+          <div>{data.metadata?.slack_channel_id || 'N/A'}</div>
+          <br />
+
           <div className="label">Experiments</div>
           {experiments && (
             <React.Fragment>

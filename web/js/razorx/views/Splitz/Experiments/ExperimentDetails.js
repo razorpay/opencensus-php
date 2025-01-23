@@ -32,14 +32,13 @@ class ExperimentDetails extends React.Component {
     isFetchingExperiment: false,
     isFetchingProject: false,
     isFetchingExclusionGroup: false,
-    data: null, // experiment
-    workflowStatus: null,
+    data: null,
     project: null,
     exclusionGroup: null,
     stateLogs: null,
-    submittedComment: null,
-    commentHistory: [],
     lastEvaluatedAt: null,
+    approvalWorkflow: null,
+    extensionWorkflow: null,
   };
 
   componentDidMount() {
@@ -64,7 +63,8 @@ class ExperimentDetails extends React.Component {
       data: null,
       project: null,
       exclusionGroup: null,
-      workflowStatus: null,
+      approvalWorkflow: null,
+      extensionWorkflow: null,
     });
 
     splitzFetch({
@@ -75,15 +75,19 @@ class ExperimentDetails extends React.Component {
       },
     })
       .then((res) => {
+        const approvalWorkflow = res.workflows.find(
+          (w) => w.workflow.title === 'Approve splitz experiment',
+        );
+        const extensionWorkflow = res.workflows.find(
+          (w) => w.workflow.title === 'Approve splitz extension of experiment termination',
+        );
+
         this.setState({
-          workflowStatus: res.workflows[0]?.workflow?.status || [],
-          submittedComment: res.workflows[0]?.workflow?.states?.L1_Approval?.actions[0]?.comment,
+          approvalWorkflow,
+          extensionWorkflow,
           isFetchingExperiment: false,
           data: res.experiment,
           stateLogs: res.state_change_logs,
-          commentHistory: res.workflows.map((item) => {
-            return item?.workflow?.states?.L1_Approval?.actions[0];
-          }),
           lastEvaluatedAt: res?.experiment?.metadata?.last_evaluated_at,
         });
 
@@ -195,6 +199,47 @@ class ExperimentDetails extends React.Component {
     });
   };
 
+  extendExperimentTermination = () => {
+    const { data } = this.state;
+    const { experimentId, collection } = this.props;
+
+    splitzFetch({
+      url: 'experiment.v1.ExperimentAPI/ExtendAutoTermination',
+      data: {
+        id: data?.id,
+      },
+    })
+      .then(() => {
+        this.fetch(experimentId);
+        collection.fetch();
+      })
+      .catch((err) => {
+        notifyError(err);
+      });
+  };
+
+  approveRejectExtendTermination = (approvalStatus) => {
+    const { data } = this.state;
+    const { experimentId, collection } = this.props;
+
+    splitzFetch({
+      url: 'experiment.v1.ExperimentAPI/Action',
+      data: {
+        id: data?.id,
+        approval_status: approvalStatus,
+        comment: this.optionalRemarks,
+      },
+    })
+      .then(() => {
+        this.fetch(experimentId);
+        collection.fetch();
+        notifySuccess('Success: Experiment termination extension request processed');
+      })
+      .catch((err) => {
+        notifyError(err);
+      });
+  };
+
   showAddExperiment = () => openModal(<ExperimentsModal experimentId={this.state.data} />);
 
   showAddExperimentOwnersModal = () => {
@@ -288,13 +333,12 @@ class ExperimentDetails extends React.Component {
       isFetchingProject,
       isFetchingExclusionGroup,
       data,
-      workflowStatus,
       project,
       exclusionGroup,
       stateLogs,
-      submittedComment,
-      commentHistory,
       lastEvaluatedAt,
+      approvalWorkflow,
+      extensionWorkflow,
     } = this.state;
     const { experimentId } = this.props;
 
@@ -304,6 +348,7 @@ class ExperimentDetails extends React.Component {
     const type = {
       ramping: 'Ramp',
       split: 'A/B',
+      control_switch: 'Control Switch',
     };
 
     const evaluationStrategies = {
@@ -373,9 +418,24 @@ class ExperimentDetails extends React.Component {
           </div>
           <br />
           {statusPill(data.status)}
-          {['initiated', 'created'].includes(workflowStatus) ? (
+          {['initiated', 'created'].includes(approvalWorkflow?.workflow?.status) ? (
             <span className="pill">Pending</span>
           ) : null}
+          {['initiated', 'created'].includes(extensionWorkflow?.workflow?.status) ? (
+            <span className="pill">Extension Pending</span>
+          ) : null}
+
+          {data.auto_terminate_at && (
+            <>
+              <br />
+              <div>
+                <span>
+                  <b>Auto Termination: </b>
+                  {formatDate(data.auto_terminate_at)}
+                </span>
+              </div>
+            </>
+          )}
           <br />
           <br />
           {data.status === 'activated' ? (
@@ -396,9 +456,14 @@ class ExperimentDetails extends React.Component {
             </div>
           ) : null}
           {['created', 'terminated'].includes(data.status) &&
-          (['rejected', 'processed'].includes(workflowStatus) || !workflowStatus.length) ? (
+          (['rejected', 'processed'].includes(approvalWorkflow?.workflow?.status) ||
+            !approvalWorkflow?.workflow?.status.length) ? (
             <>
-              {submittedComment && <Comment commentHistory={commentHistory} />}
+              {approvalWorkflow?.workflow?.states?.L1_Approval?.actions[0]?.comment && (
+                <Comment
+                  commentHistory={approvalWorkflow?.workflow?.states?.L1_Approval?.actions}
+                />
+              )}
               <br />
               <AsyncButton
                 type="button"
@@ -411,7 +476,7 @@ class ExperimentDetails extends React.Component {
               </AsyncButton>
             </>
           ) : null}
-          {['initiated', 'created'].includes(workflowStatus) ? (
+          {['initiated', 'created'].includes(approvalWorkflow?.workflow?.status) ? (
             <>
               <br />
               <form>
@@ -452,7 +517,11 @@ class ExperimentDetails extends React.Component {
           ) : null}
           {data.status === 'activated' ? (
             <>
-              {submittedComment && <Comment commentHistory={commentHistory} />}
+              {approvalWorkflow?.workflow?.states?.L1_Approval?.actions[0]?.comment && (
+                <Comment
+                  commentHistory={approvalWorkflow?.workflow?.states?.L1_Approval?.actions}
+                />
+              )}
               <br />
               <AsyncButton
                 type="button"
@@ -466,6 +535,66 @@ class ExperimentDetails extends React.Component {
                 Terminate Experiment
                 <span className="dot-loader">.</span>
               </AsyncButton>
+            </>
+          ) : null}
+          <br />
+          <br />
+          {data.status === 'activated' && data.auto_terminate_at ? (
+            <>
+              {extensionWorkflow?.workflow?.states?.L1_Approval?.actions[0]?.comment && (
+                <Comment
+                  commentHistory={extensionWorkflow?.workflow?.states?.L1_Approval?.actions}
+                />
+              )}
+              <AsyncButton
+                type="button"
+                className="link info text-info text-bold"
+                pendingClass="link info-faded text-info text-bold btn-pending"
+                confirm="Do you want to extend the experiment termination date?"
+                onClick={this.extendExperimentTermination}
+              >
+                Extend Termination
+                <span className="dot-loader">.</span>
+              </AsyncButton>
+              <br />
+              {extensionWorkflow?.workflow?.status === 'initiated' && (
+                <>
+                  <form>
+                    <TextAreaField
+                      fieldClass="approval-form"
+                      label="Optional Remarks"
+                      name="remarks"
+                      onChange={(e) => {
+                        this.optionalRemarks = e.target.value;
+                      }}
+                    />
+                    <br />
+                    {isRzpApprover() === true && (
+                      <>
+                        <AsyncButton
+                          type="button"
+                          className="link text-bold text-success"
+                          onClick={() => {
+                            this.approveRejectExtendTermination('extend_termination_approved');
+                          }}
+                        >
+                          Approve
+                        </AsyncButton>
+                        <br />
+                      </>
+                    )}
+                    <AsyncButton
+                      type="button"
+                      className="link text-bold text-danger"
+                      onClick={() => {
+                        this.approveRejectExtendTermination('extend_termination_rejected');
+                      }}
+                    >
+                      Reject
+                    </AsyncButton>
+                  </form>
+                </>
+              )}
             </>
           ) : null}
           <br />
@@ -694,7 +823,7 @@ class ExperimentDetails extends React.Component {
               confirm="Are you sure you want to delete the experiment?"
               onClick={this.deleteExperiment}
             >
-              Delete Experiment
+              Archive Experiment
             </AsyncButton>
           </div>
         </div>

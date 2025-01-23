@@ -32,11 +32,15 @@ class AddEditProject extends React.Component {
   };
 
   onSubmit = (form) => {
+    const { slackChannel, ...formWithoutSlackChannel } = form;
     const projectPayload = {
       project: {
-        ...form,
+        ...formWithoutSlackChannel,
         pod: this.state.team,
         id: this.props.data.id,
+        metadata: {
+          slack_channel_id: form.slackChannel,
+        },
       },
     };
 
@@ -194,6 +198,22 @@ class AddEditProject extends React.Component {
             onChange={this.handleSelectTeam}
             selected={team}
             className="search-box"
+            required
+          />
+          <Field
+            type="text"
+            label={
+              <span>
+                Slack Channel{' '}
+                <i
+                  className="i i-info-circle i-large"
+                  title="Notifications related to auto termination will be sent on this channel"
+                />
+              </span>
+            }
+            name="slackChannel"
+            placeholder="Enter Slack Channel ID"
+            defaultValue={isEdit ? data.metadata?.slack_channel_id ?? '' : ''}
             required
           />
           <div style={{ marginTop: 24 }} />
