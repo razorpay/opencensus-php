@@ -21,7 +21,7 @@ class Constants
         self::PERMANENT_ERRORS_ENABLE_FLAG
     ];
 
-    const EMANDATE_DEBIT_COOLDOWN = 3;
+    const EMANDATE_DEBIT_COOLDOWN = 2;
 
     const EMANDATE_DEBIT_ATTEMPTS = 3;
 
