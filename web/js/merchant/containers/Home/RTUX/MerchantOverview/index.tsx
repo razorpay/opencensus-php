@@ -13,7 +13,11 @@ import SettlementInfoBar from 'merchant/containers/Home/RTUX/MerchantOverview/Me
 import { useSplitzService } from 'common/splitz';
 
 import { isSettlementSOHBlockEnabled } from 'merchant/views/Settlements/components/utils';
-import { isBlocked } from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils';
+import {
+  isBlocked,
+  isRiskDisabled,
+  isRiskFoh,
+} from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils';
 
 const MerchantOverviewComponent: React.FC<IMerchantOverview & CommonWidgetProps> = (props) => {
   const { user } = props;
@@ -28,6 +32,8 @@ const MerchantOverviewComponent: React.FC<IMerchantOverview & CommonWidgetProps>
   const { formattedDate, greeting } = useMemo(() => getGreetingAndDate(), []);
   const setIsHovered = useIsSettlementHovered((state) => state.setIsHovered);
   const isEnabled = isSettlementSOHBlockEnabled(splitz) && blocked;
+  const isFOHMerchant =
+    isSettlementSOHBlockEnabled(splitz) && (isRiskFoh() || isRiskDisabled() || isEnabled);
 
   return (
     <Box
@@ -60,11 +66,11 @@ const MerchantOverviewComponent: React.FC<IMerchantOverview & CommonWidgetProps>
         position={isEnabled ? 'relative' : 'static'}
         padding={{
           base: isEnabled ? 'spacing.4' : 'spacing.7',
-          m: isEnabled ? 'spacing.6' : 'spacing.8',
+          m: isFOHMerchant ? 'spacing.0' : 'spacing.8',
         }}
         paddingLeft={{ m: isEnabled ? 'spacing.7' : 'none' }}
       >
-        <MerchantOverviewData {...props} />
+        <MerchantOverviewData {...props} isFOHMerchant={isFOHMerchant} />
       </Box>
 
       {isEnabled && isCurrentBalance && (

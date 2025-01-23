@@ -137,6 +137,7 @@ export interface IMerchantOverview {
   user: User;
   bankUpdate: boolean;
   settlementConfig: settlementConfig | null;
+  isFOHMerchant: boolean;
 }
 
 export interface IMerchantOverviewData {

@@ -58,7 +58,6 @@ const Settlement: React.FC<SettlementProps> = ({
   const isSohBlock = settlementConfig?.status;
   const isMobile = useMobile(mobileBreakoints);
   const splitz = useSplitzService();
-  const hasCurrentBalance = typeof current_balance === 'string';
   return (
     <Box
       display="flex"
@@ -71,7 +70,6 @@ const Settlement: React.FC<SettlementProps> = ({
           settlementConfig={settlementConfig}
           bankUpdate={!!bankUpdate}
           isFohRiskDisabled={false}
-          hasCurrentBalance={hasCurrentBalance}
         />
       ) : (
         <>

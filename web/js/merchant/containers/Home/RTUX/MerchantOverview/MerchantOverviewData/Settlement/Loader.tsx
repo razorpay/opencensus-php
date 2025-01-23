@@ -5,13 +5,14 @@ import { TimelineItemIconKeys } from 'merchant/containers/Home/RTUX/MerchantOver
 
 import { Timeline, TimelineItem } from './components/Timeline';
 
-const SettlementLoader = () => (
+const SettlementLoader = ({ isRiskFohMerchant = false }) => (
   <Box
     display="flex"
     flexDirection={{ base: 'column', l: 'row' }}
     gap="spacing.6"
     marginX={{ base: 'spacing.2', l: 'spacing.4' }}
     testID="settlement-shimmer"
+    padding={isRiskFohMerchant ? 'spacing.6' : 'spacing.0'}
   >
     <Box
       display="flex"

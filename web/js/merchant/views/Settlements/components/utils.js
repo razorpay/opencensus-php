@@ -216,5 +216,5 @@ export const isBlocked = (feature) => {
   return feature?.hold.status || feature?.global_hold_config.status || feature?.block?.status;
 };
 
-export const getFOHDisabledLiveText = (ticketId) =>
-  `This means that you will no longer be able to accept new transactions. To assist in resolving this issue, please respond over the Ticket ID: ${ticketId}. You can call us from your registered number at 08068838200, using your Ticket ID ${ticketId} as the PIN.`;
+export const FOH_DISABLED_LIVE_TEXT =
+  'This means that you will no longer be able to accept new transactions.';

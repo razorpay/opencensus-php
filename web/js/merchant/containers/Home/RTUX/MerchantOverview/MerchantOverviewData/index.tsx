@@ -22,7 +22,6 @@ import {
 import { isRiskFoh, isRiskDisabled } from './Settlement/utils';
 import SettlementBlockedSOH from './Settlement/SettlementBlockedSOH';
 import { useSplitzService } from 'common/splitz';
-import { Box } from '@razorpay/blade/components';
 
 const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
   queryKey,
@@ -32,6 +31,7 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
   data,
   user,
   type,
+  isFOHMerchant = false,
 }) => {
   const [bankUpdate, setBankUpdate] = useState(false);
   const [isRetrying, retryHandler] = useRetryWidget(queryKey);
@@ -40,7 +40,6 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
   const [settlementConfig, setSettlementConfig] = useState<settlementConfig>({});
   const splitz = useSplitzService();
   const isRiskNonTransactedFoh = isRiskFoh() && data?.hero_card_data?.is_transacted === false;
-  const hasCurrentBalance = typeof data?.hero_card_data?.settlement?.current_balance === 'string';
 
   useEffect(() => {
     if (!isLoading && !isRetrying) {
@@ -110,7 +109,11 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
   }, [data]);
 
   if (isLoading || isRetrying)
-    return user.isTransacted ? <SettlementLoader /> : <NonSettlementLoader />;
+    return user.isTransacted ? (
+      <SettlementLoader isRiskFohMerchant={isFOHMerchant} />
+    ) : (
+      <NonSettlementLoader isRiskFohMerchant={isFOHMerchant} />
+    );
 
   if (error)
     return (
@@ -146,7 +149,6 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
         settlementConfig={settlementConfig}
         bankUpdate={false}
         isFohRiskDisabled={isRiskDisabled() && !isRiskFoh()}
-        hasCurrentBalance={hasCurrentBalance}
       />
     );
   }

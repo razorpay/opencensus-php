@@ -37,7 +37,6 @@ describe('SettlementBlockedSOH Component', () => {
       bankUpdate: true,
       settlementConfig: SOH_MOCK,
       isFohRiskDisabled: false,
-      hasCurrentBalance: false,
     };
     const { container } = render(
       <BladeProvider themeTokens={bladeTheme}>
@@ -60,7 +59,6 @@ describe('SettlementBlockedSOH Component', () => {
       bankUpdate: false,
       settlementConfig: SOH_MOCK,
       isFohRiskDisabled: false,
-      hasCurrentBalance: false,
     };
     const { container } = render(
       <BladeProvider themeTokens={bladeTheme}>
@@ -78,7 +76,6 @@ describe('SettlementBlockedSOH Component', () => {
       bankUpdate: false,
       settlementConfig: SOH_MOCK_2,
       isFohRiskDisabled: false,
-      hasCurrentBalance: false,
     };
     const { container } = render(
       <BladeProvider themeTokens={bladeTheme}>
@@ -96,7 +93,6 @@ describe('SettlementBlockedSOH Component', () => {
       bankUpdate: false,
       settlementConfig: FOH_MOCK,
       isFohRiskDisabled: false,
-      hasCurrentBalance: false,
     };
     const { container } = render(
       <BladeProvider themeTokens={bladeTheme}>
@@ -115,7 +111,6 @@ describe('SettlementBlockedSOH Component', () => {
       bankUpdate: false,
       settlementConfig: BLOCK_MOCK,
       isFohRiskDisabled: false,
-      hasCurrentBalance: false,
     };
     render(
       <BladeProvider themeTokens={bladeTheme}>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Skeleton } from '@razorpay/blade/components';
 
-const NonSettlementLoader = () => {
+const NonSettlementLoader = ({ isRiskFohMerchant = false }) => {
   return (
     <Box
       display="flex"
@@ -11,6 +11,7 @@ const NonSettlementLoader = () => {
       alignItems={{ base: 'center', l: 'unset' }}
       width="100%"
       testID="non-settlement-shimmer"
+      padding={isRiskFohMerchant ? 'spacing.6' : 'spacing.0'}
     >
       <Skeleton height="100px" width="100px" />
       <Box

@@ -32,7 +32,7 @@ export const track = (user, widget, action, properties = {}) => {
 export const onClickRedirectNC = (user, widget) => {
   track(user, widget, 'clicked');
   window.open(
-    `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`,
+    `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification?isRekyc=true`,
     '_blank',
     'noreferrer noopener',
   );

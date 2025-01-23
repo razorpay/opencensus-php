@@ -14,7 +14,7 @@ import {
   Heading,
   useTheme,
 } from '@razorpay/blade/components';
-import { makeSpace } from '@razorpay/blade/utils';
+import { useBreakpoint } from '@razorpay/blade/utils';
 import { useMobile } from 'common/hooks/useMobile';
 import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
 import { settlementConfig } from 'merchant/containers/Home/RTUX/MerchantOverview/types';
@@ -27,7 +27,7 @@ import {
 } from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils';
 import Image from 'assets/paper-dart-blocked.png';
 import {
-  getFOHDisabledLiveText,
+  FOH_DISABLED_LIVE_TEXT,
   SETTLEMENT_HOLD_BANK_UPDATE_MESSAGE,
   SETTLEMENT_HOLD_CONTACT_SUPPORT_MESSAGE,
   SETTLEMENT_HOLD_CTA_TEXT,
@@ -46,17 +46,19 @@ interface SettlementBlockedSOHProps extends settlementConfig {
   bankUpdate: boolean;
   settlementConfig: settlementConfig | null;
   isFohRiskDisabled: boolean;
-  hasCurrentBalance: boolean;
 }
 const SettlementBlockedSOH: React.FC<SettlementBlockedSOHProps> = ({
   bankUpdate,
   settlementConfig,
   isFohRiskDisabled = false,
-  hasCurrentBalance = false,
 }) => {
   const isMobile = useMobile(mobileBreakoints);
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const { matchedBreakpoint } = useBreakpoint({
+    breakpoints: theme.breakpoints,
+  });
+  const isMediumDesktop = matchedBreakpoint && ['base', 'xs', 's', 'm'].includes(matchedBreakpoint);
   const isHold = settlementConfig?.source === SETTLEMENT_HOLD_FEATURE.HOLD;
   const isFoh = settlementConfig?.source === SETTLEMENT_HOLD_FEATURE.FOH;
   const isBlock = settlementConfig?.source === SETTLEMENT_HOLD_FEATURE.BLOCK;
@@ -91,7 +93,7 @@ const SettlementBlockedSOH: React.FC<SettlementBlockedSOHProps> = ({
       case SETTLEMENT_HOLD_FEATURE.HOLD:
         return (
           <>
-            <Box flex="4">
+            <Box flex="4" padding="spacing.6">
               <Box
                 display="flex"
                 gap={isMobile ? 'spacing.4' : 'spacing.5'}
@@ -189,8 +191,23 @@ const SettlementBlockedSOH: React.FC<SettlementBlockedSOHProps> = ({
         );
       case SETTLEMENT_HOLD_FEATURE.DISABLED_LIVE:
         return (
-          <Box display="flex" flexDirection="row" justifyContent="space-between" width="100%">
-            <Box flex="4" display="flex" flexDirection="column" justifyContent="center">
+          <Box
+            display="flex"
+            flexDirection="row"
+            justifyContent="space-between"
+            width="100%"
+            backgroundImage={isMediumDesktop ? '' : `url(${Image})`}
+            backgroundPosition="right bottom"
+            backgroundRepeat="no-repeat"
+            backgroundSize="contain"
+          >
+            <Box
+              flex="4"
+              display="flex"
+              flexDirection="column"
+              justifyContent="center"
+              padding="spacing.6"
+            >
               <Box display="flex" gap="spacing.5" alignItems="flex-start">
                 <Box flexShrink="0" marginTop="spacing.2">
                   <AlertTriangleIcon
@@ -204,7 +221,7 @@ const SettlementBlockedSOH: React.FC<SettlementBlockedSOHProps> = ({
               </Box>
               <Box borderRadius="large" margin="spacing.4" paddingLeft="spacing.8">
                 <Text weight="medium" color="surface.text.gray.subtle" size="medium">
-                  {getFOHDisabledLiveText(fohTicketId ? fohTicketId : '')}
+                  {FOH_DISABLED_LIVE_TEXT}
                 </Text>
                 <Button
                   marginTop="spacing.6"
@@ -217,23 +234,28 @@ const SettlementBlockedSOH: React.FC<SettlementBlockedSOHProps> = ({
                 </Button>
               </Box>
             </Box>
-            <Box
-              flex="2"
-              marginY={
-                hasCurrentBalance ? makeSpace(-theme.spacing[6]) : makeSpace(-theme.spacing[8])
-              }
-              display={{ base: 'none', l: 'flex' }}
-              alignItems="flex-end"
-              width="340px"
-            >
-              <img src={Image} alt="Status_Image" style={{ width: '340px', maxHeight: '100%' }} />
-            </Box>
+            <Box flex="2" display={{ base: 'none', l: 'flex' }} />
           </Box>
         );
       default:
         return (
-          <Box display="flex" flexDirection="row" justifyContent="space-between" width="100%">
-            <Box flex="4" display="flex" flexDirection="column" justifyContent="center">
+          <Box
+            display="flex"
+            flexDirection="row"
+            justifyContent="space-between"
+            width="100%"
+            backgroundImage={isMediumDesktop ? '' : `url(${Image})`}
+            backgroundPosition="right bottom"
+            backgroundRepeat="no-repeat"
+            backgroundSize="contain"
+          >
+            <Box
+              flex="4"
+              display="flex"
+              flexDirection="column"
+              justifyContent="center"
+              padding="spacing.6"
+            >
               <Box display="flex" gap="spacing.5" alignItems="flex-start">
                 <Box flexShrink="0" marginTop="spacing.2">
                   <AlertTriangleIcon
@@ -260,18 +282,7 @@ const SettlementBlockedSOH: React.FC<SettlementBlockedSOHProps> = ({
                 </Button>
               </Box>
             </Box>
-            <Box
-              flex="2"
-              // this is to fix the image alignment issue on FOH card
-              marginY={
-                hasCurrentBalance ? makeSpace(-theme.spacing[6]) : makeSpace(-theme.spacing[8])
-              }
-              display={{ base: 'none', l: 'flex' }}
-              alignItems="flex-end"
-              width="340px"
-            >
-              <img src={Image} alt="Status_Image" style={{ width: '340px', maxHeight: '100%' }} />
-            </Box>
+            <Box flex="2" display={{ base: 'none', l: 'flex' }} />
           </Box>
         );
     }
@@ -281,6 +292,7 @@ const SettlementBlockedSOH: React.FC<SettlementBlockedSOHProps> = ({
       display="flex"
       minHeight={isMobile ? 'auto' : '150px'}
       marginX={isMobile ? 'auto' : 'spacing.3'}
+      width="100%"
     >
       {renderContent()}
     </Box>
