@@ -34,8 +34,6 @@ web/js/merchant_common/views/Reports              @joel-jaimon @TanroopSing @asp
 web/js/merchant_common/containers/ReportsAsync    @joel-jaimon @TanroopSing @asp48
 web/js/merchant/views/PartnerDashboard            @razorpay/partnerships-fe @razorpay/merchant-dashboard
 web/js/merchant/views/Transactions/v1/SuccessRate @akash-sachan @NarasimhaSwamy
-web/js/merchant/views/Navigator                   @parth-p-ui
-web/js/merchant/views/Optimizer                   @parth-p-ui
 config/splitz.php                                 @razorpay/ssab-fe
 web/js/merchant/views/Transactions/v2             @razorpay/ssab-fe
 web/js/merchant/views/POS                         @razorpay/omni-acquisition-fe
@@ -57,6 +55,10 @@ web/js/merchant/containers/Home/RTUX/index.tsx    @razorpay/ssab-fe
 # Monitoring the folders until old cold is removed
 web/js/merchant/views/Transactions/v1             @abhieshekumar @Satvik1911
 web/js/merchant/views/Settlements                 @abhieshekumar @Satvik1911
+# Optimizer folders
+web/js/merchant/views/Navigator                     @parth-p-ui @ravid7000 @sanchit-razorpay
+web/js/merchant/views/Optimizer                     @parth-p-ui @ravid7000 @sanchit-razorpay
+web/js/merchant/views/Marketplace/OptimizerAccounts @parth-p-ui @ravid7000 @sanchit-razorpay
 
 # Disabled E2Es - Requires PR approval from dashboard deploy leads
 web/e2e/suites/partnerDashboard/pos/partnerAgent/inviteFlows.spec.js     @razorpay/deploy-leads-dashboard
