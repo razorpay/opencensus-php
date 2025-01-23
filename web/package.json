@@ -51,7 +51,7 @@
     "keyword-extractor": "0.0.25",
     "mobx": "3.6.2",
     "mobx-react": "4.4.3",
-    "moment": "2.29.1",
+    "moment": "2.29.4",
     "node-polyfill-webpack-plugin": "2.0.1",
     "numeral": "2.0.6",
     "path-to-regexp": "6.2.1",

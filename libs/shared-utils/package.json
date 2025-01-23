@@ -9,7 +9,7 @@
     "@razorpay/i18nify-js": "^1.12.3",
     "@razorpay/universe-utils": "11.1.3",
     "axios": "0.21.1",
-    "moment": "2.29.1",
+    "moment": "2.29.4",
     "react": "17.0.2",
     "react-router-dom": "6.14.2",
     "@types/jest": "^29.4.1",
