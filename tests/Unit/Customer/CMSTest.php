@@ -563,6 +563,29 @@ class CMSTest extends TestCase
 
         $this->assertEquals($mockResponse, $result);
     }
+
+    public function testTransformV1CreateOptionsToV2CreateOptionsWithIntegerContact()
+    {
+        $input = [
+            'contact' => 900000
+        ];
+
+        $merchantId = '12345';
+        $output = (new Service($this->app))->transformV1CreateOptionsToV2CreateOptions($input, $merchantId);
+        $this->assertEquals((string)$input['contact'], $output['contact']);
+    }
+
+    public function testTransformV1CreateOptionsToV2CreateOptionsWithNullContact()
+    {
+        $input = [
+            'contact' => null
+        ];
+
+        $merchantId = '12345';
+        $output = (new Service($this->app))->transformV1CreateOptionsToV2CreateOptions($input, $merchantId);
+        $this->assertNull($output['contact']);
+    }
+
     public function testCreateCustomerV2Failure()
     {
         $input = [

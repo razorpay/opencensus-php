@@ -200,7 +200,7 @@ class Service {
             'middle_name'         =>        null,
             'last_name'           =>        null,
             'email'               =>        $opt['email'] ?? null,
-            'contact'             =>        $opt['contact'] ?? null,
+            'contact'             =>        $opt['contact'] ? (string)$opt['contact'] : null,
             'notes'               =>        (object)$opt["notes"] ?? [],
             'gender'              =>        null,
             'dob'                 =>        null,
