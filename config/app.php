@@ -1235,6 +1235,8 @@ return array(
 
     'force_iin_fetch_from_api_for_recon' => env('FORCE_IIN_FETCH_FROM_API_FOR_RECON'),
 
+    'allow_bin_service_bulk_feature_update' => env('ALLOW_BIN_SERVICE_BULK_FEATURE_UPDATE'),
+
     'fetch_iin_from_bin_service' => env('FETCH_IIN_FROM_BIN_SERVICE'),
 
     'skip_optimizer_card_callback' => env('SKIP_OPTIMIZER_CARD_CALLBACK'),

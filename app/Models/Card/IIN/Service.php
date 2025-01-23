@@ -35,7 +35,7 @@ class Service extends Base\Service
         return $iin->toArrayAdmin();
     }
 
-    public function editIin($id, $input, $editSource='manual', $editReason='manual')
+    public function editIin($id, $input, $editSource='manual', $editReason='manual', $bulkUpdateFeatures=false)
     {
         $iin = $this->repo->iin->findOrFailAPIEntity($id);
 
@@ -58,6 +58,9 @@ class Service extends Base\Service
             $this->updateBinServiceData($iin, $input);
         }
 
+        if ($bulkUpdateFeatures && $this->shouldAllowBulkFeatureUpdateAtBinService($iin)) {
+            $this->bulkUpdateFeaturesForBin($iin, $input);
+        }
 
         return $iin->toArrayAdmin();
     }
@@ -824,7 +827,7 @@ class Service extends Base\Service
                     $editReason = "UNPROCESSABLE_ENTITY";
                 }
                 $editSource = 'automatic';
-                return $this->editIin($input['iin'], $editInput, $editSource, $editReason);
+                return $this->editIin($input['iin'], $editInput, $editSource, $editReason,true);
             }
         }
 
@@ -849,7 +852,7 @@ class Service extends Base\Service
 
                 $editSource = 'cron';
 
-                return $this->editIin($input['iin'], $editInput, $editSource);
+                return $this->editIin($input['iin'], $editInput, $editSource, bulkUpdateFeatures: true);
             }
         }
 
@@ -1183,6 +1186,45 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+    private function bulkUpdateFeaturesForBin($iin, $input)
+    {
+        $binService = (new BinService());
+
+        $originalIIN = $this->repo->iin->findOrFail($iin['iin']);
+
+        $request = $this->getFlows($input, $originalIIN);
+
+        $country = $input["country"] ?? $originalIIN["country"];
+        $type = $input["type"] ?? $originalIIN["type"];
+
+
+        $url = "iins/".$iin['iin']."/features/bulk";
+
+        $namespace = "RZP/".strtoupper($country)."/".strtoupper($type);
+
+        $binService->sendRequest($url, 'PATCH', $request, $namespace, BinService::BULK_UPDATE_FEATURES);
+    }
+
+    private function shouldAllowBulkFeatureUpdateAtBinService($iin)
+    {
+        if (Environment::isTestingEnvironment($this->app['env']) === true ||
+            Environment::isEnvironmentQA($this->app['env']) === true ||
+            Environment::isEnvironmentItf($this->app['env']) === true )
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $iin,
+            'experiment_id' => $this->app['config']->get('app.allow_bin_service_bulk_feature_update'),
+            'request_data' => json_encode([
+                "bin" => $iin
+            ]),
+        ];
+
+        return (new Card\TokenisedIIN\Service)->checkIfSplitzExperimentIsEnabled($properties);
     }
 
     private function shouldRouteIINFetchToBinService($iin)

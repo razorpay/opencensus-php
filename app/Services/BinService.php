@@ -26,6 +26,8 @@ class BinService
 
     const UPDATE_IIN        = 'update_iin';
 
+    const BULK_UPDATE_FEATURES = 'bulk_update_features';
+
     const CREATE_TOKEN_RANGE        = 'create_token_range';
 
     const FETCH_IIN         = 'fetch_iin';
