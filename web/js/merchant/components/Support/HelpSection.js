@@ -113,7 +113,7 @@ const HelpSection = ({
   }
 
   const isOnBoardingRevampScreen =
-    history.location.pathname.includes('onboarding') ||
+    (history.location.pathname.includes('onboarding') && !getCookie('ftuxSession')) ||
     history.location.pathname.includes('tncform');
   const DASHBOARD_HOST_REGEX = /(dashboard.*\.razorpay\.(com|in)|localhost)$/;
 

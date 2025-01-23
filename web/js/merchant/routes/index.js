@@ -755,15 +755,6 @@ const fullPageViewsMap = {
   '/configuration/magic/:rest*': {
     component: MagicFPVWithHeader,
   },
-  '/onboarding/api-keys': {
-    component: () => <ApiKeysAndPlugins isFullScreenMode={true} />,
-    additionalCondition: (user) =>
-      // Either an user channel has been verified or user has intent of Website channel (as in FTUX1.5)
-      (!!getProvidedChannels(user).length ||
-        !!getIntentChannels(user, ['business_website'])?.length) &&
-      (user.isFtuxEnabled ||
-        ((user.isProductLedOnboardingRZP || user.isApiKeysRevampEnabled) && user.activated)),
-  },
   '/kyc': {
     component: (props) => (
       <EasyOnboardingWrapper>
