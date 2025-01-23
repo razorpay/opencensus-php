@@ -250,7 +250,8 @@ describe('SettleNow', () => {
         ...restriction,
       };
 
-      render(<App initialState={initialState} isNodalAccountLowBalanceBlocked={true} />);
+      server.use(apiHandlers.odsConfigBlockedHandler);
+      render(<App initialState={initialState} />);
       await waitForODSConfigLoading();
       expect(
         screen.getByText('We are temporarily offline. Will be back soon!'),

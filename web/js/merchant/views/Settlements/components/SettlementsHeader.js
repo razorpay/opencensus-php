@@ -10,7 +10,6 @@ import SettlementsBanner from './SettlementsBanner';
 import BalanceDetails from './BalanceDetails';
 import SettleNow from './SettleNow';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { useODSConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
 
 function SettlementsHeader(props) {
   const {
@@ -22,9 +21,7 @@ function SettlementsHeader(props) {
     checkIfFirstEverSettlement,
     esOndemandSettlementEnabled,
   } = props;
-  const odsQuery = useODSConfig();
 
-  const isNodalAccountBalanceLowBlocked = odsQuery.data?.blocked;
   const { isConfigTagEnabled } = useI18Service();
   const { no_settlement } = settlement_amount.data;
 
@@ -68,7 +65,6 @@ function SettlementsHeader(props) {
                         settlementExists={settlementExists}
                         esOndemandSettlementEnabled={esOndemandSettlementEnabled}
                         checkIfFirstEverSettlement={checkIfFirstEverSettlement}
-                        isNodalAccountLowBalanceBlocked={isNodalAccountBalanceLowBlocked}
                       />
                     )}
                   <br />

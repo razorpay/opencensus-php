@@ -341,73 +341,6 @@ class HomeContainer extends Component {
     return this.props.user.isFeatureEnabled('es_on_demand_restricted') || this.isOnDemandDisabled;
   }
 
-  get settleNowRestrictionMsg() {
-    // prettier-ignore
-    if (!this.settlementRestricted) return false;
-    // prettier-ignore
-    const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
-      this.props.ondemand_restrictions.data;
-    if (this.props.user.isEsOnDemandBlocked) {
-      return 'Settle now is temporarily unavailable. Please try again at 8:00 AM tomorrow.';
-    } else if (this.isOnDemandDisabled) {
-      const restrictedItem = this.restrictedFeatures
-        .filter((feat) => this.props.user.isFeatureEnabled(feat))
-        .map((feat) => this.featureName[feat]);
-      const showRepaymentTootip =
-        restrictedItem?.length === 1 &&
-        restrictedItem?.[0] === this.featureName.disable_ondemand_for_loc;
-      if (showRepaymentTootip) {
-        return <LocRepaymentTooltip />;
-      }
-
-      const renderFeatureComponent = () => {
-        return restrictedItem.map((item, i) => {
-          if (i === restrictedItem.length - 1 && i != 0) {
-            return (
-              <>
-                & <span className="highlight-tooltip"> {item}.</span>
-              </>
-            );
-          } else {
-            return (
-              // eslint-disable-next-line react/jsx-key
-              <span className="highlight-tooltip">
-                {item}
-                {i === restrictedItem.length - 1
-                  ? '.'
-                  : i === restrictedItem.length - 2
-                  ? ' '
-                  : ', '}
-              </span>
-            );
-          }
-        });
-      };
-      return (
-        <div className="disable-ondemand-msg">
-          On-demand Instant Settlements have been disabled because you have delayed the repayments
-          on {renderFeatureComponent()}
-          <br /> <br />
-          Please complete the repayments to re-enable Instant Settlements.
-        </div>
-      );
-    } else if (!attempts_left && !settlable_amount) {
-      return `You’ve already settled your maximum allowed limit of ${getFormattedAmountNew(
-        max_amount_limit,
-        true,
-        this.props.user.merchant.currency,
-      )} for the day.`;
-    } else if (!attempts_left) {
-      return `You've already settled your maximum allowed limit of ${settlements_count_limit} times for the day.`;
-    } else if (!settlable_amount) {
-      return `You’ve already settled your maximum allowed limit of ${getFormattedAmountNew(
-        max_amount_limit,
-        true,
-        this.props.user.merchant.currency,
-      )} for the day.`;
-    } else return '';
-  }
-
   fetchRestrictionsIfAny() {
     if (this.settlementRestricted) {
       this.props.fetchOndemandRestrictions();
@@ -968,7 +901,6 @@ class HomeContainer extends Component {
       mode,
       current_balance,
       ondemand_restrictions: this.settlementRestricted && ondemand_restrictions,
-      settleNowRestrictionMsg,
       tabsMeta,
       isAdmin,
       analyticsFetch,
@@ -982,7 +914,6 @@ class HomeContainer extends Component {
       showOnboardingBannerFirstStep,
       expandOnboardingBanner,
       payments,
-      isOnDemandDisabled: this.isOnDemandDisabled,
       // Handling first step in a different way if its instant activations
       showOnboardingBanner: showOnboardingBannerFirstStep
         ? !user.showInstantActivation || user.instantActivation.isL1Submitted

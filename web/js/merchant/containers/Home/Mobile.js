@@ -13,7 +13,6 @@ import Amount from 'common/ui/Amount';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import Header from 'common/ui/Header';
-import Popover, { PopoverBody } from 'common/ui/Popover';
 import PricingSubscriptionWrapper from 'common/ui/PricingSubscription';
 import Sticky from 'common/ui/Sticky';
 import { getFormattedAmountNew, checkHTML5APIvalidity } from 'common/utils/rzp-utils';
@@ -44,7 +43,6 @@ import {
 } from 'merchant/views/Account/WebsiteAppDetails/utils';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import { OnDemandModalEntry } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandModalEntry';
-import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
 import OnboardingCard from 'merchant/views/onboarding/mobile/Screens/Home';
 import { openModal } from 'merchant_common/reducers/modals';
@@ -60,6 +58,7 @@ import {
   EVENT_CATEGORY_DASHBOARD_HOME,
 } from './ga';
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
+import SettleNow from 'merchant/views/Settlements/components/SettleNow';
 import { Box } from '@razorpay/blade/components';
 import { isEligibleForReKyc } from 'merchant/components/ReKycStatusAlerts/utils';
 import { isEligibleForRazorpayRewind } from 'merchant/components/RazorpayRewind/utils';
@@ -232,7 +231,6 @@ class AnalyticsMobile extends Component {
     const {
       config,
       current_balance,
-      ondemand_restrictions,
       onExtraContentMount,
       isAdmin,
       onFetchPayments,
@@ -259,28 +257,12 @@ class AnalyticsMobile extends Component {
       recentActivityTitle,
       trafficSectionTitle,
       windowWidth,
-      settleNowRestrictionMsg,
-      isOnDemandDisabled,
       bannerCarouselData: { banner_carousel_items = [] } = {},
       i18: { isConfigTagEnabled },
     } = this.props;
 
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
-
-    const attemptsLeft = ondemand_restrictions && ondemand_restrictions.data.attempts_left;
-    const isOndemandRestrictionsLoading = ondemand_restrictions && ondemand_restrictions.loading;
-    const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
-    const isEsOnDemandBlocked = user.isEsOnDemandBlocked;
-    const isSettleNowRestricted =
-      ondemand_restrictions && (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
-    const checkIfSettlementDisabled =
-      isSettleNowRestricted ||
-      current_balance.loading ||
-      current_balance.data.balance < 100 ||
-      isOnDemandDisabled ||
-      isEsOnDemandBlocked;
-
     const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
     const ticketsRaisedByAgents = this.props.ticketsRaisedByAgents.filter(
       (ticket) =>
@@ -415,25 +397,12 @@ class AnalyticsMobile extends Component {
                   {this.props.user.isOndemandSettlementEnabled &&
                   this.props.user.isAllowedView('early_settlement') ? (
                     <div className="settlenow-container">
-                      <SettleNowButton
-                        disabled={checkIfSettlementDisabled}
-                        merchantId={user.current}
-                        fromWhere="Home"
+                      <SettleNow
                         settlementExists={settlementExists}
                         esOndemandSettlementEnabled={esOndemandSettlementEnabled}
-                        showOndemandSettlementForm={this.showOndemandSettlementForm}
                         checkIfFirstEverSettlement={this.checkIfFirstEverSettlement}
+                        fromWhere="Home"
                       />
-
-                      {settleNowRestrictionMsg && (
-                        <Popover
-                          align="top"
-                          parentQuerySelector=".settle-btn .settle-now--mobile"
-                          theme="dark"
-                        >
-                          <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
-                        </Popover>
-                      )}
                     </div>
                   ) : (
                     <Link className="pull-right btn-text" to="/settlements">

@@ -30,13 +30,13 @@ const SettleNow = (props) => {
     esOndemandSettlementEnabled,
     openModal,
     fetchOndemandRestrictions,
-    isNodalAccountLowBalanceBlocked,
     showLeftBorder = true,
+    fromWhere = 'Settlements',
   } = props;
   const currencyCode = user.merchant.currency || 'INR';
 
   const odsQuery = useODSConfig();
-
+  const isNodalAccountLowBalanceBlocked = odsQuery.data?.blocked;
   const isLoading = odsQuery.isFetching || current_balance.loading;
   const isOdsDisabled = !!odsQuery.data?.disable;
 
@@ -146,7 +146,7 @@ const SettleNow = (props) => {
         // TODO: Ideally we should use loading indicator instead of disabling CTA(existing pattern used by checkIfSettlementDisabled and SettleNowButton).
         disabled={isLoading || checkIfSettlementDisabled}
         merchantId={user.current}
-        fromWhere="Settlements"
+        fromWhere={fromWhere}
         settlementExists={settlementExists}
         esOndemandSettlementEnabled={esOndemandSettlementEnabled}
         showOndemandSettlementForm={showOndemandSettlementForm}

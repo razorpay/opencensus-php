@@ -32,6 +32,11 @@ export const odsConfigNoBreachHandler = getOdsConfigHandler({
   blocked: false,
 });
 
+export const odsConfigBlockedHandler = getOdsConfigHandler({
+  disable: false,
+  blocked: true,
+});
+
 export const odsConfigNoBreachWithLimitHandler = getOdsConfigHandler({
   disable: false,
   blocked: false,

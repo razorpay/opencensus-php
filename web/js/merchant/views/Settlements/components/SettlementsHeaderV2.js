@@ -27,10 +27,7 @@ import {
 } from 'merchant/reducers/settlements/details';
 import { OdsBanners } from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage/banners/OdsBanners';
 import { QUERY_KEY as LINKED_ACC_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useLinkedAccountBalance';
-import {
-  useODSConfig,
-  QUERY_KEY as ODS_CONFIG_QUERY_KEY,
-} from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
+import { QUERY_KEY as ODS_CONFIG_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
 import { QUERY_KEY as ODS_RES_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSRestrictedConfig';
 import { QUERY_KEY as PG_BAL_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/usePGBalance';
 import { handleAnalytics } from 'merchant/views/Settlements/Settlements/analytics';
@@ -88,11 +85,7 @@ const SettlementsHeaderV2 = ({
 
   const [fetchedAt, setFetchedAt] = useState(moment());
   const [timeDiff, setTimeDiff] = useState(0);
-
-  const odsQuery = useODSConfig({ enabled: isOndemandSettlementEnabled });
   const queryClient = useQueryClient();
-
-  const isNodalAccountBalanceLowBlocked = odsQuery.data?.blocked;
   const {
     settlement_currency: settlementCurrency,
     balance_currency: balanceCurrency,
@@ -266,7 +259,6 @@ const SettlementsHeaderV2 = ({
             settlementExists={settlementExists}
             esOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
             checkIfFirstEverSettlement={checkIfFirstEverSettlement}
-            isNodalAccountLowBalanceBlocked={isNodalAccountBalanceLowBlocked}
             balanceCurrency={balanceCurrency}
           />
           <SettlementDueTodayCard

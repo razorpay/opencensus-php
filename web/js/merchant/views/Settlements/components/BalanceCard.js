@@ -16,7 +16,6 @@ const BalanceCard = ({
   settlementExists,
   esOndemandSettlementEnabled,
   checkIfFirstEverSettlement,
-  isNodalAccountBalanceLowBlocked,
   balanceCurrency,
 }) => {
   let amount = current_balance?.data?.balance || 0;
@@ -53,7 +52,6 @@ const BalanceCard = ({
         settlementExists={settlementExists}
         esOndemandSettlementEnabled={esOndemandSettlementEnabled}
         checkIfFirstEverSettlement={checkIfFirstEverSettlement}
-        isNodalAccountLowBalanceBlocked={isNodalAccountBalanceLowBlocked}
         showLeftBorder={false}
       />
     );

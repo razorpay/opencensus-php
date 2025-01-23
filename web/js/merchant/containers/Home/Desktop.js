@@ -89,7 +89,6 @@ import {
 import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import { OnDemandModalEntry } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandModalEntry';
-import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
 import { getSettlementTimeFormat } from 'merchant/views/Settlements/components/utils';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
@@ -108,6 +107,7 @@ import {
 } from './ga';
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
 import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import SettleNow from 'merchant/views/Settlements/components/SettleNow';
 import { Box } from '@razorpay/blade/components';
 import { isEligibleForRazorpayRewind } from 'merchant/components/RazorpayRewind/utils';
 
@@ -474,10 +474,7 @@ class AnalyticsDesktop extends Component {
       recentActivityTitle,
       trafficSectionTitle,
       lateAuthConfig,
-      ondemand_restrictions,
-      settleNowRestrictionMsg,
       limitBreach,
-      isOnDemandDisabled,
       settlementConfig,
       bannerCarouselData: { banner_carousel_items = [] } = {},
       internationalSettingStatus,
@@ -495,18 +492,6 @@ class AnalyticsDesktop extends Component {
 
     const nextSettlement = !settlement_amount.data.next_settlement_time;
     const { no_settlement, settlement_currency: settlementCurrency } = settlement_amount.data;
-    const attemptsLeft = ondemand_restrictions && ondemand_restrictions.data.attempts_left;
-    const isOndemandRestrictionsLoading = ondemand_restrictions && ondemand_restrictions.loading;
-    const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
-    const isEsOnDemandBlocked = user.isEsOnDemandBlocked;
-    const isSettleNowRestricted =
-      ondemand_restrictions && (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
-    const checkIfSettlementDisabled =
-      isSettleNowRestricted ||
-      current_balance.loading ||
-      current_balance.data.balance < 100 ||
-      isOnDemandDisabled ||
-      isEsOnDemandBlocked;
     let balance = current_balance.data.balance;
     let negativeBalanceClassName = '';
     const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
@@ -955,25 +940,12 @@ class AnalyticsDesktop extends Component {
                   {this.props.user.isOndemandSettlementEnabled &&
                   this.props.user.isAllowedView('early_settlement') ? (
                     <div className="settlenow-container">
-                      <SettleNowButton
-                        disabled={checkIfSettlementDisabled}
-                        merchantId={user.current}
-                        fromWhere="Home"
+                      <SettleNow 
                         settlementExists={settlementExists}
                         esOndemandSettlementEnabled={esOndemandSettlementEnabled}
-                        showOndemandSettlementForm={this.showOndemandSettlementForm}
                         checkIfFirstEverSettlement={this.checkIfFirstEverSettlement}
+                        fromWhere={"Home"}
                       />
-
-                      {settleNowRestrictionMsg && (
-                        <Popover
-                          align="top"
-                          parentQuerySelector=".settle-btn .settle-now--desktop"
-                          theme="dark"
-                        >
-                          <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
-                        </Popover>
-                      )}
                     </div>
                   ) : !isJKOmniFlow ? (
                     <Link className="pull-right btn-text" to="/settlements">
