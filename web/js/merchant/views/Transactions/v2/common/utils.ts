@@ -224,11 +224,6 @@ export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User):
 
   const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
 
-  // Todo: Remove experiment check once enabled 100%
-  if (user.isJnKOmniEnabled) {
-    return isExperimentEnabled(abExperiments?.enable_trxn_v2_for_JK_omni_merchants);
-  }
-
   if (!abExperiments?.Transactions_Revamp) return false;
 
   // All optimiser merchants are parity merchants

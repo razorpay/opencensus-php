@@ -1869,12 +1869,6 @@ export default class User {
       ORG_CUSTOM_CODE_MAP.HDFC_GIG,
     ];
 
-    if (this.isJnKOmniEnabled) {
-      return (
-        getSplitzExperimentVariant('ramp_account_settings_for_jnk_omni')?.variables?.result === 'on'
-      );
-    }
-
     const isHDFCOrg = excludedOrgs.some(
       (org) => org.toLowerCase() === this.orgCustomCode?.toLowerCase(),
     );

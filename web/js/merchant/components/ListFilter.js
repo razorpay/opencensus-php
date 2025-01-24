@@ -26,11 +26,7 @@ export const isTransactionsV2Enabled = (splitz, user) => {
     ORG_CUSTOM_CODE_MAP.HDFC_GIG,
   ];
 
-  // Omni flagged J&K merchants are excluded as well
-  if (
-    excludedOrgs.some((org) => org.toLowerCase() === user.orgCustomCode?.toLowerCase()) ||
-    user.isJnKOmniEnabled
-  ) {
+  if (excludedOrgs.some((org) => org.toLowerCase() === user.orgCustomCode?.toLowerCase())) {
     return false;
   }
 
