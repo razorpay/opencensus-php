@@ -39,7 +39,10 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
   const widgetId = `merchantDashboard.${screen}.${type}.${id}`;
   const [settlementConfig, setSettlementConfig] = useState<settlementConfig>({});
   const splitz = useSplitzService();
-  const isRiskNonTransactedFoh = isRiskFoh() && data?.hero_card_data?.is_transacted === false;
+  const isRiskNonTransactedFoh =
+    isRiskFoh() &&
+    (data?.hero_card_data?.is_transacted === false ||
+      data?.hero_card_data?.is_settlement === false);
 
   useEffect(() => {
     if (!isLoading && !isRetrying) {
