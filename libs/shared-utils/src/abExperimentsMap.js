@@ -689,4 +689,11 @@ export default {
     //prod experiment ids,
     'PebDaH1KpqjGEv',
   ],
+  rtux_enabled_splitz_experiment_id: [
+    //beta experiment ids
+    'NQLsTXE9tcp1pE',
+
+    //prod experiment ids,
+    'NQLDxIVXOAnYez',
+  ],
 };

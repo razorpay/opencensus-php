@@ -11,6 +11,8 @@ interface RTUXHomepageEnabled {
 }
 
 export const isRTUXHomepageEnabled = ({ user, abExperiments }: RTUXHomepageEnabled): boolean => {
+  // Note: when updating the logic for rtux here, please also update the logic in web/js/common/utils/observability.js
+
   const isInternalTesting = isInternalTestingEnabled(abExperiments);
   if (isInternalTesting) return true;
 

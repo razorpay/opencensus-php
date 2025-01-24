@@ -3,6 +3,8 @@ import errorService from '@razorpay/universe-utils/errorService';
 import { getPathForMetrics } from 'common/new-ui/ErrorBoundary/utils';
 import { captureErrorOnAnalytics, capturePrometheusMetric, Metrics } from 'common/utils/analytics';
 
+import { getSplitzExperimentVariant } from './rzp-utils';
+
 function extractPersona() {
   const {
     role,
@@ -29,6 +31,17 @@ function extractPersona() {
     merchant: { country_code } = {},
   } = window.rzp_user || {};
 
+  const rtuxExperimentEnabled =
+    getSplitzExperimentVariant('rtux_enabled_splitz_experiment_id')?.variables?.result === 'on';
+
+  const isRtux =
+    rtuxExperimentEnabled &&
+    activationStatus === 'activated' &&
+    country_code === 'IN' &&
+    window.rzp_org.custom_code === 'rzp' &&
+    !partnerType &&
+    !(window.rzp_user.merchants[window.rzp_user.current].role === 'partner_agent');
+
   return {
     role: role ?? null,
 
@@ -41,6 +54,7 @@ function extractPersona() {
     disabledReason: disabledReason ?? null,
     preSignupComplete: preSignupComplete ?? null,
     merchantId: merchantId ?? null,
+    isRtux: isRtux ?? null,
 
     // User related
     emailVerified: emailVerified ?? null,

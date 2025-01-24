@@ -272,5 +272,8 @@ return [
 
         // Shell redirection experiment
         'SHELL_REDIRECTION_EXPERIMENT_ID' => env('SHELL_REDIRECTION_EXPERIMENT_ID', ''),
+
+        // Rtux enabled experiment
+        'RTUX_ENABLED_SPLITZ_EXPERIMENT_ID' => env('RTUX_ENABLED_SPLITZ_EXPERIMENT_ID', ''),
     ]
 ];
