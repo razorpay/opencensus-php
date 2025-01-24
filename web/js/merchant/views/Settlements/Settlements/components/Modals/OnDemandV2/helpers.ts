@@ -24,7 +24,15 @@ export const SETTLEMENT_TYPES = {
   ROUTE: 'ROUTE',
 } as const;
 
+export const SETTLEMENT_TYPE_SMART = 'settlement_payout_type_smart';
+export const SETTLEMENT_TYPE_INSTANT = 'settlement_payout_type_instant';
+
 export type SettlementTypes = keyof typeof SETTLEMENT_TYPES;
+
+export type SettlementTransactionType =
+  | typeof SETTLEMENT_TYPE_SMART
+  | typeof SETTLEMENT_TYPE_INSTANT
+  | '';
 
 /**
  * Address JS floating-point precision errors
@@ -82,3 +90,6 @@ export const midLimitGTMViewedStatus = {
   isViewed: () => Boolean(getItem('ods_gtm_viewed')),
   setViewed: () => setItem('ods_gtm_viewed', 'true'),
 };
+
+export const MIN_SMART_SETTLEMENT_AMOUNT = 50000000;
+export const MAX_IMPS_AMOUNT = 5000000000;

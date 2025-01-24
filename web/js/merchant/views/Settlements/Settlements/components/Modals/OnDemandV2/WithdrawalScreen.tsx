@@ -3,8 +3,8 @@ import {
   Button,
   Box,
   Text,
-  Heading,
   Amount,
+  Heading,
   HelpCircleIcon,
   Tooltip,
   TextInput,
@@ -60,6 +60,7 @@ import {
   midLimitGTMViewedStatus,
 } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/helpers';
 import { zIndicesMap } from 'common/constant';
+import SelectModeOfTransaction from './SelectModeOfTransaction';
 
 const GtmModalContent = lazy(
   () =>
@@ -78,7 +79,7 @@ const TOOLTIP_CONTENT = {
   },
 };
 
-const MAX_AMOUNT = 2000000000; // In Paise
+const MAX_AMOUNT = 50000000000; // In Paise
 const MIN_AMOUNT = 10000; // In Paise
 
 const KeyValuePair = ({
@@ -241,7 +242,6 @@ const HardLoading = () => {
     </Box>
   );
 };
-
 /** Analytics utils */
 let hasEditedAmount = false;
 
@@ -272,7 +272,6 @@ const WithdrawalScreen = ({
       : 0;
   });
   const [shouldShowPricingBreakup, setShouldShowPricingBreakup] = useState(false);
-  const [shouldShowConfirm, setShouldShowConfirm] = useState(false);
   /** isInputDirty - causes validation messages to start appearing */
   const [isInputDirty, setIsInputDirty] = useState(false);
   const [selectedTab, setSelectedTab] = useState<SettlementTypes>(
@@ -303,7 +302,8 @@ const WithdrawalScreen = ({
   const showDailyLimit = isODSRestricted || hasMIDLevelLimit;
   const currentBalance = pgBalanceQuery.data?.balance || 0;
   const linkedAccountBalance = Number(linkedAccountBalanceQuery.data?.balance) || 0;
-
+  const isSmartSettlementAvailable =
+    odsConfigQuery?.data?.smart_settlement_config?.smart_settlement === 'active';
   const errorMessage = ((): string => {
     // Linked Account
     if (isLinkedAccountTabActive) {
@@ -324,6 +324,9 @@ const WithdrawalScreen = ({
     }
     if ((dailyAvailableLimit || 0) > 0 && amountInPaise > (dailyAvailableLimit || 0)) {
       return `Maximum settlement amount is ${formatAmount(dailyAvailableLimit || 0, currency)}`;
+    }
+    if (amountInPaise > MAX_AMOUNT) {
+      return `Maximum settlement amount is ${formatAmount(MAX_AMOUNT, currency)}`;
     }
     return '';
   })();
@@ -346,9 +349,11 @@ const WithdrawalScreen = ({
     return midLimitGTMViewedStatus.isViewed();
   });
   const {
-    abExperiments: { capital_is_gtm },
+    abExperiments: { capital_is_gtm, capital_is_smart_settlement },
   } = useSplitzService();
+
   const isMIDLimitGTMExpActive = capital_is_gtm?.variables?.result === 'on';
+  const isSmartSettlementExpActive = capital_is_smart_settlement?.variables?.result === 'on';
   const shouldShowMIDGtm =
     !isODSRestricted && hasMIDLevelLimit && isMIDLimitGTMExpActive && !hasSeenGTMModal;
 
@@ -358,10 +363,12 @@ const WithdrawalScreen = ({
     (isODSRestricted && odsRestrictedConfigQuery.isInitialLoading);
   /** Using isFetchingInitialData as state initialiser, allows us to avoid CLS when going to next screen(confirm screen) and coming back here*/
   const [isInitialised, setIsInitialised] = useState(!isFetchingInitialData);
-
+  const [shouldShowTransactionModeSelection, setShouldShowTransactionModeSelection] =
+    useState(false);
+  const [shouldShowConfirm, setShouldShowConfirm] = useState(false);
   const shouldDisableConfirmCta = isLinkedAccountTabActive
     ? linkedAccountBalanceQuery.isFetching
-    : false;
+    : pricingBreakupQuery.isError || isPricingLoading;
 
   const settleNowPayload = isLinkedAccountTabActive
     ? {
@@ -400,6 +407,7 @@ const WithdrawalScreen = ({
     value = (value || '').replace(/[^0-9]+/g, '');
     setAmount(Number(value) || 0);
     setIsInputDirty(true);
+    setShouldShowPricingBreakup(false);
     if (!hasEditedAmount) {
       hasEditedAmount = true;
       trackField({ name: 'amount', screen: SCREENS.WITHDRAW });
@@ -423,7 +431,9 @@ const WithdrawalScreen = ({
       setIsInputDirty(true);
       return;
     }
-    setShouldShowConfirm(true);
+    if (isSmartSettlementExpActive && selectedTab === SETTLEMENT_TYPES.ODS)
+      setShouldShowTransactionModeSelection(true);
+    else setShouldShowConfirm(true);
     trackButton({
       name: 'Confirm Settlement',
       screen: SCREENS.WITHDRAW,
@@ -434,10 +444,13 @@ const WithdrawalScreen = ({
     onNext(settleNowPayload);
   };
 
+  const onBack = () => {
+    setShouldShowTransactionModeSelection(false);
+  };
+
   const onConfirmDismiss = () => {
     setShouldShowConfirm(false);
   };
-
   const onShowBreakup = () => {
     setShouldShowPricingBreakup(!shouldShowPricingBreakup);
     trackButton({
@@ -587,6 +600,18 @@ const WithdrawalScreen = ({
           onComplete={() => setHasSeenGTMModal(true)}
         />
       </Suspense>
+    );
+  }
+
+  if (shouldShowTransactionModeSelection) {
+    return (
+      <SelectModeOfTransaction
+        currency={currency}
+        amount={settleNowPayload.amount}
+        onSuccess={onSuccess}
+        onBack={onBack}
+        isSmartSettlementAvailable={isSmartSettlementAvailable}
+      />
     );
   }
 

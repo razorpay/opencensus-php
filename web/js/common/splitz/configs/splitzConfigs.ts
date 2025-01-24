@@ -2397,6 +2397,22 @@ export const splitzConfig: SplitzInitConfig = {
           },
         },
         {
+          uniqueHashKey: 'capital_is_smart_settlement',
+          experimentId: {
+            beta: 'Pjggm3c9pdS5nb',
+            production: 'PjfRphousn9tIQ',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
           uniqueHashKey: 'is_managed_merchant_account',
           experimentId: {
             beta: 'PN6YUhAbo1OhDs',

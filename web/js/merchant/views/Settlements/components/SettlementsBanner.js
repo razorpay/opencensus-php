@@ -29,10 +29,7 @@ const SettlementsBanner = (props) => {
 
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
   const isOnHold = no_settlement?.on_hold;
-  console.log({ isOnHold });
-
   const balance = current_balance.data.balance || 0;
-
   const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
   const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
 

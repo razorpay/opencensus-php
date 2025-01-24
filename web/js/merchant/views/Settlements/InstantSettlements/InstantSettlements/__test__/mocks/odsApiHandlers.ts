@@ -48,6 +48,8 @@ export const odsConfigErrorHandler = getOdsConfigHandler(null, false);
 
 export const pgBalanceHandler = getPgBalanceHandler();
 
+export const pgBalanceHandlerSmartSettlement = getPgBalanceHandler({ balance: 12000000040 });
+
 export const pricingBreakupHandler = getPricingBreakupHandler();
 
 export const odsRestrictedConfigHandler = getOdsValidateHandler({
@@ -60,3 +62,30 @@ export const postODSHandler = getPostODSHandler();
 
 export const routeBalanceHandler = getLinkedAccountBalanceHandler();
 export const postRouteODSHandler = getPostRouteODSHandler();
+
+export const odsConfigNoBreachWithLimitHandlerForSmartSettlements = getOdsConfigHandler({
+  disable: false,
+  blocked: false,
+  available_limit: 10000000000,
+  max_limit: 11000000000,
+  smart_settlement_config: {
+    smart_settlement: 'active',
+  },
+});
+
+export const odsConfigNoBreachWithLimitHandlerAndBankTimingsOffForSmartSettlements =
+  getOdsConfigHandler({
+    disable: false,
+    blocked: false,
+    available_limit: 10000000000,
+    max_limit: 11000000000,
+    smart_settlement_config: {
+      smart_settlement: 'inactive',
+    },
+  });
+
+export const odsRestrictedConfigHandlerSmartSettlement = getOdsValidateHandler({
+  attempts_left: 1000,
+  settlable_amount: 6000000000,
+  max_amount_limit: 6000000000,
+});

@@ -9,6 +9,9 @@ export type ODSConfig = {
   disable: boolean;
   max_limit?: number | null;
   available_limit?: number | null;
+  smart_settlement_config?: {
+    smart_settlement: string;
+  };
 };
 
 /** TODO: After react-query v5 migration, use queryoptions function from react-query */

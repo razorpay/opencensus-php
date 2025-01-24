@@ -11,17 +11,28 @@ import { QUERY_KEY as LINKED_ACC_QUERY_KEY } from 'merchant/views/Settlements/In
 import { QUERY_KEY as ODS_CONFIG_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
 import { QUERY_KEY as ODS_RES_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSRestrictedConfig';
 import { QUERY_KEY as PG_BAL_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/usePGBalance';
-import { SETTLEMENT_TYPES } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/helpers';
+import {
+  SETTLEMENT_TYPES,
+  type SettlementTransactionType,
+} from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/helpers';
 import { settleLinkedAccountsBalance } from 'merchant/views/Settlements/Settlements/components/api';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 type Payload =
-  | { type: typeof SETTLEMENT_TYPES.ROUTE; merchantId: string; amount: number }
-  | { type: typeof SETTLEMENT_TYPES.ODS; amount: number; currency: 'INR' };
+  | {
+      type: typeof SETTLEMENT_TYPES.ROUTE;
+      merchantId: string;
+      amount: number;
+    }
+  | {
+      type: typeof SETTLEMENT_TYPES.ODS;
+      amount: number;
+      currency: 'INR';
+      settlement_payout_type?: SettlementTransactionType;
+    };
 
 export const useOdsMutation = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (
       payload: Payload,
@@ -35,6 +46,7 @@ export const useOdsMutation = () => {
             data: {
               amount: payload.amount,
               currency: payload.currency,
+              settlement_payout_type: payload?.settlement_payout_type,
             },
           });
     },

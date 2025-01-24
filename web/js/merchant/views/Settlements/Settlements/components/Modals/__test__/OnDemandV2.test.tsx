@@ -1,12 +1,11 @@
 import React, { useEffect } from 'react';
 import { render, screen, server, waitFor, userEvent } from 'test-utils';
-
 import { queryClient } from 'common/components/Bootstrap/Wrapper';
 import { SpiltzContextState } from 'common/splitz/types';
 import * as apiHandlers from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/__test__/mocks/odsApiHandlers';
 import { OnDemandModalEntry } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandModalEntry';
 import * as modals from 'merchant_common/reducers/modals';
-
+import { waitForSuccessScreen, waitForOdsModal } from './mocks/fixtures/OnDemandModalV2';
 jest.mock('merchant/views/Settlements/Settlements/components/Modals/OndemandModal', () => ({
   ...(jest.requireActual(
     'merchant/views/Settlements/Settlements/components/Modals/OndemandModal',
@@ -18,6 +17,7 @@ jest.mock('merchant/views/Settlements/Settlements/components/Modals/OndemandModa
 const mockActiveExp = { variables: { result: 'on' } };
 const mockGTMExpActive: any = { value: undefined };
 const mockSameDaySettlementDisabledExp: any = { value: undefined };
+const mockIsSmartSettlementEnabledExp: any = { value: undefined };
 
 jest.mock('common/splitz', () => ({
   useSplitzService: () =>
@@ -26,6 +26,7 @@ jest.mock('common/splitz', () => ({
         capital_is_settle_now_v2: { variables: { result: 'on' } },
         capital_is_gtm: mockGTMExpActive.value,
         is_managed_merchant_account: mockSameDaySettlementDisabledExp.value,
+        capital_is_smart_settlement: mockIsSmartSettlementEnabledExp.value,
       },
     } as unknown as SpiltzContextState),
 }));
@@ -40,24 +41,9 @@ jest.mock('merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/h
   midLimitGTMViewedStatus: mockGTMSeen.value,
 }));
 
-const waitForOdsModal = async () => {
-  await waitFor(() => {
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
-  });
-  await waitFor(() => {
-    expect(screen.getByText('Instant Settlements')).toBeInTheDocument();
-  });
-};
-
 const waitForConfirmModal = async () => {
   await waitFor(() => {
-    expect(screen.getAllByText('Confirm Settlement')).toHaveLength(2); // CTA + Modal header
-  });
-};
-
-const waitForSuccessScreen = async () => {
-  await waitFor(() => {
-    expect(screen.getByText(/Settlement Initiated/i)).toBeInTheDocument();
+    expect(screen.getAllByText('Confirm Settlement')).toHaveLength(2);
   });
 };
 
