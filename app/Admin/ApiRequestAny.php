@@ -1208,7 +1208,8 @@ class ApiRequestAny
             $errorDescription = $exceptionData['error']['description'];
         }
         // Handle the errors from Admin-experience-service
-        if (array_key_exists('meta', $exceptionData) === true &&
+        if (empty($exceptionData) === false &&
+            array_key_exists('meta', $exceptionData) === true &&
             array_key_exists('source', $exceptionData['meta']) === true &&
             $exceptionData['meta']['source'] === 'aes' &&
             array_key_exists('description', $exceptionData['meta']) === true)
@@ -1222,7 +1223,8 @@ class ApiRequestAny
     public function getSourceOFError($exceptionData, &$errors)
     {
         // Handle the errors from Admin-experience-service
-        if (array_key_exists('meta', $exceptionData) === true &&
+        if (empty($exceptionData) === false &&
+            array_key_exists('meta', $exceptionData) === true &&
             array_key_exists('source', $exceptionData['meta']) === true &&
             $exceptionData['meta']['source'] === 'aes' &&
             array_key_exists('description', $exceptionData['meta']) === true)

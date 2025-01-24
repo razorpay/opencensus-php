@@ -2107,15 +2107,8 @@ class Service extends Base\Service
 
         list($error, $data, $statusCode) = $request->processInput($requestBody)->send(Constants::AES_LOGIN_PATH, 'POST');
 
-        if($statusCode !== 200) {
-            throw new BadRequestError(
-                'Admin Login Failed',
-                ErrorCode::BAD_REQUEST_ERROR,
-                400
-            );
-        }
         $this->trace->info(TraceCode::AES_LOGIN, [
-            'current_merchant_id' => $error,
+            'error'               => $error,
             'data'                => $data,
             'response'            => $data,
             'input'               => $input,
