@@ -9,7 +9,7 @@ interface INotes {
   isStorefront: boolean;
 }
 
-const ignoredNotesKeys = ['name', 'email', 'phone'];
+const ignoredNotesKeys = ['name', 'email', 'phone', 'product_type'];
 
 function getNotes({ notes, isStorefront }: INotes): JSX.Element | string {
   if (Object.keys(notes).length === 0) {

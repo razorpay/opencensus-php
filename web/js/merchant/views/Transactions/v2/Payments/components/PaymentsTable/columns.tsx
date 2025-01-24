@@ -321,7 +321,7 @@ export const actions = {
       </VisuallyHidden>
     </Box>
   ),
-  value: ({ id, status }: Item): JSX.Element => {
+  value: ({ id, status, notes }: Item): JSX.Element => {
     const currentPath = window.location.pathname.includes(FAILED_PAYMENTS)
       ? FAILED_PAYMENTS
       : PAYMENTS;
@@ -332,6 +332,7 @@ export const actions = {
         itemId={id}
         baseUrl={PAYMENTS}
         initiatePage={initiatePage}
+        notes={notes}
       />
     );
   },

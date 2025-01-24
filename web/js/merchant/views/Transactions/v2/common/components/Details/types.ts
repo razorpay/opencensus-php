@@ -11,6 +11,8 @@ export interface HandleDetailsClickParams {
   isButton?: boolean;
   isDisabled?: boolean;
   rowData?: { paymentMethod?: string; sourceChannel?: string };
+  notes?: any;
+  isStorefront?: boolean;
 }
 
 export type DetailsProps = HandleDetailsClickParams;

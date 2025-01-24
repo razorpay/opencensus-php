@@ -20,13 +20,20 @@ import { RouterLink } from './styled';
 import { DetailsProps, HandleDetailsClickParams, RouterParams } from './types';
 import { useStore } from 'shell/commonStore';
 
-const makeUrl = ({ baseUrl, itemId, initiatePage, rowData }: HandleDetailsClickParams): string => {
+const makeUrl = ({
+  baseUrl,
+  itemId,
+  initiatePage,
+  rowData,
+  isStorefront,
+}: HandleDetailsClickParams): string => {
   const { hash } = window.location;
   let url = `${baseUrl}/${itemId}?init_page=${initiatePage}`;
   if (hash) {
     url += hash;
+  } else if (isStorefront) {
+    url += '#storefront';
   }
-
   if (rowData?.sourceChannel === POS_TRANSACTION_CHANNEL && rowData?.paymentMethod === 'upi') {
     url += '&dashboard_flag=qr_device_detail';
   }
@@ -58,11 +65,18 @@ export const handleDetailsClick = ({
   navigate(url);
 };
 
-const Details = ({ isDisabled, itemId, baseUrl, initiatePage }: DetailsProps): JSX.Element => {
+const Details = ({
+  isDisabled,
+  itemId,
+  baseUrl,
+  initiatePage,
+  notes,
+}: DetailsProps): JSX.Element => {
   const navigate = useNavigate();
   const user = useStore((state) => state.session.user);
   const isMobile = useMobile([...mobileBreakoints, 'l']);
   const splitz = useSplitzService();
+  const isStorefront = notes?.product_type === 'payment_store';
 
   const linkText = isMobile ? '' : 'Details';
 
@@ -97,7 +111,7 @@ const Details = ({ isDisabled, itemId, baseUrl, initiatePage }: DetailsProps): J
   const shouldShowHyperlink =
     baseUrl === TransactionsEntityRoute.PAYMENTS && isPaymentV2ParityFeatureEnabled(splitz, user);
 
-  const url = makeUrl({ baseUrl, itemId, initiatePage });
+  const url = makeUrl({ baseUrl, itemId, initiatePage, isStorefront });
 
   return (
     <Box display="flex" gap="spacing.4">
