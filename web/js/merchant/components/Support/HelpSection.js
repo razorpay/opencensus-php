@@ -15,7 +15,11 @@ import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGating
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 
 import { fireCustomEvent, getPosActivationStatus } from './utils';
-import { blockTicketCreationFoh } from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils';
+import {
+  blockTicketCreationFoh,
+  isRiskDisabled,
+  isRiskFoh,
+} from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils';
 import { isSettlementSOHBlockEnabled } from 'merchant/views/Settlements/components/utils';
 
 const Support = lazy(() =>
@@ -49,6 +53,7 @@ const HelpSection = ({
   const { fohTicketStatus } = useFohTicket();
   const hideTicketCreation =
     isSettlementSOHBlockEnabled(splitz) && blockTicketCreationFoh(user, fohTicketStatus);
+  const isRiskFohMerchant = isRiskFoh() || isRiskDisabled();
   const handleError = ({ error = 'CARE ERROR', rank = Ranks.P2 } = {}) => {
     errorService.captureError(error, {
       tags: {
@@ -200,6 +205,7 @@ const HelpSection = ({
             checkEligibilityForFeeBasedGating(user) || !user.activation_status || hideTicketCreation
           }
           handleClose={handleSupportClose}
+          disableCallChatOption={isRiskFohMerchant}
         />
       </Suspense>
     </ErrorBoundary>

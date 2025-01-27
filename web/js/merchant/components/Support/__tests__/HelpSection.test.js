@@ -14,6 +14,15 @@ jest.mock('merchant/views/TicketSupport/utils', () => ({
     emit: jest.fn(),
   },
 }));
+
+jest.mock(
+  'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils',
+  () => ({
+    isRiskFoh: jest.fn().mockReturnValue(false),
+    isRiskDisabled: jest.fn().mockReturnValue(false),
+  }),
+);
+
 const queryClient = new QueryClient();
 
 describe('HelpSection Component', () => {

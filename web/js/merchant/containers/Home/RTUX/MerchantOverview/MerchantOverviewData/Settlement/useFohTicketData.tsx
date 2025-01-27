@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 
+import { useSplitzService } from 'common/splitz';
 import {
   isRiskDisabled,
   isRiskFoh,
 } from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils';
 import { useFohTicket } from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/store';
 import { fetchFohTicketData } from 'merchant/containers/Home/RTUX/MerchantOverview/utils';
+import { isSettlementSOHBlockEnabled } from 'merchant/views/Settlements/components/utils';
 
 const useFohTicketData = () => {
+  const splitz = useSplitzService();
   const [isLoading, setIsLoading] = useState(false);
   const { setFohTicketId, setFohTicketStatus } = useFohTicket();
 
@@ -22,7 +25,7 @@ const useFohTicketData = () => {
   };
 
   useEffect(() => {
-    if (isRiskFoh() || isRiskDisabled()) {
+    if ((isRiskFoh() || isRiskDisabled()) && isSettlementSOHBlockEnabled(splitz)) {
       fetchTicketData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
