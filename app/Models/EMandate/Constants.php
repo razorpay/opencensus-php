@@ -357,6 +357,8 @@ class Constants
         "ubaidullah a",
         "zaffar hussain",
         "s s aluminium",
-        "rblessing"
+        "rblessing",
+        "Sandeep Kumar",
+        "Mahendra Singh"
     ];
 }
