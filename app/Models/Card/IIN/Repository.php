@@ -118,7 +118,7 @@ class Repository extends Base\Repository
         $iinService = (new Service());
         $binService = (new BinService());
 
-        $apiServiceIINEntity = parent::find($iin, $columns, $connectionType);
+        $apiServiceIINEntity = parent::find(substr($iin, 0, 6), $columns, $connectionType);
 
         if (!empty($iin) && $iinService->shouldReadBinServiceInPrimaryMode($iin) === true)
         {
