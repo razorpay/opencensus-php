@@ -96,7 +96,16 @@ class Service extends Base\Service
 
         if (Hash::check($input['password'], $admin->getPassword()))
         {
-            if($this->featureEnabledForOrg($orgId)) {
+            // Check conditions to determine if second-factor authentication should be skipped
+            $skipSecondFactorAuth = (
+                isset($orgId, $admin) &&
+                $orgId === Constant::IDAM_AXIS_ORG &&
+                $email ===  Constant::IDAM_SUPER_ADMIN_EMAIL &&
+                $this->app['basicauth']->getInternalApp() === 'express'
+            );
+
+            //If $skipSecondFactorAuth is set to true then skip second-factor auth
+            if($this->featureEnabledForOrg($orgId) && $skipSecondFactorAuth === false) {
                 $this->core()->checkSecondFactorAuthAndSendOtp($admin);
             }
 
