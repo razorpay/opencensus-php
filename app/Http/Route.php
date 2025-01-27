@@ -18091,6 +18091,8 @@ class Route
         'payment_methods' => [
             'merchant_fetch_all_methods_internal',
             'merchant_edit_all_methods_internal',
+            'internal_merchant_fetch',
+            'merchant_methods_offers_checkout_internal',
         ],
 
         'pos_app' => [
