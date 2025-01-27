@@ -1,0 +1,27 @@
+name: Run E2E Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request_review:
+    types:
+      - submitted
+
+jobs:
+  run-e2e:
+    runs-on: api-public
+    name: Run E2E Test In Devstack
+    continue-on-error: false
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
+      (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')
+    steps:
+      - name: Run E2E Test
+        uses: razorpay/e2e-test-orchestrator/e2e-action@master
+        with:
+          REQUIRED_WORKFLOW_PASS_CHECK: "build_images.yml, bvt.yml"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          E2E_ORCHESTRATOR_USERNAME: ${{ secrets.E2E_ORCHESTRATOR_USERNAME }}
+          E2E_ORCHESTRATOR_PASSWORD: ${{ secrets.E2E_ORCHESTRATOR_PASSWORD }}
+          CONFIG_NAME: "api_banking.json, api_smart-collect.json"

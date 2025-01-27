@@ -450,52 +450,52 @@ jobs:
           -d '{ "branch" : "master" , "commit" : "${{ github.event.pull_request.head.sha || github.sha }}" , "repo" : "api" }' \
           https://${{ secrets.SPINNAKER_BASIC_AUTH }}@deploy-github-actions.razorpay.com/webhooks/webhook/x-regression
 
-  trigger-e2e-execution-master:
-    name: Trigger E2E Execution on Master
-    runs-on:
-      - self-hosted
-      - api
-      - X64
-    needs: [ build-web-multiarch, build-worker-multiarch, build-checkout-multiarch, validate-php-syntax-app, validate-php-syntax-misc ]
-    if: github.ref == 'refs/heads/master'
-    steps:
-      - name: Run ITF E2E Tests - Master
-        uses: fjogeleit/http-request-action@master
-        with:
-          url: "https://e2e-test-orchestrator.dev.razorpay.in/twirp/rzp.e2e_test_orchestrator.suite_execution.v1.SuiteExecutionAPI/Create"
-          username: ${{ secrets.E2E_ORCHESTRATOR_USERNAME }}
-          password: ${{ secrets.E2E_ORCHESTRATOR_PASSWORD }}
-          method: "POST"
-          data: >
-            {
-              "service_under_test": "api",
-              "commit_id": "${{ github.event.pull_request.head.sha || github.sha }}",
-              "end_to_end_tests_ref": "master",
-              "status": "Pending",
-              "config_overrides": "{}"
-            }
+  # trigger-e2e-execution-master:
+  #   name: Trigger E2E Execution on Master
+  #   runs-on:
+  #     - self-hosted
+  #     - api
+  #     - X64
+  #   needs: [ build-web-multiarch, build-worker-multiarch, build-checkout-multiarch, validate-php-syntax-app, validate-php-syntax-misc ]
+  #   if: github.ref == 'refs/heads/master'
+  #   steps:
+  #     - name: Run ITF E2E Tests - Master
+  #       uses: fjogeleit/http-request-action@master
+  #       with:
+  #         url: "https://e2e-test-orchestrator.dev.razorpay.in/twirp/rzp.e2e_test_orchestrator.suite_execution.v1.SuiteExecutionAPI/Create"
+  #         username: ${{ secrets.E2E_ORCHESTRATOR_USERNAME }}
+  #         password: ${{ secrets.E2E_ORCHESTRATOR_PASSWORD }}
+  #         method: "POST"
+  #         data: >
+  #           {
+  #             "service_under_test": "api",
+  #             "commit_id": "${{ github.event.pull_request.head.sha || github.sha }}",
+  #             "end_to_end_tests_ref": "master",
+  #             "status": "Pending",
+  #             "config_overrides": "{}"
+  #           }
             
-  trigger-e2e-execution-sc:
-    name: Trigger E2E Execution for smart collect
-    runs-on:
-      - self-hosted
-      - api
-      - X64
-    needs: [ build-web-multiarch, build-worker-multiarch, build-checkout-multiarch, validate-php-syntax-app, validate-php-syntax-misc ]
-    steps:
-      - name: Run ITF E2E Tests - smart collect
-        uses: fjogeleit/http-request-action@master
-        with:
-          url: "https://e2e-test-orchestrator.dev.razorpay.in/twirp/rzp.e2e_test_orchestrator.suite_execution.v1.SuiteExecutionAPI/Create"
-          username: ${{ secrets.E2E_ORCHESTRATOR_USERNAME }}
-          password: ${{ secrets.E2E_ORCHESTRATOR_PASSWORD }}
-          method: "POST"
-          data: >
-            {
-              "service_under_test": "api",
-              "commit_id": "${{ github.event.pull_request.head.sha || github.sha }}",
-              "end_to_end_tests_ref": "master",
-              "status": "Pending",
-              "config_overrides": "{}",
-              "testcase_overrides": ["TestVirtualAccountCRUD", "TestVirtualAccountAxis"]
-            }
+  # trigger-e2e-execution-sc:
+  #   name: Trigger E2E Execution for smart collect
+  #   runs-on:
+  #     - self-hosted
+  #     - api
+  #     - X64
+  #   needs: [ build-web-multiarch, build-worker-multiarch, build-checkout-multiarch, validate-php-syntax-app, validate-php-syntax-misc ]
+  #   steps:
+  #     - name: Run ITF E2E Tests - smart collect
+  #       uses: fjogeleit/http-request-action@master
+  #       with:
+  #         url: "https://e2e-test-orchestrator.dev.razorpay.in/twirp/rzp.e2e_test_orchestrator.suite_execution.v1.SuiteExecutionAPI/Create"
+  #         username: ${{ secrets.E2E_ORCHESTRATOR_USERNAME }}
+  #         password: ${{ secrets.E2E_ORCHESTRATOR_PASSWORD }}
+  #         method: "POST"
+  #         data: >
+  #           {
+  #             "service_under_test": "api",
+  #             "commit_id": "${{ github.event.pull_request.head.sha || github.sha }}",
+  #             "end_to_end_tests_ref": "master",
+  #             "status": "Pending",
+  #             "config_overrides": "{}",
+  #             "testcase_overrides": ["TestVirtualAccountCRUD", "TestVirtualAccountAxis"]
+  #           }
