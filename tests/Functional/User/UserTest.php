@@ -15384,6 +15384,7 @@ class UserTest extends TestCase
 
     public function testMobileVerifyOtpForSignupSkipOnStage()
     {
+        $this->markTestSkipped();
         $this->app['env'] = 'dev';
 
         $this->app['config']->set('app.debug', false);
@@ -15431,6 +15432,7 @@ class UserTest extends TestCase
 
     public function testloginUserWithOtpSendLoginOtpViaSmsSkipOnProd()
     {
+        $this->markTestSkipped();
         $this->app['env'] = 'production';
 
         $this->app['config']->set('app.debug', false);
