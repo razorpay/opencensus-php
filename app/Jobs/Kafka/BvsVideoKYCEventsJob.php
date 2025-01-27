@@ -183,15 +183,23 @@ class BvsVideoKYCEventsJob extends Job
                     'vkyc_status' => $eddStatus,
                 ]);
 
+                if ($merchant->hasValidPurposeCodeForGlobalBankTransfer() === false || empty($merchant->getIecCode()) === true) {
+                    $this->trace->info(TraceCode::ACTIVATE_INTERNATIONAL_VA_REQUEST_MISSING_PURPOSE_CODE, [
+                        'merchantId' => $merchantID,
+                        'vkyc_status' => $eddStatus,
+                    ]);
+                    return;
+                }
+
                 $experimentEnabled = $bankTransferService->isAsyncInternationalVirtualAccountActivationEnabled($merchantID);
 
-                if ($experimentEnabled === true) {
+                if ($experimentEnabled === true ) {
                     $payload = [
                         'action' => CrossBorderCommonUseCases::CREATE_INTERNATIONAL_VIRTUAL_ACCOUNT_INTERNALLY,
                         'merchant_id' => $merchantID,
                         'mode' =>  Mode::LIVE,
                     ];
-                    CrossBorderCommonUseCases::dispatch($payload)->delay(rand(300, 600));
+                    CrossBorderCommonUseCases::dispatch($payload)->delay(rand(5, 10));
                 }
             }
 

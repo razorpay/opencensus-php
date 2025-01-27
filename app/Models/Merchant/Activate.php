@@ -49,6 +49,7 @@ use RZP\Mail\Merchant\InstantActivation as InstantActivationMail;
 use RZP\Mail\Merchant\RazorpayX\InstantActivation as RazorpayXInstantActivationMail;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Merchant\Methods\Core as MethodsCore;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 
 class Activate extends Base\Core
 {
@@ -201,6 +202,8 @@ class Activate extends Base\Core
         $merchantCore = new Core();
 
         $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
+
+        $this->activateMoneySaverAccountIfApplicable($merchant);
 
         $merchantBalance = $merchantCore->createBalance($merchant, 'live');
 
@@ -518,6 +521,25 @@ class Activate extends Base\Core
                     $this->addFeatures($featureParams);
             }
         }
+    }
+
+
+    /*
+     *  If merchant is coming from modular onboarding for international onboarding
+     *  Merchant's purpose code ,iec code will be set, so will be activating money saver account for the merchant.
+     * */
+    public function activateMoneySaverAccountIfApplicable(Entity $merchant): void
+    {
+
+        if ($merchant->hasValidPurposeCodeForGlobalBankTransfer() === false || empty($merchant->getIecCode()) === true) {
+            return;
+        }
+        $payload = [
+            'action' => CrossBorderCommonUseCases::CREATE_INTERNATIONAL_VIRTUAL_ACCOUNT_INTERNALLY,
+            'merchant_id' => $merchant->getId(),
+            'mode' =>  Mode::LIVE,
+        ];
+        CrossBorderCommonUseCases::dispatch($payload)->delay(rand(5, 10));
     }
 
     public function updateLedger(Entity $merchant)

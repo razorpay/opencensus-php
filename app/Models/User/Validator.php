@@ -79,6 +79,8 @@ class Validator extends Base\Validator
         DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
         DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
         DeviceDetail\Entity::SIGNUP_SOURCE      => 'sometimes|string',
+        DeviceDetail\Constants::CROSS_BORDER_FLOW => 'sometimes|string|in:intl,ind_intl'
+
     ];
 
     protected static $createRules = self::CREATE_COMMON_RULES + [

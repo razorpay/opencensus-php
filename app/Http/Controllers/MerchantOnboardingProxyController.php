@@ -506,6 +506,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
             return true;
         }
 
+        if ($this->isCrossBorderModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail) === true)
+        {
+            return true;
+        }
+
         $workflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
 
         return (empty($workflowType) === false && $workflowType === DeviceDetailConstants::MODULAR_ONBOARDING);
@@ -552,6 +557,53 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         return $this->getProductSpecificWorkflowType($userDeviceDetail, DeviceDetailConstants::PRODUCT_PG_ONBOARDING)
             === DeviceDetailConstants::MODULAR_ONBOARDING;
+    }
+
+    protected function isCrossBorderModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail): bool
+    {
+        if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
+        return $this->getProductSpecificWorkflowType($userDeviceDetail, DeviceDetailConstants::CROSS_BORDER_ONBOARDING)
+            === DeviceDetailConstants::MODULAR_ONBOARDING;
+    }
+
+    public function isCrossBorderIndiaModularMerchant($merchant): bool
+    {
+        if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchant->getId());
+
+        if (empty($userDeviceDetail) === true)
+        {
+            return false;
+        }
+
+        return $this->isCrossBorderModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail);
+    }
+
+
+    // Adding a common check , as for cross border all the checks are similar to pgIndia Modular Merchant
+    public function isIndiaPgOrCrossBorderIndiaModularMerchant($merchant): bool
+    {
+        if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchant->getId());
+
+        if (empty($userDeviceDetail) === true)
+        {
+            return false;
+        }
+
+        return $this->isIndiaPgModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail) || $this->isCrossBorderModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail);
     }
 
     public function getProductSpecificWorkflowType($userDeviceDetail, $product)
@@ -1007,7 +1059,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     {
         $merchant = $this->app['basicauth']->getMerchant();
 
-        if ($this->isIndiaPgModularMerchant($merchant) === false)
+        if ($this->isIndiaPgOrCrossBorderIndiaModularMerchant($merchant) === false)
         {
             return;
         }

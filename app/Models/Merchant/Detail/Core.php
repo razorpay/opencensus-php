@@ -184,6 +184,7 @@ use RZP\Jobs\PaymentPageProcessor;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AccountSDKWrapper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\AccountDetail as AccountDetailsSDKWrapper;
 use RZP\Models\DeviceDetail\Core as DeviceDetailCore;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 
 class Core extends Base\Core
 {
@@ -4445,20 +4446,29 @@ class Core extends Base\Core
                 \Event::dispatch(new TransactionalClosureEvent(function () use ($merchant) {
                     $this->triggerRequestToBvs($merchant, Status::EDD_PENDING);
 
-                    $pgosPayload = [
-                        Entity::MERCHANT_ID                 => $merchant->getId(),
-                        DeviceDetailConstants::PRODUCT      =>  DeviceDetailConstants::PRODUCT_PG_ONBOARDING,
-                        DeviceDetailConstants::ORG_ID       =>  $merchant->getOrgId(),
-                        DeviceDetailConstants::PLATFORM     =>  DeviceDetailConstants::PLATFORM_PG,
-                        MerchantEntity::COUNTRY_CODE        =>  DetailConstants::INDIA_COUNTRY_CODE,
-                        ClarificationConstants::SUBMIT      => true,
-                        DeviceDetailConstants::FIELD_DATA => [
-                            DeviceDetailConstants::START_VKYC => true
-                        ]
-                    ];
+                    // Adding changes for activation for cross border usecase
+                    if ($this->pgosProxyController->isCrossBorderIndiaModularMerchant($merchant) === true) {
+                        $payload = [
+                            'action' => CrossBorderCommonUseCases::ACTIVATE_CROSS_BORDER_MODULAR_ONBOARDING_MERCHANT,
+                            'merchant_id' => $merchant->getMerchantId(),
+                            'mode' =>  Mode::LIVE,
+                        ];
+                        CrossBorderCommonUseCases::dispatch($payload)->delay(10);
+                    } else {
+                        $pgosPayload = [
+                            Entity::MERCHANT_ID => $merchant->getId(),
+                            DeviceDetailConstants::PRODUCT => DeviceDetailConstants::PRODUCT_PG_ONBOARDING,
+                            DeviceDetailConstants::ORG_ID => $merchant->getOrgId(),
+                            DeviceDetailConstants::PLATFORM => DeviceDetailConstants::PLATFORM_PG,
+                            MerchantEntity::COUNTRY_CODE => DetailConstants::INDIA_COUNTRY_CODE,
+                            ClarificationConstants::SUBMIT => true,
+                            DeviceDetailConstants::FIELD_DATA => [
+                                DeviceDetailConstants::START_VKYC => true
+                            ]
+                        ];
 
-                    $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::ONBOARDING_SAVE, $pgosPayload, $merchant, true);
-
+                        $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::ONBOARDING_SAVE, $pgosPayload, $merchant, true);
+                    }
                 }));
             }
 
@@ -7241,7 +7251,7 @@ class Core extends Base\Core
     {
         $merchant = $merchantDetails->merchant;
 
-        if ($this->pgosProxyController->isIndiaPgModularMerchant($merchant) === true)
+        if ($this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($merchant) === true)
         {
             // todo: the activation_status should be calculated by calling PGOS. This logic will be subsequently migrated.
             // we are hardcoding the activation_status as Under-Review for now for India PG modular merchants to avoid network calls
@@ -12609,7 +12619,7 @@ class Core extends Base\Core
         // Malaysian Merchants should not be eligible for fee based gating
         $isMalaySianMerchant = $this->isMalaysianMerchant($merchant);
 
-        $isIndiaPgModularMerchant = $this->pgosProxyController->isIndiaPgModularMerchant($merchant);
+        $isIndiaPgOrCrossBorderIndiaModularMerchant = $this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($merchant);
 
         $splitzResultWebsiteMerchant = $this->getSplitzResponse($merchant->getId(), 'fee_based_gating_website_exp_id');
 
@@ -12621,7 +12631,7 @@ class Core extends Base\Core
             'signupCampaign'                => $signupCampaign,
             'malaysianMerchant'             => $isMalaySianMerchant,
             'splitzWebsiteMerchant'         => $splitzResultWebsiteMerchant,
-            'isIndiaPgModularMerchant'      => $isIndiaPgModularMerchant,
+            'isIndiaPgModularMerchant'      => $isIndiaPgOrCrossBorderIndiaModularMerchant,
         ]);
 
         if (($merchantOrg === Org\Entity::RAZORPAY_ORG_ID) and
@@ -12630,7 +12640,7 @@ class Core extends Base\Core
              (($splitzResultWebsiteMerchant === Constants::SPLITZ_TRUE) and $hasBusinessWebsiteOrAppUrls === true)) and
             ($activationFlow !== ActivationFlow::BLACKLIST) and
             ($isPgMerchant === true) and
-            ($isIndiaPgModularMerchant === false) and
+            ($isIndiaPgOrCrossBorderIndiaModularMerchant === false) and
             ($isMalaySianMerchant === false))
         {
             if (empty($signupCampaign) === false && $signupCampaign === DDConstants::EASY_ONBOARDING)

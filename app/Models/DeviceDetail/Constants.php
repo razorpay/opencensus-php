@@ -70,11 +70,15 @@ class Constants
 
     const PRODUCT_PG_ONBOARDING = 'pg_onboarding';
 
+    const CROSS_BORDER_ONBOARDING = 'cross_border_onboarding';
+
     const PRODUCT_WORKFLOW_TYPE_TEMPLATE = '%s_workflow_type';
 
     const CURLEC_LINKED_ACCOUNT_ONBOARDING = "curlec_linked_account_onboarding";
 
     const PGOS_ENABLED_SIGNUP_CAMPAIGNS = [self::ASSISTED_ONBOARDING, self::PARTNER_ASSISTED_ONBOARDING, self::I18N_MY_SIGNUP, self::RIZE_INCORPORATION, self::SINGAPORE_SIGNUP] ;
+
+    const CROSS_BORDER_FLOW = 'cross_border_flow';
 
     const SIGNUP_CAMPAIGN_ONBOARDING_MAPPING = [
         self::RIZE_INCORPORATION => [

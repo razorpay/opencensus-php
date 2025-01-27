@@ -4541,6 +4541,11 @@ class Route
             'international_enablement/draft',
             'MerchantInternationalEnablementController@draft',
         ],
+        'merchant_international_enablement_draft_internal' => [
+            'post',
+            'international_enablement/internal/draft',
+            'MerchantInternationalEnablementController@draftInternal',
+        ],
         'merchant_international_enablement_submit' => [
             'post',
             'international_enablement/submit',
@@ -6960,6 +6965,7 @@ class Route
         'internal_payment_update_b2b_invoice',
         'internal_qr_code_merchant_create',
         'create_qr_for_single_stack',
+        'merchant_international_enablement_draft_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -12453,7 +12459,8 @@ class Route
             'payment_capture',
             'internal_payment_authorize_refund',
             'internal_merchant_fetch',
-            'internal_payment_update_b2b_invoice'
+            'internal_payment_update_b2b_invoice',
+            'feature_get_multiple_internal',
         ],
 
         'cross_border_import_service' => [
@@ -18382,7 +18389,8 @@ class Route
             'feature_bulk_assign_internal',
             'internal_merchant_methods_edit',
             'internal_get_all_features',
-            'internal_qr_code_merchant_create'
+            'internal_qr_code_merchant_create',
+            'merchant_international_enablement_draft_internal',
         ],
 
         'disputes' => [

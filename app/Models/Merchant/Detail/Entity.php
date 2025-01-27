@@ -737,7 +737,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
         $merchantOnboardingProxyController = new MerchantOnboardingProxyController();
 
-        if ($merchantOnboardingProxyController->isIndiaPgModularMerchant($this->merchant) === true)
+        if ($merchantOnboardingProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($this->merchant) === true)
         {
             $allowedNextActivationStatusMap = (new Core())->getActivationStatusMappingForModularMerchants();
             $allowedNextActivationStatuses = $allowedNextActivationStatusMap[$activationStatus];

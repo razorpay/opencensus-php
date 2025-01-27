@@ -2,8 +2,12 @@
 
 namespace RZP\Tests\Functional\International;
 
+use Accounts\Account\V1\Account;
+use Accounts\Account\V1\GetAccountByIdResponse;
 use Functional\Helpers\BvsTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AsvSdkAccount;
 use RZP\Services\PaymentsCrossBorderClient;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
@@ -207,5 +211,85 @@ class CBMerchantTest extends TestCase
         $response = $this->startTest();
 
         $this->assertEquals($mockResponse,$response);
+    }
+
+    public function testSaveCaseApprovalInAccountAdditionalDetailsForCrossBorderOnboarding()
+    {
+        $merchantId= '10000000000002';
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10000000000002',
+            'email' => 'razorpay@razorpay.com']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $merchantDetails = $this->fixtures->merchant_detail->create([
+            'merchant_id'    => $merchant->getId(),
+        ]);
+
+        $this->fixtures->edit('merchant',
+            '10000000000002',
+            ['activated' => false]);
+
+        $asvSdkAccount = new AsvSdkAccount();
+        $mockAccountClient = $this->getMockAsvClient();
+
+        $this->mockAsvResponsesForCrossBorderOnboarding('edd_non_verified', $asvSdkAccount, $mockAccountClient);
+
+        $this->mockAsvResponsesForCrossBorderOnboarding('get_additional_details', $asvSdkAccount, $mockAccountClient);
+
+        $this->mockAsvResponsesForCrossBorderOnboarding('save_additional_details', $asvSdkAccount, $mockAccountClient);
+
+        $data = [
+            'merchant_id' => $merchantId,
+            'action' => CrossBorderCommonUseCases::ACTIVATE_CROSS_BORDER_MODULAR_ONBOARDING_MERCHANT,
+            'mode' => 'live',
+        ];
+        (new CrossBorderCommonUseCases($data))->handle();
+    }
+
+    protected function mockAsvResponsesForCrossBorderOnboarding($case, $asvSdkAccount,  $mockAccountClient)
+    {
+        $asvSdkAccount->getAsvSdkClient()->setAccount($mockAccountClient);
+
+        // Choose JSON data based on the case
+        switch ($case) {
+            case 'get_additional_details':
+                $jsonData = '{"id":"10000000000002","additional_detail":{"details":{"cross_border_onboarding":{"cross_border_intent":true}}}}';
+                break;
+
+            case 'edd_non_verified':
+                $jsonData = '{"id":"10000000000002","account_detail":{"edd_verification_status":"pending"}}';
+                break;
+            case 'save_additional_details':
+                $jsonData = '{"id":"10000000000002","additional_detail":{"details":{"cross_border_onboarding":{"cross_border_intent":true, "case_approved":true}}}}';
+                break;
+
+            default:
+                $jsonData = '{"id":"10000000000002","additional_detail":{"details":{"cross_border_onboarding":{"cross_border_intent":true}}}}';
+
+        }
+
+        $account = new Account();
+        $account->mergeFromJsonString($jsonData);
+
+
+        $response = new GetAccountByIdResponse();
+        $response->setAccount($account);
+        if ($case === 'save_additional_details') {
+            $fieldList = ["account.additional_detail.details"];
+            $mockAccountClient->expects($this->once())->method("Save")->willReturn([$response, null]);
+        } else {
+            $mockAccountClient->expects($this->any())
+                ->method('GetAccountById')
+                ->withAnyParameters()
+                ->willReturn([$response, null]);
+        }
+    }
+
+    protected function getMockAsvClient()
+    {
+        return $this->getMockBuilder("Razorpay\Asv\Interfaces\AccountInterface")
+            ->enableOriginalConstructor()
+            ->getMock();
     }
 }

@@ -316,6 +316,57 @@ class InternationalEnablementTest extends TestCase
 
     }
 
+    public function testDraftInternalSuccessCase()
+    {
+        $merchant = $this->createFixtures();
+
+        $this->ba->pgosAppAuth();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $testData = $this->testData['testDraftInternalSuccessCase'];
+
+        $this->startTest($testData);
+    }
+
+    public function testDraftInternalValidationErrorCase()
+    {
+        $merchant = $this->createFixtures();
+
+        $this->ba->pgosAppAuth();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $testData = $this->testData['testDraftInternalWithValidationError'];
+
+        $this->makeRequestAndCatchException(
+            function () use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestException::class,
+            "International enablement details couldn't be captured due to validation failure.");
+    }
+
+    public function testDraftInternalForMerchantMissing()
+    {
+        $merchant = $this->createFixtures();
+
+        $this->ba->pgosAppAuth();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $testData = $this->testData['testDraftInternalForMerchantMissing'];
+
+        $this->makeRequestAndCatchException(
+            function () use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestException::class,
+            "International enablement details couldn't be captured due to validation failure.");
+    }
+
     public function testPreviewCases()
     {
         $merchant = $this->createFixtures();

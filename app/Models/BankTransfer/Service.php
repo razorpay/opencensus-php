@@ -2444,11 +2444,11 @@ class Service extends Base\Service
         {
             $this->trace->traceException($ex,
                 Trace::ERROR,
-                TraceCode::ACTIVATE_INTERNATIONAL_VA_INTERNALLY_FAILED);
+                TraceCode::ACTIVATE_INTERNATIONAL_VIRTUAL_ACCOUNT_FAILED);
 
             // add metric
             $this->trace->count(BankTransferMetrics::INTERNATIONAL_B2B_CURRENCY_CLOUD_BANK_ACCOUNT_CREATION_FAILED, [
-                'merchant_id' => $merchantId
+                'error_code' => $ex->getCode()
             ]);
 
             throw $ex;

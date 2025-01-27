@@ -318,6 +318,100 @@ return [
         ],
     ],
 
+    'testDraftInternalSuccessCase' => [
+        'request'   => [
+            'url'     => '/international_enablement/internal/draft',
+            'method'  => 'POST',
+            'content' => [
+                'products' => [
+                    'payment_gateway',
+                ],
+                'import_export_code'                  => '1234567891',
+                'purpose_code'                        => 'P0609',
+                'version'                             => 'v2',
+                'merchant_id'                         => 'EV7j5qM0qca1U3',
+                'business_use_case'                   => "clncjsdclsjbvsBhxj",
+                'documents' => [
+                    'bank_statement_inward_remittance' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                    'firc' => [
+                        [
+                            'id'           => 'doc_10000011111112',
+                            'display_name' => 'display_name_2',
+                        ],
+                    ],
+                    'invoices' => [
+                        [
+                            'id'           => 'doc_10000011111113',
+                            'display_name' => 'display_name_3',
+                        ],
+                    ],
+                    'others' => [
+                        'custom_type_1' => [
+                            [
+                                'id'           => 'doc_10000011111112',
+                                'display_name' => 'display_name_2',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'status_code' => 200,
+            'content'     => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testDraftInternalWithValidationError' => [
+        'request'   => [
+            'url'     => '/international_enablement/internal/draft',
+            'method'  => 'POST',
+            'content' => [
+                'products' => [
+                    'payment_gateway',
+                ],
+                'documents'                           => null,
+                'import_export_code'                  => '12345678',
+                'purpose_code'                        => 'P0609',
+                'version'                             => 'v2',
+                'merchant_id'                         => 'EV7j5qM0qca1U3',
+                'business_use_case'                   => "clncjsdclsjbvsBhxj",
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testDraftInternalForMerchantMissing' => [
+        'request'   => [
+            'url'     => '/international_enablement/internal/draft',
+            'method'  => 'POST',
+            'content' => [
+                'products' => [
+                    'payment_gateway',
+                ],
+                'documents' => null,
+                'import_export_code'                  => '1234567890',
+                'purpose_code'                        => 'P0609',
+                'version'                             => 'v2',
+                'business_use_case'                   => "clncjsdclsjbvsBhxj",
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetWithNoEntry' => [
         'request'   => [
             'url'     => '/international_enablement',

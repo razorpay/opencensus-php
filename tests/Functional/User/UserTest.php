@@ -1266,6 +1266,47 @@ class UserTest extends TestCase
         $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
     }
 
+    public function testCreateMerchantForNewUserWithInvalidCrossBorderIntent()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '+919000000002', 'email'  => null]);
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantForNewUserWithValidCrossBorderIntent()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '+919097930187', 'email'  => null]);
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        $merchant = DB::table('merchant_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
+
+        $this->assertEquals($user['contact_mobile'], $merchant->contact_mobile);
+    }
+
     public function testGetInXWhenUserOnPg()
     {
         $user = $this->fixtures->create('user');

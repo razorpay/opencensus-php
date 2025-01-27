@@ -39,6 +39,11 @@ use RZP\Models\Merchant\InternationalIntegration\Service as MIIService;
 use RZP\Models\Settlement\Processor\OPGSPImportICICI\Processor as OpgspIciciProcessor;
 use RZP\Models\Merchant\InternationalIntegration\Service as MerchantInternationalIntegrationService;
 use RZP\Models\BankTransfer\Service as BankTransferService;
+use RZP\Models\Merchant\Detail\Service as MerchantDetailService;
+use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstants;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AccountSDKWrapper;
 
 
 class CrossBorderCommonUseCases extends Job
@@ -89,6 +94,8 @@ class CrossBorderCommonUseCases extends Job
     const CREATE_FOREX_CHARGES = 'create_forex_charges';
 
     const CREATE_INTERNATIONAL_VIRTUAL_ACCOUNT_INTERNALLY = 'CREATE_INTERNATIONAL_VIRTUAL_ACCOUNT_INTERNALLY';
+
+    const ACTIVATE_CROSS_BORDER_MODULAR_ONBOARDING_MERCHANT = 'ACTIVATE_CROSS_BORDER_MODULAR_ONBOARDING_MERCHANT';
 
     const SEND_OPGSP_INVOICES_ZIP = 'SEND_OPGSP_INVOICES_ZIP';
     /**
@@ -199,6 +206,9 @@ class CrossBorderCommonUseCases extends Job
                     break;
                 case self::CREATE_INTERNATIONAL_VIRTUAL_ACCOUNT_INTERNALLY:
                     $this->createInternationalVirtualAccountAsync();
+                    break;
+                case self::ACTIVATE_CROSS_BORDER_MODULAR_ONBOARDING_MERCHANT:
+                    $this->activateCrossBorderModularOnboardingMerchant();
                     break;
                 default:
                     $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_INVALID_ACTION,[
@@ -690,6 +700,118 @@ class CrossBorderCommonUseCases extends Job
                 ]);
         }
 
+    }
+
+    /*
+     *  activation of merchant for cross border modular onboarding merchant ,
+     *  activation can happen from here if vcip is already completed for merchant.
+     *  In case of activation, segment event will be triggered
+     *  if vcip have not been verified yet , case_approval key will be saved in account.additional_detail.details
+     *  under cross_border_onboarding key
+     * {"cross_border_onboarding": {"cross_border_intent": "intl", "case_approved" : true}}
+     * */
+    /**
+     * @throws BadRequestException
+     */
+    protected function activateCrossBorderModularOnboardingMerchant(): void
+    {
+        $merchantID = $this->payload['merchant_id'];
+        try {
+
+            $eddStatus = (new MerchantDetailsCore)->getEDDStatus(['merchant_id' => $merchantID]);
+            $merchant = $this->repo->merchant->findOrFail($merchantID);
+            $this->app['rzp.mode'] = Mode::LIVE;
+
+            $input = [
+                "merchant_id" => $merchantID,
+                "action" => "UPDATE_ACTIVATION_STATUS",
+                "activation_status" => "activated",
+                "modular_merchant_activation" => true,
+            ];
+
+            if ($merchant->isActivated() === false) {
+                if ($eddStatus === MerchantDetailsConstants::VERIFIED) {
+                    (new MerchantDetailService())->submitMerchantInternal($merchantID, $input);
+
+                    $this->sendActivatedSegmentEvent($merchantID);
+                } else {
+                    $this->saveCaseApprovalInAccountAdditionalDetails($merchantID);
+                }
+            }
+        } catch (\Throwable $ex) {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::ACTIVATE_CROSS_BORDER_MODULAR_MERCHANT_FAILED,
+                [
+                    'merchant_id' => $merchantID,
+                    'error_message' => $ex->getMessage(),
+                ]);
+
+            $this->trace->count(Metrics::CROSS_BORDER_MERCHANT_ACTIVATION_FAILED, [
+                'error_code' => $ex->getCode(),
+                'error_message' => $ex->getMessage(),
+            ]);
+        }
+    }
+
+    protected function saveCaseApprovalInAccountAdditionalDetails($merchantID): void
+    {
+        try {
+            $this->trace->info(
+                TraceCode::UPDATE_ACCOUNT_ADDITIONAL_DETAIL_REQUEST_FOR_INTERNATIONAL_ONBOARDING,
+                [
+                    'merchant_id' => $merchantID
+                ]
+            );
+
+            $existingAdditionalDetails = (new Merchant\Service())->getAdditionalDetailsFromASV($merchantID);
+
+            if (!isset($existingAdditionalDetails['cross_border_onboarding'])) {
+                $this->trace->error(TraceCode::CROSS_BORDER_ACCOUNT_ADDITIONAL_DETAIL_MISSING, [
+                    'merchant_id' => $merchantID,
+                    'asv_additional_details' => $existingAdditionalDetails
+                ]);
+            }
+
+            $existingAdditionalDetails['cross_border_onboarding']['case_approved'] = true;
+
+            $updatedAdditionalDetailsJson = get_Protobuf_Struct($existingAdditionalDetails);
+
+            $fieldList = ["account.additional_detail.details"];
+
+            $accountId = (new AccountSDKWrapper())->saveAccountAdditionalDetailWithDetails($merchantID, $updatedAdditionalDetailsJson, $fieldList);
+
+            $this->trace->info(
+                TraceCode::ACCOUNT_ADDITIONAL_DETAIL_UPDATED,
+                [
+                    'merchant_id' => $accountId
+                ]
+            );
+        } catch (\Exception $ex) {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::UPDATE_ACCOUNT_ADDITIONAL_DETAIL_FOR_INTERNATIONAL_ONBOARDING_FAILED,
+                ['merchant_id' => $merchantID]
+            );
+
+            throw $ex;
+        }
+    }
+
+
+    protected function sendActivatedSegmentEvent($merchant)
+    {
+        $merchantDetails = $this->repo->merchant_detail->findOrFail($merchant->getId());
+        $properties = [
+            "u_em" => $merchantDetails->getContactEmail(),
+            "u_mb" => $merchantDetails->getContactMobile(),
+            "first_name" => $merchantDetails->getContactName(),
+            "merchant_type" => "cross_border_money_saver",
+        ];
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $properties, "Merchant Activated");
     }
 
     protected function zipFIRS()
