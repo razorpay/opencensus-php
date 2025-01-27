@@ -42,8 +42,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $autochargeRules = [
-        'count'         => 'sometimes|integer',
-        'merchant_ids'  => 'sometimes|string'
+        'count'             => 'sometimes|integer',
+        'merchant_ids'      => 'sometimes|string',
+        'charge_past_days'  => 'sometimes|integer',
     ];
 
     protected static $associateTokenRules = [

@@ -5948,7 +5948,8 @@ class Processor
         if (($currentRouteName === 'payment_create_recurring') or
             ($currentRouteName === 'subscription_registration_charge_token') or
             ($currentRouteName === 'subscription_registration_charge_token_bulk') or
-            ($currentRouteName === 'payment_create_subscriptions'))
+            ($currentRouteName === 'payment_create_subscriptions') or
+            ($currentRouteName === 'subscription_registration_auto_charge'))
         {
             return null;
         }

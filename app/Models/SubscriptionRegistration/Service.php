@@ -446,9 +446,11 @@ class Service extends Base\Service
 
         $count = $input['count'] ?? 100;
 
+        $prevDays = $input['charge_past_days'] ?? 2;
+
         $merchantIds = $input['merchant_ids'] ?? [];
 
-        $tokenRegistrationsToCharge = $this->repo->subscription_registration->getTokenRegistrationsForFirstCharge($merchantIds, $count);
+        $tokenRegistrationsToCharge = $this->repo->subscription_registration->getTokenRegistrationsForFirstCharge($merchantIds, $count, $prevDays);
 
         $tokenRegistrationsPicked = [];
 
