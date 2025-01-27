@@ -541,7 +541,7 @@ trait Authorize
             $isPushedToKafka = $this->pushPaymentToKafkaForVerify($this->payment);
 
             $payment->setIsPushedToKafka($isPushedToKafka);
-            
+
             // Check if the method is UPI and we need to use re-arch flow for subsequent payment
             if ($payment->isUpiAutoRecurring() === true)
             {
@@ -10566,9 +10566,61 @@ trait Authorize
     {
         $data['razorpay_order_id'] = $payment->order->getPublicId();
 
-        $this->fillReturnDataWithSignatureIfApplicable($data);
-    }
+        try
+        {
+            $this->fillReturnDataWithSignatureIfApplicable($data);
+        }
+        catch (\Throwable $e)
+        {
+            $splitzResult = $this->getSplitzResponse($payment->getMerchantId(), 'ignore_signature_error_exp_id',["method"=>$payment->getMethod()]);
 
+             if (strtolower($splitzResult) === 'enable')
+            {
+                $this->trace->info(
+                    TraceCode::SIGNATURE_GENERATION_ERROR_SKIPPED_TRACE,
+                    [
+                        'merchant_id' => $payment->getMerchantId(),
+                        'payment_id' => $payment->getPublicId(),
+                    ]);
+
+                return;
+            }
+            throw $e;
+        }
+    }
+    public function getSplitzResponse(string $id, string $experimentName,array $requestData = []) : string
+    {
+
+        $app = \App::getFacadeRoot();
+
+        try
+        {
+            $experimentId = $app->config->get('app.'.$experimentName);
+            $response     = $app['splitzService']->evaluateRequest([
+                                                                       'id'            => $id,
+                                                                       'experiment_id' => $experimentId,
+                                                                       'request_data'  => json_encode(
+                                                                           $requestData),
+                                                                   ]);
+            $app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id'   => $id,
+                'experiment_id' => $experimentId,
+                'experimentName'=> $experimentName,
+                'response'      => $response,
+                'request_body'  => $requestData
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $app->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'     => $id,
+                'experiment_id'   => $app->config->get($experimentName) ?? null,
+                'experiment_name' => $experimentName
+            ]);
+        }
+
+        return $response['response']['variant']['name'] ?? '';
+    }
     protected function fillReturnDataWithSignatureIfApplicable(array & $data)
     {
         // If accessed via keyless flow (public auth routes or direct auth routes like payment callback on UPI QR) and

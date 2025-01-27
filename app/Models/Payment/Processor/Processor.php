@@ -757,6 +757,10 @@ class Processor
         $this->requestContext = $this->app['request.ctx.v2'];
     }
 
+    public function setTrace($trace)
+    {
+        $this->trace = $trace;
+    }
     public function flushPaymentObjects()
     {
         $this->order        = null;
