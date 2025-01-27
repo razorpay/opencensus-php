@@ -21894,4 +21894,105 @@ The same has been enabled for the account.
         $this->assertEquals('newEmail@test.com', $updatedMerchantDetail->getContactEmail());
 
     }
+
+    public function testMerchantEmailUpdateCreateNewOwnerForMerchant()
+    {
+        Mail::fake();
+
+        $app = App::getFacadeRoot();
+
+        $merchant = $this->fixtures->create('merchant', ['email' => 'oldcontact@gmail.com', 'partner_type' => 'aggregator']);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'contact_email' => 'oldcontact@gmail.com',
+            'merchant_id' => $merchant['id']
+        ]);
+
+        $appAttributes = [
+            'merchant_id' => $merchant['id'],
+            'partner_type'=> 'aggregator',
+        ];
+
+        $application = $this->fixtures->merchant->createDummyPartnerApp($appAttributes);
+
+        $token = str_random(50);
+
+        $oldOwnerUser = $this->fixtures->create('user',[
+            'email'                   => 'oldowner@gmail.com',
+            'contact_mobile'          => '8839106483',
+            'name'                    => 'ownername',
+            'contact_mobile_verified' => true,
+            'password_reset_token'    => $token,
+            'password_reset_expiry'   => Carbon::now()->timestamp + 86400,
+        ]);
+
+        // create owner role on pg
+        $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'primary');
+
+        $userDeviceDetail = [
+            'merchant_id' => $merchant['id'],
+            'user_id' => $oldOwnerUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service' => 'pgos',
+            ]
+        ];
+        $this->fixtures->create('user_device_detail', $userDeviceDetail);
+
+        // put data in cache
+        $cacheData = [
+            'current_owner_email'    => 'oldowner@gmail.com',
+            'email'                  => 'newowner@gmail.com',
+            'merchant_id'            => $merchant['id'],
+            'reattach_current_owner' => true,
+            'set_contact_email'      => true,
+        ];
+
+        $app['cache']->put('merchant_email_update_' . $merchant['id'], $cacheData, 60*60*24);
+
+        $oldOwnerUser = $this->getDbEntityById('user', $oldOwnerUser['id']);
+
+        $testData = $this->testData['testMerchantEmailUpdateCreateNewUser'];
+
+        $testData['request']['content']['token']       = $token;
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+
+        $testData['response']['content']['logout_sessions_for_users'] = [$oldOwnerUser->getId()];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchant['id']);
+
+        $user = $this->repo->user->getUserFromEmail("newowner@gmail.com");
+
+        $merchantUser = \DB::table('merchant_users')
+            ->where('merchant_id', '=', $merchant['id'])
+            ->where('role','=','owner')
+            ->first();
+
+        $this->assertEquals($deviceDetail->merchant_id, $merchant['id']);
+
+        $this->assertEquals($deviceDetail->user_id, $user->id);
+
+        $this->assertEquals($merchantUser->user_id, $user->id);
+
+        $this->assertEquals($merchantUser->merchant_id, $merchant['id']);
+
+        $this->assertEquals("owner", $merchantUser->role);
+    }
+
 }

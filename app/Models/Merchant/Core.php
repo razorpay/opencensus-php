@@ -3843,13 +3843,13 @@ class Core extends Base\Core
             $this->attachUserForMerchant($merchant->getId(), $currentOwner, $currentOwnerNewRole, $product);
         }
 
-        $this->changeUserDeviceDetailForOwner($merchant);
+        $this->changeUserDeviceDetailForOwner($merchant,$user);
 
     }
 
     // Updates the signup campaign and metadata for the current owner user
     // when merchant ownership is transferred from one user to another.
-    protected function changeUserDeviceDetailForOwner($merchant): void
+    protected function changeUserDeviceDetailForOwner($merchant,$user): void
     {
         try
         {
@@ -3881,6 +3881,15 @@ class Core extends Base\Core
                         ];
 
                         (new \RZP\Models\DeviceDetail\Core)->editDeviceDetail($currentDeviceDetailId, $updatedData);
+                    }
+                    else
+                    {
+                        $deviceDetailInput = [
+                            \RZP\Models\DeviceDetail\Entity::MERCHANT_ID     => $merchant->getId(),
+                            \RZP\Models\DeviceDetail\Entity::USER_ID         => $user->getId(),
+                            \RZP\Models\DeviceDetail\Entity::SIGNUP_CAMPAIGN => $originalDeviceDetail->getSignupCampaign(),
+                        ];
+                        (new \RZP\Models\DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
                     }
                 }
             }
