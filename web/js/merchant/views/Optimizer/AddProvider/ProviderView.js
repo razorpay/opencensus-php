@@ -132,6 +132,7 @@ const ProviderView = (props) => {
     [WALLET_AUTO_DEBIT_KEY]: walletAutoDebit,
     Recurring,
     Sodexo,
+    [PROVIDER_KEYS.ROUTE]: route,
   } = provider?.Gateway_details || {};
 
   const [showIntegrationAuditModal, setShowIntegrationAuditModal] = useState(false);
@@ -208,6 +209,7 @@ const ProviderView = (props) => {
     SEAMLESS_PROVIDERS?.includes(provider?.Gateway) &&
     provider?.Gateway_details?.hasOwnProperty('optimizer_seamless_disabled');
   const isRecurringEnabled = provider?.Gateway_details?.hasOwnProperty('Recurring');
+  const isRouteEnabled = provider?.Gateway_details?.hasOwnProperty(PROVIDER_KEYS.ROUTE);
 
   let strPaymentMethods = paymentMethods?.map((method) => METHODS_MAP[method])?.join(', ') ?? '';
   const isSodexoEnabled =
@@ -231,6 +233,7 @@ const ProviderView = (props) => {
     WALLET_AUTO_DEBIT_KEY,
     PROVIDER_KEYS.RECURRING,
     PROVIDER_KEYS.GATEWAY_ACQUIRER,
+    PROVIDER_KEYS.ROUTE,
   ];
   const ignoreFields =
     !isPaytmAutoDebitEnabled || !walletAutoDebit
@@ -603,6 +606,19 @@ const ProviderView = (props) => {
                         </Box>
                         <Box display="flex" gap="spacing.2" alignItems="center">
                           <Text>{Recurring ? 'Enabled' : 'Disabled'}</Text>
+                        </Box>
+                      </Box>
+                    </>
+                  )}
+                  {isRouteEnabled && (
+                    <>
+                      <Divider />
+                      <Box display="flex" gap="spacing.4">
+                        <Box display="flex" gap="spacing.2" alignItems="center" minWidth="200px">
+                          <Text>Route</Text>
+                        </Box>
+                        <Box display="flex" gap="spacing.2" alignItems="center">
+                          <Text>{route ? 'Enabled' : 'Disabled'}</Text>
                         </Box>
                       </Box>
                     </>

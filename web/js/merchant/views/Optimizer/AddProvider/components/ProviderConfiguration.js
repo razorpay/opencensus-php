@@ -24,6 +24,11 @@ import {
   TPV_OPTIONS,
   SKIP_INPUT_FOR_PROVIDER_KEYS,
 } from 'merchant/views/Navigator/constants';
+import {
+  RECURRING_HELP_TEXT,
+  TPV_HELP_TEXT,
+  ROUTE_HELP_TEXT,
+} from 'merchant/views/Optimizer/AddProvider/constants';
 import { gatewayDetailsMapping } from 'merchant/views/Navigator/components/util';
 import {
   isIntegrationAuditEnabled,
@@ -41,6 +46,7 @@ const ProviderConfiguration = (props) => {
     providers,
     provider,
     isPaytmAutoDebitEnabled,
+    isRouteEnabled,
     hasSeamlessOption,
     validationErrors,
     changeGatewayDetails,
@@ -306,11 +312,7 @@ const ProviderConfiguration = (props) => {
                           color="feedback.icon.neutral.intense"
                         />
                         <Popover theme="dark" align="right">
-                          <PopoverBody>
-                            Third-Party Validation (TPV) of your customer’s bank accounts in
-                            real-time. It is a mandatory requirement for merchants in the BFSI
-                            (Banking, Financial Services and Insurance) sector.
-                          </PopoverBody>
+                          <PopoverBody>{TPV_HELP_TEXT}</PopoverBody>
                         </Popover>
                       </Box>
                     </Box>
@@ -353,9 +355,45 @@ const ProviderConfiguration = (props) => {
                         <Text color="surface.text.gray.muted">{labelText}</Text>
                       </Box>
                       <Text variant="caption" color="surface.text.gray.muted">
-                        Available for Card and Netbanking, coming soon for UPI.
+                        {RECURRING_HELP_TEXT}
                       </Text>
                     </>
+                  ) : (
+                    <Text weight="semibold">{labelText}</Text>
+                  )}
+                </Box>
+              </Box>
+            );
+          } else if (label === PROVIDER_KEYS.ROUTE && showMethods && isRouteEnabled) {
+            const labelText = Gateway_details?.[label] ? 'Enabled' : 'Disabled';
+            return (
+              <Box key={label} display="flex">
+                <Box minWidth="180px" marginTop="spacing.3">
+                  <Box display="flex" alignItems="center">
+                    <Text>Route</Text>
+                    <Box display="flex" alignItems="center" marginLeft="spacing.2">
+                      <HelpCircleIcon
+                        testID="tpv-info-icon"
+                        size="medium"
+                        color="feedback.icon.neutral.intense"
+                      />
+                      <Popover theme="dark" align="right">
+                        <PopoverBody>{ROUTE_HELP_TEXT}</PopoverBody>
+                      </Popover>
+                    </Box>
+                  </Box>
+                </Box>
+                <Box minWidth="280px">
+                  {isFormEdit ? (
+                    <Box as="label" display="flex" alignItems="center" gap="spacing.2">
+                      <Switch
+                        value={label}
+                        isChecked={Gateway_details?.[label]}
+                        onChange={changeGatewayDetails}
+                        accessibilityLabel="Toggle Route"
+                      />
+                      <Text color="surface.text.gray.muted">{labelText}</Text>
+                    </Box>
                   ) : (
                     <Text weight="semibold">{labelText}</Text>
                   )}

@@ -15,12 +15,14 @@ import {
 } from '@razorpay/blade/components';
 
 import { titleCase } from 'common/utils/rzp-utils';
-import { METHODS_MAP } from 'merchant/views/Navigator/constants';
+import { METHODS_MAP, PROVIDER_KEYS } from 'merchant/views/Navigator/constants';
 import {
   SODEXO_HELP_TEXT,
   RECURRING_HELP_TEXT,
   TPV_HELP_TEXT,
-} from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/constants';
+  ROUTE_HELP_TEXT,
+  METHODS,
+} from 'merchant/views/Optimizer/AddProvider/constants';
 import { tpvFeaturesPayload } from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/utils';
 
 export const ProviderSettings = ({
@@ -30,6 +32,7 @@ export const ProviderSettings = ({
   methods,
   setMethods,
   integrationType,
+  isRouteEnabled,
 }) => {
   const methodsList = [...gatewayMetaData?.['Payment Methods']?.data_value] || [];
   // Move wallet method at the end
@@ -38,12 +41,24 @@ export const ProviderSettings = ({
     methodsList.push('wallet');
   }
   // Add sodexo method for PayU gateway
-  if (gatewayMetaData?.Sodexo && !methodsList.includes('sodexo') && integrationType === 's2s') {
-    methodsList.splice(methodsList.indexOf('card') + 1, 0, 'sodexo');
+  if (
+    gatewayMetaData?.Sodexo &&
+    !methodsList.includes(METHODS.SODEXO) &&
+    integrationType === 's2s'
+  ) {
+    methodsList.splice(methodsList.indexOf('card') + 1, 0, METHODS.SODEXO);
   }
 
-  if (gatewayMetaData?.Recurring && !methodsList.includes('recurring')) {
-    methodsList.splice(methodsList.indexOf('wallet'), 0, 'recurring');
+  if (gatewayMetaData?.Recurring && !methodsList.includes(METHODS.RECURRING)) {
+    methodsList.splice(methodsList.indexOf('wallet'), 0, METHODS.RECURRING);
+  }
+
+  if (
+    isRouteEnabled &&
+    gatewayMetaData?.[PROVIDER_KEYS.ROUTE] &&
+    !methodsList.includes(METHODS.ROUTE)
+  ) {
+    methodsList.splice(methodsList.indexOf('wallet'), 0, METHODS.ROUTE);
   }
 
   const wallets = gatewayMetaData?.['Payment Methods']?.meta_data?.wallet_metadata?.wallets || [];
@@ -133,9 +148,15 @@ export const ProviderSettings = ({
                   <Text color="surface.text.gray.subtle">
                     {METHODS_MAP[method] || titleCase(method)}
                   </Text>
-                  {['sodexo', 'recurring'].includes(method) && (
+                  {[METHODS.SODEXO, METHODS.RECURRING, METHODS.ROUTE].includes(method) && (
                     <Tooltip
-                      content={method === 'sodexo' ? SODEXO_HELP_TEXT : RECURRING_HELP_TEXT}
+                      content={
+                        method === METHODS.SODEXO
+                          ? SODEXO_HELP_TEXT
+                          : method === METHODS.RECURRING
+                          ? RECURRING_HELP_TEXT
+                          : ROUTE_HELP_TEXT
+                      }
                       onOpenChange={function noRefCheck() {}}
                       placement="right"
                       zIndex={99999}
@@ -155,8 +176,8 @@ export const ProviderSettings = ({
                     isChecked={methods[method]}
                     onChange={changeMethods}
                     isDisabled={
-                      (method === 'sodexo' && !methods.card) ||
-                      (method === 'recurring' && !methods.card && !methods.upi)
+                      (method === METHODS.SODEXO && !methods.card) ||
+                      (method === METHODS.RECURRING && !methods.card && !methods.upi)
                     }
                   />
                 </Box>

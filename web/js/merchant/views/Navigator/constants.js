@@ -88,6 +88,7 @@ export const PROVIDER_KEYS = {
   SODEXO: 'Sodexo',
   RECURRING: 'Recurring',
   MANDATORY_METHODS: 'Mandatory Methods',
+  ROUTE: 'optimizer_route',
 };
 
 export const SKIP_INPUT_FOR_PROVIDER_KEYS = [
@@ -108,6 +109,7 @@ export const SKIP_VALIDATION_KEYS = [
   WALLET_AUTO_DEBIT_KEY,
   PROVIDER_KEYS.RECURRING,
   PROVIDER_KEYS.MANDATORY_METHODS,
+  PROVIDER_KEYS.ROUTE,
 ];
 
 export const SKIP_PAYTM_AUTO_DEBIT_VALIDATION_KEYS = ['CLIENT_KEY', 'CLIENT_SECRET']; // These fields are only required if the wallet auto debit is enabled on paytm

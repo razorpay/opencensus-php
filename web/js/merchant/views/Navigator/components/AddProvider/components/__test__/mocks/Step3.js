@@ -135,3 +135,20 @@ export const NETBANKING_ICICI_PROVIDER = {
   validationErrors: {},
   changeGatewayDetails: jest.fn(),
 };
+
+export const CASHFREE_PROVIDER = {
+  isEdit: true,
+  selectedProvider: 'cashfree',
+  providers: SUPPORTED_GATEWAYS,
+  isRouteEnabled: true,
+  provider: {
+    Provider_name: 'cashfree route 1',
+    Description: 'test',
+    Gateway: 'cashfree',
+    Gateway_details: {
+      'Payment Methods': [],
+    },
+  },
+  validationErrors: {},
+  changeGatewayDetails: jest.fn(),
+};

@@ -6,70 +6,16 @@ import userEvent from '@testing-library/user-event';
 
 import { ProviderSettings } from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/ProviderSettings';
 
+import { PROVIDER_SETTING_GATEWAY_META } from './mocks';
+
 describe('Optimizer IntegrationTesting ProviderSettings', () => {
   const mockProps = {
     providerName: 'payu test',
-    gatewayMetaData: {
-      'Gateway Name': {
-        data_type: 'string',
-        data_value: 'PayU',
-        terminals_key: '',
-      },
-      Key: {
-        data_type: 'string',
-        data_value: 'payu key',
-        min_length: 6,
-        terminals_key: '',
-      },
-      'Payment Methods': {
-        data_type: 'array',
-        data_value: ['card', 'upi', 'netbanking', 'emi', 'wallet', 'emandate'],
-        terminals_key: '',
-        meta_data: {
-          wallet_metadata: {
-            wallets: [
-              'itzcash',
-              'airtelmoney',
-              'freecharge',
-              'oxigen',
-              'payzapp',
-              'amexeasyclick',
-              'olamoney',
-              'paycash',
-              'jiomoney',
-              'citibankrewards',
-              'amazonpay',
-              'paytm',
-              'phonepe',
-            ],
-          },
-        },
-      },
-      Recurring: {
-        data_type: 'bool',
-        data_value: 'recurring',
-        terminals_key: '',
-      },
-      Salt: {
-        data_type: 'string',
-        data_value: 'payu salt',
-        min_length: 8,
-        terminals_key: '',
-      },
-      Sodexo: {
-        data_type: 'bool',
-        data_value: 'sodexo',
-        terminals_key: '',
-      },
-      optimizer_seamless_disabled: {
-        data_type: 'bool',
-        data_value: 'optimizer_seamless_disabled',
-        terminals_key: '',
-      },
-    },
+    gatewayMetaData: PROVIDER_SETTING_GATEWAY_META,
     methods: {},
     setMethods: jest.fn(),
     integrationType: 'instant',
+    isRouteEnabled: false,
   };
 
   const App = (props) => {
@@ -250,5 +196,38 @@ describe('Optimizer IntegrationTesting ProviderSettings', () => {
     expect(screen.getByText('Non TPV')).toBeInTheDocument();
     expect(screen.getByText('TPV Only')).toBeInTheDocument();
     expect(screen.getByText('Both (TPV and Non TPV)')).toBeInTheDocument();
+  });
+
+  it('should render Route switch when route is enabled', () => {
+    const props = {
+      ...mockProps,
+      gatewayMetaData: {
+        ...mockProps.gatewayMetaData,
+        optimizer_route: {
+          data_type: 'bool',
+          data_value: 'optimizer_route',
+          terminals_key: '',
+        },
+      },
+      isRouteEnabled: true,
+    };
+    render(<App {...props} />);
+    expect(screen.getByRole('switch', { name: 'Route' })).toBeInTheDocument();
+  });
+
+  it('should not render Route switch when route is not enabled', () => {
+    const props = {
+      ...mockProps,
+      gatewayMetaData: {
+        ...mockProps.gatewayMetaData,
+        optimizer_route: {
+          data_type: 'bool',
+          data_value: 'optimizer_route',
+          terminals_key: '',
+        },
+      },
+    };
+    render(<App {...props} />);
+    expect(screen.queryByRole('switch', { name: 'Route' })).toBeNull();
   });
 });

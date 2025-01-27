@@ -71,6 +71,7 @@ class ProviderDetails extends Component {
         SEAMLESS_PROVIDERS?.includes(provider?.Gateway) &&
         provider?.Gateway_details?.hasOwnProperty('optimizer_seamless_disabled');
       const isRecurringEnabled = provider?.Gateway_details?.hasOwnProperty('Recurring');
+      const isRouteEnabled = provider?.Gateway_details?.hasOwnProperty(PROVIDER_KEYS.ROUTE);
       const {
         'UPI Features': upiFeatures,
         'Netbanking Features': netbankingFeatures,
@@ -78,6 +79,7 @@ class ProviderDetails extends Component {
         optimizer_seamless_disabled,
         [WALLET_AUTO_DEBIT_KEY]: walletAutoDebit,
         Recurring,
+        [PROVIDER_KEYS.ROUTE]: route,
       } = provider?.Gateway_details || {};
 
       let strPaymentMethods =
@@ -185,6 +187,12 @@ class ProviderDetails extends Component {
                         label="Recurring"
                         value={Recurring ? 'Enabled' : 'Disabled'}
                       />
+                    </div>
+                  )}
+
+                  {isRouteEnabled && (
+                    <div className="list-group details-row-container">
+                      <EntityDetailRow label="Route" value={route ? 'Enabled' : 'Disabled'} />
                     </div>
                   )}
 

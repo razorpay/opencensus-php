@@ -12,6 +12,7 @@ import {
   OPTIMIZER_RAZORPAY_PROVIDER,
   NETBANKING_HDFC_PROVIDER,
   NETBANKING_ICICI_PROVIDER,
+  CASHFREE_PROVIDER,
 } from 'merchant/views/Navigator/components/AddProvider/components/__test__/mocks/Step3';
 import { SUPPORTED_GATEWAYS } from 'merchant/views/Navigator/tests/data/mockData';
 import ProviderConfiguration from 'merchant/views/Optimizer/AddProvider/components/ProviderConfiguration';
@@ -257,6 +258,26 @@ describe('Add Provider > ProviderConfiguration', () => {
 
     test.each(FIELDS)('should rendered the required fields: %s', (field) => {
       render(<App {...NETBANKING_ICICI_PROVIDER} />);
+      expect(screen.getByText(field)).toBeInTheDocument();
+    });
+  });
+
+  describe('For cashfree gateway route support', () => {
+    const FIELDS = ['App Id', 'App Secret Key', 'Payment Methods', 'TPV', 'Route'];
+
+    test('should render without any errors', () => {
+      expect(() => render(<App {...CASHFREE_PROVIDER} />)).not.toThrowError();
+    });
+
+    test('should render correct text for gateway', () => {
+      render(<App {...mockProps} {...CASHFREE_PROVIDER} />);
+      expect(screen.getByText('Cashfree Production API Details')).toBeInTheDocument();
+      expect(screen.getByText('STEP 4 OUT OF 4')).toBeInTheDocument();
+      expect(screen.getByText('Where do I find Cashfree API Keys details?')).toBeInTheDocument();
+    });
+
+    test.each(FIELDS)('should rendered the required fields: %s', (field) => {
+      render(<App {...CASHFREE_PROVIDER} />);
       expect(screen.getByText(field)).toBeInTheDocument();
     });
   });

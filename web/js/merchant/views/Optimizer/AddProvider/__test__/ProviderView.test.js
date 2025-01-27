@@ -115,6 +115,24 @@ describe('Optimizer ProviderView V2', () => {
           created_at: 1630502042,
           updated_at: 1719334812,
         },
+        {
+          Provider_name: 'cashfree_route_1',
+          Description: 'test',
+          Gateway: 'cashfree',
+          Gateway_details: {
+            'App ID': 'jash71masd',
+            'App secret Key': '',
+            'Payment Methods': ['card'],
+            optimizer_route: true,
+            optimizer_seamless_disabled: false,
+          },
+          Currency: ['INR'],
+          Gateway_acquirer: 'cashfree',
+          Terminal_id: 'Pmu7HxHAoxrpiL',
+          Status: 'activated',
+          created_at: 1737639513,
+          updated_at: 1737639941,
+        },
       ],
       providers_loading: false,
     },
@@ -269,5 +287,26 @@ describe('Optimizer ProviderView V2', () => {
     expect(screen.queryByRole('button', { name: 'View integration audit results' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'View detailed provider settings' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Restart integration testing' })).toBeNull();
+  });
+
+  it('should render for cashfree', () => {
+    const props = {
+      location: {
+        pathname: 'optimizer/update-provider/Pmu7HxHAoxrpiL',
+      },
+    };
+    render(<App initialState={initialState} props={props} />);
+    expect(screen.getByRole('heading', { name: 'cashfree_route_1' })).toBeInTheDocument();
+    expect(screen.getByText('LIVE')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Details' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Method settings' })).toBeInTheDocument();
+    expect(screen.getByText('Description')).toBeInTheDocument();
+    expect(screen.getByText('test')).toBeInTheDocument();
+    expect(screen.getByText('Gateway')).toBeInTheDocument();
+    expect(screen.getByText('cashfree')).toBeInTheDocument();
+    expect(screen.getByText('Methods enabled')).toBeInTheDocument();
+    expect(screen.getByText('Card')).toBeInTheDocument();
+    expect(screen.getByText('Route')).toBeInTheDocument();
+    expect(screen.getByText('Enabled')).toBeInTheDocument();
   });
 });

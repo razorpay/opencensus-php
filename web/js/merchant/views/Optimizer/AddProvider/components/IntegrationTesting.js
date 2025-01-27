@@ -31,6 +31,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { GoLiveConfirmation } from './GoLiveConfirmation';
 import { INTEGRATION_TESTING_STEPS, AUDIT_TYPES } from './IntegrationTesting/constants';
+import { PROVIDER_KEYS } from 'merchant/views/Navigator/constants';
 
 const IntegrationTesting = ({
   isModalOpen,
@@ -591,6 +592,7 @@ const IntegrationTesting = ({
                 methods={methods}
                 setMethods={setMethods}
                 integrationType={integrationType}
+                isRouteEnabled={user?.isOptimizerRouteEnabled}
               />
             )}
           </Box>

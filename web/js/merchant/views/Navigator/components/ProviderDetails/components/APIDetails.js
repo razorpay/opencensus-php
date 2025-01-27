@@ -13,6 +13,7 @@ const IGNORE_FIELDS = [
   WALLET_AUTO_DEBIT_KEY,
   PROVIDER_KEYS.RECURRING,
   PROVIDER_KEYS.GATEWAY_ACQUIRER,
+  PROVIDER_KEYS.ROUTE,
 ];
 
 function APIDetails({ providerDetails, isPaytmAutoDebitEnabled, walletAutoDebit }) {

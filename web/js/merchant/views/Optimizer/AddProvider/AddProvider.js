@@ -685,7 +685,7 @@ class AddProvider extends React.Component {
           }
         } else if (name === 'Sodexo') {
           provider.Gateway_details[name] = isChecked;
-        } else if (value === 'Recurring') {
+        } else if ([PROVIDER_KEYS.RECURRING, PROVIDER_KEYS.ROUTE].includes(value)) {
           provider.Gateway_details[value] = isChecked;
         } else {
           provider.Gateway_details[name] = value;
@@ -1226,6 +1226,7 @@ class AddProvider extends React.Component {
                   selectedProvider={selectedProviderWithAcquirer}
                   provider={provider}
                   isPaytmAutoDebitEnabled={user.isPaytmAutoDebitEnabled}
+                  isRouteEnabled={user?.isOptimizerRouteEnabled}
                   validationErrors={validationErrors}
                   isSubmitting={isSaving}
                   hasSeamlessOption={hasSeamlessOption || hasAccountTypeOption}

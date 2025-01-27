@@ -34,17 +34,60 @@ const SUPPORTED_GATEWAYS = {
     'User Id': { data_type: 'string', data_value: 'user id', min_length: 1, terminals_key: '' },
   },
   cashfree: {
-    'App ID': { data_type: 'string', data_value: 'app id', min_length: 1, terminals_key: '' },
+    'App ID': {
+      data_type: 'string',
+      data_value: 'app id',
+      min_length: 1,
+      terminals_key: '',
+    },
     'App secret Key': {
       data_type: 'string',
       data_value: 'app secret',
       min_length: 1,
       terminals_key: '',
     },
-    'Gateway Name': { data_type: 'string', data_value: 'Cashfree', terminals_key: '' },
+    'Gateway Name': {
+      data_type: 'string',
+      data_value: 'Cashfree',
+      terminals_key: '',
+    },
+    'Mandatory Methods': {
+      data_type: 'array',
+      data_value: ['upi'],
+      terminals_key: '',
+    },
     'Payment Methods': {
       data_type: 'array',
-      data_value: ['card', 'upi', 'netbanking'],
+      data_value: ['card', 'upi', 'netbanking', 'wallet'],
+      terminals_key: '',
+      meta_data: {
+        wallet_metadata: {
+          wallets: [
+            'mobikwik',
+            'phonepe',
+            'freecharge',
+            'olamoney',
+            'airtelmoney',
+            'paytm',
+            'amazonpay',
+            'jiomoney',
+          ],
+        },
+      },
+    },
+    TPV: {
+      data_type: 'array',
+      data_value: [0, 1, 2],
+      terminals_key: '',
+    },
+    optimizer_route: {
+      data_type: 'bool',
+      data_value: 'optimizer_route',
+      terminals_key: '',
+    },
+    optimizer_seamless_disabled: {
+      data_type: 'bool',
+      data_value: 'optimizer_seamless_disabled',
       terminals_key: '',
     },
   },

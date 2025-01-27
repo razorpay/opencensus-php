@@ -113,9 +113,3 @@ export const GATEWAY_NAMES = {
   cashfree: 'Cashfree',
   paytm: 'Paytm',
 };
-
-export const SODEXO_HELP_TEXT =
-  'To activate the Pluxee feature, please make sure to enable the "card" method.';
-export const RECURRING_HELP_TEXT = 'Available for Card and UPI, coming soon for Netbanking.';
-export const TPV_HELP_TEXT =
-  "Third-Party Validation (TPV) of your customer's bank accounts in real-time. It is a mandatory requirement for merchants in the BFSI (Banking, Financial Services and Insurance) sector.";
