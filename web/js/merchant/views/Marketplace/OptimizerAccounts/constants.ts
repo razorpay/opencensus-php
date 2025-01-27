@@ -8,3 +8,5 @@ export const OPTIMIZER_ACCOUNTS_TABLE_HEADERS = [
 export const ACCOUNT_STATUS_MAP = {
   activated: 'Activated',
 };
+
+export const OPTIMIZER_ACCOUNTS_DEFAULT_COUNT = '10';

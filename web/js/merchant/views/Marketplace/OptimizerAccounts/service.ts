@@ -5,12 +5,11 @@ import { OptimizerAccount, CreateOptimizerLinkAccountPayload } from './types';
 export const fetchOptimizerAccounts = (
   accountId?: string,
   count?: string,
-): Promise<{ success: boolean; data: { data: OptimizerAccount[] } }> => {
+): Promise<{ success: boolean; data: { data: OptimizerAccount[] } | [] }> => {
   let url = 'optimizer/linked_account';
   if (accountId) {
-    url += `?account_id=${accountId}`;
-  }
-  if (count) {
+    url += `?id=${accountId}`;
+  } else if (count) {
     url += `${url.includes('?') ? '&' : '?'}skip=0&count=${count}`;
   }
   const params = {
@@ -20,7 +19,9 @@ export const fetchOptimizerAccounts = (
   return merchantFetch(params);
 };
 
-export const createLinkAccount = (payload: CreateOptimizerLinkAccountPayload): Promise<any> => {
+export const createLinkAccount = (
+  payload: CreateOptimizerLinkAccountPayload,
+): Promise<{ success: boolean; data: OptimizerAccount }> => {
   const url = 'optimizer/linked_account';
   return merchantFetch({
     url,
@@ -32,7 +33,7 @@ export const createLinkAccount = (payload: CreateOptimizerLinkAccountPayload): P
 export const updateLinkAccount = (
   accountId: string,
   payload: Partial<CreateOptimizerLinkAccountPayload>,
-): Promise<any> => {
+): Promise<{ success: boolean; data: OptimizerAccount }> => {
   const url = `optimizer/linked_account/${accountId}`;
   return merchantFetch({
     url,

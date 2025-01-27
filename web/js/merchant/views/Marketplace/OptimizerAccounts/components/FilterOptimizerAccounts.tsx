@@ -1,6 +1,8 @@
 import React from 'react';
 import { Box, TextInput, Link, Button } from '@razorpay/blade/components';
 
+import { OPTIMIZER_ACCOUNTS_DEFAULT_COUNT } from '../constants';
+
 export const FilterOptimizerAccounts = ({
   accountId,
   setAccountId,
@@ -22,7 +24,7 @@ export const FilterOptimizerAccounts = ({
 
   const handleClearFilter = () => {
     setAccountId('');
-    setCount('');
+    setCount(OPTIMIZER_ACCOUNTS_DEFAULT_COUNT);
   };
 
   return (
