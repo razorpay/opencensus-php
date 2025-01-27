@@ -53,8 +53,16 @@ playwright/utils/removeNpmrc.js                   @razorpay/deploy-leads-dashboa
 # Each change to homepage needs to be reviewed by design team
 web/js/merchant/containers/Home/RTUX/index.tsx    @razorpay/ssab-fe
 # Monitoring the folders until old cold is removed
-web/js/merchant/views/Transactions            @abhieshekumar @Satvik1911
+web/js/merchant/views/Transactions                @abhieshekumar @Satvik1911
 web/js/merchant/views/Settlements                 @abhieshekumar @Satvik1911
+web/js/merchant/reducers/submerchant.js           @1995navinkumar @shashi-vc
+web/js/newAuth/signup/components/PartnerSignup    @1995navinkumar @shashi-vc
+web/js/merchant/views/Marketplace/Transfers       @1995navinkumar @shashi-vc
+web/js/merchant/views/Marketplace/PlatformFee     @1995navinkumar @shashi-vc
+web/js/merchant/views/onboarding/mobile           @1995navinkumar @shashi-vc
+web/js/merchant/views/PartnerAppStore             @1995navinkumar @shashi-vc  
+web/js/merchant_common/views/Reports/redux/reducer.ts    @1995navinkumar @shashi-vc
+web/js/merchant/views/POS/PartnerExclusiveContainer      @1995navinkumar @shashi-vc
 # Optimizer folders
 web/js/merchant/views/Navigator                     @parth-p-ui @ravid7000 @sanchit-razorpay
 web/js/merchant/views/Optimizer                     @parth-p-ui @ravid7000 @sanchit-razorpay
