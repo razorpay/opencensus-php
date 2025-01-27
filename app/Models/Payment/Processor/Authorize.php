@@ -15715,9 +15715,19 @@ trait Authorize
                 {
                     $merchantID = $payment->merchant->getId();
                     $mode = $this->mode;
-                    $variant = $this->app['razorx']->getTreatment($merchantID,
-                        RazorxTreatment::APPEND_GATEWAY_PAYMENT_ID_PAYU,
-                        $mode);
+
+                    $properties = [
+                        'id'            => $merchantID,
+                        'experiment_id' => $this->app['config']->get('app.append_gateway_payment_id_payu_exp_id'),
+                        'request_data'  => json_encode(['merchant_id' => $merchantID]),
+                    ];
+
+                    $response = $this->app['splitzService']->evaluateRequest($properties);
+
+                    $variant = '';
+                    if(isSet($response['response']['variant']) === true) {
+                        $variant = $response['response']['variant']['name'] ?? '';
+                    }
 
                     $this->trace->info(
                         TraceCode::RAZORX_PAYMENT_NOTES_APPEND,
@@ -15728,7 +15738,7 @@ trait Authorize
                             'payment' => $payment->getId()
                         ]);
 
-                    if (strtolower($variant) !== 'on')
+                    if (strtolower($variant) !== 'enabled')
                     {
                         return;
                     }

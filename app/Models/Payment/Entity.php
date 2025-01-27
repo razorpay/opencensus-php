@@ -6694,16 +6694,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isOptimizerCaptureSettingsEnabled()
     {
         if ($this->isOptimizerExternalPgPayment() === true) {
-
-            $app = \App::getFacadeRoot();
-
-            $variant = $app['razorx']->getTreatment($this->getMerchantId(),
-                RazorxTreatment::ENABLE_CAPTURE_SETTINGS_FOR_OPTIMIZER,
-                $app['rzp.mode']);
-
-            if (strtolower($variant) === 'on') {
-                return true;
-            }
+            return true;
         }
         return false;
     }

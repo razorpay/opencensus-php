@@ -878,11 +878,6 @@ final class RazorxTreatment
 
     const ALLOW_OPTIMIZER_UPI_RECURRING = 'allow_optimizer_upi_recurring';
 
-    /**
-     * Razorx flag to enable capture settings for optimizer merchants overriding the Direct settlement capture flow
-     */
-    const ENABLE_CAPTURE_SETTINGS_FOR_OPTIMIZER = 'enable_capture_settings_for_optimizer';
-
     // Expt to handle non terminal payouts after migration
     const NON_TERMINAL_MIGRATION_HANDLING       = 'non_terminal_migration_handling';
 
@@ -991,8 +986,6 @@ final class RazorxTreatment
      */
     const SKIP_UPI_ICICI_CALLBACK_FOR_BT = 'skip_upi_icici_callback_for_bt';
     const RECURRING_SIHUB_CANCEL_WEBHOOK_ENABLED = 'recurring_sihub_webhook_enabled';
-
-    const APPEND_GATEWAY_PAYMENT_ID_PAYU = 'append_gateway_payment_id_payu';
 
     // Experiment to support multiple frequencies for card recurring payment CAW
     const CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES = "card_mandate_enable_multiple_frequencies";

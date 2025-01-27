@@ -1181,6 +1181,8 @@ return array(
 
     'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
 
+    'append_gateway_payment_id_payu_exp_id' => env('APPEND_GATEWAY_PAYMENT_ID_PAYU_EXP_ID'),
+
     'enabled_rearch_optimizer_recurring_flow' => env('ENABLED_REARCH_OPTIMIZER_RECURRING_FLOW'),
 
     'emit_pgos_consumer_metric_experiment' => env('EMIT_PGOS_CONSUMER_METRIC_EXPERIMENT_ID'),
