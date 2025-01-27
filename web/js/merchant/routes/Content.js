@@ -943,14 +943,7 @@ class Content extends Component {
               </RouteGuard>
             }
           />
-          <Route
-            path="payroll/*"
-            element={
-              <RouteGuard additionalCondition={() => isConnectedNavigation}>
-                <ConnectedNavigationContent />
-              </RouteGuard>
-            }
-          />
+
           <Route
             path="banking/*"
             element={
