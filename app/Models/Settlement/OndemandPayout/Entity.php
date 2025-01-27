@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\OndemandPayout;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Constants\Metric;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
@@ -193,6 +194,8 @@ class Entity extends Base\PublicEntity
         Status::validateStatusUpdate($status, $currentStatus);
 
         $this->setAttribute(self::STATUS, $status);
+
+        app('trace')->count(Metric::SETTLEMENT_ONDEMAND_PAYOUT_STATUS_UPDATES, ['status' => $status, 'mode' => $this->getMode()]);
     }
 
     public function setPayoutId($payoutId)

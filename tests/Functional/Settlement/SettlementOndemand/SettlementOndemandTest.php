@@ -5981,10 +5981,7 @@ class SettlementOndemandTest extends TestCase
 
         $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => 'setlod'.$reversal['id'].'-ondemand_settlement_reversed']);
 
-
-
         $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry  soft deleted');
-
     }
 
     public function testCreateOndemandInternalNoIdemKeySuccess() {
@@ -6258,6 +6255,68 @@ class SettlementOndemandTest extends TestCase
             ->andReturn([]);
 
         $this->startTest();
+    }
+
+    public function testClsInsufficientBalanceScenario()
+    {
+        $this->ba->capitalEarlySettlementAuth();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'pg_ledger_reverse_shadow']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20030000]);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+        Carbon::setTestNow($bankingHour);
+
+        $mockLedger = Mockery::mock(Ledger::class)->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+        $mockLedger->expects('fetchAccountsByEntitiesAndMerchantID')
+            ->times(2)
+            ->andReturns([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "20030000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        $this->mockGetFeatureConfigCallFromCapitalEs(false);
+
+        $this->startTest();
+
+        $setlod = $this->getDbLastEntity('settlement.ondemand');
+
+        $request = $this->getJournalRequestPayload('setlod_'.$setlod->id, 'ondemand_settlement_processed');
+
+        $kafkaEventPayload = $this->getKafkaEventPayloadForPGReverseShadow(null, $request, "insufficient_balance_failure: BAD_REQUEST_INSUFFICIENT_BALANCE");
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $setlod = $this->getDbLastEntity('settlement.ondemand');
+
+        $this->assertEquals('failed', $setlod['status']);
+
+        $this->assertEquals(1, $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => 'setlod_'.$setlod['id'].'-ondemand_settlement_processed'])->is_deleted);
     }
 
     private function mockGetFeatureConfigCallFromCapitalEs($enabled = true)

@@ -778,6 +778,15 @@ class Core extends Base\Core
             ]);
         }
 
+        if ($transactorEvent === LedgerConstants::LEDGER_ONDEMAND_SETTLEMENT_PROCESSED &&
+            str_contains($errorMessage, constants::INSUFFICIENT_BALANCE_FAILURE))
+        {
+            $this->repo->transaction(function () use ($transactorEvent, $transactorId) {
+                $this->handleOndemandSettlementEventsOnFailure($transactorEvent, $transactorId);
+                $this->softDelete($transactorId, $transactorEvent);
+            });
+        }
+
         return null;
     }
 

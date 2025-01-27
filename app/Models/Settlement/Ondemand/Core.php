@@ -192,6 +192,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($settlementOndemand);
 
+        $this->trace->count(Metric::SETTLEMENT_ONDEMAND_STATUS_UPDATES, ['status' => Status::CREATED]);
+
         if(!$skipLedgerOutboxEntry) {
             $reverseShadowCapital->createLedgerEntryForSettlementOndemandProcessedInReverseShadow($settlementOndemand);
         }

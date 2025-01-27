@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\OndemandPayout;
 use App;
 use Carbon\Carbon;
 
+use RZP\Constants\Metric;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Pricing;
@@ -245,6 +246,8 @@ class Core extends Base\Core
             }
 
             $this->repo->saveOrFail($settlementOndemandPayout);
+
+            $this->trace->count(Metric::SETTLEMENT_ONDEMAND_PAYOUT_STATUS_UPDATES, ['status' => Status::CREATED, 'mode' => $mode]);
 
             array_push($settlementOndemandPayouts, $settlementOndemandPayout);
         }

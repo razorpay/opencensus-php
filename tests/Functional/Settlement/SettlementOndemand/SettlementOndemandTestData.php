@@ -2502,4 +2502,33 @@ return [
             ],
         ]
     ],
+
+    'testClsInsufficientBalanceScenario' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/internal',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'content' => [
+                'settle_full_balance' => true,
+                'description'         => 'pg_ledger_reverse_shadow',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'               => 'settlement.ondemand',
+                'amount_requested'     => 20030000,
+                'fees'                 => 472708,
+                'tax'                  => 72108,
+                'amount_pending'       => 19557292,
+                'amount_settled'       => 0,
+                'amount_reversed'      => 0,
+                'settle_full_balance'  => true,
+                'currency'             => 'INR',
+                'status'               => 'created',
+                'description'          => 'pg_ledger_reverse_shadow',
+            ]
+        ]
+    ],
 ];

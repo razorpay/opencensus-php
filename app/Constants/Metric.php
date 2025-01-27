@@ -310,7 +310,11 @@ class Metric
 
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_NOT_FOUND          = 'settlement_ondemand_feature_config_not_found';
 
-    const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_NOT_FOUND = 'settlement_ondemand_feature_config_max_limit_not_found';
+    const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_NOT_FOUND= 'settlement_ondemand_feature_config_max_limit_not_found';
+
+    const SETTLEMENT_ONDEMAND_STATUS_UPDATES                    = 'settlement_ondemand_status_updates';
+
+    const SETTLEMENT_ONDEMAND_PAYOUT_STATUS_UPDATES             = 'settlement_ondemand_payout_status_updates';
 
     const BANK_TRANSFER_CREATE_PROCESS_JOB_INIT_COUNT            = 'bank_transfer_create_process_job_init_count';
     const HARVESTER_QUERY_HAS_MERCHANT_TRANSACTED_PROCESSING_TIME = 'harvester_query_has_merchant_transacted_processing_time';
