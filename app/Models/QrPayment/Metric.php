@@ -50,7 +50,7 @@ class Metric extends Base\Core
             Metric::LABEL_GATEWAY       => $gateway,
             Metric::LABEL_METHOD        => $method,
             Metric::LABEL_SUCCESSFUL    => $valid,
-            Metric::LABEL_ERROR_MESSAGE => $errorMessage,
+//            Metric::LABEL_ERROR_MESSAGE => $errorMessage,
             self::LABEL_REQUEST_SOURCE  => $requestSource,
             self::LABEL_SHARED_TERMINAL => $isSharedTerminalPayment,
         ];
