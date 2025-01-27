@@ -65,10 +65,4 @@ class CreditRepayment extends Base
         }
     }
 
-    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
-    {
-        $amount = $this->source->getAmount();
-
-        $this->debit = abs($amount);
-    }
 }

@@ -4754,7 +4754,9 @@ GROUP BY
             return [$obj, Mode::TEST];
         }
 
-        $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)
+        $connectionType = app()->runningUnitTests() ? Connection::LIVE : Connection::DATA_WAREHOUSE_MERCHANT_LIVE;
+
+        $obj = $this->newQueryWithConnection($connectionType)
             ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"))
             ->where(Entity::GATEWAY, $gateway)
             ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
@@ -4764,7 +4766,9 @@ GROUP BY
             return [$obj, Mode::LIVE];
         }
 
-        $obj = $this->newQueryWithConnection(Connection::SLAVE_TEST)->where(Entity::GATEWAY, $gateway)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+        $connectionType = app()->runningUnitTests() ? Connection::TEST : Connection::SLAVE_TEST;
+
+        $obj = $this->newQueryWithConnection($connectionType)->where(Entity::GATEWAY, $gateway)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
 
         if ($obj !== null)
         {

@@ -59,18 +59,7 @@ class CreditTransfer extends Base
         $this->tax  = 0;
     }
 
-    public function setFeeDefaultsForDualWrite($fees, $tax)
-    {
-        $this->fees = 0;
-        $this->tax  = 0;
-    }
-
     public function calculateFees()
-    {
-
-    }
-
-    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
     {
 
     }

@@ -256,6 +256,14 @@ class Repository extends Base\Repository
     {
         try
         {
+            $testCaseExecution = app()['config']['applications.test_case.execution'] ?? false;
+
+            if ((in_array(app()['env'], ['testing', 'dev', 'testing_docker', 'beta'], true) === true) OR
+                ($testCaseExecution === true))
+            {
+                return null;
+            }
+            
             return $this->getSlaveConnection();
         }
         catch (\Throwable $e)

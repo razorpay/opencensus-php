@@ -108,13 +108,6 @@ class Core extends Base\Core
         return $txnProcessor->createTransaction($txnId);
     }
 
-    public function createTransactionForSourceDualWrite(Base\Entity $source, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
-    {
-        $txnProcessor = $this->getFactory($source);
-
-        return $txnProcessor->createTransactionDualWrite($txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
-    }
-
     /**
      * This will be called only in case of Non Auth Capture Flow
      * We will create a dummy transaction with no fee split.
@@ -213,36 +206,6 @@ class Core extends Base\Core
             // dispatch this transaction for settlement.
             $this->dispatchForSettlementBucketing($txn);
         }
-        return [$txn, $feesSplit];
-    }
-
-    public function createPaymentTransactionForDualWrite($payment, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
-    {
-        list($txn, $feesSplit) = $this->createTransactionForSourceDualWrite($payment, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
-
-        $this->saveFeeDetails($txn, $feesSplit);
-
-        return [$txn, $feesSplit];
-    }
-
-    public function createTransferTransactionForDualWrite(Transfer\Entity $transfer, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
-    {
-        list($txn, $feesSplit) = $this->createTransactionForSourceDualWrite($transfer, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
-
-        return [$txn, $feesSplit];
-    }
-
-    public function createAdjustmentTransactionForDualWrite(Adjustment\Entity $adjustment, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
-    {
-        list($txn, $feesSplit) = $this->createTransactionForSourceDualWrite($adjustment, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
-
-        return [$txn, $feesSplit];
-    }
-
-    public function createPayoutTransactionForDualWrite($payout, $txnId,  $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUsed)
-    {
-        list($txn, $feesSplit) = $this->createTransactionForSourceDualWrite($payout, $txnId, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUsed);
-
         return [$txn, $feesSplit];
     }
 

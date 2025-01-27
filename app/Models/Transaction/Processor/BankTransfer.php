@@ -42,11 +42,6 @@ class BankTransfer extends Base
         $this->tax  = 0;
     }
 
-    public function setFeeDefaultsForDualWrite($fees, $tax)
-    {
-        $this->fees = 0;
-        $this->tax  = 0;
-    }
     /**
      * {@inheritDoc}
      */
@@ -135,8 +130,4 @@ class BankTransfer extends Base
         $this->credit = $this->source->getAmount();
     }
 
-    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
-    {
-        $this->credit = $this->source->getAmount();
-    }
 }

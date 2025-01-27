@@ -34,62 +34,6 @@ class Transfer extends Base {
         throw new LogicException('Not implemented', ErrorCode::SERVER_ERROR_LOGICAL_ERROR);
     }
 
-    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
-    {
-        if ($amountCreditsUsed)
-        {
-            // fail the transaction if the amount credits are less than the transaction amount.
-            // This is done to ensure we don't incorrectly mark fee, tax on the transactions
-            if ($this->amountCredits < $this->txn->getAmount())
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE);
-            }
-
-            $this->calculateFeeForAmountCredit();
-        }
-        else if ($feeCreditsUsed)
-        {
-            // fail the transaction if the amount credits are less than the transaction amount.
-            // This is done to ensure we don't incorrectly mark fee, tax on the transactions
-            if ($this->feeCredits < $fees)
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE);
-            }
-
-            $this->calculateFeeForFeeCredit();
-        }
-        else
-        {
-            $this->calculateFeeDefault();
-        }
-
-
-        $amount = $this->getNetAmount();
-
-        $this->credit = 0;
-        $this->debit  = 0;
-
-        if ($amount > 0)
-        {
-            $this->credit = $amount;
-        }
-        else
-        {
-            $this->debit = -1 * $amount;
-        }
-
-        $this->trace->debug(TraceCode::CALCULATED_FEES_FOR_TRANSFER,
-            [
-                'credit'            => $this->credit,
-                'debit'             => $this->debit,
-                'amount'            => $amount,
-                'fee'               => $this->fees,
-                'fee_credits'       => $this->feeCredits,
-                'amount_credits'    => $this->amountCredits
-            ]
-        );
-    }
-
     public function getNetAmount()
     {
         $amount = $this->txn->getAmount();
