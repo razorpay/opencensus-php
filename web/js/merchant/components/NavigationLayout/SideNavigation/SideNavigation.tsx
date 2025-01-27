@@ -113,7 +113,7 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
     if (alias === 'payments_top_navigation_item') {
       toggleMode = mode;
     }
-    if (alias === 'partnership_top_navigation_item') {
+    if (alias === 'partners_top_navigation_item') {
       toggleMode = partnerMode;
     }
     analyticsTrack({

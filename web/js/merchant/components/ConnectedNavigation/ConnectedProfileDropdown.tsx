@@ -27,6 +27,7 @@ import { Link } from 'react-router-dom';
 import { withI18Service } from 'common/i18';
 import copyToClipboard from 'common/utils/copyToClipboard';
 import { titleCase } from 'common/utils/rzp-utils';
+import ExplorePartnerProgramCard from 'merchant/components/ExplorePartnerProgramCard';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { getRole } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/config/profile';
@@ -35,19 +36,20 @@ import PaymentHandleSlug from 'merchant/views/PaymentHandle/components/DropDownS
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { CopyWrapper } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
 
+import { Mode } from './types';
+import { getCurrentMode, trackProfileDropdownClicks } from './utils';
 import SwitchMerchantTypeaheadV2 from '../HeaderNav/SwitchMerchantTypeaheadV2';
-import ShowWhen from '../ShowWhen';
 import useConnectedNavigationStore from '../NavigationLayout/navigationStore';
-import { trackProfileDropdownClicks } from './utils';
-import ExplorePartnerProgramCard from 'merchant/components/ExplorePartnerProgramCard';
+import ShowWhen from '../ShowWhen';
 
 interface ConnectedProfileDropdownProps {
   user: any;
   isRTBEnabled: boolean;
   trustedBadgeTooltipInfo: string;
   i18: any;
-  mode: 'test' | 'live';
-  onSwitchMode: (mode: 'test' | 'live') => void;
+  mode: Mode;
+  partnerMode: Mode;
+  onSwitchMode: (mode: Mode) => void;
   onLogout: () => void;
   showPartnerIntent: () => void;
   openSwitchMerchantModal: () => void;
@@ -62,6 +64,7 @@ function ConnectedProfileDropdown({
   trustedBadgeTooltipInfo,
   i18,
   mode,
+  partnerMode,
   onSwitchMode,
   onLogout,
   showPartnerIntent,
@@ -77,7 +80,11 @@ function ConnectedProfileDropdown({
   const { name: loggedInUserName } = loggedInUser;
   const { isConfigTagEnabled } = i18;
   const userRole = getRole({ user });
-
+  const currentMode = getCurrentMode({
+    mode,
+    partnerMode,
+    selectedProduct: selectedProduct?.product?.alias,
+  });
   const { theme } = useTheme();
   const { matchedDeviceType } = useBreakpoint({
     breakpoints: theme.breakpoints,
@@ -86,7 +93,7 @@ function ConnectedProfileDropdown({
 
   const showSwitchMerchant = user.merchants && Object.keys(user.merchants).length > 1;
 
-  const invertMode = mode === 'live' ? 'test' : 'live';
+  const invertMode = currentMode === 'live' ? 'test' : 'live';
 
   const handleSwitchMerchant = () => {
     trackProfileDropdownClicks({
@@ -256,7 +263,7 @@ function ConnectedProfileDropdown({
               leading={
                 <ActionListItemAsset
                   alt={`${invertMode}-mode-icon`}
-                  src={mode === 'live' ? TestModeIcon : LiveModeIcon}
+                  src={currentMode === 'live' ? TestModeIcon : LiveModeIcon}
                 />
               }
               title={`Enable ${titleCase(invertMode)} Mode`}

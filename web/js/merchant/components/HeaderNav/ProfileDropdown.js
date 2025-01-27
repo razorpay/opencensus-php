@@ -230,6 +230,7 @@ class ProfileDropdown extends Component {
       trustedBadge,
       tracking,
       mode,
+      partnerMode,
       onSwitchMode,
       i18: { isConfigTagEnabled },
       isRTUXHomepage,
@@ -259,6 +260,7 @@ class ProfileDropdown extends Component {
           isRTBEnabled={isRTBEnabled}
           trustedBadgeTooltipInfo={trustedBadgeTooltipInfo}
           mode={mode}
+          partnerMode={partnerMode}
           onSwitchMode={onSwitchMode}
           onLogout={this.logout}
           showPartnerIntent={this.showPartnerIntent}
