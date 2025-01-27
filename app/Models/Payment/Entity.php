@@ -6967,6 +6967,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      * Get the collection of items as a plain array.
      * @return array
      * @throws LogicException
+     * This method has been depricated, and we have moved the logic to pg-sdk.
+     * If changing in toArrayPublic() for Payment, please make sure to connect with pg-router team
      */
     public function toArrayPublic()
     {

@@ -1231,6 +1231,8 @@ return array(
 
     'order_payments_parity_producer' => env('ORDER_PAYMENT_PARITY_PRODUCER'),
 
+    'internal_order_payments_experiment_id' => env('INTERNAL_ORDER_PAYMENTS_EXPERIMENT_ID'),
+
     'mandate_payouts_ikey_internal_experiment_id' => env('MANDATE_PAYOUTS_IKEY_INTERNAL_EXPERIMENT_ID'),
 
     'enable_payout_ikey_required_feature_flag_experiment_id' => env('ENABLE_PAYOUT_IKEY_REQUIRED_FEATURE_FLAG_EXPERIMENT_ID'),

@@ -873,6 +873,20 @@ class Service extends Base\Service
         {
             $orderId = Entity::verifyIdAndSilentlyStripSign($id);
 
+            $properties = [
+                "id" => UniqueIdEntity::generateUniqueId(),
+                "experiment_id" => $this->app['config']->get('app.internal_order_payments_experiment_id'),
+            ];
+
+            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'allow');
+
+            if ($variant)
+            {
+                $payments = $this->repo->payment->fetchPaymentsForOrderId($orderId, $input['merchant_id']);
+
+                return $payments->toArrayPublic();
+            }
+
             $apiPayments = $this->repo->payment->fetchInternalPaymentsForOrderId($orderId, $input['merchant_id']);
 
             $responseList = []; // Initialize an array to hold all responses
