@@ -37,6 +37,7 @@ export const checkoutEditorContext = createContext<
   handleSaveTitleModal: noop,
   handleRtbEnable: noop,
   handleFestivalThemeToggle: noop,
+  handleSelectedConfigChange: noop,
   handlePreviewScreenChange: noop,
 });
 

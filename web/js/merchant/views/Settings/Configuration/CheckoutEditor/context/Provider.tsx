@@ -24,6 +24,7 @@ import {
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/utils/mandateSummaryPage';
 import track from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/TrustedBadge/track';
 import { isRazorpayTrustedBadgeActive } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/TrustedBadge/utils';
+import { getHandleSelectedConfigChange } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/updater';
 import {
   ACTIONS,
   INITIAL_STATE,
@@ -43,11 +44,11 @@ import {
   createTitleModalPayloadToSaveConfig,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers/brandConfigHelper';
 import { checkoutFeatureReducer } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/reducer';
+import sendToSegment from 'merchant/views/Settings/Configuration/CheckoutEditor/track';
 import {
   flashCheckoutProps,
   skipCardMandateSummaryProps,
 } from 'merchant/views/Settings/Configuration/settings-config-constants';
-import sendToSegment from 'merchant/views/Settings/Configuration/CheckoutEditor/track';
 
 export type CheckoutEditorProviderProps = {
   children: React.ReactNode;
@@ -333,7 +334,7 @@ const CheckoutEditorProvider = ({
           type: ACTIONS.SET_VALUES,
           payload: {
             [CHECKOUT_EDITOR_FIELDS.ALL_PAYMENT_CONFIGS]:
-              merchantCheckoutPaymentConfigs?.data?.checkout_configuration?.checkout_configs,
+              merchantCheckoutPaymentConfigs?.data ?? [],
           },
         });
       }
@@ -640,6 +641,8 @@ const CheckoutEditorProvider = ({
     });
   };
 
+  const handleSelectedConfigChange = getHandleSelectedConfigChange(setValue);
+
   useEffect(() => {
     setAccountConfigToState();
   }, [accountConfig, setAccountConfigToState]);
@@ -697,6 +700,7 @@ const CheckoutEditorProvider = ({
         handleSaveTitleModal,
         handleRtbEnable,
         handleFestivalThemeToggle,
+        handleSelectedConfigChange,
         handlePreviewScreenChange,
       }}
     >

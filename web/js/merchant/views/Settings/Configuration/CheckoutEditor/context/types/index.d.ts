@@ -33,6 +33,7 @@ export type CheckoutEditorContext<Values> = {
   handleBrandNameChange: (value: string) => void;
   handleSaveTitleModal: (setShowEditModal: React.Dispatch<React.SetStateAction<boolean>>) => void;
   handleFestivalThemeToggle: (value: boolean) => void;
+  handleSelectedConfigChange: (config: MerchantCheckoutPaymentConfig) => void;
   handlePreviewScreenChange: (screen: string) => void;
 };
 
