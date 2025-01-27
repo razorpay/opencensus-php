@@ -113,7 +113,7 @@ TIP: Change the values of `RUN_FIXTURES` and `RUN_FIXTURES_ONCE` in `.env.testin
 
 ### Setup git hooks
 
-* Run `cp scripts/git-hooks/pre-commit .git/hooks/`
+* Run `cp scripts/git-hooks/pre-commit .git/hooks/`.
 
 ### Setup crons
 
