@@ -841,7 +841,7 @@ class Core extends Base\Core
         $isCurrentTimeOutsideBankingHours = (new OndemandPayout\Core)->isOutsideBankingHoursUpdated($currentTime);
         $isOutsideBankingHours = (new OndemandPayout\Core)->isOutsideBankingHoursUpdated($time);
 
-        $shouldEnableSmartSettlement = $isCurrentTimeOutsideBankingHours && $isOutsideBankingHours;
+        $shouldEnableSmartSettlement = !$isCurrentTimeOutsideBankingHours && !$isOutsideBankingHours;
 
         return [
             'smart_settlement' => $shouldEnableSmartSettlement ? 'active'  : 'inactive',

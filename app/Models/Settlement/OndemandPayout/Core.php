@@ -97,7 +97,7 @@ class Core extends Base\Core
 
             if (!$this->shouldEnableRtgs($this->merchant->getId()))
             {
-                throw new BadRequestException(ErrorCode::SMART_SETTLEMENTS_NOT_ENABLED);
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_SMART_SETTLEMENTS_NOT_ENABLED);
             }
 
             if($amount < self::MIN_RTGS_AMOUNT){
@@ -105,7 +105,7 @@ class Core extends Base\Core
             }
 
             if(!$isInsideRtgsHours) {
-                throw new BadRequestException(ErrorCode::SMART_SETTLEMENT_WINDOW_NOT_OPEN);
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_SMART_SETTLEMENT_WINDOW_NOT_OPEN);
             }
 
             return FundTransfer\Mode::RTGS;
@@ -505,7 +505,7 @@ class Core extends Base\Core
 
         foreach ($variables as $variable)
         {
-            if (is_array($variable) === true && $variable['key'] === 'enable_rtgs' && $variable['value'] === 'on')
+            if (is_array($variable) === true && $variable['key'] === 'result' && $variable['value'] === 'on')
             {
                 return true;
             }
