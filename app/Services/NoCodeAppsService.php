@@ -129,6 +129,7 @@ class NoCodeAppsService {
         $body['customer_fee'] = $payment->getConvenienceFee() ?? 0;
         $body['customer_fee_gst'] = $payment->getConvenienceFeeGst() ?? 0;
         $body[Payment\Entity::FEE_BEARER] = $payment->getFeeBearer(true);
+        $body[Payment\Entity::AUTO_CAPTURED] = $payment->getAutoCaptured();
 
         return $this->sendPaymenEventToNocode($body, $payment->getMerchantId(), $this->ba->getMode(), self::SOURCE_S2S);
     }
