@@ -16,13 +16,20 @@ export const Wrapper = styled.div`
   position: relative;
 `;
 
-export const FrameContainer = styled.div<{ isDesktopPreview: boolean }>`
+export const FrameContainer = styled.div<{
+  isDesktopPreview: boolean;
+  zoomMethodsScreen: boolean;
+}>`
   display: flex;
   justify-content: center;
   align-items: center;
   height: 410px;
   margin-top: ${(props) => (props.isDesktopPreview ? '20px' : '42px')};
-  width: ${(props) => (props.isDesktopPreview ? '1000px' : 'auto')};
+  width: 100%;
+  transform-origin: ${(props) =>
+    props.zoomMethodsScreen ? (props.isDesktopPreview ? '70% 80%' : '50% 45%') : 'center'};
+  transform: ${(props) => (props.zoomMethodsScreen ? 'scale(1.4)' : 'scale(1)')};
+  transition: transform 0.5s ease-in-out, transform-origin 0.5s ease-in-out;
 `;
 
 export const CheckoutFrame = styled.iframe<{
@@ -80,7 +87,7 @@ export const PreviewButton = styled.div(
 );
 
 export const MobileBackground = styled.div(
-  ({ backgroundImg }: { backgroundImg: string }) => `
+  ({ backgroundImg, zoomMethodsScreen }: { backgroundImg: string; zoomMethodsScreen: boolean }) => `
   pointer-events: none;
   position: absolute;
   z-index: 1;
@@ -88,16 +95,25 @@ export const MobileBackground = styled.div(
   width: 280px;
   height: 580px;
   left: 49.3%;
-  transform: translateX(-50%);
   align-items: center;
   background-size: cover;
   background-image: url(${backgroundImg});
   margin-top: 20px;
+  transform-origin: ${zoomMethodsScreen ? '50% 40%' : ' center'};
+  transform: translateX(-50%) ${zoomMethodsScreen ? 'scale(1.4)' : 'scale(1)'};
+  transition: transform 0.5s ease-in-out, transform-origin 0.5s ease-in-out;
   `,
 );
 
 export const MobileToolbar = styled.div(
-  ({ backgroundColor }: { backgroundColor: string }) => `
+  ({
+    backgroundColor,
+    zoomMethodsScreen,
+  }: {
+    backgroundColor: string;
+    zoomMethodsScreen: boolean;
+  }) => `
+    visibility: ${zoomMethodsScreen ? 'hidden' : 'visible'};
     margin-top: 20px;
     position: absolute;
     height: 23px;
@@ -107,7 +123,8 @@ export const MobileToolbar = styled.div(
     top: 2%;
     left: 50%;
     transform: translateX(-50%);
-    background-color: ${backgroundColor}
+    background-color: ${backgroundColor};
+    transition: transform 0.5s ease-in-out, transform-origin 0.5s ease-in-out;
   `,
 );
 
@@ -125,8 +142,40 @@ export const PreviewBadge = styled.div(
   `,
 );
 
-export const ScrollablePreview = styled.div`
+export const ScrollablePreview = styled.div(
+  ({ isDesktopPreview }: { isDesktopPreview: boolean }) => `
   position: relative;
   overflow: scroll;
   height: 500px;
-`;
+  width: ${isDesktopPreview ? 'auto' : '100%'}
+`,
+);
+
+export const ZoomButton = styled.button(
+  ({ theme, type }: { theme: Theme; type: 'zoom-in' | 'zoom-out' }) => `
+  display: flex;
+  background-color: ${theme.colors.interactive.background.staticWhite.default};
+  border-top-left-radius: ${
+    type === 'zoom-in' ? theme.border.radius.max : theme.border.radius.none
+  }px;
+  border-bottom-left-radius: ${
+    type === 'zoom-in' ? theme.border.radius.max : theme.border.radius.none
+  }px;
+  border-top-right-radius: ${
+    type === 'zoom-in' ? theme.border.radius.none : theme.border.radius.max
+  }px;
+  border-bottom-right-radius: ${
+    type === 'zoom-in' ? theme.border.radius.none : theme.border.radius.max
+  }px;
+  justify-content: center;
+  align-items: center;
+  border-width: 0px;
+  padding: ${[
+    theme.spacing[4],
+    type === 'zoom-in' ? theme.spacing[4] : theme.spacing[5],
+    theme.spacing[4],
+    type === 'zoom-in' ? theme.spacing[5] : theme.spacing[4],
+  ].join('px ')}px;
+  height: 56px;
+  `,
+);

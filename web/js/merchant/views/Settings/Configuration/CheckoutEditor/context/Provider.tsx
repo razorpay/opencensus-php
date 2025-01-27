@@ -242,6 +242,10 @@ const CheckoutEditorProvider = ({
     setValue(CHECKOUT_EDITOR_FIELDS.BRAND_NAME, value);
   };
 
+  const handlePreviewScreenChange = (value: string) => {
+    setValue(CHECKOUT_EDITOR_FIELDS.PREVIEW_SCREEN, value);
+  };
+
   const setAccountConfigToState = useCallback(() => {
     const getFeatureFlag = (features: ConfigFeatures | undefined, featureAPIKey: string) => {
       const featureObj = features?.find((feature) => feature.feature === featureAPIKey);
@@ -693,6 +697,7 @@ const CheckoutEditorProvider = ({
         handleSaveTitleModal,
         handleRtbEnable,
         handleFestivalThemeToggle,
+        handlePreviewScreenChange,
       }}
     >
       {children}
