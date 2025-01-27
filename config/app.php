@@ -947,6 +947,8 @@ return array(
 
     'offers_engine_create_read_migration_exp_id' => env('OFFERS_ENGINE_CREATE_READ_MIGRATION_EXP'),
 
+    'offers_engine_merchant_dashboard_read_migration_exp_id' => env('OFFERS_ENGINE_MERCHANT_DASHBOARD_READ_MIGRATION_EXP'),
+
     'offers_engine_find_by_public_id_migration_exp_id' => env('OFFERS_ENGINE_FIND_BY_PUBLIC_ID_MIGRATION_EXP'),
 
     'fee_based_gating_exp_id' => env('FEE_BASED_GATING_EXP_ID'),

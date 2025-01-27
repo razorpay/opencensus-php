@@ -393,6 +393,18 @@ trait ExternalOffersRepo
 
         return [];
     }
+    private function fetchMultipleMerchantDashboardFromOE($merchantId, $input)
+    {
+        $responseOffers = $this->fetchExternalEntitiesBulk($merchantId, [], $input);
+
+        if (empty($responseOffers) === true)
+        {
+            return [];
+        }
+
+        // fetch offers from API if it has limits
+        return $this->fetchOffersWithLimitsFromAPI($responseOffers);
+    }
 
     private function fetchExternalEntitiesBulk($merchantId, array $ids = [], $input = [])
     {

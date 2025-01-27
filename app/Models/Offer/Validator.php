@@ -79,6 +79,12 @@ class Validator extends Base\Validator
         'page_size'         => 'required|int|in:1'
     ];
 
+    protected static $fetchMultipleRules = [
+        Entity::MERCHANT_ID => 'sometimes|unsigned_id',
+        'page'              => 'sometimes|int|min:1|max:1000',
+        'page_size'         => 'sometimes|int|min:1|max:50'
+    ];
+
     protected static $createBulkRules = [
         'offer'          => 'associative_array',
         'merchant_ids'   => 'array',
