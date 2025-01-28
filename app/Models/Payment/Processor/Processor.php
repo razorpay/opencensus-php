@@ -1530,6 +1530,9 @@ class Processor
 
                 // not required in case of billdesk, add vpa if required for any other provider
                 $input[Payment\Entity::UPI] = null;
+                $input[Payment\Entity::CARD] = null;
+                $input[Payment\Entity::BANK_ACCOUNT] = null;
+
 
                 $input[Payment\Entity::API_VAULT] = "";
 
@@ -1554,6 +1557,9 @@ class Processor
                     'merchant_id' => $merchant->getId(),
                     'flow' => 'optimizer_recurring',
                     'recurring_token' => $recurringToken,
+                    'upi' => $input[Payment\Entity::UPI],
+                    'card' => $input[Payment\Entity::CARD],
+                    'bank_account' => $input[Payment\Entity::BANK_ACCOUNT],
                 ]);
 
                 return true;
