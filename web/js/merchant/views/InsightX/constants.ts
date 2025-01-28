@@ -11,11 +11,11 @@ export const INSIGHTX_TABS = [
 
 // based on name of subTabs in success rate
 export const SUPERSET_DASHBOARD_IDS = {
-  Overview: '27f23cb9-e01f-4376-9556-79630ef0d1af',
-  UPI: '5cab776a-cb63-4e0d-a76d-0e41804646ea',
-  Cards: '4fbb7298-9002-4b4b-a793-2e1c62051341',
-  Netbanking: '13524b78-5b48-40a5-8556-43ec496f6fa3',
-  Wallets: 'b02bb061-eeed-4971-a4af-dae7ee01e697',
+  Overview: `${window.INSIGHT_X_SUPERSET_OVERVIEW_ID}`,
+  UPI: `${window.INSIGHT_X_SUPERSET_UPI_ID}`,
+  Cards: `${window.INSIGHT_X_SUPERSET_CARDS_ID}`,
+  Netbanking: `${window.INSIGHT_X_SUPERSET_NETBANKING_ID}`,
+  Wallets: `${window.INSIGHT_X_SUPERSET_WALLETS_ID}`,
 };
 
 export const insightxDateRangePresets: { label; value }[] = [
