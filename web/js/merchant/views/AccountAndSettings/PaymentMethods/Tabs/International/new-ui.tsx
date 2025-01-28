@@ -42,9 +42,10 @@ export type Props = {
     live: boolean;
   };
   instrument?: InstrumentListItem;
+  isOrgCurlec: boolean;
 };
 
-const International = ({ user, instrument }: Props): JSX.Element => {
+const International = ({ user, instrument, isOrgCurlec }: Props): JSX.Element => {
   const isActivatedUser = user.activation_status === 'activated';
   const isIntlMethodsHidden = user.isInternationalMethodsHidden;
   const isIntlMerchant = user.international;
@@ -52,7 +53,7 @@ const International = ({ user, instrument }: Props): JSX.Element => {
 
   return (
     <>
-      {isIntlMerchant && <Firc />}
+      {isIntlMerchant && !isOrgCurlec && <Firc />}
       <Box id="settings-payment-methods" display="flex" flexDirection="column" gap="spacing.7">
         {!isLiveMerchant ? (
           <Alert
@@ -124,18 +125,23 @@ const International = ({ user, instrument }: Props): JSX.Element => {
 
 const mapStateToProps = ({ session, instrumentRequests }) => {
   let internationalInstrument = instrumentRequests.pg.find((item) => item.slug === 'international');
-  const user = session.user;
+  const { user } = session;
+  const { isOrgCurlec } = user;
 
-  if (user?.isOrgCurlec && internationalInstrument) {
+  if (isOrgCurlec && internationalInstrument) {
     // for curlec merchant only Paypal is allowed
     internationalInstrument = {
       ...internationalInstrument,
-      leafList: internationalInstrument.leafList.filter((item) => item.slug === 'wallet'),
+      leafList: internationalInstrument.leafList.filter(
+        ({ slug, list }) =>
+          slug === 'wallet' && list.some((leafListItem) => leafListItem.slug === 'paypal'),
+      ),
     };
   }
 
   return {
     user,
+    isOrgCurlec,
     instrument: internationalInstrument,
   };
 };

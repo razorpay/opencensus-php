@@ -70,6 +70,7 @@ const UnlockMoreMethods = lazy(
 
 type NewType = {
   user: User;
+  isOrgCurlec: boolean;
   instrument?: InstrumentListItem;
   showMoreInternationalMethods: boolean;
   fetchWorkflowStatus: () => void;
@@ -81,6 +82,7 @@ export type Props = NewType;
 
 const International = ({
   user,
+  isOrgCurlec,
   instrument,
   showMoreInternationalMethods,
   fetchWorkflowStatus,
@@ -197,7 +199,7 @@ const International = ({
 
   return (
     <>
-      {!isLoading && user?.international && <Firc />}
+      {!isLoading && !isOrgCurlec && user?.international && <Firc />}
       <PaymentMethodsSection type={PaymentMethodsFields.INTERNATIONAL} showLoader={isLoading}>
         <LeafListItemSection className="methods-view">
           {instrument?.leafList.map((leafListItem) => {
@@ -233,24 +235,6 @@ const International = ({
               );
             }
 
-            if (user.isOrgCurlec) {
-              const allowedItems = (leafListItem) => leafListItem.slug === 'paypal';
-              return (
-                <>
-                  {leafListItem.list.some(allowedItems) && (
-                    <LeafListItemDiv
-                      data-testid="leaf-list-item"
-                      key={leafListItem.header}
-                      className="level-3"
-                      ref={listItemRef}
-                    >
-                      {renderLeafListItem(leafListItem)}
-                    </LeafListItemDiv>
-                  )}
-                </>
-              );
-            }
-
             return (
               <LeafListItemDiv
                 data-testid="leaf-list-item"
@@ -268,11 +252,29 @@ const International = ({
   );
 };
 
-const mapStateToProps = ({ session, instrumentRequests, unlockIntlPaymentMethods }) => ({
-  user: session.user,
-  instrument: instrumentRequests.leafInstrument,
-  showMoreInternationalMethods: unlockIntlPaymentMethods.showMorePaymentMethodsSection,
-});
+const mapStateToProps = ({ session, instrumentRequests, unlockIntlPaymentMethods }) => {
+  const { user } = session;
+  const { isOrgCurlec } = user;
+
+  let instrument = instrumentRequests.leafInstrument;
+
+  // filter out instruments to show only wallet -> paypal for curlec org merchants
+  if (isOrgCurlec) {
+    instrument = {
+      ...instrumentRequests.leafInstrument,
+      leafList: instrumentRequests.leafInstrument.leafList?.filter(({ slug, list }) => {
+        return slug === 'wallet' && list.some((leafListItem) => leafListItem.slug === 'paypal');
+      }),
+    };
+  }
+
+  return {
+    user,
+    isOrgCurlec,
+    instrument,
+    showMoreInternationalMethods: unlockIntlPaymentMethods.showMorePaymentMethodsSection,
+  };
+};
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(

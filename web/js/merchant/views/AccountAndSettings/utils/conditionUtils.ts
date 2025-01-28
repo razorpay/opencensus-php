@@ -155,6 +155,11 @@ export const shouldShowFIRCSection = (user: User, extraConfig: ExtraConfig): boo
     );
   };
 
+  // Hide FIRC section for Curlec users
+  if (user.isOrgCurlec) {
+    return false;
+  }
+
   if (extraConfig && isInternationalTagEnabled(extraConfig)) {
     return false;
   }
