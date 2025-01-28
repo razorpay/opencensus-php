@@ -102,7 +102,7 @@ class Service extends Transaction\Service
         }
 
         /** @var PublicCollection $transactions */
-        $transactions = $this->repo->statement->fetch($input, $this->merchant->getId());
+        $transactions = $this->repo->statement->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $transactions->toArrayPublic();
     }
@@ -151,7 +151,7 @@ class Service extends Transaction\Service
         $transaction = $this->repo
                             ->statement
                             ->findByPublicIdAndMerchantForBankingBalance(
-                                $id, $this->merchant, $input);
+                                $id, $this->merchant, $input, ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $transaction->toArrayPublic();
     }

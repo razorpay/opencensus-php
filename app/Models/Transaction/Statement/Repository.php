@@ -67,11 +67,12 @@ class Repository extends Transaction\Repository
     public function findByPublicIdAndMerchantForBankingBalance(
         string $id,
         Merchant\Entity $merchant,
-        array $params = []): Entity
+        array $params = [],
+        $connectionType = null): Entity
     {
         Entity::verifyIdAndStripSign($id);
 
-        $statement = $this->getQueryForFindWithParams($params)
+        $statement = $this->getQueryForFindWithParams($params,$connectionType)
                           ->merchantId($merchant->getId())
                           ->findOrFailPublic($id);
 
