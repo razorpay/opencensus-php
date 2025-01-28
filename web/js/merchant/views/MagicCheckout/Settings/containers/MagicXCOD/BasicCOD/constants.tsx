@@ -92,7 +92,7 @@ export const INVALID_COD_RANGE = 'Please Set Valid COD Order Range';
 export const GENERAL_FEE_INFO = 'Fee can only be configured in Shopify.';
 export const COD_FEE_INFO = `${GENERAL_FEE_INFO} For COD profile, set rate as total [Shipping + COD]`;
 export const SETUP_GUIDE_DOCS_HREF =
-  'https://razorpay.com/docs/payments/cod-magic-checkout/configure-cod/';
+  'https://razorpay.com/docs/payments/cod-magic-checkout/shopify/configure-cod/';
 export const SETUP_GUIDE_VIDEO_HREF = 'http://bit.ly/magic-checkout-guide';
 export const SETUP_MAGICX_ROUTE = '/magic/settings/magicx-store-settings';
 
@@ -103,7 +103,7 @@ export const BASIC_COD_SETUP_GUIDE = {
     'All shipping profiles (product groups) and shipping methods have been synced from Shopify. You can use the Configure COD button above to enable/disable COD for your respective shipping methods on Shopify. You can also limit COD availability by cart amount and disable prepaid options using the configurations above.',
   video: 'http://bit.ly/magic-checkout-guide',
   thumbnail: basicCODSetupGuideThumbnail,
-  docs: 'https://razorpay.com/docs/payments/cod-magic-checkout/configure-cod/',
+  docs: 'https://razorpay.com/docs/payments/cod-magic-checkout/shopify/configure-cod/',
 };
 
 //Greater Than Or Equal

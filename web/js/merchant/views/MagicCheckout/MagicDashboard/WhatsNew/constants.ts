@@ -13,7 +13,7 @@ export const NEW_OFFERINGS: NewOffering[] = [
     ctaLink: '/magic/coupons',
     docLink: (isRCODEnabled: boolean) =>
       isRCODEnabled
-        ? 'https://razorpay.com/docs/payments/cod-magic-checkout/coupon-engine/'
+        ? 'https://razorpay.com/docs/payments/cod-magic-checkout/shopify/coupons/'
         : 'https://razorpay.com/docs/payments/magic-checkout/shopify/configuration/#method-1-razorpay-dashboard-2',
     condition: (platform, _isRCODEnabled) => platform === PLATFORMS.SHOPIFY,
   },
