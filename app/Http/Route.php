@@ -12464,6 +12464,7 @@ class Route
         ],
 
         'cross_border_import_service' => [
+            'payout_create_internal',
             'payment_fetch_by_id'
         ],
 

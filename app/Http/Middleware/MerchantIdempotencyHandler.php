@@ -101,7 +101,8 @@ class MerchantIdempotencyHandler
             ($this->basicauth->isRouteDirectTransferRequest() === false) and
             ($this->basicauth->isXperienceApp() === false) and
             ($this->basicauth->isRouteDashboardPayoutRequest() === false) and
-            ($this->basicauth->isCapitalEarlySettlementApp() === false))
+            ($this->basicauth->isCapitalEarlySettlementApp() === false) and
+            ($this->basicauth->isCrossBorderImportApp() === false))
         {
             return $next($request);
         }

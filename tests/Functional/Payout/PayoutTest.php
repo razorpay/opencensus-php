@@ -22278,6 +22278,23 @@ class PayoutTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($sourceDetails, $response);
     }
 
+    public function testSourceCreationInCaseOfCompositePayoutCreatedByCrossBorderImportService()
+    {
+        $balance = $this->bankingBalance;
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '20000']);
+
+        $this->ba->appAuthTest($this->config['applications.cross_border_import_service.secret']);
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout->getSourceDetails()->toArray()];
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response);
+    }
+
     public function testIdempotencyInCaseOfCompositePayoutCreatedBySettlementsWithDifferentRequestContents()
     {
         $balance = $this->bankingBalance;
@@ -22487,6 +22504,30 @@ class PayoutTest extends OAuthTestCase
                                     'payout_id'   => $payout->getId(),
                                     'source_id'   => 'vdpm_1',
                                     'source_type' => 'settlements',
+                                    'priority'    => 1
+                                ]);
+
+        $payout->setStatus(Status::PROCESSING);
+
+        Queue::assertPushed(PayoutSourceUpdaterJob::class);
+    }
+
+    public function testPayoutSetStatusQueuePushForICATransferPayout()
+    {
+        $this->app->instance('rzp.mode', "live");
+
+        Queue::fake();
+
+        $payout = $this->fixtures->create('payout', [
+            'status' => 'created'
+        ]);
+
+        // now adding payout source and QueuePush Should Happen
+        $this->fixtures->create('payout_source',
+                                [
+                                    'payout_id'   => $payout->getId(),
+                                    'source_id'   => 'vdpm_1',
+                                    'source_type' => 'ica_transfer',
                                     'priority'    => 1
                                 ]);
 

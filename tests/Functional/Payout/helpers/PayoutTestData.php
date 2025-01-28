@@ -9730,7 +9730,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 8,
+                'count'     => 9,
                 'items'     =>  [
                     [
                         'purpose'       =>  'refund',
@@ -9762,6 +9762,10 @@ return [
                     ],
                     [
                         'purpose'       => 'petty cash',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
@@ -9814,7 +9818,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 9,
+                'count'     => 10,
                 'items'     =>  [
                     [
                         'purpose'       => 'Give Mehul A Bonus',
@@ -9851,6 +9855,10 @@ return [
                     [
                         'purpose'       => 'petty cash',
                         'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
+                        'purpose_type'  =>  'settlement',
                     ]
                 ],
             ],
@@ -9883,7 +9891,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 12,
+                'count'     => 13,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Mehul A Bonus',
@@ -9932,6 +9940,10 @@ return [
                     [
                         'purpose'       => 'petty cash',
                         'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
+                        'purpose_type'  =>  'settlement',
                     ]
                 ],
             ],
@@ -9960,7 +9972,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 11,
+                'count'     => 12,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Sumit A Bonus',
@@ -10004,6 +10016,10 @@ return [
                     ],
                     [
                         'purpose'       => 'petty cash',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
@@ -10092,7 +10108,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 12,
+                'count'     => 13,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Mehul A Bonus',
@@ -10140,6 +10156,10 @@ return [
                     ],
                     [
                         'purpose'       => 'petty cash',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
@@ -16188,6 +16208,78 @@ return [
                     [
                         'source_id'   => '100000000000sa',
                         'source_type' => 'settlements',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testSourceCreationInCaseOfCompositePayoutCreatedByCrossBorderImportService' => [
+        'request' => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'ica_transfer',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Mehul Kaushik',
+                        'ifsc'           => 'ICIC0000104',
+                        'account_number' => '1111000011110000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+                'queue_if_low_balance' => 1,
+                'origin'               => 'dashboard',
+                'source_details'       => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'ica_transfer',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'ica_transfer',
+                'status'          => 'queued',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'ica_transfer',
                         'priority'    => 1,
                     ],
                 ],

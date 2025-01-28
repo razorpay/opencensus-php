@@ -883,7 +883,8 @@ class Service extends Base\Service
                $this->auth->isChargeCollectionsApp() or
                $this->auth->isCapitalCollectionsApp() or
                $this->auth->isFTSApp() or
-               $this->auth->isXperienceApp();
+               $this->auth->isXperienceApp() or
+               $this->auth->isCrossBorderImportApp();
     }
 
     public function isSettlementsApp(): bool
@@ -921,6 +922,11 @@ class Service extends Base\Service
         return $this->auth->isXperienceApp();
     }
 
+    public function isCrossBorderImportApp(): bool
+    {
+        return $this->auth->isCrossBorderImportApp();
+    }
+
     public function isRemitterDetailsExpectedInPayload(): bool
     {
         if ($this->isAllowedInternalApp() === false)
@@ -938,7 +944,8 @@ class Service extends Base\Service
             ($this->auth->isChargeCollectionsApp() === false) and
             ($this->auth->isCapitalCollectionsApp() === false) and
             ($this->auth->isFTSApp() === false) and
-            ($this->auth->isXperienceApp() === false)
+            ($this->auth->isXperienceApp() === false) and 
+            ($this->auth->isCrossBorderImportApp() === false)
         );
     }
 

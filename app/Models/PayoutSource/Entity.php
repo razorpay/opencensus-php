@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const SETTLEMENTS                    = 'settlements';
     const XPAYROLL                       = 'xpayroll';
     const REFUND                         = 'refund';
+    const ICA_TRANSFER                   = 'ica_transfer';    
 
     const CHARGE_COLLECTIONS             = 'charge_collections';
     const CAPITAL_COLLECTIONS            = 'capital_collections';
@@ -49,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::XPAYROLL,
         self::CAPITAL_COLLECTIONS,
         self::PETTY_CASH,
+        self::ICA_TRANSFER,
     ];
 
     protected $fillable   = [

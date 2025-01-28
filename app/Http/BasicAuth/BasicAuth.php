@@ -2208,7 +2208,6 @@ class BasicAuth
         return ($this->getInternalApp() === 'cross_border_import_service');
     }
 
-
     public function isWorkflowsServiceApp(): bool
     {
         return ($this->getInternalApp() === 'workflows');

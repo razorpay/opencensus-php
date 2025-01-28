@@ -1543,7 +1543,7 @@ return [
         'response' => [
             'content' => [
                     'entity' => 'collection',
-                    'count' => 8,
+                    'count' => 9,
                     'items' =>
                                 [
                                     [
@@ -1576,6 +1576,10 @@ return [
                                     ],
                                     [
                                         'purpose' => 'petty cash',
+                                        'purpose_type' => 'settlement',
+                                    ],
+                                    [
+                                        'purpose' => 'ica_transfer',
                                         'purpose_type' => 'settlement',
                                     ],
                                 ]

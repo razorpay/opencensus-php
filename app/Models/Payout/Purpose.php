@@ -33,6 +33,7 @@ class Purpose
     const RZP_TAX_PAYMENT      = 'rzp_tax_pay';
     const MERCHANT_ID          = 'merchant_id';
     const RZP_FUND_MANAGEMENT  = 'RZP Fund Management';
+    const ICA_TRANSFER          = 'ica_transfer';
 
     protected static $default = [
         self::REFUND,
@@ -43,6 +44,7 @@ class Purpose
         self::VENDOR_BILL,
         self::VENDOR_ADVANCE,
         self::PETTY_CASH,
+        self::ICA_TRANSFER,
     ];
 
     protected static $defaultPurposeTypeMap = [
@@ -54,6 +56,7 @@ class Purpose
         self::VENDOR_BILL     => FTAPurpose::SETTLEMENT,
         self::VENDOR_ADVANCE  => FTAPurpose::SETTLEMENT,
         self::PETTY_CASH      => FTAPurpose::SETTLEMENT,
+        self::ICA_TRANSFER     => FTAPurpose::SETTLEMENT,
     ];
 
     protected static $internalPurposeTypeMap = [

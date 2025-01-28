@@ -933,7 +933,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerOptimizerCoreService();
 
         $this->registerOptimizerCoreServiceClient();
-
+        
         $this->registerCredcase();
 
         $this->registerCredcaseService();
