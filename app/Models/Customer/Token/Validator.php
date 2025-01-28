@@ -151,7 +151,8 @@ class Validator extends Base\Validator
         Entity::CARD                 => 'required|array',
         Entity::NOTES                => 'sometimes|notes',
         'account_ids'                => 'required|array|max:' . Entity::PUSH_PROVISIONING_FETCH_MERCHANTS_WITH_TOKEN_LIMIT,
-        'account_ids.*'              => 'sometimes|public_id'
+        'account_ids.*'              => 'sometimes|public_id',
+        'filter'                     => 'sometimes|string',
     ];
 
     protected static $createNetworkTokenAuthenticationDataRules = [

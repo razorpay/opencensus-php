@@ -2476,7 +2476,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function fetchCardMerchantListByFingerprint($fingerprint, $account_ids)
+    public function fetchCardMerchantListByFingerprint($fingerprint, $account_ids, $status)
     {
 
         $this->trace->info(
@@ -2488,7 +2488,12 @@ class Core extends Base\Core
             $merchant_ids = Merchant\Account\Entity::verifyIdAndStripSignMultiple($account_ids);
 
             // find card entities by fingerprint
-            $cardMerchantIdsWithTokenPresent = $this->repo->card->findCardMerchantIdsByFingerprint($fingerprint, $merchant_ids);
+            if($status !== "") {
+                $cardMerchantIdsWithTokenPresent = $this->repo->card->findCardMerchantIdsByFingerprintWithStatus(
+                    $fingerprint, $merchant_ids, $status);
+            } else {
+                $cardMerchantIdsWithTokenPresent = $this->repo->card->findCardMerchantIdsByFingerprint($fingerprint, $merchant_ids);
+            }
 
             return array_map(
                 function ($ele){
@@ -2499,7 +2504,10 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $this->trace->info(TraceCode::SAVED_CARD_TOKEN_NOT_FOUND, []);
+            $this->trace->error(TraceCode::SAVED_CARD_TOKEN_NOT_FOUND, [
+                'trace' => $e->getTrace(),
+                'message' => $e->getMessage()
+            ]);
 
             return false;
         }

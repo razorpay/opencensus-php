@@ -225,6 +225,36 @@ class Repository extends Base\Repository
                       ->pluck(Entity::MERCHANT_ID)->toArray();
     }
 
+    public function findCardMerchantIdsByFingerprintWithStatus(string $fingerprint, array $merchant_ids, string $status)
+    {
+        $tokeRepo = $this->repo->token;
+
+        $tokenTable = $tokeRepo->getTableName();
+
+        $tokenStatusColumn = $tokeRepo->dbColumn(Token\Entity::STATUS);
+
+        $tokenCardIdColumn = $tokeRepo->dbColumn(Token\Entity::CARD_ID);
+
+        $globalFingerprint = $this->dbColumn(Entity::GLOBAL_FINGERPRINT);
+
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $cardIdColumn = $this->dbColumn(Entity::ID);
+
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+            ->select($merchantIdColumn)
+            ->distinct()
+            ->join($tokenTable, function ($join) use ($cardIdColumn, $tokenCardIdColumn, $tokenStatusColumn, $status) {
+                $join->on($cardIdColumn, '=', $tokenCardIdColumn)
+                    ->where($tokenStatusColumn, '=', $status);
+            })
+            ->where($globalFingerprint, '=', $fingerprint)
+            ->whereIn($merchantIdColumn, $merchant_ids)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
     public function findCardsWithoutFingerprint(int $limit, int $timestamp, int $timeWindow)
     {
         $window = 1200;

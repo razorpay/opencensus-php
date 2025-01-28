@@ -1518,6 +1518,11 @@ class Service extends Base\Service
                     'via_push_provisioning' => true
                 ];
 
+                $status = "";
+                if(empty($input['filter']) === false) {
+                    $status = $input['filter'];
+                }
+
                 if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_FINGERPRINTS) === false)
                 {
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "card_fingerprints feature is not enabled for this merchant");
@@ -1536,7 +1541,7 @@ class Service extends Base\Service
                     throw new Exception\BadRequestException(ErrorCode::SERVER_ERROR, null, null, "card fingerprint could not be fetched for identification");
                 }
 
-                $data = $this->core->fetchCardMerchantListByFingerprint($fingerprint, $input['account_ids']);
+                $data = $this->core->fetchCardMerchantListByFingerprint($fingerprint, $input['account_ids'], $status);
 
                 $response = [
                         'account_ids' => $data
