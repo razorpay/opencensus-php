@@ -2349,22 +2349,6 @@ export const splitzConfig: SplitzInitConfig = {
       ],
       abExperiments: [
         {
-          uniqueHashKey: 'capital_is_settle_now_v2',
-          experimentId: {
-            beta: 'OxgkBGIXu2gCQw',
-            production: 'Oxgfp6a0pE4I1f',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-            ],
-          },
-        },
-        {
           uniqueHashKey: 'capital_is_gtm',
           experimentId: {
             beta: 'P3eJWSuYWs63GF',

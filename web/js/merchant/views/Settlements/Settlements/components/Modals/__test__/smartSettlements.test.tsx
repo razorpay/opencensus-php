@@ -8,14 +8,6 @@ import * as modals from 'merchant_common/reducers/modals';
 import { queryClient } from 'common/components/Bootstrap/Wrapper';
 import { waitForSuccessScreen, waitForOdsModal } from './mocks/fixtures/OnDemandModalV2';
 
-jest.mock('merchant/views/Settlements/Settlements/components/Modals/OndemandModal', () => ({
-  ...(jest.requireActual(
-    'merchant/views/Settlements/Settlements/components/Modals/OndemandModal',
-  ) as object),
-  __esModule: true,
-  default: () => <p>OndemandModal V1</p>,
-}));
-
 const mockGTMExpActive: any = { value: undefined };
 const mockSameDaySettlementDisabledExp: any = { value: undefined };
 const mockIsSmartSettlementEnabledExp: any = { value: { variables: { result: 'on' } } };
