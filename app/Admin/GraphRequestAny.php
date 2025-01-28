@@ -110,6 +110,13 @@ class GraphRequestAny
             'headers'       => $this->headers,
         ];
 
+        $apolloClientName = Request::header('apollographql-client-name');
+
+        if (empty($apolloClientName) === false && $apolloClientName === 'easy-dashboard' )
+        {
+            $options['cookies'] = $this->forwardCookies();
+        }
+
         $options = array_merge($options, $this->getDataForOutgoingRequest($this->data));
         $spanOptions = (new ApiRequestSpan($this->request))::getRequestSpanOptions(Config::get('razorpay.graphql.server_url'));
         $graphQlPath = Config::get('razorpay.graphql.server_path');
@@ -187,8 +194,6 @@ class GraphRequestAny
 
         $csrfToken = Request::header('X-Csrf-Token');
 
-        $cookies = Request::header('Cookie');
-
         $orgId = Request::header('X-Org-Id');
 
         $apolloClientName = Request::header('apollographql-client-name');
@@ -205,27 +210,55 @@ class GraphRequestAny
 
         $rzpAccount = Request::header('x-razorpay-account');
 
-        $defaultHeaders =  [
-            'X-Dashboard'                           => 'true',
-            'X-Org-Hostname'                        => $domain,
-            'X-Request-Origin'                      => $originDomain,
-            'X-Product-Type'                        => $productType,
-            'X-Dashboard-Ip'                        => $clientIp,
-            'X-IP-Address'                          => $ipAddress,
-            'X-User-Agent'                          => $userAgent,
-            'X-Csrf-Token'                          => $csrfToken,
-            'Cookie'                                => $cookies,
-            'X-Org-Id'                              => $orgId,
-            'apollographql-client-name'             => $apolloClientName,
-            'apollographql-client-version'          => $apolloClientVersion,
-            'X-App-Mode'                            => $appMode,
-            'rzpctx-dev-serve-user'                 => $devServeHeader,
-            'X-Mobile-Debug-Id'                     => $mobileDebugId,
-            'X-Razorpay-Account'                    => $rzpAccount,
-            // x-partner-* headers contain meta data used during phantom signup
-            Headers::X_PARTNER_APPLICATION_ID       => Request::header(Headers::X_PARTNER_APPLICATION_ID),
-            Headers::X_PARTNER_OAUTH_REFERRAL       => Request::header(Headers::X_PARTNER_OAUTH_REFERRAL),
-        ];
+        $cookies = Request::header('Cookie');
+
+        if (empty($apolloClientName) === false && $apolloClientName === 'easy-dashboard' )
+        {
+            $defaultHeaders = [
+                'X-Dashboard'                     => 'true',
+                'X-Org-Hostname'                  => $domain,
+                'X-Request-Origin'                => $originDomain,
+                'X-Product-Type'                  => $productType,
+                'X-Dashboard-Ip'                  => $clientIp,
+                'X-IP-Address'                    => $ipAddress,
+                'X-User-Agent'                    => $userAgent,
+                'X-Csrf-Token'                    => $csrfToken,
+                'X-Org-Id'                        => $orgId,
+                'apollographql-client-name'       => $apolloClientName,
+                'apollographql-client-version'    => $apolloClientVersion,
+                'X-App-Mode'                      => $appMode,
+                'rzpctx-dev-serve-user'           => $devServeHeader,
+                'X-Mobile-Debug-Id'               => $mobileDebugId,
+                'X-Razorpay-Account'              => $rzpAccount,
+                // x-partner-* headers contain meta data used during phantom signup
+                Headers::X_PARTNER_APPLICATION_ID => Request::header(Headers::X_PARTNER_APPLICATION_ID),
+                Headers::X_PARTNER_OAUTH_REFERRAL => Request::header(Headers::X_PARTNER_OAUTH_REFERRAL),
+            ];
+        }
+        else
+        {
+            $defaultHeaders = [
+                'X-Dashboard'                     => 'true',
+                'X-Org-Hostname'                  => $domain,
+                'X-Request-Origin'                => $originDomain,
+                'X-Product-Type'                  => $productType,
+                'X-Dashboard-Ip'                  => $clientIp,
+                'X-IP-Address'                    => $ipAddress,
+                'X-User-Agent'                    => $userAgent,
+                'X-Csrf-Token'                    => $csrfToken,
+                'Cookie'                          => $cookies,
+                'X-Org-Id'                        => $orgId,
+                'apollographql-client-name'       => $apolloClientName,
+                'apollographql-client-version'    => $apolloClientVersion,
+                'X-App-Mode'                      => $appMode,
+                'rzpctx-dev-serve-user'           => $devServeHeader,
+                'X-Mobile-Debug-Id'               => $mobileDebugId,
+                'X-Razorpay-Account'              => $rzpAccount,
+                // x-partner-* headers contain meta data used during phantom signup
+                Headers::X_PARTNER_APPLICATION_ID => Request::header(Headers::X_PARTNER_APPLICATION_ID),
+                Headers::X_PARTNER_OAUTH_REFERRAL => Request::header(Headers::X_PARTNER_OAUTH_REFERRAL),
+            ];
+        }
 
         if (app('request.ctx')->isOauthRequest() === true)
         {
@@ -407,5 +440,20 @@ class GraphRequestAny
 
             'data'      => null,
         ];
+    }
+
+    /**
+     *
+     * @return array
+     */
+    private function forwardCookies()
+    {
+
+        if (empty($_COOKIE['admin_experience_session']) === false)
+        {
+            $_COOKIE['admin_experience_session'] = urldecode($_COOKIE['admin_experience_session']);
+        }
+
+        return $_COOKIE;
     }
 }
