@@ -37,7 +37,7 @@ GIT_TOKEN_FROM_SECRETS := "$(cat /run/secrets/git_token)"
 # Set GIT_TOKEN variable from secrets if present (defaults to env variable)
 ifneq ($(GIT_TOKEN_FROM_SECRETS),)
 $(info Found GIT_TOKEN from secrets)
-GIT_TOKEN := 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
+GIT_TOKEN := $(GIT_TOKEN_FROM_SECRETS)
 endif
 
 
