@@ -17,7 +17,9 @@ use RZP\Trace\TraceCode;
 class Service {
     const REQUEST_TIMEOUT = 5;
     const CMS_ROUTES = [
-        'create_customer_v2' => 'v2/internal/customers',
+        'create_customer' => 'v2/internal/customers',
+        'get_customer_by_reference_id' => 'v2/internal/customers/by/reference/%s',
+        'update_customer_by_reference_id' => 'v2/internal/customers/by/reference/%s'
     ];
 
     protected $app;
@@ -61,7 +63,17 @@ class Service {
     {
         $input = $this->transformV1CreateOptionsToV2CreateOptions($input,$merchantId);
 
-        return $this->sendRequest(self::CMS_ROUTES['create_customer_v2'], 'post', $input);
+        return $this->sendRequest(self::CMS_ROUTES['create_customer'], 'post', $input);
+    }
+
+    public function getCustomerByReferenceId($customerId)
+    {
+        return $this->sendRequest(sprintf(self::CMS_ROUTES['get_customer_by_reference_id'], $customerId), 'get');
+    }
+
+    public function updateCustomerByReferenceId($customerId, $payload)
+    {
+        return $this->sendRequest(sprintf(self::CMS_ROUTES['update_customer_by_reference_id'], $customerId), 'patch', $payload);
     }
 
     /**
@@ -110,6 +122,7 @@ class Service {
             'timeout' => self::REQUEST_TIMEOUT,
             'auth'    => [$key, $secret],
         );
+
         $request = array(
             'url' => $url,
             'method' => $method,
@@ -165,11 +178,21 @@ class Service {
 
         try
         {
-            $response = Requests::$method(
-                $request['url'],
-                $request['headers'],
-                $request['content'],
-                $request['options']);
+            if ($method == 'post' or $method == 'put' or $method == 'patch')
+            {
+                $response = Requests::$method(
+                    $request['url'],
+                    $request['headers'],
+                    $request['content'],
+                    $request['options']);
+            }
+            else
+            {
+                $response = Requests::get(
+                    $request['url'],
+                    $request['headers'],
+                    $request['options']);
+            }
         }
 
         catch(\WpOrg\Requests\Exception $e)
@@ -204,7 +227,7 @@ class Service {
             'notes'               =>        (object)$opt["notes"] ?? [],
             'gender'              =>        null,
             'dob'                 =>        null,
-            'custom_data'         =>        (object)(!empty($opt['global_customer_id']) ? ['global_customer_id' => $opt['global_customer_id']] : []),
+            'custom_data'         =>        (object)([]),
             'tax_details'         =>        $this->convertGstinToTaxDetails($opt['gstin'] ?? null),
             'merchant_id'         =>        $merchantId,
         ];

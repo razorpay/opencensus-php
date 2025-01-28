@@ -7557,7 +7557,27 @@ trait Authorize
     protected function createLocalCustomerForSubscription(
         Customer\Entity $customer)
     {
-        return (new Customer\Core)->createLocalCustomerFromGlobal($customer, $this->subscription->merchant);
+        $localCustomer = (new Customer\Core)->createLocalCustomerFromGlobal($customer, $this->subscription->merchant);
+
+        // Based on experiment, evaluate if update call should go to CMS or not
+        // Note that, we are reusing the same experiment that we are using for create override
+        $shouldCreateViaCMS = (new Customer\Core)->isCreateOverrideToCmsEnabled($this->subscription->merchant,
+            $this->mode,
+            app('request.ctx')->getInternalAppName(),
+            $this->app['api.route']->getCurrentRouteName(),
+        );
+
+        if ($shouldCreateViaCMS)
+        {
+            (new Customer\Core)->addGlobalCustomerIdViaCMS($this->subscription->merchant->getId(), $localCustomer, $customer->getId());
+        }
+        else
+        {
+            $localCustomer->globalCustomer()->associate($customer);
+            $this->repo->saveOrFail($localCustomer);
+        }
+
+        return $localCustomer;
     }
 
     protected function addCustomerIdToSubscriptionInput(array & $input)

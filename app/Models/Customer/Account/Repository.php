@@ -61,10 +61,10 @@ class Repository extends Base\Repository
             ->find($id);
     }
 
-    public function findByContactAndMerchant($contact, Merchant\Entity $merchant)
+    public function findByContactAndMerchant($contact, Merchant\Entity $merchant, bool $useWritePdo = false)
     {
-        return $this->newQuery()
-                    ->where(Customer\Entity::CONTACT, '=', $contact)
+        $query = $useWritePdo ? $this->newQuery()->useWritePdo() : $this->newQuery();
+        return $query->where(Customer\Entity::CONTACT, '=', $contact)
                     ->where(Customer\Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->first();
     }
@@ -85,10 +85,10 @@ class Repository extends Base\Repository
                     ->find($id);
     }
 
-    public function findByContactEmailAndMerchant($contact, $email, Merchant\Entity $merchant)
+    public function findByContactEmailAndMerchant($contact, $email, Merchant\Entity $merchant, bool $useWritePdo = false)
     {
-        return $this->newQuery()
-                    ->where(Customer\Entity::CONTACT, '=', $contact)
+        $query = $useWritePdo ? $this->newQuery()->useWritePdo() : $this->newQuery();
+        return $query->where(Customer\Entity::CONTACT, '=', $contact)
                     ->where(Customer\Entity::EMAIL, '=', $email)
                     ->where(Customer\Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->first();

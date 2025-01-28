@@ -110,7 +110,6 @@ class Core extends Base\Core
             Entity::NAME    => $globalCustomer->getName(),
             Entity::EMAIL   => $globalCustomer->getEmail(),
             Entity::CONTACT => $globalCustomer->getContact(),
-            Entity::GLOBAL_CUSTOMER_ID => $globalCustomer->getId(),
         ];
 
         return $this->create($createInput, $merchant, false);
@@ -151,18 +150,11 @@ class Core extends Base\Core
     {
         $inputTrace = $input;
 
-        // global_customer_id field is not allowed on customer_create route
-        if (!empty($input[Entity::GLOBAL_CUSTOMER_ID]) && $this->app['api.route']->getCurrentRouteName() == "customer_create")
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_FIELD_SENT, null, null);
-        }
-
         unset($inputTrace[Entity::NAME], $inputTrace[Entity::EMAIL], $inputTrace[Entity::CONTACT]);
 
         $this->trace->info(TraceCode::CUSTOMER_CREATE, $inputTrace);
 
-        // Remove global customer ID key from the array before passing it otherwise it leads to validation error in build()
-        $customer = (new Customer\Entity)->build(array_diff_key($input, [Entity::GLOBAL_CUSTOMER_ID => '']));
+        $customer = (new Customer\Entity)->build($input);
 
         $customer->merchant()->associate($merchant);
 
@@ -212,7 +204,6 @@ class Core extends Base\Core
                     $this->createCustomerViaCMS($customer, $input, $merchant->getId());
                 else
                 {
-                    $customer->setAttribute(Entity::GLOBAL_CUSTOMER_ID, $input[Entity::GLOBAL_CUSTOMER_ID]);
                     $this->repo->saveOrFail($customer, ['logged' => true]);
                 }
 
@@ -271,18 +262,46 @@ class Core extends Base\Core
         $cmsInput = $input;
         $data = $cmsService->createCustomerV2($cmsInput, $merchantId);
 
+        $this->fillV2CustomerInfoInCustomerEntity($customer, $data);
+    }
+
+    protected function fillV2CustomerInfoInCustomerEntity($customer, $v2Data)
+    {
         $entityData = [
-            Entity::ID             => $data[Entity::ID] ?? null,
-            Entity::ENTITY         => $data[Entity::ENTITY] ?? null,
-            Entity::NAME           => $data['first_name'] ?? null,
-            Entity::EMAIL          => $data[Entity::EMAIL] ?? null,
-            Entity::CONTACT        => $data[Entity::CONTACT] ?? null,
-            Entity::GSTIN          => $data['tax_details'][0]['value'] ?? null,
-            Entity::NOTES          => $data[Entity::NOTES] ?? [],
+            Entity::ID             => $v2Data[Entity::ID] ?? null,
+            Entity::ENTITY         => $v2Data[Entity::ENTITY] ?? null,
+            Entity::NAME           => $v2Data['first_name'] ?? null,
+            Entity::EMAIL          => $v2Data[Entity::EMAIL] ?? null,
+            Entity::CONTACT        => $v2Data[Entity::CONTACT] ?? null,
+            Entity::GSTIN          => $v2Data['tax_details'][0]['value'] ?? null,
+            Entity::NOTES          => $v2Data[Entity::NOTES] ?? [],
         ];
         $customer->fill($entityData);
-        $customer->setAttribute(Entity::GLOBAL_CUSTOMER_ID, $data['custom_data']['global_customer_id']);
-        $customer->setAttribute(Entity::CREATED_AT, $data[Entity::CREATED_AT]);
+        $customer->setAttribute(Entity::CREATED_AT, $v2Data[Entity::CREATED_AT]);
+
+        if (array_key_exists('global_customer_id', $v2Data['custom_data']))
+        {
+            $customer->setAttribute(Entity::GLOBAL_CUSTOMER_ID, $v2Data['custom_data']['global_customer_id']);
+        }
+    }
+
+
+    /**
+     * Uses v2 update API to add global customer ID to the given customer ID
+     * Makes a read call to first fetch the existing customer and then adds global customer ID to the custom_data field
+     * @param $merchantId
+     * @param $customerId
+     * @param $globalCustomerId
+     * @return void
+     */
+    public function addGlobalCustomerIdViaCMS($merchantId, $localCustomer, $globalCustomerId)
+    {
+        $cmsService = new CMSService\Service($this->app);
+        $data = $cmsService->getCustomerByReferenceId($localCustomer->getId());
+
+        $newCustomData = array_merge($data['custom_data'], ['global_customer_id' => $globalCustomerId]);
+        $updatedCustomerV2 = $cmsService->updateCustomerByReferenceId($localCustomer->getId(), ['custom_data' => $newCustomData, 'merchant_id' => $merchantId]);
+        $this->fillV2CustomerInfoInCustomerEntity($localCustomer, $updatedCustomerV2);
     }
 
     /**
@@ -1645,7 +1664,9 @@ class Core extends Base\Core
         {
             $existingCustomer = $this->repo->customer->findByContactAndMerchant(
                 $customer->getContact(),
-                $customer->merchant);
+                $customer->merchant,
+                true
+            );
         }
         else if(($customer->getEmail() !== null) or
             ($customer->getContact() !== null) )
@@ -1653,7 +1674,8 @@ class Core extends Base\Core
             $existingCustomer = $this->repo->customer->findByContactEmailAndMerchant(
                 $customer->getContact(),
                 $customer->getEmail(),
-                $customer->merchant);
+                $customer->merchant,
+                true);
         }
 
         if (($existingCustomer !== null) and
