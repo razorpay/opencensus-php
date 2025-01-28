@@ -34,6 +34,8 @@ class Service extends Base\Service
 {
     protected $core;
 
+    const TOKEN_CHARGE_IDEMPOTENCY_CACHE_KEY_ROW_ID = 'subr_charge_token_batch_row_id_';
+
     public function __construct()
     {
         parent::__construct();
@@ -335,6 +337,55 @@ class Service extends Base\Service
             $rowIdempotentId = $this->app['request']->header(RequestHeader::X_Batch_Row_Id) ?? null;
         }
 
+        try {
+            
+            $isDuplicateRequest = $this->checkAndProcessForIdempotencyKeyForTokenCharge($rowIdempotentId);
+
+            $this->trace->info(TraceCode::BATCH_DUPLICATE_PAYMENT_IDEMPOTENCY_CHECK,
+                [
+                    'token_id' => $id,
+                    'input'    => $input,
+                    'batch_id' => $batchId,
+                    'row_id'   => $rowIdempotentId,
+                    'isDuplicateRequest' => $isDuplicateRequest,
+                ]);
+            
+            // Check for duplicate payment request
+            if (empty($rowIdempotentId) === false and ($isDuplicateRequest === true)) {
+                throw new \LogicException('Duplicate request', 409);
+            }
+        }
+        
+        catch (\Exception $ex) {
+            $this->trace->traceException($ex,
+                Trace::INFO,
+                TraceCode:: BATCH_DUPLICATE_PAYMENT_IDEMPOTENCY_CHECK_FAILED,
+                [
+                    'token_id' => $id,
+                    'input'    => $input,
+                    'batch_id' => $batchId,
+                    'row_id'   => $rowIdempotentId,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $ex->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $ex->getCode(),
+                    ],
+                ]);
+
+            return [
+                'error' =>[
+                    Error::DESCRIPTION       => $ex->getMessage(),
+                    Error::PUBLIC_ERROR_CODE => $ex->getCode(),
+                ]
+            ];
+
+        }
+
+        // set the cache key for the idempotency key
+        if (empty($rowIdempotentId) === false) {
+            $cacheKey = self::TOKEN_CHARGE_IDEMPOTENCY_CACHE_KEY_ROW_ID . $rowIdempotentId;
+            $this->app['cache']->put($cacheKey, true, 600 * 60);
+        }
+
         if ($batchId !== null)
         {
             $this->trace->info(TraceCode::AUTH_LINK_BATCH_INPUT,
@@ -360,6 +411,23 @@ class Service extends Base\Service
         $this->trace->count(Metric::AUTH_LINK_CHARGE_TOKEN_SUBMITTED, ['mode' => $this->mode]);
 
         return $response;
+    }
+
+    private function checkAndProcessForIdempotencyKeyForTokenCharge($idempotentKey){
+
+        if(empty($idempotentKey) == true){
+            return false;
+        }
+
+        $cacheKey = self::TOKEN_CHARGE_IDEMPOTENCY_CACHE_KEY_ROW_ID . $idempotentKey;
+
+        $cacheValue = $this->app['cache']->get($cacheKey);
+
+        if ($cacheValue !== null) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
