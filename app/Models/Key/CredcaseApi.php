@@ -210,8 +210,7 @@ class CredcaseApi
         catch(\Exception $e)
         {
             $this->trace->traceException($e, null, TraceCode::KEY_DUAL_WRITE_SPLITZ_FAILED);
-
-            return 'disable';
+            return false;
         }
     }
 

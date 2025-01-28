@@ -71,7 +71,7 @@ class Repository extends Base\Repository
             $this->trace->count(Metric::KEY_API_DB_RESPONSE_COUNT, [
                     'route_name' => $routeName,
                     'mode' => $mode,
-                    'function' => 'getFirstActiveKeyForMerchant',
+                    'function' => 'getKeysForMerchant',
                 ]
             );
             return $apiKeys;
@@ -99,7 +99,10 @@ class Repository extends Base\Repository
         try {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
             $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants(array($merchantId), $mode, 1, false);
-            $credcaseKey = isEmpty($credcaseKeys->getItems()) ? null : $credcaseKeys->getItems()->offsetGet(0);
+            $credcaseKey = null;
+            if($credcaseKeys->getCount() > 0){
+                $credcaseKey = $credcaseKeys->getItems()->offsetGet(0);
+            }
             return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiDBKey);
         } catch (\Exception $e) {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['merchantId' => $merchantId], ["exception" => $e]]);
@@ -179,7 +182,10 @@ class Repository extends Base\Repository
         try {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
             $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants(array($merchantId), $mode, 1, false);
-            $credcaseKey = isEmpty($credcaseKeys->getItems()) ? null : $credcaseKeys->getItems()->offsetGet(0);
+            $credcaseKey = null;
+            if($credcaseKeys->getCount() > 0){
+                $credcaseKey = $credcaseKeys->getItems()->offsetGet(0);
+            }
             return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiDBKey);
         } catch (\Exception $e) {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['merchantId' => $merchantId], ["exception" => $e]]);

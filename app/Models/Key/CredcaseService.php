@@ -56,11 +56,14 @@ class CredcaseService
 
         // Compare only the extracted fields
         if ($this->compareKeys($filteredCredcaseItems, $filteredQueryItems)) {
+            $this->trace->count(Metric::CREDCASE_READ_RESPONSE_MATCH,  [
+                'route_name' => $routeName,
+            ]);
             return $credcaseItems;
         }
 
         // Log metric if there is a mismatch
-        $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH);
+        $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH, $filteredCredcaseItems, $filteredQueryItems);
         return $queryResults;
     }
 
@@ -68,10 +71,13 @@ class CredcaseService
     public function fetchKey($routeName, $credcaseResponse, $queryResult)
     {
         if(!isset($credcaseResponse) && !isset($queryResult)){
+            $this->trace->count(Metric::CREDCASE_READ_RESPONSE_MATCH,  [
+                'route_name' => $routeName,
+            ]);
             return $credcaseResponse;
         }
         if(!isset($credcaseResponse) || !isset($queryResult)) {
-            $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH);
+            $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH, array(), array());
             return $queryResult;
         }
         $credcaseItem = $this->buildKeyFromCredcaseResponse($credcaseResponse);
@@ -79,14 +85,16 @@ class CredcaseService
         // Extract relevant fields for comparison (id, merchant_id, expired_at)
         $filteredCredcaseItems = $this->extractFields(new PublicCollection(array($credcaseItem)));
         $filteredQueryItems = $this->extractFields(new PublicCollection(array($queryResult)));
-
         // Compare only the extracted fields
         if ($this->compareKeys($filteredCredcaseItems, $filteredQueryItems)) {
+            $this->trace->count(Metric::CREDCASE_READ_RESPONSE_MATCH,  [
+                'route_name' => $routeName,
+            ]);
             return $credcaseItem;
         }
 
         // Log metric if there is a mismatch
-        $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH);
+        $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH, $filteredCredcaseItems, $filteredQueryItems);
         return $queryResult;
     }
 
@@ -127,10 +135,12 @@ class CredcaseService
      * @param $traceCode
      * @param $metric
      */
-    public function logCredcaseError($routeName, $traceCode, $metric): void
+    public function logCredcaseError($routeName, $traceCode, $metric, $credcaseItems, $apiDBItems, ): void
     {
         $this->trace->info($traceCode, [
             'route_name' => $routeName,
+            'credcase_items' => $credcaseItems,
+            'api_items' => $apiDBItems
         ]);
         $this->trace->count($metric, [
                 'route_name' => $routeName,
