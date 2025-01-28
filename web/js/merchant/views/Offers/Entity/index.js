@@ -262,7 +262,7 @@ export class OffersDetails extends React.Component {
       if (payment_method_type == 'credit') {
         paymentMethod = 'Credit Card';
       }
-      if (payment_method_type === null) {
+      if (!payment_method_type) {
         paymentMethod = 'Both Credit and Debit cards';
       }
     }
