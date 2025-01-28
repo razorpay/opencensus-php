@@ -1666,9 +1666,9 @@ class Core extends Base\Core
         return false;
     }
 
-    public function fetchBySourceTypeAndId(string $sourceType, string $sourceId)
+    public function fetchBySourceTypeAndId(string $sourceType, string $sourceId, Merchant\Entity $merchant)
     {
-        return $this->repo->fund_account->fetchBySourceTypeAndId($sourceType, $sourceId);
+        return $this->repo->fund_account->fetchBySourceTypeAndId($sourceType, $sourceId, $merchant->getId());
     }
 
     protected function updateFundAccountIfPresent(array $input, Merchant\Entity $merchant)
