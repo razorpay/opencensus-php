@@ -5,12 +5,14 @@ on:
       - 'master'
       - 'dark'
       - singapore_release
+      - us_release
   push:
     branches:
       - 'master'
       - 'hotfix**'
       - 'dark'
       - singapore_release
+      - us_release
   workflow_dispatch:
 
 concurrency:

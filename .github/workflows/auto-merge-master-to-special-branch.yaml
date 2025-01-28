@@ -11,6 +11,7 @@ jobs:
       matrix:
         release_branch:
           - singapore_release
+          - us_release
             # Add additional special branches as needed.
 
       fail-fast: false
@@ -59,7 +60,7 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-      - name: Test merging of '${{ github.ref }}' branch into '${{ matrix.release_branch }}' branch
+      - name: Test merging of '${{ github.ref_name }}' branch into '${{ matrix.release_branch }}' branch
         id: merge
         if: steps.check_branch.outputs.branch_exists == 'true'
         run: |
@@ -72,7 +73,7 @@ jobs:
           # Check if there are any changes to merge
           if git merge-base --is-ancestor origin/${GITHUB_REF#refs/heads/} HEAD; then
             echo "merge_status=up_to_date" >> $GITHUB_OUTPUT
-            echo "::notice title=Merge Status::${{ matrix.release_branch }} is already up to date with ${{ github.ref }}. No merge needed."
+            echo "::notice title=Merge Status::${{ matrix.release_branch }} is already up to date with ${{ github.ref_name }}. No merge needed."
           else
             set +o errexit
             merge_output=$(git merge --no-commit --no-ff --allow-unrelated-histories ${{ github.ref }} 2>&1)
@@ -81,7 +82,7 @@ jobs:
 
             if [ $merge_exit_code -eq 0 ]; then
               echo "merge_status=success" >> $GITHUB_OUTPUT
-              echo "::notice title=Merge Status::Merge ${{ github.ref }} into ${{ matrix.release_branch }} is possible. No conflicts detected."
+              echo "::notice title=Merge Status::Merge ${{ github.ref_name }} into ${{ matrix.release_branch }} is possible. No conflicts detected."
               git merge --abort  # Clean up the working directory
             else
               echo "merge_status=conflict" >> $GITHUB_OUTPUT
@@ -118,11 +119,11 @@ jobs:
             echo "Merge conflict detected in ${{ matrix.release_branch }}. Manual intervention required." >> $GITHUB_STEP_SUMMARY
             exit 1
           elif [[ "${{ steps.merge.outputs.merge_status }}" == "success" ]]; then
-            echo "::notice title=Merge Successful::Successfully merged ${{ github.ref }} into ${{ matrix.release_branch }}."
-            echo "Successfully merged '${{ github.ref }}' branch into '${{ matrix.release_branch }}' branch." >> $GITHUB_STEP_SUMMARY
+            echo "::notice title=Merge Successful::Successfully merged ${{ github.ref_name }} into ${{ matrix.release_branch }}."
+            echo "Successfully merged '${{ github.ref_name }}' branch into '${{ matrix.release_branch }}' branch." >> $GITHUB_STEP_SUMMARY
           elif [[ "${{ steps.merge.outputs.merge_status }}" == "up_to_date" ]]; then
-            echo "::notice title=Branch Up to Date::${{ matrix.release_branch }} is already up to date with ${{ github.ref }}."
-            echo "${{ matrix.release_branch }} is already up to date with ${{ github.ref }}." >> $GITHUB_STEP_SUMMARY
+            echo "::notice title=Branch Up to Date::${{ matrix.release_branch }} is already up to date with ${{ github.ref_name }}."
+            echo "${{ matrix.release_branch }} is already up to date with ${{ github.ref_name }}." >> $GITHUB_STEP_SUMMARY
           else
             echo "::error title=Unexpected Status::Unexpected status for ${{ matrix.release_branch }}."
             echo "Unexpected status for ${{ matrix.release_branch }}." >> $GITHUB_STEP_SUMMARY
@@ -159,7 +160,7 @@ jobs:
           SLACK_LINK_NAMES: true
           SLACKIFY_MARKDOWN: true
           SLACK_MESSAGE: |
-            Merge conflict detected while merging `${{ github.base_ref }}` into `${{ matrix.release_branch }}` in the `${{ github.repository }}` repository. Manual intervention required. Please visit the Actions URL for more details.
+            Merge conflict detected while merging `${{ github.ref_name }}` into `${{ matrix.release_branch }}` in the `${{ github.repository }}` repository. Manual intervention required. Please visit the Actions URL for more details.
             Author: ${{ contains(steps.find_commit_author_in_slack.outputs.commit_author_slack_handle, '@') && steps.find_commit_author_in_slack.outputs.commit_author_slack_handle || format('<@{0}>', steps.find_commit_author_in_slack.outputs.commit_author_slack_handle) }} (${{ steps.merge.outputs.author }})
 
             ### Conflict details
