@@ -100,4 +100,23 @@ trait PayoutEvent
         $properties = $event->getProperties();
         $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $eventData, $properties);
     }
+
+    public function trackDuplicatePayoutPreventionEvent(
+        array $eventData,
+        array $customProperties = [],
+    ) {
+        $requestId = $this->app['request']->getTaskId();
+
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $customProperties +=
+            [
+                'timestamp'     => $timestamp,
+                'requestId'     => $requestId
+            ];
+
+        $event = new PE(null, null, $customProperties);
+        $properties = $event->getProperties();
+        $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $eventData, $properties);
+    }
 }

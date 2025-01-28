@@ -246,6 +246,8 @@ class Base extends BaseCore
     const PAYOUT_TYPE             = 'payout_type';
     const DUPLICATE_PAYOUT_EVALUATE_FETCH_LIMIT = 1000;
 
+    const DUPLICATE_PAYOUT_EVALUATE_EVENT_FOUND_DUPLICATE = 'duplicate_payout_evaluate_event_found_duplicate';
+
     public function __construct()
     {
         parent::__construct();
@@ -579,6 +581,31 @@ class Base extends BaseCore
         $this->fireEventForPayoutStatus($payout);
 
         return $payout;
+    }
+
+    public function trackDuplicatePayoutPreventionEvent(
+        string $eventName,
+        array $properties): void
+    {
+        $eventDataGroup = null;
+
+        switch ($eventName)
+        {
+            case self::DUPLICATE_PAYOUT_EVALUATE_EVENT_FOUND_DUPLICATE:
+                $eventDataGroup = EventCode::DUPLICATE_PAYOUT_PREVENTION_FOUND_DUPLICATE;
+                break;
+        }
+
+        $this->app['diag']->trackDuplicatePayoutPreventionEvent(
+            $eventDataGroup,
+            $properties,
+        );
+
+        $this->trace->info(TraceCode::DUPLICATE_PAYOUT_EVALUATE_DATALAKE_EVENT_PUSHED,[
+            "event_name"       => $eventName,
+            "event_properties" => $properties,
+            "event_data_group" => $eventDataGroup
+        ]);
     }
 
     public function setQueuedFeeRecoveryPayoutsFlag(Entity $payout): void
@@ -2644,6 +2671,18 @@ class Base extends BaseCore
 
                 if ($foundDuplicate === true)
                 {
+                    $this->trackDuplicatePayoutPreventionEvent(
+                        self::DUPLICATE_PAYOUT_EVALUATE_EVENT_FOUND_DUPLICATE,
+                        [
+                            Payout\Entity::MERCHANT_ID     => $this->merchant->getId(),
+                            Payout\Entity::PAYOUT_SOURCE   => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
+                            Payout\Entity::PAYOUT_TYPE     => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
+                            Payout\Entity::PAYOUT_ID       => $this->app['request']->input('duplicate_payout_evaluate_payout_id', null),
+                            Payout\Entity::CUSTOM_INTERVAL => $this->app['request']->input('duplicate_payout_evaluate_custom_interval', null),
+                            'lag_occurred'                 => true,
+                        ]
+                    );
+
                     $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_FOUND_PAYOUT);
 
                     if ($this->duplicatePayoutEvaluateTakeAction === true)
@@ -2684,6 +2723,18 @@ class Base extends BaseCore
                         Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
                         Payout\Entity::PAYOUT_TYPE   => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
                     ]);
+
+                $this->trackDuplicatePayoutPreventionEvent(
+                  self::DUPLICATE_PAYOUT_EVALUATE_EVENT_FOUND_DUPLICATE,
+                    [
+                        Payout\Entity::MERCHANT_ID     => $this->merchant->getId(),
+                        Payout\Entity::PAYOUT_SOURCE   => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
+                        Payout\Entity::PAYOUT_TYPE     => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
+                        Payout\Entity::PAYOUT_ID       => $this->app['request']->input('duplicate_payout_evaluate_payout_id', null),
+                        Payout\Entity::CUSTOM_INTERVAL => $this->app['request']->input('duplicate_payout_evaluate_custom_interval', null),
+                        'lag_occurred'                 => false,
+                    ]
+                );
 
                 $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_FOUND_PAYOUT);
 
@@ -2835,6 +2886,10 @@ class Base extends BaseCore
 
             // Get payout id & update in exception description
             $errorDescription = PublicErrorDescription::DUPLICATE_PAYOUT_CREATION_ATTEMPT;
+
+            $this->app['request']->merge(['duplicate_payout_evaluate_payout_id' => $payout->getId()]);
+
+            $this->app['request']->merge(['duplicate_payout_evaluate_custom_interval' => $lastXDuration]);
 
             $errorDescription = str_replace(['<payout_id>', '<custom_interval>'], [$payout->getId(), $lastXDuration], $errorDescription);
 

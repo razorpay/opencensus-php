@@ -335,6 +335,10 @@ class Base
                     );
                 }
 
+                $this->app['request']->merge(['duplicate_payout_evaluate_payout_id' => $payoutId]);
+
+                $this->app['request']->merge(['duplicate_payout_evaluate_custom_interval' => $customInterval]);
+
                 $errorDescription = PublicErrorDescription::DUPLICATE_PAYOUT_CREATION_ATTEMPT;
 
                 $errorDescription = str_replace(['<payout_id>', '<custom_interval>'], [$payoutId, $customInterval], $errorDescription);
