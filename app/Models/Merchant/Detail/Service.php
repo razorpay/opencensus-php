@@ -2303,7 +2303,7 @@ class Service extends Base\Service
 
     public function getBusinessCategoriesVasMerchant(): array
     {
-        $businessCategoriesMap = BusinessCategoriesV2\BusinessCategory::SUBCATEGORY_MAP;
+        $businessCategoriesMap = BusinessCategory::SUBCATEGORY_MAP;
         $businessCategories    = [];
 
         foreach ($businessCategoriesMap as $businessCategory => $subCategories)
