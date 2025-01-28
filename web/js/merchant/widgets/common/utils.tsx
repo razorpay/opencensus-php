@@ -1,5 +1,6 @@
 import { ArrowRightIcon, IconComponent } from '@razorpay/blade/components';
 import { CurrencyCodeType, convertToMajorUnit } from '@razorpay/i18nify-js';
+import cloneDeep from 'lodash/cloneDeep';
 import moment from 'moment';
 
 import { currencySymbols } from 'common/utils/rzp-utils';
@@ -100,7 +101,7 @@ export function formatXAxis(
   point: PointType['x'],
   schema: ChartSchemaType['x'],
   unit?: DateRangeValues,
-  nextPossiblePoint?: PointType['x'],
+  nextPossiblePoint?: PointType['x'], // for custom range and last month preset only
   isCustomRange = false,
 ) {
   const { type } = schema;
@@ -108,16 +109,13 @@ export function formatXAxis(
     if (unit === durationOptionKeys.LAST_30_DAYS) {
       // MomentJS week is ending on Saturday, we want a week to run from Monday-Sunday
       const startDate = moment(Number(point) * 1000);
-      let endDate = moment();
+      let endDate = isCustomRange ? moment() : moment().subtract(1, 'day');
 
-      if (!isCustomRange) {
-        const endOfWeekTimestamp = moment(Number(point) * 1000)
-          .endOf('week')
-          .add(1, 'day');
-        endDate = endOfWeekTimestamp > endDate ? endDate : endOfWeekTimestamp;
-      } else {
-        endDate = nextPossiblePoint ? moment.unix(Number(nextPossiblePoint)) : endDate;
-      }
+      const endOfWeekTimestamp = nextPossiblePoint
+        ? moment.unix(Number(nextPossiblePoint))
+        : endDate;
+      endDate = endOfWeekTimestamp > endDate ? endDate : endOfWeekTimestamp;
+
       return `${startDate.format(getTimestampFormat(unit))} - ${endDate.format(
         getTimestampFormat(unit),
       )}`;
@@ -143,35 +141,53 @@ export function formatYAxis(point: PointType['y'], schema: ChartSchemaType['y'])
 }
 
 export const getChartData = (
-  chartData: ChartDataType,
+  _chartData: ChartDataType,
   unit?: DateRangeValues,
 ): {
   labels: Array<string>;
   datasets: Array<Dataset>;
 } => {
+  /**
+   * creates a deep copy of the chartdata object
+   * this is required to avoid issues with in-place modifications (using pop below)
+   * that can cause problems on subsequent renders
+   */
+  const chartData = cloneDeep(_chartData);
   let isCustomRange = false;
   let lastDateInRange: PointType['x'];
 
-  if (unit === durationOptionKeys.CUSTOM && chartData.type === 'line') {
-    isCustomRange = true;
-
+  if (
+    chartData.type === 'line' &&
+    (unit === durationOptionKeys.CUSTOM || unit === durationOptionKeys.LAST_30_DAYS)
+  ) {
     const pointset = chartData.data[0].points;
     const fromDate = moment.unix(+pointset[0].x);
     const lastDate = moment.unix(+pointset[pointset.length - 1].x);
 
-    if (fromDate.isSame(lastDate, 'day')) {
-      unit = durationOptionKeys.TODAY;
-    } else if (lastDate.diff(fromDate, 'days') < 14) {
-      unit = durationOptionKeys.LAST_7_DAYS;
-    } else {
-      unit = durationOptionKeys.LAST_30_DAYS;
+    if (unit === durationOptionKeys.LAST_30_DAYS) {
+      /**
+       * last point is used as a end point marker for custom range and last month preset
+       * hence removing it from every dataset
+       */
       chartData.data.forEach((dataSet) => dataSet.points.pop());
       lastDateInRange = `${lastDate.unix()}`;
+    } else if (unit === durationOptionKeys.CUSTOM) {
+      isCustomRange = true;
+
+      if (fromDate.isSame(lastDate, 'day')) {
+        unit = durationOptionKeys.TODAY;
+      } else if (lastDate.diff(fromDate, 'days') < 14) {
+        unit = durationOptionKeys.LAST_7_DAYS;
+      } else {
+        unit = durationOptionKeys.LAST_30_DAYS;
+        chartData.data.forEach((dataSet) => dataSet.points.pop());
+        lastDateInRange = `${lastDate.unix()}`;
+      }
     }
   }
 
   const labels = chartData.data[0].points.map((point, index, points) => {
-    if (isCustomRange && unit === durationOptionKeys.LAST_30_DAYS && chartData.type === 'line') {
+    if (unit === durationOptionKeys.LAST_30_DAYS && chartData.type === 'line') {
       const nextPossiblePoint = points[index + 1]
         ? moment(+points[index + 1].x * 1000) // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
             .subtract(1, 'day')

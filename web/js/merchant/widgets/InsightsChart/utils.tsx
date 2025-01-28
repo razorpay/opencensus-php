@@ -23,8 +23,8 @@ export const getSubWidget = ({
 
 export const durationOptionsMap: Record<Exclude<DateRangeValues, 'custom_range'>, string> = {
   today: 'Today',
-  last_7_days: 'Last week',
-  last_30_days: 'Last month',
+  last_7_days: 'Last 7 days',
+  last_30_days: 'Last 30 days',
 };
 
 export const durationOptionsSubtextMap: Record<Exclude<DateRangeValues, 'custom_range'>, string> = {

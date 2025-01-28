@@ -44,6 +44,6 @@ export async function assertAPICallForDataRefresh({ page, title }) {
 
   await dropDown.click();
 
-  const last30daysOption = page.getByRole('option', { name: 'Last month' });
+  const last30daysOption = page.getByRole('option', { name: 'Last 30 days' });
   await Promise.all([page.waitForResponse(UCS_DATA_API_URL), last30daysOption.click()]);
 }

@@ -91,6 +91,7 @@ describe('Widget->common->utils->formatXAxis', () => {
       '1706466600',
       { type: 'timestamp', unit: '' },
       'last_30_days',
+      '1707066600',
     );
     expect(formattedXAxisLabel).toBe('Jan 28 - Feb 04');
   });
