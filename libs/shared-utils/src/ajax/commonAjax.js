@@ -11,6 +11,21 @@ import { getCookie } from '../cookies';
 //   return response;
 // });
 
+axios.interceptors.response.use((response) => {
+  const { errors } = response?.data || {};
+  if (errors?.source === 'aes') {
+    document?.body?.dispatchEvent(
+      new CustomEvent('LOGIN_AS_MX', {
+        bubbles: true,
+        detail: {
+          message: errors?.[0] || 'Something went wrong',
+        },
+      }),
+    );
+  }
+  return response;
+});
+
 export default function ajax(params = {}) {
   return new Promise((resolve, reject) => {
     const { headers = {} } = params;
@@ -27,21 +42,6 @@ export default function ajax(params = {}) {
       const encodedParams = _flattenSearchParams(currentParams);
       return encodedParams.join('&'); // Build the encoded query string
     };
-
-    axios.interceptors.response.use((response) => {
-      const { errors } = response?.data || {};
-      if (errors?.source === 'aes') {
-        document.body.dispatchEvent(
-          new CustomEvent('LOGIN_AS_MX', {
-            bubbles: true,
-            detail: {
-              message: errors?.[0] || 'Something went wrong',
-            },
-          }),
-        );
-      }
-      return response;
-    });
 
     axios(params).then(
       (resp) => {
