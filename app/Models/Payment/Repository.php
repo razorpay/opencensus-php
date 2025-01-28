@@ -4545,7 +4545,11 @@ GROUP BY
 
             return $results[0];
         }
-        return [];
+           $results[0]['fee'] =null;
+           $results[0]['tax'] = null;
+           $results[0]['total_amount'] = null;
+
+           return $results[0];
 
     }
 

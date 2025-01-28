@@ -131,8 +131,6 @@ final class RazorxTreatment
 
     const RENDERING_PREFERENCES_PAYMENT_LINKS = 'rendering_preferences_payment_links';
 
-    const INVOICE_PAYMENTS_EXPAND = 'invoice_payments_expand';
-
     const FAV_PG_LEDGER_CUTOFF = 'fav_pg_ledger_cutoff';
 
     // Decides if fund account and contact creation should have duplicate checks
@@ -647,9 +645,6 @@ final class RazorxTreatment
 
     // Refund source fallback is enabled on merchant or not
     const REFUND_FALLBACK_ENABLED_ON_MERCHANT = 'refund_source_fallback_enabled';
-
-    // Experiment to use new PG Invoice template
-    const MERCHANT_PG_INVOICE_V2 = 'merchant_pg_invoice_v2';
 
     //Experiment to validate Urls, emails, html tags inclusions in Linked Account name, business_name
     public const URL_VALIDATION_FOR_LINKED_ACCOUNT_NAME = 'url_validation_for_linked_account_name';
