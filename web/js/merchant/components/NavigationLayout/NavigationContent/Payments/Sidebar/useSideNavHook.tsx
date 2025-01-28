@@ -90,11 +90,13 @@ function transformDataWithRoutes(data, routes, { user, abExperiments, isConfigTa
           if (PRODUCTS_DATA[product.product_id]?.items?.length > 0) {
             product.items = getL1ProductItems(product.product_id, user);
           }
+
           acc.push({
             ...product,
-            href: PRODUCTS_DATA[product.product_id]?.getRef
-              ? PRODUCTS_DATA[product.product_id]?.getRef({ user, routes })
-              : routes[product.product_id],
+            href:
+              typeof PRODUCTS_DATA[product.product_id]?.getHref === 'function'
+                ? PRODUCTS_DATA[product.product_id]?.getHref({ user, routes })
+                : routes[product.product_id],
             routeRegex: ROUTE_REG[product.product_id],
             icon: PRODUCTS_DATA[product.product_id].bladeIcon,
           });
