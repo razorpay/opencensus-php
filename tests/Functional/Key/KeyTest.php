@@ -431,7 +431,6 @@ class KeyTest extends TestCase
     {
         Mail::fake();
 
-        $this->enableRazorXTreatmentForFeature(RazorxTreatment::WHATSAPP_NOTIFICATIONS, 'on');
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 

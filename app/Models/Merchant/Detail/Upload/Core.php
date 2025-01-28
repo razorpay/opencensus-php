@@ -3,6 +3,11 @@
 
 namespace RZP\Models\Merchant\Detail\Upload;
 
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
+use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\Detail\Entity as MDEntity;
+use RZP\Models\User\Entity;
 use Throwable;
 
 use RZP\Models\Base;
@@ -11,12 +16,10 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Pricing;
 use RZP\Models\Feature;
-use RZP\Constants\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
-use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Pricing\Service as PricingService;
@@ -24,10 +27,11 @@ use RZP\Models\Merchant\Service as MerchantService;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Core as MDetailCore;
 use RZP\Models\Merchant\Website\Core as MWebsiteCore;
-use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Upload\Processors\Factory;
 use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
-use RZP\Models\Merchant\BvsValidation;
+use RZP\Models\Admin\Org;
+use RZP\Models\DeviceDetail;
+use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
@@ -53,6 +57,8 @@ class Core extends Base\Core
 
     private  $merchantService;
 
+    protected $pgosProxyController;
+
     public function __construct()
     {
         parent::__construct();
@@ -72,6 +78,8 @@ class Core extends Base\Core
         $this->pricingService = new PricingService();
 
         $this->merchantService = new MerchantService();
+
+        $this->pgosProxyController = new MerchantOnboardingProxyController();
     }
 
     public function uploadMerchant(array $input)
@@ -137,34 +145,280 @@ class Core extends Base\Core
 
             $parser->preProcessMerchantEntry($processedEntry);
 
-            $merchant = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($processedEntry, $parser, &$entry)
-            {
+            $createUserMerchantResponse = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($processedEntry, $parser, &$entry) {
                 $user = $this->createUser($processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME],
                     $processedEntry[UConstants::IS_DS_MERCHANT], $processedEntry[Header::MIQ_CONTACT_NUMBER]);
 
                 $merchant = $this->createMerchant($user, $processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME],
                     $processedEntry[MerchantEntity::ORG_ID], $processedEntry[UConstants::IS_DS_MERCHANT]);
 
-                $feeBearer = $parser->getMerchantFeeBearerType($processedEntry);
-
-                $this->setFeeModelAndFeeBearer($merchant, $processedEntry, $feeBearer);
-
-                if(empty($merchant) === true)
-                {
+                if (empty($merchant) === true) {
                     throw new Exception\RuntimeException("Failed to create merchant", null,
                         null, ErrorCode::SERVER_ERROR);
                 }
 
-                // Add only_ds feature only to merchant, if the 'is_ds_merchant' field is set.
-                if($processedEntry[UConstants::IS_DS_MERCHANT] === '1')
+                return [$merchant, $user];
+            });
+
+            $merchant = $createUserMerchantResponse[0];
+            $user = $createUserMerchantResponse[1];
+
+            $orgId = Org\Entity::silentlyStripSign($processedEntry[MerchantEntity::ORG_ID]);
+
+            $properties = [
+                'id' => $orgId,
+               'experiment_id' => $this->app['config']->get('app.pgos_onboarding_upload_miq_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? false;
+
+            $this->trace->info(TraceCode::BATCH_SERVICE_UPLOAD_MIQ_CREATE_REQUEST, [
+                    'splitz_req' => $properties,
+                    'splitz_res' => $response,
+                    'variant' => $variant
+                ]
+            );
+
+            $onboardViaPgos = false;
+
+            if ($variant === 'true') {
+                $onboardViaPgos = true;
+            }
+
+            if ($onboardViaPgos)
+            {
+                // Create OBS Workflow For Merchant via PGOS.
+                try
                 {
-                    $this->addOnlyDSRelevantFeatures($merchant->getId());
+                    $createWorkflowRequestBody = [
+                        'account_id'   => $merchant->getId(),
+                        'account_type' => "merchant",
+                        DeviceDetail\Entity::SIGNUP_SOURCE => "",
+                        Merchant\Entity::COUNTRY_CODE => "IN",
+                        'org_id' => $orgId,
+                        'user_id' => $user['id'],
+                        DeviceDetail\Constants::WORKFLOW_TYPE => DeviceDetailConstants::MODULAR_ONBOARDING,
+                        DeviceDetail\Constants::PRODUCT => 'vas_onboarding',
+                        DeviceDetail\Constants::PLATFORM => 'pg'
+
+                    ];
+
+                    $response = $this->pgosProxyController->handleMerchantSignup($createWorkflowRequestBody, $merchant);
+                    $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                        'merchant_id' => $merchant->getId(),
+                        'create_workflow_response' => $response,
+                    ]);
+
+                    if (empty($response) or empty($response['workflow_id']) or $response['downstream_status_code']>=400)
+                    {
+                        $onboardViaPgos = false;
+                        $entry[Header::STATUS] = Status::FAILURE;
+                        $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                        $entry[Header::ERROR_DESCRIPTION] = 'PGOS error while creating onboarding workflow';
+                    }
+                } catch (\Throwable $exception)
+                {
+                    $onboardViaPgos = false;
+                    $entry[Header::STATUS] = Status::FAILURE;
+                    $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                    $entry[Header::ERROR_DESCRIPTION] = 'PGOS error while creating onboarding workflow';
+                    $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                        'merchant_id' => $merchant->getId(),
+                        'error_message' => $exception->getMessage()
+                    ]);
                 }
+                //no error in create workflow call, proceed to save details calls
+                if ($onboardViaPgos)
+                {
+                    //call saveWorkflow: onboarding_save endpoint of PGOS in sequential calls, cannot send all the details in 1 call
+                    try {
+                        $modularPayload = [
+                            'field_data' => [
+                                MDEntity::CONTACT_EMAIL             => $processedEntry[Header::MIQ_CONTACT_EMAIL],
+                                MDEntity::CONTACT_MOBILE            => $processedEntry[Header::MIQ_CONTACT_NUMBER],
+                                MDEntity::TRANSACTION_REPORT_EMAIL  => $processedEntry[Header::MIQ_TXN_REPORT_EMAIL]
+                            ],
+                            DeviceDetail\Constants::PRODUCT     => 'vas_onboarding',
+                            DeviceDetail\Constants::PLATFORM    => 'pg',
+                            Merchant\Entity::COUNTRY_CODE       => 'IN',
+                            DeviceDetail\Constants::ORG_ID      => $orgId,
+                            DeviceDetail\Constants::VERSION_ID  => DeviceDetail\Constants::DEFAULT_VERSION,
+                        ];
 
-                $entry[Header::MIQ_OUT_MERCHANT_ID] = $merchant->getId();
+                        $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
 
-                $entry[Header::MIQ_OUT_FEE_BEARER] = $merchant->getFeeBearer();
+                        if (empty($response) === false and $response['downstream_status_code']>=400)
+                        {
+                            $onboardViaPgos = false;
+                            $entry[Header::STATUS] = Status::FAILURE;
+                            $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
 
+                            $entry[Header::ERROR_DESCRIPTION] = 'PGOS error while saving workflow';
+                        }
+
+                        $modularPayload = [
+                            'field_data' => [
+                                MDEntity::CONTACT_NAME  => $processedEntry[Header::MIQ_CONTACT_NAME],
+                                MDEntity::BUSINESS_NAME => $processedEntry[Header::MIQ_BUSINESS_NAME],
+                                MDEntity::BUSINESS_DBA  => $processedEntry[Header::MIQ_DBA_NAME]
+                            ],
+                            DeviceDetail\Constants::PRODUCT     => 'vas_onboarding',
+                            DeviceDetail\Constants::PLATFORM    => 'pg',
+                            Merchant\Entity::COUNTRY_CODE       => 'IN',
+                            DeviceDetail\Constants::ORG_ID      => $orgId,
+                            DeviceDetail\Constants::VERSION_ID  => DeviceDetail\Constants::DEFAULT_VERSION,
+                        ];
+
+                        $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
+
+                        if (empty($response) === false and $response['downstream_status_code']>=400)
+                        {
+                            $onboardViaPgos = false;
+                            $entry[Header::STATUS] = Status::FAILURE;
+                            $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                            $entry[Header::ERROR_DESCRIPTION] = 'PGOS error while saving workflow';
+                        }
+
+                        $modularPayload = [
+                            'field_data' => [
+                                MDEntity::BUSINESS_DESCRIPTION                => $processedEntry[Header::MIQ_BUSINESS_DESCRIPTION],
+                                UConstants::BUSINESS_REGISTRATION_ADDRESS     => $processedEntry[Header::MIQ_ADDRESS],
+                                UConstants::BUSINESS_REGISTRATION_CITY        => $processedEntry[Header::MIQ_CITY],
+                                UConstants::BUSINESS_REGISTRATION_STATE       => $processedEntry[Header::MIQ_STATE],
+                                UConstants::BUSINESS_REGISTRATION_POSTCODE    => $processedEntry[Header::MIQ_PIN_CODE],
+                                UConstants::BUSINESS_OPERATIONAL_ADDRESS      => $processedEntry[Header::MIQ_ADDRESS],
+                                UConstants::BUSINESS_OPERATIONAL_CITY         => $processedEntry[Header::MIQ_CITY],
+                                UConstants::BUSINESS_OPERATIONAL_STATE        => $processedEntry[Header::MIQ_STATE],
+                                UConstants::BUSINESS_OPERATIONAL_POSTCODE     => $processedEntry[Header::MIQ_PIN_CODE],
+                                MDEntity::BUSINESS_CATEGORY                   => $processedEntry[Header::MIQ_BUSINESS_CATEGORY],
+                                MDEntity::BUSINESS_MODEL                      => $processedEntry[Header::MIQ_BUSINESS_DESCRIPTION],
+                                MDEntity::BUSINESS_SUBCATEGORY                => $processedEntry[Header::MIQ_SUB_CATEGORY],
+                                MDEntity::BUSINESS_TYPE                       => sprintf("%d", $processedEntry[Header::MIQ_BUSINESS_TYPE]),
+                            ],
+                            DeviceDetail\Constants::PRODUCT     => 'vas_onboarding',
+                            DeviceDetail\Constants::PLATFORM    => 'pg',
+                            Merchant\Entity::COUNTRY_CODE       => 'IN',
+                            DeviceDetail\Constants::ORG_ID      => $orgId,
+                            DeviceDetail\Constants::VERSION_ID  => DeviceDetail\Constants::DEFAULT_VERSION,
+                        ];
+
+                        $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
+
+                        if (empty($response) === false and $response['downstream_status_code']>=400)
+                        {
+                            $onboardViaPgos = false;
+                            $entry[Header::STATUS] = Status::FAILURE;
+                            $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                            $entry[Header::ERROR_DESCRIPTION] = 'PGOS error while saving workflow';
+                        }
+
+                        $modularPayload = [
+                            'field_data' => [
+                                MDEntity::PROMOTER_PAN                  => $processedEntry[Header::MIQ_AUTHORISED_SIGNATORY_PAN],
+                                MDEntity::PROMOTER_PAN_NAME             => $processedEntry[Header::MIQ_PAN_OWNER_NAME],
+                                UConstants::GSTIN_NUMBER                => $processedEntry[Header::MIQ_GSTIN],
+                                MDEntity::COMPANY_PAN                   => $processedEntry[Header::MIQ_BUSINESS_PAN],
+                                MDEntity::COMPANY_PAN_NAME              => $processedEntry[Header::MIQ_BUSINESS_NAME],
+                                MDEntity::COMPANY_CIN                   => $processedEntry[Header::MIQ_CIN] !== '' ? $entry[Header::MIQ_CIN] : null
+                            ],
+                            DeviceDetail\Constants::PRODUCT     => 'vas_onboarding',
+                            DeviceDetail\Constants::PLATFORM    => 'pg',
+                            Merchant\Entity::COUNTRY_CODE       => 'IN',
+                            DeviceDetail\Constants::ORG_ID      => $orgId,
+                            DeviceDetail\Constants::VERSION_ID  => DeviceDetail\Constants::DEFAULT_VERSION,
+                        ];
+
+                        $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
+
+                        if (empty($response) === false and $response['downstream_status_code']>=400)
+                        {
+                            $onboardViaPgos = false;
+                            $entry[Header::STATUS] = Status::FAILURE;
+                            $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                            $entry[Header::ERROR_DESCRIPTION] = 'PGOS error while saving workflow';
+                        }
+
+                        $modularPayload = [
+                            'field_data' => [
+                                UConstants::BANK_ACCOUNT_HOLDER_NAME   => $processedEntry[Header::MIQ_BENEFICIARY_NAME],
+                                UConstants::BANK_IFSC_CODE             => $processedEntry[Header::MIQ_BRANCH_IFSC_CODE],
+                                MDEntity::BANK_ACCOUNT_NUMBER          => $processedEntry[Header::MIQ_BANK_ACC_NUMBER],
+                            ],
+                            DeviceDetail\Constants::PRODUCT     => 'vas_onboarding',
+                            DeviceDetail\Constants::PLATFORM    => 'pg',
+                            Merchant\Entity::COUNTRY_CODE       => 'IN',
+                            DeviceDetail\Constants::ORG_ID      => $orgId,
+                            DeviceDetail\Constants::VERSION_ID  => DeviceDetail\Constants::DEFAULT_VERSION,
+                        ];
+
+                        $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
+
+                        if (empty($response) === false and $response['downstream_status_code']>=400)
+                        {
+                            $onboardViaPgos = false;
+                            $entry[Header::STATUS] = Status::FAILURE;
+                            $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                            $entry[Header::ERROR_DESCRIPTION] = 'PGOS error while saving workflow';
+                        }
+
+                        $modularPayload = [
+                            'field_data' => [
+                                MDEntity::DATE_OF_ESTABLISHMENT         => $processedEntry[Header::MIQ_ESTD_DATE],
+                                MDEntity::BUSINESS_INTERNATIONAL        => $processedEntry[Header::MIQ_INTERNATIONAL] === 'yes' ? 1  : 0,
+                                MDEntity::BUSINESS_WEBSITE              => $processedEntry[Header::MIQ_WEBSITE] !== '' ? $entry[Header::MIQ_WEBSITE]  : null,
+                                MDEntity::WEBSITE_REFUND                => $processedEntry[Header::MIQ_WEBSITE_REFUNDS],
+                                MDEntity::WEBSITE_PRICING               => $processedEntry[Header::MIQ_WEBSITE_PRODUCT_PRICING],
+                                MDEntity::WEBSITE_TERMS                 => $processedEntry[Header::MIQ_WEBSITE_TERMS_CONDITIONS],
+                                MDEntity::WEBSITE_PRIVACY               => $processedEntry[Header::MIQ_WEBSITE_PRIVACY_POLICY]
+                            ],
+                            DeviceDetail\Constants::PRODUCT     => 'vas_onboarding',
+                            DeviceDetail\Constants::PLATFORM    => 'pg',
+                            Merchant\Entity::COUNTRY_CODE       => 'IN',
+                            DeviceDetail\Constants::ORG_ID      => $orgId,
+                            DeviceDetail\Constants::VERSION_ID  => DeviceDetail\Constants::DEFAULT_VERSION,
+                        ];
+
+                        $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
+
+                        $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                            'merchant_id' => $merchant->getId(),
+                            'onboarding_save_response' => $response,
+                        ]);
+
+                        if (empty($response) === false and $response['downstream_status_code']>=400)
+                        {
+                            $onboardViaPgos = false;
+                            $entry[Header::STATUS] = Status::FAILURE;
+                            $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                            $entry[Header::ERROR_DESCRIPTION] = 'PGOS error while saving workflow';
+                        }
+                    } catch (\Throwable $exception)
+                    {
+                        $onboardViaPgos = false;
+                        $entry[Header::STATUS] = Status::FAILURE;
+                        $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                        $entry[Header::ERROR_DESCRIPTION] = 'PGOS error while saving Merchant details';
+                        $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                            'merchant_id' => $merchant->getId(),
+                            'error_message' => $exception->getMessage()
+                        ]);
+                    }
+                }
+            }
+
+            if ($onboardViaPgos === false) {
+                //continue onboarding via API
+                //in case experiment response is false or pgos onboarding flow above fails
                 $merchantDetailsInput = $parser->getMerchantDetailInput($processedEntry);
 
                 $this->merchantDetailCore->saveMerchantDetails($merchantDetailsInput, $merchant);
@@ -172,21 +426,6 @@ class Core extends Base\Core
                 $websiteDetails = $parser->getWebsiteDetailInput($processedEntry);
 
                 $this->businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $websiteDetails);
-
-                $org = $merchant->org;
-
-                $orgDefinedMerchantFields = $parser->getOrgDefinedMerchantFields($processedEntry, $org);
-
-                if (!empty($orgDefinedMerchantFields))
-                {
-                    $additionalFieldsValidationResponse = (new Validator)->validateOrgDefinedMerchantFieldsInput($entry, $org->getId());
-                }
-
-                if (!empty($additionalFieldsValidationResponse) and empty($additionalFieldsValidationResponse[Header::ERROR_CODE]))
-                {
-                    //if no error in field validations then proceed to save the details
-                    $this->businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $orgDefinedMerchantFields, true);
-                }
 
                 // The activation form milestone is set to L2 as here we are submitting the KYC form.
                 $submitData = [
@@ -213,23 +452,51 @@ class Core extends Base\Core
                     $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
 
                     $entry[Header::ERROR_DESCRIPTION] = 'Failed to submit activation details';
-                } else {
-                    //storing errors from KYC verification calls
-                    $bvsResponse = $this->merchantDetailCore->getBVSResponseforKYCValidations($merchant->getId());
-                    $entry[Header::ERROR_CODE] = $bvsResponse[0];
-                    $entry[Header::ERROR_DESCRIPTION] = $bvsResponse[1];
-
-                    //storing error for orgDefinedMerchantFields
-                    if (!empty($additionalFieldsValidationResponse[Header::ERROR_CODE]))
-                    {
-                        $entry[Header::ERROR_CODE] = $entry[Header::ERROR_CODE] . ', ' . $additionalFieldsValidationResponse[Header::ERROR_CODE];
-                        $entry[Header::ERROR_DESCRIPTION] = $entry[Header::ERROR_DESCRIPTION] . ', ' . $additionalFieldsValidationResponse[Header::ERROR_DESCRIPTION];
-                    }
                 }
+            }
 
-                return $merchant;
-            });
+            $feeBearer = $parser->getMerchantFeeBearerType($processedEntry);
 
+            $this->setFeeModelAndFeeBearer($merchant, $processedEntry, $feeBearer);
+
+            $entry[Header::MIQ_OUT_MERCHANT_ID] = $merchant->getId();
+
+            $entry[Header::MIQ_OUT_FEE_BEARER] = $merchant->getFeeBearer();
+
+            $org = $merchant->org;
+
+            $orgDefinedMerchantFields = $parser->getOrgDefinedMerchantFields($processedEntry, $org);
+
+            if (!empty($orgDefinedMerchantFields))
+            {
+                $additionalFieldsValidationResponse = (new Validator)->validateOrgDefinedMerchantFieldsInput($entry, $org->getId());
+            }
+
+            if (!empty($additionalFieldsValidationResponse) and empty($additionalFieldsValidationResponse[Header::ERROR_CODE]))
+            {
+                //if no error in field validations then proceed to save the details
+                $this->businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $orgDefinedMerchantFields, true);
+            }
+
+            if (empty($entry[Header::STATUS])) {
+                //storing errors from KYC verification calls
+                $bvsResponse = $this->merchantDetailCore->getBVSResponseforKYCValidations($merchant->getId());
+                $entry[Header::ERROR_CODE] = $bvsResponse[0];
+                $entry[Header::ERROR_DESCRIPTION] = $bvsResponse[1];
+
+                //storing error for orgDefinedMerchantFields
+                if (!empty($additionalFieldsValidationResponse[Header::ERROR_CODE]))
+                {
+                    $entry[Header::ERROR_CODE] = $entry[Header::ERROR_CODE] . ', ' . $additionalFieldsValidationResponse[Header::ERROR_CODE];
+                    $entry[Header::ERROR_DESCRIPTION] = $entry[Header::ERROR_DESCRIPTION] . ', ' . $additionalFieldsValidationResponse[Header::ERROR_DESCRIPTION];
+                }
+            }
+
+            $this->trace->info(TraceCode::BATCH_SERVICE_UPLOAD_MIQ_CREATE_RESPONSE, [
+                    'merchant_id' => $merchant->getId(),
+                    'onboardingViaPGOS' => $onboardViaPgos
+                ]
+            );
             // Creating pricing plan only, when merchant is created and KYC form submitted successfully.
             if(!empty($merchant) && empty($entry[Header::STATUS]))
             {

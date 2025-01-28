@@ -12,6 +12,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Trace\TraceCode;
 use RZP\Models\Pricing;
 use RZP\Constants\Procurer;
@@ -1133,6 +1134,18 @@ class Core extends Base\Core
         }
 
         $merchantId = $merchant->getId();
+        // split experiment
+        $requestPayload = [
+            "id" =>  $merchant->getId(),
+            "experiment_name" => Merchant\RazorxTreatment::Axis_VA_MIGRATION,
+            'request_data'  => json_encode(['id' =>  $merchant->getId()])
+        ];
+
+        $isMerchantEnabledForIDFCVA = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,'enable');
+
+        if($isMerchantEnabledForIDFCVA === true){
+            return Provider::IDFC_VA_PREFIX;
+        }
 
         $config = (new Admin\Service)->getConfigKey(
             ['key' => Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX]);

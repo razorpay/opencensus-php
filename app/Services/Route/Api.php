@@ -43,24 +43,47 @@ class Api extends Base
         return $this->sendRequest(Constant::DIRECT_TRANSFER_ENDPOINT, Requests::POST, $input);
     }
 
+    public function createPaymentTransfer(string $paymentId, array $input) : array
+    {
+        if ((new Config())->shouldCreateNewPassportToken())
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $endpoint = sprintf(Constant::PAYMENT_TRANSFER_ENDPOINT, $paymentId);
+
+        return $this->sendRequest($endpoint, Requests::POST, $input);
+    }
+
     /**
      * To fetch a transfer by ID from Route microservice
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function fetchTransferById(string $transferId) : Transfer\Entity
+    public function fetchTransferById(string $transferId, string $merchantId = null) : Transfer\Entity
     {
-        $response = $this->fetchTransferByIdInternalRequest($transferId);
+        $response = $this->fetchTransferByIdInternalRequest($transferId, $merchantId);
 
         $transfer = $this->forceFillTransferFromResponse($response);
 
         return $this->loadRelatedEntity($transfer);
     }
 
-    protected function fetchTransferByIdInternalRequest(string $transferId) : array
+    protected function fetchTransferByIdInternalRequest(string $transferId, string $merchantId = null) : array
     {
         $endpoint = sprintf(Constant::TRANSFER_FETCH_BY_ID_ENDPOINT, $transferId);
+
+        if (empty($merchantId) === false)
+        {
+            $queryParams = http_build_query(['merchant_id' => $merchantId]);
+
+            $endpoint = $endpoint . '?' . $queryParams;
+        }
 
         $response = $this->sendRequest($endpoint, Requests::GET);
 

@@ -18,6 +18,8 @@ class Validator extends Base\Validator
     const VA_CURRENCY = 'va_currency';
     const ACCEPT_B2B_TNC = 'accept_b2b_tnc';
 
+    const ENABLE_ALL_CURRENCIES = 'enable_all_currencies';
+
     protected static $createRules = [
         Entity::PAYER_NAME              => 'nullable|string|max:100',
         Entity::PAYER_ACCOUNT           => 'nullable|string|max:40',
@@ -67,6 +69,26 @@ class Validator extends Base\Validator
         'Corp_code'                         => 'nullable|string',
     ];
 
+    public static $idfcRulesForValidationApi = [
+        'txnAmt'                            => 'required|string',
+        'VANum'                             => 'required|string',
+        'bankRef'                           => 'required|string',
+        'remitterAc'                        => 'required|string',
+        'remitterBankifsc'                  => 'nullable|string', // typo in bank doc, not available in IMPS mode for now
+        'remiterName'                       => 'nullable|string', // typo in bank doc
+    ];
+
+    public static $idfcRulesForNotificationApi = [
+        'creditGenerationTime'              => 'required|string',
+        'batchAmt'                          => 'required|string',
+        'productCode'                       => 'required|string',
+        'vaNumber'                          => 'required|string',
+        'utrNo'                             => 'required|string',
+        'remitterAccountNumber'             => 'required|string',
+        'ifscCode'                          => 'nullable|string', // remitter Ifsc code
+        'remitterName'                      => 'nullable|string',
+    ];
+
     public static $iciciRules = [
         'Virtual_Account_Number_Verification_IN'                    => 'required|array',
         'Virtual_Account_Number_Verification_IN.0.client_code'      => 'required|string',
@@ -105,6 +127,11 @@ class Validator extends Base\Validator
     public static $createAccountForCurrencyCloudRules = [
         self::VA_CURRENCY       => 'sometimes|string|max:5',
         self::ACCEPT_B2B_TNC    => 'sometimes|boolean',
+        self::ENABLE_ALL_CURRENCIES => 'sometimes|boolean'
+    ];
+
+    public static $toggleVirtualAccountForCurrencyCloudRules = [
+        'action'       => 'required|string|in:activate,deactivate',
     ];
 
     protected function validateMode($attribute, $mode)
@@ -133,7 +160,7 @@ class Validator extends Base\Validator
     {
         // We currently aren't getting the actual payer_ifsc for IMPS payments.
         if ((strlen($input[Entity::PAYER_IFSC]) !== self::IFSC_LENGTH) and
-            (in_array($input[Entity::MODE], self::MODES_WITHOUT_IFSC, true) === false))
+            (in_array(strtolower($input[Entity::MODE]), self::MODES_WITHOUT_IFSC, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'IFSC is of invalid length',

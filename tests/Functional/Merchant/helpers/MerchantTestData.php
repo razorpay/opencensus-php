@@ -15416,4 +15416,58 @@ return [
             'status_code' => 200
         ]
     ],
+
+    'testGetBalancesV2' => [
+        'request' => [
+            'url' => '/v2/balances',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'count' => 2,
+            ],
+        ],
+    ],
+
+    'testGetBalancesV2InputValidationError' => [
+        'request' => [
+            'url' => '/v2/balances?type=primary',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'type is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'testEditMerchantEmailWhenOldEmailIsNull' => [
+        'request' => [
+            'content' => [
+                'email' => 'newEmail@test.com',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'email' => 'newEmail@test.com'
+            ]
+        ]
+    ],
+
 ];

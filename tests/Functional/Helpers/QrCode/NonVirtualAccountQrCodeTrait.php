@@ -18,6 +18,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity;
 use RZP\Models\Order\Entity as OrderEntity;
 
+
 trait NonVirtualAccountQrCodeTrait
 {
     private function createQrCode(array $input = [], $mode = 'test', $merchantId = '10000000000000', array $headers = [])
@@ -55,6 +56,20 @@ trait NonVirtualAccountQrCodeTrait
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/'. $id . '/refund',
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    public function createQrForSingleStack(array $input = [], array $headers = [])
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/terminal/qr_codes/device/create',
+            'content' => $input,
+            'headers' => $headers,
         ];
 
         return $this->makeRequestAndGetContent($request);
@@ -643,6 +658,50 @@ trait NonVirtualAccountQrCodeTrait
                               }));
     }
 
+    /**
+     * @throws \Exception
+     */
+    protected function setMockSplitzTreatment(array $Experiments = [])
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+       $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+           ->andReturnUsing(function ($input) use ($Experiments) {
+                if (array_key_exists($input['experiment_id'], $Experiments) === true)
+                {
+                    $result = ($Experiments[$input['experiment_id']] ?? null) === 'on' ? 'on' : 'off';
+                    return [
+                        "response" => [
+                            "variant" => [
+                                "variables" => [
+                                    [
+                                        "key" => "result",
+                                        "value" => $result
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ];
+                }
+
+                return [
+                     "response" => [
+                          "variant" => [
+                            "variables" => [
+                                 [
+                                      "key" => "result",
+                                      "value" => "off"
+                                 ]
+                            ]
+                          ]
+                     ]
+                ];
+           });
+    }
+
     protected function mockSplitzTreatment($output)
     {
         $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
@@ -652,6 +711,24 @@ trait NonVirtualAccountQrCodeTrait
         $this->splitzMock
             ->shouldReceive('evaluateRequest')
             ->andReturn($output);
+    }
+
+    protected function mockHolygrailIciciFlowSplitzExerpiementEnabled()
+    {
+        $output = [
+            'response' => [
+                'variant' => [
+                    'variables' => [
+                        [
+                            'key' => 'holygrail',
+                            'value' => 'on'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
     }
 
     protected function mockSplitzTreatmentForStatusCheck($qrStatusCheckOutput = 'on', $dedicatedTerminalOutput = 'on')
@@ -673,6 +750,10 @@ trait NonVirtualAccountQrCodeTrait
                                     [
                                         "key" => "result",
                                         "value" => $qrStatusCheckOutput,
+                                    ],
+                                    [
+                                        "key" => "holygrail",
+                                        "value" => "on",
                                     ]
                                 ]
                             ]
@@ -689,6 +770,10 @@ trait NonVirtualAccountQrCodeTrait
                                     [
                                         "key" => "result",
                                         "value" => $dedicatedTerminalOutput,
+                                    ],
+                                    [
+                                        "key" => "holygrail",
+                                        "value" => "on",
                                     ]
                                 ]
                             ]
@@ -704,7 +789,11 @@ trait NonVirtualAccountQrCodeTrait
                             "variables" => [
                                 [
                                     "key" => "result",
-                                    "value" => "off"
+                                    "value" => "off",
+                                ],
+                                [
+                                    "key" => "holygrail",
+                                    "value" => "on",
                                 ]
                             ]
                         ]
@@ -789,9 +878,26 @@ trait NonVirtualAccountQrCodeTrait
         return $output;
     }
 
+    protected function getHolygrailIciciFlowSplitzResponseForOnVaiant()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "holygrail",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        return $output;
+    }
+
     protected function getDedicatedTerminalSplitzResponseForVariantON()
     {
-        $this->mockSplitzTreatment([
+         $this->mockSplitzTreatment([
             "response" => [
                 "variant" => [
                     "variables" => [
@@ -849,8 +955,29 @@ trait NonVirtualAccountQrCodeTrait
                             'terminalId'        => '5411',
                         ]
                     ]
-                ]
-            ]
+                ],
+                'upi' => [
+                    'vpa' => 'razorpay@icici',
+                    'status_code' => '0',
+                    'npci_reference_id' => $rrn,
+                    'merchant_reference' => str_after($qrCodeId, 'qr_') . 'qrv2',
+                    'gateway_payment_id' => '235291019373',
+                    'gateway_amount' => 26553,
+                ],
+                'payment' => [
+                    'currency' => 'INR',
+                    'amount_authorized' => '4000',
+                    'payer_account_type' => 'credit_card',
+                ],
+                'terminal' => [
+                    'gateway_merchant_id' => '403343',
+                    'gateway' => 'upi_icici'
+                ],
+                'version' => 'v2'
+            ],
+            'error' => null,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'success' => true,
         ];
         if (empty($rrn) === false)
         {
@@ -1227,6 +1354,22 @@ trait NonVirtualAccountQrCodeTrait
         $this->splitzMock
             ->shouldReceive('bulkCallsToSplitz')
             ->andReturn($output);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn([
+                            "response" => [
+                                "variant" => [
+                                    "variables" => [
+                                        [
+                                            "key"   => "result",
+                                            "value" => 'off',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ]
+            );
     }
 
     public function mockRemindersRequestForStatusCheck(&$count = 0, $fail = false, &$disableCount = 0)
@@ -1347,5 +1490,4 @@ trait NonVirtualAccountQrCodeTrait
 
         return $this->makeRequestAndGetContent($request);
     }
-
 }

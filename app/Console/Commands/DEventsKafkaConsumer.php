@@ -42,8 +42,6 @@ class DEventsKafkaConsumer extends Command
 
     protected $mode;
 
-    protected bool $refundTxnDualWrite = false;
-
     /**
      * message processor for kafka topics
      *
@@ -87,9 +85,6 @@ class DEventsKafkaConsumer extends Command
         $this->info("topics : " . stringify($topics));
 
         $topics = $this->getTransformedTopics($topics);
-
-        //Temp change. To be removed once API txn dual write is stopped.
-        $topics = $this->getTransformedRefundTxnDualWriteTopics($topics);
 
         $this->info("transformed topics : " . stringify($topics));
 
@@ -169,62 +164,6 @@ class DEventsKafkaConsumer extends Command
             $conf->set('fetch.message.max.bytes', env('DEDUPE_KAFKA_FETCH_MESSAGE_MAX_BYTES'));
 
         }
-        elseif (count($topics) == 1 && $topics[0] == env('PG_LEDGER_DUAL_WRITE_CLS_TOPIC'))
-        {
-            $consumerGroup = env('PG_LEDGER_DUAL_WRITE_CLS_CONSUMER_GROUP');
-
-            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
-
-            $conf->set('group.id', $consumerGroup);
-
-            $conf->set('session.timeout.ms', 240000);
-
-            $conf->set('heartbeat.interval.ms', 120000);
-
-            $conf->set('auto.offset.reset', 'largest');
-        }
-        elseif (count($topics) == 1 && $topics[0] == env('PG_LEDGER_DUAL_WRITE_API_TOPIC'))
-        {
-            $consumerGroup = env('PG_LEDGER_DUAL_WRITE_API_CONSUMER_GROUP');
-
-            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
-
-            $conf->set('group.id', $consumerGroup);
-
-            $conf->set('session.timeout.ms', 240000);
-
-            $conf->set('heartbeat.interval.ms', 120000);
-
-            $conf->set('auto.offset.reset', 'largest');
-        }
-        elseif (count($topics) == 1 && $topics[0] == env('PG_LEDGER_DUAL_WRITE_RETRY_TOPIC'))
-        {
-            $consumerGroup = env('PG_LEDGER_DUAL_WRITE_RETRY_CONSUMER_GROUP');
-
-            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
-
-            $conf->set('group.id', $consumerGroup);
-
-            $conf->set('session.timeout.ms', 240000);
-
-            $conf->set('heartbeat.interval.ms', 120000);
-
-            $conf->set('auto.offset.reset', 'largest');
-        }
-        elseif (count($topics) == 1 && $topics[0] == env('PG_LEDGER_DUAL_WRITE_REFUND_TOPIC'))
-        {
-            $consumerGroup = env('PG_LEDGER_DUAL_WRITE_REFUND_CONSUMER_GROUP');
-
-            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
-
-            $conf->set('group.id', $consumerGroup);
-
-            $conf->set('session.timeout.ms', 240000);
-
-            $conf->set('heartbeat.interval.ms', 120000);
-
-            $conf->set('auto.offset.reset', 'largest');
-        }
         elseif (count($topics) == 1 && (str_contains($topics[0], KafkaMessageProcessor::PGOS_PROD_CDC_EVENTS)
                                         or str_contains($topics[0], KafkaMessageProcessor::PGOS_STAGE_CDC_EVENTS)))
         {
@@ -298,6 +237,16 @@ class DEventsKafkaConsumer extends Command
 
             $conf->set('auto.offset.reset', 'largest');
         }
+        else if (count($topics) == 1 && str_contains($topics[0], 'partnerships') && str_contains($topics[0], 'api_outbox'))
+        {
+            $consumerGroup = env('PARTNERSHIP_API_OUTBOX_GROUP');
+
+            $conf->set('group.id', $consumerGroup);
+
+            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
+
+            $conf->set('auto.offset.reset', 'largest');
+        }
         else
         {
             if (count($topics) == 1 && $topics[0] == env('RAW_CONTACTS_KAFKA_TOPIC_NAME'))
@@ -333,28 +282,12 @@ class DEventsKafkaConsumer extends Command
             $consumer->unsubscribe();
 
             $topics = $this->getTransformedTopics($topics);
-            $topics = $this->getTransformedRefundTxnDualWriteTopics($topics);
 
             $consumer->subscribe($topics);
 
             $this->info("Message processing failed, retrying" . " Offset -" .
                         $message->offset . " Partition - " . $message->partition);
         }
-    }
-
-    public function getTransformedRefundTxnDualWriteTopics($topics): array
-    {
-        $transformedTopics = [];
-        foreach ($topics as $topic)
-        {
-            if (str_contains($topic, 'refund_events_api_ledger'))
-            {
-                $this->refundTxnDualWrite = true;
-                $topic = str_replace('_api_ledger', '', $topic);
-            }
-            $transformedTopics[] = $topic;
-        }
-        return $transformedTopics;
     }
 
     public function getTransformedTopics($topics): array
@@ -450,7 +383,7 @@ class DEventsKafkaConsumer extends Command
             $topic = KafkaMessageProcessor::PARTNERSHIPS_OUTBOX_EVENTS;
         }
 
-        $isProcessed = $this->messageProcessor->process($topic, $payload, $this->mode, $this->refundTxnDualWrite);
+        $isProcessed = $this->messageProcessor->process($topic, $payload, $this->mode);
 
         $infoMessage = ($isProcessed === true) ? 'successful' : 'failed';
 

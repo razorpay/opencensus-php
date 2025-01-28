@@ -635,7 +635,7 @@ return [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
-                'amount' => 2000000500,
+                'amount' => 6000000500,
                 'settle_full_balance' => 0,
                 'description' => 'Demo Narration - optional',
             ],
@@ -1040,10 +1040,10 @@ return [
             ],
         'response' => [
             'content' => [
-                'settlable_amount'        => 5000,
-                'attempts_left'           => 2,
-                'settlements_count_limit' => 2,
-                'max_amount_limit'        => 7500
+                'settlable_amount'        => 0,
+                'attempts_left'           => 100,
+                'settlements_count_limit' => 100,
+                'max_amount_limit'        => 10000000
             ]
         ]
     ],
@@ -1061,9 +1061,9 @@ return [
         'response' => [
             'content' => [
                 'settlable_amount'        => 5000,
-                'attempts_left'           => 0,
-                'settlements_count_limit' => 2,
-                'max_amount_limit'        => 7500
+                'attempts_left'           => 98,
+                'settlements_count_limit' => 100,
+                'max_amount_limit'        => 10000000
             ]
         ]
     ],
@@ -1082,8 +1082,8 @@ return [
             'content' => [
                 'settlable_amount'         => 0,
                 'attempts_left'            => 0,
-                'settlements_count_limit'  => 3,
-                'max_amount_limit'         => 7500
+                'settlements_count_limit'  => 100,
+                'max_amount_limit'         => 10000000
             ]
         ]
     ],
@@ -2077,16 +2077,16 @@ return [
             'content' => [
                 'merchant_id'                    => '10000000000000',
                 'mode'                           => 'test',
-                'amount'                         => 1000000,
+                'amount'                         => 10000,
                 'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
             ]
         ],
         'response' => [
             'content' => [
                 'entity'              => 'settlement.ondemand',
-                'amount_requested'    => 1000000,
+                'amount_requested'    => 10000,
                 'amount_settled'      => 0,
-                'amount_pending'      => 1000000,
+                'amount_pending'      => 10000,
                 'amount_reversed'     => 0,
                 'fees'                => 0,
                 'tax'                 => 0,
@@ -2500,6 +2500,35 @@ return [
                     ],
                 ],
             ],
+        ]
+    ],
+
+    'testClsInsufficientBalanceScenario' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/internal',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'content' => [
+                'settle_full_balance' => true,
+                'description'         => 'pg_ledger_reverse_shadow',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'               => 'settlement.ondemand',
+                'amount_requested'     => 20030000,
+                'fees'                 => 472708,
+                'tax'                  => 72108,
+                'amount_pending'       => 19557292,
+                'amount_settled'       => 0,
+                'amount_reversed'      => 0,
+                'settle_full_balance'  => true,
+                'currency'             => 'INR',
+                'status'               => 'created',
+                'description'          => 'pg_ledger_reverse_shadow',
+            ]
         ]
     ],
 ];

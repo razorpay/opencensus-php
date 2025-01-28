@@ -1271,7 +1271,7 @@ class Validator extends Base\Validator
 
         $merchantOnboardingProxyController = new MerchantOnboardingProxyController();
 
-        if ($merchantOnboardingProxyController->isIndiaPgModularMerchant($this->entity->merchant) === true)
+        if ($merchantOnboardingProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($this->entity->merchant) === true)
         {
             $validActivationStatuses =  array_keys((new Core())->getActivationStatusMappingForModularMerchants());
         }
@@ -1335,7 +1335,7 @@ class Validator extends Base\Validator
 
         $merchantOnboardingProxyController = new MerchantOnboardingProxyController();
 
-        if ($merchantOnboardingProxyController->isIndiaPgModularMerchant($this->entity->merchant) === true)
+        if ($merchantOnboardingProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($this->entity->merchant) === true)
         {
             $allowedNextActivationStatusMap = (new Core())->getActivationStatusMappingForModularMerchants();
             $allowedNextActivationStatus = $allowedNextActivationStatusMap[$currentStatus];

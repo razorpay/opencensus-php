@@ -413,8 +413,6 @@ return array(
 
     'ledger_makeshift_dual_write_enabled' => env('LEDGER_MAKESHIFT_DUAL_WRITE_ENABLED'),
 
-    'api_ledger_dual_write_rearch' => env('API_LEDGER_DUAL_WRITE_REARCH'),
-
     'partner_regenerate_referrals_links_exp_id' => env('PARTNER_REGENERATE_REFERRAL_LINKS_EXP_ID'),
 
     'partner_config_auditing_experiment_id' => env('PARTNER_CONFIG_AUDITING_EXPERIMENT_ID'),
@@ -469,6 +467,8 @@ return array(
 
     'linked_account_modular_onboarding_activate_experiment_id' => env('LINKED_ACCOUNT_MODULAR_ONBOARDING_ACTIVATE_EXPERIMENT_ID', false),
 
+    'pgos_onboarding_upload_miq_experiment_id' => env('PGOS_ONBOARDING_UPLOAD_MIQ_EXPERIMENT_ID'),
+
     'pgos_phantom_live_mode_experiment_id' => env('PGOS_PHANTOM_LIVE_MODE_EXPERIMENT_ID'),
 
     'others_m3_experiment_id' => env('OTHERS_M3_EXPERIMENT_ID'),
@@ -514,6 +514,8 @@ return array(
     'rejected_communications_from_api_exp_id' => env('SEND_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
 
     'needs_clarification_communications_from_api_exp_id' => env('SEND_NC_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
+
+    'enable_pos_for_api_submerchants' => env('ENABLE_POS_FOR_API_SUBMERCHANTS'),
 
     'cac_blacklist_exp_id' => env('CAC_BLACKLIST_EXP_ID'),
 
@@ -624,6 +626,8 @@ return array(
 
     'dedicated_terminal_qr_code_splitz_experiment_id' => env('DEDICATED_TERMINAL_QR_CODE_SPLITZ_EXPERIMENT_ID'),
 
+    'holygrail_icici_flow'  => env('HOLYGRAIL_ICICI_FLOW'),
+
     'enable_ezetap_notification_splitz_experiment_id' => env('ENABLE_EZETAP_NOTIFICATION_SPLITZ_EXPERIMENT_ID'),
 
     'qr_code_status_check_splitz_experiment_id' => env('QR_CODE_STATUS_CHECK_SPLITZ_EXPERIMENT_ID'),
@@ -640,15 +644,23 @@ return array(
 
     'nocodeapps_block_keywords_experiment_id' => env('NOCODEAPPS_BLOCK_KEYWORDS_EXPERIMENT_ID'),
 
+    'nocodeapps_payment_callback_experiment_id' => env('NOCODEAPPS_PAYMENT_CALLBACK_EXPERIMENT_ID'),
+
     'send_submerchant_first_transaction_segment_event' => env('SEND_SUBMERCHANT_FIRST_TRANSACTION_SEGMENT_EVENT'),
 
     'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),
 
     'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),
 
+    'upi_autopay_rearch_upi_rzpapb_v1_exp_id'   => env('UPI_AUTOPAY_REARCH_UPI_RZPAPB_V1_EXP_ID'),
+
+    'upi_autopay_rearch_upi_mindgate_v1_exp_id'   => env('UPI_AUTOPAY_REARCH_UPI_MINDGATE_V1_EXP_ID'),
+
     'cc_on_upi_pricing_splitz_experiment_id' => env('CC_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
 
     'credit_line_on_upi_pricing_splitz_experiment_id' => env('CREDIT_LINE_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
+
+    'enable_offers_bypass_ups_experiment_id' => env('ENABLE_OFFERS_BYPASS_UPS_EXPERIMENT_ID'),
 
     'allow_offers_on_rearch_ups_splitz_experiment_id' => env('ALLOW_OFFERS_ON_REARCH_UPS_SPLITZ_EXPERIMENT_ID'),
 
@@ -677,8 +689,6 @@ return array(
     'ppi_wallet_on_upi_pricing_splitz_experiment_id' => env('PPI_WALLET_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
 
     'dcc_on_auto_subscription_payments_experiment_id' => env('DCC_ON_AUTO_SUBSCRIPTION_PAYMENTS_EXPERIMENT_ID'),
-
-    'partner_independent_kyc_exp_id' => env('PARTNER_INDEPENDENT_KYC_EXP_ID'),
 
     'optimise_submerchant_create_exp_id' => env('OPTIMISE_SUBMERCHANT_CREATE_EXP_ID'),
 
@@ -756,6 +766,10 @@ return array(
 
     'show_upi_autopay_method_on_dashboard' => env('SHOW_UPI_AUTOPAY_METHOD_ON_DASHBOARD'),
 
+    'upi_autopay_rearch_pre_process' => env('UPI_AUTOPAY_REARCH_PRE_PROCESS'),
+
+    'upi_autopay_payment_remark' => env('UPI_AUTOPAY_PAYMENT_REMARK'),
+
     'enable_force_auth_on_upi_autopay' => env('ENABLE_FORCE_AUTH_ON_UPI_AUTOPAY'),
 
     'upi_autopay_one_time_mandate_reattempt_interval' => env('UPI_AUTOPAY_ONE_TIME_MANDATE_REATTEMPT_INTERVAL'),
@@ -820,6 +834,8 @@ return array(
 
     'merchant_automation_activation_exp_id' => env('MERCHANT_AUTOMATION_ACTIVATION_EXP_ID'),
 
+    'ignore_signature_error_exp_id' => env('IGNORE_SIGNATURE_ERROR_EXP_ID'),
+
     'nc_automation_activation_exp_id' => env('NC_AUTOMATION_ACTIVATION_EXP_ID'),
 
     'bank_cancelled_check_exp_id' => env('BANK_CANCELLED_CHECK_EXP_ID'),
@@ -829,8 +845,6 @@ return array(
     'nocodeapp_pricing_plans_exp_id' => env('NOCODEAPP_PRICING_PLANS_EXP_ID'),
 
     'no_website_merchant_automation_activation_exp_id' => env('NO_WEBSITE_MERCHANT_AUTOMATION_ACTIVATION_EXP_ID'),
-
-    'pgos_migration_dual_writing_exp_id' => env('PGOS_MIGRATION_DUAL_WRITING_EXP_ID'),
 
     'merchant_business_category_v3_revamp_exp_id' => env('MERCHANT_BUSINESS_CATEGORY_V3_REVAMP_EXP_ID'),
 
@@ -853,6 +867,8 @@ return array(
     'enable_compliance_checks_on_auto_kyc_rules' => env('ENABLE_COMPLIANCE_CHECKS_ON_AUTO_KYC_RULES'),
 
     'vpa_validation' => env('VPA_VALIDATION'),
+
+    'manual_rekyc' => env('MANUAL_REKYC_EXP_ID'),
 
     'remove_ngo_business_type' => env('REMOVE_NGO_BUSINESS_TYPE'),
 
@@ -932,6 +948,8 @@ return array(
     'offers_engine_reverse_shadow_exp_id' => env('OFFERS_ENGINE_REVERSE_SHADOW_EXP'),
 
     'offers_engine_create_read_migration_exp_id' => env('OFFERS_ENGINE_CREATE_READ_MIGRATION_EXP'),
+
+    'offers_engine_merchant_dashboard_read_migration_exp_id' => env('OFFERS_ENGINE_MERCHANT_DASHBOARD_READ_MIGRATION_EXP'),
 
     'offers_engine_find_by_public_id_migration_exp_id' => env('OFFERS_ENGINE_FIND_BY_PUBLIC_ID_MIGRATION_EXP'),
 
@@ -1107,9 +1125,9 @@ return array(
 
     'alt_id-fallback_api' => env('ALT_ID_FALLBACK_API'),
 
-    'route_rearch_exp_id' => env('ROUTE_REARCH_EXP_ID'),
+    'direct_transfer_rearch_exp_id' => env('DIRECT_TRANSFER_REARCH_EXP_ID'),
 
-    'transfer_balance_config_balance_id_harvester_experiment' => env('TRANSFER_BALANCE_CONFIG_BALANCE_ID_EXP_ID'),
+    'payment_transfer_rearch_exp_id' => env('PAYMENT_TRANSFER_REARCH_EXP_ID'),
 
     'route_tidb_fetch_exp_id' => env('ROUTE_TIDB_FETCH_EXP_ID'),
 
@@ -1121,14 +1139,6 @@ return array(
 
     'transaction_created_fire_webhook_sync'=>env('TXN_CREATED_FIRE_WEBHOOK_SYNC'),
 
-    'refund_creation_data_cls_balance_experiment' => env('REFUND_CREATION_DATA_CLS_BALANCE_EXP_ID'),
-
-    'refund_journal_payload_harvester_balance_experiment' => env('REFUND_JOURNAL_PAYLOAD_BALANCE_EXP_ID'),
-
-    'reversal_debit_journal_payload_harvester_balance_experiment' => env('REVERSAL_DEBIT_JOURNAL_BALANCE_EXP_ID'),
-
-    'refund_reversal_txn_experiment' => env('REFUND_REVERSAL_TXN_FETCH_EXP_ID'),
-
     'validate_transfer_using_oauth_exp_id' => env('VALIDATE_TRANSFER_USING_OAUTH'),
 
     'gifu_upi_ds_settlement_timestamp_exp_id' => env('GIFU_UPI_DS_SETTLEMENT_TIMESTAMP_EXP_ID'),
@@ -1137,29 +1147,19 @@ return array(
 
     'merchant_activation_pos_activation_check_for_transfers_splitz_exp_id' => env('MERCHANT_ACTIVATION_POS_ACTIVATION_CHECK_FOR_TRANSFERS_SPLITZ_EXP_ID'),
 
-    'splitz_merchant_cls_balance_read_experiment_id'    => env('SPLITZ_MERCHANT_CLS_BALANCE_READ_EXPERIMENT_ID'),
-
-    'splitz_harvester_query_upi_experiment_id'          => env('SPLITZ_HARVESTER_QUERY_UPI_EXPERIMENT_ID'),
-
-    'splitz_harvester_query_core_experiment_id'         => env('SPLITZ_HARVESTER_QUERY_CORE_EXPERIMENT_ID'),
-
-    'splitz_harvester_query_partnership_experiment_id'  => env('SPLITZ_HARVESTER_QUERY_PARTNERSHIP_EXPERIMENT_ID'),
-
-    'splitz_merchant_acq_harvester_query_experiment_id' => env('SPLITZ_MERCHANT_ACQ_HARVESTER_QUERY_EXPERIMENT_ID'),
-
-    'splitz_post_payment_harvester_query_experiment_id' => env('SPLITZ_POST_PAYMENT_HARVESTER_QUERY_EXPERIMENT_ID'),
-
-    'splitz_payout_harvester_query_experiment_id'       => env('SPLITZ_PAYOUT_HARVESTER_QUERY_EXPERIMENT_ID'),
-
-    'splitz_insufficient_balance_experiment_id'          => env('SPLITZ_INSUFFICIENT_BALANCE_EXPERIMENT_ID'),
+    'splitz_entity_origin_fallback_experiment_id'       => env('SPLITZ_ENTITY_ORIGIN_FALLBACK_EXPERIMENT_ID'),
 
     'qr_code_v1_failed_payment_experiment' => env('QRCODEV1_FAILED_PAYMENT_EXPERIMENT'),
 
-    'transaction_read_experiment' => env('TRANSACTION_READ_EXPERIMENT_ID'),
+    'qr_gateway_unrecognised_payment_process'  =>   env('QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS'),
 
-    'transfer_read_experiment' => env('TRANSFER_READ_EXPERIMENT_ID'),
+    'recon_unexpected_qr_payment_via_upi_route'  =>   env('RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE'),
 
-    'reversal_read_experiment' => env('REVERSAL_READ_EXPERIMENT_ID'),
+    'qr_code_create_refactor_gateway'  =>   env('QR_CODE_CREATE_REFACTOR_GATEWAY'),
+
+    'qr_payment_refactor_gateway'  =>   env('QR_PAYMENT_REFACTOR_GATEWAY'),
+
+    'qr_payment_refactor_existing_gateway'  =>   env('QR_PAYMENT_REFACTOR_EXISTING_GATEWAY'),
 
     'ezetap_device_notification_gateway_enabled' => env('EZETAP_DEVICE_NOTIFICATION_GATEWAY_ENABLED'),
 
@@ -1167,11 +1167,11 @@ return array(
 
     'mecode_sihub_from_initial' => env('MECODE_SIHUB_FROM_INITIAL'),
 
-    'splitz_recurring_harvester_query_experiment_id' => env('SPLITZ_RECURRING_HARVESTER_QUERY_EXPERIMENT_ID'),
-
     'fulcrum_recurring_subsequent_experiment' => env('FULCRUM_RECURRING_SUBSEQUENT_PAYMENT_EXP_ID'),
 
     'bank_data_via_npci_api_experiment' => env('BANK_DATA_VIA_NPCI_API_EXP_ID'),
+
+    'migrate_nach_icic_batch_service_experiment' => env('MIGRATE_NACH_ICICI_BATCH_SERVICE_EXP_ID'),
 
     'hdfc_ecms_fund_trans_experiment_id' => env('HDFC_ECMS_FUND_TRANS_EXPERIMENT_ID'),
 
@@ -1180,6 +1180,10 @@ return array(
     'enable_rearch_card_recurring_flow_hub' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_HUB'),
 
     'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
+
+    'append_gateway_payment_id_payu_exp_id' => env('APPEND_GATEWAY_PAYMENT_ID_PAYU_EXP_ID'),
+
+    'enabled_rearch_optimizer_recurring_flow' => env('ENABLED_REARCH_OPTIMIZER_RECURRING_FLOW'),
 
     'emit_pgos_consumer_metric_experiment' => env('EMIT_PGOS_CONSUMER_METRIC_EXPERIMENT_ID'),
 
@@ -1211,23 +1215,44 @@ return array(
 
     'read_token_iin_bin_service_shadow' => env('READ_TOKEN_IIN_BIN_SERVICE_SHADOW'),
 
+    'force_iin_fetch_from_api_for_recon' => env('FORCE_IIN_FETCH_FROM_API_FOR_RECON'),
+
+    'allow_bin_service_bulk_feature_update' => env('ALLOW_BIN_SERVICE_BULK_FEATURE_UPDATE'),
+
+    'fetch_iin_from_bin_service' => env('FETCH_IIN_FROM_BIN_SERVICE'),
+
     'skip_optimizer_card_callback' => env('SKIP_OPTIMIZER_CARD_CALLBACK'),
 
     'handle_async_balance_update_by_redis_queue_exp_id' => env('HANDLE_ASYNC_BALANCE_UPDATE_BY_REDIS_QUEUE_EXP_ID'),
 
     'enable_feature_fetch_from_dcs_exp_id' => env('ENABLE_FEATURE_FETCH_FROM_DCS_EXP_ID'),
 
-    'pgrouter_order_payments_route_update'       => env('PG_ROUTER_ORDER_PAYMENTS_ROUTE_UPDATE'),
-
     'cls_onboarding_feature_fetch_exp_id' => env('CLS_ONBOARDING_FEATURE_FETCH_EXP_ID'),
 
     'gifu_card_upi_ds_refunds_exp_id' => env('GIFU_CARD_UPI_DS_REFUNDS_EXP_ID'),
+
+    'handling_null_self_user' => env('HANDLING_NULL_SELF_USER'),
 
     'optimizer_card_payment_fetch_provider_exp_id' => env('OPTIMIZER_CARD_PAYMENT_FETCH_PROVIDER_EXP_ID'),
 
     'order_payments_parity_producer' => env('ORDER_PAYMENT_PARITY_PRODUCER'),
 
+    'internal_order_payments_experiment_id' => env('INTERNAL_ORDER_PAYMENTS_EXPERIMENT_ID'),
+
     'mandate_payouts_ikey_internal_experiment_id' => env('MANDATE_PAYOUTS_IKEY_INTERNAL_EXPERIMENT_ID'),
 
-    'enable_payout_ikey_required_feature_flag_experiment_id' => env('ENABLE_PAYOUT_IKEY_REQUIRED_FEATURE_FLAG_EXPERIMENT_ID')
+    'enable_payout_ikey_required_feature_flag_experiment_id' => env('ENABLE_PAYOUT_IKEY_REQUIRED_FEATURE_FLAG_EXPERIMENT_ID'),
+
+    'enable_smart_settlement_ods_experiment_id' => env('ENABLE_SMART_SETTLEMENT_ODS_EXPERIMENT_ID'),
+
+    'enable_intl_va_async' => env('ENABLE_INTERNATIONAL_VIRTUAL_ACCOUNT_ASYNC'),
+
+    'cross_border_import_rearch_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_EXPERIMENT_ID'),
+
+    'cross_border_import_rearch_shadow_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_SHADOW_EXPERIMENT_ID'),
+
+    'cross_border_pacb_tagging_experiment_id'   => env('CROSS_BORDER_PACB_TAGGING_EXPERIMENT_ID'),
+
+    'update_upi_late_auth_status'   => env('UPDATE_UPI_LATE_AUTH_STATUS')
+
 );

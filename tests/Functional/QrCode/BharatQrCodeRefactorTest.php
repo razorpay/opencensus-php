@@ -49,11 +49,11 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->fixtures->on('live')->create('merchant_detail:sane', ['merchant_id' => 'LiveAccountMer']);
         $this->fixtures->on('live')->merchant->activate();
 
-        // Mock razorx to return 'on' for qr code create refactor experiment
-        $this->setMockRazorxTreatment(
+        // Mock splitz to return 'on' for qr code create refactor experiment
+        $this->setMockSplitzTreatment(
             [
-                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'on',
-                RazorxTreatment::QR_PAYMENT_REFACTOR_GATEWAY => 'on',
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'on',
             ]
         );
 
@@ -256,7 +256,15 @@ class BharatQrCodeRefactorTest extends TestCase
     {
         $this->fixtures->on('live')->create('terminal:dedicated_upi_mindgate_terminal');
 
-        $this->setMockRazorxTreatment([RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'off']);
+
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'off',
+            ]
+        );
+
+
         $count = 0;
         $this->mockMozartResponse(
             count: $count,
@@ -286,8 +294,12 @@ class BharatQrCodeRefactorTest extends TestCase
     public function testUpiHdfcMindgateCreateBharatQrCodeSingleUse()
     {
         $this->fixtures->on('live')->create('terminal:dedicated_upi_mindgate_terminal');
-
-        $this->setMockRazorxTreatment([RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'off']);
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'off',
+            ]
+        );
         $count = 0;
         $this->mockMozartResponse(
             count: $count,
@@ -765,7 +777,14 @@ class BharatQrCodeRefactorTest extends TestCase
     {
         $terminal = $this->fixtures->on('live')->create('terminal:dedicated_upi_mindgate_terminal');
 
-        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate', RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'off']);
+        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'off',
+            ]
+        );
         $this->createQrCode(
             [
                 'usage'          => 'multiple_use',
@@ -845,7 +864,13 @@ class BharatQrCodeRefactorTest extends TestCase
     {
         $terminal = $this->fixtures->on('live')->create('terminal:dedicated_upi_mindgate_terminal');
 
-        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate', RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'off']);
+        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'off',
+            ]
+        );
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -925,8 +950,13 @@ class BharatQrCodeRefactorTest extends TestCase
     public function testCreateBQrPaymentViaRefactorFlowWithAmountMismatchForHdfcMindgate()
     {
         $terminal = $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal',);
-        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate', RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'off']);
-
+        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'off',
+            ]
+        );
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -1097,8 +1127,14 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->mockSplitzTreatmentForStatusCheck();
 
         $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
-        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate', RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'off']);
+        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
 
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway')=> 'off',
+            ]
+        );
         $qrCode        = $this->createQrCode(
             [
                 'type'           => 'bharat_qr',

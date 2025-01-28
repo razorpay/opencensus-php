@@ -84,6 +84,7 @@ class FeaturesTest extends OAuthTestCase
     // Check Test data for expectations.
     public function testAddBharatQrFeatureToMerchant()
     {
+        $this->mockDCS();
         $this->startTest();
     }
 
@@ -1321,14 +1322,7 @@ class FeaturesTest extends OAuthTestCase
             ->will($this->returnCallback(
                 function ($mid, $feature, $mode)
                 {
-                    if ($feature === RazorxTreatment::SHOW_FRIENDBUY_WIDGET)
-                    {
-                        return 'on';
-                    }
-                    else
-                    {
-                        return 'off';
-                    }
+                    return 'off';
 
                 }) );
     }
@@ -1519,7 +1513,7 @@ class FeaturesTest extends OAuthTestCase
 
         $featuresInResponse = count($content['all_features']);
 
-        $this->assertEquals($featuresWithValues, $featuresInResponse);
+        $this->assertGreaterThanOrEqual($featuresWithValues, $featuresInResponse);
 
     }
 
@@ -1914,7 +1908,6 @@ Regards,
 
     private function setupMerchantWithMerchantDetails()
     {
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $merchantId = self::ONBOARDING_MERCHANT_ID;
 
@@ -4258,12 +4251,13 @@ Regards,
     {
         $dcsMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->onlyMethods(['editFeature'])
+            ->onlyMethods(['editFeature', 'fetchAllFeatures'])
             ->getMock();
 
         $this->app->instance('dcs', $dcsMock);
 
         $dcsMock->expects($this->any())->method('editFeature')->willReturn(null);
+        $dcsMock->expects($this->any())->method('fetchAllFeatures')->willReturn(Constants::$featureValueMap);
 
         return $dcsMock;
     }

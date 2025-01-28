@@ -883,7 +883,8 @@ class Service extends Base\Service
                $this->auth->isChargeCollectionsApp() or
                $this->auth->isCapitalCollectionsApp() or
                $this->auth->isFTSApp() or
-               $this->auth->isXperienceApp();
+               $this->auth->isXperienceApp() or
+               $this->auth->isCrossBorderImportApp();
     }
 
     public function isSettlementsApp(): bool
@@ -921,6 +922,11 @@ class Service extends Base\Service
         return $this->auth->isXperienceApp();
     }
 
+    public function isCrossBorderImportApp(): bool
+    {
+        return $this->auth->isCrossBorderImportApp();
+    }
+
     public function isRemitterDetailsExpectedInPayload(): bool
     {
         if ($this->isAllowedInternalApp() === false)
@@ -938,7 +944,8 @@ class Service extends Base\Service
             ($this->auth->isChargeCollectionsApp() === false) and
             ($this->auth->isCapitalCollectionsApp() === false) and
             ($this->auth->isFTSApp() === false) and
-            ($this->auth->isXperienceApp() === false)
+            ($this->auth->isXperienceApp() === false) and 
+            ($this->auth->isCrossBorderImportApp() === false)
         );
     }
 
@@ -1854,6 +1861,23 @@ class Service extends Base\Service
         $payout = $this->core->createPayoutToMerchant($input, $merchant);
 
         return $payout->toArrayPublic();
+    }
+
+    public function internalMerchantRDSReduce(array $input): array
+    {
+        $merchantId = $input[Entity::MERCHANT_ID] ?? null;
+
+        if (!is_string($merchantId)) {
+            throw new Exception\BadRequestValidationFailureException('merchant_id is mandatory for the RDS balance update');
+        }
+
+        (new Validator)->validateInput('merchant', $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $response = $this->core->updateMerchantRDSBalance($input, $merchant);
+
+        return $response;
     }
 
     public function merchantPayoutOnDemand(array $input)
@@ -5274,6 +5298,10 @@ class Service extends Base\Service
             else if ($channel === 'yesbank')
             {
                 $input[Entity::CHANNEL] = 'yesbank';
+            }
+            else if ($channel === 'idfc')
+            {
+                $input[Entity::CHANNEL] = 'idfc';
             }
         }
         else if ($balance->isAccountTypeShared() === true)

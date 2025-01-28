@@ -79,24 +79,6 @@ class DualWritingTest extends TestCase
                 'service' => $service
             ]
         ]);
-
-        if ($experimentEnabled === true)
-        {
-            $splitzMockInput = [
-                'id'            => $mid,
-                'experiment_id' => \Config::get('app.pgos_migration_dual_writing_exp_id')
-            ];
-
-            $splitzMockOutput = [
-                'response' => [
-                    'variant' => [
-                        'name' => 'variables'
-                    ]
-                ]
-            ];
-
-            $this->mockSplitzTreatment($splitzMockInput, $splitzMockOutput);
-        }
     }
 
     public function testSaveMerchantsPGOSDataToAPI()
@@ -118,7 +100,8 @@ class DualWritingTest extends TestCase
                 "id"                 => "KqsQEszAud2PqZ",
                 "stakeholder"        => [
                     "stakeholder_name"  => "Shwetabh Shekhar",
-                    "stakeholder_email" => ""
+                    "stakeholder_email" => "",
+                    "stakeholder_mobile" => "9999999999"
                 ],
                 "country_code"       => null,
                 "business_details"   => [
@@ -175,6 +158,7 @@ class DualWritingTest extends TestCase
                                   "company_pan"   => "ABCCD1235B",
                                   "promoter_pan"  => "ABCPD1234A",
                                   "business_type" => 6,
+                                  "contact_mobile" => "+919999999999",
                                  ],
                                  $merchantDetail1->toArray());
 
@@ -200,6 +184,12 @@ class DualWritingTest extends TestCase
                                       "android_app_present" => false
                                   ]],
                                  $merchantBusinessDetail1->toArray());
+
+        $user1 = $this->getDbLastEntity('user', 'live');
+
+        $this->assertArraySubset([
+            "contact_mobile" => "9999999999",
+        ], $user1->toArray());
 
         $data = [
             "database"            => "stage-pg_onboarding_service",
@@ -337,12 +327,11 @@ class DualWritingTest extends TestCase
                                   "contact_name"         => "Shwetabh Shekhar",
                                   "contact_email"        => "",
                                   "business_dba"         => "CHIZRINZ INFOWAY PRIVATE",
-                                  "company_pan"          => "ABCCD1235B",
-                                  "promoter_pan"         => "ABCPD1234A",
-                                  "business_type"        => 6,
+                                  "business_type"        => '6',
                                   "business_category"    => "education",
                                   "business_subcategory" => null,
                                  ], $merchantDetail1->toArray());
+
     }
 
     public function testSaveVerificationsPGOSDataToAPI()

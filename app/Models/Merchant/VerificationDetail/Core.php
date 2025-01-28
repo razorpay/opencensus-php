@@ -96,60 +96,55 @@ class Core extends Base\Core
 
     public function savePGOSDataToAPI(array $data)
     {
-        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+        $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-        if ($splitzResult === 'variables')
+        // dual write only for below merchants
+        // merchants for whom pgos is serving onboarding requests
+        // merchants who are not completely activated
+        if ($merchant->getService() === MerchantConstants::PGOS and
+            $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
         {
-            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
+            $verification = (new Repository())->getDetailsForTypeAndIdentifier($data[Entity::MERCHANT_ID],
+                                                                               $data[Entity::ARTEFACT_TYPE],
+                                                                               $data[Entity::ARTEFACT_IDENTIFIER]
+            );
 
-            // dual write only for below merchants
-            // merchants for whom pgos is serving onboarding requests
-            // merchants who are not completely activated
-            if ($merchant->getService() === MerchantConstants::PGOS and
-                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+            // extract verificationId if present and unset
+            $verificationId = $data['verification_id'];
+            if(empty($verificationId) === false){
+                unset($data['verification_id']);
+            }
+
+            if (empty($verification) === false)
             {
-                $verification = (new Repository())->getDetailsForTypeAndIdentifier($data[Entity::MERCHANT_ID],
-                                                                                   $data[Entity::ARTEFACT_TYPE],
-                                                                                   $data[Entity::ARTEFACT_IDENTIFIER]
-                );
+                $verification->edit($data);
 
-                // extract verificationId if present and unset
-                $verificationId = $data['verification_id'];
-                if(empty($verificationId) === false){
-                    unset($data['verification_id']);
-                }
+                $this->repo->saveOrFail($verification);
+            }
+            else
+            {
+                $verification = new Entity;
 
-                if (empty($verification) === false)
-                {
-                    $verification->edit($data);
+                $verification->generateId();
 
-                    $this->repo->saveOrFail($verification);
-                }
-                else
-                {
-                    $verification = new Entity;
+                $verification->build($data);
 
-                    $verification->generateId();
+                $this->repo->merchant_verification_detail->saveOrFail($verification);
 
-                    $verification->build($data);
+            }
 
-                    $this->repo->merchant_verification_detail->saveOrFail($verification);
+            if ($this->isArtefactEligibleForSave($merchant->merchantDetail, $data, $verificationId) === true) {
 
-                }
+                $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_REQUEST, [
+                    '$verificationId'    => $verificationId,
+                    'data'                => $data
+                ]);
 
-                if ($this->isArtefactEligibleForSave($merchant->merchantDetail, $data, $verificationId) === true) {
+                $merchantDetails = $this->repo->merchant_detail->getByMerchantId($data[Entity::MERCHANT_ID]);
+                $validation = $this->repo->bvs_validation->findOrFail($verificationId);
 
-                    $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_REQUEST, [
-                        '$verificationId'    => $verificationId,
-                        'data'                => $data
-                    ]);
-
-                    $merchantDetails = $this->repo->merchant_detail->getByMerchantId($data[Entity::MERCHANT_ID]);
-                    $validation = $this->repo->bvs_validation->findOrFail($verificationId);
-
-                    $statusUpdater = new DefaultStatusUpdater($merchant, $merchantDetails, "", $validation);
-                    $statusUpdater->updateMerchantContext();
-                }
+                $statusUpdater = new DefaultStatusUpdater($merchant, $merchantDetails, "", $validation);
+                $statusUpdater->updateMerchantContext();
             }
         }
     }

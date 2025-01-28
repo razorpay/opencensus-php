@@ -20,6 +20,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Base\Entity;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Transaction;
+use Illuminate\Support\Str;
 use RZP\Models\Payment\Status;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Merchant\Balance;
@@ -204,12 +205,78 @@ trait ReverseShadowTrait
             LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()
         ];
 
-        $response = $ledgerService->fetchAccountsByEntitiesAndMerchantID($accountPayload, $requestHeaders, true);
+        $retryAttempts = 0;
 
-        return $response['body']['accounts'];
+        while ($retryAttempts <= LedgerReverseShadowConstants::MAX_RETRY_COUNT_FETCH_MERCHANT_ACCOUNT)
+        {
+            try
+            {
+                $response = $ledgerService->fetchAccountsByEntitiesAndMerchantID($accountPayload, $requestHeaders, true);
+
+                return $response['body']['accounts'];
+            }
+            catch (\Throwable $e)
+            {
+
+                if (Str::contains($e->getMessage(), "cURL error 28: Operation timed out", true))
+                {
+                    $retryAttempts++;
+                    if ($retryAttempts > LedgerReverseShadowConstants::MAX_RETRY_COUNT_FETCH_MERCHANT_ACCOUNT)
+                    {
+                        throw $e;
+                    }
+
+                    $this->trace->info(
+                        TraceCode::PG_LEDGER_FETCH_MERCHANT_ACCOUNTS_RETRY_ATTEMPT,
+                        [
+                            'retry_count'  => $retryAttempts,
+                        ]
+                    );
+
+                    continue;
+                }
+
+                if (method_exists($e, 'getData'))
+                {
+                    $data = $e->getData();
+
+                    if (isset($data['status_code']))
+                    {
+                        $responseCode = $data['status_code'];
+
+                        if ($responseCode >= 500)
+                        {
+                            $retryAttempts++;
+                            if ($retryAttempts > LedgerReverseShadowConstants::MAX_RETRY_COUNT_FETCH_MERCHANT_ACCOUNT)
+                            {
+                                throw $e;
+                            }
+
+                            $this->trace->info(
+                                TraceCode::PG_LEDGER_FETCH_MERCHANT_ACCOUNTS_RETRY_ATTEMPT,
+                                [
+                                    'retry_count'  => $retryAttempts,
+                                ]
+                            );
+
+                            continue;
+
+                        } else
+                        {
+                            throw $e;
+                        }
+                    }
+                }
+
+                throw $e;
+
+            }
+        }
+
+        return [];
     }
 
-    private function getMerchantAccountBalancesMap($merchantAccountBalancesList): array
+    public function getMerchantAccountBalancesMap($merchantAccountBalancesList): array
     {
         $accountBalances = [];
         $now = time();
@@ -427,11 +494,6 @@ trait ReverseShadowTrait
                 [
                     Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
                     Constants::FUND_ACCOUNT_TYPE => [Constants::MERCHANT_FEE_CREDITS]
-                ],
-                // PG Merchant Amount Credit Account
-                [
-                    Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
-                    Constants::FUND_ACCOUNT_TYPE => [Constants::REWARD]
                 ],
                 // PG Merchant Split Account Amount Credit Account
                 [
@@ -965,13 +1027,20 @@ trait ReverseShadowTrait
             $merchant = $this->repo->merchant->findOrFail($merchantId);
         }
 
-        $credit = 0; $debit = 0; $feeCredits = 0;
+        $credit = 0; $debit = 0; $feeCredits = 0; $balance = 0;
 
         if (isset($merchantBalanceLedgerEntry) === true)
         {
             $credit = $merchantBalanceLedgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_CREDIT ? $merchantBalanceLedgerEntry[Constants::AMOUNT] : 0;
 
             $debit = $merchantBalanceLedgerEntry[Constants::TYPE] === Constants::ENTRY_TYPE_DEBIT ? $merchantBalanceLedgerEntry[Constants::AMOUNT] : 0;
+
+            $balance = $merchantBalanceLedgerEntry[Constants::BALANCE];
+        }
+        else if (isset($merchantReserveBalanceLedgerEntry) === true)
+        {
+            $credit = $merchantReserveBalanceLedgerEntry[Constants::AMOUNT];
+            $balance = $merchantReserveBalanceLedgerEntry[Constants::BALANCE];
         }
 
         $tax =  $taxBalanceLedgerEntry !== null ? $taxBalanceLedgerEntry[Constants::AMOUNT] : 0;
@@ -1008,7 +1077,7 @@ trait ReverseShadowTrait
             TransactionEntity::CURRENCY         => $currency,
             TransactionEntity::CREDIT           => (int) $credit,
             TransactionEntity::DEBIT            => (int) $debit,
-            TransactionEntity::BALANCE          => (int) $merchantBalanceLedgerEntry[Constants::BALANCE],
+            TransactionEntity::BALANCE          => (int) $balance,
             TransactionEntity::FEE              => (int) $fees,
             TransactionEntity::TAX              => (int) $tax,
             TransactionEntity::CHANNEL          => isset($merchant) ? $merchant->getChannel(): null,
@@ -1328,6 +1397,19 @@ trait ReverseShadowTrait
         return $baseTransactionEntity;
     }
 
+    public function transformJournalResponseToTransactionEntityForPayout($journalResponse, \RZP\Models\Payout\Entity $payout)
+    {
+        $baseTransactionEntity = $this->transformJournalResponseToTransactionEntityBase($journalResponse);
+
+        $baseTransactionEntity->setChannel($payout->merchant->getChannel());
+
+        $settledAt = $journalResponse[Constants::CREATED_AT];
+
+        $baseTransactionEntity->setSettledAt($settledAt);
+
+        return $baseTransactionEntity;
+    }
+
     public function transformJournalResponseToTransactionEntityForRefund($journalResponse, $refundId)
     {
         $baseTransactionEntity = $this->transformJournalResponseToTransactionEntityBase($journalResponse);
@@ -1529,26 +1611,6 @@ trait ReverseShadowTrait
         return $isExperimentEnabled;
     }
 
-    public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForPayments($merchant): bool
-    {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_PAYMENTS,
-            $this->mode ?? Mode::LIVE
-        );
-
-        $isExperimentEnabled = ($variant === 'on');
-
-        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK,
-            [
-                'merchant'               => $merchant->getId(),
-                'isExperimentEnabled'    => $isExperimentEnabled,
-                'type'                   => "payment"
-            ]);
-
-        return $isExperimentEnabled;
-    }
-
     /** getAPITxnIDForReverseShadowPayments returns the transaction Id
      * for reverse shadow payment
      * @param PaymentEntity $payment
@@ -1571,46 +1633,6 @@ trait ReverseShadowTrait
         }
 
         return null;
-    }
-
-    public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForAdjustments($merchant): bool
-    {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ADJUSTMENTS,
-            $this->mode ?? Mode::LIVE
-        );
-
-        $isExperimentEnabled = ($variant === 'on');
-
-        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK,
-            [
-                'merchant'               => $merchant->getId(),
-                'isExperimentEnabled'    => $isExperimentEnabled,
-                'type'                   => "adjustment"
-            ]);
-
-        return $isExperimentEnabled;
-    }
-
-    public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForReversals($merchant): bool
-    {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_REVERSALS,
-            $this->mode ?? Mode::LIVE
-        );
-
-        $isExperimentEnabled = ($variant === 'on');
-
-        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK,
-            [
-                'merchant'               => $merchant->getId(),
-                'isExperimentEnabled'    => $isExperimentEnabled,
-                'type'                   => "reversal"
-            ]);
-
-        return $isExperimentEnabled;
     }
     public function createTransactionEntityForPreFundWithdrawFromJournal($journalResponse, $merchant): TransactionEntity
     {

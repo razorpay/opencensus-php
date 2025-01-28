@@ -1318,8 +1318,10 @@ class Validator extends Base\Validator
 
         $international = $invoice->merchant->isInternational();
 
+        $moneySaverMerchant = (new \RZP\Models\BankTransfer\Service())->isMoneySaverMerchant($invoice->merchant->getId());
+
         // Non International accounts should not create PL in other currencies.
-        if (($international !== true) and ($currency !==  $invoice->merchant->getCurrency()))
+        if (($international !== true && $moneySaverMerchant !== true) and ($currency !==  $invoice->merchant->getCurrency()))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED,

@@ -198,6 +198,12 @@ class Type
     const NACH                              =  'nach';
     const MERCHANT_AGREEMENT                =  'merchant_agreement';
 
+    // International enablement cards documents
+    const FIRC                              = 'firc';
+    const MERCHANT_PREVIOUS_INTERNATIONAL_INVOICES  = 'invoices';
+    const BANK_STATEMENT_INWARD_REMITTANCE  = 'bank_statement_inward_remittance';
+    const CURRENT_PAYMENT_PARTNER_SETTLEMENT_RECORD = 'current_payment_partner_settlement_record';
+
     const NC_ADDITIONAL_DOCUMENTS = [
 
         self::FSSAI_CERTIFICATE,
@@ -600,6 +606,10 @@ class Type
         self::BAR_COUNCIL_DOCUMENT,
         self::AJL_LICENSE_OR_PROOF_OF_MEMBERSHIP_WITH_DSAM,
         self::MOTAC_LICENSE,
+        self::FIRC,
+        self::BANK_STATEMENT_INWARD_REMITTANCE,
+        self::MERCHANT_PREVIOUS_INTERNATIONAL_INVOICES,
+        self::CURRENT_PAYMENT_PARTNER_SETTLEMENT_RECORD,
     ];
 
     const VALID_POS_DOCUMENTS = [

@@ -510,6 +510,9 @@ class PublicErrorDescription
     const BAD_REQUEST_ONDEMAND_SETTLEMENT_AMOUNT_MAX_LIMIT_EXCEEDED             = 'Amount requested is more than the max limit for ondemand settlement';
     const BAD_REQUEST_AMOUNT_LESS_THAN_MIN_LIMIT_FOR_NON_ES_AUTOMATIC_MERCHANTS = 'Minimum amount that can be settled is ₹ 2000.';
     const BAD_REQUEST_AMOUNT_LESS_THAN_MIN_ONDEMAND_AMOUNT                      = 'Minimum amount that can be settled is ₹ 1.';
+    const BAD_REQUEST_SMART_SETTLEMENTS_NOT_ENABLED                             = 'Smart settlements not enabled';
+    const BAD_REQUEST_AMOUNT_LESS_THAN_MIN_SMART_SETTLEMENT_AMOUNT              = 'Minimum amount that can be settled via smart settlement is ₹ 5,00,000.';
+
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
     const BAD_REQUEST_PROOF_TYPE_INVALID                                        = 'invalid proof type';
@@ -1852,7 +1855,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BUSINESS_GSTIN_MISMATCH = 'The given GSTIN does not belong to the Business PAN provided. Please provide a different GSTIN';
     const BAD_REQUEST_SUSPICIOUS_TRANSACTION  = 'Transaction blocked. Please reach out to support.';
 
-    const DUPLICATE_PAYOUT_CREATION_ATTEMPT  = 'Similar request <payout_id> in progress. Retry after <custom_interval> or use a unique identifier.';
+    const DUPLICATE_PAYOUT_CREATION_ATTEMPT  = 'Similar request <payout_id> in progress. Retry after <custom_interval> seconds or use a unique identifier.';
 
     const SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE = 'Your Razorpay merchant account creation is in progress. Please retry the action after sometime.';
 

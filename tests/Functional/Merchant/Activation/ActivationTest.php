@@ -133,13 +133,6 @@ class ActivationTest extends OAuthTestCase
         $this->app->razorx->method('getTreatment')
             ->will($this->returnCallback(
                 function($mid, $feature, $mode) {
-                    if ($feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY or
-                        $feature === RazorxTreatment::LITE_ONBOARDING or
-                        $feature === RazorxTreatment::UPDATED_LITE_ONBOARDING)
-                    {
-                        return 'on';
-                    }
-
                     return 'off';
                 }));
     }

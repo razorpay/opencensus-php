@@ -7,6 +7,7 @@ use RZP\Models\Order;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Entity extends Base\PublicEntity
 {
@@ -130,7 +131,9 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $ignoredRelations = [
-        "order"
+        "order",
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
     ];
 
     // Relations

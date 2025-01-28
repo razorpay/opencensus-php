@@ -112,16 +112,7 @@ class Service extends Base\Service
             return false;
         }
 
-        $experimentName = DetailConstants::TNC_ORG_ID_EXP_MAP[$org];
-
-        if ((new Merchantcore())->isRazorxExperimentEnable(
-                $merchant->getId(),
-                $experimentName) === false)
-        {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     public function saveMerchantTnc(array $input)

@@ -107,20 +107,9 @@ class Factory
             return new DefaultClarificationReasonComposer();
         }
 
-        $isNeedClarificationNotMatchedEnabled = (new MerchantCore())->isRazorxExperimentEnable(
-            $this->merchantDetails->getId(),
-            RazorxTreatment::SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED);
-
-        if ($validation->getErrorCode() === Constants::RULE_EXECUTION_FAILED and
-            $isNeedClarificationNotMatchedEnabled === true)
-        {
-            return new NotMatchedReasonComposer($validation, $needsClarificationMetaData);
-        }
-
-        // remove this once razorx experiment is ramped to 100.
         if ($validation->getErrorCode() === Constants::RULE_EXECUTION_FAILED)
         {
-            return new DefaultClarificationReasonComposer();
+            return new NotMatchedReasonComposer($validation, $needsClarificationMetaData);
         }
 
         // trigger Auto NC for Route linked accounts for Spam detected error.

@@ -3585,6 +3585,528 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->assertNull($ledgerOutboxEntity);
     }
 
+    public function testTransferReversalReverseShadowSuccessForRefundCredits()
+{
+    $sourceMID = '10000000000000';
+    $destnMID = '10000000000001';
+
+    $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+    $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], $destnMID);
+
+
+    $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($this->payment['id']);
+
+    $dummyTransferData = [
+        'id'                 => "AnyRandomID123",
+        'source_id'          =>  $paymentId,
+        'source_type'        => "payment",
+        'status'             => "processed",
+        'settlement_status'  => NULL,
+        'to_id'              => 10000000000001,
+        'to_type'            => "merchant",
+        'amount'             => 50000,
+        'currency'           => "INR",
+        'amount_reversed'    => 0,
+        'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+        'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp(),
+        'processed_at'       => Carbon::now()->addHours(-4)->getTimestamp(),
+    ];
+
+    $this->fixtures->transfer->create($dummyTransferData);
+
+    $transfer = $this->getDbLastEntity('transfer')['id'];
+
+    $this->fixtures->reversal->createTransferReversalWithoutTxn('AnyRandomID123', [
+        'id'          => 'PUmF95hAhquk8v',
+        'merchant_id' => '10000000000000',
+        'entity_type' => 'transfer',
+        'amount'      => 100,
+        'fee'         => 0,
+        'tax'         => 0,
+    ]);
+
+    $this->fixtures->refund->createFromTransferPaymentWithoutTxn([
+                                                                     'payment' => $this->getDbLastPayment(),
+                                                                     'id'      => 'PUmF9vJcN9RhxY',
+                                                                 ]);
+    $reversal = $this->getDbEntityById('reversal', 'PUmF95hAhquk8v');
+
+    $refund = $this->getDbEntityById('refund','PUmF9vJcN9RhxY');
+
+    $this->fixtures->refund->createFromTransferPaymentWithoutTxn([
+                                                                     'payment' => $this->getDbLastPayment(),
+                                                                     'id'      => 'PUmF9vJcN9Rtuy',
+                                                                 ]);
+
+    $sourceRefund = $this->getDbEntityById('refund','PUmF9vJcN9Rtuy');
+
+    $journals= $this->getTransferReversalsJournalResponse();
+
+    $results = [[$reversal,$refund]];
+
+    list($reversalAndRefundJournalIds, $producerKey)=(new ReverseShadow\Transfers\Reversal\Core())->createPayloadForAPITransactionCreation($results,$sourceRefund,$journals,false,false);
+
+    //"reversals": [
+    //        {
+    //            "transfer_reversal_journal_id": "PcZP8RDinu3hZe",
+    //          "refund_id": "PcZP86gwio6zxN",
+    //          "transfer_reversal_id": "PcZP7LpIiDI3Cn",
+    //          "refund_journal_id": ""
+    //        }
+    $this->assertNotNull($reversalAndRefundJournalIds);
+    $this->assertEquals(true, isset($reversalAndRefundJournalIds['reversals']));
+    $this->assertEquals(true, isset($reversalAndRefundJournalIds['reversals'][0]['refund_journal_id']));
+    $this->assertEquals('PcZP8R4Pph0ZTZ',($reversalAndRefundJournalIds['reversals'][0]['refund_journal_id']));
+    $this->assertEquals('PcZP8RDinu3hZe',($reversalAndRefundJournalIds['reversals'][0]['transfer_reversal_id']));
+
+}
+
+    public function testTransferReversalReverseShadowSuccessForRefundWithBalance()
+    {
+        $sourceMID = '10000000000000';
+        $destnMID = '10000000000001';
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], $destnMID);
+
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($this->payment['id']);
+
+        $dummyTransferData = [
+            'id'                 => "AnyRandomID124",
+            'source_id'          =>  $paymentId,
+            'source_type'        => "payment",
+            'status'             => "processed",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 50000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp(),
+            'processed_at'       => Carbon::now()->addHours(-4)->getTimestamp(),
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $transfer = $this->getDbLastEntity('transfer')['id'];
+
+        $this->fixtures->reversal->createTransferReversalWithoutTxn('AnyRandomID124', [
+            'id'          => 'PUmF95hAhquk81',
+            'merchant_id' => '10000000000000',
+            'entity_type' => 'transfer',
+            'amount'      => 100,
+            'fee'         => 0,
+            'tax'         => 0,
+        ]);
+
+        $this->fixtures->refund->createFromTransferPaymentWithoutTxn([
+                                                                         'payment' => $this->getDbLastPayment(),
+                                                                         'id'      => 'PUmF9vJcN9Rhx0',
+                                                                     ]);
+        $reversal = $this->getDbEntityById('reversal', 'PUmF95hAhquk81');
+
+        $refund = $this->getDbEntityById('refund','PUmF9vJcN9Rhx0');
+
+        $this->fixtures->refund->createFromTransferPaymentWithoutTxn([
+                                                                         'payment' => $this->getDbLastPayment(),
+                                                                         'id'      => 'PUmF9vJcN9Rtua',
+                                                                     ]);
+
+        $sourceRefund = $this->getDbEntityById('refund','PUmF9vJcN9Rtua');
+
+        $journals= $this->getTransferReversalsJournalResponsewithBalance();
+
+        $results = [[$reversal,$refund]];
+
+        list($reversalAndRefundJournalIds, $producerKey)=(new ReverseShadow\Transfers\Reversal\Core())->createPayloadForAPITransactionCreation($results,$sourceRefund,$journals,false,false);
+
+        //"reversals": [
+        //        {
+        //            "transfer_reversal_journal_id": "PcZP8RDinu3hZe",
+        //          "refund_id": "PcZP86gwio6zxN",
+        //          "transfer_reversal_id": "PcZP7LpIiDI3Cn",
+        //          "refund_journal_id": ""
+        //        }
+        $this->assertNotNull($reversalAndRefundJournalIds);
+        $this->assertEquals(true, isset($reversalAndRefundJournalIds['reversals']));
+        $this->assertEquals(true, isset($reversalAndRefundJournalIds['reversals'][0]['refund_journal_id']));
+        $this->assertEquals('PcZP8R4Pph0ZTZ',($reversalAndRefundJournalIds['reversals'][0]['refund_journal_id']));
+        $this->assertEquals('PcZP8RDinu3hZe',($reversalAndRefundJournalIds['reversals'][0]['transfer_reversal_id']));
+
+    }
+
+    public function getTransferReversalsJournalResponse()
+    {
+        return [
+            "journals"=> [
+                [
+                    "base_amount"=> "137100",
+                    "transactor_event"=> "transfer_reversal_processed",
+                    "transactor_id"=> "rvrsl_PcZP7LpIiDI3Cn",
+                    "transaction_date"=> "1735383171",
+                    "currency"=> "INR",
+                    "created_at"=> "1735383171",
+                    "updated_at"=> "1735383171",
+                    "tenant"=> "PG",
+                    "id"=> "PcZP8R4Pph0ZTZ",
+                    "ledger_entry"=> [
+                        [
+                            "base_amount"=> "137100",
+                            "balance"=> "",
+                            "type"=> "credit",
+                            "account_id"=> "KNIZxfkC0t9wJT",
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "merchant_va_merchant"
+                                ]
+                            ],
+                            "balance_updated"=> false,
+                            "currency"=> "INR",
+                            "created_at"=> "1735383171",
+                            "updated_at"=> "1735383171",
+                            "amount"=> "137100",
+                            "id"=> "PcZP8R7UFSPVzY",
+                            "merchant_id"=> "HU2en5yUMOBQnv",
+                            "journal_id"=> "PcZP8R4Pph0ZTZ"
+                        ],
+                        [
+                            "base_amount"=> "137100",
+                            "balance"=> "1016900.000000",
+                            "type"=> "debit",
+                            "account_id"=> "KkBEZ8ni0XvulF",
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "merchant_refund_credits"
+                                ]
+                            ],
+                            "balance_updated"=> true,
+                            "currency"=> "INR",
+                            "created_at"=> "1735383171",
+                            "updated_at"=> "1735383171",
+                            "amount"=> "137100",
+                            "id"=> "PcZP8R7VLDdRzb",
+                            "merchant_id"=> "HU2en5yUMOBQnv",
+                            "journal_id"=> "PcZP8R4Pph0ZTZ"
+                        ]
+                    ],
+                    "amount"=> "137100"
+                ],
+                [
+                    "base_amount"=> "137100",
+                    "transactor_event"=> "transfer_reversal_processed",
+                    "transactor_id"=> "rvrsl_PcZP7LpIiDI3Cn",
+                    "transaction_date"=> "1735383170",
+                    "currency"=> "INR",
+                    "created_at"=> "1735383171",
+                    "updated_at"=> "1735383171",
+                    "tenant"=> "PG",
+                    "id"=> "PcZP8RDinu3hZe",
+                    "ledger_entry"=> [
+                        [
+                            "base_amount"=> "137100",
+                            "balance"=> "",
+                            "type"=> "debit",
+                            "account_id"=> "KNIZxfkC0t9wJT",
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "merchant_va_merchant"
+                                ]
+                            ],
+                            "balance_updated"=> false,
+                            "currency"=> "INR",
+                            "created_at"=> "1735383171",
+                            "updated_at"=> "1735383171",
+                            "amount"=> "137100",
+                            "id"=> "PcZP8RGBDFIauN",
+                            "merchant_id"=> "FiQZRe4DKPGjnC",
+                            "journal_id"=> "PcZP8RDinu3hZe"
+                        ],
+                        [
+                            "base_amount"=> "137100",
+                            "balance"=> "211046082.000000",
+                            "type"=> "credit",
+                            "account_id"=> "Kjot4ok9i8MHFq",
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "merchant_balance"
+                                ]
+                            ],
+                            "balance_updated"=> true,
+                            "currency"=> "INR",
+                            "created_at"=> "1735383171",
+                            "updated_at"=> "1735383171",
+                            "amount"=> "137100",
+                            "id"=> "PcZP8RGCAPCxNb",
+                            "merchant_id"=> "FiQZRe4DKPGjnC",
+                            "journal_id"=> "PcZP8RDinu3hZe"
+                        ]
+                    ],
+                    "amount"=> "137100"
+                ],
+                [
+                    "base_amount"=> "137100",
+                    "transactor_event"=> "refund_processed",
+                    "transactor_id"=> "rfnd_PcZP6p2Ks3oNXq",
+                    "transaction_date"=> "1735383170",
+                    "currency"=> "INR",
+                    "created_at"=> "1735383171",
+                    "updated_at"=> "1735383171",
+                    "tenant"=> "PG",
+                    "id"=> "PcZP8RWj5sIqv4",
+                    "ledger_entry"=> [
+                        [
+                            "base_amount"=> "137100",
+                            "balance"=> "210908982.000000",
+                            "type"=> "debit",
+                            "account_id"=> "Kjot4ok9i8MHFq",
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "merchant_balance"
+                                ]
+                            ],
+                            "balance_updated"=> true,
+                            "currency"=> "INR",
+                            "created_at"=> "1735383171",
+                            "updated_at"=> "1735383171",
+                            "amount"=> "137100",
+                            "id"=> "PcZP8RZ1tRv9mO",
+                            "merchant_id"=> "FiQZRe4DKPGjnC",
+                            "journal_id"=> "PcZP8RWj5sIqv4"
+                        ],
+                        [
+                            "base_amount"=> "137100",
+                            "balance"=> "",
+                            "type"=> "credit",
+                            "account_id"=> "KQr53C5A8jAShY",
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "gateway_refund"
+                                ],
+                                "gateway"=> [
+                                    "wallet_openwallet"
+                                ]
+                            ],
+                            "balance_updated"=> false,
+                            "currency"=> "INR",
+                            "created_at"=> "1735383171",
+                            "updated_at"=> "1735383171",
+                            "amount"=> "137100",
+                            "id"=> "PcZP8RZ2safSR7",
+                            "merchant_id"=> "FiQZRe4DKPGjnC",
+                            "journal_id"=> "PcZP8RWj5sIqv4"
+                        ]
+                    ],
+                    "amount"=> "137100"
+                ]
+            ]
+        ];
+    }
+
+    public function getTransferReversalsJournalResponsewithBalance()
+    {
+        return [
+            "journals"=> [
+                [
+                    "base_amount"=> "137100",
+                    "transactor_event"=> "transfer_reversal_processed",
+                    "transactor_id"=> "rvrsl_PcZP7LpIiDI3Cn",
+                    "transaction_date"=> "1735383171",
+                    "currency"=> "INR",
+                    "created_at"=> "1735383171",
+                    "updated_at"=> "1735383171",
+                    "tenant"=> "PG",
+                    "id"=> "PcZP8R4Pph0ZTZ",
+                    "ledger_entry"=> [
+                        [
+                            "base_amount"=> "137100",
+                            "balance"=> "",
+                            "type"=> "credit",
+                            "account_id"=> "KNIZxfkC0t9wJT",
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "merchant_va_merchant"
+                                ]
+                            ],
+                            "balance_updated"=> false,
+                            "currency"=> "INR",
+                            "created_at"=> "1735383171",
+                            "updated_at"=> "1735383171",
+                            "amount"=> "137100",
+                            "id"=> "PcZP8R7UFSPVzY",
+                            "merchant_id"=> "HU2en5yUMOBQnv",
+                            "journal_id"=> "PcZP8R4Pph0ZTZ"
+                        ],
+                        [
+                            "base_amount"=> "137100",
+                            "balance"=> "1016900.000000",
+                            "type"=> "debit",
+                            "account_id"=> "KkBEZ8ni0XvulF",
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "merchant_balance"
+                                ]
+                            ],
+                            "balance_updated"=> true,
+                            "currency"=> "INR",
+                            "created_at"=> "1735383171",
+                            "updated_at"=> "1735383171",
+                            "amount"=> "137100",
+                            "id"=> "PcZP8R7VLDdRzb",
+                            "merchant_id"=> "HU2en5yUMOBQnv",
+                            "journal_id"=> "PcZP8R4Pph0ZTZ"
+                        ]
+                    ],
+                    "amount"=> "137100"
+                ],
+                [
+                    "base_amount"=> "137100",
+                    "transactor_event"=> "transfer_reversal_processed",
+                    "transactor_id"=> "rvrsl_PcZP7LpIiDI3Cn",
+                    "transaction_date"=> "1735383170",
+                    "currency"=> "INR",
+                    "created_at"=> "1735383171",
+                    "updated_at"=> "1735383171",
+                    "tenant"=> "PG",
+                    "id"=> "PcZP8RDinu3hZe",
+                    "ledger_entry"=> [
+                        [
+                            "base_amount"=> "137100",
+                            "balance"=> "",
+                            "type"=> "debit",
+                            "account_id"=> "KNIZxfkC0t9wJT",
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "merchant_va_merchant"
+                                ]
+                            ],
+                            "balance_updated"=> false,
+                            "currency"=> "INR",
+                            "created_at"=> "1735383171",
+                            "updated_at"=> "1735383171",
+                            "amount"=> "137100",
+                            "id"=> "PcZP8RGBDFIauN",
+                            "merchant_id"=> "FiQZRe4DKPGjnC",
+                            "journal_id"=> "PcZP8RDinu3hZe"
+                        ],
+                        [
+                            "base_amount"=> "137100",
+                            "balance"=> "211046082.000000",
+                            "type"=> "credit",
+                            "account_id"=> "Kjot4ok9i8MHFq",
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "merchant_balance"
+                                ]
+                            ],
+                            "balance_updated"=> true,
+                            "currency"=> "INR",
+                            "created_at"=> "1735383171",
+                            "updated_at"=> "1735383171",
+                            "amount"=> "137100",
+                            "id"=> "PcZP8RGCAPCxNb",
+                            "merchant_id"=> "FiQZRe4DKPGjnC",
+                            "journal_id"=> "PcZP8RDinu3hZe"
+                        ]
+                    ],
+                    "amount"=> "137100"
+                ],
+                [
+                    "base_amount"=> "137100",
+                    "transactor_event"=> "refund_processed",
+                    "transactor_id"=> "rfnd_PcZP6p2Ks3oNXq",
+                    "transaction_date"=> "1735383170",
+                    "currency"=> "INR",
+                    "created_at"=> "1735383171",
+                    "updated_at"=> "1735383171",
+                    "tenant"=> "PG",
+                    "id"=> "PcZP8RWj5sIqv4",
+                    "ledger_entry"=> [
+                        [
+                            "base_amount"=> "137100",
+                            "balance"=> "210908982.000000",
+                            "type"=> "debit",
+                            "account_id"=> "Kjot4ok9i8MHFq",
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "merchant_balance"
+                                ]
+                            ],
+                            "balance_updated"=> true,
+                            "currency"=> "INR",
+                            "created_at"=> "1735383171",
+                            "updated_at"=> "1735383171",
+                            "amount"=> "137100",
+                            "id"=> "PcZP8RZ1tRv9mO",
+                            "merchant_id"=> "FiQZRe4DKPGjnC",
+                            "journal_id"=> "PcZP8RWj5sIqv4"
+                        ],
+                        [
+                            "base_amount"=> "137100",
+                            "balance"=> "",
+                            "type"=> "credit",
+                            "account_id"=> "KQr53C5A8jAShY",
+                            "account_entities"=> [
+                                "account_type"=> [
+                                    "payable"
+                                ],
+                                "fund_account_type"=> [
+                                    "gateway_refund"
+                                ],
+                                "gateway"=> [
+                                    "wallet_openwallet"
+                                ]
+                            ],
+                            "balance_updated"=> false,
+                            "currency"=> "INR",
+                            "created_at"=> "1735383171",
+                            "updated_at"=> "1735383171",
+                            "amount"=> "137100",
+                            "id"=> "PcZP8RZ2safSR7",
+                            "merchant_id"=> "FiQZRe4DKPGjnC",
+                            "journal_id"=> "PcZP8RWj5sIqv4"
+                        ]
+                    ],
+                    "amount"=> "137100"
+                ]
+            ]
+        ];
+    }
+
     public function testReverseShadowCronRetryForPaymentTransferProcessedEventFailureWrongRoute()
     {
         $this->assertNotNull($this->payment);

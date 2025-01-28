@@ -66,7 +66,7 @@ class UpiTerminalOnboarding extends Base
 
         $otherInputs = [];
 
-        if (($gateway === Payment\Gateway::UPI_ICICI) and
+        if ((($gateway === Payment\Gateway::UPI_ICICI) or ($gateway === Payment\Gateway::UPI_RZPAPB)) and
             (boolval($recurring) === true))
         {
             $features['recurring'] = '1';
@@ -93,7 +93,9 @@ class UpiTerminalOnboarding extends Base
                 $identifiers[Terminal\Entity::NETWORK_CATEGORY] = $category2;
             }
 
-            $otherInputs[Terminal\Entity::SECRETS] = [Terminal\Entity::GATEWAY_TERMINAL_PASSWORD => app('config')->get("gateway.upi_icici.live_recurring_onboarding_api_key")];
+            if ($gateway === Payment\Gateway::UPI_ICICI) {
+                $otherInputs[Terminal\Entity::SECRETS] = [Terminal\Entity::GATEWAY_TERMINAL_PASSWORD => app('config')->get("gateway.upi_icici.live_recurring_onboarding_api_key")];
+            }
         }
 
         $response = $this->app['terminals_service']->initiateOnboarding($merchantId, $gateway, $identifiers, $features, [], $otherInputs);

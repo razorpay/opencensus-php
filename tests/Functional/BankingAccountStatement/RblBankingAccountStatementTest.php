@@ -37,6 +37,7 @@ use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Webhook\Event;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use RZP\Models\Merchant\Balance\Entity;
+use RZP\Jobs\AccountStatementDualWrite;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankingAccount\Gateway\Rbl;
@@ -17333,6 +17334,7 @@ class RblBankingAccountStatementTest extends TestCase
         ]);
 
         $newBAS = $this->getDbEntity('banking_account_statement', ['utr' => '933815383814']);
+        $txn = $this->getDbLastEntity('transaction', 'test');
 
         $payout->reload();
 
@@ -17340,6 +17342,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertNotNull($newBAS->getEntityId());
         $this->assertNotNull($newBAS->getTransactionId());
         $this->assertTrue($isValidInput);
+        $this->assertEquals($newBAS->getAmount(), $txn->getDebit());
+        $this->assertEquals(0, $txn->getCredit());
     }
 
     public function testDualWriteForAccountStatementServiceBas()
@@ -17471,6 +17475,8 @@ class RblBankingAccountStatementTest extends TestCase
         $payout = $this->getDbLastEntity('payout');
         $this->assertNotNull($payout->getTransactionId());
         $this->assertEquals($payout->getTransactionId(), $bas->getId());
+        $this->assertEquals($bas->getAmount(), $txn->getDebit());
+        $this->assertEquals(0, $txn->getCredit());
 
         $basDataInput = [
             BasEntity::ID                  => "randomid111112",
@@ -17596,6 +17602,8 @@ class RblBankingAccountStatementTest extends TestCase
         /** @var Payout\Entity $payout */
         $payout = $this->getDbLastEntity('payout');
         $this->assertNull($payout->getTransactionId());
+        $this->assertEquals($bas->getAmount(), $txn->getDebit());
+        $this->assertEquals(0, $txn->getCredit());
     }
 
     public function testDualWriteForAccountStatementServiceBasLinkToPsPayout()
@@ -17691,6 +17699,8 @@ class RblBankingAccountStatementTest extends TestCase
         $txn = $this->getDbLastEntity('transaction');
         $this->assertEquals($bas->getId(), $txn->getId());
         $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+        $this->assertEquals($bas->getAmount(), $txn->getDebit());
+        $this->assertEquals(0, $txn->getCredit());
     }
 
     public function testDualWriteForAccountStatementServiceBasLinkToAPIPayoutTwoTimes()
@@ -17720,6 +17730,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($bas->getId(), $txn->getId());
         $this->assertEquals($bas->getEntityType(), $txn->getType());
         $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+        $this->assertEquals($bas->getAmount(), $txn->getDebit());
+        $this->assertEquals(0, $txn->getCredit());
     }
 
     public function testDualWriteForAccountStatementServiceBasLinkToAPIReversal()
@@ -17812,6 +17824,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($bas->getId(), $txn->getId());
         $this->assertEquals($bas->getEntityType(), $txn->getType());
         $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+        $this->assertEquals($bas->getAmount(), $txn->getCredit());
+        $this->assertEquals(0, $txn->getDebit());
     }
 
     public function testDualWriteForAccountStatementServiceBasReverseAndLinkToAPIReversal()
@@ -17889,6 +17903,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($bas->getId(), $txn->getId());
         $this->assertEquals($bas->getEntityType(), $txn->getType());
         $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+        $this->assertEquals($bas->getAmount(), $txn->getDebit());
+        $this->assertEquals(0, $txn->getCredit());
     }
 
     public function testDualWriteForAccountStatementServiceBasLinkToPsReversal()
@@ -17947,6 +17963,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         /** @var BasEntity $bas */
         $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+        $txn = $this->getDbLastEntity('transaction', 'test');
 
         $expectedBas = $basData;
         unset($expectedBas[BasEntity::GATEWAY_REF_NUMBER]);
@@ -17963,6 +17980,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($bas->getId(), $txn->getId());
         $this->assertEquals($bas->getEntityType(), $txn->getType());
         $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+        $this->assertEquals($bas->getAmount(), $txn->getDebit());
+        $this->assertEquals(0, $txn->getCredit());
     }
 
     public function testDualWriteForAccountStatementServiceBasLinkToAPIReversalTwoTimes()
@@ -17994,6 +18013,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($bas->getId(), $txn->getId());
         $this->assertEquals($bas->getEntityType(), $txn->getType());
         $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+        $this->assertEquals($bas->getAmount(), $txn->getCredit());
+        $this->assertEquals(0, $txn->getDebit());
     }
 
     public function testDualWriteForAccountStatementServiceBasLinkToAPIExternal()
@@ -18047,6 +18068,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($bas->getId(), $txn->getId());
         $this->assertEquals($bas->getEntityType(), $txn->getType());
         $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+        $this->assertEquals($bas->getAmount(), $txn->getDebit());
+        $this->assertEquals(0, $txn->getCredit());
     }
 
     public function testDualWriteForAccountStatementServiceBasLinkToAPIExternalThenToPayout()
@@ -18101,6 +18124,8 @@ class RblBankingAccountStatementTest extends TestCase
         $txn = $this->getDbLastEntity('transaction');
         $this->assertEquals($bas->getId(), $txn->getId());
         $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+        $this->assertEquals($bas->getAmount(), $txn->getDebit());
+        $this->assertEquals(0, $txn->getCredit());
 
         /** @var Payout\Entity $payout */
         $payout = $this->getDbLastEntity('payout');
@@ -18108,11 +18133,13 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals($payout->getId(), $bas->getEntityId());
         $this->assertEquals(Constants\Entity::PAYOUT, $bas->getEntityType());
+        $this->assertEquals($bas->getAmount(), $txn->getDebit());
+        $this->assertEquals(0, $txn->getCredit());
     }
 
     public function testDualWriteForAccountStatementServiceBasLinkToAPIExternalThenToAPIReversal()
     {
-        $this->testDualWriteForPayoutServiceBasLinkToAPIExternal();
+        $this->testDualWriteForAccountStatementServiceBasLinkToAPIExternal();
 
         // Set up a direct account payout.
         $this->setupForRblPayout('rbl');
@@ -18193,6 +18220,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($bas->getId(), $txn->getId());
         $this->assertEquals($bas->getEntityType(), $txn->getType());
         $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+        $this->assertEquals($bas->getAmount(), $txn->getDebit());
+        $this->assertEquals(0, $txn->getCredit());
 
         $this->assertEquals($reversal->getId(), $bas->getEntityId());
         $this->assertEquals(Constants\Entity::REVERSAL, $bas->getEntityType());
@@ -18200,7 +18229,7 @@ class RblBankingAccountStatementTest extends TestCase
 
     public function testDualWriteForAccountStatementServiceBasLinkToAPIExternalTwoTimes()
     {
-        $this->testDualWriteForPayoutServiceBasLinkToAPIExternal();
+        $this->testDualWriteForAccountStatementServiceBasLinkToAPIExternal();
 
         /** @var BasEntity $bas */
         $bas = $this->getDbLastEntity('banking_account_statement', 'test');
@@ -18225,6 +18254,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($bas->getId(), $txn->getId());
         $this->assertEquals($bas->getEntityType(), $txn->getType());
         $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+        $this->assertEquals($bas->getAmount(), $txn->getDebit());
+        $this->assertEquals(0, $txn->getCredit());
     }
 
     public function testDualWriteForAccountStatementServiceBasWithOldUpdateAtTimestamp()
@@ -18337,5 +18368,19 @@ class RblBankingAccountStatementTest extends TestCase
 
         // Assert that only 1 entry was saved
         $this->assertEquals(1, sizeof($bas));
+    }
+
+    public function testDualWriteForAccountStatementServiceIsNotPushedInPayoutsDualWriteQueue()
+    {
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceBas'];
+
+        Queue::fake();
+
+        $this->startTest();
+
+        Queue::assertNotPushed(PayoutServiceDualWrite::class);
+        Queue::assertPushed(AccountStatementDualWrite::class, 1);
     }
 }

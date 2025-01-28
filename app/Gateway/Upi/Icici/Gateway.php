@@ -24,6 +24,7 @@ use RZP\Constants\Timezone;
 use RZP\Http\RequestHeader;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
+use RZP\Http\RequestContext;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Base\Response;
 use RZP\Gateway\Base\VerifyResult;
@@ -38,6 +39,7 @@ use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
+use RZP\Models\BharatQr\GatewayResponseParams;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Generator;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrEntity;
@@ -57,7 +59,12 @@ class Gateway extends Base\Gateway
     use AuthorizeFailed;
     use Base\RecurringTrait;
     use Base\MandateTrait;
-    use CommonGatewayTrait;
+    use CommonGatewayTrait{
+        CommonGatewayTrait::getQrData as getQrDataFromTrait;
+        CommonGatewayTrait::getQrPaymentMerchantReference as getQrPaymentMerchantReferenceFromTrait;
+        CommonGatewayTrait::getQrPaymentStatus as getQrPaymentStatusFromTrait;
+        CommonGatewayTrait::parseMozartResp as parseMozartRespFromTrait;
+    }
     use UpiTrait;
 
     /**
@@ -135,6 +142,61 @@ class Gateway extends Base\Gateway
      * @param  array  $input
      * @return boolean
      */
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->requestContext = $this->app['request.ctx'];
+
+    }
+
+    public function checkIfHolygrailIciciFlowSplitzExperimentEnabled($gatewayId): bool
+    {
+
+        if(is_null($this->requestContext->getHolygrailIciciFlow()) === false){
+            return boolval($this->requestContext->getHolygrailIciciFlow());
+        }
+        try{
+            $properties = [
+                'id'            => $gatewayId,
+                'experiment_id' => $this->app->config->get('app.holygrail_icici_flow'),
+                'request_data'  => json_encode(['gateway' => $gatewayId]),
+            ];
+            $response   = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'gateway'       => $gatewayId,
+                '$response'     => $response
+            ]);
+
+            $experimentResult = false; // Default value
+            $variables = $response['response']['variant']['variables'] ?? [];
+            foreach ($variables as $variable) {
+                $key = $variable['key'] ?? '';
+                $value = $variable['value'] ?? '';
+                if($key === 'holygrail' and $value === 'on')
+                {
+                    $experimentResult = true;
+                    $this->requestContext->setHolygrailIciciFlow($experimentResult);
+                    break;
+                }
+            }
+            return $experimentResult;
+        }catch (\Exception $e){
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SPLITZ_ERROR
+            );
+            $this->requestContext->setHolygrailIciciFlow(false);
+            return false;
+        }
+        $this->requestContext->setHolygrailIciciFlow(false);
+        return false;
+    }
+
     public function authorize(array $input)
     {
         parent::action($input, Action::AUTHENTICATE);
@@ -144,28 +206,46 @@ class Gateway extends Base\Gateway
             return $this->authenticate($input);
         }
 
-        if (($this->isBharatQrPayment() === true) or
-            ($this->isUpiTransferPayment() === true))
+        if ($this->isBharatQrPayment() or
+            $this->isUpiTransferPayment())
         {
             //
-            //Hacky fixture: When ORIGINAL_BANK_RRN_REQ is null, the entity NPCI_REFERENCE_ID method becomes
-            // inaccessible for the gateway.To fix the issue, we assign it to BANK_RRN so that paymentData can
-            //access NPCI_REFERENCE_ID using getNpciReferenceId() method.
+            // Hacky fixture: When ORIGINAL_BANK_RRN_REQ is null, the NPCI_REFERENCE_ID method becomes
+            // inaccessible for the gateway. To fix this, assign it to BANK_RRN so that paymentData can
+            // access NPCI_REFERENCE_ID using getNpciReferenceId() method.
             //
 
             $routeName = $this->app['api.route']->getCurrentRouteName();
+            $isExperimentEnabled = $this->checkIfHolygrailIciciFlowSplitzExperimentEnabled($this->gateway);
+
+            // Helper function to populate $input fields
+            $populateInputFields = function ($input, $source)
+            {
+                $input[Fields::ORIGINAL_BANK_RRN_REQ] = $source[UpiEntity::NPCI_REFERENCE_ID];
+                $input[Fields::MERCHANT_TRAN_ID] = $source[UpiEntity::MERCHANT_REFERENCE];
+                $input[Fields::MERCHANT_ID] = $source[UpiEntity::GATEWAY_MERCHANT_ID];
+                $input[Fields::PAYER_VA] = $source[UpiEntity::VPA];
+                $input[Entity::TYPE] = Base\Type::PAY;
+                return $input;
+            };
 
             if ($routeName === 'payment_create_upi_unexpected')
             {
-                $input[Fields::ORIGINAL_BANK_RRN_REQ] = $input['upi'][UpiEntity::NPCI_REFERENCE_ID];
-
-                $input[Fields::MERCHANT_TRAN_ID] = $input['upi'][UpiEntity::MERCHANT_REFERENCE];
-
-                $input[Fields::MERCHANT_ID] = $input['terminal'][UpiEntity::GATEWAY_MERCHANT_ID];
-
-                $input[Fields::PAYER_VA] = $input['upi'][UpiEntity::VPA];
-
-                $input[Entity::TYPE] = Base\Type::PAY;
+                if ($isExperimentEnabled)
+                {
+                    $input = $populateInputFields($input, $input['data']['upi']);
+                }
+                else
+                {
+                    $input = $populateInputFields($input, $input['upi']);
+                }
+            }
+            elseif ($isExperimentEnabled)
+            {
+                if (empty($input['data']['upi']) === false)
+                {
+                    $input = $populateInputFields($input, $input['data']['upi']);
+                }
             }
             else
             {
@@ -507,7 +587,7 @@ class Gateway extends Base\Gateway
      * @throws Exception\GatewayErrorException
      * @throws Exception\RuntimeException
      */
-    protected function parseGatewayResponse(string $response, bool $forceDecryption = false, bool $isUpiTransfer = false): array
+    public function parseGatewayResponse(string $response, bool $forceDecryption = false, bool $isUpiTransfer = false): array
     {
 
         if (($forceDecryption === false) or
@@ -525,6 +605,10 @@ class Gateway extends Base\Gateway
             // but not in all cases (usually errors are unencrypted)
             if ($decodedJson !== null)
             {
+                if($this->checkIfHolygrailIciciFlowSplitzExperimentEnabled($this->gateway) === true)
+                {
+                    $decodedJson = $this->formatMozartResponse($decodedJson);
+                }
                 return $decodedJson;
             }
         }
@@ -550,7 +634,14 @@ class Gateway extends Base\Gateway
             );
         }
 
-        return $this->jsonToArray($response);
+        $response =  $this->jsonToArray($response);
+
+        if($this->checkIfHolygrailIciciFlowSplitzExperimentEnabled($this->gateway) === true)
+        {
+            $response = $this->formatMozartResponse($response);
+        }
+
+        return $response;
     }
 
     /**
@@ -801,6 +892,10 @@ class Gateway extends Base\Gateway
 
     public function getQrPaymentStatus($input)
     {
+        if ($this->checkIfHolygrailIciciFlowSplitzExperimentEnabled($this->gateway) === true)
+        {
+            return $this->getQrPaymentStatusFromTrait($input);
+        }
         $request = [
             EntityConstants::PAYMENT => [
                 'gateway' => $this->gateway,
@@ -820,7 +915,9 @@ class Gateway extends Base\Gateway
                                                Action::VERIFY
         );
 
-        if ((isset($result['data']['meta']['response']['plain']) === true) and
+
+
+         if ((isset($result['data']['meta']['response']['plain']) === true) and
             (isset($result['data']['meta']['response']['plain'][Fields::SUCCESS]) === true) and
             ($result['data']['meta']['response']['plain'][Fields::SUCCESS] === 'true'))
         {
@@ -854,6 +951,11 @@ class Gateway extends Base\Gateway
 
     public function parseMozartResp($data)
     {
+        if ($this->checkIfHolygrailIciciFlowSplitzExperimentEnabled($this->gateway) === true)
+        {
+            return $this->parseMozartRespFromTrait($data);
+        }
+
         $callbackData = [
             Fields::BANK_RRN            => $data[Fields::ORIGINAL_BANK_RRN],
             Fields::PAYER_VA            => $data[Fields::VERIFY_PAYER_VA],
@@ -1570,6 +1672,15 @@ class Gateway extends Base\Gateway
              (($routeName === 'payment_create_upi_unexpected') and ($isBharatQr === true))))
         {
             $response = $this->parseGatewayResponse($body, false, $isUpiTransfer);
+
+//            if ($this->checkIfHolygrailIciciFlowSplitzExperimentEnabled($this->gateway) === true)
+//            {
+//                if(isset($response['data']['upi']) === false)
+//                {
+//                    $response = $this->getMozartResponse($response);
+//                }
+//            }
+
         }
         else if (($decoded !== null) and
             (isset($decoded["encryptedData"]) === true) and (isset($decoded["encryptedKey"]) === true) and
@@ -1602,9 +1713,21 @@ class Gateway extends Base\Gateway
                 return $response;
             }
 
+            $gatewayResponse = [
+                'callback_data' => $response
+            ];
+
+
+            if(((new BharatQr\Service())->isNonVAQrCodePayment($gatewayResponse) === true) and
+                ($this->checkIfHolygrailIciciFlowSplitzExperimentEnabled($this->gateway) === true))
+            {
+                return $response;
+            }
+
             $response = $this->parseGatewayResponse($body, true, $isUpiTransfer);
         }
-        else {
+        else
+        {
             $response = $this->parseGatewayResponse($body, true, $isUpiTransfer);
         }
 
@@ -1674,21 +1797,95 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    public function getParsedDataFromUnexpectedCallback(array $input)
+    private function formatMozartResponse($response) : array
     {
-        $payment = [
-            Payment\Entity::METHOD      => Payment\Method::UPI,
-            Payment\Entity::AMOUNT      => (int) ($input[Fields::PAYER_AMOUNT] * 100),
-            Payment\Entity::VPA         => $input[Fields::PAYER_VA],
-            Payment\Entity::CURRENCY    => 'INR',
-            Payment\Entity::CONTACT     => '+919999999999',
-            Payment\Entity::EMAIL       => 'void@razorpay.com',
+        if(isset($response['data'])  === true &&
+            isset($response['data']['upi']) === true &&
+            isset($response['data']['payment']) === true &&
+            isset($response['data']['terminal']) === true)
+        {
+            return $response;
+        }
+        $dummyResponse['data'] = [
+            'upi' => $this->getMozartFormatFromParsedResponse('UPI',$response),
+            'payment' => $this->getMozartFormatFromParsedResponse('PAYMENT',$response),
+            'version' => 'v2',
+            'terminal' => $this->getMozartFormatFromParsedResponse('TERMINAL',$response),
+            'status' => 'payment_successful',
         ];
 
-        $terminal = [
-            Terminal\Entity::GATEWAY                => $this->gateway,
-            Terminal\Entity::GATEWAY_MERCHANT_ID    => $input[Fields::MERCHANT_ID],
-        ];
+        $dummyResponse['success'] = $response['TxnStatus'] === 'SUCCESS';
+
+        return $dummyResponse;
+    }
+
+    private function getMozartFormatFromParsedResponse($type,$response) : array
+    {
+        $data = [];
+        switch ($type)
+        {
+            case 'UPI':
+                $data =  [
+                    Entity::VPA                  => $response[Fields::PAYER_VA],
+                    Entity::NPCI_REFERENCE_ID    => $response[Fields::BANK_RRN],
+                    Entity::MERCHANT_REFERENCE   => $response[Fields::MERCHANT_TRAN_ID],
+                    Entity::GATEWAY_TIMESTAMP    => $response[Fields::TXN_COMPLETION_DATE] ?? null
+
+                ];
+                break;
+            case 'PAYMENT':
+                $data =  [
+                    'amount_authorized'=> $this->getIntegerFormattedAmount($response[Fields::PAYER_AMOUNT]),
+                ];
+                break;
+            case 'TERMINAL':
+                $data = [
+                    Entity::VPA => $response[Fields::PAYER_VA],
+                    Entity::GATEWAY => $this->gateway,
+                    Entity::GATEWAY_MERCHANT_ID => $response[Fields::MERCHANT_ID] ?? $response[Fields::PAYER_VA],
+                ];
+                break;
+            default:
+                break;
+        }
+        return $data;
+    }
+
+    public function getParsedDataFromUnexpectedCallback(array $input)
+    {
+        if($this->checkIfHolygrailIciciFlowSplitzExperimentEnabled($this->gateway) === true)
+        {
+            $payment = [
+                Payment\Entity::METHOD      => Payment\Method::UPI,
+                Payment\Entity::AMOUNT      => $input['data']['payment']['amount_authorized'],
+                Payment\Entity::VPA         => $input['data']['upi']['vpa'],
+                Payment\Entity::CURRENCY    => 'INR',
+                Payment\Entity::CONTACT     => '+919999999999',
+                Payment\Entity::EMAIL       => 'void@razorpay.com',
+            ];
+
+            $terminal = [
+                Terminal\Entity::GATEWAY                => $this->gateway,
+                Terminal\Entity::GATEWAY_MERCHANT_ID    =>  $input['data']['terminal']['gateway_merchant_id'],
+            ];
+        }
+        else
+        {
+            $payment = [
+                Payment\Entity::METHOD      => Payment\Method::UPI,
+                Payment\Entity::AMOUNT      => (int) ($input[Fields::PAYER_AMOUNT] * 100),
+                Payment\Entity::VPA         => $input[Fields::PAYER_VA],
+                Payment\Entity::CURRENCY    => 'INR',
+                Payment\Entity::CONTACT     => '+919999999999',
+                Payment\Entity::EMAIL       => 'void@razorpay.com',
+            ];
+
+            $terminal = [
+                Terminal\Entity::GATEWAY                => $this->gateway,
+                Terminal\Entity::GATEWAY_MERCHANT_ID    => $input[Fields::MERCHANT_ID],
+            ];
+        }
+
 
         return [
             'payment'   => $payment,
@@ -1813,6 +2010,10 @@ class Gateway extends Base\Gateway
 
     public function getQrData(array $input)
     {
+        if($this->checkIfHolygrailIciciFlowSplitzExperimentEnabled($this->gateway) === true)
+        {
+           return $this->getQrDataFromTrait($input,$this->gateway);
+        }
         if ((isset($input['data']['upi']) === true) and
             (isset($input['data']['payment']) === true) and
             (isset($input['data']['terminal']) === true))
@@ -2545,6 +2746,10 @@ class Gateway extends Base\Gateway
 
     public function getQrPaymentMerchantReference($merchantReference, $inputFields = null)
     {
+        if($this->checkIfHolygrailIciciFlowSplitzExperimentEnabled($this->gateway) === true)
+        {
+            return $this->getQrPaymentMerchantReferenceFromTrait($merchantReference,$inputFields);
+        }
         if ((isset($inputFields) === true) and
             (isset($inputFields['data']) === true) and
             (isset($inputFields['data']['meta']) === true) and

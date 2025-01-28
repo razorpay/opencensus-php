@@ -62,15 +62,19 @@ class UpiAirtelQRCodeTest extends TestCase
 
         $this->setMockRazorxTreatment(
             [
-                'api_upi_airtel_pre_process_v1' => 'upi_airtel',
-                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON
+                'api_upi_airtel_pre_process_v1' => 'upi_airtel'
+            ]
+        );
+
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_gateway_unrecognized_payment_process') => 'on'
             ]
         );
     }
 
 
-    public function createPricingForOffline()
+    public function createPricingForOffline($contents = [])
     {
         $posQRPricingPlan = [
             'plan_id' => '1hDYlICobzOCYt',
@@ -85,6 +89,8 @@ class UpiAirtelQRCodeTest extends TestCase
             'fixed_rate' => 0,
             'channel' => 'in_person',
         ];
+
+        $posQRPricingPlan = array_merge($posQRPricingPlan, $contents);
 
         $this->fixtures->create('pricing', $posQRPricingPlan);
     }
@@ -159,8 +165,7 @@ class UpiAirtelQRCodeTest extends TestCase
 
         $this->setMockRazorxTreatment(
             [
-                'api_upi_airtel_pre_process_v1'                  => 'upi_airtel',
-                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
+                'api_upi_airtel_pre_process_v1'                  => 'upi_airtel'
             ]
         );
 
@@ -266,9 +271,9 @@ class UpiAirtelQRCodeTest extends TestCase
     public function testCloseAPBQrWithCloseQrOnDemandFlagEnabled(): void
     {
         $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
-        $this->expectException(BadRequestException::class);
-
-        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
+//        $this->expectException(BadRequestException::class);
+//
+//        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
 
         $qrCode = $this->createQrCode(
             [
@@ -283,6 +288,8 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->assertEquals(Status::ACTIVE, $qrCode['status']);
         $closeResponse = $this->closeQrCode($qrCode['id'], 'live', 'LiveAccountMer');
 
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+        $this->assertEquals('closed', $qrCode->getStatus());
     }
     public function testCloseAPBQrWithCloseQrOnDemandFlagEnabledPos(): void
     {
@@ -310,6 +317,7 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testCloseAPBQrWithCloseQrOnDemandFlagDisabled(): void
     {
+        $this->markTestSkipped('feature close_qr_on_demand has been deprecated');
         $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
         $this->fixtures->on('live')->merchant->removeFeatures([FeatureConstants::CLOSE_QR_ON_DEMAND], 'LiveAccountMer');
         $this->expectException(BadRequestException::class);
@@ -332,6 +340,16 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testCreateStaticAirtelQrWithOfflineTerminal(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
+        $this->setMockSplitzTreatment(
+            [
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on'
+            ]
+        );
         $terminal = $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $qrCode   = $this->createQrCode(
                      [
@@ -727,6 +745,16 @@ class UpiAirtelQRCodeTest extends TestCase
     public function testOfflineStaticQrWithRandomMerchantReference(): void
     {
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
+        $this->setMockSplitzTreatment(
+            [
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on'
+            ]
+        );
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
         $terminal = $this->fixtures->create(
@@ -780,7 +808,16 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testStaticQRPaymentsForOfflineWithoutQrCodeConfig(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
+        $this->setMockSplitzTreatment(
+            [
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on'
+            ]
+        );
         $this->fixtures->create(
             'terminal:dedicated_upi_airtel_offline_terminal',
             [
@@ -933,8 +970,7 @@ class UpiAirtelQRCodeTest extends TestCase
 
         $this->setMockRazorxTreatment(
             [
-                'api_upi_airtel_pre_process_v1' => 'upi_airtel',
-                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
+                'api_upi_airtel_pre_process_v1' => 'upi_airtel'
             ]
         );
 
@@ -1156,7 +1192,16 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testProcessAirtelQrReconInternalWithoutPaymentForStaticQR(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
+        $this->setMockSplitzTreatment(
+            [
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on'
+            ]
+        );
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
         $terminal = $this->fixtures->create(
@@ -1203,6 +1248,16 @@ class UpiAirtelQRCodeTest extends TestCase
     public function testProcessAirtelQrReconInternalSQRDuplicate(): void
     {
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
+        $this->setMockSplitzTreatment(
+            [
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on'
+            ]
+        );
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
         $terminal = $this->fixtures->create(
@@ -1258,11 +1313,10 @@ class UpiAirtelQRCodeTest extends TestCase
         $terminal = $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $this->setMockRazorxTreatment(
             [
-                'api_upi_airtel_pre_process_v1' => 'upi_airtel',
-                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
+                'api_upi_airtel_pre_process_v1' => 'upi_airtel'
             ]
         );
-        $this->createPricingForOffline();
+        $this->createPricingForOffline(['receiver_type' => 'qr_code']);
         $this->createQrCode(
                      [
                          'usage' => 'multiple_use',
@@ -1329,17 +1383,21 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->assertNotNull($response['payment']['amount']);
     }
 
-
+   //qrCode Configs not Found
     public function testPaymentCreationViaReconForAPBStaticQr()
     {
         $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
 
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
-                'api_upi_airtel_pre_process_v1' => 'upi_airtel',
-                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
+                'api_upi_airtel_pre_process_v1' => 'upi_airtel'
+            ]
+        );
+
+        $this->setMockSplitzTreatment(
+            [
+               'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on'
             ]
         );
 
@@ -1389,6 +1447,7 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->assertEquals($response['payment_id'], $payment['id']);
     }
 
+    //qrCode Configs not Found
     public function testPaymentCreationViaReconForAPBStaticQrDuplicateCall()
     {
         $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
@@ -1399,10 +1458,14 @@ class UpiAirtelQRCodeTest extends TestCase
 
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
                 'api_upi_airtel_pre_process_v1' => 'upi_airtel',
-                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+
+        $this->setMockSplitzTreatment(
+            [
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on'
             ]
         );
 
@@ -1588,10 +1651,14 @@ class UpiAirtelQRCodeTest extends TestCase
     {
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
                 'api_upi_airtel_pre_process_v1' => 'upi_airtel',
-                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_gateway_unrecognized_payment_process') => 'on',
+                $this->config->get('app.recon_unexpected_qr_payment_via_upi_route') => 'on'
             ]
         );
 
@@ -1631,10 +1698,14 @@ class UpiAirtelQRCodeTest extends TestCase
     {
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
                 'api_upi_airtel_pre_process_v1' => 'upi_airtel',
-                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_gateway_unrecognized_payment_process') => 'on',
+                $this->config->get('app.recon_unexpected_qr_payment_via_upi_route') => 'on'
             ]
         );
 
@@ -1678,6 +1749,16 @@ class UpiAirtelQRCodeTest extends TestCase
             'terminal:dedicated_upi_airtel_offline_terminal',
             [
                 'merchant_id' => '10000000000000'
+            ]
+        );
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
+        $this->setMockSplitzTreatment(
+            [
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on'
             ]
         );
 
@@ -1762,7 +1843,15 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testEzetapNotificationOfflineQRCode()
     {
-        $this->mockSplitzTreatmentForEzetapNotification();
+
+        $this->setMockSplitzTreatment(
+            [
+                'M25grFTOPZEGQS' => 'on',
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on',
+                'P1ihasxhcDs1ZE' => 'on'
+            ]
+        );
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
         $this->fixtures->create(
@@ -1801,9 +1890,15 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testEzetapNotificationOfflineQRCodeWithoutExperiment()
     {
-
+        $this->setMockSplitzTreatment(
+            [
+                'M25grFTOPZEGQS' => 'on',
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on',
+                'P1ihasxhcDs1ZE' => 'off'
+            ]
+        );
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
-        $this->mockSplitzTreatmentForEzetapNotification('off');
         $this->fixtures->create(
             'terminal:dedicated_upi_airtel_offline_terminal',
             [
@@ -1928,7 +2023,14 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testEzetapNotificationOfflineRefundCreatedQRCode()
     {
-        $this->mockSplitzTreatmentForEzetapNotification();
+        $this->setMockSplitzTreatment(
+            [
+                'M25grFTOPZEGQS' => 'on',
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on',
+                'P1ihasxhcDs1ZE' => 'on'
+            ]
+        );
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
         $this->fixtures->create(
@@ -1974,7 +2076,14 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testEzetapNotificationOfflineRefundCreatedQRCodeWithoutExperiment()
     {
-        $this->mockSplitzTreatmentForEzetapNotification('off');
+        $this->setMockSplitzTreatment(
+            [
+                'M25grFTOPZEGQS' => 'on',
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on',
+                'P1ihasxhcDs1ZE' => 'off'
+            ]
+        );
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
         $this->fixtures->create(
@@ -2017,7 +2126,14 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testEzetapNotificationOfflineRefundProcessedQRCode()
     {
-        $this->mockSplitzTreatmentForEzetapNotification();
+        $this->setMockSplitzTreatment(
+            [
+                'M25grFTOPZEGQS' => 'on',
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on',
+                'P1ihasxhcDs1ZE' => 'on'
+            ]
+        );
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
         $this->fixtures->create(
@@ -2067,7 +2183,14 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testEzetapNotificationOfflineRefundFailedQRCode()
     {
-        $this->mockSplitzTreatmentForEzetapNotification();
+        $this->setMockSplitzTreatment(
+            [
+                'M25grFTOPZEGQS' => 'on',
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on',
+                'P1ihasxhcDs1ZE' => 'on'
+            ]
+        );
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
         $this->fixtures->create(
@@ -2113,5 +2236,51 @@ class UpiAirtelQRCodeTest extends TestCase
         (new Refund\Service)->dispatchEzetapRefundWebhook($payload);
         $this->assertEqualsCanonicalizing($eventList, $expectedEventList);
         $this->assertEquals(5, $actualEzetapNotificationCallCount);
+    }
+
+    public function testEzetapDeviceNoficationForSingleStackPayment()
+    {
+        $this->setMockSplitzTreatment(
+            [
+                'M25grFTOPZEGQS' => 'on',
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on',
+                'P1ihasxhcDs1ZE' => 'off'
+            ]
+        );
+        $this->config['applications.ezetap-notification.mock'] = true;
+        $this->fixtures->merchant->addFeatures(['omni_single_stack']);
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_airtel_offline_terminal',
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        );
+        $actualEzetapNotificationCallCount =0 ;
+        $eventList =[] ;
+        $expectedEventList = [
+            'qr_code.credited',
+        ];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount,$eventList);
+        $this->createPricingForOffline();
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type' => 'upi_qr',
+                'vpa'   => 'testvpaoffline@mairtel',
+            ],
+            headers: [
+                'X-Razorpay-Request-Source' => 'ezetap'
+            ]
+        );
+        $this->runQrCodeEntityAssertions('test');
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel', 'hdnOrderID' => 'Random78']);
+
+        $this->runQrPaymentEntityAssertions();
+        $this->assertEqualsCanonicalizing($eventList,$expectedEventList);
+        $this->assertEquals(1, $actualEzetapNotificationCallCount);
     }
 }

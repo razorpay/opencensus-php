@@ -1856,4 +1856,22 @@ class Service extends Base\Service
         // NOTE: Add additional query param support here.
         return [];
     }
+
+    // fetchAddressesForCustomerInternal is to be used by microservices to fetch additional fields
+    // not in `public()` for further processing.
+    public function fetchAddressesForCustomerInternal(array $input) : array
+    {
+        if (empty($input['contact']) == false)
+        {
+            $contact = $input['contact'];
+            $addresses = (new Address\Core)->fetchAddressesForContact($contact);
+            $customerAddresses = [];
+            foreach ($addresses as $address)
+            {
+                array_push($customerAddresses, $address->toArray());
+            }
+            return ["addresses" => $customerAddresses];
+        }
+        return [];
+    }
 }

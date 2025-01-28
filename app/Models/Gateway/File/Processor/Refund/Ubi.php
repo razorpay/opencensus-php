@@ -48,7 +48,7 @@ class Ubi extends Base
             $transactionAmount = str_pad($row['refund']['amount'], 18, '0', STR_PAD_LEFT);
 
             $formattedData[] = [
-                self::ACCOUNT_NUMBER      => $row['gateway'][Netbanking::BANK_ACCOUNT_NUMBER],
+                self::ACCOUNT_NUMBER      => preg_replace('/[\s\t\n\r\b\x07]+/', '', $row['gateway'][Netbanking::BANK_ACCOUNT_NUMBER]),
                 self::TRAN_TYPE           => 'C',
                 self::DATE                => $transactionDate,
                 self::REFUND_DATE         => ' '.$refundDate,

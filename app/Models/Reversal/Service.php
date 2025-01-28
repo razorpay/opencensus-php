@@ -20,11 +20,7 @@ class Service extends Base\Service
 
         $isReverseShadowMerchant = empty($merchant) === false ? $merchant->isFeatureEnabled(Features::PG_LEDGER_REVERSE_SHADOW) : false;
 
-        $requestId = empty($merchant) === false ? $merchant->getId() : $this->app['request']->getTaskId();
-
-        $readExp = $this->getReversalReadSplitzResponse($requestId) === 'enable';
-
-        if($isReverseShadowMerchant === true and $readExp === true
+        if($isReverseShadowMerchant === true
             and $this->app['basicauth']->getAuthType() === AuthType::PROXY_AUTH)
         {
             if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
@@ -69,17 +65,6 @@ class Service extends Base\Service
         }
 
         return $response;
-    }
-
-    public function getReversalReadSplitzResponse($merchantId)
-    {
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.reversal_read_experiment'),
-        ];
-        $response = $this->app['splitzService']->evaluateRequest($properties);
-
-        return $response['response']['variant']['name'] ?? '';
     }
 
     public function fetchMultiple(array $input): array

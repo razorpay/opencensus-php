@@ -360,18 +360,6 @@ class BvsValidationClient extends BaseClient
      */
     private function newMetadata(string $merchant_id, string $artefactType): ?validationV1\Metadata
     {
-
-        $variant = $this->app->razorx->getTreatment(
-            $merchant_id,
-            RazorxTreatment::BVS_CREATE_VALIDATION_METADATA,
-            Constant::LIVE_MODE
-        );
-
-        if (strcmp($variant, Constant::ON) != 0)
-        {
-            return null;
-        }
-
         $requestContext = $this->app['request.ctx'];
         $request        = $this->app['request'];
 

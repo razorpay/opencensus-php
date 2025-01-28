@@ -76,7 +76,8 @@ class VerificationDetailsTransformer extends Base\Transformer
         "incorrect_details" => "incorrect_details",
         "not_matched"       => "not_matched",
         "failed"            => "failed",
-        "captured"          => "initiated"
+        "captured"          => "initiated",
+        "staled"            => ""
     ];
 
     public function __construct()

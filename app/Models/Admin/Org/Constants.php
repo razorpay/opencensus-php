@@ -80,6 +80,38 @@ class Constants
                 "name" => 'Subvented',
                 "type" => 'bool',
             ],
+        ],
+        Entity::AXIS_EASYPAY_ORG_ID => [
+            [
+                "id" => 'field1',
+                "name" => 'RM Emp No',
+                "type" => 'string',
+            ],
+            [
+                "id" => 'field2',
+                "name" => 'RM Name',
+                "type" => 'string',
+            ],
+            [
+                "id" => 'field3',
+                "name" => 'PSM Emp No.',
+                "type" => 'string',
+            ],
+            [
+                "id" => 'field4',
+                "name" => 'PSM Name',
+                "type" => 'string',
+            ],
+            [
+                "id" => 'field5',
+                "name" => 'Business Segment',
+                "type" => 'string',
+            ],
+            [
+                "id" => 'field6',
+                "name" => 'Regional/Segment Head',
+                "type" => 'string',
+            ]
         ]
     ];
 }

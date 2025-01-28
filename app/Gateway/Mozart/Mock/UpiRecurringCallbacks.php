@@ -30,6 +30,9 @@ trait UpiRecurringCallbacks
             case Payment\Gateway::UPI_AXIS:
                 return $this->getAsyncCallbackResponseMandateCreateForAxis($payment);
 
+            case Payment\Gateway::UPI_RZPAPB:
+                return $this->getAsyncCallbackResponseMandateCreateForApb($payment);
+
             default:
                 throw new Exception\AssertionException('Invalid gateway for ' . __FUNCTION__ . ' ' . $gateway);
         }
@@ -49,6 +52,9 @@ trait UpiRecurringCallbacks
 
             case Payment\Gateway::UPI_AXIS:
                 return $this->getAsyncCallbackResponseFirstDebitForAxis($payment);
+
+            case Payment\Gateway::UPI_RZPAPB:
+                return $this->getAsyncCallbackResponseMandateCreateForApb($payment);
 
             default:
                 throw new Exception\AssertionException('Invalid gateway for ' . __FUNCTION__ . ' ' . $gateway);
@@ -87,6 +93,9 @@ trait UpiRecurringCallbacks
             case Payment\Gateway::UPI_AXIS:
                 return $this->getAsyncCallbackResponsePauseForAxis($mandate);
 
+            case Payment\Gateway::UPI_RZPAPB:
+                return $this->getAsyncCallbackResponsePauseForApb($mandate);
+
             default:
                 throw new Exception\AssertionException('Invalid gateway for ' . __FUNCTION__ . ' ' . $gateway);
         }
@@ -107,6 +116,9 @@ trait UpiRecurringCallbacks
             case Payment\Gateway::UPI_AXIS:
                 return $this->getAsyncCallbackResponseResumeForAxis($mandate);
 
+            case Payment\Gateway::UPI_RZPAPB:
+                return $this->getAsyncCallbackResponseResumeForApb($mandate);
+
             default:
                 throw new Exception\AssertionException('Invalid gateway for ' . __FUNCTION__ . ' ' . $gateway);
         }
@@ -126,6 +138,9 @@ trait UpiRecurringCallbacks
 
             case Payment\Gateway::UPI_AXIS:
                 return $this->getAsyncCallbackResponseRevokeForAxis($mandate);
+
+            case Payment\Gateway::UPI_RZPAPB:
+                return $this->getAsyncCallbackResponseRevokeForApb($mandate);
 
             default:
                 throw new Exception\AssertionException('Invalid gateway for ' . __FUNCTION__ . ' ' . $gateway);
@@ -210,6 +225,10 @@ trait UpiRecurringCallbacks
             ],
         ];
 
+        if($payment["description"] === 'rearch_callback')
+        {
+            return $response;
+        }
 
         $jsonResponse =  json_encode($response);
 
@@ -222,6 +241,257 @@ trait UpiRecurringCallbacks
             'payload'      => $content,
             'ivToken'      => $iv,
             'keyId'        => 1
+        ];
+
+        return json_encode($response);
+    }
+
+    protected function getAsyncCallbackResponseMandateCreateForApb($payment)
+    {
+        $response = [
+            'entity'=> 'upi.mandate',
+            'mandate' => true,
+            'reference_id'=> $this->getReferenceNumberForCallback($payment, 'create'),
+            'upi_transaction_id'=> 'RZPc2ed455b797e4add8392110cfc528acc',
+            'upi_customer_reference_number'=> '804813039157',
+            'amount'=> 100,
+            'amount_rule'=> 'max',
+            'block_fund'=> true,
+            'created_at'=> 1722317078,
+            'currency'=> 'INR',
+            'description'=> 'Sample Mandate Entity',
+            'expire_at'=> 1722317078,
+            'initiated_by'=> 'Payee',
+            'name'=> 'mandate name',
+            'pause'=> [
+                'start'=> '',
+                'end'=> ''
+            ],
+            'merchant'=> [
+                'vpa'=> 'swiggy@rzp',
+                'name'=> 'Swiggy Pvt. Ltd.',
+                'mcc'=> '6765'
+            ],
+            'payer'=> [
+                'vpa'=> '7262093972.stage@rzp'
+            ],
+            'revocable_by_payer'=> true,
+            'recurrence'=> [
+                'period'=> 'as_presented',
+                'rule'=> 'before',
+                'value'=> 31
+            ],
+            'sequence_number'=> 1,
+            'share_to_payee'=> true,
+            'status'=> 'active',
+            'upi_reference_category'=> '02',
+            'upi_reference_url'=> 'https=>//www.abcxyz.com/',
+            'upi_initiation_mode'=> '00',
+            'upi_purpose_code'=> '14',
+            'upi_error_code'=> '14',
+            'upi_response_code'=> '00',
+            'upi_response_message'=> 'message',
+            'validity'=> [
+                'start_at'=> 1722317078,
+                'end_at'=> 1722317078
+            ],
+            'umn'=> 'XYZa977ccabb11e7abc4cec278b6b50a@mypsp'
+        ];
+
+        return json_encode($response);
+    }
+
+    protected function getAsyncCallbackResponseFirstDebitForApb($payment)
+    {
+        $response = [
+            'entity'=> 'upi.mandate_execution',
+            'mandate' => true,
+            'reference_id'=> $this->getReferenceNumberForCallback($payment, 'execte'),
+            'upi_transaction_id'=> 'RZP1KuSUGrp2l6MmPuT0163789452QPAY02',
+            'upi_customer_reference_number'=> '804813039157',
+            'umn'=> '130a977ccabb11e7abc4cec278b6b50a@mypsp',
+            'description'=> 'Sample Mandate Execution Request',
+            'amount'=> 100,
+            'sequence_number'=> 1,
+            'status'=> 'success',
+            'upi_error_code'=> '00',
+            'upi_payer_response_code'=> '00',
+            'upi_payer_reversal_response_code'=> '00',
+            'upi_payee_response_code'=> '00',
+            'upi_payee_reversal_response_code'=> '00',
+            'upi_response_message'=> 'message',
+            'expire_at'=> 1722317078,
+            'payer'=> [
+                'vpa'=> 'rohit@rzp',
+                'fundsource'=> [
+                    'type'=> 'savings',
+                    'ifsc'=> 'AXIS0000058',
+                    'masked_account_number'=> 'XXXXXXXXXXX3000'
+                ],
+                'name'=> 'Rohit Sharma'
+            ]
+        ];
+
+        return json_encode($response);
+    }
+
+    protected function getAsyncCallbackResponseRevokeForApb($mandate)
+    {
+        $response = [
+            'entity'=> 'upi.mandate',
+            'mandate' => true,
+            'upi_transaction_id'=> 'RZPc2ed455b797e4add8392110cfc528acc',
+            'upi_customer_reference_number'=> '804813039157',
+            'amount'=> 100,
+            'amount_rule'=> 'max',
+            'block_fund'=> true,
+            'created_at'=> 1722317078,
+            'currency'=> 'INR',
+            'description'=> 'Sample Mandate Entity',
+            'expire_at'=> 1722317078,
+            'initiated_by'=> 'Payee',
+            'name'=> 'mandate name',
+            'pause'=> [
+                'start'=> '',
+                'end'=> ''
+            ],
+            'merchant'=> [
+                'vpa'=> 'swiggy@rzp',
+                'name'=> 'Swiggy Pvt. Ltd.',
+                'mcc'=> '6765'
+            ],
+            'payer'=> [
+                'vpa'=> '7262093972.stage@rzp'
+            ],
+            'revocable_by_payer'=> true,
+            'recurrence'=> [
+                'period'=> 'as_presented',
+                'rule'=> 'before',
+                'value'=> 31
+            ],
+            'sequence_number'=> 1,
+            'share_to_payee'=> true,
+            'status'=> 'revoked',
+            'upi_reference_category'=> '02',
+            'upi_reference_url'=> 'https=>//www.abcxyz.com/',
+            'upi_initiation_mode'=> '00',
+            'upi_purpose_code'=> '14',
+            'upi_error_code'=> '14',
+            'upi_response_code'=> '00',
+            'upi_response_message'=> 'message',
+            'validity'=> [
+                'start_at'=> 1722317078,
+                'end_at'=> 1722317078
+            ],
+            'umn'=> $mandate['umn']
+        ];
+
+        return json_encode($response);
+    }
+
+    protected function getAsyncCallbackResponsePauseForApb($mandate)
+    {
+        $response = [
+            'entity'=> 'upi.mandate',
+            'mandate' => true,
+            'upi_transaction_id'=> 'RZPc2ed455b797e4add8392110cfc528acc',
+            'upi_customer_reference_number'=> '804813039157',
+            'amount'=> 100,
+            'amount_rule'=> 'max',
+            'block_fund'=> true,
+            'created_at'=> 1722317078,
+            'currency'=> 'INR',
+            'description'=> 'Sample Mandate Entity',
+            'expire_at'=> 1722317078,
+            'initiated_by'=> 'Payee',
+            'name'=> 'mandate name',
+            'pause'=> [
+                'start'=> '',
+                'end'=> ''
+            ],
+            'merchant'=> [
+                'vpa'=> 'swiggy@rzp',
+                'name'=> 'Swiggy Pvt. Ltd.',
+                'mcc'=> '6765'
+            ],
+            'payer'=> [
+                'vpa'=> '7262093972.stage@rzp'
+            ],
+            'revocable_by_payer'=> true,
+            'recurrence'=> [
+                'period'=> 'as_presented',
+                'rule'=> 'before',
+                'value'=> 31
+            ],
+            'sequence_number'=> 1,
+            'share_to_payee'=> true,
+            'status'=> 'paused',
+            'upi_reference_category'=> '02',
+            'upi_reference_url'=> 'https=>//www.abcxyz.com/',
+            'upi_initiation_mode'=> '00',
+            'upi_purpose_code'=> '14',
+            'upi_error_code'=> '14',
+            'upi_response_code'=> '00',
+            'upi_response_message'=> 'message',
+            'validity'=> [
+                'start_at'=> 1722317078,
+                'end_at'=> 1722317078
+            ],
+            'umn'=> $mandate['umn']
+        ];
+
+        return json_encode($response);
+    }
+
+    protected function getAsyncCallbackResponseResumeForApb($mandate)
+    {
+        $response = [
+            'entity'=> 'upi.mandate',
+            "mandate" => true,
+            'upi_transaction_id'=> 'RZPc2ed455b797e4add8392110cfc528acc',
+            'upi_customer_reference_number'=> '804813039157',
+            'amount'=> 100,
+            'amount_rule'=> 'max',
+            'block_fund'=> true,
+            'created_at'=> 1722317078,
+            'currency'=> 'INR',
+            'description'=> 'Sample Mandate Entity',
+            'expire_at'=> 1722317078,
+            'initiated_by'=> 'Payee',
+            'name'=> 'mandate name',
+            'pause'=> [
+                'start'=> '',
+                'end'=> ''
+            ],
+            'merchant'=> [
+                'vpa'=> 'swiggy@rzp',
+                'name'=> 'Swiggy Pvt. Ltd.',
+                'mcc'=> '6765'
+            ],
+            'payer'=> [
+                'vpa'=> '7262093972.stage@rzp'
+            ],
+            'revocable_by_payer'=> true,
+            'recurrence'=> [
+                'period'=> 'as_presented',
+                'rule'=> 'before',
+                'value'=> 31
+            ],
+            'sequence_number'=> 1,
+            'share_to_payee'=> true,
+            'status'=> 'unpaused',
+            'upi_reference_category'=> '02',
+            'upi_reference_url'=> 'https=>//www.abcxyz.com/',
+            'upi_initiation_mode'=> '00',
+            'upi_purpose_code'=> '14',
+            'upi_error_code'=> '14',
+            'upi_response_code'=> '00',
+            'upi_response_message'=> 'message',
+            'validity'=> [
+                'start_at'=> 1722317078,
+                'end_at'=> 1722317078
+            ],
+            'umn'=> $mandate['umn']
         ];
 
         return json_encode($response);
@@ -288,10 +558,16 @@ trait UpiRecurringCallbacks
                     'show_QR'              => 'Y',
                     'callback_type'        => 'MANDATE_STATUS',
                     'purpose_code'         => '00',
-                    'message'              => 'Initial debit successful'
+                    'message'              => 'Initial debit successful',
+                    'respCode'             => '00'
                 ]
             ],
         ];
+
+        if($payment["description"] === 'rearch_callback')
+        {
+            return $response;
+        }
 
         $jsonResponse =  json_encode($response);
 
@@ -440,6 +716,11 @@ trait UpiRecurringCallbacks
             ],
         ];
 
+        if($mandate["description"] === 'rearch_callback')
+        {
+            return $response;
+        }
+
         $jsonResponse =  json_encode($response);
 
         $iv = strtoupper(bin2hex(random_bytes(16)));
@@ -503,6 +784,11 @@ trait UpiRecurringCallbacks
             ],
         ];
 
+        if($mandate["description"] === 'rearch_callback')
+        {
+            return $response;
+        }
+
         $jsonResponse =  json_encode($response);
 
         $iv = strtoupper(bin2hex(random_bytes(16)));
@@ -563,6 +849,11 @@ trait UpiRecurringCallbacks
                 ]
             ],
         ];
+
+        if($mandate["description"] === 'rearch_callback')
+        {
+            return $response;
+        }
 
         $jsonResponse =  json_encode($response);
 

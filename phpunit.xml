@@ -193,6 +193,7 @@
             <file>./tests/Unit/Utility/IfscValidationTest.php</file>
             <file>./tests/Unit/PayoutSource/PayoutSourceTest.php</file>
             <directory>./tests/Unit/Models/Payout/</directory>
+            <file>./tests/Unit/Payout/IrctcPayoutLedgerTest.php</file>
         </testsuite>
         <testsuite name="Features-3-2 Test Suite">
             <directory>./tests/Functional/Order/</directory>
@@ -208,6 +209,7 @@
             <directory>./tests/Functional/Tax/</directory>
             <directory>./tests/Functional/User/</directory>
             <directory>./tests/Functional/UserRole/</directory>
+            <file>./tests/Unit/Models/Merchant/DualWritingTest.php</file>
         </testsuite>
         <testsuite name="Features-4-1 Test Suite">
             <directory>./tests/Functional/Dispute/</directory>
@@ -259,6 +261,7 @@
             <exclude>./tests/Unit/Models/Merchant/BusinessDetail/</exclude>
             <exclude>./tests/Unit/Models/Merchant/Bvs/</exclude>
             <exclude>./tests/Unit/Request/Edge/</exclude>
+            <exclude>./tests/Unit/Models/Merchant/DualWritingTest.php</exclude>
         </testsuite>
         <testsuite name="Feature-6 Test Suite">
             <directory>./tests/Functional/TaxPayments/</directory>

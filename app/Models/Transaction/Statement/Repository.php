@@ -67,11 +67,12 @@ class Repository extends Transaction\Repository
     public function findByPublicIdAndMerchantForBankingBalance(
         string $id,
         Merchant\Entity $merchant,
-        array $params = []): Entity
+        array $params = [],
+        $connectionType = null): Entity
     {
         Entity::verifyIdAndStripSign($id);
 
-        $statement = $this->getQueryForFindWithParams($params)
+        $statement = $this->getQueryForFindWithParams($params,$connectionType)
                           ->merchantId($merchant->getId())
                           ->findOrFailPublic($id);
 
@@ -184,12 +185,7 @@ class Repository extends Transaction\Repository
     {
         if ($query == null)
         {
-            $connectionType = $this->getPaymentFetchReplicaConnection();
-
-            if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-            {
-                $connectionType = $this->getSlaveConnection();
-            }
+            $connectionType = $this->getSlaveConnection();
 
             $query = $this->newQueryWithConnection($connectionType);
         }
@@ -204,12 +200,7 @@ class Repository extends Transaction\Repository
         if( ($balance != null and $balance->isTypeBanking())
             and (array_key_exists(self::FROM, $input) or $this->checkDefaultFilters($input)) )
         {
-            $connectionType = $this->getPaymentFetchReplicaConnection();
-
-            if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-            {
-                $connectionType = $this->getSlaveConnection();
-            }
+            $connectionType = $this->getSlaveConnection();
 
             $this->baseQuery = $this->newQueryWithConnection($connectionType)
                 ->from(\DB::raw(Table::TRANSACTION.' USE INDEX (transactions_merchant_id_balance_id_created_at_index)'));

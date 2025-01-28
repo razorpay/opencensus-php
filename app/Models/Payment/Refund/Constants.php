@@ -260,6 +260,7 @@ class Constants
 
     const PG_LEDGER_REVERSE_SHADOW                  = 'pg_ledger_reverse_shadow';
     const JOURNAL_ID                                = 'journal_id';
+    const PARTIAL_CAPTURE_FEATURE                   = 'allow_partial_capture';
     const FEE_ONLY_REVERSAL                         = 'fee_only_reversal';
     const FULL_REVERSAL                             = 'full_reversal';
     const SPEED_DECISIONED                          = "speed_decisioned";

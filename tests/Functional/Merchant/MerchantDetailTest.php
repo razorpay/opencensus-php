@@ -3074,9 +3074,9 @@ class MerchantDetailTest extends OAuthTestCase
         {
             $shouldSendEmailViaStork = $mail->shouldSendEmailViaStork();
             $getParamsForStork = $mail->getParamsForStork();
-
             $this->assertArrayHasKey('template_name', $getParamsForStork);
             $this->assertArrayHasKey('template_namespace', $getParamsForStork);
+            $this->assertArrayHasKey('org_id', $getParamsForStork);
             $this->assertArrayHasKey('params', $getParamsForStork);
             $this->assertArrayHasKey('isCustomOnboardingEmail', $getParamsForStork['params']);
             $this->assertArrayHasKey('is_email_logo', $getParamsForStork['params']);
@@ -6339,8 +6339,6 @@ Team Razorpay', '+911234567890');
         $this->setAdminForInternalAuth();
 
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
-
-        $this->mockRazorX(__FUNCTION__, 'BVS_MANUAL_VERIFICATION_DATA', 'on', $merchantId);
 
         $this->startTest();
 
@@ -10063,11 +10061,6 @@ Team Razorpay',
                         return $value;
                     }
 
-                    if ($feature === RazorxTreatment::WHATSAPP_NOTIFICATIONS)
-                    {
-                        return $value;
-                    }
-
                     return 'off';
                 }));
     }
@@ -10584,8 +10577,6 @@ Team Razorpay',
     {
         Mail::fake();
 
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
-
         $merchant = $this->fixtures->merchant->create([
             'activated' => true,
             'name' => 'Test name'
@@ -10641,8 +10632,6 @@ Team Razorpay',
 
    private function setupMerchantWithMerchantDetails(array $predefinedMerchant = [], array $predefinedMerchantDetails = [], string $role = Role::OWNER)
     {
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
-
         $merchant = $this->fixtures->create('merchant', $predefinedMerchant);
 
         $merchantId = $merchant['id'];
@@ -11344,7 +11333,6 @@ You can now start accepting payments from https://www.example.com.
 
     protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data, $expectedStorkParametersForSMSTemplate)
     {
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -13092,8 +13080,6 @@ We look forward to transacting with you!
 
         $website = 'www.liotec.ch';
 
-        $this->setMockRazorxTreatment(['WHATCMS_EXPERIMENT' => 'on']);
-
         $kafkaEventPayload = [
             'merchant_id'=>'IY31FYZ48vP1vc',
             'website_url'=>'www.liotec.ch'
@@ -14210,6 +14196,81 @@ We look forward to transacting with you!
         $businessDetailMetadata = $merchantDetails->businessDetail;
 
         $this->assertEmpty($businessDetailMetadata);
+    }
+    public function testFetchAdditionalBusinessDetailsForMerchantMetadataForEasyPayOrg()
+    {
+        $mid = random_alphanum_string(14);
+
+        $org = $this->fixtures->create('org', [
+            'id' => OrgEntity::AXIS_EASYPAY_ORG_ID
+        ]);
+
+        $this->addAssignablePermissionsToOrg($org);
+
+        $this->fixtures->create('merchant',
+            [
+                'id'                    => $mid,
+                'email'                 => 'test@razorpay.com',
+                'billing_label'         => 'Test Merchant',
+                'activated_at'          => time(),
+                'category'              => '5399',
+                'product_international' => '1111000000',
+                'org_id'                => OrgEntity::AXIS_EASYPAY_ORG_ID
+            ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => $mid,
+            'contact_mobile'    => '1234567124',
+        ]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/$mid/business/detail";
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->assertNotEmpty($resp['metadata']['org_defined_merchant_fields']);
+    }
+    public function testSaveAdditionalBusinessDetailsForMerchantMetadataSuccessForEasyPayOrg()
+    {
+        $mid = random_alphanum_string(14);
+
+        $org = $this->fixtures->create('org', [
+            'id' => OrgEntity::AXIS_EASYPAY_ORG_ID
+        ]);
+
+        $this->addAssignablePermissionsToOrg($org);
+
+        $this->fixtures->create('merchant',
+            [
+                'id'                    => $mid,
+                'email'                 => 'test@razorpay.com',
+                'billing_label'         => 'Test Merchant',
+                'activated_at'          => time(),
+                'category'              => '5399',
+                'product_international' => '1111000000',
+                'org_id'                => OrgEntity::AXIS_EASYPAY_ORG_ID
+            ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => $mid,
+            'contact_mobile'    => '1234567124',
+        ]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/$mid/business/detail";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchantDetails = (new Detail\Repository())->getByMerchantId($mid);
+        $businessDetailMetadata = $merchantDetails->businessDetail->getMetadata();
+
+        $this->assertNotEmpty($businessDetailMetadata['org_defined_merchant_fields']);
     }
 
     public function testSaveMerchantDetailsForPartnerMerchant()

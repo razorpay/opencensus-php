@@ -210,23 +210,13 @@ class Repository extends Base\Repository
 
         $globalFingerprint = $this->dbColumn(Entity::GLOBAL_FINGERPRINT);
 
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_upi_experiment_id'),
-        ];
-
-        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         // TODO: Further optimization can be picked up later on this. Once a merchant is found for given fingerprint
         //       These is no need to query further rows.
         $query = $this->newQueryWithConnection($connectionType);
-        if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
-            $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ " . Entity::MERCHANT_ID));
-        }else{
-            $query = $query->select(Entity::MERCHANT_ID);
-        }
+
+        $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ " . Entity::MERCHANT_ID));
 
         return  $query->where($globalFingerprint, '=', $fingerprint)
                       ->whereIn(Entity::MERCHANT_ID, $merchant_ids)

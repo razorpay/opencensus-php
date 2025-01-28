@@ -310,6 +310,10 @@ return [
         'x_corp_code' => env('AXIS_X_CORP_CODE', "9845"),
     ],
 
+    'idfc_va' => [
+        'org_token'   => env('IDFC_VA_SECRET'),
+    ],
+
     'rbl' => [
         'secret' => env('BANKING_ACCOUNT_RBL_WEBHOOK_SECRET'),
     ],
@@ -1604,6 +1608,17 @@ return [
         'url'       => [
             'live' => env('PAYMENTS_CROSS_BORDER_SERVICE_LIVE_URL'),
             'test' => env('PAYMENTS_CROSS_BORDER_SERVICE_TEST_URL'),
+        ],
+    ],
+
+    'cross_border_import_service' => [
+        'mock'      => env('CROSS_BORDER_IMPORT_SERVICE_MOCK', false),
+        'username' => env('CROSS_BORDER_IMPORT_SERVICE_USERNAME','cross-border-import'),
+        'password' => env('CROSS_BORDER_IMPORT_SERVICE_PASSWORD','RANDOM_CBI_PASSWORD'),
+        'secret'   => env('CROSS_BORDER_IMPORT_SERVICE_SECRET'),
+        'url'      => [
+            'live' => env('CROSS_BORDER_IMPORT_SERVICE_LIVE_URL'),
+            'test' => env('CROSS_BORDER_IMPORT_SERVICE_TEST_URL'),
         ],
     ],
 

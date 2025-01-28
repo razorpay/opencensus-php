@@ -3573,7 +3573,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 62,
+                    'rules_count' => 69,
                     'type'        => 'pricing',
                 ],
                 [
@@ -3599,6 +3599,11 @@ return [
                 [
                     'plan_name'   => 'testDefaultPlan',
                     'rules_count' => 37,
+                    'type'        => 'pricing',
+                ],
+                [
+                    'plan_name'   => 'ZeroPricingPlan',
+                    'rules_count' => 8,
                     'type'        => 'pricing',
                 ],
             ],
@@ -3680,7 +3685,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 62,
+                    'rules_count' => 69,
                     'type'        => 'pricing',
                 ],
                 [
@@ -3706,6 +3711,11 @@ return [
                 [
                     'plan_name'   => 'testDefaultPlan',
                     'rules_count' => 37,
+                    'type'        => 'pricing',
+                ],
+                [
+                    'plan_name'   => 'ZeroPricingPlan',
+                    'rules_count' => 8,
                     'type'        => 'pricing',
                 ],
             ],

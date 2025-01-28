@@ -1551,10 +1551,11 @@ return [
                 "entity" => [
                     "entity" => "qr_code",
                     "name" => "Test QR Code",
-                    "usage" => "multiple_use",
+                    "usage" => "single_use",
                     "type" => "upi_qr",
                     'status' => 'active',
-                    'fixed_amount' => false,
+                    'fixed_amount' => true,
+                    'payment_amount' => 100,
                     'payments_amount_received' => 0,
                     'payments_count_received' => 0,
                     'customer_id' => null,

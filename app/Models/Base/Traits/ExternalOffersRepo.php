@@ -60,12 +60,16 @@ trait ExternalOffersRepo
         }
 
         // if experiment is false or exception caught, calls parent repo function but the offer response does not change
-        return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query->whereIn(OfferEntity::MERCHANT_ID, [$merchantId, Constants::PLATFORM_AD_PUBLISHER])
+                     ->findOrFailPublic($id);
     }
 
     public function findById($id, string $connectionType = null)
     {
-        if ($this->fetchByIdFromOE($id) === true)
+        if ($this->validateExternalFetchEnabled() === true)
         {
             try
             {
@@ -389,6 +393,18 @@ trait ExternalOffersRepo
 
         return [];
     }
+    private function fetchMultipleMerchantDashboardFromOE($merchantId, $input)
+    {
+        $responseOffers = $this->fetchExternalEntitiesBulk($merchantId, [], $input);
+
+        if (empty($responseOffers) === true)
+        {
+            return [];
+        }
+
+        // fetch offers from API if it has limits
+        return $this->fetchOffersWithLimitsFromAPI($responseOffers);
+    }
 
     private function fetchExternalEntitiesBulk($merchantId, array $ids = [], $input = [])
     {
@@ -468,13 +484,6 @@ trait ExternalOffersRepo
         return ($this->validateExternalFetchEnabled() === true)
         && ($this->core->shouldRouteToOffersEngine(
             $merchantId, Constants::OFFERS_ENGINE_FETCH_EXP) === true);
-    }
-
-    private function fetchByIdFromOE(string $id): bool
-    {
-        return ($this->validateExternalFetchEnabled() === true)
-               && ($this->core->shouldRouteToOffersEngineForPayments(
-                    $id, Constants::OFFERS_ENGINE_ADMIN_FETCH_OFFERS_EXP) === true);
     }
 
     private function fetchRemainingFromAPI(array $offerIds, $offerEngineOffers)

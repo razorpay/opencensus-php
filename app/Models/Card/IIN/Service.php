@@ -35,7 +35,7 @@ class Service extends Base\Service
         return $iin->toArrayAdmin();
     }
 
-    public function editIin($id, $input, $editSource='manual', $editReason='manual')
+    public function editIin($id, $input, $editSource='manual', $editReason='manual', $bulkUpdateFeatures=false)
     {
         $iin = $this->repo->iin->findOrFailAPIEntity($id);
 
@@ -58,6 +58,9 @@ class Service extends Base\Service
             $this->updateBinServiceData($iin, $input);
         }
 
+        if ($bulkUpdateFeatures && $this->shouldAllowBulkFeatureUpdateAtBinService($iin)) {
+            $this->bulkUpdateFeaturesForBin($iin, $input);
+        }
 
         return $iin->toArrayAdmin();
     }
@@ -143,13 +146,41 @@ class Service extends Base\Service
 
         try
         {
+            if($this->shouldRouteIINFetchToBinService($id) === true){
+                $iinSource = 'BIN_SERVICE';
+
+                $this->app['diag']->trackIINEvent(EventCode::BIN_API_INITIATION, null, null, $this->getCustomProperties($id, $iinSource));
+
+                $binService = new BinService();
+                $response = $binService->fetchFromBinServiceAndAdaptResponse($id);
+                $iin = (new IIN\Repository())->fillIinEntity($response);
+
+                if(isset($response) && isset($response['iin'])){
+                    $data = $this->getBasicDetails($iin);
+                    $data['card_iin'] = $response['card_iin'];
+                    $data['tokenised'] = $response['tokenised'];
+
+                    $data = $this->getPaymentFlows($data, $iin);
+
+                    $this->app['diag']->trackIINEvent(EventCode::BIN_API_SUCCESS, null, null, $this->getCustomProperties($id, $iinSource));
+                    (new Metric())->pushIinMetrics(Metric::BIN_API, Metric::SUCCESS, $iin, null, $iinSource);
+
+                    (new Metric())->pushIINResponseTimeMetrics($iin, Metric::BIN_API_RESPONSE_TIME, $startTime, $iinSource);
+                    return $data;
+                }
+
+                $this->app['diag']->trackIINEvent(EventCode::BIN_API_FAILURE, null, null, $this->getCustomProperties($id, $iinSource));
+            }
+
+            $startTime = microtime(true);
+
             $this->app['diag']->trackIINEvent(EventCode::BIN_API_INITIATION, null, null, $this->getCustomProperties($id));
 
             $input[Entity::IIN] = $id;
 
             (new Validator)->validateInput('fetch_iin', $input);
 
-            $token_iin = $this->repo->tokenised_iin->findbyTokenIin($id);
+            $token_iin = $this->repo->tokenised_iin->fetchTokenIINMappingFromRepo($id);
 
             $token_bin = null;
 
@@ -766,11 +797,12 @@ class Service extends Base\Service
         }
     }
 
-    protected function getCustomProperties($id)
+    protected function getCustomProperties($id, $source = null)
     {
         return  [
             'iin'           => $id,
             'merchant'      => $this->merchant->getId(),
+            'source'        => $source,
         ];
     }
 
@@ -795,7 +827,7 @@ class Service extends Base\Service
                     $editReason = "UNPROCESSABLE_ENTITY";
                 }
                 $editSource = 'automatic';
-                return $this->editIin($input['iin'], $editInput, $editSource, $editReason);
+                return $this->editIin($input['iin'], $editInput, $editSource, $editReason,true);
             }
         }
 
@@ -820,7 +852,7 @@ class Service extends Base\Service
 
                 $editSource = 'cron';
 
-                return $this->editIin($input['iin'], $editInput, $editSource);
+                return $this->editIin($input['iin'], $editInput, $editSource, bulkUpdateFeatures: true);
             }
         }
 
@@ -906,8 +938,16 @@ class Service extends Base\Service
 
         $mandates = [];
         if (empty($input['mandate_hubs']) === true){
-            $input['mandate_hubs'] = $originalIIN['mandate_hubs'];
+            $input['mandate_hubs'] = [];
+            if(isset($originalIIN['mandate_hubs'])){
+                foreach (MandateHub::getEnabledMandateHubs($originalIIN['mandate_hubs'])
+                         as $value)
+                {
+                    $input['mandate_hubs'][$value] = '1';
+                }
+            }
         }
+
         foreach ($input['mandate_hubs'] as $key => $value) {
             if ($value === "1") {
                 $mandates[] = $key;
@@ -1146,5 +1186,64 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+    private function bulkUpdateFeaturesForBin($iin, $input)
+    {
+        $binService = (new BinService());
+
+        $originalIIN = $this->repo->iin->findOrFail($iin['iin']);
+
+        $request = $this->getFlows($input, $originalIIN);
+
+        $country = $input["country"] ?? $originalIIN["country"];
+        $type = $input["type"] ?? $originalIIN["type"];
+
+
+        $url = "iins/".$iin['iin']."/features/bulk";
+
+        $namespace = "RZP/".strtoupper($country)."/".strtoupper($type);
+
+        $binService->sendRequest($url, 'PATCH', $request, $namespace, BinService::BULK_UPDATE_FEATURES);
+    }
+
+    private function shouldAllowBulkFeatureUpdateAtBinService($iin)
+    {
+        if (Environment::isTestingEnvironment($this->app['env']) === true ||
+            Environment::isEnvironmentQA($this->app['env']) === true ||
+            Environment::isEnvironmentItf($this->app['env']) === true )
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $iin,
+            'experiment_id' => $this->app['config']->get('app.allow_bin_service_bulk_feature_update'),
+            'request_data' => json_encode([
+                "bin" => $iin
+            ]),
+        ];
+
+        return (new Card\TokenisedIIN\Service)->checkIfSplitzExperimentIsEnabled($properties);
+    }
+
+    private function shouldRouteIINFetchToBinService($iin)
+    {
+        if (Environment::isTestingEnvironment($this->app['env']) === true ||
+            Environment::isEnvironmentQA($this->app['env']) === true ||
+            Environment::isEnvironmentItf($this->app['env']) === true)
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $iin,
+            'experiment_id' => $this->app['config']->get('app.fetch_iin_from_bin_service'),
+            'request_data' => json_encode([
+                "bin" => $iin
+            ]),
+        ];
+
+        return (new Card\TokenisedIIN\Service())->checkIfSplitzExperimentIsEnabled($properties);
     }
 }

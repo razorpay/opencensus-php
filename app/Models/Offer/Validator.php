@@ -69,14 +69,22 @@ class Validator extends Base\Validator
     protected static $adminFetchMultipleRules = [
         Entity::MERCHANT_ID => 'sometimes|unsigned_id',
         'page'              => 'required|int|min:1|max:1000',
-        'page_size'         => 'required|int|min:1|max:50'
+        'page_size'         => 'required|int|min:1|max:50',
+        'from'              => 'sometimes|epoch',
+        'to'                => 'sometimes|epoch'
     ];
 
     protected static $adminFetchRules = [
-        'offer_id'          => 'required|unsigned_id',
-        Entity::MERCHANT_ID => 'sometimes|unsigned_id',
+        'offer_id'          => 'required|alpha_num|size:14',
+        Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
         'page'              => 'required|int|in:1',
         'page_size'         => 'required|int|in:1'
+    ];
+
+    protected static $fetchMultipleRules = [
+        Entity::MERCHANT_ID => 'sometimes|unsigned_id',
+        'page'              => 'sometimes|int|min:1|max:1000',
+        'page_size'         => 'sometimes|int|min:1|max:50'
     ];
 
     protected static $createBulkRules = [

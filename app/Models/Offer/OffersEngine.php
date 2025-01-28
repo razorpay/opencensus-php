@@ -1278,6 +1278,7 @@ class OffersEngine extends Base\Core
             'check_usage'       => true,
             'transaction_amount'=> $payment->getAmount(),
             'transaction_currency'=> $payment->getCurrency(),
+            'reference_id1' =>   $payment->order ? "order_" . $payment->order->getId() : null,
         ];
     }
 

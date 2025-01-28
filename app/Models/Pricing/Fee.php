@@ -503,7 +503,7 @@ class Fee extends Base\Core
         //
         $directChannelsWithRulesAbsent = [];
 
-        list($rblRulePresent, $iciciRulePresent, $axisRulePresent, $yesbankRulePresent) = $pricingPlan->hasBankingDirectAccountNonFreePayoutRule();
+        list($rblRulePresent, $iciciRulePresent, $axisRulePresent, $yesbankRulePresent, $idfcRulePresent) = $pricingPlan->hasBankingDirectAccountNonFreePayoutRule();
 
         if ($rblRulePresent === false)
         {
@@ -523,6 +523,11 @@ class Fee extends Base\Core
         if ($yesbankRulePresent === false)
         {
             $directChannelsWithRulesAbsent[] = Channel::YESBANK;
+        }
+
+        if ($idfcRulePresent === false)
+        {
+            $directChannelsWithRulesAbsent[] = Channel::IDFC;
         }
 
         if (empty($directChannelsWithRulesAbsent) === false)

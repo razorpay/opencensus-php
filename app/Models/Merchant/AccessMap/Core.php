@@ -709,7 +709,7 @@ class Core extends Base\Core
             }
             $accessMap->setEntityId($newAppId);
         }
-
+        $this->app['partnerships']->pushMetricForPartnershipsSwitchOver(__FUNCTION__);
         $this->repo->saveOrFailCollection($accessMaps);
     }
 
@@ -745,4 +745,5 @@ class Core extends Base\Core
     {
         return $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchantId, true)->toArray();
     }
+
 }

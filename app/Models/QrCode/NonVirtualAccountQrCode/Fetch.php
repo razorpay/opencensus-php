@@ -14,6 +14,7 @@ class Fetch extends BaseFetch
             Entity::NOTES                  => 'sometimes|notes_fetch',
             Entity::NAME                   => 'sometimes|string',
             Entity::CUSTOMER_ID            => 'sometimes|string',
+            Entity::DEVICE_ID              => 'sometimes|string',
             EsRepository::CUSTOMER_EMAIL   => 'sometimes|string',
             EsRepository::CUSTOMER_NAME    => 'sometimes|string',
             EsRepository::CUSTOMER_CONTACT => 'sometimes|string',
@@ -28,6 +29,7 @@ class Fetch extends BaseFetch
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
             Entity::CUSTOMER_ID,
+            Entity::DEVICE_ID,
             Entity::USAGE_TYPE,
             Entity::PROVIDER,
         ],

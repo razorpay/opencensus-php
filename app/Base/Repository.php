@@ -70,7 +70,6 @@ class Repository extends \Razorpay\Spine\Repository
     const TIDB_GATEWAY_FALLBACK          = 'tidb_gateway_fallback';
     const PAYMENT_QUERIES_TIDB_MIGRATION = 'payment_queries_tidb_migration';
     const PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB = 'payment_P0_queries_migration_from_tidb';
-    const PAYMENT_FETCH_QUERIES_TIDB_MIGRATION = 'payment_fetch_queries_tidb_migration';
     const SETTLEMENT_TRANSACTION_READ_MIGRATION = 'settlement_transaction_read_migration';
 
     const TRANSACTION_READ_MIGRATION = 'transaction_read_migration';
@@ -1298,16 +1297,6 @@ class Repository extends \Razorpay\Spine\Repository
         return $connection;
     }
 
-    protected function useDataWarehouseConnection(string $experiment): bool
-    {
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
-        ];
-
-        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-    }
-
     public function getDataWarehouseConnection(string $cluster = null): string
     {
         // Removing Environment::BETA from the array list. Since we now have api db present on
@@ -1384,11 +1373,6 @@ class Repository extends \Razorpay\Spine\Repository
             // Ideal connection should be to data warehouse test, but that connection is broken on prod for some reason
             // To be fixed and used when the use case comes
             return Connection::TEST;
-        }
-
-        if ($useHarvester === true)
-        {
-            return Connection::PAYMENT_FETCH_REPLICA_LIVE;
         }
 
         // This config key returns admin/merchant string values
@@ -1659,5 +1643,5 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         return Connection::PAYMENT_FETCH_REPLICA_TEST;
-    }
+    } 
 }

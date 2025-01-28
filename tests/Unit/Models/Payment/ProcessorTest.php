@@ -2,11 +2,12 @@
 
 namespace RZP\Tests\Unit\Models\Payment;
 
-
+use APP;
 use Carbon\Carbon;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Exception\GatewayErrorException;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants;
@@ -26,8 +27,10 @@ use function GuzzleHttp\Promise\queue;
 class ProcessorTest extends TestCase
 {
     use PaymentTrait;
-
+    use MocksSplitz;
     use DbEntityFetchTrait;
+
+    use MocksSplitz;
 
     protected $processorMock;
 
@@ -503,4 +506,98 @@ class ProcessorTest extends TestCase
         $processor->setPayment($payment);
         self::assertEquals($payment, $processor->getPayment());
     }
+
+    public function testFillReturnDataWithOrderSuccessForGiftCards()
+    {
+        $payment = \Mockery::mock(Entity::class)->makePartial();
+        $order = \Mockery::mock(\RZP\Models\Order\Entity::class)->makePartial();
+
+        $paymentProcessor = \Mockery::mock(Processor::class)->makePartial()->shouldAllowMockingProtectedMethods();
+        $order->shouldReceive('getPublicId')->withAnyArgs()->zeroOrMoreTimes()->andReturn("order_123");
+        $payment->shouldReceive('getPublicId')->withAnyArgs()->zeroOrMoreTimes()->andReturn("payment_123");
+        $payment->shouldReceive('getAttribute')->with("order")->zeroOrMoreTimes()->andReturn($order);
+        $payment->order = $order;
+        $data = ['razorpay_payment_id' => 'payment_123'];
+        $paymentProcessor->shouldReceive('fillReturnDataWithSignatureIfApplicable')
+                         ->andReturnUsing(function(&$arg) {
+                             $arg['razorpay_signature'] = 'signature';
+                             return $arg;
+                         });
+        $paymentProcessor->fillReturnDataWithOrder($payment, $data);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $data);
+        $this->assertEquals('payment_123', $data['razorpay_payment_id']);
+    }
+
+    public function testFillReturnDataWithOrderErrorForGiftCards()
+    {
+        $payment = \Mockery::mock(Entity::class)->makePartial();
+        $order = \Mockery::mock(\RZP\Models\Order\Entity::class)->makePartial();
+
+        $paymentProcessor = \Mockery::mock(Processor::class)->makePartial()->shouldAllowMockingProtectedMethods();
+        $order->shouldReceive('getPublicId')->withAnyArgs()->zeroOrMoreTimes()->andReturn("order_123");
+        $payment->shouldReceive('getPublicId')->withAnyArgs()->zeroOrMoreTimes()->andReturn("payment_123");
+        $payment->shouldReceive('getAttribute')->with("order")->zeroOrMoreTimes()->andReturn($order);
+        $payment->order = $order;
+        $data = ['razorpay_payment_id' => 'payment_123'];
+        $payment->shouldReceive('getMerchantId')->withAnyArgs()->zeroOrMoreTimes()->andReturn('merchant_123');
+        $payment->shouldReceive('getMethod')->withAnyArgs()->zeroOrMoreTimes()->andReturn(Method::GIFT_CARDS);
+        $paymentProcessor->shouldReceive('fillReturnDataWithSignatureIfApplicable')->andThrow(new \RZP\Exception\LogicException('Key cannot be null here'));
+        $trace = App::getFacadeRoot()['trace'];
+        $paymentProcessor->setTrace($trace);
+        $input = [
+            "experiment_id" => "Ple79fIQ53Ix8S",
+            "id"            => "merchant_123",
+            "request_data" => "{\"method\":\"gift_cards\"}"
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+        $paymentProcessor->fillReturnDataWithOrder($payment, $data);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $data);
+        $this->assertEquals('payment_123', $data['razorpay_payment_id']);
+    }
+    public function testFillReturnDataWithOrderErrorForNonGiftCards()
+    {
+        $payment = \Mockery::mock(Entity::class)->makePartial();
+        $order = \Mockery::mock(\RZP\Models\Order\Entity::class)->makePartial();
+
+        $paymentProcessor = \Mockery::mock(Processor::class)->makePartial()->shouldAllowMockingProtectedMethods();
+        $order->shouldReceive('getPublicId')->withAnyArgs()->zeroOrMoreTimes()->andReturn("order_123");
+        $payment->shouldReceive('getPublicId')->withAnyArgs()->zeroOrMoreTimes()->andReturn("payment_123");
+        $payment->shouldReceive('getAttribute')->with("order")->zeroOrMoreTimes()->andReturn($order);
+        $payment->order = $order;
+        $data = ['razorpay_payment_id' => 'payment_123'];
+        $trace = App::getFacadeRoot()['trace'];
+        $paymentProcessor->setTrace($trace);
+        $payment->shouldReceive('getMerchantId')->withAnyArgs()->zeroOrMoreTimes()->andReturn('merchant_123');
+        $payment->shouldReceive('getMethod')->withAnyArgs()->zeroOrMoreTimes()->andReturn(Method::CARD);
+        $paymentProcessor->shouldReceive('fillReturnDataWithSignatureIfApplicable')->andThrow(new \RZP\Exception\LogicException('Key cannot be null here'));
+
+        $input = [
+            "experiment_id" => "Ple79fIQ53Ix8S",
+            "id"            => "merchant_123",
+            "request_data" => "{\"method\":\"card\"}"
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+        $this->expectException(\RZP\Exception\LogicException::class);
+        $paymentProcessor->fillReturnDataWithOrder($payment, $data);
+    }
+
 }

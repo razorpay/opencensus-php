@@ -224,6 +224,7 @@ class Entity extends Base\PublicEntity
     protected $ignoredRelations = [
         'source',
         'to',
+        'transaction'
     ];
 
     protected static $generators = [

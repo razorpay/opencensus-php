@@ -29,16 +29,17 @@ class Repository extends BaseRepository
                             ->where(Entity::ENTITY_ID, $entityId)
                             ->first();
 
-        if (is_null($entityOrigin) === true)
+        $fallbackRemoved = $this->checkFallbackRemoved();
+
+        if (is_null($entityOrigin) === true and $fallbackRemoved === false)
         {
             $entityOrigin = $this->newQueryAndResetEntityConnection(function () use ($entityType, $entityId)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
-                if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
-                    $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
-                }
+
+                $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
 
                 return  $query->where(Entity::ENTITY_TYPE, $entityType)
                               ->where(Entity::ENTITY_ID, $entityId)
@@ -56,17 +57,17 @@ class Repository extends BaseRepository
                               ->where(Entity::ENTITY_ID, $entityId)
                               ->first();
 
+        $fallbackRemoved = $this->checkFallbackRemoved();
 
-        if (is_null($entityOrigin) === true)
+        if (is_null($entityOrigin) === true and $fallbackRemoved === false)
         {
             $entityOrigin = $this->newQueryAndResetEntityConnection(function () use ($entityType, $entityId)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
-                if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
-                    $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
-                }
+
+                $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
 
                 return  $query->where(Entity::ENTITY_TYPE, $entityType)
                               ->where(Entity::ENTITY_ID, $entityId)
@@ -91,15 +92,13 @@ class Repository extends BaseRepository
                     ->get();
     }
 
-    protected function checkHarvsterQuerySplitzAndReturnConnection()
+    protected function checkFallbackRemoved()
     {
         $properties = [
             "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_partnership_experiment_id'),
+            "experiment_id" => $this->app['config']->get('app.splitz_entity_origin_fallback_experiment_id'),
         ];
 
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        return $variant === true ? ConnectionType::DATA_WAREHOUSE_MERCHANT :ConnectionType::PAYMENT_FETCH_REPLICA;
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
     }
 }

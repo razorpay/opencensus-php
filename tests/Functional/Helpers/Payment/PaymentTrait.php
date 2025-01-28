@@ -9,9 +9,9 @@ use Carbon\Carbon;
 use Razorpay\IFSC\Bank;
 use RZP\Models\Pricing\Entity;
 use RZP\Services\RazorXClient;
+use RZP\Services\SplitzService;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Services\SplitzService;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Constants\Shield as ShieldConstants;
@@ -2103,6 +2103,76 @@ trait PaymentTrait
             });
     }
 
+    protected function mockSplitzTreatmentForAutopayDebitRetries($upiAutopayPricing = 'variant_on', $upiAutopayOtherExperiment = 'control')
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) use ($upiAutopayPricing, $upiAutopayOtherExperiment) {
+                // If the experiment to evaluate is related to status check splitz, return the mock output
+                if ($input['experiment_id'] === 'PLCa20SI9HGtQt' or
+                    $input['experiment_id'] === 'PLCNycPzMvtgV6' or
+                    $input['experiment_id'] === 'PLCPWHMLyubjNC')
+                {
+                    return [
+                        "response" => [
+                            "variant" => [
+                                "name" => $upiAutopayPricing
+                            ]
+                        ]
+                    ];
+                }
+                // For all other experiments return an off value
+                // For example, evaluating if a dedicated terminal is enabled or not.
+                return [
+                    "response" => [
+                        "variant" => [
+                            "name" => $upiAutopayOtherExperiment
+                        ]
+                    ]
+                ];
+            });
+    }
+
+    protected function mockSplitzTreatmentForAutopayRearch($upiAutopayRearch = 'variant_on', $upiAutopayOtherExperiment = 'control')
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) use ($upiAutopayRearch, $upiAutopayOtherExperiment) {
+                // If the experiment to evaluate is related to status check splitz, return the mock output
+                if ($input['experiment_id'] === 'PLCa20SI9HGtQt' or
+                    $input['experiment_id'] === 'PDANy0UHIO3yOJ' or
+                    $input['experiment_id'] === 'PMncVHaTfAX8VI' or
+                    $input['experiment_id'] === 'PSIW9jjGHde6az'
+                )
+                {
+                    return [
+                        "response" => [
+                            "variant" => [
+                                "name" => $upiAutopayRearch
+                            ]
+                        ]
+                    ];
+                }
+                // For all other experiments return an off value
+                // For example, evaluating if a dedicated terminal is enabled or not.
+                return [
+                    "response" => [
+                        "variant" => [
+                            "name" => $upiAutopayOtherExperiment
+                        ]
+                    ]
+                ];
+            });
+    }
+
     protected function getEmandatePaymentArray($bank = 'HDFC', $authType = 'netbanking', $amount = 2000)
     {
         $payment = $this->getDefaultNetbankingPaymentArray($bank);
@@ -2205,7 +2275,7 @@ trait PaymentTrait
                 'number'       => '41476700000006',
                 'name'         => 'Harshil',
                 'expiry_month' => '12',
-                'expiry_year'  => '2024',
+                'expiry_year'  => '2034',
                 'cvv'          => '566'
             ];
         }
@@ -2336,7 +2406,7 @@ trait PaymentTrait
             'number'            => '4012001038443335',
             'name'              => 'Harshil',
             'expiry_month'      => '12',
-            'expiry_year'       => '2024',
+            'expiry_year'       => '2034',
             'cvv'               => '566',
             'cryptogram_value'  => 'test',
             'tokenised'         => true,
@@ -4233,7 +4303,7 @@ trait PaymentTrait
                                 'token_number' => '4044649165235890',
                                 'cryptogram_value' => 'test',
                                 'token_expiry_month' => 12,
-                                'token_expiry_year' => 2024,
+                                'token_expiry_year' => 2034,
                             ],
                         ]
                     ];
@@ -4250,7 +4320,7 @@ trait PaymentTrait
                     $response['alt_id'] = [
                             'value' => '2223000000000007',
                             'expiry_month' => '12',
-                            'expiry_year' => '2024',
+                            'expiry_year' => '2034',
                             'cryptogram_value' => 'AgAAAAAcfGcac/wAABFcgqYAAAA=',
                     ];
                     break;

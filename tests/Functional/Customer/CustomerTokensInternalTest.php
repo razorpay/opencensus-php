@@ -151,7 +151,7 @@ class CustomerTokensInternalTest extends TestCase
             "type"          => "credit",
             "issuer"        => "sbi",
             "expiry_month"  => 12,
-            "expiry_year"   => 2024,
+            "expiry_year"   => 2034,
             'vault'         => 'visa',
         ],
             $attributes

@@ -22,6 +22,7 @@ use RZP\Models\BankTransfer\Validator;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Trace\Tracer;
+use RZP\Base\RuntimeManager;
 
 class BankTransferController extends Controller
 {
@@ -196,6 +197,50 @@ class BankTransferController extends Controller
         return $this->processAxisBankTransfer(false);
     }
 
+    public function validateIdfcBankTransferLive()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
+
+        $request = Request::getContent();
+
+        return $this->service()->validateIdfcBankTransfer($request);
+    }
+
+    public function processIdfcBankTransferLive()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
+
+        $request = Request::getContent();
+
+        return $this->service()->processIdfcBankTransfer($request);
+    }
+
+    public function validateIdfcBankTransferTest()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);
+
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
+
+        $request = Request::getContent();
+
+        return $this->service()->validateIdfcBankTransfer($request);
+    }
+
+    public function processIdfcBankTransferTest()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);
+
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
+
+        $request = Request::getContent();
+
+        return $this->service()->processIdfcBankTransfer($request);
+    }
+
     public function processRblBankTransfer($validateReqToken = true)
     {
         // hardcoding this for now. We will fix this later.
@@ -249,8 +294,27 @@ class BankTransferController extends Controller
         }
         catch (BadRequestValidationFailureException $e)
         {
-            $this->trace->traceException($e);
 
+
+            if (TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR === $e ->getMessage()){
+                return array(
+                    "error" => array(
+                        "code" => TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR,
+                        "description" => "Payment Method not allowed for the gateway",
+                    )
+                );
+            }
+
+            if (TraceCode::YESBANK_GATEWAY_UNEXPECTED_PAYMENT_ERROR === $e ->getMessage()){
+                return array(
+                    "error" => array(
+                        "code" => TraceCode::YESBANK_GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+                        "description" => "Payment Method not allowed for the gateway",
+                    )
+                );
+            }
+
+            $this->trace->traceException($e);
             return ApiResponse::json(['Status' => 'Failure.'], 400);
         }
         catch (\Throwable $e)
@@ -903,6 +967,9 @@ class BankTransferController extends Controller
 
     public function createAccountForCurrencyCloud()
     {
+        RuntimeManager::setTimeLimit(1800);
+        RuntimeManager::setMemoryLimit("1024M");
+
         $input = Request::all();
 
         $response = $this->service()->createAccountForCurrencyCloud($input);
@@ -954,6 +1021,15 @@ class BankTransferController extends Controller
         $input = Request::all();
 
         $response = $this->service()->captureCronForPACBBankTransferPayments($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function toggleInternationalVirtualAccountForMerchant()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->toggleInternationalVirtualAccountForMerchant($input);
 
         return ApiResponse::json($response);
     }

@@ -459,9 +459,16 @@ class Core extends Base\Core
             }
             else
             {
-                $balance = $merchant->getBalanceByTypeOrFail($balanceType);
+                if ($merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW))
+                {
+                    $refundCredits = $this->repo->credits->getMerchantCreditsOfType($merchant->getId(), Credits\Type::REFUND);
+                }
+                else
+                {
+                    $balance = $merchant->getBalanceByTypeOrFail($balanceType);
 
-                $refundCredits = $balance->getRefundCredits();
+                    $refundCredits = $balance->getRefundCredits();
+                }
             }
         }
 
@@ -747,8 +754,13 @@ class Core extends Base\Core
             $maxNegativeAllowed = $this->getMaximumNegativeAllowedForBalanceType($merchantBalance->merchant,
                                                                                     $balanceType, $txnType);
 
-            (new NegativeReserveBalanceMailers)->sendNegativeBalanceMailIfApplicable($merchantBalance->merchant,
-                $oldBalance, $newBalance, $maxNegativeAllowed, $balanceSource, $txnType);
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+            $reverseShadowMerchant = $merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW);
+
+            if ($reverseShadowMerchant === false){
+                (new NegativeReserveBalanceMailers)->sendNegativeBalanceMailIfApplicable($merchantBalance->merchant,
+                    $oldBalance, $newBalance, $maxNegativeAllowed, $balanceSource, $txnType);
+            }
         }
     }
 }

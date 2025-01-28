@@ -475,7 +475,10 @@ class Core extends Base\Core
 
                         $discountAmount = $offer->getDiscountAmountForPayment($payment->order->getAmount(), $payment);
 
-                        $invoiceEntity->setOfferAmount($discountAmount);
+                        if ($offer->getOfferType() !== Offer\Constants::CASHBACK_OFFER)
+                        {
+                                $invoiceEntity->setOfferAmount($discountAmount);
+                        }
 
                         $this->calculateAndSetAmountsOfInvoice($invoiceEntity);
 

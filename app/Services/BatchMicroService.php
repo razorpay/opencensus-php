@@ -29,6 +29,8 @@ class BatchMicroService
 
     const FILE_STORE = 'file_store';
 
+    const JK_ORG = 'CuggZoEvla3kgc';
+
     protected $trace;
 
     protected $mode;
@@ -158,7 +160,7 @@ class BatchMicroService
 
         $this->trace->info(TraceCode::BATCH_SERVICE_MULTIPART_PAYLOAD, ['multipartData' => $multipartData]);
 
-        $response = $this->sendToBatchService($multipartData, $merchant, $relativeUri);
+        $response = $this->sendToBatchService($multipartData, $merchant, $relativeUri, $input);
 
         $batchResponse = json_decode($response->getBody(), true);
 
@@ -282,7 +284,7 @@ class BatchMicroService
 
     public function sendToBatchService(array $multipartData,
                                        Merchant\Entity $merchant,
-                                       string $relativeUri)
+                                       string $relativeUri, array $input)
     {
         try
         {
@@ -298,11 +300,17 @@ class BatchMicroService
             }
 
             $headers = [
-                'X-Entity-Id'    => $merchant->getId(),
-                'mode'           => $this->mode,
-                'X-Creator-Id'   => $userId,
+                'mode' => $this->mode,
+                'X-Creator-Id' => $userId,
                 'X-Creator-Type' => $creatorType,
             ];
+
+            if ($input['type'] !=='jammu_and_kashmir_onboarding') {
+                $headers['X-Entity-Id'] = $merchant->getId();
+            } else {
+                $headers['X-Entity-Id'] = self::JK_ORG;
+            }
+
             if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
                 $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
             }
@@ -897,7 +905,7 @@ class BatchMicroService
 
         $relativeUri = self::BATCH_URLS['batch'];
 
-        $response = $this->sendToBatchService($multipartData, $merchant, $relativeUri);
+        $response = $this->sendToBatchService($multipartData, $merchant, $relativeUri, $input);
 
         $batchResponse = json_decode($response->getBody(), true);
 

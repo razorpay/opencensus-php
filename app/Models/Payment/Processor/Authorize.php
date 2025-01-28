@@ -14,6 +14,7 @@ use Lib\PhoneBook;
 use RZP\Constants\Country;
 use RZP\Constants as RzpConstants;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Gateway\Upi\Base\RecurringTrait;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
@@ -540,6 +541,13 @@ trait Authorize
             $isPushedToKafka = $this->pushPaymentToKafkaForVerify($this->payment);
 
             $payment->setIsPushedToKafka($isPushedToKafka);
+
+            // Check if the method is UPI and we need to use re-arch flow for subsequent payment
+            if ($payment->isUpiAutoRecurring() === true)
+            {
+                // set appropriate cps_route for UPI Payments
+                $this->setCpsRouteForUpi($payment);
+            }
 
             $this->repo->saveOrFail($payment);
 
@@ -2580,11 +2588,13 @@ trait Authorize
 
             $this->validateLRSDataIfApplicable($payment);
 
-            $this->validateJPMCImportFlowDataIfApplicable($payment);
+            $this->validateJPMCImportFlowDataInCrossBorderImportService($payment);
 
             $this->validatePaCBDataIfApplicable($payment);
 
             $this->validateLRSTravelCitiDataIfApplicable($payment);
+
+            $this->validateImportFlowDataIfApplicable($payment);
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
         }
@@ -4564,6 +4574,11 @@ trait Authorize
         }
     }
 
+    /**
+     * @throws BadRequestException
+     * @throws \Throwable
+     * @throws BadRequestValidationFailureException
+     */
     protected function validateJPMCImportFlowDataIfApplicable(Payment\Entity $payment)
     {
         if($payment->merchant->isJpmcImportFlowEnabled() === false)
@@ -4807,6 +4822,114 @@ trait Authorize
 
         }
     }
+    /**
+     * @throws \Throwable
+     * @throws BadRequestException
+     */
+    protected function validateJPMCImportFlowDataInCrossBorderImportService(Payment\Entity $payment)
+    {
+        if($payment->merchant->isJpmcImportFlowEnabled() === false)
+        {
+            return;
+        }
+
+        $shadowExperimentResultJPMC = $this->evaluateShadowSplitzExperimentforCrossBorderImportRearch($payment->merchant->getId());
+        $primaryExperimentResulJPMC = $this->evaluateSplitzExperimentforCrossBorderImportRearch($payment->merchant->getId());
+
+        //If primary experiment is enabled, then call to import service for payment validation and return
+        if($primaryExperimentResulJPMC){
+            try {
+                $this->trace->info(
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_REQUEST, [
+                        'payment_id'  => $payment['payment_id'],
+                        'merchant_id' => $payment['merchant_id'],
+                    ]
+                );
+
+                //call to import service
+                $response = $this->app['cross_border_import_service']->validateImportPayment($payment);
+                $this->trace->info(
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_RESPONSE, [
+                        'response' => $response,
+                    ]
+                );
+                return ;
+
+            } catch (\Throwable $e) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_FAILED
+                );
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_VALIDATION_FAILED, null, null, $e->getMessage()
+                );
+            }
+        }
+
+        $shadowExperimentResultCrossBorderImportService = null;
+        $apiJpmcValidationResult = null;
+
+        //If shadow experiment is enabled, then call to import service for payment validation and also validate here
+        if($shadowExperimentResultJPMC){
+            try {
+                $this->trace->info(
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_REQUEST, [
+                        'payment_id'  => $payment['payment_id'],
+                        'merchant_id' => $payment['merchant_id'],
+                    ]
+                );
+
+                //call to import service
+                $response = $this->app['cross_border_import_service']->validateImportPayment($payment);
+                $this->trace->info(
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_RESPONSE, [
+                        'response' => $response,
+                    ]
+                );
+
+            } catch (\Throwable $e) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_FAILED
+                );
+                $shadowExperimentResultCrossBorderImportService = $e->getMessage();
+            }
+        }
+
+        try
+        {
+            $this->validateJPMCImportFlowDataIfApplicable($payment);
+            $this->traceMismatchInResult($apiJpmcValidationResult,$shadowExperimentResultCrossBorderImportService);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::API_JPMC_VALIDATION_ERROR,[
+                    'jpmc_validation_response' => $e->getMessage()
+                ]
+            );
+            $apiJpmcValidationResult = $e->getMessage();
+            $this->traceMismatchInResult($apiJpmcValidationResult,$shadowExperimentResultCrossBorderImportService);
+            throw $e;
+        }
+    }
+
+    protected function traceMismatchInResult($apiResult, $crossBorderImportServiceResult)
+    {
+        if (is_null($apiResult) && is_null($crossBorderImportServiceResult)) {
+            return;
+        }
+        $this->trace->error(
+            TraceCode::CROSS_BORDER_IMPORT_API_JPMC_VALIDATIONS_MISMATCH, [
+                'api_result' => $apiResult ?? 'success',
+                'cross_border_import_service_result' => $crossBorderImportServiceResult ?? 'success',
+            ]
+        );
+    }
 
     protected function validateLRSDataIfApplicable(Payment\Entity $payment)
     {
@@ -4899,7 +5022,6 @@ trait Authorize
             return;
         }
 
-
         // validate if lrs travel citi supported payment libraries
         $library = (new Payment\Service)->getLibraryFromPayment($payment);
         if(in_array($library, Analytics\Metadata::LRS_TRAVEL_CITI_SUPPORTED_LIBRARIES) === false)
@@ -4912,7 +5034,6 @@ trait Authorize
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_LIBRARY,
                 [
-                    'merchant_id' => $payment->merchant->getId(),
                     'payment_id'  => $payment->getId(),
                 ]);
         }
@@ -4927,7 +5048,6 @@ trait Authorize
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD,
                 [
-                    'merchant_id' => $payment->merchant->getId(),
                     'payment_id'  => $payment->getId(),
                 ]);
         }
@@ -4955,12 +5075,32 @@ trait Authorize
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID, [
-                    'merchant_id' => $payment->merchant->getId(),
+                    'payment_id'  => $payment->getId(),
                 ]
             );
         }
 
-        //Validate if invoice number is present in notes
+        if ($payment->order->hasOrderMeta() === false || $payment->order->isCartInfoOrderMeta() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Pan and Billing Address Details are Required', 'order');
+        }
+
+        $cartInfo = $payment->order->getCartInfoOrderMeta();
+
+        if($this->validateBillingAddressInCartInfoOrderMeta($cartInfo) === false)
+        {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Billing Address is Required', 'order');
+        }
+
+        if($this->validatePanDetailsInCartInfoOrderMeta($cartInfo) === false)
+        {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Pan Details are Required', 'order');
+        }
+
+        // Validate if invoice number is present in notes
         if (empty($payment->getNotes()))
         {
             $this->pushMetricForImportFlowPaymentValidation(
@@ -5037,9 +5177,164 @@ trait Authorize
             throw new Exception\BadRequestValidationFailureException(
                 'Payment already exist with same invoice number.', 'notes');
         }
-
-
     }
+
+    protected function validatePanDetailsInCartInfoOrderMeta($cartInfo) : bool {
+        if (empty($cartInfo['customer_details']))
+        {
+            return false;
+        }
+
+        if (empty($cartInfo['customer_details']['identity']))
+        {
+            return false;
+        }
+
+        foreach($cartInfo['customer_details']['identity'] as $identity)
+        {
+           if ($identity['type'] === 'pan_number' && isset($identity['id']))
+           {
+               return true;
+           }
+        }
+
+        return false;
+    }
+
+    protected function validateBillingAddressInCartInfoOrderMeta($cartInfo) : bool {
+        if (empty($cartInfo['customer_details']))
+        {
+            return false;
+        }
+
+        if (empty($cartInfo['customer_details']['billing_address']))
+        {
+            return false;
+        }
+
+        if( isset($cartInfo['customer_details']['billing_address']['line1']) === false ||
+            isset($cartInfo['customer_details']['billing_address']['line2']) === false ||
+            isset($cartInfo['customer_details']['billing_address']['city']) === false ||
+            isset($cartInfo['customer_details']['billing_address']['state']) === false ||
+            isset($cartInfo['customer_details']['billing_address']['country']) === false ||
+            isset($cartInfo['customer_details']['billing_address']['zipcode']) === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    protected function validateImportFlowDataIfApplicable(Payment\Entity $payment)
+    {
+        if ($payment->merchant->isImportFlowEnabled() === false)
+        {
+            return;
+        }
+        try {
+
+            $this->trace->info(
+                TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_REQUEST, [
+                    'payment_id' => $payment['payment_id'],
+                    'merchant_id' => $payment['merchant_id'],
+                ]
+            );
+
+            //call to import service
+            $response = $this->app['cross_border_import_service']->validateImportPayment($payment);
+            $this->trace->info(
+                TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_RESPONSE, [
+                    'response' => $response,
+                ]
+            );
+
+        } catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_FAILED
+            );
+            throw $e;
+        }
+    }
+
+
+    private function evaluateSplitzExperimentforCrossBorderImportRearch($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.cross_border_import_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_IMPORT_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateShadowSplitzExperimentforCrossBorderImportRearch($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.cross_border_import_rearch_shadow_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_IMPORT_REARCH_SHADOW_EXPERIMENT_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+
 
     protected function checkAndValidateDebitEmiProviders(Payment\Entity $payment)
     {
@@ -7262,15 +7557,7 @@ trait Authorize
     protected function createLocalCustomerForSubscription(
         Customer\Entity $customer)
     {
-        $localCustomer = (new Customer\Core)->createLocalCustomerFromGlobal($customer, $this->subscription->merchant);
-        $shouldCreateViaCMS = (new Customer\Core)->isCreateOverrideToCmsEnabled($this->subscription->merchant->getId(), $this->mode, app('request.ctx')->getInternalAppName(), $this->app['api.route']->getCurrentRouteName());
-        if (!$shouldCreateViaCMS)
-        {
-            $localCustomer->globalCustomer()->associate($customer);
-            $this->repo->saveOrFail($localCustomer);
-        }
-
-        return $localCustomer;
+        return (new Customer\Core)->createLocalCustomerFromGlobal($customer, $this->subscription->merchant);
     }
 
     protected function addCustomerIdToSubscriptionInput(array & $input)
@@ -10279,9 +10566,61 @@ trait Authorize
     {
         $data['razorpay_order_id'] = $payment->order->getPublicId();
 
-        $this->fillReturnDataWithSignatureIfApplicable($data);
-    }
+        try
+        {
+            $this->fillReturnDataWithSignatureIfApplicable($data);
+        }
+        catch (\Throwable $e)
+        {
+            $splitzResult = $this->getSplitzResponse($payment->getMerchantId(), 'ignore_signature_error_exp_id',["method"=>$payment->getMethod()]);
 
+             if (strtolower($splitzResult) === 'enable')
+            {
+                $this->trace->info(
+                    TraceCode::SIGNATURE_GENERATION_ERROR_SKIPPED_TRACE,
+                    [
+                        'merchant_id' => $payment->getMerchantId(),
+                        'payment_id' => $payment->getPublicId(),
+                    ]);
+
+                return;
+            }
+            throw $e;
+        }
+    }
+    public function getSplitzResponse(string $id, string $experimentName,array $requestData = []) : string
+    {
+
+        $app = \App::getFacadeRoot();
+
+        try
+        {
+            $experimentId = $app->config->get('app.'.$experimentName);
+            $response     = $app['splitzService']->evaluateRequest([
+                                                                       'id'            => $id,
+                                                                       'experiment_id' => $experimentId,
+                                                                       'request_data'  => json_encode(
+                                                                           $requestData),
+                                                                   ]);
+            $app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id'   => $id,
+                'experiment_id' => $experimentId,
+                'experimentName'=> $experimentName,
+                'response'      => $response,
+                'request_body'  => $requestData
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $app->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'     => $id,
+                'experiment_id'   => $app->config->get($experimentName) ?? null,
+                'experiment_name' => $experimentName
+            ]);
+        }
+
+        return $response['response']['variant']['name'] ?? '';
+    }
     protected function fillReturnDataWithSignatureIfApplicable(array & $data)
     {
         // If accessed via keyless flow (public auth routes or direct auth routes like payment callback on UPI QR) and
@@ -15376,9 +15715,19 @@ trait Authorize
                 {
                     $merchantID = $payment->merchant->getId();
                     $mode = $this->mode;
-                    $variant = $this->app['razorx']->getTreatment($merchantID,
-                        RazorxTreatment::APPEND_GATEWAY_PAYMENT_ID_PAYU,
-                        $mode);
+
+                    $properties = [
+                        'id'            => $merchantID,
+                        'experiment_id' => $this->app['config']->get('app.append_gateway_payment_id_payu_exp_id'),
+                        'request_data'  => json_encode(['merchant_id' => $merchantID]),
+                    ];
+
+                    $response = $this->app['splitzService']->evaluateRequest($properties);
+
+                    $variant = '';
+                    if(isSet($response['response']['variant']) === true) {
+                        $variant = $response['response']['variant']['name'] ?? '';
+                    }
 
                     $this->trace->info(
                         TraceCode::RAZORX_PAYMENT_NOTES_APPEND,
@@ -15389,7 +15738,7 @@ trait Authorize
                             'payment' => $payment->getId()
                         ]);
 
-                    if (strtolower($variant) !== 'on')
+                    if (strtolower($variant) !== 'enabled')
                     {
                         return;
                     }

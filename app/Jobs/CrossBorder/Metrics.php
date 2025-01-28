@@ -14,6 +14,8 @@ class Metrics extends Core
 
     const INVOICE_ZIP_FILE_NOT_UPLOADED_PROPERLY = 'invoice_zip_file_not_uploaded_properly';
 
+    const CROSS_BORDER_MERCHANT_ACTIVATION_FAILED = 'cross_border_merchant_activation_failed';
+
     // Dimensions
     const ACTION = 'action';
     const IS_DELETED = 'is_deleted';

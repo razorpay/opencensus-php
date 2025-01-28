@@ -396,10 +396,14 @@ class Service extends Base\Service
         {
             try
             {
-                $terminal = $this->editTerminal($item[Entity::TERMINAL_ID], [
-                    Entity::PLAN_NAME => $item[Entity::PLAN_NAME],
+                $editData = [
                     GatewayTerminalConstants::SYNC_INSTRUMENTS => true
-                ]);
+                ];
+                if (!empty($item[Entity::PLAN_ID])) {
+                    $editData[Entity::PLAN_ID] = $item[Entity::PLAN_ID];
+                }
+
+                $terminal = $this->editTerminal($item[Entity::TERMINAL_ID], $editData);
 
                 $returnData->push([
                     Entity::TERMINAL_ID => $terminal[Entity::ID],

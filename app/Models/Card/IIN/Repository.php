@@ -118,7 +118,7 @@ class Repository extends Base\Repository
         $iinService = (new Service());
         $binService = (new BinService());
 
-        $apiServiceIINEntity = parent::find($iin, $columns, $connectionType);
+        $apiServiceIINEntity = parent::find(substr($iin, 0, 6), $columns, $connectionType);
 
         if (!empty($iin) && $iinService->shouldReadBinServiceInPrimaryMode($iin) === true)
         {
@@ -126,9 +126,7 @@ class Repository extends Base\Repository
 
             if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
             {
-                $iinEntity = new Entity();
-
-                return $iinEntity->forceFill($binServiceIINEntity);
+                return $this->fillIinEntity($binServiceIINEntity);
             }
         }
         else if(!empty($iin) && $iinService->shouldReadFromBinServiceInShadowMode() === true)
@@ -142,6 +140,23 @@ class Repository extends Base\Repository
         }
 
         return $apiServiceIINEntity;
+    }
+
+    public function fillIinEntity($binServiceIINEntity)
+    {
+        $iinEntity = new Entity();
+
+        //remove bin service attributes that are not a part of IIN entity
+        $fillableAttributes = $iinEntity->getFillableAttributes();
+
+        foreach ($binServiceIINEntity as $attribute => $value)
+        {
+            if (!in_array($attribute, $fillableAttributes)) {
+                unset($binServiceIINEntity[$attribute]);
+            }
+        }
+
+        return $iinEntity->forceFill($binServiceIINEntity);
     }
 
     public function findOrFail($iin, $columns = array('*'), string $connectionType = null)

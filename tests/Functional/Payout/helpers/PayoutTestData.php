@@ -46,6 +46,25 @@ return [
             ],
         ],
     ],
+    'testCreatePayoutForIrctcMerchants' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout',
+            'content' => [
+                'amount'         => 1000,
+                'merchant_id'    => 'OGJDenfkpc6whP',
+                'min_amount'     => 100,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'notes'       => []
+            ],
+        ],
+    ],
     'testFTACreateWithMutex' => [
         'request'  => [
             'method'  => 'POST',
@@ -199,7 +218,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
-                    'description' => 'Similar request pay123 in progress. Retry after 100 or use a unique identifier.',
+                    'description' => 'Similar request pay123 in progress. Retry after 100 seconds or use a unique identifier.',
                 ],
             ],
             'status_code' => 409,
@@ -242,7 +261,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
-                    'description' => 'Similar request pay123 in progress. Retry after 100 or use a unique identifier.',
+                    'description' => 'Similar request pay123 in progress. Retry after 100 seconds or use a unique identifier.',
                 ],
             ],
             'status_code' => 409,
@@ -284,7 +303,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
-                    'description' => 'Similar request pay123 in progress. Retry after 100 or use a unique identifier.',
+                    'description' => 'Similar request pay123 in progress. Retry after 100 seconds or use a unique identifier.',
                 ],
             ],
             'status_code' => 409,
@@ -328,7 +347,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
-                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 or use a unique identifier.',
+                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 seconds or use a unique identifier.',
                 ],
             ],
             'status_code' => 409,
@@ -370,7 +389,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
-                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 or use a unique identifier.',
+                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 seconds or use a unique identifier.',
                 ],
             ],
             'status_code' => 409,
@@ -414,7 +433,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
-                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 or use a unique identifier.',
+                    'description' => 'Similar request pay12345678901 in progress. Retry after 3600 seconds or use a unique identifier.',
                 ],
             ],
             'status_code' => 409,
@@ -1828,6 +1847,60 @@ return [
                 "batch_id"       => null,
                 "failure_reason" => null,
                 'merchant_id'    => '10000000000000'
+            ],
+        ],
+    ],
+
+    'testFtsAppPayoutsFundAccountDedupe' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Dummy Saha',
+                        'ifsc'           => 'HDFC0000077',
+                        'account_number' => '3434000111000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Uptime Merchant',
+                        'email'   => 'test@razorpay.com',
+                        'contact' => '1234567890',
+                        'type'    => 'customer',
+                        'notes'   => [
+                            'note_key' => 'uptime test merchant'
+                        ],
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
             ],
         ],
     ],
@@ -9657,7 +9730,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 8,
+                'count'     => 9,
                 'items'     =>  [
                     [
                         'purpose'       =>  'refund',
@@ -9689,6 +9762,10 @@ return [
                     ],
                     [
                         'purpose'       => 'petty cash',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
@@ -9741,7 +9818,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 9,
+                'count'     => 10,
                 'items'     =>  [
                     [
                         'purpose'       => 'Give Mehul A Bonus',
@@ -9778,6 +9855,10 @@ return [
                     [
                         'purpose'       => 'petty cash',
                         'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
+                        'purpose_type'  =>  'settlement',
                     ]
                 ],
             ],
@@ -9810,7 +9891,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 12,
+                'count'     => 13,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Mehul A Bonus',
@@ -9859,6 +9940,10 @@ return [
                     [
                         'purpose'       => 'petty cash',
                         'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
+                        'purpose_type'  =>  'settlement',
                     ]
                 ],
             ],
@@ -9887,7 +9972,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 11,
+                'count'     => 12,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Sumit A Bonus',
@@ -9931,6 +10016,10 @@ return [
                     ],
                     [
                         'purpose'       => 'petty cash',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
@@ -10019,7 +10108,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 12,
+                'count'     => 13,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Mehul A Bonus',
@@ -10067,6 +10156,10 @@ return [
                     ],
                     [
                         'purpose'       => 'petty cash',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
@@ -16115,6 +16208,78 @@ return [
                     [
                         'source_id'   => '100000000000sa',
                         'source_type' => 'settlements',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testSourceCreationInCaseOfCompositePayoutCreatedByCrossBorderImportService' => [
+        'request' => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'ica_transfer',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Mehul Kaushik',
+                        'ifsc'           => 'ICIC0000104',
+                        'account_number' => '1111000011110000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+                'queue_if_low_balance' => 1,
+                'origin'               => 'dashboard',
+                'source_details'       => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'ica_transfer',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'ica_transfer',
+                'status'          => 'queued',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'ica_transfer',
                         'priority'    => 1,
                     ],
                 ],
@@ -24281,21 +24446,6 @@ return [
             ]
         ]
     ],
-    'testDualWriteForPayoutServiceCAPayoutFeeRecovery' => [
-        'request' => [
-            'method' => 'POST',
-            'url' => '/payouts_service/dual_write',
-            'content' => [
-                'payout_id' => 'randomid111112',
-                'timestamp' => 946684801
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'success'
-            ]
-        ]
-    ],
 
     'testPayoutUpdatePostBasRecon' => [
         'request' => [
@@ -25902,7 +26052,7 @@ return [
                 'action' => 'generate_merchant_invoice',
                 'bulk_input' => [[
                     'month' => 12,
-                    'year' => 2024,
+                    'year' => 2034,
                     'merchant_ids' => ['mid1', 'mid2']
                 ]]
             ]
@@ -25916,7 +26066,7 @@ return [
                 'reason' => 'Jaruri hai',
                 'action' => 'generate_merchant_invoice',
                 'bulk_input' => [[
-                    'year' => 2024,
+                    'year' => 2034,
                     'merchant_ids' => ['mid1'],
                 ]]
             ]
@@ -26023,5 +26173,35 @@ return [
             'class' => RZP\Exception\ServerErrorException::class,
             'internal_error_code' => ErrorCode::SERVER_ERROR_DB_QUERY_FAILED,
         ],
+    ],
+    'testFeeRecoveryForNonInitiatedFailedPayouts' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts_service/dual_write',
+            'content' => [
+                'payout_id' => 'randomid111112',
+                'timestamp' => 946684801
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ]
+        ]
+    ],
+    'testFeeRecoveryForInitiatedFailedPayouts' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts_service/dual_write',
+            'content' => [
+                'payout_id' => 'randomid111112',
+                'timestamp' => 946684801
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ]
+        ]
     ],
 ];

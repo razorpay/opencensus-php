@@ -426,6 +426,14 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
 
         $this->terminal = $this->fixtures->create('terminal:shared_upi_axis_terminal');
 
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_gateway') => 'off',
+                $this->config->get('app.qr_payment_refactor_existing_gateway') => 'off',
+            ]
+        );
+
         $this->setRazorxMock(function ($mid, $feature, $mode)
         {
             return $this->getRazoxVariant($feature, 'api_upi_axis_pre_process_v1', 'upi_axis');

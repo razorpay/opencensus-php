@@ -131,6 +131,7 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
 use Throwable;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 
 class Core extends Base\Core
 {
@@ -2744,6 +2745,13 @@ class Core extends Base\Core
 
         $parentId = $merchant->getReferrer();
 
+        $isHandleNullSelfCaseEnabled = $this->isHandleNullSelfCaseExpEnabled($merchant->getId());
+
+        if($isHandleNullSelfCaseEnabled === true)
+        {
+            $merchantDetails = $merchant->merchantDetail;
+        }
+
         if (empty($parentId) === false)
         {
             $parent = $this->repo->merchant->findForWrite($parentId);
@@ -2784,6 +2792,7 @@ class Core extends Base\Core
                 $this->notify($merchant);
                 $newEmail = $pgosResponse["activation_response"]["contact_email"];
                 $merchant->edit(['email' => $newEmail], $operation);
+
                 $this->editEmailInMailingList($oldEmail, $newEmail, $merchant);
                 return $merchant;
             }
@@ -2803,6 +2812,13 @@ class Core extends Base\Core
         {
             $merchant->edit($input, $operation);
             $this->saveAndNotify($merchant);
+
+            if($isHandleNullSelfCaseEnabled === true)
+            {
+                $merchantDetails->edit(['contact_email' => $input['email']]);
+                $this->repo->saveOrFail($merchantDetails);
+            }
+
             $newEmail = $merchant->getEmail();
             $this->editEmailInMailingList($oldEmail, $newEmail, $merchant);
             return $merchant;
@@ -3827,13 +3843,13 @@ class Core extends Base\Core
             $this->attachUserForMerchant($merchant->getId(), $currentOwner, $currentOwnerNewRole, $product);
         }
 
-        $this->changeUserDeviceDetailForOwner($merchant);
+        $this->changeUserDeviceDetailForOwner($merchant,$user);
 
     }
 
     // Updates the signup campaign and metadata for the current owner user
     // when merchant ownership is transferred from one user to another.
-    protected function changeUserDeviceDetailForOwner($merchant): void
+    protected function changeUserDeviceDetailForOwner($merchant,$user): void
     {
         try
         {
@@ -3865,6 +3881,15 @@ class Core extends Base\Core
                         ];
 
                         (new \RZP\Models\DeviceDetail\Core)->editDeviceDetail($currentDeviceDetailId, $updatedData);
+                    }
+                    else
+                    {
+                        $deviceDetailInput = [
+                            \RZP\Models\DeviceDetail\Entity::MERCHANT_ID     => $merchant->getId(),
+                            \RZP\Models\DeviceDetail\Entity::USER_ID         => $user->getId(),
+                            \RZP\Models\DeviceDetail\Entity::SIGNUP_CAMPAIGN => $originalDeviceDetail->getSignupCampaign(),
+                        ];
+                        (new \RZP\Models\DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
                     }
                 }
             }
@@ -4060,6 +4085,13 @@ class Core extends Base\Core
         return $processed;
     }
 
+    public function isHandleNullSelfCaseExpEnabled($merchantId):bool
+    {
+        $splitzResponse = (new Detail\Core())->getSplitzResponse($merchantId, 'handling_null_self_user');
+
+        return $splitzResponse === 'variant';
+    }
+
     /**
      * This handles 3 possible cases when changing user email.
      * 1. There exists a team member with the new email
@@ -4078,6 +4110,8 @@ class Core extends Base\Core
      */
     public function changeMerchantUsersEmail(Entity $merchant, ?string $originalEmail, string $newEmail, string $product)
     {
+        $isHandleNullSelfCaseEnabled = $this->isHandleNullSelfCaseExpEnabled($merchant->getId());
+
         $merchantUsersCount = $merchant->users()->where(Entity::PRODUCT, $product)->count();
 
         if ($merchantUsersCount === 0)
@@ -4092,7 +4126,14 @@ class Core extends Base\Core
 
         $existingUser = $this->repo->user->getUserFromEmail($newEmail);
 
-        $selfUser = $this->repo->user->getUserFromEmail($originalEmail);
+        if($isHandleNullSelfCaseEnabled === true)
+        {
+            $selfUser = !empty($originalEmail) ? $this->repo->user->getUserFromEmail($originalEmail) : null;
+        }
+        else
+        {
+            $selfUser = $this->repo->user->getUserFromEmail($originalEmail);
+        }
 
         $oldOwner = $merchant->primaryOwner($product);
 
@@ -4142,6 +4183,18 @@ class Core extends Base\Core
             ];
 
             (new User\Core)->edit($selfUser, $userData, 'edit_email_for_merchant');
+        }
+        elseif (empty($selfUser) === true)
+        {
+            // if old email is null in the workflow, then self user will also be null. Therefore, update the email of old owner user
+            if($isHandleNullSelfCaseEnabled === true)
+            {
+                $userData = [
+                    'email' => $newEmail,
+                ];
+
+                (new User\Core)->edit($oldOwner, $userData, 'edit_email_for_merchant');
+            }
         }
     }
 
@@ -8791,7 +8844,7 @@ class Core extends Base\Core
         }
         else
         {
-            // ICICI, Axis, Yes Bank, RBL Migration (CAs implemented in BAS)
+            // ICICI, Axis, Yes Bank, RBL Migration(CAs implemented in BAS)
             $repo = new BalanceRepo();
 
             $balance = Tracer::inspan(['name' => HyperTrace::MERCHANT_CORE_GET_BALANCE_BY_MERCHANT_ID_CHANNELS_AND_ACCOUNT_TYPE], function () use ($repo, $merchant)
@@ -9507,6 +9560,22 @@ class Core extends Base\Core
         if ($this->isRegularSubmerchant($merchant) === false)
         {
             return false;
+        }
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $properties = [
+            'id'            => $merchantDetails->getMerchantId(),
+            'experiment_id' => $this->app['config']->get('app.enable_pos_for_api_submerchants'),
+        ];
+
+        $isExperimentEnabled = $this->isSplitzExperimentEnable($properties, 'enable');
+
+        if ($isExperimentEnabled) {
+            if ($merchantDetails->getActivationStatus() === Constants::ACTIVATED && $merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID)
+            {
+                return true;
+            }
         }
 
         if ($merchant->isTagAddedBasedOnPrefix(Constants::POS_PARTNERSHIP_TAG_PREFIX) === false)
@@ -11060,17 +11129,13 @@ class Core extends Base\Core
     //so we are only editing the record and not creating it
     public function savePGOSDataToAPI(array $data)
     {
-        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::ID], 'pgos_migration_dual_writing_exp_id');
+        $merchant = $this->repo->merchant->find($data[Entity::ID]);
 
-        if ($splitzResult === 'variables')
-        {
-            $merchant = $this->repo->merchant->find($data[Entity::ID]);
-
-            // dual write only for below merchants
-            // merchants for whom pgos is serving onboarding requests
-            // merchants who are not completely activated
-            if ($merchant->getService() === Merchant\Constants::PGOS and
-                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+        // dual write only for below merchants
+        // merchants for whom pgos is serving onboarding requests
+        // merchants who are not completely activated
+        if ($merchant->getService() === Merchant\Constants::PGOS and
+            $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
             {
                 unset($data[Entity::ID]);
 
@@ -11096,7 +11161,6 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($merchant);
             }
-        }
     }
 
     public function getMerchantActivationDetails(string $merchantId)

@@ -1243,67 +1243,6 @@ class Processor extends Base\Core
 
             if ($data->count() != 0)
             {
-                $settlementJournalID = null;
-
-                if (empty($input['journal_id']) === false)
-                {
-                    $settlementJournalID = $input['journal_id'];
-                }
-
-                if (empty($input['journals_data']) === false)
-                {
-                    $journalsData = $input['journals_data'];
-
-                    if($journalsData['settlement_journal_id'] !== ""){
-                        $settlementJournalID = $journalsData['settlement_journal_id']??null;
-                    }
-                }
-
-                if ($settlementJournalID !== null)
-                {
-                    app('request.ctx')->setLedgerDualWriteFlow(true);
-                }
-
-                if(empty($data[0]->getTransactionId())){
-                    try {
-                        $this->trace->info(
-                            TraceCode::SETTLEMENT_TRANSACTION_CREATE_RETRY,
-                            [
-                                'input' => $input,
-                                'settlementJournalID' => $settlementJournalID,
-                            ]);
-
-
-                        $merchantSettler->createTransaction($data[0], $settlementJournalID);
-
-                        return [
-                            'transaction_id'                        => $settlementJournalID,
-                            'settlement_transfer_transaction_id'    => (isset($settlementTrf[0]) === true) ? $settlementTrf[0]->transaction->getId() : null,
-                            'duplicate'                             => false,
-                            'error'                                 => null,
-                            'soft_failure'                          => false,
-                        ];
-
-                    }  catch (\Throwable $e) {
-
-                        $this->trace->traceException(
-                            $e,
-                            Trace::ERROR,
-                            TraceCode::SETTLEMENT_TRANSACTION_CREATION_FAILED,
-                            [
-                                'input' => $input,
-                            ]);
-
-                        return [
-                            'transaction_id'                        => $settlementJournalID,
-                            'settlement_transfer_transaction_id'    => (isset($settlementTrf[0]) === true) ? $settlementTrf[0]->transaction->getId() : null,
-                            'duplicate'                             => false,
-                            'error'                                 => null,
-                            'soft_failure'                          => true,
-                        ];
-                    }
-                }
-
                 $this->trace->info(
                     TraceCode::SETTLEMENT_TRANSACTION_CREATE_DUPLICATE_REQUEST,
                     [

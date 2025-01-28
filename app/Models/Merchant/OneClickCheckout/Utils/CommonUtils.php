@@ -88,7 +88,9 @@ class CommonUtils extends Base\Core
 
     public function getNectorCoinsFromPromotions(array $promotions): array {
         return array_values(array_filter($promotions, function($coin){
-            return (isset($coin[OrderOneCCFields::PROMOTIONS_TYPE]) === true &&  $coin[OrderOneCCFields::PROMOTIONS_TYPE] === Constants::NECTOR_COINS);
+            return (isset($coin[OrderOneCCFields::PROMOTIONS_TYPE]) === true &&
+                ($coin[OrderOneCCFields::PROMOTIONS_TYPE] === Constants::NECTOR_COINS ||
+                $coin[OrderOneCCFields::PROMOTIONS_TYPE] === Constants::NECTOR_WALLET));
         }));
     }
 

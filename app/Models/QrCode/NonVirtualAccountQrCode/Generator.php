@@ -117,14 +117,6 @@ class Generator extends QrCode\Generator
             {
                 case Gateway::UPI_YESBANK:
                 {
-                    $variantForFeature = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                                          RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE, $this->mode);
-
-                    if (strtolower($variantForFeature) === RazorxTreatment::RAZORX_VARIANT_ON and
-                        ($this->merchant->isFeatureEnabled(FeatureConstants::CLOSE_QR_ON_DEMAND) === true))
-                    {
-                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_ON_DEMAND_CLOSE_FOR_YES_BANK);
-                    }
 
                     $vpa = $terminal->getVpa();
 
@@ -138,7 +130,7 @@ class Generator extends QrCode\Generator
                 }
                 case Gateway::UPI_KOTAK:
                 {
-                    if ((empty($qrCode->getCloseBy()) === false) or ($this->merchant->isFeatureEnabled(FeatureConstants::CLOSE_QR_ON_DEMAND) === true))
+                    if (empty($qrCode->getCloseBy()) === false)
                     {
                         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_CREATE_KOTAK);
                     }
@@ -164,12 +156,7 @@ class Generator extends QrCode\Generator
 
                 case Gateway::UPI_MINDGATE:
                 {
-                    $variantForFeature = $this->app->razorx
-                        ->getTreatment(
-                            $this->merchant->getId(),
-                            RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE,
-                            $this->mode
-                        );
+
 
                     // If there's no expiry passed, this variable will remain true,
                     // else, we will check if the expiry time is beyond 7 days.
@@ -181,10 +168,7 @@ class Generator extends QrCode\Generator
                         $expirySupport = $this->checkCloseBySupportForUpiMindgate($qrCode->getCloseBy());
                     }
 
-                    if (($expirySupport !== true) or
-                        ((strtolower($variantForFeature) === RazorxTreatment::RAZORX_VARIANT_ON) and
-                            ($this->merchant->isFeatureEnabled(FeatureConstants::CLOSE_QR_ON_DEMAND) === true))
-                    )
+                    if ($expirySupport !== true)
                     {
                         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_CREATE_HDFC);
                     }
@@ -1135,19 +1119,33 @@ class Generator extends QrCode\Generator
                     return $this->generateQrIntentUrlViaGatewayModuleForUpiRzpApb($qrCode, $terminal);
                 }
 
-                if
-                (
-                    (
-                        strtolower(
-                            $this->app->razorx->getTreatment(
-                                $terminal->getGateway(),
-                                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
-                                $this->mode
-                            )
-                        ) === RazorxTreatment::RAZORX_VARIANT_ON
-                    ) and
-                    ($qrCode->getProvider() === Provider::UPI_QR)
-                )
+                //Splitz Experiment
+                $properties = [
+                    'id'            => $terminal->getGateway(),
+                    'experiment_id' => $this->app->config->get('app.qr_code_create_refactor_gateway'),
+                    'request_data'  => json_encode(['gateway' => $terminal->getGateway()]),
+                ];
+                $response   = $this->app['splitzService']->evaluateRequest($properties);
+
+                $this->app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                    'experiment_id' => $properties['experiment_id'],
+                    'gateway'   => $terminal->getGateway(),
+                    '$response'     => $response
+                ]);
+
+
+                $qrVariant = false; // Default value
+                $variables = $response['response']['variant']['variables'] ?? [];
+                foreach ($variables as $variable) {
+                    $key = $variable['key'] ?? '';
+                    $value = $variable['value'] ?? '';
+                    if ($key === 'result' && $value === 'on') {
+                        $qrVariant = true;
+                        break; // Stop looping once the condition is met
+                    }
+                }
+
+                if ($qrVariant and ($qrCode->getProvider() === Provider::UPI_QR))
                 {
                     return $this->generateQrIntentUrlViaGatewayModule($qrCode, $terminal);
                 }
@@ -1410,16 +1408,31 @@ class Generator extends QrCode\Generator
 
             try
             {
-                if
-                (
-                    strtolower(
-                        $this->app->razorx->getTreatment(
-                            $terminal->getGateway(),
-                            RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
-                            $this->mode
-                        )
-                    ) === RazorxTreatment::RAZORX_VARIANT_ON
-                )
+
+                $properties = [
+                    'id'            => $this->gateway,
+                    'experiment_id' => $this->app->config->get('app.qr_code_create_refactor_gateway'),
+                    'request_data'  => json_encode(['gateway' => $this->gateway]),
+                ];
+                $response   = $this->app['splitzService']->evaluateRequest($properties);
+
+                $this->app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                    'experiment_id' => $properties['experiment_id'],
+                    'gateway'   => $this->gateway,
+                    '$response'     => $response
+                ]);
+
+                $qrVariant = false; // Default value
+                $variables = $response['response']['variant']['variables'] ?? [];
+                foreach ($variables as $variable) {
+                    $key = $variable['key'] ?? '';
+                    $value = $variable['value'] ?? '';
+                    if ($key === 'result' && $value === 'on') {
+                        $qrVariant = true;
+                        break; // Stop looping once the condition is met
+                    }
+                }
+                if ($qrVariant)
                 {
                     return $this->generateQrIntentUrlViaGatewayModule($qrCode, $terminal);
                 }

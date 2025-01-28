@@ -834,6 +834,8 @@ class Core extends Base\Core
             case 'bank_transfer_process':
             case 'bank_transfer_process_rbl':
             case 'bank_transfer_process_axis':
+            case 'bank_transfer_validate_idfc':
+            case 'bank_transfer_process_idfc':
             case 'bank_transfer_process_icici':
             case 'bank_transfer_process_hdfc_ecms':
                 $properties = [

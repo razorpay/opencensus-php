@@ -46,6 +46,7 @@ class Entity extends Base\PublicEntity
     const FEE_CREDITS           = 'fee_credits';
     const REWARD_FEE_CREDITS    = 'reward_fee_credits';
     const REFUND_CREDITS        = 'refund_credits';
+    const AVAILABLE_BALANCE     = 'available_balance';
 
     //
     // This is bank_accounts.account_number for bank_account's virtual_account

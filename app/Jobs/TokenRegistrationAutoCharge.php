@@ -86,6 +86,8 @@ class TokenRegistrationAutoCharge extends Job
                             ]
                         );
 
+                        $this->tokenRegistration->incrementAttempts();
+
                         $this->tokenRegistration->setFailureReason($e->getCode());
 
                         $this->repo->saveOrFail($this->tokenRegistration);

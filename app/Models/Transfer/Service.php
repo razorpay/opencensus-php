@@ -67,11 +67,7 @@ class Service extends Base\Service
 
         $isReverseShadowMerchant = empty($merchant) === false ? $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) : false;
 
-        $requestId = empty($merchant) === false ? $merchant->getId() : $this->app['request']->getTaskId();
-
-        $readExp = $this->getTransferReadSplitzResponse($requestId) === 'enable';
-
-        if($isReverseShadowMerchant === true and $readExp === true)
+        if($isReverseShadowMerchant === true)
         {
             if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
                 and (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
@@ -123,25 +119,6 @@ class Service extends Base\Service
         }
 
         return $transfer;
-    }
-
-    public function getTransferReadSplitzResponse($merchantId)
-    {
-        try
-        {
-            $properties = [
-                'id'            => $merchantId,
-                'experiment_id' => $this->app['config']->get('app.transfer_read_experiment'),
-            ];
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            return $response['response']['variant']['name'] ?? '';
-        }
-        catch (\Throwable $e)
-        {
-            return '';
-        }
-
     }
 
     public function fetchMultiple(array $input)
@@ -277,7 +254,7 @@ class Service extends Base\Service
         {
             $merchantId = $this->merchant->getId();
 
-            $isExpEnabled = $this->isRouteRearchExpEnabled($merchantId);
+            $isExpEnabled = $this->isDirectTransferRearchExpEnabled($merchantId, $input);
 
             if ($isExpEnabled === true)
             {
@@ -407,6 +384,7 @@ class Service extends Base\Service
 
         try
         {
+            // TODO: check this
             if ($this->isRouteTidbFetchExpEnabled($parentMerchant))
             {
                 $transfer = $this->repo
@@ -582,7 +560,7 @@ class Service extends Base\Service
         }
         else
         {
-            if ($isRouteRearchEnabled)
+            if ($isRouteTidbFetchEnabled)
             {
                 $paymentTransfers =  $this->repo->transfer->getTransfersByPaymentsAndTransId(
                     $parentPaymentId, $merchantId,$transId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
@@ -599,7 +577,7 @@ class Service extends Base\Service
 
                 $orderId = $payment->getApiOrderId();
 
-                if ($isRouteRearchEnabled)
+                if ($isRouteTidbFetchEnabled)
                 {
                     $paymentTransfers =  $this->repo->transfer->getTransfersByPaymentsAndTransId(
                         $orderId, $merchantId, $transId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
@@ -1239,76 +1217,6 @@ class Service extends Base\Service
         $transferIdsFailed = [];
         $transactionIdsFailed = [];
 
-        $merchantId='';
-
-        $expResult=false;
-
-        $experimentId='';
-
-        try{
-            if(count($transactionIds)>0){
-
-                $txnId= $transactionIds[0];
-
-                $txn= $this->repo->transaction->fetchByIdFromTiDB($txnId);
-
-                if($txn === null){
-
-                    $ex= new SettlementIdUpdateException($transactionIds, false);
-
-                    $this->trace->traceException(
-                        $ex,
-                        Trace::CRITICAL,
-                        TraceCode::TRANSFER_RECON_FAILURE,
-                        [
-                            'transaction_id' => $transactionIds,
-                            'message'=>'transactions could not be updated due to mid extraction failure'
-                        ]
-                    );
-
-                    throw $ex;
-                }
-
-                $merchantId=$txn[0]['merchant_id'];
-            }
-
-            $experimentId=$this->app['config']->get(self::TRANSFER_SETTLEMENT_NSS_EXPERIMENT_KEY);
-
-            $properties= [
-                'id'            => $merchantId,
-                'experiment_id' => $experimentId,
-            ];
-
-            $response= $this->app['splitzService']->evaluateRequest($properties);
-
-            $expResult = $response['response']['variant']['name']==='variant_on' ?? false;
-
-            $this->trace->info(
-                TraceCode::TRANSFER_RECON_EXPERIMENT,
-                [
-                    'experiment_evaluated' => $expResult,
-                    'experiment_id'=> $experimentId,
-                    'merchant_id'=>$merchantId,
-                ]
-            );
-
-
-        }catch(\Throwable $ex){
-            $this->trace->traceException(
-                $ex,
-                Trace::CRITICAL,
-                TraceCode::TRANSFER_RECON_FAILURE,
-                [
-                    'id'            => $merchantId,
-                    'experiment_id' => $experimentId,
-                    'transaction_id' => $transactionIds,
-                    'message'=> 'exception while fetching tidb data or exp evaluation'
-                ]
-            );
-            $expResult=false;
-        }
-
-
         foreach ($transactionIds as $transactionId)
         {
             $transferId = null;
@@ -1317,13 +1225,7 @@ class Service extends Base\Service
             try
             {
 
-                if ($expResult===true){
-                    [$transferId, $settlementId] = $this->updateSingleTransferWithSettlementIdRearch($transactionId);
-                }
-                else {
-                    [$transferId, $settlementId] = $this->updateSingleTransferWithSettlementId($transactionId);
-                }
-
+                [$transferId, $settlementId] = $this->updateSingleTransferWithSettlementIdRearch($transactionId);
 
                 if ($transferId === null and $settlementId === null)
                 {
@@ -2897,7 +2799,7 @@ class Service extends Base\Service
         RuntimeManager::setMaxExecTime(600);
     }
 
-    public function isRouteRearchExpEnabled(string $merchantId): bool
+    public function isDirectTransferRearchExpEnabled(string $merchantId, array $transferInput): bool
     {
         if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
         {
@@ -2906,9 +2808,21 @@ class Service extends Base\Service
 
         try
         {
+            if ($this->isCustomerWalletOrPartnershipTransfer($this->merchant, $transferInput))
+            {
+                return false;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            return false;
+        }
+
+        try
+        {
             $properties = [
                 'id'            => Base\UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.route_rearch_exp_id'),
+                'experiment_id' => $this->app['config']->get('app.direct_transfer_rearch_exp_id'),
                 'request_data'  => json_encode(['merchant_id' => $merchantId]),
             ];
 
@@ -2916,7 +2830,7 @@ class Service extends Base\Service
 
             $variant = $response['response']['variant']['name'] ?? '';
 
-            $this->trace->info(TraceCode::ROUTE_REARCH_SPLITZ_EXP_RESULT, [
+            $this->trace->info(TraceCode::DIRECT_TRANSFER_REARCH_SPLITZ_EXP_RESULT, [
                 'merchant_id'   => $merchantId,
                 'splitz_output' => $response,
             ]);
@@ -2927,12 +2841,65 @@ class Service extends Base\Service
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
                 'merchant_id'   => $merchantId,
-                'experiment_id' => $this->app['config']->get('app.route_rearch_exp_id') ?? null
+                'experiment_id' => $this->app['config']->get('app.direct_transfer_rearch_exp_id') ?? null
             ]);
 
             return false;
         }
     }
+
+    public function isPaymentTransferRearchExpEnabled(string $paymentId, string $merchantId, array $transferInput): bool
+    {
+        if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            if ($this->isCustomerWalletOrPartnershipPaymentTransfer($this->merchant, $transferInput))
+            {
+                return false;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            // If exception due to invalid input, process request via API
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                'id'            => $paymentId,
+                'experiment_id' => $this->app['config']->get('app.payment_transfer_rearch_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::PAYMENT_TRANSFER_REARCH_SPLITZ_EXP_RESULT, [
+                'merchant_id'   => $merchantId,
+                'payment_id '   => $paymentId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'payment_id '   => $paymentId,
+                'experiment_id' => $this->app['config']->get('app.payment_transfer_rearch_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
+
 
     public function isRouteTidbFetchExpEnabled(string $merchantId): bool
     {
@@ -2996,5 +2963,56 @@ class Service extends Base\Service
         $this->repo->loadRelations($transfer);
 
         return $transfer;
+    }
+
+    protected function isCustomerWalletTransfer($input)
+    {
+        return isset($input[ToType::CUSTOMER]) === true;
+    }
+
+    protected function isRoutePartnershipTransfer($merchant)
+    {
+        $core = new Transfer\Core();
+        $parentMerchant = $core->fetchAccountParentMerchant($merchant);
+
+        if ($core->isValidPlatformTransfer() === true && $merchant->getId() !== $parentMerchant->getId())
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isCustomerWalletOrPartnershipPaymentTransfer($merchant, $input)
+    {
+        foreach ($input['transfers'] as $transferInput)
+        {
+            $isCustomerWalletTransfer = $this->isCustomerWalletTransfer($transferInput);
+
+            $isPartnershipTransfer = $this->isRoutePartnershipTransfer($merchant);
+
+            $this->trace->info(TraceCode::REARCH_TRANSFER_TYPE_CHECK, [
+                'isCustomerWalletTransfer' => $isCustomerWalletTransfer,
+                'isPartnershipTransfer'    => $isPartnershipTransfer,
+            ]);
+
+            if ($isCustomerWalletTransfer || $isPartnershipTransfer) return true;
+        }
+
+        return false;
+    }
+
+    protected function isCustomerWalletOrPartnershipTransfer($merchant, $input)
+    {
+        $isCustomerWalletTransfer = $this->isCustomerWalletTransfer($input);
+
+        $isPartnershipTransfer = $this->isRoutePartnershipTransfer($merchant);
+
+        $this->trace->info(TraceCode::REARCH_TRANSFER_TYPE_CHECK, [
+            'isCustomerWalletTransfer' => $isCustomerWalletTransfer,
+            'isPartnershipTransfer'    => $isPartnershipTransfer,
+        ]);
+
+        return $isCustomerWalletTransfer || $isPartnershipTransfer;
     }
 }

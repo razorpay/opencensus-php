@@ -32,8 +32,9 @@ class Metric extends Base\Core
     // Dimensions Values
     const SUCCESS                               = 'success';
     const FAILED                                = 'failed';
+    const LABEL_IIN_FETCH_SOURCE                = 'iin_fetch_source';
 
-    public function pushIinMetrics(string $metric, string $status, Entity $iin = null, $exe = null)
+    public function pushIinMetrics(string $metric, string $status, Entity $iin = null, $exe = null, $iinSource = null)
     {
         try
         {
@@ -43,6 +44,7 @@ class Metric extends Base\Core
             }
 
             $dimensions[self::LABEL_IIN_STATUS] = $status;
+            $dimensions[self::LABEL_IIN_FETCH_SOURCE] = $iinSource;
 
             if ($exe !== null)
             {
@@ -68,13 +70,15 @@ class Metric extends Base\Core
         }
     }
 
-    public function pushIINResponseTimeMetrics(Entity $iin, string $metric, int $startTime)
+    public function pushIINResponseTimeMetrics(Entity $iin, string $metric, int $startTime, $iinSource = null)
     {
         try
         {
             $responseTime = get_diff_in_millisecond($startTime);
 
             $dimensions = $this->getDefaultDimentions($iin);
+
+            $dimensions[self::LABEL_IIN_FETCH_SOURCE] = $iinSource;
 
             $this->trace->histogram($metric, $responseTime, $dimensions);
         }

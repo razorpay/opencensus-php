@@ -332,10 +332,10 @@ class VirtualAccountController extends Controller
 
     public function bulkDeactivateClosedRBLBankAccount()
     {
-        // Set time limit and max execution time to 30 minutes (1800 seconds)
-        RuntimeManager::setTimeLimit(1800);
+        // Set time limit and max execution time to 60 minutes (3600 seconds)
+        RuntimeManager::setTimeLimit(3600);
 
-        RuntimeManager::setMaxExecTime(1800);
+        RuntimeManager::setMaxExecTime(3600);
 
         RuntimeManager::setMemoryLimit('9216');
 
@@ -346,10 +346,10 @@ class VirtualAccountController extends Controller
 
     public function deactivateMigratedBA()
     {
-        // Set time limit and max execution time to 30 minutes (1800 seconds)
-        RuntimeManager::setTimeLimit(1800);
+        // Set time limit and max execution time to 60 minutes (3600 seconds)
+        RuntimeManager::setTimeLimit(3600);
 
-        RuntimeManager::setMaxExecTime(1800);
+        RuntimeManager::setMaxExecTime(3600);
 
         RuntimeManager::setMemoryLimit('9216');
 

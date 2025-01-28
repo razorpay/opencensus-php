@@ -3574,7 +3574,7 @@ class Repository extends Base\Repository
 
                 } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
 
-                $this->resetConnectionOnModels($results, $this->getReportingReplicaConnection());
+                $this->resetConnectionOnModels($results, $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT));
 
                 return $results;
             }

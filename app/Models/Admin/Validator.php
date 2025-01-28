@@ -212,14 +212,17 @@ class Validator extends Base\Validator
 
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_AXIS_SLAB1    => 'filled|integer',
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB1 => 'filled|integer',
+        ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_IDFC_SLAB1    => 'filled|integer',
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_AXIS_SLAB2    => 'filled|integer',
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB2 => 'filled|integer',
+        ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_IDFC_SLAB2    => 'filled|integer',
 
         ConfigKey::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB3         => 'filled|integer',
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB3     => 'filled|integer',
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB3   => 'filled|integer',
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_AXIS_SLAB3    => 'filled|integer',
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB3 => 'filled|integer',
+        ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_IDFC_SLAB3    => 'filled|integer',
 
         ConfigKey::FREE_PAYOUTS_SUPPORTED_MODES           => 'filled|array',
         ConfigKey::DELAY_RUPAY_CAPTURE                    => 'filled|boolean',
@@ -399,7 +402,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $mozartGatewayPvtRules = [
-        'gateway'            => 'required|string|in:citi,icici,yesbank_upi,yesbank,icici_imps,rbl,m2p,axis,amazonpay,mc_send,hdfc',
+        'gateway'            => 'required|string|in:citi,icici,yesbank_upi,yesbank,icici_imps,rbl,m2p,axis,amazonpay,mc_send,hdfc,idfc,idfc_upi',
         'action'             => 'required|string|in:gateway_auth,gateway_session,transfer_init,transfer_status,beneficiary_verify,beneficiary_register,registration,account_balance,account_statement,account_statement_consolidated',
         'namespace'          => 'required|string',
         'payload'            => 'required|array',

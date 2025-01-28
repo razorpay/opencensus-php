@@ -427,6 +427,47 @@ class Holidays
                 25 => 'Christmas',
             ],
         ],
+        2025 => [
+            2 => [
+                19 => 'Chhatrapati Shivaji Maharaj Jayanti',
+                26 => 'Mahashivratri',
+            ],
+            3 => [
+                14 => 'Holi (Second Day) - Dhuleti/Dhulandi/Dol Jatra',
+                31 => 'Ramzan-Id (Id-Ul-Fitr) (Shawal-1)/Khutub-E-Ramzan',
+            ],
+            4 => [
+                1  => 'Banks to close their yearly accounts',
+                10  => 'Mahavir Janmakalyanak/Mahavir Jayanti',
+                14 => 'Dr. Babasaheb Ambedkar Jayanti/Vishu/Biju/Buisu Festival/Maha Vishuva Sankranti/Tamil New Year Day/Bohag Bihu/Cheiraoba',
+                18 => 'Good Friday',
+            ],
+            5 => [
+                1  => 'Maharashtra Din/May Day (Labor Day)',
+                12 => 'Buddha Purnima',
+            ],
+            6 => [
+                7 => 'Bakri Eid (Eid-Ul-Zuha)',
+            ],
+            8 => [
+                15 => 'Independence Day/Parsi New Year (Shahenshahi)/Janmashtami',
+                27 => 'Ganesh Chaturthi/Samvatsari (Chaturthi Paksha)/Varasiddhi Vinayaka Vrata/Ganesh Puja/VinayakarChathurthi',
+            ],
+            9 => [
+                5  => 'Id-E-Milad/Milad-un-Nabi or Id-e Milad (Birthday of Prophet Mohammad) (bara vafat)/Thiruvonam/Milad-i-Sherif',
+            ],
+            10 => [
+                2  => 'Mahatma Gandhi Jayanti/Dasara/Vijaya Dashami/Dussehra/Durga Puja (Dasain)/Janmotsav of Sri SriSankardeva',
+                21 => 'Diwali Amavasya (Laxmi Pujan)/Deepawali/Govardhan Pooja',
+                22 => 'Diwali (Bali Pratipada)/Vikram Samvant New Year Day/Govardhan Pooja/Balipadyami, Laxmi Puja (Deepawali)',
+            ],
+            11 => [
+                5 => 'Guru Nanak Jayanti/Kartika Purnima/Rahas Purnima',
+            ],
+            12 => [
+                25 => 'Christmas',
+            ],
+        ],
     ];
 
     /**
@@ -737,6 +778,34 @@ class Holidays
         if ((isset(self::$holidays[$year])) and
             (isset(self::$holidays[$year][$month])) and
             (isset(self::$holidays[$year][$month][$day])))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function isNationalBankHoliday($date): bool
+    {
+        $nationalHolidays =  [
+            1 => [
+                26 => 'Republic Day',
+            ],
+            4 => [
+                1 => 'Annual Bank closing',
+            ],
+            8 => [
+                15 => 'Independence Day',
+            ],
+        ];
+
+
+        $month = $date->month;
+        $day = $date->day;
+
+        if (
+            (isset($nationalHolidays[$month])) and
+            (isset($nationalHolidays[$month][$day])))
         {
             return true;
         }

@@ -813,14 +813,7 @@ class Service extends Base\Service
 
         $payments = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_FETCH_PAYMENTS], function() use(&$input, $merchantId)
         {
-            $properties = [
-                "id" => UniqueIdEntity::generateUniqueId(),
-                "experiment_id" => $this->app['config']->get('app.splitz_payout_harvester_query_experiment_id'),
-            ];
-
-            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-            $connectionType = $variant === true ? ConnectionType::DATA_WAREHOUSE_MERCHANT : ConnectionType::PAYMENT_FETCH_REPLICA;
+            $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
             return $this->repo->payment->fetch($input, $merchantId, $connectionType);
         });

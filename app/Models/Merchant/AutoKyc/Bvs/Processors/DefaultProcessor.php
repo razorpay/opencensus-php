@@ -50,6 +50,19 @@ class DefaultProcessor implements Processor
 
     ];
 
+    protected $rampedUpRazorxExperiments = [
+        RazorxTreatment::GSTIN_SYNC,
+        RazorxTreatment::CIN_SYNC,
+        RazorxTreatment::LLPIN_SYNC,
+        RazorxTreatment::PERSONAL_PAN_SYNC,
+        RazorxTreatment::BUSINESS_PAN_SYNC,
+        RazorxTreatment::BANK_SYNC,
+        RazorxTreatment::AADHAR_FRONT_BACK_SYNC,
+        RazorxTreatment::VOTERS_ID_SYNC,
+        RazorxTreatment::PASSPORT_SYNC,
+        RazorxTreatment::AADHAR_EKYC_SYNC,
+    ];
+
     protected $timeoutMap = [
         Constant::GSTIN                                      => 5,
         Constant::CIN                                        => 2,
@@ -318,24 +331,10 @@ class DefaultProcessor implements Processor
 
         $experiment = $this->experimentMap[$this->configName];
 
-        $isRazorxExperimentEnabled = (new Core())->isRazorxExperimentEnable(
-            $this->merchant->getMerchantId(),
-            $experiment);
+        $isRazorxExperimentEnabled = array_key_exists($experiment, $this->rampedUpRazorxExperiments);
 
         $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT, ["merchant_id" => $this->merchant->getMerchantId(),
                                                                  $experiment   => $isRazorxExperimentEnabled]);
-
-        if ($isRazorxExperimentEnabled === false)
-        {
-            return Constant::ASYNC;
-        }
-
-        $isRazorxExperimentEnabled = (new Core())->isRazorxExperimentEnable(
-            $this->merchant->getMerchantId(),
-            RazorxTreatment::BVS_IN_SYNC);
-
-        $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT, ["merchant_id"                => $this->merchant->getMerchantId(),
-                                                                 RazorxTreatment::BVS_IN_SYNC => $isRazorxExperimentEnabled]);
 
         if ($isRazorxExperimentEnabled === false)
         {

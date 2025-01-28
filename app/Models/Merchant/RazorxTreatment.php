@@ -17,7 +17,6 @@ final class RazorxTreatment
 
     const EDUCATION_OTHERS_BUSINESS_TYPE = 'EDUCATION_OTHERS_BUSINESS_TYPE';
     const HUF_BUSINESS_TYPE              = 'huf_business_type';
-    const MAILMODO_L1_FORM_EMAIL_TRIGGER = 'mailmodo_l1_form_email_trigger';
     const PAR_ASYNC_FOR_CARD_FINGERPRINT = 'par_async_for_card_fingerprint';
 
     const DISABLE_RZP_TOKENISED_PAYMENT        = 'disable_rzp_tokenised_payment';
@@ -49,8 +48,6 @@ final class RazorxTreatment
     // the ON variant
     const RAZORX_VARIANT_ON     = 'on';
 
-    //Razorx treatment constant, allows system to show friend buy widget to merchant
-    const SHOW_FRIENDBUY_WIDGET = "show_friendbuy_widget";
 
     //Razorx treatment constant, allows system to send new bu namespace to vault service
     const VAULT_BU_NAMESPACE_MIGRATION  = 'vault_bu_namespace_migration';
@@ -68,23 +65,14 @@ final class RazorxTreatment
     // Response filed filtering based on role
     const RESPONSE_FIELDS_FILTERING_FOR_ROLES = 'response_fields_filtering_for_roles';
 
-    //Razorx treatment constant, allows system to call bvs for partnership deed verification.
-    const AUTO_KYC_PARTNERSHIP = "auto_kyc_partnership";
-
     //Razorx treatment constant, allows system to call bvs for certificate of incorporation verification.
     const AUTO_KYC_COI = "auto_kyc_coi";
 
     //Razorx treatment constant, allows system to call bvs for trust society ngo business certificate verification.
     const TRUST_SOCIETY_NGO_BVS_VALIDATION = "trust_society_ngo_bvs_validation";
 
-    //Razorx treatment constant, allows system to call bvs for trust and society autokyc.
-    const AUTO_KYC_TRUST_SOCIETY = "auto_kyc_trust_society";
-
     // Razorx treatment constant, allows merchant to submit support call requests.
     const SUPPORT_CALL = 'support_call';
-
-    // Razorx treatment constant, allows system to call ledger service.
-    const LEDGER_ONBOARDING_PG_MERCHANT = 'ledger_onboarding_pg_merchant';
 
     //It is used to maintain backward compatibility for fav composite api response.
     const FAV_COMPOSITE_SERVICE_FORWARDING = 'fav_composite_service_forwarding';
@@ -142,8 +130,6 @@ final class RazorxTreatment
     const SELLER_APP_PL_BATCH_UPLOAD_EXPERIMENT = 'sellerapp_PL_batch_upload';
 
     const RENDERING_PREFERENCES_PAYMENT_LINKS = 'rendering_preferences_payment_links';
-
-    const INVOICE_PAYMENTS_EXPAND = 'invoice_payments_expand';
 
     const FAV_PG_LEDGER_CUTOFF = 'fav_pg_ledger_cutoff';
 
@@ -311,28 +297,11 @@ final class RazorxTreatment
 
     const BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT = 'bulk_payouts_improvements_rollout';
 
-    // experiment to enable whatsapp notifications and also refactoring notifications;
-    const WHATSAPP_NOTIFICATIONS = 'whatsapp_notifications';
-
-    // experiment to enable pushing events to segment
-    const SEGMENT_ANALYTICS_FUNCTIONALITY = 'segment_analytics_functionality';
-
-    // experiment to enable instant activations on L1 submit;
-    const INSTANT_ACTIVATION_FUNCTIONALITY = 'instant-activations-functionality';
-
     // experiment to enable shop estb doc verification through OCR;
     const SHOP_ESTABLISHMENT_DOC_VERIFICATION = 'shop_establishment_doc_verification';
 
     // experiment to enable gst in doc verification through OCR;
     const GST_IN_DOC_VERIFICATION = 'gst_in_doc_verification';
-
-    const POA_VERIFICATION_AUTO_KYC = 'poa_verification_auto_kyc';
-
-    // experiment to skip poa documents if aadhaar esign is done
-    const SKIP_POA_DOCUMENT_FUNCTIONALITY = "SKIP_POA_DOCUMENT_FUNCTIONALITY";
-
-    // experiment to enable axis wrapper feature
-    const AXIS_WRAPPER_ENABLED = "AXIS_WRAPPER_ENABLED";
 
     // experiment to enable ipAddress-clientId dedupe functionality
     const DEDUPE_FUNCTIONALITY_FOR_CLIENT_IP_ID = 'DEDUPE_FUNCTIONALITY_FOR_CLIENT_IP_ID';
@@ -392,21 +361,18 @@ final class RazorxTreatment
     const BT_RBL_CREATE_VIRTUAL_ACCOUNT = 'bt_rbl_create_virtual_account';
     const SC_STOP_QR_AS_RECEIVER_FOR_VIRTUAL_ACCOUNT = 'sc_stop_qr_as_receiver_for_virtual_account';
 
-    // This experiment COLLECTX_LIVE_ON_BANK_ACCOUNTS would be enabled for merchants who are live on bank accounts for collectx
-    // Since there could be merchants who are live on UPI but not on Bank Account, VAs should be created accordingly
-    const COLLECTX_LIVE_ON_BANK_ACCOUNTS = "collectx_live_on_bank_accounts";
-
     const COLLECTX_AXIS_PAYMENT_TRANSFER_RAMP_UP = "collectx_axis_payment_transfer_ramp_up";
 
     // this experiment is to disable webhooks for collectx merchants
     const COLLECTX_DISABLE_WEBHOOKS = "collectx_disable_webhooks";
 
+    // this experiment is to enable webhooks via worker flow
+    const COLLECTX_WORKER_FLOW = "collectx_worker_flow";
+
     const COLLECTX_RBL_MERCHANTS_VA_CREATION_BLOCK = "collectx_rbl_merchants_va_creation_block";
     const COLLECTX_RBL_PAYMENT_TRANSFER_RAMP_UP = "collectx_rbl_payment_transfer_ramp_up";
 
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
-
-    const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED = 'system_based_needs_clarification_not_matched';
 
     // to a/b test between offer tile vs subtext for cred
     const CRED_OFFER_SUBTEXT = 'cred_offer_subtext';
@@ -526,26 +492,11 @@ final class RazorxTreatment
     // Experiment to send create validation metadata to BVS
     const BVS_CREATE_VALIDATION_METADATA = 'BVS_CREATE_VALIDATION_METADATA';
 
-    // Experiment to send manual verification data to BVS
-    const BVS_MANUAL_VERIFICATION_DATA = 'BVS_MANUAL_VERIFICATION_DATA';
-
-    // Experiment for removal of extra fields during onboarding
-    const LITE_ONBOARDING = 'lite_onboarding';
-
-    // Experiment for removal of extra fields during onboarding
-    const UPDATED_LITE_ONBOARDING = 'updated_lite_onboarding';
-
-    const HARVESTER_SEGREGATE_QUERIES = 'HARVESTER_SEGREGATE_QUERIES';
-
     const HARVESTER_REFUND_FILTER = 'HARVESTER_REFUND_FILTER';
 
     const HARVESTER_V2_MIGRATION = 'HARVESTER_V2_MIGRATION';
 
     const DRUID_MIGRATION = 'DRUID_MIGRATION';
-
-    const WHATCMS_EXPERIMENT = 'WHATCMS_EXPERIMENT';
-
-    const ESIGN_AADHAR_VERIFICATION = 'ESIGN_AADHAR_VERIFICATION';
 
     //Experiment for removal of extra fields in payment response
     const DISALLOW_ORG_DATA_IN_RESPONSE = 'disallow_org_data_in_response';
@@ -695,9 +646,6 @@ final class RazorxTreatment
     // Refund source fallback is enabled on merchant or not
     const REFUND_FALLBACK_ENABLED_ON_MERCHANT = 'refund_source_fallback_enabled';
 
-    // Experiment to use new PG Invoice template
-    const MERCHANT_PG_INVOICE_V2 = 'merchant_pg_invoice_v2';
-
     //Experiment to validate Urls, emails, html tags inclusions in Linked Account name, business_name
     public const URL_VALIDATION_FOR_LINKED_ACCOUNT_NAME = 'url_validation_for_linked_account_name';
 
@@ -748,8 +696,6 @@ final class RazorxTreatment
 
     /** This is a mock experiment and used to control the test suite behaviour **/
     public const DISABLE_CAC_FOR_GITHUB_TEST_SUITES = "disable_cac_for_github_test_suites";
-
-    public const EMAIL_EASY_ONBOARDING_SIGNUP = 'email_easy_onboarding_signup';
 
     public const REFUND_AMOUNT_VALIDATION_FROM_REFUND_ENTITY = 'refund_amt_validation_from_refund_entity';
 
@@ -888,9 +834,6 @@ final class RazorxTreatment
     //Experiment to remove bank fetch call if balance is stale while creating CA payout and mark the payout to queued.
     const CA_PAYOUT_SKIP_BALANCE_FETCH = 'ca_payout_skip_balance_fetch';
 
-    //Experiment to create dedicated UPI terminal
-    const UPI_DEDICATED_TERMINAL = 'upi_dedicated_terminal';
-
     // Unexpected payment refund delay to T+1
     const UNEXPECTED_PAYMENT_REFUND_DELAY = 'unexpected_payment_refund_delay';
 
@@ -924,19 +867,11 @@ final class RazorxTreatment
 
     const CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER  = "card_subscriptions_international_handler";
 
-    const DISABLE_QR_CODE_ON_DEMAND_CLOSE = 'disable_qr_code_on_demand_close';
-
-    const QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS = 'qr_gateway_unrecognised_payment_process';
 
     // If true, it will select Optimizer mandate hub for card recurring payments.
     const ALLOW_OPTIMIZER_CARD_MANDATE_HUB = 'allow_optimizer_card_mandate_hub';
 
     const ALLOW_OPTIMIZER_UPI_RECURRING = 'allow_optimizer_upi_recurring';
-
-    /**
-     * Razorx flag to enable capture settings for optimizer merchants overriding the Direct settlement capture flow
-     */
-    const ENABLE_CAPTURE_SETTINGS_FOR_OPTIMIZER = 'enable_capture_settings_for_optimizer';
 
     // Expt to handle non terminal payouts after migration
     const NON_TERMINAL_MIGRATION_HANDLING       = 'non_terminal_migration_handling';
@@ -1038,7 +973,7 @@ final class RazorxTreatment
      */
     const ENABLE_STANDARD_CHECKOUT_MERCHANTS_ON_PUSH_TOKEN_PROVISIONING = 'enable_standard_checkout_merchants_on_push_token_provisioning';
 
-    const QR_PAYMENT_PROCESS_RETRY = 'qr_payment_process_retry';
+
 
     /**
      * Razorx flag to skip callback for upi_icici BT(Beneficiary Timeout) cases
@@ -1046,8 +981,6 @@ final class RazorxTreatment
      */
     const SKIP_UPI_ICICI_CALLBACK_FOR_BT = 'skip_upi_icici_callback_for_bt';
     const RECURRING_SIHUB_CANCEL_WEBHOOK_ENABLED = 'recurring_sihub_webhook_enabled';
-
-    const APPEND_GATEWAY_PAYMENT_ID_PAYU = 'append_gateway_payment_id_payu';
 
     // Experiment to support multiple frequencies for card recurring payment CAW
     const CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES = "card_mandate_enable_multiple_frequencies";
@@ -1083,10 +1016,6 @@ final class RazorxTreatment
      * Razorx flag to enable/disable validation on payee_account length during bank_transfer Callback
      */
     const PAYEE_ACCOUNT_LENGTH_VALIDATION = 'payee_account_length_validation';
-    /*
-    * Razorx flag is used to control versions(old/new) of otp unification for acs page
-    */
-    const OTP_UNIFICATION_ACS_PAGE  = 'otp_unification_acs_page';
     /*
      * Razorx flag to enable/disable three decimal currency check for invoice and plugins flow
      */
@@ -1175,4 +1104,5 @@ final class RazorxTreatment
     const ALLOW_FULCRUM_RECURRING_SUBSEQUENT = 'fulcrum_recurring_subsequent';
 
     const BANK_DATA_VIA_NPCI_API = 'bank_data_via_npci_api';
+    const Axis_VA_MIGRATION = 'axis_va_migration';
 }

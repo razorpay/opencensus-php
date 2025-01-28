@@ -598,6 +598,34 @@ class Processor extends VirtualAccount\Processor
             // If the fund loading has happened to the common merchant account, we need to refund the money
             // back by creating a payout to the payer account.
             if ($bankTransfer->virtualAccount->getId() === VirtualAccount\Entity::SHARED_ID_BANKING) {
+                // If the payee account is of IDFC bank VA then we need to raise the slack alert
+                if($bankTransfer[Entity::PAYEE_IFSC] == VirtualAccount\Provider::IDFC_COMMON_IFSC &&
+                    substr($bankTransfer[Entity::PAYEE_ACCOUNT], 0, 4) == VirtualAccount\Provider::IDFC_VA_PREFIX &&
+                    empty($bankTransfer[Entity::PAYER_IFSC]))
+                {
+                    // For such cases we need to raise a slack alert for manual refund creation.
+                    // This manual refund creation will be done by the finops team.
+                    // We will create a bank transfer in this case, assuming payout will be processed manually
+                    $this->trace->info(TraceCode::IDFC_VA_MANUAL_REFUND_CREATION, [
+                        'virtual_account_id' => $bankTransfer->getVirtualAccountId(),
+                        'amount' => $bankTransfer->getAmount(),
+                        'payer_bank_account_id' => $bankTransfer->getPayerBankAccountId(),
+                        'utr' => $bankTransfer->getUtr(),
+                        'bank_transfer_id' => $bankTransfer->getId(),
+                    ]);
+
+                    $metric = \RZP\Models\Payout\Metric::FUND_LOADING_VA_CALLBACK_FAILURE;
+
+                    $this->trace->count(
+                        $metric,
+                        [
+                            'trace_code' => TraceCode::IDFC_VA_MANUAL_REFUND_CREATION,
+                            'route_name' => $this->app['api.route']->getCurrentRouteName()
+                        ]);
+
+                    return;
+                }
+
                 (new PayoutsClient)->refundFundLoadingViaPayout($bankTransfer);
             }
         } catch (\Throwable $ex) {

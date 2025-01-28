@@ -282,6 +282,17 @@ class Mode
                         self::UPI
                     ],
                 ],
+                Settlement\Channel::IDFC  => [
+                    Constants\Entity::VPA          => [
+                        self::UPI,
+                    ],
+                    Constants\Entity::BANK_ACCOUNT => [
+                        self::RTGS,
+                        self::NEFT,
+                        self::IMPS,
+                        self::IFT,
+                    ],
+                ],
             ],
         ];
     }

@@ -376,7 +376,8 @@ class Processor extends Base\Core
             Payment\Entity::NOTES       => $this->qrCode->getNotes()->toArray(),
         ];
 
-        if ($this->qrCode->getRequestSource() === NonVirtualAccountQrCode\RequestSource::EZETAP)
+        if (($this->qrCode->getRequestSource() === NonVirtualAccountQrCode\RequestSource::EZETAP) or
+            ($this->terminal->isOffline()))
         {
             $paymentArray[Payment\Entity::SOURCE_CHANNEL] = QrConstants::PAYMENT_TYPE_IN_PERSON;
         }
@@ -394,6 +395,11 @@ class Processor extends Base\Core
             $order = $this->qrCode->source;
 
             $paymentArray[Payment\Entity::ORDER_ID] = $order->getPublicId();
+        }
+
+        if($this->qrCode->getDeviceId() !== null and $qrPayment->isExpected() === true)
+        {
+            $paymentArray[Payment\Entity::DeviceId] = $this->qrCode->getDeviceId();
         }
 
         // TODO: find a better method to do this. This is done in order to bypass validation
@@ -856,14 +862,6 @@ class Processor extends Base\Core
                                'qr_payment' => $qrPayment->getId()
                            ]);
 
-        $variant = $this->app->razorx->getTreatment($this->qrCode->merchant->getId(),
-                                                    RazorxTreatment::QR_PAYMENT_PROCESS_RETRY,
-                                                    $this->mode);
-
-        if (strtolower($variant) !== RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            throw $ex;
-        }
 
         if ($this->causedByLostConnection($ex) === false)
         {

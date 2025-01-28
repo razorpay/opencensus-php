@@ -62,7 +62,8 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $ignoredRelations = [
-        "order"
+        "order",
+        "offer"
     ];
 
 

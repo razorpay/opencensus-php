@@ -5,6 +5,7 @@ namespace RZP\Models\Customer\Transaction;
 use RZP\Models\Base;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Entity extends Base\PublicEntity
 {
@@ -92,7 +93,9 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $ignoredRelations = [
-        self::ENTITY
+        self::ENTITY,
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER
     ];
 
     // -------------------- Relations ---------------------------

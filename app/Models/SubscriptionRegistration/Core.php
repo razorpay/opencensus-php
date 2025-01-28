@@ -82,6 +82,12 @@ class Core extends Base\Core
                 $validator->validateFrequencyAndMaxAmountCardRecurring($input);
                 $subscriptionRegistration->setFrequency($input[Entity::FREQUENCY] ?? Entity::AS_PRESENTED);
             }
+
+            if ($this->isOptimizerRecurringPayment($merchant))
+            {
+                $validator->validateFrequencyAndMaxAmountCardRecurring($input);
+                $subscriptionRegistration->setFrequency($input[Entity::FREQUENCY] ?? Entity::AS_PRESENTED);
+            }
         }
 
         if ($subscriptionRegistration->getMethod() === Payment\Method::WALLET)
@@ -1006,31 +1012,46 @@ class Core extends Base\Core
             ]
         );
 
-        $order = $this->createOrder($tokenRegistration);
-
-        $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_ORDER_CREATED, $tokenRegistration->getMetricDimensions());
-
-        $paymentSuccess = true;
-
-        $tokenRegistration->incrementAttempts();
-
-        $this->trace->info(
-            TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
-            [
-                'token.registration_id' => $tokenRegistration->getId(),
-                'status'                => 'increment attempts'
-            ]
-        );
-
-        $this->repo->saveOrFail($tokenRegistration);
-
+        $paymentSuccess = false;
         try{
-            $payment = $this->createPayment($tokenRegistration, $order);
-        }
-        catch(Exception $ex)
-        {
-            $paymentSuccess = false;
+            $tokenRegistration->incrementAttempts();
 
+            $order = $this->createOrder($tokenRegistration);
+
+            $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_ORDER_CREATED, $tokenRegistration->getMetricDimensions());
+
+            $this->trace->info(
+                TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+                [
+                    'token.registration_id' => $tokenRegistration->getId(),
+                    'attempts'              => $tokenRegistration->getAttempts(),
+                    'status'                => 'after order creation'
+                ]
+            );
+
+            $payment = $this->createPayment($tokenRegistration, $order);
+
+            if (isset($payment['razorpay_payment_id']))
+            {
+                $paymentSuccess = true;
+                $tokenRegistration->setStatus(Status::COMPLETED);
+                $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_SUCCESSFUL, $tokenRegistration->getMetricDimensions());
+            }
+            $this->repo->saveOrFail($tokenRegistration);
+
+            $this->trace->info(
+                TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+                [
+                    'token.registration_id' => $tokenRegistration->getId(),
+                    'status'                => 'post payment attempt',
+                    'attempts'              => $tokenRegistration->getAttempts(),
+                    'payment_response'      => $payment,
+                    'is_payment_successful' => $paymentSuccess,
+                ]
+            );
+        }
+        catch(\Exception $ex)
+        {
             $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_FAILED,
                                 $tokenRegistration->getMetricDimensions(['failure_reason' => $ex->getCode()]));
 
@@ -1043,19 +1064,22 @@ class Core extends Base\Core
                 ]
             );
 
+            $this->trace->info(
+                TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+                [
+                    'token.registration_id' => $tokenRegistration->getId(),
+                    'attempts'              => $tokenRegistration->getAttempts(),
+                    'status'                => 'post payment attempt',
+                    'is_payment_successful' => $paymentSuccess,
+                ]
+            );
+
             $tokenRegistration->setFailureReason($ex->getCode());
 
             $this->repo->saveOrFail($tokenRegistration);
         }
 
-        if ($paymentSuccess === true)
-        {
-            $tokenRegistration->setStatus(Status::COMPLETED);
-
-            $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_SUCCESSFUL, $tokenRegistration->getMetricDimensions());
-        }
-
-        $this->repo->saveOrFail($tokenRegistration);
+        return [];
     }
 
     /**
@@ -1178,8 +1202,8 @@ class Core extends Base\Core
             Order\Entity::CURRENCY         => $tokenRegistration->getCurrency(),
             Order\Entity::PAYMENT_CAPTURE  => true,
             Order\Entity::METHOD           => $tokenRegistration->getMethod(),
-            Order\Entity::NOTES            => $previousOrder->getNotes()->toArray(),
-            Order\Entity::PRODUCTS         => $previousOrder->products->toArrayPublic()['items'],
+            Order\Entity::NOTES            => $previousOrder->getNotes(),
+            Order\Entity::PRODUCTS         => $previousOrder->products,
             Order\Entity::RECEIPT          => 'auto_crg_' . Base\UniqueIdEntity::generateUniqueId(),
         ];
 
@@ -1527,5 +1551,45 @@ class Core extends Base\Core
         $this->trace->count(BatchMetric::BATCH_REQUESTS_TOTAL, $dimensions);
 
         return (new Batch\ResponseEntity)->fill($batchResponse);
+    }
+
+    private function isOptimizerRecurringPayment($merchant) : bool
+    {
+        if($merchant->isFeatureEnabled('raas') === false){
+            return false;
+        }
+
+        $mode = 'enable';
+
+        $merchantID = $this->merchant->getId();
+
+        try
+        {
+            $properties = [
+                'id'            => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.enabled_rearch_optimizer_recurring_flow'),
+                'request_data'  => json_encode(['merchant_id' => $merchantID]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::OPTIMIZER_MERCHANT_RECURRING_REARCH_ENABLE_EXPERIMENT, [
+                'splitz_output' => $variant,
+                'response' => $response,
+            ]);
+
+            return $variant === $mode;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::OPTIMIZER_MERCHANT_RECURRING_REARCH_ENABLE_EXPERIMENT_ERROR, [
+                'merchant_id'   => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.enabled_rearch_optimizer_recurring_flow') ?? null,
+            ]);
+
+            return false;
+        }
     }
 }

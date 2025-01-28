@@ -13,7 +13,9 @@ class Action
 {
     const ENROLL                        = 'enroll';
     const AUTHORIZE                     = 'authorize';
+    const AUTHENTICATE                  = 'authenticate';
     const CALLBACK                      = 'callback';
+    const RECURRING_CALLBACK            = 'recurring_callback';
     const PAY                           = 'pay';
     const CAPTURE                       = 'capture';
     const OTP_GENERATE                  = 'otp_generate';
@@ -22,8 +24,11 @@ class Action
     const REVERSE                       = 'reverse';
     const TOPUP                         = 'topup';
     const PRE_DEBIT                     = 'pre_debit';
+    const NOTIFY                        = 'notify';
     const DEBIT                         = 'debit';
     const VERIFY                        = 'verify';
+    const VERIFY_RECURRING              = 'verify_recurring';
+    const REVOKE                        = 'revoke';
     const VERIFY_GATEWAY                = 'verify_gateway';
     const VERIFY_INTERNAL_REFUND        = 'verify_internal_refund';
     const VERIFY_REFUND                 = 'verify_refund';

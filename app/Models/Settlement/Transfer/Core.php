@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement\Transfer;
 
 use RZP\Models\Base;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
@@ -68,7 +69,7 @@ class Core extends Base\Core
 
         $txnCore = (new Transaction\Core);
 
-        $settlementTransfer = $this->transaction(function () use ($settlement, $destinationBalance, $txnCore, $entityID, $journalID, $settlementJournalID)
+        $settlementTransfer = $this->transaction(function () use ($destinationMerchant, $settlement, $destinationBalance, $txnCore, $entityID, $journalID, $settlementJournalID)
         {
             $settlementTransfer = $this->buildSettlementTransferEntity(
                 $settlement,
@@ -83,11 +84,17 @@ class Core extends Base\Core
             //
             $settlement->setStatus(Status::PROCESSED);
 
-            $transaction = $txnCore->createFromSettlementTransfer($settlementTransfer, $journalID);
+            if ($destinationMerchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === true && $destinationBalance->isTypePrimary() === true)
+            {
+                $settlementTransfer->setAttribute(Entity::TRANSACTION_ID, $journalID);
+            }
+            else
+            {
+                $transaction = $txnCore->createFromSettlementTransfer($settlementTransfer, $journalID);
+                $this->repo->saveOrFail($transaction);
+            }
 
             $this->repo->saveOrFail($settlementTransfer);
-
-            $this->repo->saveOrFail($transaction);
 
             $this->repo->saveOrFail($settlement);
 
@@ -97,7 +104,6 @@ class Core extends Base\Core
                 [
                     'destination_balance_id'            => $destinationBalance->getId(),
                     'settlement_id'                     => $settlement->getId(),
-                    'transaction_id'                    => $transaction->getId(),
                     'settlement_transfer_id'            => $settlementTransfer->getId(),
                 ]);
 

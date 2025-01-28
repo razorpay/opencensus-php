@@ -29,6 +29,7 @@ class Mode extends Core
     const IFT     = 'IFT';
     const DUITNOW = "DUITNOW";
     const IBG     = "IBG";
+    const FAST    = "FAST";
 
     // We will be storing mode 'card' for payouts through
     // M2P, but we will be supporting 'Card', 'cArd', 'CaRD' etc in request body

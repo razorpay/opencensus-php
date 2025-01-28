@@ -64,7 +64,9 @@ class Service extends Base\Service
                 {
                     if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                     {
-                        (new ReverseShadowAdjustmentsCore())->createLedgerEntryForManualAdjustmentReverseShadow($adj, $publicId);
+                        $journal = (new ReverseShadowAdjustmentsCore())->createLedgerEntryForManualAdjustmentReverseShadow($adj, $publicId);
+
+                        $adj->setTransactionId($journal[LedgerConstants::ID]);
 
                         $adj->setStatus(Status::PROCESSED);
 
@@ -81,7 +83,9 @@ class Service extends Base\Service
                     and ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                 )
                 {
-                    (new ReverseShadowAdjustmentsCore())->createLedgerEntryForManualReservePrimaryNegativeAdjustmentReverseShadow($adj, $publicId);
+                    $journal = (new ReverseShadowAdjustmentsCore())->createLedgerEntryForManualReservePrimaryNegativeAdjustmentReverseShadow($adj, $publicId);
+
+                    $adj->setTransactionId($journal[LedgerConstants::ID]);
 
                     $adj->setStatus(Status::PROCESSED);
 

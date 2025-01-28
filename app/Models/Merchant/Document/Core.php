@@ -220,6 +220,14 @@ class Core extends Base\Core
 
         (new Validator())->validateDocumentTypeAndFileType($rule, $input);
 
+        $service = new Merchant\Service();
+        $isRekycMerchant = $service->isRekycMerchant($merchant->getMerchantId(), $merchantDetails->getActivationStatus());
+
+        // unlock the form for the rekyc case
+        if($isRekycMerchant) {
+            $merchantDetails->setLocked(false);
+        }
+
         $validateLock = $this->shouldValidateLock($input, $validateLock);
 
         if ($validateLock === true)
@@ -253,7 +261,8 @@ class Core extends Base\Core
 
             $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
 
-            if ($shouldMerchantOnboardViaPGOS === true)
+            // or if rekyc merchant onboard via PGOS
+            if ($shouldMerchantOnboardViaPGOS === true || $isRekycMerchant)
             {
                 $payload = [
                     "document_type"      => $documentType,
@@ -261,6 +270,7 @@ class Core extends Base\Core
                     "merchant_id"        => $merchantId,
                     "original_file_name" => $fileAttributes[$documentType]['original_file_name'],
                     "size"               => $size ? (int) ($size) : 0,
+                    "product"            => $input["product"] ?? '',
                 ];
 
                 $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_REQUEST, [
@@ -274,6 +284,11 @@ class Core extends Base\Core
                     'merchant_id' => $merchantId,
                     'response'    => $response,
                 ]);
+
+                // lock again for the rekyc case
+                if ($isRekycMerchant){
+                    $merchantDetails->setLocked(true);
+                }
 
                 return $response['activation_response'];
             }
@@ -647,29 +662,7 @@ class Core extends Base\Core
         // If document type belong to the category of joint validation document,
         // we need to send both documents together in one request.
         // Currently, this is hidden behind experiment.
-        $isExperimentEnabledForJointValidation = (new Merchant\Core)->isRazorxExperimentEnable($merchant->getMerchantId(),
-            RazorxTreatment::AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION);
-
-        if ($isExperimentEnabledForJointValidation and Type::isJointValidationDocumentType($document->getDocumentType()) === true)
-        {
-            $this->trace->info(TraceCode::BVS_JOINT_VALIDATION_REQUEST, [
-                'performOcrWithBvs' => 'aadhaar front and back joint validation experiment.',
-                '$merchant' => $merchant->getMerchantId()
-                ]);
-            $factory = new requestDispatcher\Factory();
-
-            $requestDispatcher = $factory->getBvsRequestDispatcherForDocument(
-                $document, $merchant, $merchantDetails);
-
-            if(empty($requestDispatcher)===false)
-            {
-                $this->trace->debug(TraceCode::BVS_JOINT_VALIDATION_REQUEST, [
-                    'triggerBVSRequest' => 'request dispatcher non-empty.'
-                ]);
-                $requestDispatcher->triggerBVSRequest();
-            }
-        }
-        else if (Type::isPoaDocument($document->getDocumentType()) === true)
+        if (Type::isPoaDocument($document->getDocumentType()) === true)
         {
             $this->performPoaOcrWithBvs($document, $merchantDetails,$merchant);
         }
@@ -818,19 +811,19 @@ class Core extends Base\Core
 
     public function savePGOSDataToAPI(array $data)
     {
-        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+        $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-        if ($splitzResult === 'variables')
-        {
-            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
+        // dual write only for below merchants
+        // merchants for whom pgos is serving onboarding requests
+        // merchants who are not completely activated
+        // or offline eligible merchant with offline not activated yet
 
-            // dual write only for below merchants
-            // merchants for whom pgos is serving onboarding requests
-            // merchants who are not completely activated
-            // or offline eligible merchant with offline not activated yet
+        $service = new Merchant\Service();
+        $activationStatus = $merchant->merchantDetail->getActivationStatus();
+        $isRekycMerchant = $service->isRekycMerchant($data[Entity::MERCHANT_ID],$activationStatus);
 
-            if (($merchant->getService() === Merchant\Constants::PGOS and $merchant->merchantDetail->getActivationStatus() != Detail\Status::ACTIVATED) or
-                (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant))
+        if (($merchant->getService() === Merchant\Constants::PGOS and $activationStatus != Detail\Status::ACTIVATED) or
+            (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant) or $isRekycMerchant)
             {
                 $document = $this->repo->merchant_document->findDocumentByFileStoreId($data[Entity::FILE_STORE_ID]);
 
@@ -869,7 +862,6 @@ class Core extends Base\Core
 
                 }
             }
-        }
     }
 
 

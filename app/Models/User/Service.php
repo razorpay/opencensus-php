@@ -284,8 +284,6 @@ class Service extends Base\Service
 
             $merchantId = $data['id'];
 
-            $easyOnboardingExperiment = (new Merchant\Core)->isRazorxExperimentEnable($merchantId,Merchant\RazorxTreatment::EMAIL_EASY_ONBOARDING_SIGNUP);
-
             if (empty($signupCampaign) === false)
             {
                 $ddInput = [
@@ -660,16 +658,14 @@ class Service extends Base\Service
         if (isset($user[Entity::EMAIL]) === true)
         {
             $merchantInputData[Merchant\Entity::EMAIL]            = $user[Entity::EMAIL];
-            $merchantInputData[Merchant\Entity::SIGNUP_VIA_EMAIL] = 1;
         }
-        else
+
+        if (isset($user[Entity::CONTACT_MOBILE]) === true)
         {
-            if (isset($user[Entity::CONTACT_MOBILE]))
-            {
-                $merchantDetailInputData[Entity::CONTACT_MOBILE]      = $user[Entity::CONTACT_MOBILE];
-                $merchantInputData[Merchant\Entity::SIGNUP_VIA_EMAIL] = 0;
-            }
+            $merchantDetailInputData[Entity::CONTACT_MOBILE]      = $user[Entity::CONTACT_MOBILE];
         }
+
+        $merchantInputData[Merchant\Entity::SIGNUP_VIA_EMAIL] = $user[Entity::SIGNUP_VIA_EMAIL] === 1 ? 1 : 0;
 
         if (isset($input[Merchant\Constants::PARTNER_INTENT]))
         {
@@ -977,7 +973,7 @@ class Service extends Base\Service
     // should be stored separately. as of now, this change is enforced only for one product but other products should also adopt this approach.
     public function shouldStoreProductSpecificWorkflowType($product): bool
     {
-        return ($product === DeviceDetailConstants::PRODUCT_PG_ONBOARDING);
+        return in_array($product, [DeviceDetailConstants::PRODUCT_PG_ONBOARDING, DeviceDetailConstants::CROSS_BORDER_ONBOARDING]);
     }
 
     public function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
@@ -1146,6 +1142,10 @@ class Service extends Base\Service
                         DeviceDetail\Constants::ORG_ID          => $orgId,
                         DeviceDetail\Constants::VERSION_ID      => DeviceDetail\Constants::DEFAULT_VERSION,
                     ];
+
+                    if (empty($input[DeviceDetail\Constants::CROSS_BORDER_FLOW]) === false) {
+                        $modularPayload['field_data']['cross_border_flow'] = $input[DeviceDetail\Constants::CROSS_BORDER_FLOW];
+                    }
 
                     // this response is not used in this flow
                     $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
@@ -1418,6 +1418,10 @@ class Service extends Base\Service
                         DeviceDetail\Constants::ORG_ID          => $orgId,
                         DeviceDetail\Constants::VERSION_ID      => DeviceDetail\Constants::DEFAULT_VERSION,
                     ];
+
+                    if (empty($input[DeviceDetail\Constants::CROSS_BORDER_FLOW]) === false) {
+                        $modularPayload['field_data']['cross_border_flow'] = $input[DeviceDetail\Constants::CROSS_BORDER_FLOW];
+                    }
                     // this response is not used in this flow
                     $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
 
@@ -2464,7 +2468,6 @@ class Service extends Base\Service
         // Start the onboarding of merchant via PGOS
         if ($user[Entity::SIGNUP_VIA_EMAIL] === 1) {
             $input[Entity::EMAIL] = $user[Entity::EMAIL];
-
             try {
                 if (empty($signupCampaign) === false)
                 {
@@ -2484,7 +2487,6 @@ class Service extends Base\Service
             $this->signUpSuccess($user, false, $signupMethod, null, $merchantId);
         } else if (empty($user[Entity::OAUTH_PROVIDER]) === true) {
             $input[Entity::CONTACT_MOBILE] = $user[Entity::CONTACT_MOBILE];
-
             if (!$this->isAssistedOnboardingSignupCampaign($signupCampaign)) {
                 try {
                     $merchant = $this->repo->merchant->findOrFail($merchantId);
@@ -4493,7 +4495,7 @@ class Service extends Base\Service
             }
 
             $merchant = $this->repo->merchant->findOrFailPublic($input['merchant_id']);
-            
+
             if (empty($merchant))
             {
                 throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND);

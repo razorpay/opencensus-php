@@ -106,17 +106,30 @@ class NoCodeAppsService {
     public function sendS2SPaymentEvent(Payment\Entity $payment): array
     {
         if ($payment->hasOrder() !== true
-            || $payment->order->getProductType() !== ProductType::PAYMENT_STORE)
+            || !in_array($payment->order->getProductType(), [
+                ProductType::PAYMENT_STORE,
+                ProductType::PAYMENT_PAGE
+            ]))
         {
             $this->trace->info(TraceCode::NOCODE_SERVICE_NO_PAYMENT_ORDER, [
                 'payment_id' => $payment->getId() ?? null,
             ]);
-    
+
             return [];
         }
 
         $body = $payment->toArrayPublic();
-        $body["order"] = $payment->order->toArrayPublic();
+
+        $body['order'] = $payment->order->toArrayPublic();
+        $body['order']['product_type'] = $payment->order->getProductType();
+        $body['order']['product_id'] = $payment->order->getProductId();
+
+        $body["discount"] = isset($payment->discount) ? $payment->discount->toArrayPublic() : null;
+        $body['fee_in_mcc'] = $payment->getFeeInMcc() ?? 0;
+        $body['customer_fee'] = $payment->getConvenienceFee() ?? 0;
+        $body['customer_fee_gst'] = $payment->getConvenienceFeeGst() ?? 0;
+        $body[Payment\Entity::FEE_BEARER] = $payment->getFeeBearer(true);
+        $body[Payment\Entity::AUTO_CAPTURED] = $payment->getAutoCaptured();
 
         return $this->sendPaymenEventToNocode($body, $payment->getMerchantId(), $this->ba->getMode(), self::SOURCE_S2S);
     }
@@ -142,7 +155,7 @@ class NoCodeAppsService {
             'auth'             => [$this->key, $this->secret],
             'follow_redirects' => false,
         ];
-        
+
         $headers = [
             self::ACCEPT                    => self::CONTENT_TYPE_JSON,
             self::CONTENT_TYPE              => self::CONTENT_TYPE_JSON,
@@ -152,12 +165,12 @@ class NoCodeAppsService {
         ];
 
         $response = [];
-    
+
         $this->trace->info(TraceCode::NOCODE_SERVICE_REQUEST, [
             'input' => $input,
             'url'   => Tracing::maskUrl($url)
         ]);
-        
+
         try
         {
             $response = $this->makeApiCall($url, $headers, $body, "POST", $options);

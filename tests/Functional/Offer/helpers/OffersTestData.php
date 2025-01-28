@@ -2608,6 +2608,28 @@ return [
         ],
     ],
 
+    'testAdminFetchOfferByInvalidIdValidationFailure' => [
+        'request'   => [
+            'method'  => 'GET',
+            'url'     => '/admin/offer/[{"id": "PbOeXfWCjyFOVQP3T9nIwXdjeESQ"}]',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The offer id may only contain letters and numbers.',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
     'testFetchOffersDiscountForSubscription' => [
         'request'  => [
             'content' => [

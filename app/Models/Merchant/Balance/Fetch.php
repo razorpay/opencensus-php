@@ -22,6 +22,7 @@ class Fetch extends BaseFetch
         ],
         AuthType::PRIVATE_AUTH => [
             Entity::TYPE           =>    'sometimes|string|max:32',
+            Entity::CHANNEL        =>    'sometimes|string|max:32',
         ],
     ];
     const ACCESSES = [
@@ -33,6 +34,8 @@ class Fetch extends BaseFetch
         ],
         AuthType::PRIVATE_AUTH => [
             Entity::TYPE,
+            Entity::ACCOUNT_TYPE,
+            Entity::CHANNEL,
         ],
         AuthType::ADMIN_AUTH =>  [
             Entity::MERCHANT_ID,

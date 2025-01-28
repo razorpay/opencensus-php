@@ -1553,7 +1553,8 @@ class Validator extends Base\Validator
         if (((new Service)->isSettlementsApp() === true) or
             ((new Service)->isXPayrollApp() === true) or
             ((new Service)->isXperienceApp() === true) or
-            ((new Service)->isScroogeApp() === true))
+            ((new Service)->isScroogeApp() === true) or
+            ((new Service)->isCrossBorderImportApp() === true))
             //  check if this is required, since we are not using composite api
         {
             return;
@@ -1752,6 +1753,7 @@ class Validator extends Base\Validator
 
                 case Settlement\Channel::AXIS :
                 case Settlement\Channel::ICICI :
+                case Settlement\Channel::IDFC :
                 case Settlement\Channel::YESBANK :
                     if ((new PayoutModeConfig\Service())->checkIfUpiDirectAccountChannelEnabledForMerchant($merchantId, $channel) === false)
                     {

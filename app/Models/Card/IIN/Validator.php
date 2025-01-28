@@ -61,7 +61,7 @@ class Validator extends Base\Validator
 
     protected static $getIinDetailsRules = [
         'callback'                  => 'sometimes', // JSONP
-        'iin'                       => 'required|numeric|digits_between:6,8',
+        'iin'                       => 'required|numeric|digits_between:6,19',
         '_'                         => 'sometimes|array',
         'order_id'                  => 'sometimes|filled',
         'language_code'             => 'sometimes',

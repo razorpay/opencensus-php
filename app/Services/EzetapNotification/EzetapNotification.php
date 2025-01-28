@@ -124,17 +124,21 @@ class EzetapNotification
 
             $url = $this->getDeviceWebhookUrl();
 
+            $this->trace->info(TraceCode::EZETAP_DEVICE_NOTIFICATION_REQUEST_PAYLOAD, [
+                'request_body' => $input,
+                'url'          => $url,
+                'message'      => 'EZETAP_DEVICE_NOTIFICATION_REQUEST_PAYLOAD',
+            ]);
+
             $signature = $this->getSignatureDetails($input);
 
             $request = $this->getRequest($url, $signature, $input, $timeout, $connectTimeout);
 
-            $this->trace->info(TraceCode::EZETAP_SERVICE_REQUEST, $request);
-
             $responseBody = $this->sendRawRequest($request);
 
-            $this->trace->info(TraceCode::EZETAP_SERVICE_RESPONSE, [
+            $this->trace->info(TraceCode::EZETAP_DEVICE_NOTIFICATION_RESPONSE, [
                 'responseBody' => $responseBody,
-                'message'      => 'EZETAP_SERVICE_RESPONSE',
+                'message'      => 'EZETAP_DEVICE_NOTIFICATION_RESPONSE',
             ]);
 
             return $responseBody;

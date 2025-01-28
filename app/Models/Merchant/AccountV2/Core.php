@@ -11,6 +11,7 @@ use RZP\Exception;
 use Lib\PhoneBook;
 use RZP\Models\BankingAccount\Activation\Detail\Region;
 use RZP\Models\DeviceDetail;
+use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\User;
 use RZP\Trace\Tracer;
 use RZP\Models\Feature;
@@ -74,6 +75,7 @@ class Core extends Merchant\Core
 
         $input = $this->transformInputForCrossBorderMerchant($input);
         $input = $this->transformInputForDomesticMerchant($input);
+        $input = $this->transformInputForIndividualBusinessTypeLA($input);
 
         (new Validator)->validateCreateAccount($input, $requestedProduct);
 
@@ -143,7 +145,16 @@ class Core extends Merchant\Core
 
         return $account;
     }
-
+    protected function transformInputForIndividualBusinessTypeLA($input)
+    {
+        $isLinkedAccount = isset($input[Constants::TYPE]) && $input[Constants::TYPE] === Type::ROUTE;
+        if ($isLinkedAccount) {
+            if (isset($input['business_type']) && $input['business_type'] === BusinessType::INDIVIDUAL) {
+                $input['business_type'] = BusinessType::NOT_YET_REGISTERED;
+            }
+        }
+        return $input;
+    }
     protected function transformInputForCrossBorderMerchant($input)
     {
         if (!$this->merchant->isFeatureEnabled(Feature\Constants::PACB_EXPORT_PARTNER_FLOW)) {
@@ -298,7 +309,6 @@ class Core extends Merchant\Core
     protected function createSubmerchantAndAssociatedEntities(Merchant\Entity $partner, array $input): Merchant\Entity
     {
         Request::instance()->request->add([User\Entity::SKIP_CAPTCHA_VALIDATION => true]);
-
         $this->repo->assertTransactionActive();
 
         $subMerchantCreateInput = InputHelper::getSubMerchantCreateInput($input);

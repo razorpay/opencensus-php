@@ -789,6 +789,45 @@ return [
         ],
     ],
 
+    'testCreateMerchantForNewUserWithInvalidCrossBorderIntent' => [
+        'request' => [
+            'url'       => '/users/merchants',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+                'cross_border_flow' => 'random'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code"=>        "BAD_REQUEST_ERROR",
+                    "description"=> "The selected cross border flow is invalid.",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testCreateMerchantForNewUserWithValidCrossBorderIntent' => [
+        'request' => [
+            'url'       => '/users/merchants',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+                'cross_border_flow' => 'intl',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+            ],
+        ],
+    ],
+
     'testGetActorInfo' =>[
         'request' => [
             'url'    => '/actor_info_internal/id',
@@ -8907,6 +8946,20 @@ return [
         'response' => [
             'content' => [
                 'is_merchant_entities_empty' => true
+            ],
+        ],
+    ],
+
+    'testCreateMerchantForExistingOrphanUserWithEmailAndMobile' => [
+        'request' => [
+            'url'       => '/users/merchants',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
             ],
         ],
     ]

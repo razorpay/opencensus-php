@@ -29,4 +29,5 @@ class Constants
     const MAX_RETRY_COUNT_TRANSFER_CRON             = 15;
     const MAX_RETRY_COUNT_ONDEMAND_SETTLEMENT_CRON  = 15;
     const RETRY_COUNT                               = 'retry_count';
+    const MAX_RETRY_COUNT_FETCH_MERCHANT_ACCOUNT    = 5;
 }

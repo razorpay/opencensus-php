@@ -109,11 +109,6 @@ class Core extends Base\Core
             return;
         }
 
-        if ($this->isCapitalEsReadWriteEnabled('create_merchant_config') === false)
-        {
-            return;
-        }
-
         $this->app['capital_early_settlements']->createMerchantFeatureConfig($featureConfig->toArray());
     }
 
@@ -124,22 +119,12 @@ class Core extends Base\Core
             return;
         }
 
-        if ($this->isCapitalEsReadWriteEnabled('update_merchant_config') === false)
-        {
-            return;
-        }
-
         $this->app['capital_early_settlements']->updateMerchantFeatureConfig($featureConfig->toArray());
     }
 
     private function getFeatureConfigFromCapitalEs($merchantId)
     {
         if ($this->mode === Constants\Mode::TEST)
-        {
-            return (new Repository)->getConfigByMerchantId($merchantId);
-        }
-
-        if ($this->isCapitalEsReadWriteEnabled('read_merchant_config') === false)
         {
             return (new Repository)->getConfigByMerchantId($merchantId);
         }
@@ -165,27 +150,5 @@ class Core extends Base\Core
         }
 
         return (new Entity)->build($data);
-    }
-
-    private function isCapitalEsReadWriteEnabled($action)
-    {
-        $request = ['experiment_id' => $this->app['config']->get('app.feature_config_from_capital_es_experiment_id')];
-        $response = $this->app['splitzService']->evaluateRequest($request);
-
-        $variables = $response['response']['variant']['variables'] ?? [];
-        if (is_array($variables) === false)
-        {
-            return false;
-        }
-
-        foreach ($variables as $variable)
-        {
-            if (is_array($variable) === true && $variable['key'] === $action && $variable['value'] === 'on')
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

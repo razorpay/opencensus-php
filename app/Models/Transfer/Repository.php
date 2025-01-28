@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transfer;
 
+use DB;
 use Carbon\Carbon;
 use Neves\Events\TransactionalClosureEvent;
 use Razorpay\Trace\Logger;
@@ -147,7 +148,7 @@ class Repository extends Base\Repository
      */
     public function fetchPendingTransfers(string $sourceType, array $includeMerchantIds, array $excludeMerchantIds, int $count, int $minutes)
     {
-        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaLiveConnection());
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
 
         // If a list of merchantIds is given, we will fetch transfers only for those merchantIds. Else
         // fetch transfers for all merchants excluding key merchants.
@@ -160,7 +161,8 @@ class Repository extends Base\Repository
             $query->whereNotIn(Entity::MERCHANT_ID, $excludeMerchantIds);
         }
 
-        return $query->select(Entity::SOURCE_ID)
+        return $query->from(\DB::raw('`transfers` FORCE INDEX (transfers_source_type_status_index)'))
+                     ->select(Entity::SOURCE_ID)
                      ->where(Entity::SOURCE_TYPE, $sourceType)
                      ->where(Entity::STATUS, Status::PENDING)
                      ->where(Entity::UPDATED_AT, '<', Carbon::now()->subMinutes($minutes)->getTimestamp())
@@ -193,14 +195,7 @@ class Repository extends Base\Repository
         $transferStatus = $this->repo->transfer->dbColumn(Entity::STATUS);
         $updatedAt      = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
 
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         $query = $this->newQueryWithConnection($connectionType);
 
@@ -237,14 +232,7 @@ class Repository extends Base\Repository
         $transferStatus = $this->repo->transfer->dbColumn(Entity::STATUS);
         $updatedAt      = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
 
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         $query = $this->newQueryWithConnection($connectionType);
 

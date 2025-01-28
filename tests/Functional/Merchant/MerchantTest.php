@@ -2085,7 +2085,6 @@ class MerchantTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
 
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
 
         $merchant = $this->fixtures->merchant->edit($merchant['id'], ['country_code' => "MY"]);
         $response = (new Merchant\Activate)->updateLedger($merchant);
@@ -2151,7 +2150,6 @@ class MerchantTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
 
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
 
         $response = (new Merchant\Activate)->updateLedger($merchant);
 
@@ -2220,8 +2218,6 @@ class MerchantTest extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
-
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
 
         $response = (new Merchant\Activate)->updateLedger($merchant);
 
@@ -2305,8 +2301,6 @@ class MerchantTest extends TestCase
 
         $merchant       = $merchantDetail->merchant;
 
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
-
         $response = (new Merchant\Activate)->updateLedger($merchant);
 
         $feature = $this->getDbEntity('feature', ["name" => 'pg_ledger_reverse_shadow', "entity_id" => '10000000000040']);
@@ -2343,8 +2337,6 @@ class MerchantTest extends TestCase
         $this->mockDCS();
 
         $merchant       = $merchantDetail->merchant;
-
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
 
         $response = (new Merchant\Activate)->updateLedger($merchant);
 
@@ -4810,7 +4802,6 @@ class MerchantTest extends TestCase
     {
         Config(['services.bvs.mock' => true]);
 
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -4959,8 +4950,6 @@ class MerchantTest extends TestCase
     public function testUpdateBankAccountPennyTestingFailWorkflowOnHoldMerchantReject()
     {
         Config(['services.bvs.mock' => true]);
-
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $this->mockStorkForBankAccountUpdateOnHoldRejectionReason();
 
@@ -5265,8 +5254,6 @@ Team Razorpay',
         Config(['services.bvs.mock' => true]);
 
         $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
-
-        $this->enableRazorXTreatmentForFeature('whatsapp_notifications');
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -5715,8 +5702,6 @@ Team Razorpay',
     public function testUpdateBankAccountPennyTestingFailWorkflowReject()
     {
         Config(['services.bvs.mock' => true]);
-
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $this->setupWorkflowForBankAccountUpdate();
 
@@ -6927,7 +6912,7 @@ Team Razorpay',
             return true;
         });
     }
-    
+
     public function testMerchantEmailUpdateUserStatusForEmailUserAlreadyExistNonOrphanWithNonActivatedMerchant()
     {
         Mail::fake();
@@ -6949,9 +6934,9 @@ Team Razorpay',
         $this->createMerchantUserMapping($user->getId(), $merchant->getId(), 'owner');
 
         $user2 = $this->fixtures->create('user', ['email' => 'newowner@gmail.com']);
-        
+
         $merchant2 = $this->fixtures->create('merchant');
-        
+
         $this->createMerchantUserMapping($user2->getId(), $merchant2->getId(), 'owner');
 
         $testData = $this->testData['testMerchantEmailGetUserStatus'];
@@ -6965,14 +6950,14 @@ Team Razorpay',
         $this->testData[__FUNCTION__] = $testData;
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
-        
+
         $this->startTest();
     }
-    
+
     public function testMerchantEmailUpdateUserStatusForEmailUserAlreadyExistNonOrphanWithActivatedMerchant()
     {
         Mail::fake();
-        
+
         $splitzOutput = [
             "response" => [
                 "variant" => [
@@ -6980,9 +6965,9 @@ Team Razorpay',
                 ]
             ]
         ];
-    
+
         $this->mockSplitzTreatment($splitzOutput);
-        
+
         $merchant = $this->fixtures->create('merchant');
 
         $user = $this->fixtures->create('user', ['email' => 'abctest@gmail.com']);
@@ -6990,11 +6975,11 @@ Team Razorpay',
         $this->createMerchantUserMapping($user->getId(), $merchant->getId(), 'owner');
 
         $user2 = $this->fixtures->create('user', ['email' => 'newowner@gmail.com']);
-        
+
         $merchant2 = $this->fixtures->create('merchant', [
             'activated'  => 1
         ]);
-        
+
         $this->createMerchantUserMapping($user2->getId(), $merchant2->getId(), 'owner');
 
         $testData = $this->testData['testMerchantEmailGetUserStatus'];
@@ -15096,8 +15081,6 @@ Team Razorpay',
 
         Config(['services.bvs.response' => 'failure']);
 
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
-
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
@@ -15193,8 +15176,6 @@ Team Razorpay',
         Config(['services.bvs.sync.flow' => true]);
 
         Config(['services.bvs.response' => 'failure']);
-
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -18021,7 +18002,6 @@ Team Razorpay',
 
     protected function mockStorkForTransactionLimitSelfServe()
     {
-        $this->enableRazorXTreatmentForFeature('whatsapp_notifications');
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -18470,7 +18450,6 @@ The same has been enabled for the account.
 
     protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data, $expectedStorkParametersForSMSTemplate = [])
     {
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -21369,4 +21348,651 @@ The same has been enabled for the account.
             ->andReturnUsing($callable);
 
     }
+
+    public function testGetBalancesV2()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $balanceData1 = [
+            'id'             => '100abc000abc00',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 0,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626905',
+            'account_type'   => 'shared',
+            'channel'        => null,
+            'updated_at'     => 1
+        ];
+
+        $balanceData2 = [
+            'id'             => '100abc000abc01',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 100,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626906',
+            'account_type'   => 'direct',
+            'channel'        => 'rbl',
+            'updated_at'     => 1
+        ];
+
+        $balanceData3 = [
+            'id'             => '100def000def02',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'primary',
+            'currency'       => null,
+            'name'           => null,
+            'balance'        => 100000,
+            'credits'        => 50000,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => null,
+            'account_type'   => null,
+            'channel'        => 'shared',
+            'updated_at'     => 1
+        ];
+
+        $this->fixtures->create('balance', $balanceData1);
+
+        $this->fixtures->create('balance', $balanceData2);
+
+        $this->fixtures->create('balance', $balanceData3);
+
+        $bankingAccountStatementDetailsData = [
+            'id'                      => '100def000def06',
+            'merchant_id'             => '10000000000000',
+            'account_number'          => '2224440041626906',
+            'balance_id'              => '100abc000abc01',
+            'channel'                 => 'rbl',
+            'account_type'            => 'direct',
+            'balance_last_fetched_at' => 1672398841,
+            'gateway_balance'         => 100
+        ];
+
+        $this->fixtures->create('banking_account_statement_details', $bankingAccountStatementDetailsData);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $expectedResponse = [
+            [
+                "id"                => "100abc000abc01",
+                "currency"          => "INR",
+                "balance"           => 100,
+                "account_number"    => "XXXXXXXXXXXX6906",
+                "account_type"      => "direct",
+                "bank"              => 'rbl',
+                "last_refreshed"    => 1672398841,
+                "entity"            => "balance",
+                "available_balance" => 100
+            ],
+            [
+                "id"                => "100abc000abc00",
+                "currency"          => "INR",
+                "balance"           => 0,
+                "account_number"    => "XXXXXXXXXXXX6905",
+                "account_type"      => "shared",
+                "bank"              => null,
+                "last_refreshed"    => null,
+                "entity"            => "balance",
+                "available_balance" => 0
+            ]
+        ];
+
+        // Assert that only banking balance is returned
+        $this->assertEquals(2, sizeof($response['items']));
+        $this->assertEquals($expectedResponse, $response['items']);
+    }
+
+    public function testGetBalancesV2ForAccountTypeShared()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $balanceData1 = [
+            'id'             => '100abc000abc00',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 0,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626905',
+            'account_type'   => 'shared',
+            'channel'        => null,
+            'updated_at'     => 1
+        ];
+
+        $balanceData2 = [
+            'id'             => '100abc000abc01',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 100,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626906',
+            'account_type'   => 'direct',
+            'channel'        => 'rbl',
+            'updated_at'     => 1
+        ];
+
+        $balanceData3 = [
+            'id'             => '100def000def02',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'primary',
+            'currency'       => null,
+            'name'           => null,
+            'balance'        => 100000,
+            'credits'        => 50000,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => null,
+            'account_type'   => null,
+            'channel'        => 'shared',
+            'updated_at'     => 1
+        ];
+
+        $this->fixtures->create('balance', $balanceData1);
+
+        $this->fixtures->create('balance', $balanceData2);
+
+        $this->fixtures->create('balance', $balanceData3);
+
+        $bankingAccountStatementDetailsData = [
+            'id'                      => '100def000def06',
+            'merchant_id'             => '10000000000000',
+            'account_number'          => '2224440041626906',
+            'balance_id'              => '100abc000abc01',
+            'channel'                 => 'rbl',
+            'account_type'            => 'direct',
+            'balance_last_fetched_at' => 1672398841,
+            'gateway_balance'         => 100
+        ];
+
+        $this->fixtures->create('banking_account_statement_details', $bankingAccountStatementDetailsData);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBalancesV2'];
+        $this->testData[__FUNCTION__]['request']['url']               = '/v2/balances?account_type=shared';
+        $this->testData[__FUNCTION__]['response']['content']['count'] = 1;
+
+        $response = $this->startTest();
+
+        $expectedResponse = [
+            [
+                "id"                => "100abc000abc00",
+                "currency"          => "INR",
+                "balance"           => 0,
+                "account_number"    => "XXXXXXXXXXXX6905",
+                "account_type"      => "shared",
+                "bank"              => null,
+                "last_refreshed"    => null,
+                "entity"            => "balance",
+                "available_balance" => 0
+            ]
+        ];
+
+        $this->assertEquals(1, sizeof($response['items']));
+        $this->assertEquals($expectedResponse, $response['items']);
+    }
+
+    public function testGetBalancesV2ForAccountTypeDirect()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $balanceData1 = [
+            'id'             => '100abc000abc00',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 0,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626905',
+            'account_type'   => 'shared',
+            'channel'        => null,
+            'updated_at'     => 1
+        ];
+
+        $balanceData2 = [
+            'id'             => '100abc000abc01',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 100,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626906',
+            'account_type'   => 'direct',
+            'channel'        => 'rbl',
+            'updated_at'     => 1
+        ];
+
+        $balanceData3 = [
+            'id'             => '100def000def02',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'primary',
+            'currency'       => null,
+            'name'           => null,
+            'balance'        => 100000,
+            'credits'        => 50000,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => null,
+            'account_type'   => null,
+            'channel'        => 'shared',
+            'updated_at'     => 1
+        ];
+
+        $this->fixtures->create('balance', $balanceData1);
+
+        $this->fixtures->create('balance', $balanceData2);
+
+        $this->fixtures->create('balance', $balanceData3);
+
+        $bankingAccountStatementDetailsData = [
+            'id'                      => '100def000def06',
+            'merchant_id'             => '10000000000000',
+            'account_number'          => '2224440041626906',
+            'balance_id'              => '100abc000abc01',
+            'channel'                 => 'rbl',
+            'account_type'            => 'direct',
+            'balance_last_fetched_at' => 1672398841,
+            'gateway_balance'         => 100
+        ];
+
+        $this->fixtures->create('banking_account_statement_details', $bankingAccountStatementDetailsData);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBalancesV2'];
+        $this->testData[__FUNCTION__]['request']['url']               = '/v2/balances?account_type=direct';
+        $this->testData[__FUNCTION__]['response']['content']['count'] = 1;
+
+        $response = $this->startTest();
+
+        $expectedResponse = [
+            [
+                "id"                => "100abc000abc01",
+                "currency"          => "INR",
+                "balance"           => 100,
+                "account_number"    => "XXXXXXXXXXXX6906",
+                "account_type"      => "direct",
+                "bank"              => 'rbl',
+                "last_refreshed"    => 1672398841,
+                "entity"            => "balance",
+                "available_balance" => 100
+            ]
+        ];
+
+        $this->assertEquals(1, sizeof($response['items']));
+        $this->assertEquals($expectedResponse, $response['items']);
+    }
+
+    public function testGetBalancesV2ForBank()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $balanceData1 = [
+            'id'             => '100abc000abc00',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 0,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626905',
+            'account_type'   => 'shared',
+            'channel'        => 'axis',
+            'updated_at'     => 1
+        ];
+
+        $balanceData2 = [
+            'id'             => '100abc000abc01',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 100,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626906',
+            'account_type'   => 'direct',
+            'channel'        => 'rbl',
+            'updated_at'     => 1
+        ];
+
+        $balanceData3 = [
+            'id'             => '100def000def02',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'primary',
+            'currency'       => null,
+            'name'           => null,
+            'balance'        => 100000,
+            'credits'        => 50000,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => null,
+            'account_type'   => null,
+            'channel'        => 'shared',
+            'updated_at'     => 1
+        ];
+
+        $this->fixtures->create('balance', $balanceData1);
+
+        $this->fixtures->create('balance', $balanceData2);
+
+        $this->fixtures->create('balance', $balanceData3);
+
+        $bankingAccountStatementDetailsData = [
+            'id'                      => '100def000def06',
+            'merchant_id'             => '10000000000000',
+            'account_number'          => '2224440041626906',
+            'balance_id'              => '100abc000abc01',
+            'channel'                 => 'rbl',
+            'account_type'            => 'direct',
+            'balance_last_fetched_at' => 1672398841,
+            'gateway_balance'         => 100
+        ];
+
+        $this->fixtures->create('banking_account_statement_details', $bankingAccountStatementDetailsData);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBalancesV2'];
+        $this->testData[__FUNCTION__]['request']['url']               = '/v2/balances?bank=rbl';
+        $this->testData[__FUNCTION__]['response']['content']['count'] = 1;
+
+        $response = $this->startTest();
+
+        $expectedResponse = [
+            [
+                "id"                => "100abc000abc01",
+                "currency"          => "INR",
+                "balance"           => 100,
+                "account_number"    => "XXXXXXXXXXXX6906",
+                "account_type"      => "direct",
+                "bank"              => 'rbl',
+                "last_refreshed"    => 1672398841,
+                "entity"            => "balance",
+                "available_balance" => 100
+            ]
+        ];
+
+        $this->assertEquals(1, sizeof($response['items']));
+        $this->assertEquals($expectedResponse, $response['items']);
+    }
+
+    public function testGetBalancesV2UsingCountAndSkipFilter()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $balanceData1 = [
+            'id'             => '100abc000abc00',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 0,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626905',
+            'account_type'   => 'shared',
+            'channel'        => null,
+            'updated_at'     => 1
+        ];
+
+        $balanceData2 = [
+            'id'             => '100abc000abc01',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 100,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626906',
+            'account_type'   => 'direct',
+            'channel'        => 'rbl',
+            'updated_at'     => 1
+        ];
+
+        $balanceData3 = [
+            'id'             => '100def000def02',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'primary',
+            'currency'       => null,
+            'name'           => null,
+            'balance'        => 100000,
+            'credits'        => 50000,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => null,
+            'account_type'   => null,
+            'channel'        => 'shared',
+            'updated_at'     => 1
+        ];
+
+        $this->fixtures->create('balance', $balanceData1);
+
+        $this->fixtures->create('balance', $balanceData2);
+
+        $this->fixtures->create('balance', $balanceData3);
+
+        $bankingAccountStatementDetailsData = [
+            'id'                      => '100def000def06',
+            'merchant_id'             => '10000000000000',
+            'account_number'          => '2224440041626906',
+            'balance_id'              => '100abc000abc01',
+            'channel'                 => 'rbl',
+            'account_type'            => 'direct',
+            'balance_last_fetched_at' => 1672398841,
+            'gateway_balance'         => 100
+        ];
+
+        $this->fixtures->create('banking_account_statement_details', $bankingAccountStatementDetailsData);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBalancesV2'];
+        $this->testData[__FUNCTION__]['request']['url']               = '/v2/balances?count=1&skip=1';
+        $this->testData[__FUNCTION__]['response']['content']['count'] = 1;
+
+        $response = $this->startTest();
+
+        $expectedResponse = [
+            [
+                "id"                => "100abc000abc00",
+                "currency"          => "INR",
+                "balance"           => 0,
+                "account_number"    => "XXXXXXXXXXXX6905",
+                "account_type"      => "shared",
+                "bank"              => null,
+                "last_refreshed"    => null,
+                "entity"            => "balance",
+                "available_balance" => 0
+            ]
+        ];
+
+        $this->assertEquals(1, sizeof($response['items']));
+        $this->assertEquals($expectedResponse, $response['items']);
+    }
+
+    public function testGetBalancesV2InputValidationError()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantEmailWhenOldEmailIsNull()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        $merchant = $this->createMerchant([
+            'email' => null
+        ]);
+
+        $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant([
+            'merchant_id'   => $merchant['id'],
+            'contact_email' => $merchant['email'],
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant(
+            $merchant['id'],
+            [
+                'email' => $merchant['email']
+            ]
+        );
+
+        $this->fixtures->user->createUserMerchantMapping(
+            [
+                'user_id'       => $user['id'],
+                'merchant_id'   => $merchant['id'],
+                'role'          => 'owner'
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = (new Merchant\Repository())->findOrFail($merchant['id']);
+
+        $this->assertEquals('newEmail@test.com', $merchant->getEmail());
+
+        $this->assertEquals('newEmail@test.com', $merchant->primaryOwner('primary')->getEmail());
+
+        $this->assertEquals('newEmail@test.com', $merchant->primaryOwner('banking')->getEmail());
+
+        $updatedMerchantDetail = (new Merchant\Detail\Repository())->getByMerchantId($merchant['id']);
+
+        $this->assertEquals('newEmail@test.com', $updatedMerchantDetail->getContactEmail());
+
+    }
+
+    public function testMerchantEmailUpdateCreateNewOwnerForMerchant()
+    {
+        Mail::fake();
+
+        $app = App::getFacadeRoot();
+
+        $merchant = $this->fixtures->create('merchant', ['email' => 'oldcontact@gmail.com', 'partner_type' => 'aggregator']);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'contact_email' => 'oldcontact@gmail.com',
+            'merchant_id' => $merchant['id']
+        ]);
+
+        $appAttributes = [
+            'merchant_id' => $merchant['id'],
+            'partner_type'=> 'aggregator',
+        ];
+
+        $application = $this->fixtures->merchant->createDummyPartnerApp($appAttributes);
+
+        $token = str_random(50);
+
+        $oldOwnerUser = $this->fixtures->create('user',[
+            'email'                   => 'oldowner@gmail.com',
+            'contact_mobile'          => '8839106483',
+            'name'                    => 'ownername',
+            'contact_mobile_verified' => true,
+            'password_reset_token'    => $token,
+            'password_reset_expiry'   => Carbon::now()->timestamp + 86400,
+        ]);
+
+        // create owner role on pg
+        $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'primary');
+
+        $userDeviceDetail = [
+            'merchant_id' => $merchant['id'],
+            'user_id' => $oldOwnerUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service' => 'pgos',
+            ]
+        ];
+        $this->fixtures->create('user_device_detail', $userDeviceDetail);
+
+        // put data in cache
+        $cacheData = [
+            'current_owner_email'    => 'oldowner@gmail.com',
+            'email'                  => 'newowner@gmail.com',
+            'merchant_id'            => $merchant['id'],
+            'reattach_current_owner' => true,
+            'set_contact_email'      => true,
+        ];
+
+        $app['cache']->put('merchant_email_update_' . $merchant['id'], $cacheData, 60*60*24);
+
+        $oldOwnerUser = $this->getDbEntityById('user', $oldOwnerUser['id']);
+
+        $testData = $this->testData['testMerchantEmailUpdateCreateNewUser'];
+
+        $testData['request']['content']['token']       = $token;
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+
+        $testData['response']['content']['logout_sessions_for_users'] = [$oldOwnerUser->getId()];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchant['id']);
+
+        $user = $this->repo->user->getUserFromEmail("newowner@gmail.com");
+
+        $merchantUser = \DB::table('merchant_users')
+            ->where('merchant_id', '=', $merchant['id'])
+            ->where('role','=','owner')
+            ->first();
+
+        $this->assertEquals($deviceDetail->merchant_id, $merchant['id']);
+
+        $this->assertEquals($deviceDetail->user_id, $user->id);
+
+        $this->assertEquals($merchantUser->user_id, $user->id);
+
+        $this->assertEquals($merchantUser->merchant_id, $merchant['id']);
+
+        $this->assertEquals("owner", $merchantUser->role);
+    }
+
 }

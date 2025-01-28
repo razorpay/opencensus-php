@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Admin\Org\Hostname;
 
+use RZP\Base\ConnectionType;
 use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
@@ -32,5 +33,24 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->get();
+    }
+
+    public function getHostsByOrgIdFromSlave(string $orgId)
+    {
+        try
+        {
+            return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::SLAVE))
+                ->where(Entity::ORG_ID, '=', $orgId)
+                ->get()
+                ->first();
+        }
+        catch (\Throwable $e)
+        {
+            return $this->newQuery()
+                ->where(Entity::ORG_ID, '=', $orgId)
+                ->get()
+                ->first();
+        }
+
     }
 }

@@ -186,6 +186,9 @@ class RblBankTransferTest extends TestCase
 
     public function testFetchPaymentsPostRblMigration()
     {
+        // skipping as the rbl nodal account is close
+        $this->markTestSkipped();
+
         $accountNumber = $this->getIciciVaBankAccount();
 
         $terminalAttributes = [ 'id' =>'GENERICBANKRBL', 'gateway' => Gateway::BT_RBL, 'gateway_merchant_id' => '0001046' ];
@@ -261,6 +264,9 @@ class RblBankTransferTest extends TestCase
 
     public function testPaymentProcessRblWithNoSenderName()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData['testBankTransferRbl'];
         $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
         $testData['request']['content']['Data'][0]['senderName'] = '';
@@ -280,6 +286,9 @@ class RblBankTransferTest extends TestCase
 
     public function testBankTransferRbl()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
@@ -303,6 +312,9 @@ class RblBankTransferTest extends TestCase
 
     public function testBankTransferRblUnexpected()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData[__FUNCTION__];
 
         $account = $this->getRblVaBankAccount();
@@ -346,6 +358,9 @@ class RblBankTransferTest extends TestCase
 
     public function testBankTransferRblWithLongSenderAccNumber()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData['testBankTransferRbl'];
 
         $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
@@ -371,6 +386,9 @@ class RblBankTransferTest extends TestCase
 
     public function testBankTransferRblWithSenderAccNumberExceedingLimit()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData['testBankTransferRbl'];
 
         $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
@@ -408,6 +426,9 @@ class RblBankTransferTest extends TestCase
 
     public function testBankTransferRblUnexpectedWithRazorXOff()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData['testBankTransferRblUnexpected'];
 
         $this->getRblVaBankAccount();
@@ -435,6 +456,9 @@ class RblBankTransferTest extends TestCase
 
     public  function testBankTransferRblViaScService()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $this->enableRazorXTreatmentForRoutingApiToScService();
 
         $testData = $this->testData['testBankTransferRbl'];
@@ -510,6 +534,9 @@ class RblBankTransferTest extends TestCase
      */
     public function testRblBankTransferWithShortPayeeAccount()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData['testBankTransferRbl'];
         $this->getRblVaBankAccount();
 
@@ -537,6 +564,9 @@ class RblBankTransferTest extends TestCase
      */
     public function testRblBankTransferWithLongPayeeAccount()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData['testBankTransferRbl'];
         $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = '22233300433504890';
 
@@ -545,6 +575,9 @@ class RblBankTransferTest extends TestCase
 
     public function testRblBankTransferWithAlphanumericPayeeAccount()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData['testBankTransferRbl'];
         $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = '222333AB43350485';
 
@@ -566,6 +599,9 @@ class RblBankTransferTest extends TestCase
 
     public function testBankTransferRblRefund()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $this->createRblRefund(__FUNCTION__);
     }
 
@@ -582,6 +618,9 @@ class RblBankTransferTest extends TestCase
 
     public function testBankTransferRblImps()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
@@ -607,6 +646,9 @@ class RblBankTransferTest extends TestCase
 
     public function testBankTransferRblUpi()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
@@ -634,6 +676,9 @@ class RblBankTransferTest extends TestCase
 
     public function testBankTransferRblIft()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
@@ -681,6 +726,9 @@ class RblBankTransferTest extends TestCase
 
     public function testBankTransferRblWithDuplicateUtr()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
@@ -754,6 +802,9 @@ class RblBankTransferTest extends TestCase
                 'account_number'   => '1234567890',
             ]);
 
+        // adding minimum fee credit balance for collectx payment check
+        $this->fixtures->create('credits', ['merchant_id' => $merchantID, 'value' => 500 , 'type' => 'fee']);
+
         // creating terminal for the merchant
         if (in_array('bank_account', $receivers)) {
             $bankTransferTerminalAttributes = [
@@ -771,22 +822,6 @@ class RblBankTransferTest extends TestCase
             ];
 
             $this->fixtures->on('test')->create('terminal:bank_account_terminal', $bankTransferTerminalAttributes);
-
-            // enabling collectx_live_on_bank_accounts feature flag for merchant to allow creation of bank account type VA
-            $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-            $this->app->instance('razorx', $razorx);
-
-            $razorx->shouldReceive('getTreatment')
-                ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-                {
-                    if ($featureFlag === (RazorxTreatment::COLLECTX_LIVE_ON_BANK_ACCOUNTS))
-                    {
-                        return 'on';
-                    }
-
-                    return 'control';
-                });
         }
 
         if (in_array('vpa', $receivers))
@@ -953,6 +988,9 @@ class RblBankTransferTest extends TestCase
 
     public function testRblFallbackTerminal()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $testData = $this->testData[__FUNCTION__];
 
         $terminalAttributes = [
@@ -984,6 +1022,9 @@ class RblBankTransferTest extends TestCase
 
     public function testRblBankTransferWithNoMatchingTerminal()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $terminalAttributes = [
             'id'                    =>'RblBtShrdTrmnl',
             'gateway'               => Gateway::BT_RBL,
@@ -1183,10 +1224,90 @@ class RblBankTransferTest extends TestCase
         $this->assertEquals(0, $txn['credit']);
     }
 
+    public function testRblCallbackForCollectxWithNonAllowedPayer()
+    {
+        $this->app['config']->set('gateway.mock_bt_rbl', true);
+
+        $testData = $this->testData['testBankTransferRblCollectx'];
+
+        $merchantID = '10000000000000';
+
+        $response = $this->createCollectXVirtualAccount(merchantID: $merchantID, receivers: ['bank_account']);
+
+        $url = '/virtual_accounts/'.$response['id']. '/allowed_payers';
+
+        $request = [
+            'url' => $url,
+            'method' => 'post',
+            'content' => [
+                'type'         => 'bank_account',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0000002',
+                    'account_number' => '765432123456789'
+                ],
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $beneAccountNo;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->enableSplitzExperiment(
+            experimentName: RazorxTreatment::COLLECTX_RBL_PAYMENT_TRANSFER_RAMP_UP,
+            id: $merchantID,
+            requestData: ['id' => $merchantID]);
+
+        $response = $this->startTest();
+
+        $this->assertEquals('Success', $response['Status']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertTrue($bankTransferRequest['is_created']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals(200, $bankTransfer['amount']);
+        $this->assertEquals('processed', $bankTransfer['status']);
+        $this->assertEquals('RTGS', $bankTransfer['mode']);
+        $this->assertTrue($bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['Data'][0]['senderAccountNumber'], $payerBankAccount['account_number']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+        $this->assertEquals('10000000000001', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('collectx', $payment['reference14']);
+        $this->assertTrue($payment['auto_captured']);
+
+        $txn =  $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $txn['entity_id']);
+        $this->assertEquals(0, $txn['credit']);
+    }
+
     // If we received a webhook from bank that was for collectx but our check failed to identify it, the request will be processed as normal fundloading
     // transfer (because balance type is banking). Payment entity won't be created, but BT and BTR both will be created and will be in processed state
     public function testRblCallbackForCollectx_WithExperimentDisabled()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $this->app['config']->set('gateway.mock_bt_rbl', true);
 
         $testData = $this->testData['testBankTransferRblCollectx'];
@@ -1358,6 +1479,9 @@ class RblBankTransferTest extends TestCase
 
     public function testRblCallbackForCollectx_VaNotFound()
     {
+        // skipping as the rbl nodal account is closed
+        $this->markTestSkipped();
+
         $this->app['config']->set('gateway.mock_bt_rbl', true);
 
         $testData = $this->testData['testBankTransferRblCollectx'];
@@ -1377,7 +1501,7 @@ class RblBankTransferTest extends TestCase
         $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
 
         $this->assertFalse($bankTransferRequest['is_created']);
-        
+
         $this->assertNotNull($bankTransferRequest['payee_account']);
     }
 

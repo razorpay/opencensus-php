@@ -14,6 +14,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Payment\Action;
 use RZP\Models\UpiMandate\Metrics;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\UpiMandate\Frequency;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Gateway\Upi\Base\ProviderCode;
@@ -250,12 +251,21 @@ class Core extends Base\Core
                 {
                     $gatewayRequest['upi_mandate'] = $this->upiMandate->toArray();
 
-                    $gatewayResponse = $this->app['gateway']->call(
-                        $gatewayRequest['gateway'],
-                        $gatewayRequest['action'],
-                        $gatewayRequest,
-                        $this->mode,
-                        $gatewayRequest['terminal']);
+                    // hit razorx service to get the variant
+                    $isVariantOn = $this->getSplitzVariantForUpiAutopay($gatewayRequest);
+
+                    if ($isVariantOn === true)
+                    {
+                        $gatewayResponse = $this->app['upi.payments']->action(Payment\Action::NOTIFY, $gatewayRequest, $gatewayRequest['gateway']);
+                    }
+                    else {
+                        $gatewayResponse = $this->app['gateway']->call(
+                            $gatewayRequest['gateway'],
+                            $gatewayRequest['action'],
+                            $gatewayRequest,
+                            $this->mode,
+                            $gatewayRequest['terminal']);
+                    }
 
                     $this->processPreDebitGatewayResponse($gatewayRequest, $gatewayResponse, $notification);
 
@@ -285,6 +295,38 @@ class Core extends Base\Core
             20,
             1000,
             2000);
+    }
+
+    protected function getSplitzVariantForUpiAutopay($gatewayRequest): bool
+    {
+        try {
+            $gateway = $gatewayRequest['payment']['gateway'];
+            $merchantId = $gatewayRequest['merchant']['id'];
+            if (isset($merchantId) === true)
+            {
+                $feature = 'upi_autopay_rearch'. '_' . $gateway . '_v1_exp_id';
+                $properties = [
+                    'id'            => UniqueIdEntity::generateUniqueId(),
+                    'experiment_id' => $this->app['config']->get('app.'.$feature),
+                    'request_data'  => json_encode(['merchant_id' => $merchantId]),
+                ];
+                $response = $this->app['splitzService']->evaluateRequest($properties);
+
+                $variant = $response['response']['variant']['name'] ?? '';
+
+                return ($variant === 'variant_on' or $gateway === Payment\Gateway::UPI_RZPAPB);
+
+            }
+        } catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::UPI_AUTOPAY_GATEWAY_REARCH_SPLITZ_FAILED, [
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+
+        return false;
     }
 
     public function eventOrderNotificationDelivered($notification)
@@ -411,9 +453,11 @@ class Core extends Base\Core
             'amount'    => $order->getAmount(),
             'id'        => $notification->getId(),
             'vpa'       => $this->upiMandate['gateway_data']['vpa'],
+            'order_id'  => $notification->getOrderId(),
             'gateway'   => $terminal->getGateway(),
             'recurring' => true,
-            'method'    => 'upi'
+            'method'    => 'upi',
+            'currency'  => 'INR'
         ];
 
         $upi = [

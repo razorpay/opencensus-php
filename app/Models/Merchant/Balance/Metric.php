@@ -25,6 +25,9 @@ class Metric extends Base\Core
     const BALANCE_READ_API_LEDGER_CLS_MERCHANT                = 'balance_read_api_ledger_cls_merchant';
     const BALANCE_WRITE_API_LEDGER_CLS_MERCHANT               = 'balance_write_api_ledger_cls_merchant';
 
+    const X_BALANCE_READ_API_LEDGER_MERCHANT                = 'x_balance_read_api_ledger_merchant';
+    const X_BALANCE_WRITE_API_LEDGER_MERCHANT               = 'x_balance_write_api_ledger_merchant';
+
     public function getBalanceNegativeDimensions(string $merchantId, string $balanceType, int $balanceAmount, string $txnType) : array
     {
         $dimensions = [

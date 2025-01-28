@@ -17,6 +17,7 @@ class Status
     const KYC_QUALIFIED_UNACTIVATED = 'kyc_qualified_unactivated';
     const KYC_QUALIFIED_STB         = 'kyc_qualified_stb';
     const EDD_PENDING               = 'edd_pending';
+    const APPROVED                  = "approved";
 
     /*
      * Allowed next activation statuses mapping
@@ -24,7 +25,7 @@ class Status
     const ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING = [
         self::INSTANTLY_ACTIVATED       => [self::UNDER_REVIEW, self::ACTIVATED, self::ACTIVATED_MCC_PENDING],
         self::UNDER_REVIEW              => [self::NEEDS_CLARIFICATION, self::ACTIVATED, self::REJECTED, self::ACTIVATED_MCC_PENDING, self::ACTIVATED_KYC_PENDING],
-        self::NEEDS_CLARIFICATION       => [self::UNDER_REVIEW, self::ACTIVATED],
+        self::NEEDS_CLARIFICATION       => [self::UNDER_REVIEW, self::ACTIVATED, self::ACTIVATED_MCC_PENDING],
         self::REJECTED                  => [self::UNDER_REVIEW],
         self::ACTIVATED_MCC_PENDING     => [self::NEEDS_CLARIFICATION, self::ACTIVATED],
         self::ACTIVATED_KYC_PENDING     => [self::NEEDS_CLARIFICATION, self::UNDER_REVIEW],
@@ -48,7 +49,7 @@ class Status
     const ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_KQU = [
         self::INSTANTLY_ACTIVATED       => [self::UNDER_REVIEW, self::ACTIVATED, self::ACTIVATED_MCC_PENDING],
         self::UNDER_REVIEW              => [self::NEEDS_CLARIFICATION, self::ACTIVATED, self::REJECTED, self::ACTIVATED_MCC_PENDING, self::ACTIVATED_KYC_PENDING, self::KYC_QUALIFIED_UNACTIVATED],
-        self::NEEDS_CLARIFICATION       => [self::UNDER_REVIEW, self::ACTIVATED],
+        self::NEEDS_CLARIFICATION       => [self::UNDER_REVIEW, self::ACTIVATED, self::ACTIVATED_MCC_PENDING],
         self::REJECTED                  => [self::UNDER_REVIEW],
         self::ACTIVATED_MCC_PENDING     => [self::NEEDS_CLARIFICATION, self::KYC_QUALIFIED_UNACTIVATED, self::ACTIVATED],
         self::ACTIVATED_KYC_PENDING     => [self::NEEDS_CLARIFICATION, self::UNDER_REVIEW],
@@ -65,6 +66,17 @@ class Status
         self::REJECTED                  => [self::UNDER_REVIEW],
         self::EDD_PENDING               => [self::ACTIVATED],
         self::ACTIVATED                 => [],
+    ];
+
+    /*
+     * Allowed next rekyc statuses mapping with state EDD_PENDING
+     */
+    const ALLOWED_NEXT_REKYC_STATUSES_MAPPING = [
+        self::UNDER_REVIEW              => [self::NEEDS_CLARIFICATION, self::REJECTED, self::EDD_PENDING],
+        self::NEEDS_CLARIFICATION       => [self::UNDER_REVIEW],
+        self::REJECTED                  => [self::UNDER_REVIEW],
+        self::EDD_PENDING               => [self::APPROVED],
+        self::APPROVED                  => [],
     ];
 
     /*

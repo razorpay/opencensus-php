@@ -3,6 +3,7 @@
 namespace Unit\Customer;
 
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Entity;
 use RZP\Services\CMS\Service;
 use RZP\Services\SplitzService;
 use RZP\Models\Customer\Core;
@@ -10,7 +11,6 @@ use RZP\Tests\TestCase;
 use Mockery;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
-
 
 class CMSTest extends TestCase
 {
@@ -24,10 +24,11 @@ class CMSTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $this->app['config']->set(include 'config/applications.php');
+
         $this->mockInstance = $this->getMockBuilder(Service::class)
             ->onlyMethods(['sendCMSRequest'])
-            ->disableOriginalConstructor()
-            ->getMock();
+            ->setConstructorArgs([$this->app])->getMock();
 
         $reflection = new \ReflectionClass(get_parent_class($this->mockInstance));
         $property = $reflection->getProperty('trace'); // Access protected 'trace'
@@ -38,6 +39,7 @@ class CMSTest extends TestCase
         $this->app->singleton('rzp.mode', function () {
             return 'test'; // Set the mode you want to test
         });
+
         $this->coreMock = $this->getMockBuilder(Core::class)
             ->onlyMethods([
                 'isAddressPresentInRequest',
@@ -108,6 +110,7 @@ class CMSTest extends TestCase
                 'internal_app_name' => 'payment_links',
                 'mode' => 'test',
                 'route_name' => 'customer_create',
+                'country' => 'in',
             ]),
         ];
 
@@ -118,7 +121,12 @@ class CMSTest extends TestCase
             ->with($properties)
             ->willReturn($output);
         $splitzHelper = new Core();
-        $result = $splitzHelper->isCreateOverrideToCmsEnabled('O2Z3vbS94pgFs8', 'test', 'payment_links', 'customer_create');
+
+        $inputMerchant = new Entity();
+        $inputMerchant->fill(['id' => 'O2Z3vbS94pgFs8', 'country_code' => 'in']);
+
+
+        $result = $splitzHelper->isCreateOverrideToCmsEnabled($inputMerchant, 'test', 'payment_links', 'customer_create');
         $this->assertTrue($result);
         #T1 ends
 
@@ -136,7 +144,7 @@ class CMSTest extends TestCase
             ->method('evaluateRequest')
             ->willReturn($output);
         $splitzHelper = new Core();
-        $result = $splitzHelper->isCreateOverrideToCmsEnabled('O2Z3vb4pgFs8', 'test', 'payment_links', 'customer_create');
+        $result = $splitzHelper->isCreateOverrideToCmsEnabled($inputMerchant, 'test', 'payment_links', 'customer_create');
         $this->assertFalse($result);
         #T2 ends
 
@@ -164,7 +172,7 @@ class CMSTest extends TestCase
             ->method('evaluateRequest')
             ->willReturn($output);
         $splitzHelper = new Core();
-        $result = $splitzHelper->isCreateOverrideToCmsEnabled('O2Z3vb4pgFs8', 'test', 'payment_links', 'customer_create');
+        $result = $splitzHelper->isCreateOverrideToCmsEnabled($inputMerchant, 'test', 'payment_links', 'customer_create');
         $this->assertFalse($result);
         #T3 ends
 
@@ -184,7 +192,7 @@ class CMSTest extends TestCase
             ->willThrowException(new \Exception('some error encountered while calling splitz'));
 
         $splitzHelper = new Core();
-        $result = $splitzHelper->isCreateOverrideToCmsEnabled('O2Z3vb4pgFs8', 'test', 'payment_links', 'customer_create');
+        $result = $splitzHelper->isCreateOverrideToCmsEnabled($inputMerchant, 'test', 'payment_links', 'customer_create');
         $this->assertFalse($result);
         #T4 ends
     }
@@ -555,6 +563,29 @@ class CMSTest extends TestCase
 
         $this->assertEquals($mockResponse, $result);
     }
+
+    public function testTransformV1CreateOptionsToV2CreateOptionsWithIntegerContact()
+    {
+        $input = [
+            'contact' => 900000
+        ];
+
+        $merchantId = '12345';
+        $output = (new Service($this->app))->transformV1CreateOptionsToV2CreateOptions($input, $merchantId);
+        $this->assertEquals((string)$input['contact'], $output['contact']);
+    }
+
+    public function testTransformV1CreateOptionsToV2CreateOptionsWithNullContact()
+    {
+        $input = [
+            'contact' => null
+        ];
+
+        $merchantId = '12345';
+        $output = (new Service($this->app))->transformV1CreateOptionsToV2CreateOptions($input, $merchantId);
+        $this->assertNull($output['contact']);
+    }
+
     public function testCreateCustomerV2Failure()
     {
         $input = [

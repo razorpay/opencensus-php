@@ -546,33 +546,70 @@ class Service extends Base\Service
             return;
         }
 
-        if ($this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow) === true)
-        {
-            app('trace')->info(TraceCode::BALANCE_RETRIEVAL_EVENT,
-                [
-                    'balance'     => $entity->getId(),
-                    'route'       => $route,
-                ]);
+        [$isLoggingRequired, $type] = $this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow);
 
-            app('trace')->count(Metric::BALANCE_READ_API_LEDGER_CLS_MERCHANT, [
-                'route'            => $route,
-            ]);
+        if ($isLoggingRequired === true)
+        {
+            if ($type === Type::PRIMARY)
+            {
+                app('trace')->info(TraceCode::BALANCE_RETRIEVAL_EVENT,
+                    [
+                        'balance' => $entity->getId(),
+                        'route' => $route,
+                    ]);
+
+                app('trace')->count(Metric::BALANCE_READ_API_LEDGER_CLS_MERCHANT, [
+                    'route' => $route,
+                ]);
+            }
+
+            if ($type === Type::BANKING)
+            {
+                app('trace')->info(TraceCode::X_BALANCE_FETCH_EVENT,
+                    [
+                        'balance' => $entity->getId(),
+                        'route' => $route,
+                    ]);
+
+                app('trace')->count(Metric::X_BALANCE_READ_API_LEDGER_MERCHANT, [
+                    'route' => $route,
+                ]);
+            }
         }
     }
 
     public function logBalanceWrites(Entity $entity, $isLedgerDualWriteFlow, $route)
     {
-        if ($this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow) === true)
-        {
-            app('trace')->info(TraceCode::BALANCE_SAVED_EVENT,
-                [
-                    'balance'     => $entity->getId(),
-                    'route'       => $route,
-                ]);
+        [$isLoggingRequired, $type] = $this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow);
 
-            app('trace')->count(Metric::BALANCE_WRITE_API_LEDGER_CLS_MERCHANT, [
-                'route'            => $route,
-            ]);
+        if ($isLoggingRequired === true)
+        {
+            if ($type === Type::PRIMARY)
+            {
+                app('trace')->info(TraceCode::BALANCE_SAVED_EVENT,
+                    [
+                        'balance' => $entity->getId(),
+                        'route' => $route,
+                    ]);
+
+                app('trace')->count(Metric::BALANCE_WRITE_API_LEDGER_CLS_MERCHANT, [
+                    'route' => $route,
+                ]);
+            }
+
+            if ($type === Type::BANKING)
+            {
+                app('trace')->info(TraceCode::X_BALANCE_WRITE_EVENT,
+                    [
+                        'transaction' => $entity->getId(),
+                        'route' => $route,
+                    ]);
+
+                app('trace')->count(Metric::X_BALANCE_WRITE_API_LEDGER_MERCHANT, [
+                    'transaction_type' => $entity->getType(),
+                    'route' => $route
+                ]);
+            }
         }
     }
 
@@ -580,28 +617,41 @@ class Service extends Base\Service
     {
         if ($isLedgerDualWriteFlow === true)
         {
-            return false;
+            return [false, null];
         }
 
         $merchantId = $entity->getMerchantId();
 
         $isPGBalance = $entity->getType() === Type::PRIMARY;
 
-        if ($isPGBalance === false)
+        $isXBalance = $entity->getType() === Type::BANKING;
+
+        if ($isPGBalance === true)
         {
-            return false;
+            $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                'merchant',
+                $merchantId,
+                Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
+
+            if (!empty($feature))
+            {
+                return [true, Type::PRIMARY];
+            }
         }
 
-        $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
-            'merchant',
-            $merchantId,
-            Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
-
-        if (!empty($feature))
+        if ($isXBalance === true)
         {
-            return true;
+            $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                'merchant',
+                $merchantId,
+                Feature\Constants::LEDGER_REVERSE_SHADOW);
+
+            if (!empty($feature))
+            {
+                return [true, Type::BANKING];
+            }
         }
 
-        return false;
+        return [false, null];
     }
 }

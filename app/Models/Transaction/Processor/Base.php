@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Models\Feature;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
@@ -112,20 +113,6 @@ abstract class Base extends BaseCore
             }
         }
         else
-        {
-            $txn = $this->createNewTransaction($txnId);
-        }
-
-        $this->setTransaction($txn);
-    }
-
-    protected function setTransactionForSourceDualWrite($txnId = null)
-    {
-        $txn = null;
-
-        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($this->source);
-
-        if ($txn === null)
         {
             $txn = $this->createNewTransaction($txnId);
         }
@@ -301,60 +288,6 @@ abstract class Base extends BaseCore
     }
 
 
-    public function createTransactionDualWrite($txnId = null, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
-    {
-        // Creates new or fetches existing transaction entity for the source entity
-        $this->setTransactionForSourceDualWrite($txnId);
-
-        // set transaction attributes from the source entity
-        $this->setSourceDefaults();
-
-        // fills the transaction attributes from the merchant attributes
-        $this->fillDetails();
-
-        $this->setCreditDebitDetailsForDualWrite($this, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
-
-        // updates entity specific attributes in transaction
-        $this->updateTransaction();
-
-        if ($this->txn->getType() === Transaction\Type::PAYMENT)
-        {
-            $this->fillSettledAtInfo();
-        }
-
-        $negativeLimit = (new Balance\Core)->getNegativeLimit($this->txn);
-
-        if ($this->shouldUpdateBalanceForDualWrite() === true)
-        {
-            $startTime = microtime(true);
-
-            try
-            {
-                $lockStartTime = microtime(true);
-                // update merchant credits an balances
-                $this->setMerchantBalanceLockForUpdate();
-
-                $this->decideBalanceSource();
-
-                $this->updateCredits($negativeLimit);
-
-                $this->updateBalances($negativeLimit);
-            }
-            finally
-            {
-                $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_TIME_TAKEN_DUAL_WRITE,
-                    [
-                        'txn_type' => $this->txn->getType(),
-                        'merchant_id' => $this->txn->getMerchantId(),
-                        'balance_update_time' => (microtime(true) - $startTime) * 1000
-                    ]
-                );
-            }
-        }
-
-        return [$this->txn, $this->feesSplit];
-    }
-
     protected function shouldUpdateBalance()
     {
         $merchantId = $this->txn->getMerchantId();
@@ -390,11 +323,6 @@ abstract class Base extends BaseCore
                 ]);
         }
 
-        return true;
-    }
-
-    protected function shouldUpdateBalanceForDualWrite()
-    {
         return true;
     }
 
@@ -487,8 +415,6 @@ abstract class Base extends BaseCore
 
     abstract function calculateFees();
 
-    abstract function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
-
     // Currently settlement with merchant is done in the currency of a merchant, Hence
     // all the fields for credit, debit and fee should be in merchant's currency only
     public function setSourceDefaults()
@@ -515,6 +441,15 @@ abstract class Base extends BaseCore
             return;
         }
 
+        // Setting reference3 to "disabled" only for payouts involving PG balances to avoid conflicts with RazorpayX payouts.
+        if(($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) &&
+            $this->txn->getType() === Transaction\Type::PAYOUT &&
+            isset($this->txn->source->balance) &&
+            in_array($this->txn->source->balance->getType(), Balance\Type::$pgBalances))
+        {
+            $this->txn->setReference3("disabled");
+        }
+
         if(($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
             (in_array($this->txn->getType(),[Transaction\Type::PAYMENT, Transaction\Type::ADJUSTMENT,
                     Transaction\Type::DISPUTE, Transaction\Type::REFUND, Transaction\Type::REVERSAL,
@@ -532,13 +467,6 @@ abstract class Base extends BaseCore
         $this->setMerchantFeeDefaults();
     }
 
-    public function setFeeDefaultsForDualWrite($fees, $tax)
-    {
-        $this->setMerchantCredits();
-
-        $this->setMerchantFeeDefaultsForDualWrite($fees, $tax);
-    }
-
     public function setCreditDebitDetails($processor)
     {
         // fetches credits, balance and calculates fees and taxes
@@ -546,18 +474,6 @@ abstract class Base extends BaseCore
 
         // calculates fee sources and calculates credit and debit amounts
         $processor->calculateFees();
-
-        // update credit and debit amounts, fees and taxes in transaction
-        $processor->setOtherDetails();
-    }
-
-    public function setCreditDebitDetailsForDualWrite($processor, $fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
-    {
-        // fetches credits, balance and calculates fees and taxes
-        $processor->setFeeDefaultsForDualWrite($fees, $tax);
-
-        // calculates fee sources and calculates credit and debit amounts
-        $processor->calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed);
 
         // update credit and debit amounts, fees and taxes in transaction
         $processor->setOtherDetails();
@@ -571,20 +487,6 @@ abstract class Base extends BaseCore
     public function setMerchantFeeDefaults()
     {
         list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
-
-        // For dynamic fee bearer, we need to update fee, tax,
-        // with the amounts borne only by merchant and add a debit of equal to customer fee + customer fee GST,
-        // to settle the right amount to mx, all of this is under dfb feature.
-        $this->setCustomerFeeAndTaxForDfb();
-    }
-
-    public function setMerchantFeeDefaultsForDualWrite($fees, $tax)
-    {
-        list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
-
-        $this->fees = $fees;
-
-        $this->tax = $tax;
 
         // For dynamic fee bearer, we need to update fee, tax,
         // with the amounts borne only by merchant and add a debit of equal to customer fee + customer fee GST,
@@ -1096,6 +998,8 @@ abstract class Base extends BaseCore
         $amount = $this->txn->getCredits();
 
         $merchantId = $this->merchantBalance->merchant->getId();
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $reverseShadowMerchant = $merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW);
 
         $refundCreditsThreshold = $this->merchantBalance->merchant->getRefundCreditsThreshold();
 
@@ -1118,7 +1022,14 @@ abstract class Base extends BaseCore
         }
         else
         {
-            $refundCredits = $this->merchantBalance->getRefundCredits();
+            if ($reverseShadowMerchant)
+            {
+                $refundCredits = $this->repo->credits->getMerchantCreditsOfType($merchant->getId(), Credits\Type::REFUND);
+            }
+            else
+            {
+                $refundCredits = $this->merchantBalance->getRefundCredits();
+            }
         }
 
         $data = [
@@ -1147,9 +1058,16 @@ abstract class Base extends BaseCore
                 $data);
         }
 
-        $this->merchantBalance->subtractRefundCredits($amount, $negativeLimit);
+        if ($reverseShadowMerchant === false)
+        {
+            $this->merchantBalance->subtractRefundCredits($amount, $negativeLimit);
 
-        $newCredits = $this->merchantBalance->getRefundCredits();
+            $newCredits = $this->merchantBalance->getRefundCredits();
+        }
+        else
+        {
+            $newCredits = $refundCredits - $amount;
+        }
 
         $this->trace->info(TraceCode::MERCHANT_REFUND_CREDITS_DATA,
             [
@@ -1158,20 +1076,25 @@ abstract class Base extends BaseCore
                 'new_credits' => $newCredits,
                 'old_credits' => $refundCredits,
                 'method'      => 'updateRefundCredits',
+                'reverse_shadow' => $reverseShadowMerchant,
             ]);
 
-        (new Balance\NegativeReserveBalanceMailers())->sendNegativeBalanceMailIfApplicable(
-                                                        $this->merchantBalance->merchant,
-                                                        $refundCredits,
-                                                        $newCredits,
-                                                        $negativeLimit,
-                                                        'refund credits',
-                                                        $this->txn->getType());
+        if($reverseShadowMerchant === false) {
+            (new Balance\NegativeReserveBalanceMailers())->sendNegativeBalanceMailIfApplicable(
+                $this->merchantBalance->merchant,
+                $refundCredits,
+                $newCredits,
+                $negativeLimit,
+                'refund credits',
+                $this->txn->getType());
+        }
+
         //create a credit transaction for the same
         $this->createCreditTransaction($amount, Credits\Type::REFUND);
 
         // only check for credit threshold if it's not null
-        if ($refundCreditsThreshold !== null)
+
+        if ($refundCreditsThreshold !== null && $reverseShadowMerchant === false)
         {
             $this->sendRefundCreditAlertIfNeeded(
                 $amount, $refundCredits, $refundCreditsThreshold, $this->merchantBalance->merchant);

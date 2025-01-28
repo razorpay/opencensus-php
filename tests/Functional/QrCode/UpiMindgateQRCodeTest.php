@@ -57,7 +57,6 @@ class UpiMindgateQRCodeTest extends TestCase
 
         $this->terminal = $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal');
 
-        $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
 
         $this->getDedicatedTerminalSplitzResponseForVariantON();
     }
@@ -92,6 +91,9 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testCreateStaticQrDedicatedTerminal()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -105,6 +107,9 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testCreateStaticQrWithFixedAmount(): void
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'          => 'multiple_use',
@@ -120,6 +125,9 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testCreateDynamicQrDedicatedTerminal()
     {
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'         => 'single_use',
@@ -136,15 +144,14 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testSingleUseQrCodeWithCloseByWithExperimentOn()
     {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
-            ]
-        );
 
         $days = 3;
 
         $expiryTime = Carbon::now()->getTimestamp() + ($days * 24 * 60 * 60);
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $this->createQrCode(
             [
@@ -177,6 +184,10 @@ class UpiMindgateQRCodeTest extends TestCase
 
         $expiryTime = Carbon::now()->getTimestamp() + ($days * 24 * 60 * 60);
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -191,11 +202,15 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testCreateQrWithCloseQrOnDemandFlagEnabled(): void
     {
+        $this->markTestSkipped('feature close_qr_on_demand is deprecated');
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CREATE_HDFC);
 
-        $this->fixtures->on('live')->merchant->addFeatures([FeatureConstants::CLOSE_QR_ON_DEMAND], 'LiveAccountMer');
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $this->createQrCode(
             [
@@ -211,9 +226,13 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testCloseMindgateQrWithCloseQrOnDemandFlagEnabled(): void
     {
-        $this->expectException(BadRequestException::class);
+//        $this->expectException(BadRequestException::class);
+//
+//        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
 
-        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $qrCode = $this->createQrCode(
             [
@@ -227,14 +246,22 @@ class UpiMindgateQRCodeTest extends TestCase
 
         $this->fixtures->on('live')->merchant->addFeatures([FeatureConstants::CLOSE_QR_ON_DEMAND], 'LiveAccountMer');
 
-        $this->closeQrCode($qrCode['id']);
+        $this->closeQrCode($qrCode['id'], 'live', 'LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+        $this->assertEquals('closed', $qrCode->getStatus());
     }
 
     public function testCloseMindgateQrWithCloseQrOnDemandFlagDisabled(): void
     {
+        $this->markTestSkipped('feature close_qr_on_demand is deprecated');
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $qrCode = $this->createQrCode(
             [
@@ -246,7 +273,7 @@ class UpiMindgateQRCodeTest extends TestCase
             'live',
             'LiveAccountMer');
 
-        $this->closeQrCode($qrCode['id']);
+        $this->closeQrCode($qrCode['id'], 'live');
     }
 
     private function runEntityAssertionsForDedicatedTerminalQr()
@@ -284,6 +311,10 @@ class UpiMindgateQRCodeTest extends TestCase
     public function testPaymentForStaticQrCode(): void
     {
         $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $this->createQrCode(
             [
@@ -324,7 +355,9 @@ class UpiMindgateQRCodeTest extends TestCase
                 ],
             ]
         );
-
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -346,6 +379,10 @@ class UpiMindgateQRCodeTest extends TestCase
     public function testPaymentOnDynamicQrCode() :void
     {
         $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $this->createQrCode(
             [
@@ -370,6 +407,10 @@ class UpiMindgateQRCodeTest extends TestCase
     public function testQrPaymentOnInvalidQrCode()
     {
         $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $this->createQrCode(
             [
@@ -410,6 +451,9 @@ class UpiMindgateQRCodeTest extends TestCase
     {
         $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -485,6 +529,9 @@ class UpiMindgateQRCodeTest extends TestCase
     {
         $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal_test_merchant');
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $qrCode = $this->createQrCode([
                 'usage'          => 'multiple_use',
                 'type'           => 'upi_qr',
@@ -518,6 +565,10 @@ class UpiMindgateQRCodeTest extends TestCase
     public function testProcessMindgateQrPaymentInternalWithRefund()
     {
         $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal_test_merchant');
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $qrCode = $this->createQrCode([
             'usage'          => 'single_use',
@@ -557,6 +608,10 @@ class UpiMindgateQRCodeTest extends TestCase
     {
         $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal_test_merchant');
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
         $qrCode = $this->createQrCode([
             'usage'          => 'single_use',
             'type'           => 'upi_qr',
@@ -595,6 +650,10 @@ class UpiMindgateQRCodeTest extends TestCase
     public function testProcessMindgateQrPaymentInternalWithInvalidPayerAccountType()
     {
         $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal_test_merchant');
+
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
 
         $qrCode = $this->createQrCode([
             'usage'          => 'single_use',
@@ -640,6 +699,10 @@ class UpiMindgateQRCodeTest extends TestCase
 
         $request['content']['data']['upi']['merchant_reference'] = 'qwertyuiop1234qrv2';
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
         $response = $this->makeUpiPaymentInternal($requestInternal);
 
         $payment = $this->getDbLastEntity('payment', 'live');
@@ -663,6 +726,10 @@ class UpiMindgateQRCodeTest extends TestCase
 
         $requestInternal = $this->testData['testProcessMindgateQrPaymentInternal'];
 
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
+
         $requestInternal['content']['data']['terminal']['gateway_merchant_id'] = '1234567';
 
         $this->expectException(BadRequestException::class);
@@ -679,7 +746,9 @@ class UpiMindgateQRCodeTest extends TestCase
     public function testProcessMindgateQrPaymentInternalDuplicate()
     {
         $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal_test_merchant');
-
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $qrCode = $this->createQrCode([
             'usage'          => 'single_use',
             'type'           => 'upi_qr',
@@ -716,12 +785,9 @@ class UpiMindgateQRCodeTest extends TestCase
     public function testSingleUseQrCodeWithCloseByForEzetap()
     {
         $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => 'control',
-            ]
-        );
-
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $days =1;
         $this->fixtures->on('live')->merchant->addFeatures([FeatureConstants::CLOSE_QR_ON_DEMAND], 'LiveAccountMer');
         $qrCode = $this->createQrCode(
@@ -743,7 +809,9 @@ class UpiMindgateQRCodeTest extends TestCase
     public function testStaticQrCodeCreateWithVpa(): void
     {
         $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
-
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -761,7 +829,9 @@ class UpiMindgateQRCodeTest extends TestCase
     public function testPaymentForStaticQrCodeWithVpa(): void
     {
         $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
-
+        $this->setMockSplitzTreatment([
+                                          'M25grFTOPZEGQS' => 'on'
+                                      ]);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',

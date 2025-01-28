@@ -2118,8 +2118,6 @@ class CaptureTest extends TestCase
 
         $this->enableCpsConfig();
 
-        $this->mockRazorxTreatmentV2(Merchant\RazorxTreatment::ENABLE_CAPTURE_SETTINGS_FOR_OPTIMIZER, 'on');
-
         $payment1 = $this->getDefaultPaymentArray();
 
         $payment1['force_terminal_id'] = 'term_'.$terminal->getId();
@@ -2171,8 +2169,6 @@ class CaptureTest extends TestCase
         $terminal = $this->fixtures->create('terminal:card_payu_terminal');
 
         $this->enableCpsConfig();
-
-        $this->mockRazorxTreatmentV2(Merchant\RazorxTreatment::ENABLE_CAPTURE_SETTINGS_FOR_OPTIMIZER, 'on');
 
         $cardId = $this->fixtures->create('card')['id'];
 
@@ -2235,8 +2231,6 @@ class CaptureTest extends TestCase
         $terminal = $this->fixtures->create('terminal:card_payu_terminal');
 
         $this->enableCpsConfig();
-
-        $this->mockRazorxTreatmentV2(Merchant\RazorxTreatment::ENABLE_CAPTURE_SETTINGS_FOR_OPTIMIZER, 'on');
 
         $cardId = $this->fixtures->create('card')['id'];
 

@@ -13,7 +13,6 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Invoice\EInvoice;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Models\Transfer\Service as TransferService;
@@ -192,13 +191,7 @@ class PdfGenerator extends Base\Core
     {
         $data = (new Core())->getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup, $eInvoiceData) ;
 
-        if($this->isMerchantPGInvoiceV2($merchant->getId()) === true)
-        {
-            $view = ($data['isGstApplicable'] === true) ?'merchant.pg_invoice.invoiceV2' : 'merchant.pg_invoice.invoice_old';
-        }
-        else {
-            $view = ($data['isGstApplicable'] === true) ?'merchant.pg_invoice.invoice' : 'merchant.pg_invoice.invoice_old';
-        }
+        $view = ($data['isGstApplicable'] === true) ?'merchant.pg_invoice.invoiceV2' : 'merchant.pg_invoice.invoice_old';
 
         return view($view, $data)->render();
     }
@@ -236,21 +229,4 @@ class PdfGenerator extends Base\Core
         return self::MERCHANT_INVOICE_PG_PDF_PREFIX . '/revised/' . $year . '/'. $month . '/' . $merchantId;
     }
 
-    public function isMerchantPGInvoiceV2($merchantId): bool
-    {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app->razorx->getTreatment(
-            $merchantId, RazorxTreatment::MERCHANT_PG_INVOICE_V2, $mode);
-
-        $this->trace->info(
-            TraceCode::MERCHANT_PG_INVOICE_V2_RAZORX,
-            [
-                'result' => $result,
-                'mode' => $mode,
-                'merchant_id' => $merchantId,
-            ]);
-
-        return (strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON);
-    }
 }

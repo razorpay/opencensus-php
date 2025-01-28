@@ -2003,13 +2003,6 @@ class Core extends Base\Core
             return false;
         }
 
-        $upiDedicatedTerminalExpt = (new MerchantCore())->isRazorxExperimentEnable($merchant->getId(), RazorxTreatment::UPI_DEDICATED_TERMINAL);
-
-        if($upiDedicatedTerminalExpt === false)
-        {
-            return false;
-        }
-
         return true;
     }
 

@@ -1526,15 +1526,6 @@ class Core extends Base\Core
             ]
         );
 
-        $loginMailNotificationEnabled = (new Merchant\Core())->isRazorxExperimentEnable($user->getId(),
-            RazorxTreatment::USER_LOGIN_EMAIL_NOTIFICATION);
-
-        // inform the user about the login activity (only if the email is verified and Razorx exp is enabled)
-        if (($user->getConfirmedAttribute() === true) and ($loginMailNotificationEnabled === true))
-        {
-            $this->sendLoginMailToUser($user, $browserDetails);
-        }
-
         $orgId = $this->app['basicauth']->getOrgId();
 
         if(empty($orgId) === true)
@@ -1641,32 +1632,6 @@ class Core extends Base\Core
             return null;
         }
 
-    }
-
-    /**
-     * @param Entity $user
-     * @param array|null $browserDetails
-     * @return void
-     */
-    private function sendLoginMailToUser(Entity $user, ?array $browserDetails)
-    {
-        $orgId = $this->app['basicauth']->getOrgId();
-
-        $orgId =  Org\Entity::verifyIdAndStripSign($orgId);
-
-        $orgHostname = $this->app['basicauth']->getOrgHostName();
-
-        $loginAt = Carbon::now('UTC')->isoFormat('lll');
-
-        // send login notification for Razorpay org only
-        if ($orgId === Org\Entity::RAZORPAY_ORG_ID)
-        {
-            $this->trace->info(TraceCode::SEND_USER_LOGIN_EMAIL_ATTEMPT, [Entity::USER_ID => $user->getId()]);
-
-            $loginMail = new UserMail\Login($user, $orgHostname, $browserDetails, $loginAt);
-
-            Mail::queue($loginMail);
-        }
     }
 
     public function getLoginSignupOtpPayload(array $input, string $action)
@@ -7256,19 +7221,15 @@ class Core extends Base\Core
     //so we are only editing the record and not creating it
     public function savePGOSDataToAPI(array $data)
     {
-        $splitzResult = (new Merchant\Detail\Core())->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+        $users = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($data[Entity::MERCHANT_ID]);
+        $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-        if ($splitzResult === 'variables')
-        {
-            $users = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($data[Entity::MERCHANT_ID]);
-            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
-
-            // dual write only for below merchants
-            // merchants for whom pgos is serving onboarding requests
-            // merchants who are not completely activated
-            if ($merchant->getService() === Merchant\Constants::PGOS and
-                empty($users) === false and
-                $merchant->merchantDetail->getActivationStatus() != Merchant\Detail\Status::ACTIVATED)
+        // dual write only for below merchants
+        // merchants for whom pgos is serving onboarding requests
+        // merchants who are not completely activated
+        if ($merchant->getService() === Merchant\Constants::PGOS and
+            empty($users) === false and
+            $merchant->merchantDetail->getActivationStatus() != Merchant\Detail\Status::ACTIVATED)
             {
                 $user = $this->repo->user->find($users[0]);
 
@@ -7292,7 +7253,6 @@ class Core extends Base\Core
                     $this->repo->user->saveOrFailForPGOSDualWrite($user);
                 }
             }
-        }
 
     }
 

@@ -106,7 +106,6 @@ class InputHelper
         if (isset($input[Constants::BUSINESS_TYPE]) === true)
         {
             $businessType = $input[Constants::BUSINESS_TYPE];
-
             $detailInput[Detail\Entity::BUSINESS_TYPE] = Detail\BusinessType::getIndexFromKey($businessType);
         }
 

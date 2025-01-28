@@ -557,11 +557,7 @@ trait RepositoryFetch
             case ConnectionType::REPLICA:
                 if ($this->app['api.route']->routeThroughMasterReplica())
                 {
-                    if ($this->useDataWarehouseConnection(Repository::ADMIN_FETCH) === true)
-                    {
-                       return $this->getDataWarehouseConnection();
-                    }
-                    return $this->getPaymentFetchReplicaConnection();
+                    return $this->getDataWarehouseConnection();
                 }
 
             case ConnectionType::SLAVE:

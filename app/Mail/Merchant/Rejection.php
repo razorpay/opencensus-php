@@ -89,6 +89,7 @@ class Rejection extends Mailable
             'template_name' => 'banking_mail_rejection_notification',
             'template_namespace' => 'payments_banking',
             'params' => $this->data,
+            'org_id' => $this->org['id'],
         ];
         //
         if((empty($this->data['custom_branding']) === false) and ( $this->data['custom_branding'] === true) and (empty($this->data['email_logo']) === false))

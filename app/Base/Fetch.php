@@ -26,6 +26,8 @@ class Fetch
     const PHASE = 'phase';
     const STATUS ='status';
     const INTERNATIONAL = 'international';
+    const ACCOUNT_TYPE  = 'account_type';
+    const CHANNEL  = 'channel';
 
     //
     // Different constants used in AdminFetch response to dashboard
@@ -141,7 +143,10 @@ class Fetch
             self::INTERNATIONAL => 'sometimes|integer'
         ],
 
-        BasicAuth\Type::PRIVATE_AUTH  => [],
+        BasicAuth\Type::PRIVATE_AUTH  => [
+            self::ACCOUNT_TYPE,
+            self::CHANNEL,
+        ],
 
         BasicAuth\Type::PROXY_AUTH     => [],
 

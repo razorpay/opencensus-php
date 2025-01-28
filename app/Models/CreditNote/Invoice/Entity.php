@@ -3,6 +3,7 @@
 namespace RZP\Models\CreditNote\Invoice;
 
 use App;
+use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Base;
 use RZP\Models\Invoice;
 use RZP\Models\Payment\Refund;
@@ -30,6 +31,17 @@ class Entity extends Base\PublicEntity
     protected $entity = 'creditnote_invoice';
 
     protected $generateIdOnCreate = true;
+
+    /**
+     * Relations to ignore while checking existence of associated entities
+     * while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [
+        // Required as customer entity will be created via CMS and may not be present in API DB
+        ConstantsEntity::CUSTOMER,
+    ];
 
     protected $fillable = [
         self::MERCHANT_ID,

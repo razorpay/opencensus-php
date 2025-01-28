@@ -6,6 +6,8 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant\RazorxTreatment;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Admin\Org;
+use RZP\Models\Feature;
 
 class EmailHelper
 {
@@ -73,16 +75,22 @@ class EmailHelper
 
             $orgVariant = $this->getSplitzResponse($orgID,$experimentName);
 
+            $trimmedOrgId = str_replace('org_', '', $orgID);
+            $org = (new Org\Repository())->findOrFailPublic($trimmedOrgId);
+
+            $isStorkEmailVASEnabled = $org->isFeatureEnabled(Feature\Constants::ENABLE_STORK_EMAIL) === true;
+
             $app['trace']->info($traceCode, [
                 'userID' => $userID,
                 'orgID' => $orgID,
                 'userVariant' => $userVariant,
                 'orgVariant' => $orgVariant,
-                'experimentName' => $experimentName
+                'experimentName' => $experimentName,
+                'isStorkEmailVASEnabled' => $isStorkEmailVASEnabled,
             ]);
 
 
-            if (strtolower($userVariant) === 'enable' or strtolower($orgVariant) === 'enable')
+            if (strtolower($userVariant) === 'enable' or strtolower($orgVariant) === 'enable' or $isStorkEmailVASEnabled)
             {
                 return true;
             }

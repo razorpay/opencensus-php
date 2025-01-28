@@ -52,7 +52,7 @@ class OrderPaymentsParity extends Job
 
         //The TPS for this route is 300, we only want 40-50 requests to be produced
         $rand = rand(1, 18000);
-        if ($rand > 100)
+        if ($rand > 500)
         {
             return;
         }

@@ -42,6 +42,7 @@ class PaperNachIcici extends Base
 
     const STEP                   = 'register';
     const FILE_NAME              = 'MMS-CREATE-ICIC-ICIC865719-{$date}-{$code}';
+    const DIR_FILE_NAME              = 'MMS-CREATE-ICIC-ICICRZ-{$date}-{$code}';
     const EXTENSION              = FileStore\Format::ZIP;
     const FILE_TYPE              = FileStore\Type::ICICI_NACH_REGISTER;
     const GATEWAY                = Payment\Gateway::NACH_ICICI;
@@ -303,7 +304,7 @@ class PaperNachIcici extends Base
 
         $baseFileName = strtr(self::FILE_NAME, ['{$date}' => $date, '{$code}' => $fileCode]);
 
-        $dirName = strtr(self::FILE_NAME, ['{$date}' => $date, '{$code}' => $dirCode]) . '-INP';
+        $dirName = strtr(self::DIR_FILE_NAME, ['{$date}' => $date, '{$code}' => $dirCode]) . '-INP';
 
         $tiffFileName = $baseFileName . '_front.tiff';
 

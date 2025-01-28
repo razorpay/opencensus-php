@@ -198,10 +198,10 @@ class Service extends Base\Service
         }
         catch (\Exception $e)
         {
+            $this->trace->traceException($e, Trace::DEBUG, TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_CREATE);
+
             $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input) {
-
                 $this->core()->createFeatureConfig($input);
-
             });
         }
     }

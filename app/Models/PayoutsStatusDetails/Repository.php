@@ -14,12 +14,7 @@ class Repository extends Base\Repository
     {
         $idColumn = $this->repo->payouts_status_details->dbColumn(Entity::ID);
 
-        $connectionType = $this->getPaymentFetchReplicaConnection();
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getSlaveConnection();
-        }
+        $connectionType = $this->getSlaveConnection();
 
         $result =  $this->newQueryWithConnection($connectionType)
                         ->select(Entity::REASON)
@@ -64,12 +59,7 @@ class Repository extends Base\Repository
         $payoutIdColumn  = $this->repo->payouts_status_details->dbColumn(Entity::PAYOUT_ID);
         $idColumn = $this->repo->payouts_status_details->dbColumn(Entity::ID);
 
-        $connectionType = $this->getPaymentFetchReplicaConnection();
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getSlaveConnection();
-        }
+        $connectionType = $this->getSlaveConnection();
 
         return $this->newQueryWithConnection($connectionType)
                     ->select(Table::PAYOUTS_STATUS_DETAILS.'.*')

@@ -287,6 +287,59 @@ class Repository extends Base\Repository
 
     /**
      * Returns the sum of unused, non-expired credits for a merchant, for each credit type
+     *
+     * Sample return array:
+     * [
+     *  'amount' => 1000
+     *  'fee'    => 550
+     * ]
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+    public function getTypeAggregatedNonRefundMerchantCreditsWithoutActiveDBTransaction(Merchant\Entity $merchant): array
+    {
+        $merchantsCredits = $this->newQuery()
+            ->merchantId($merchant->getId())
+            ->get();
+
+        // filtering out refund credits as it is not required here
+        // helps avoid possible deadlock because of opposite lock orders on credits in refunds flow
+        // slack ref thread: https://razorpay.slack.com/archives/CNXC0JHQF/p1641983505105000
+        $creditsFiltered = $merchantsCredits->filter(function ($item) {
+            return ($item->getUnusedCredits() > 0) and (($item->getExpiredAt() == null) or
+                    ($item->getExpiredAt() > time())) and ($item->getType() !== Type::REFUND);
+        });
+
+        $creditIds = $creditsFiltered->getStringAttributesByKey('id');
+
+        $creditIds = array_keys($creditIds);
+
+        $data = [];
+
+        if (count($creditIds) > 0)
+        {
+            $credits = Entity::lockForUpdate()->newQuery()
+                ->whereIn(Entity::ID, $creditIds)
+                ->get();
+
+            foreach ($credits as $credit)
+            {
+                if (isset($data[$credit->getType()]) === false)
+                {
+                    $data[$credit->getType()] = 0;
+                }
+
+                $data[$credit->getType()] += $credit->getUnusedCredits();
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Returns the sum of unused, non-expired credits for a merchant, for each credit type
      * This function is explicitly only called by payment flow
      * Sample return array:
      * [

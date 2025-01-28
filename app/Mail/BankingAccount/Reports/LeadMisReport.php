@@ -84,6 +84,7 @@ class LeadMisReport extends Base
         // For testing only
         $this->cc('umakant.vashishtha@razorpay.com', 'Umakant Vashishtha');
         $this->cc('lakshmish.hegde@razorpay.com', 'Lakshmish S Hegde');
+        $this->cc('x-onboarding@razorpay.com', 'X Onboarding');
         // $this->cc('apurva.ankleshwaria@razorpay.com', 'Apurva Ankleshwaria');
 
         return $this;

@@ -28,6 +28,7 @@ use RZP\Models\Merchant\Cron\Collectors\FOHRemovalDataCollector;
 use RZP\Models\Merchant\Cron\Jobs\PreActivationMerchantReleaseFundsJob;
 use RZP\Models\Merchant\Cron\Collectors\MerchantAutoKycPassDataCollector;
 use RZP\Models\Merchant\Cron\Collectors\PreActivationMerchantReleaseFundsDataCollector;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 
 class AutoKycTest extends TestCase
 {
@@ -94,6 +95,171 @@ class AutoKycTest extends TestCase
         $this->assertEquals(Status::UNDER_REVIEW, (new DetailCore)->getApplicableActivationStatus($merchantDetails));
     }
 
+    public function testGetApplicableActivationStatusForCrossBorderModularMerchant()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setNonImpersonatedMerchant();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'    => '12345678901235',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $merchantDetails = $this->fixtures->merchant_detail->create([
+            'merchant_id'    => $merchant->getId(),
+            Entity::POI_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::POA_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::BANK_DETAILS_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::BUSINESS_TYPE => (new BusinessType())->getIndexFromKey(BusinessType::NOT_YET_REGISTERED),
+            Entity::BUSINESS_CATEGORY => 'tours_and_travel',
+            Entity::BUSINESS_SUBCATEGORY => 'accommodation',
+        ]);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service'       => 'pgos',
+                'workflow_type' => '',
+                'cross_border_onboarding'  => 'MODULAR_ONBOARDING',
+            ]
+        ]);
+
+        $this->assertEquals(Status::UNDER_REVIEW, (new DetailCore)->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testIsCrossBorderMerchantForModularOnboarding()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setNonImpersonatedMerchant();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'    => '12345678901235',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $merchantDetails = $this->fixtures->merchant_detail->create([
+            'merchant_id'    => $merchant->getId(),
+            Entity::POI_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::POA_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::BANK_DETAILS_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::BUSINESS_TYPE => (new BusinessType())->getIndexFromKey(BusinessType::NOT_YET_REGISTERED),
+            Entity::BUSINESS_CATEGORY => 'tours_and_travel',
+            Entity::BUSINESS_SUBCATEGORY => 'accommodation',
+        ]);
+
+        $userDeviceDetails = $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service'       => 'pgos',
+                'workflow_type' => '',
+                'cross_border_onboarding'  => 'MODULAR_ONBOARDING',
+            ]
+        ]);
+
+        $this->assertEquals(true, (new MerchantOnboardingProxyController())->isCrossBorderIndiaModularMerchant($merchant));
+    }
+
+    public function testIsCrossBorderMerchantForNonModularOnboarding()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setNonImpersonatedMerchant();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'    => '12345678901235',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+
+        $userDeviceDetails = $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service'       => 'pgos',
+                'workflow_type' => '',
+                'cross_border_onboarding'  => 'PHANTOM_ONBOARDING',
+            ]
+        ]);
+
+        $this->assertEquals(false, (new MerchantOnboardingProxyController())->isCrossBorderIndiaModularMerchant($merchant));
+
+    }
+
+    public function testIsCrossBorderMerchantForCurlecOnboarding()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setNonImpersonatedMerchant();
+
+        $org = $this->fixtures->create('org:curlec_org');
+
+        $merchantAttributes = [
+            'id' => '10000121212121',
+            'org_id' => $org->getId()
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $userDeviceDetails = $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service'       => 'pgos',
+                'workflow_type' => '',
+                'cross_border_onboarding'  => 'MODULAR_ONBOARDING',
+            ]
+        ]);
+
+        $this->assertEquals(false, (new MerchantOnboardingProxyController())->isCrossBorderIndiaModularMerchant($merchant));
+
+    }
+
+    public function testGetProductSpecificWorkflowTypeForNonModularMerchant()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setNonImpersonatedMerchant();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'    => '12345678901235',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $merchantDetails = $this->fixtures->merchant_detail->create([
+            'merchant_id'    => $merchant->getId(),
+            Entity::POI_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::POA_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::BANK_DETAILS_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::BUSINESS_TYPE => (new BusinessType())->getIndexFromKey(BusinessType::NOT_YET_REGISTERED),
+            Entity::BUSINESS_CATEGORY => 'tours_and_travel',
+            Entity::BUSINESS_SUBCATEGORY => 'accommodation',
+        ]);
+
+        $userDeviceDetails = $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service'       => 'api',
+            ]
+        ]);
+
+        $this->assertEquals(null, (new MerchantOnboardingProxyController())->getProductSpecificWorkflowType($merchant, $userDeviceDetails));
+    }
     public function testGetApplicableActivationStatusForImpersonatedMerchantNotYetRegistered()
     {
         $this->mockRazorxAndMerchantRiskClient();

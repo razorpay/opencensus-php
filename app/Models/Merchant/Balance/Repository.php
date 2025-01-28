@@ -380,7 +380,7 @@ class Repository extends Base\Repository
 
     public function getMerchantBalanceByTypeTiDB(string $merchantId, string $balanceType)
     {
-        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
 
         $entity= $query->merchantIdAndType($merchantId, $balanceType)
                          ->first();
@@ -818,14 +818,7 @@ class Repository extends Base\Repository
      */
     public function fetchMerchantsBlockedDueToLowBalanceWithBalanceId()
     {
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_payout_harvester_query_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $this->newQueryWithConnection($connectionType)
             ->where(Entity::TYPE, '=', Type::BANKING)

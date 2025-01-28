@@ -96,7 +96,7 @@ class Repository extends Base\Repository
         return $this->newQuery()->where(Entity::LOW_RANGE,'=',$tokenIin)->first();
     }
 
-    private function fetchTokenIINMappingFromRepo($tokenIin)
+    public function fetchTokenIINMappingFromRepo($tokenIin)
     {
         $tokenIin_8len = substr($tokenIin, 0, 8);
         $tokenIin_6len = substr($tokenIin, 0, 6);

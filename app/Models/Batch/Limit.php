@@ -64,7 +64,7 @@ class Limit
         Type::PAYMENT_LINK_V2                       => 500100,
         Type::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG   => 20000,
         Type::ECOLLECT_ICICI                        => 100000,
-        'nach_debit_nach_citi'                      => 100000,
+        'nach_debit_nach_citi'                      => 350000,
         'nach_debit_nach_icici'                     => 100000,
         Type::ECOLLECT_RBL                          => 100000,
         Type::ECOLLECT_YESBANK                      => 100000,

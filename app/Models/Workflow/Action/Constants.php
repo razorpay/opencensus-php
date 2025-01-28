@@ -79,6 +79,7 @@ class Constants
 
     const PERMISSION_VS_CONTROLLER = [
         'merchant_activation_save_admin_login' => 'RZP\Http\Controllers\MerchantController@postSaveActivationDetails',
+        'merchant_rekyc_update'                => 'RZP\Http\Controllers\MerchantController@postMerchantReKycUpdate',
     ];
 
     const PERMISSION_VS_CONTROLLER_FUNCTION = [

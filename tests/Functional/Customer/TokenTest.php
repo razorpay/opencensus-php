@@ -2344,7 +2344,7 @@ class TokenTest extends TestCase
                 "type"          => "credit",
                 "issuer"        => "sbi",
                 "expiry_month"  => 12,
-                "expiry_year"   => 2024,
+                "expiry_year"   => 2034,
                 "created_at"    => $fixedTimestamp,
                 "updated_at"    => $fixedTimestamp,
         ]);
@@ -2544,7 +2544,7 @@ class TokenTest extends TestCase
             'merchant_id' => '10000000000000',
             'name' => 'Harshil',
             'expiry_month' => 12,
-            'expiry_year' => 2024,
+            'expiry_year' => 2034,
             'iin' => '401200',
             'last4' => '3335',
             'length' => '16',

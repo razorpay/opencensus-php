@@ -1263,16 +1263,6 @@ class Service extends Base\Service
     {
         $mode = $this->mode ??  'live';
 
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Constants::RAS_SIGN_UP_CHECKER_POST_ACTION_FEATURE_FLAG,
-            $mode);
-
-        if (strtolower($variant) !== 'ok')
-        {
-            return false;
-        }
-
         return (empty($this->app['cache']->connection()->hget(
                 Constants::REDIS_DEDUPE_SIGNUP_CHECKER_MAP, $merchantId))
                 === false);

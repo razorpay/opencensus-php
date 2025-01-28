@@ -11,6 +11,7 @@ use RZP\Gateway\Enach\Base\Entity as EnachEntity;
 use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\Status;
 use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\ErrorCodes as ErrorCode;
 use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\DebitFileHeadings as Headings;
+use RZP\Trace\TraceCode;
 
 // Deprecated. CombinedNachIcici is now used for debits of both paper nach and e-mandate in a single file
 class EnachNbIcici extends Base

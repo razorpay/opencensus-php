@@ -24,7 +24,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use RZP\Models\Merchant\Acs\Traits\AsvUpdateTimeStamp;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
+use RZP\Trace\TraceCode;
 
 /**
  * Class Entity
@@ -735,7 +737,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
         $merchantOnboardingProxyController = new MerchantOnboardingProxyController();
 
-        if ($merchantOnboardingProxyController->isIndiaPgModularMerchant($this->merchant) === true)
+        if ($merchantOnboardingProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($this->merchant) === true)
         {
             $allowedNextActivationStatusMap = (new Core())->getActivationStatusMappingForModularMerchants();
             $allowedNextActivationStatuses = $allowedNextActivationStatusMap[$activationStatus];

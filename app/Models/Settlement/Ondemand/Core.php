@@ -42,6 +42,7 @@ use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Settlement\Ondemand\Service as Service;
 use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use RZP\Models\Pricing\Feature as PricingFeature;
+use RZP\Services\FTS\Constants as FTSConstants;
 use RZP\Jobs\SettlementOndemand\UpdateOndemandTriggerJob;
 use RZP\Models\Ledger\ReverseShadow\Capital\Core as ReverseShadowCapitalCore;
 use RZP\Models\Settlement\Ondemand\Constants as SettlementOndemandConstants;
@@ -56,6 +57,11 @@ class Core extends Base\Core
 
     const ONDEMAND_PAYOUT_REVERSED_EVENT  = 'ondemand_payout.reversed';
 
+    const MODE_BUFFER_TIME = 1800;
+
+    /**
+     * @throws BadRequestException
+     */
     public function createSettlementOndemand(array $input, Merchant\Entity $merchant, User\Entity $user = null, array $requestDetails = [])
     {
         if ($input[Entity::AMOUNT] > $merchant->primaryBalance->getBalance())
@@ -185,6 +191,8 @@ class Core extends Base\Core
         $settlementOndemand->setTotalAmountPending($settlementOndemand->getAmountToBeSettled());
 
         $this->repo->saveOrFail($settlementOndemand);
+
+        $this->trace->count(Metric::SETTLEMENT_ONDEMAND_STATUS_UPDATES, ['status' => Status::CREATED]);
 
         if(!$skipLedgerOutboxEntry) {
             $reverseShadowCapital->createLedgerEntryForSettlementOndemandProcessedInReverseShadow($settlementOndemand);
@@ -827,49 +835,32 @@ class Core extends Base\Core
         return [false, $featureConfig->getMaxLimitPerWorkingDay(), $featureConfig->getMaxLimitPerWorkingDay() - $amountSettledForMerchant];
     }
 
-    private function getGlobalConfigs()
+    public function getSmartSettlementConfig(): array
     {
-        if ($this->shouldRetrieveGlobalConfigFromCapitalEs() === true)
-        {
-            $response = $this->app['capital_early_settlements']->getFeatureConfig('global');
-            $featureConfig = $response['global_feature_config'];
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
-            return [
-                ConfigKey::ODS_CAPPING_CHECK_REQUIRED => (bool) $featureConfig['global_limit_check_required'],
-                ConfigKey::ODS_GLOBAL_LIMIT => (int) $featureConfig['global_limit'],
-                ConfigKey::ODS_CAPPING_SCALE_FACTOR => (float) $featureConfig['global_limit_capping_scale_factor'],
-                ConfigKey::ODS_CAPPED_MID_LIST => explode(',', $featureConfig['global_limit_capped_merchant_ids'])
-            ];
-        }
+        $time = $currentTime + self::MODE_BUFFER_TIME;
+        $isCurrentTimeOutsideBankingHours = (new OndemandPayout\Core)->isOutsideBankingHoursUpdated($currentTime);
+        $isOutsideBankingHours = (new OndemandPayout\Core)->isOutsideBankingHoursUpdated($time);
+
+        $shouldEnableSmartSettlement = !$isCurrentTimeOutsideBankingHours && !$isOutsideBankingHours;
 
         return [
-            ConfigKey::ODS_CAPPING_CHECK_REQUIRED => (bool) ConfigKey::get(ConfigKey::ODS_CAPPING_CHECK_REQUIRED, false),
-            ConfigKey::ODS_GLOBAL_LIMIT => (int) ConfigKey::get(ConfigKey::ODS_GLOBAL_LIMIT, 0),
-            ConfigKey::ODS_CAPPING_SCALE_FACTOR => (float) ConfigKey::get(ConfigKey::ODS_CAPPING_SCALE_FACTOR, 100),
-            ConfigKey::ODS_CAPPED_MID_LIST => ConfigKey::get(ConfigKey::ODS_CAPPED_MID_LIST, []),
+            'smart_settlement' => $shouldEnableSmartSettlement ? 'active'  : 'inactive',
         ];
     }
 
-    private function shouldRetrieveGlobalConfigFromCapitalEs()
+    private function getGlobalConfigs()
     {
-        $request = ['experiment_id' => $this->app['config']->get('app.feature_config_from_capital_es_experiment_id')];
-        $response = $this->app['splitzService']->evaluateRequest($request);
+        $response = $this->app['capital_early_settlements']->getFeatureConfig('global');
+        $featureConfig = $response['global_feature_config'];
 
-        $variables = $response['response']['variant']['variables'] ?? [];
-        if (is_array($variables) === false)
-        {
-            return false;
-        }
-
-        foreach ($variables as $variable)
-        {
-            if (is_array($variable) === true && $variable['key'] === 'read_global_config' && $variable['value'] === 'on')
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return [
+            ConfigKey::ODS_CAPPING_CHECK_REQUIRED => (bool) $featureConfig['global_limit_check_required'],
+            ConfigKey::ODS_GLOBAL_LIMIT => (int) $featureConfig['global_limit'],
+            ConfigKey::ODS_CAPPING_SCALE_FACTOR => (float) $featureConfig['global_limit_capping_scale_factor'],
+            ConfigKey::ODS_CAPPED_MID_LIST => explode(',', $featureConfig['global_limit_capped_merchant_ids'])
+        ];
     }
 
     protected function getTransactionMutexresource(Base\Entity $baseEntity)
@@ -948,97 +939,63 @@ class Core extends Base\Core
         $ledgerEntries = $journal["ledger_entry"];
         $merchantId = (count($ledgerEntries) > 0) ? $ledgerEntries[0]["merchant_id"] : "";
 
-        if (isset($merchantId)) {
-            if ($event === \RZP\Models\LedgerOutbox\Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED) {
-                $txn = $this->handleOndemandSettlementProcessedEventOnAcknowledgment($journal, $transactorId, $entityId, $merchantId, $accountAlreadyExistsForCapitalInNewLedger);
-            } else {
-                $txn = $this->handleOndemandSettlementReversedEventOnAcknowledgment($journal, $transactorId, $entityId, $merchantId);
+        if (isset($merchantId))
+        {
+            if ($event === \RZP\Models\LedgerOutbox\Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED)
+            {
+                $this->handleOndemandSettlementProcessedEventOnAcknowledgment($journal, $entityId, $merchantId, $accountAlreadyExistsForCapitalInNewLedger);
             }
-            return $txn;
+            else
+            {
+                $this->handleOndemandSettlementReversedEventOnAcknowledgment($journal, $entityId, $merchantId);
+            }
         }
-        else {
-            $this->trace->debug(
-                TraceCode::MERCHANT_ID_NOT_FOUND,
+        else
+        {
+            $this->trace->debug(TraceCode::MERCHANT_ID_NOT_FOUND,
                 [
                     LedgerConstants::MESSAGE => "merchant id not found for this ledger",
-                    LedgerConstants::TRANSACTOR_ID => $transactorId
+                    LedgerConstants::TRANSACTOR_ID => $transactorId,
+                    LedgerConstants::TRANSACTOR_EVENT => $event,
                 ]);
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_FOUND);
         }
     }
 
-    private function handleOndemandSettlementProcessedEventOnAcknowledgment($journal, string $transactorId, string $settlementOndemandId, string $merchantId, bool $accountAlreadyExistsForCapitalInNewLedger){
-        $journalId = $journal['id'];
-
-        $this->repo->transaction(function () use ($settlementOndemandId, $merchantId, $journalId, $accountAlreadyExistsForCapitalInNewLedger,$journal) {
-
+    private function handleOndemandSettlementProcessedEventOnAcknowledgment($journal, string $settlementOndemandId, string $merchantId, bool $accountAlreadyExistsForCapitalInNewLedger) {
+        $this->repo->transaction(function () use ($settlementOndemandId, $merchantId, $accountAlreadyExistsForCapitalInNewLedger, $journal) {
             $settlementOndemand = (new Repository)->findByIdAndMerchantIdWithLock($settlementOndemandId, $merchantId);
-            if($settlementOndemand->getStatus() === 'created') {
 
+            if($settlementOndemand->getStatus() === 'created')
+            {
                 $this->dispatchToSettlementFromJournalIfApplicable($journal,$settlementOndemand->merchant);
 
-                $settlementOndemandPayouts = (new OndemandPayout\Repository)
-                    ->fetchByOndemandIdAndMerchantId($settlementOndemand->getId(),
-                        $settlementOndemand->getMerchantId())->all();
+                if ($accountAlreadyExistsForCapitalInNewLedger === false)
+                {
+                    $settlementOndemandPayouts = (new OndemandPayout\Repository)->fetchByOndemandIdAndMerchantId($settlementOndemand->getId(), $settlementOndemand->getMerchantId())->all();
 
-                if ($accountAlreadyExistsForCapitalInNewLedger === false) {
                     (new Service)->handleJobPushPostTransactionCreation($settlementOndemand, $settlementOndemandPayouts, $this->mode, $merchantId);
                 }
             }
         });
-
-        app('request.ctx')->setLedgerDualWriteFlow(true);
-
-        return $this->repo->transaction(function () use ($settlementOndemandId, $merchantId, $journalId, $accountAlreadyExistsForCapitalInNewLedger) {
-            $settlementOndemand = (new Repository)->findByIdAndMerchantIdWithLock($settlementOndemandId, $merchantId);
-            $resource = $this->getTransactionMutexresource($settlementOndemand);
-
-            list($txn, $feeSplit) = $this->app['api.mutex']->acquireAndRelease(
-                $resource,
-                function () use ($settlementOndemand, $journalId) {
-                    list($txn, $feeSplit) = (new Transaction\Processor\SettlementOndemand($settlementOndemand))
-                        ->createTransaction($journalId);
-                    $this->repo->saveOrFail($txn);
-                });
-            return $txn;
-        });
     }
 
-    private function handleOndemandSettlementReversedEventOnAcknowledgment($journal, string $transactorId, string $reversalId, string $merchantId): Transaction\Entity {
-        $journalId = $journal['id'];
-
-        app('request.ctx')->setLedgerDualWriteFlow(true);
-
-        return $this->repo->transaction(function () use ($reversalId, $merchantId, $journalId,$journal) {
-
+    private function handleOndemandSettlementReversedEventOnAcknowledgment($journal, string $reversalId, string $merchantId) {
+        $this->repo->transaction(function () use ($reversalId, $merchantId, $journal) {
             $reversal = $this->repo->reversal->findById($reversalId);
 
+            $reversal->setTransactionId($journal['id']);
+
+            $this->repo->saveOrFail($reversal);
+
             $this->dispatchToSettlementFromJournalIfApplicable($journal,$reversal->merchant);
-
-            $resource = $this->getTransactionMutexresource($reversal);
-
-            $txn = $this->app['api.mutex']->acquireAndRelease(
-                $resource,
-                function () use ($reversal, $journalId)
-                {
-                    $txn = (new Transaction\Core)->createFromOndemandPartialReversal($reversal, $journalId);
-
-                    $this->repo->saveOrFail($txn);
-
-                    // update txn id in reversal entity
-                    $this->repo->saveOrFail($reversal);
-
-                    return $txn;
-                });
 
             $settlementOndemandPayout = (new OndemandPayout\Repository)->findByIdAndMerchantIdWithLock($reversal->getEntityId(), $merchantId);
 
             $settlementOndemand = (new Repository)->findByIdAndMerchantIdWithLock($settlementOndemandPayout->getOndemandId(), $merchantId);
 
             $this->handleReversalTransactionCreated($settlementOndemand, $settlementOndemandPayout, OndemandPayout\Status::REVERSED);
-
-            return $txn;
         });
     }
 
@@ -1088,8 +1045,9 @@ class Core extends Base\Core
             {
                 $bucketCore->publishForSettlement($virtualPaymentTransaction);
             }
-        } else if ($transactorEvent === LedgerConstants::LEDGER_ONDEMAND_SETTLEMENT_REVERSED) {
-
+        }
+        else if ($transactorEvent === LedgerConstants::LEDGER_ONDEMAND_SETTLEMENT_REVERSED)
+        {
             $virtualPaymentTransaction = $this->transformJournalResponseToTransactionEntityForReversal($journal);
 
             $status = $bucketCore->shouldProcessViaNewService($virtualPaymentTransaction->getMerchantId());

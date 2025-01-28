@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Constants\Mode;
+use RZP\Models\Ledger\ReverseShadow\IRCTCPayout\Core as IRCTCPayoutReverseShadowCore;
 use RZP\Models\Workflow;
 use RZP\Models\Contact;
 use RZP\Constants\Timezone;
@@ -90,6 +91,7 @@ use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 use RZP\Models\Payout\BulkIdempotencyKey\Repository as bulkIdempotencyKeyRepository;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 
 
 /**
@@ -453,6 +455,23 @@ class Base extends BaseCore
             }
 
             $this->repo->saveOrFail($payout);
+
+            // Write to outbox for IRCTC MIDs to deduct CLS Merchant Balance
+            // If this fails, enclosing transaction rolls back
+            $irctcPayoutReverseShadowCore = new IRCTCPayoutReverseShadowCore();
+
+            if ($irctcPayoutReverseShadowCore->isIrctcPGLedgerReverseShadowEnabled($payout->merchant)) {
+
+                $ledgerData = [
+                    'merchant_id' => (string)$payout->merchant->getMerchantId(),
+                    'currency' => $payout->merchant->getCurrency(),
+                    'amount' => $payout->getAmount(),
+                    'transactor_id' => LedgerConstants::PAYOUTS_PREFIX . $payout->getId(),
+                    'transactor_date' => $payout->getCreatedAt(),
+                ];
+
+                $irctcPayoutReverseShadowCore->createLedgerJournalAsync($ledgerData, LedgerConstants::IRCTC_PAYOUT_INITIATED);
+            }
 
             $this->trace->info(
                 TraceCode::PAYOUT_CREATED,
@@ -2643,7 +2662,7 @@ class Base extends BaseCore
                         [
                             Payout\Entity::MERCHANT_ID   => $this->merchant->getId(),
                             Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
-                            Payout\Entity::PAYOUT_TYPE   => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+                            Payout\Entity::PAYOUT_TYPE   => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
                         ]);
 
                     $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_NO_CONCRETE_DECISION, [
@@ -2663,7 +2682,7 @@ class Base extends BaseCore
                     [
                         Payout\Entity::MERCHANT_ID   => $this->merchant->getId(),
                         Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
-                        Payout\Entity::PAYOUT_TYPE   => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+                        Payout\Entity::PAYOUT_TYPE   => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
                     ]);
 
                 $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_FOUND_PAYOUT);
@@ -2672,6 +2691,8 @@ class Base extends BaseCore
                 {
                     throw $e;
                 }
+
+                return;
             }
 
             $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_NO_CONCRETE_DECISION, [
@@ -2809,7 +2830,7 @@ class Base extends BaseCore
                     Payout\Entity::PAYOUT_ID     => $payout->getId(),
                     Payout\Entity::MERCHANT_ID   => $this->merchant->getId(),
                     Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
-                    Payout\Entity::PAYOUT_TYPE   => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+                    Payout\Entity::PAYOUT_TYPE   => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
                 ]);
 
             // Get payout id & update in exception description
@@ -2882,7 +2903,7 @@ class Base extends BaseCore
             Payout\Entity::NARRATION       => $input[Payout\Entity::NARRATION] ?? null,
             Payout\Entity::PURPOSE         => $input[Payout\Entity::PURPOSE],
             Payout\Entity::PAYOUT_SOURCE   => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
-            Payout\Entity::PAYOUT_TYPE     => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+            Payout\Entity::PAYOUT_TYPE     => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
         ];
 
         if (empty($input[Payout\Entity::NOTES]) === false)
@@ -2906,7 +2927,7 @@ class Base extends BaseCore
 
     protected function getIKeyForDuplicatePreventionEvaluate(array $input): string
     {
-        if (isset($input[Payout\Entity::BATCH_ID]) === true)
+        if (isset($this->batchId) === true)
         {
             return $input[Payout\Entity::IDEMPOTENCY_KEY];
         }
@@ -3152,7 +3173,7 @@ class Base extends BaseCore
                 self::HASH_KEY               => $hashKey,
                 Payout\Entity::PAYOUT_ID     => $payout->getId(),
                 Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
-                Payout\Entity::PAYOUT_TYPE   => (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk', // Get payout type
+                Payout\Entity::PAYOUT_TYPE   => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
                 Payout\Entity::MERCHANT_ID   => $payout->getMerchantId(),
             ];
 
@@ -5039,7 +5060,7 @@ class Base extends BaseCore
                 $this->fetchVaToVaInfoForPayoutServiceProcessing($input[Payout\Entity::FUND_ACCOUNT_ID],
                     $fundAccount);
 
-            [$FetchPricingInfoSuccess,$pricingRuleId, $fees, $tax] = $this->fetchPricingInfo($input, $fundAccount);
+            [$FetchPricingInfoSuccess,$pricingRuleId, $fees, $tax, $PricingInput] = $this->fetchPricingInfo($input, $fundAccount);
 
             $extraInfo = [
                 Payout\Entity::FUND_ACCOUNT_INFO => [
@@ -5060,7 +5081,8 @@ class Base extends BaseCore
                     Payout\Entity::FETCH_PRICING_INFO_SUCCESS => $FetchPricingInfoSuccess,
                     Entity::PRICING_RULE_ID => $pricingRuleId,
                     Entity::FEES => $fees,
-                    Entity::TAX => $tax
+                    Entity::TAX => $tax,
+                    Entity::PRICING_INPUT => $PricingInput
                 ],
             ];
 
@@ -5445,7 +5467,7 @@ class Base extends BaseCore
 
             if ($variant != 'on')
             {
-                return [false, null, null, null];
+                return [false, null, null, null,null];
             }
 
             $bankingAccount = (new BankingAccount\Service())->fetchBankingAccountForAccountNumber($input[Entity::ACCOUNT_NUMBER],
@@ -5529,10 +5551,14 @@ class Base extends BaseCore
                 Entity::PAYOUT_ID => '',
                 Entity::USER_ID => $userId?? null,
             ];
+
+            $xRequestId = $app['request']->getTaskId();
+
             $this->trace->info(
                 TraceCode::PAYOUT_SERVICE_FETCH_PRICING_REQUEST,
                 [
-                    'params' => $params
+                    'params' => $params,
+                    'x_request_id' => $xRequestId
                 ]);
 
             $pricingInfo = $this->fetchPricingInfoForPayoutService($params);
@@ -5546,10 +5572,10 @@ class Base extends BaseCore
 
             if (isset($pricingInfo[Entity::ERROR]) === true)
             {
-                return [false, null, null, null];
+                return [false, null, null, null,null];
             }
 
-            return [true, $pricingInfo[Entity::PRICING_RULE_ID], $pricingInfo[Entity::FEES], $pricingInfo[Entity::TAX]];
+            return [true, $pricingInfo[Entity::PRICING_RULE_ID], $pricingInfo[Entity::FEES], $pricingInfo[Entity::TAX], $params];
 
         }
         catch (\Throwable $throwable)
@@ -5564,7 +5590,7 @@ class Base extends BaseCore
                     'error' => $throwable
                 ]);
 
-            return [false, null, null, null];
+            return [false, null, null, null,null];
         }
     }
 
@@ -5573,7 +5599,7 @@ class Base extends BaseCore
         try {
             $source = $this->getPayoutSourceForDuplicatePreventionEvaluate($input);
 
-            $type = (isset($input[Payout\Entity::BATCH_ID]) === false) ? 'single' : 'bulk';
+            $type = (isset($this->batchId) === false) ? 'single' : 'bulk';
 
             $experimentID =$this->app['config']->get('app.duplicate_payout_evaluate_splitz_experiment_id');
 

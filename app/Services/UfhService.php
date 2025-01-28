@@ -163,22 +163,10 @@ class UfhService
 
     protected function isCloudfrontExperimentEnabled()
     {
-        $isExperimentEnabled = false;
-
-        foreach($this->cloudfrontExperiments as $experiment)
-        {
-            $isExperimentEnabled |= (new MerchantCore())->isRazorxExperimentEnable(
-                $this->merchantId, $experiment);
-        }
-
-        if($isExperimentEnabled === true)
-        {
-            $this->trace->info(
-                TraceCode::CLOUDFRONT_EXPERIMENT_ENABLED
-            );
-        }
-
-        return $isExperimentEnabled;
+        // There are 2 Razorx experiments which have been at 0% ramp
+        // Experiment 1 : https://admin-dashboard.razorpay.com/razorx/experiments/5913
+        // Experiment 2: https://admin-dashboard.razorpay.com/razorx/features_flags/1137
+        return false;
     }
 
     protected function createUfhClient()

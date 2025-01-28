@@ -14,6 +14,16 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
+/**
+ * This is applied to a new Repository created in Payment/Transfer/Repository.php
+ * This trait fetches payment by directly calling the Payment/Repository.php bypassing the ExternalRepo.php
+ * If payment is not found via Payment/Repository.php, then the payment is fetched via Route microservice.
+ * This is to be used specifically in the flows where a linked account payment is fetched.
+ *
+ * Example usage:
+ *  $this->repo->payment_method_transfer->findXXX();
+ *
+ */
 trait ExternalLinkedAccountPaymentRepo
 {
     use ArchivedCore;

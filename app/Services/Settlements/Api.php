@@ -3,6 +3,7 @@
 namespace RZP\Services\Settlements;
 
 use RZP\Exception;
+use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount\Type;
 use RZP\Exception\RuntimeException;
@@ -369,5 +370,15 @@ class Api extends Base
     public function updateSchedule(array $input) : array
     {
         return $this->makeRequest(self::UPDATE_SCHDEULE, $input, self::SERVICE_API);
+    }
+
+    public function getHoldReasonCodeMappingsInternal(array $input) : array
+    {
+        return $this->makeRequest(self::HOLD_REASON_CODE_MAPPING_INTERNAL, $input, self::SERVICE_API, null, Requests::GET);
+    }
+
+    public function updateFOH(array $input) : array
+    {
+        return $this->makeRequest(self::UPDATE_FOH, $input, self::SERVICE_API,null, Requests::POST);
     }
 }

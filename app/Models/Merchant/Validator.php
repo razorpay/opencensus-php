@@ -118,6 +118,8 @@ class Validator extends Base\Validator
 
     const SEARCH_MERCHANT_USERS_INTERNAL = 'search_merchant_users_internal';
 
+    const FETCH_ACCOUNT_BALANCES_V2 = 'fetch_account_balances_v2';
+
     const EXTENSIONMIMEMAP = [
         'jpeg'  => 'image/jpeg',
         'jpg'   => 'image/jpeg',
@@ -777,6 +779,13 @@ class Validator extends Base\Validator
         'batch_size'       => 'required|int|min:1',
     ];
 
+    protected static $fetchAccountBalancesV2Rules = [
+        'account_type' => 'sometimes|string|in:direct,shared',
+        'bank'         => 'sometimes|string|max:32|custom',
+        'count'        => 'sometimes|int',
+        'skip'         => 'sometimes|int'
+    ];
+
     /**
      * @var array|string[]
      *
@@ -1099,6 +1108,11 @@ class Validator extends Base\Validator
     }
 
     protected function validateChannel($attribute, $channel)
+    {
+        Settlement\Channel::validate($channel);
+    }
+
+    protected function validateBank($attribute, $channel)
     {
         Settlement\Channel::validate($channel);
     }

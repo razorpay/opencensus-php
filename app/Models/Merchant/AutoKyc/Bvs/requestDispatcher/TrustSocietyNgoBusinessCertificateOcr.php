@@ -33,17 +33,8 @@ class TrustSocietyNgoBusinessCertificateOcr extends Base
      */
     public function canTriggerValidation(): bool
     {
-        $isExperimentEnabledForTrustSocietyNgo = (new Merchant\Core)->isRazorxExperimentEnable($this->merchantDetails->getMerchantId(),
-            RazorxTreatment::TRUST_SOCIETY_NGO_BVS_VALIDATION);
-
-        $this->app['trace']->info(TraceCode::TRUST_SOCIETY_NGO_EXPERIMENT,[
-            "merchantIds"                 => $this->merchantDetails->getMerchantId(),
-            "isExpEnable"                 => $isExperimentEnabledForTrustSocietyNgo,
-            "businessType"                => $this->merchantDetails->getBusinessType()
-        ]);
-
         return (($this->document->getPublicFileStoreId() !== null) and
-            (in_array($this->merchantDetails->getBusinessType(), BusinessType::getTrustSocietyNgoBusinessCertificateApplicableBusinessTypes(), true) === true) and $isExperimentEnabledForTrustSocietyNgo === true);
+            (in_array($this->merchantDetails->getBusinessType(), BusinessType::getTrustSocietyNgoBusinessCertificateApplicableBusinessTypes(), true) === true));
     }
 
     /**

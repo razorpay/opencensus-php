@@ -37,14 +37,7 @@ class Repository extends Base\Repository
         // slack thread: https://razorpay.slack.com/archives/CQ932EVNH/p1653578986629329?thread_ts=1652778693.188489&cid=CQ932EVNH
         if ($merchant->isFeatureEnabled(Feature\Constants::DEDUPE_CONTACT_ON_REPLICA) === true)
         {
-            $properties = [
-                "id" => UniqueIdEntity::generateUniqueId(),
-                "experiment_id" => $this->app['config']->get('app.splitz_payout_harvester_query_experiment_id'),
-            ];
-
-            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-            $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getReportingReplicaConnection();
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
             $query = $this->newQueryWithConnection($connectionType);
         }
@@ -254,14 +247,7 @@ class Repository extends Base\Repository
 
     public function fetchContactsFromReplica(string $merchantId, string $type, int $limit = 1000)
     {
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_payout_harvester_query_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $this->newQueryWithConnection($connectionType)
             ->merchantId($merchantId)

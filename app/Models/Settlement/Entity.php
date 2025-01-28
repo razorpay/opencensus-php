@@ -451,6 +451,16 @@ class Entity extends Base\PublicEntity
             $this->setCreatedAt($settlement['created_at']);
         }
 
+        if (isset($settlement['amount']))
+        {
+            $this->setAmount($settlement['amount']);
+        }
+
+        if (isset($settlement['status']))
+        {
+            $this->setStatus($settlement['status']);
+        }
+
         if (isset($settlement['settled_by'])) {
             $this->setSettledBy($settlement['settled_by']);
 

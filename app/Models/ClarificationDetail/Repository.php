@@ -18,14 +18,7 @@ class Repository extends Base\Repository
 
     public function hasClarificationDetailsForMerchantId($merchantId): bool
     {
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
-        ];
-
-        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getSlaveConnection(): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getSlaveConnection();
 
         $result = $this->newQueryWithConnection($connectionType)
                        ->where(Entity::MERCHANT_ID, $merchantId)
@@ -36,14 +29,7 @@ class Repository extends Base\Repository
 
     public function getByMerchantId($merchantId)
     {
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_merchant_acq_harvester_query_experiment_id'),
-        ];
-
-        $variant =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getSlaveConnection(): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getSlaveConnection();
 
         return $this->newQueryWithConnection($connectionType)
                     ->where(Entity::MERCHANT_ID, $merchantId)

@@ -7,6 +7,7 @@ use Razorpay\Asv\RequestMetadata;
 use Accounts\Account\V1\GetByIdRequest;
 use Accounts\Account\V1\SaveRequest;
 use Accounts\Account\V1\Account as AsvSDKAccount;
+use Accounts\Account\V1\AccountAdditionalDetail;
 
 
 class Account extends Base
@@ -70,5 +71,42 @@ class Account extends Base
         $account->setAccountDetail($accountDetail);
 
         return $account;
+    }
+
+    public function setAccountAdditionalDetailWithDetails($accountId,$details)
+    {
+        $account = new AsvSDKAccount();
+        $account->setId($accountId);
+
+        $additionalDetail = new AccountAdditionalDetail();
+        $additionalDetail->setDetails($details);
+        $account->setAdditionalDetail($additionalDetail);
+        return $account;
+    }
+
+    public function saveAccountAdditionalDetailWithDetails($accountId, $details, $fieldList) : string
+    {
+        $saveAccountRequest = new SaveRequest();
+
+        $fieldMask = new \Google\Protobuf\FieldMask([ 'paths' => $fieldList
+            ]
+        );
+
+        $account = $this->setAccountAdditionalDetailWithDetails($accountId, $details);
+
+        $saveAccountRequest->setFieldMask($fieldMask);
+        $saveAccountRequest->setAccount($account);
+
+        $requestMetadata = new RequestMetadata();
+        $requestMetadata->setSourceDatabase(DbSource::AsvWriter);
+
+        list($response, $err) = $this->asvSdkClient->getAccount()->Save($saveAccountRequest,
+            $this->getRequestMetaData($requestMetadata));
+
+        if ($err !== null){
+            $this->handleError($err);
+        }
+
+        return $response->getAccountId();
     }
 }

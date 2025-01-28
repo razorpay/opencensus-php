@@ -213,7 +213,6 @@ Razorpay';
     const UPDATE_RULE_URL = '/twirp/rzp.merchant_risk_alerts.rule.v1.RuleService/Update';
     const DELETE_RULE_URL = '/twirp/rzp.merchant_risk_alerts.rule.v1.RuleService/Delete';
 
-    const RAS_SIGN_UP_CHECKER_POST_ACTION_FEATURE_FLAG = 'merchants_risk_trigger_sign_up_checker_post_actions';
 
     const QUERY_EXECUTION_TIME                         = 'query_execution_time';
 

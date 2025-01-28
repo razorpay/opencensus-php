@@ -189,6 +189,11 @@ class Core extends Base\Core
             $currentDay = Carbon::now(Timezone::IST)->dayOfWeek;
         }
 
+        if($frequency === Frequency::FORTNIGHTLY and $currentDay > 15)
+        {
+            $currentDay = $currentDay - 15;
+        }
+
         $isValid = true;
         switch ($recurType)
         {

@@ -64,4 +64,13 @@ class MerchantInternationalEnablementController extends Controller
 
         return ApiResponse::json($data['response_body'], $data['status_code']);
     }
+
+    public function draftInternal()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->draftInternal($input);
+
+        return ApiResponse::json($data);
+    }
 }

@@ -403,28 +403,13 @@ class RepositoryManager extends Illuminate\Support\Manager
 
         if ($entity === Entity::PAYMENT)
         {
-            if ($this->checkHarvsterQuerySplitzStatus() === true)
-            {
-                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)->findNonRearchPaymentsFromDataWarehouseLive($id);
-            }
-            else
-            {
-                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_LIVE)->findNonRearchPaymentsFromPaymentFetchReplica($id);
-            }
-
+            $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)->findNonRearchPaymentsFromDataWarehouseLive($id);
         }
         else
         {
-            if ($this->checkHarvsterQuerySplitzStatus() === true)
-            {
-                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)
+            $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)
                     ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"))
                     ->find($id);
-            }
-            else
-            {
-                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_LIVE)->find($id);
-            }
         }
 
         if ($obj !== null)
@@ -434,25 +419,11 @@ class RepositoryManager extends Illuminate\Support\Manager
 
         if ($entity === Entity::PAYMENT)
         {
-            if ($this->checkHarvsterQuerySplitzStatus() === true)
-            {
-                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_TEST)->findNonRearchPaymentsFromDataWarehouseTest($id);
-            }
-            else
-            {
-                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_TEST)->findNonRearchPaymentsFromPaymentFetchReplica($id);
-            }
+            $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_TEST)->findNonRearchPaymentsFromDataWarehouseTest($id);
         }
         else
         {
-            if ($this->checkHarvsterQuerySplitzStatus() === true)
-            {
-                $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_TEST)->find($id);
-            }
-            else
-            {
-                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_TEST)->find($id);
-            }
+            $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_TEST)->find($id);
         }
 
         if ($obj !== null)
@@ -471,16 +442,6 @@ class RepositoryManager extends Illuminate\Support\Manager
         $repo->connection(null);
 
         return null;
-    }
-
-    protected function checkHarvsterQuerySplitzStatus()
-    {
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_upi_experiment_id'),
-        ];
-
-        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
     }
 
     protected function getRepositoryClassFromObject($entityObject)

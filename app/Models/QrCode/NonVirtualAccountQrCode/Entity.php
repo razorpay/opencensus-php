@@ -88,6 +88,7 @@ class Entity extends QrCode\Entity
         self::CLOSE_REASON,
         self::TAX_INVOICE,
         self::DEVICE_ID,
+        self::MERCHANT_ID,
     ];
 
     protected $public = [

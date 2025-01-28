@@ -6,6 +6,7 @@ use App;
 use Config;
 use Carbon\Carbon;
 use Conner\Tagging\Taggable;
+use DateTimeZone;
 use Illuminate\Support\Str;
 use Razorpay\Trace\Logger;
 use RZP\Models\Payment\Method;
@@ -740,7 +741,7 @@ class Entity extends Base\PublicEntity
     // Increase txn limit for B2B intl_bank_transfer payments
     // Higher limit is now Rs 8.2L base amount
     // https://razorpay.slack.com/archives/C01LK94TC69/p1708595682462969?thread_ts=1708496760.889379&cid=C01LK94TC69
-    const MAX_PAYMENT_AMOUNT_DEFAULT_INTL_BANK_TRANSFER = 247500000;
+    const MAX_PAYMENT_AMOUNT_DEFAULT_INTL_BANK_TRANSFER = 300000000;
 
     public function isCustomOrgUpiQrEnabled(): bool
     {
@@ -1279,6 +1280,11 @@ class Entity extends Base\PublicEntity
         return $this->isLRSEducationFlowEnabled() || $this->isLRSTravelFlowEnabled();
     }
 
+    public function isImportFlowEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::ENABLE_IMPORT_FLOW) === true);
+    }
+
     public function isNoCodeAppFeeFeatureFlagEnabled(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::NOCODEAPP_FEE_APPLICABLE) === true);
@@ -1287,6 +1293,11 @@ class Entity extends Base\PublicEntity
     public function isLRSImportFeeBreakupEnabled(): bool
     {
         return ($this->isFeatureEnabled(Dcs\Features\Constants::LRSImportFeeBreakup) === true);
+    }
+
+    public function isPACBImport() : bool
+    {
+        return ($this->isLRSFlowEnabled() || $this->isLRSTravelCitiFlowEnabled() || $this->isJpmcImportFlowEnabled() || $this->isOpgspImportSettlementEnabled());
     }
 
     public function isAVSEnabled(): bool
@@ -4312,12 +4323,20 @@ class Entity extends Base\PublicEntity
         return Currency::getCurrencyForCountry($this->getCountry()) ?? "INR";
     }
 
+    Public function getTimezonesByCountryCode($countryCode) {
+        $timezones = DateTimeZone::listIdentifiers(DateTimeZone::PER_COUNTRY, strtoupper($countryCode));
+        return $timezones;
+    }
     public function getTimeZone(){
 
         $country = $this->getCountry();
-        if ($country == 'MY'){
-            return Timezone::MYT;
+
+        $timezones = $this->getTimezonesByCountryCode($country);
+        // currently we are picking only the first timezone from the list, for countries with multiple timezone it needs to be
+        if (!empty($timezones)) {
+            return $timezones[0];
         }
+
         return Timezone::IST;
     }
 
@@ -4418,7 +4437,7 @@ class Entity extends Base\PublicEntity
     }
 
     public function getOrgAttribute() {
-        return parent::getRelationValue('org');
+        return $this->getRelationValue('org');
     }
 
     public function getFeaturesAttribute() {

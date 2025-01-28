@@ -28,11 +28,15 @@ class Repository extends Base\Repository
     }
 
     // we are renaming this entity to Token.registration soon. Named the method with that in mind.
-    public function getTokenRegistrationsForFirstCharge(array $merchantIds, int $count =100 )
+    public function getTokenRegistrationsForFirstCharge(array $merchantIds, int $count =100, int $prevDays = 2)
     {
+        // by default we are picking mandate of past 2 days only
+        $prevDaysTimestamp = Carbon::now()->subDays($prevDays)->getTimestamp();
         $query = $this->newQueryWithoutTimestamps()
             ->where(Entity::STATUS, '=', Status::AUTHENTICATED)
-            ->where(Entity::ATTEMPTS, '=', 0);
+            ->where(Entity::ATTEMPTS, '=', 0)
+            ->where(Entity::CREATED_AT, '>', $prevDaysTimestamp)
+            ->orderBy(Entity::CREATED_AT, 'desc');
 
         $midDay = Carbon::now(Timezone::IST)->midDay()->getTimestamp();
 
@@ -50,6 +54,11 @@ class Repository extends Base\Repository
 
             $query->whereIn($merchantIdCol, $merchantIds);
         }
+
+        $this->trace->info("MISC_TRACE_CODE", [
+            'function' => "getTokenRegistrationsForFirstCharge",
+            "Sql query" => $query->toSql(),
+        ]);
 
         return $query->limit($count)->get();
     }
