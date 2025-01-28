@@ -13250,9 +13250,7 @@ class Core extends Base\Core
 
         $isPosMerchant = $this->fetchPosActivationFlow($merchant) !== ActivationFlow::BLACKLIST;
 
-        $isPGOSMerchant = $this->isPGOSMerchant($merchant);
-        if ($isPGOSMerchant === true and
-            $isPosMerchant===true and
+        if ($isPosMerchant===true and
             $merchantPosActivationStatus != Detail\Status::ACTIVATED)
         {
             return true;

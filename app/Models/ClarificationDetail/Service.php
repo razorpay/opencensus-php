@@ -73,7 +73,7 @@ class Service extends Base\Service
 
             $isEligibleForRekycExperiment = $service->isEligibleForRekycExperiment($merchantId);
 
-            if ($shouldMerchantOnboardViaPGOS === true || $isEligibleForRekycExperiment === true) {
+            if ($shouldMerchantOnboardViaPGOS === true || $isEligibleForRekycExperiment === true || $onboardingType === Constants::POS_ONBOARDING_TYPE) {
 
                 if ($onboardingType === Constants::POS_ONBOARDING_TYPE) {
                     $pgosInput[DEConstants::ONBOARDING_TYPE] = $onboardingType;
@@ -287,9 +287,11 @@ class Service extends Base\Service
 
             $isEligibleForRekycExperiment = $service->isEligibleForRekycExperiment($merchantId);
 
-            if ($shouldMerchantOnboardViaPGOS === true || $isEligibleForRekycExperiment === true) {
+            $onboardingType = $input[DEConstants::ONBOARDING_TYPE];
 
-                $onboardingType = $input[DEConstants::ONBOARDING_TYPE];
+            if ($shouldMerchantOnboardViaPGOS === true || $isEligibleForRekycExperiment === true || $onboardingType === Constants::POS_ONBOARDING_TYPE) {
+
+
                 unset($input[DEConstants::ONBOARDING_TYPE]);
 
                 $pgosInput['data'] = $input;
