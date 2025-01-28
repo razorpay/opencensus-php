@@ -34,6 +34,7 @@ use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\WalletAccount\Entity as WalletAccountEntity;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
+use RZP\Models\Ledger\ReverseShadow\IRCTCPayout\Core as IRCTCPayoutReverseShadowCore;
 
 class Core extends Base\Core
 {
@@ -634,7 +635,12 @@ class Core extends Base\Core
             return;
         }
 
-        $this->updateTransactionEntity($fta->source);
+        $irctcPayoutReverseShadowCore = new IRCTCPayoutReverseShadowCore();
+
+        if(!$irctcPayoutReverseShadowCore->isIrctcPGLedgerReverseShadowEnabled($fta->merchant)) {
+            $this->updateTransactionEntity($fta->source);
+        }
+
     }
 
     /**
