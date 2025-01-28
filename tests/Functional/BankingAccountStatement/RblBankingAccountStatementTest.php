@@ -5300,6 +5300,7 @@ class RblBankingAccountStatementTest extends TestCase
     // of queued payout
     public function testProcessingRblQueuedPayoutWhenBalanceFetchCronRunsAfterBankingAccountStatementCron()
     {
+
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(50);
 
         $queuedPayoutAttributes = [
@@ -5391,6 +5392,7 @@ class RblBankingAccountStatementTest extends TestCase
             'amount'                =>  100,
             'queue_if_low_balance'  =>  1,
         ];
+
 
         $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
 
@@ -5750,6 +5752,168 @@ class RblBankingAccountStatementTest extends TestCase
         $this->ba->cronAuth();
 
         $this->startTest();
+    }
+
+    public function testQueuedFeeRecoveryPayoutQueuedFlagDoesNotUnsetAndOnlyFeeRecoveryPayoutPickedByCron()
+    {
+
+        $splitzResp = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fee_recovery_queued_payout_flag_unset_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(50);
+
+        $queuedPayoutAttributes = [
+            'account_number' => '2224440041626905',
+            'amount' => 6000,
+            'queue_if_low_balance' => 1,
+        ];
+
+        sleep(1);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            Payout\Entity::PURPOSE => Payout\Purpose::RZP_FEES,
+        ]);
+
+        $redis = $this->app['redis']->connection();
+        $redisKey = 'queued_fee_recovery_payout_' . $balance->getId();
+        $redis->set($redisKey, 1);
+
+        $this->testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron(70);
+
+        $response = $this->dispatchQueuedPayouts();
+
+        $this->assertEquals($balance['id'], $response['balance_id_list'][0]);
+
+        $payouts = $this->getDbEntities('payout');
+
+        $this->assertNotEquals('queued', $payouts[1]['status']);
+        $this->assertEquals('queued', $payouts[0]['status']);
+        $this->assertNotEquals("", $this->app['redis']->get($redisKey));
+
+        $this->app['redis']->del($redisKey);
+    }
+
+    public function testQueuedFeeRecoveryPayoutNoQueuedFeeRecoveryPayoutAndQueuedFeeRecoveryFlagNotSet()
+    {
+
+        $splitzResp = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fee_recovery_queued_payout_flag_unset_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(50);
+
+        $queuedPayoutAttributes = [
+            'account_number' => '2224440041626905',
+            'amount' => 6000,
+            'queue_if_low_balance' => 1,
+        ];
+
+        sleep(1);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+
+
+        $this->testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron(150);
+
+        $response = $this->dispatchQueuedPayouts();
+
+        $this->assertEquals($balance['id'], $response['balance_id_list'][0]);
+
+        $payouts = $this->getDbEntities('payout');
+
+        $this->assertNotEquals('queued', $payouts[1]['status']);
+        $this->assertNotEquals('queued', $payouts[0]['status']);
+    }
+
+    public function testQueuedFeeRecoveryPayoutFlagDoesNotUnsetForQueuedFeeRecoveryPayoutAndOtherPayoutsGetsQueued()
+    {
+        $splitzResp = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fee_recovery_queued_payout_flag_unset_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(50);
+
+        $queuedPayoutAttributes = [
+            'account_number' => '2224440041626905',
+            'amount' => 6000,
+            'queue_if_low_balance' => 1,
+        ];
+
+        sleep(1);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+
+        $feeRecoveryPayout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $feeRecoveryPayout['id'], [
+            Payout\Entity::PURPOSE => Payout\Purpose::RZP_FEES,
+        ]);
+
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+
+
+        $this->testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron(150);
+
+        $response = $this->dispatchQueuedPayouts();
+
+        $this->assertEquals($balance['id'], $response['balance_id_list'][0]);
+
+        $payouts = $this->getDbEntities('payout');
+
+        $this->assertNotEquals('queued', $payouts[0]['status']);
+        $this->assertEquals('queued', $payouts[1]['status']);
+
+        // Moving this Fee Recovery payout to processed and then check if Other Payout is getting created or not
+        $feeRecoveryPayout->reload();
+        $feeRecoveryPayout->setStatus(Payout\Status::PROCESSED);
+
+        $response = $this->dispatchQueuedPayouts();
+
+        $payouts = $this->getDbEntities('payout');
+
+        $this->assertNotEquals('queued', $payouts[0]['status']);
+        $this->assertNotEquals('queued', $payouts[1]['status']);
+
     }
 
     // in this first balance fetch cron is run after banking Account statement fetch Cron.

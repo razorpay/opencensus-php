@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants;
 use RZP\Http\Route;
 use RZP\Error\Error;
@@ -37,7 +38,6 @@ use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Settlement\Channel;
 use Razorpay\IFSC\IFSC as BaseIFSC;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -1846,6 +1846,10 @@ class Entity extends Base\PublicEntity
             return;
         }
 
+        // If for a balance id any of the Fee Recovery Payouts gets processed we unset the queued Fee Recovery Redis flag
+        $this->unsetQueuedFeeRecoveryPayoutFlagIfProcessed($status, $this->balance->getId());
+
+
         // We need to create a fee_recovery entity for every payout when it goes from created to initiated state.
         // Keeping this code here because this status change is allowed only once and there is no chance of this
         // getting triggered twice
@@ -1908,6 +1912,31 @@ class Entity extends Base\PublicEntity
         $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
 
         SourceUpdater::dispatchToQueue($mode, $this, $currentStatus, $status);
+    }
+
+    public function unsetQueuedFeeRecoveryPayoutFlagIfProcessed($status)
+    {
+        try {
+            $balanceId = $this->balance->getId();
+            if (((new Core())->isFeeRecoveryQueuedPayoutNewFlowSplitzExperimentEnable($balanceId) === true) and
+                ($status === Status::PROCESSED) and
+                ($this->getPurpose() === Purpose::RZP_FEES)) {
+
+                (new Processor\Base)->unsetQueuedFeeRecoveryPayoutsFlag($balanceId, $this->balance->getMerchantId());
+
+            }
+        } catch (\Throwable $e) {
+
+            $app = App::getFacadeRoot();
+            $app['trace']->traceException($e,
+                Trace::ERROR,
+                TraceCode::FEE_RECOVERY_QUEUED_PAYOUT_FLAG_UNSET_ERROR,
+                [
+                    'error' => 'Error in fee recovery queued payout flag unset after Payout Processed',
+                ]
+            );
+
+        }
     }
 
     public function setInitiatedAt()

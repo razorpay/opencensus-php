@@ -22,6 +22,7 @@ use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\ServerErrorException;
 use RZP\Mail\Payout\AutoRejectedPayout;
 use RZP\Exception\GatewayErrorException;

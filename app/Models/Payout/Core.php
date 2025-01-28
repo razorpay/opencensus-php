@@ -331,6 +331,8 @@ class Core extends Base\Core
     /** @var TdsProcessor\Processor*/
     protected $tdsProcessor;
 
+    protected $isQueuedFeeRecoveryNewFlowSplitzEnabled = false;
+
     public function __construct()
     {
         parent::__construct();
@@ -1768,19 +1770,32 @@ class Core extends Base\Core
                     $feeRecoveryQueuedPayoutIds[] = $feeRecoveryQueuedPayout->getId();
                 }
 
-                $queuedPayouts = $this->repo->payout->fetchQueuedPayoutsForBalanceId($balanceId, $offset);
 
-                foreach ($queuedPayouts as $queuedPayout)
-                {
+                // Check is Fee Recovery Queued Payout Flag is Unset Splitz Experiment is enabled
+                $this->isQueuedFeeRecoveryNewFlowSplitzEnabled = false;
+                if ((new Core())->isFeeRecoveryQueuedPayoutNewFlowSplitzExperimentEnable($balanceId)) {
+                    $this->isQueuedFeeRecoveryNewFlowSplitzEnabled = true;
+                }
 
-                    if (count($queuedPayoutsToProcess) === Repository::QUEUED_PAYOUTS_FETCH_LIMIT)
-                    {
-                        break;
-                    }
+                //
+                // If there are any Queued Fee Recovery Payout for the Balance Id we skip picking the other payouts of that balance id in the
+                // current cron execution, In the next cron execution these skipped payouts will be picked and dispatched for processing.
+                // These Payouts once dispatched will processed if the previous Fee Recovery Payout was Successful, or else will get queued again.
+                //
+                if (sizeof($feeRecoveryQueuedPayoutIds) === 0 or
+                    $this->isQueuedFeeRecoveryNewFlowSplitzEnabled === false) {
 
-                    if (in_array($queuedPayout->getID(), $feeRecoveryQueuedPayoutIds) === false)
-                    {
-                        $queuedPayoutsToProcess->add($queuedPayout);
+                    $queuedPayouts = $this->repo->payout->fetchQueuedPayoutsForBalanceId($balanceId, $offset);
+
+                    foreach ($queuedPayouts as $queuedPayout) {
+
+                        if (count($queuedPayoutsToProcess) === Repository::QUEUED_PAYOUTS_FETCH_LIMIT) {
+                            break;
+                        }
+
+                        if (in_array($queuedPayout->getID(), $feeRecoveryQueuedPayoutIds) === false) {
+                            $queuedPayoutsToProcess->add($queuedPayout);
+                        }
                     }
                 }
 
@@ -1808,7 +1823,7 @@ class Core extends Base\Core
 
                 $totalQueuedPayouts = $this->repo->payout->fetchCountOfQueuedPayoutsForBalance($balanceId);
 
-                $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $queuedPayoutsToProcess , $balanceEntity);
+                $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $queuedPayoutsToProcess, $balanceEntity);
 
                 $dispatchedPayoutCount = $dispatchedData['dispatched_payout_count'];
 
@@ -3175,6 +3190,14 @@ class Core extends Base\Core
             }
         }
 
+        if ((new Processor\Base)->getQueuedFeeRecoveryPayoutsFlag($payout)) {
+            // Metrics for Non Fee Recovery Payouts getting Dispatched repeatedly while Queue Fee Recovery Flag is set.
+            $dimenstions = [
+                'balance_id' => $balance->getId(),
+            ];
+            $this->trace->count(Metric::PAYOUTS_DISPATCHED_WHILE_FEE_RECOVERY_QUEUED_FLAG_SET, $dimenstions);
+        }
+
         // If fee_recovery payout does not get processed, we will not process any other queued payout either
         if ($rzpFeesRecoverySucceeded === false)
         {
@@ -3184,7 +3207,14 @@ class Core extends Base\Core
             ];
         }
 
-        (new Processor\Base)->unsetQueuedFeeRecoveryPayoutsFlag($balance->getId(), $balance->getMerchantId());
+        // If fee_recovery_queued_payout_flag_unset is enable, we dont unset the Queued Fee Recovery Flag here,
+        // Instead we unset it after Fee Recovery Payout is processed.
+
+        if ($this->isQueuedFeeRecoveryNewFlowSplitzEnabled === false) {
+
+            (new Processor\Base)->unsetQueuedFeeRecoveryPayoutsFlag($balance->getId(), $balance->getMerchantId());
+
+        }
 
         // We are going to get the count of Free Payouts here but we shall not be incrementing or decrementing the
         // count at this point. Increments/Decrements should ideally reside in the same flow.
@@ -12427,4 +12457,22 @@ class Core extends Base\Core
         return $eventPayload;
 
     }
+
+    public function isFeeRecoveryQueuedPayoutNewFlowSplitzExperimentEnable($balanceId)
+    {
+        $app = App::getFacadeRoot();
+
+        $eventExperimentName = 'fee_recovery_queued_payout_flag_unset';
+        $eventExperimentIdConfigKey = 'app.' . $eventExperimentName . '_id';
+
+        $properties = [
+            'id' => $balanceId,
+            'experiment_id' => $app['config']->get($eventExperimentIdConfigKey),
+            'request_data' => json_encode(['balance_id' => $balanceId])
+        ];
+
+        return $this->isSplitzExperimentEnable($properties, 'enable', TraceCode::FEE_RECOVERY_QUEUED_PAYOUT_FLAG_UNSET_ERROR);
+    }
+
+
 }

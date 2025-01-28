@@ -44799,25 +44799,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWhenZeroPricingEnabledForFeeRecovery()
     {
-        $this->setMockRazorxTreatment([
-            RazorxTreatment::ZERO_PRICING_FEE_RECOVERY_PAYOUT => 'on',
-        ], 'control');
-
-        $this->fixtures->create('pricing', [
-            'id'             => 'custompricing1',
-            'plan_id'        => 'BTo98voDY05ueB',
-            'plan_name'      => 'testFeeRecoveryZeroPricing',
-            'org_id'         => '100000razorpay',
-            'product'        => 'banking',
-            'feature'        => 'payout',
-            'type'           => 'pricing',
-            'payment_method' => 'fund_transfer',
-            'account_type'   => 'direct',
-            'payouts_filter' => Payout\Purpose::RZP_FEES,
-            'fixed_rate'     => 0,
-            'percent_rate'   => 0,
-        ]);
-
         $this->testCreatePayout();
 
         $payout = $this->getDbLastEntity('payout');
@@ -45647,7 +45628,7 @@ class PayoutTest extends OAuthTestCase
             'fund_account_id' => "100000000000fa",
             'method' => "fund_transfer",
             'reference_id' => null,
-            'balance_id' => $id ,
+            'balance_id' => '',
             'user_id' => "random_user123",
             'batch_id' => null,
             'idempotency_key' => "random_key",

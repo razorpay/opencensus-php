@@ -226,6 +226,15 @@ class Base extends FundAccountPayout\Base
         if (($payout->getPurpose() === Purpose::RZP_FEES) and
             (($fees != 0) or ($tax != 0)))
         {
+            $this->trace->count(
+                Payout\Metric::FEES_NON_ZERO_FOR_RZP_FEES_PAYOUT,
+                [
+                    'payout_id' => $payout->getId(),
+                    'fees' => $fees,
+                    'tax' => $tax,
+                    'pricing_rule' => $pricingRuleId,
+                ]);
+
             $this->trace->info(
                 TraceCode::FEES_NON_ZERO_FOR_RZP_FEES_PAYOUT,
                 [

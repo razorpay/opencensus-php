@@ -27,6 +27,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Models\Settlement\Channel;
 Use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Mail\Payout\AutoRejectedPayout;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Exception\GatewayErrorException;

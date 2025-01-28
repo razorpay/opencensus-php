@@ -82,6 +82,9 @@ final class Metric
 
     const PAYOUT_SERVICE_WORKFLOW_ACTION_FAILED           = "PAYOUT_SERVICE_WORKFLOW_ACTION_FAILED";
 
+    const PAYOUTS_DISPATCHED_WHILE_FEE_RECOVERY_QUEUED_FLAG_SET = 'payouts_dispatched_while_fee_recovery_queued_flag_set';
+    const FEES_NON_ZERO_FOR_RZP_FEES_PAYOUT = 'fees_non_zero_for_rzp_fees_payouts';
+
     // Histograms
     const PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS                      = 'payout_queued_to_created_duration_seconds.histogram';
     const PAYOUT_QUEUED_TO_CANCELLED_DURATION_SECONDS                    = 'payout_queued_to_cancelled_duration_seconds.histogram';

@@ -1215,6 +1215,7 @@ class AxisCaPayoutTest extends TestCase
 
     public function testCreateFeeRecoveryAtPayoutCreationForAxisPayouts()
     {
+
         $this->mockMozartResponseForFetchingBalanceFromAxisGateway(500);
 
         $this->ba->privateAuth();

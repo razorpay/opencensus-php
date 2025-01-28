@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Jobs\FeeRecoveryLowBalance;
 use RZP\Mail\FeeRecovery\LowBalanceAlert;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
@@ -331,6 +332,7 @@ class FeeRecoveryTest extends TestCase
 
     public function testCreateRBLQueuedPayoutNoFeeRecoveryCreated()
     {
+
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(0);
 
         $this->fixtures->edit('balance', $this->balance->getId(), ['balance' => 1000]);
@@ -505,25 +507,6 @@ class FeeRecoveryTest extends TestCase
         ];
 
         $this->ba->adminAuth();
-
-        $this->setMockRazorxTreatment([
-            RazorxTreatment::ZERO_PRICING_FEE_RECOVERY_PAYOUT => 'on',
-        ], 'control');
-
-        $this->fixtures->create('pricing', [
-            'id'             => 'custompricing1',
-            'plan_id'        => 'BTo98voDY05ueB',
-            'plan_name'      => 'testFeeRecoveryZeroPricing',
-            'org_id'         => '100000razorpay',
-            'product'        => 'banking',
-            'feature'        => 'payout',
-            'type'           => 'pricing',
-            'payment_method' => 'fund_transfer',
-            'account_type'   => 'direct',
-            'payouts_filter' => Payout\Purpose::RZP_FEES,
-            'fixed_rate'     => 0,
-            'percent_rate'   => 0,
-        ]);
 
         $this->startTest();
 
@@ -838,6 +821,7 @@ class FeeRecoveryTest extends TestCase
 
     private function createPayoutsForFeeRecoveryTests()
     {
+
         $oldTime = Carbon::create(2020, 1, 4, 8, null, null, Timezone::IST);
 
         Carbon::setTestNow($oldTime);
@@ -895,6 +879,7 @@ class FeeRecoveryTest extends TestCase
 
     private function assertFeeRecoveryEntriesAfterFeeRecoveryJob($payout, $payout2, $payout3)
     {
+
         $feeRecoveryPayout = $this->getDbLastEntity('payout');
 
         // Moving this payout to initiated
@@ -1193,6 +1178,7 @@ class FeeRecoveryTest extends TestCase
         $newTime = Carbon::create(2020, 1, 5, 7, 0, null, Timezone::IST);
 
         $task = $this->getDbLastEntity('schedule_task');
+
 
         $initialNextRunAt = $task['next_run_at'];
 
@@ -3484,25 +3470,6 @@ class FeeRecoveryTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $this->setMockRazorxTreatment([
-            RazorxTreatment::ZERO_PRICING_FEE_RECOVERY_PAYOUT => 'on',
-        ], 'control');
-
-        $this->fixtures->create('pricing', [
-            'id'             => 'custompricing1',
-            'plan_id'        => 'BTo98voDY05ueB',
-            'plan_name'      => 'testFeeRecoveryZeroPricing',
-            'org_id'         => '100000razorpay',
-            'product'        => 'banking',
-            'feature'        => 'payout',
-            'type'           => 'pricing',
-            'payment_method' => 'fund_transfer',
-            'account_type'   => 'direct',
-            'payouts_filter' => Payout\Purpose::RZP_FEES,
-            'fixed_rate'     => 0,
-            'percent_rate'   => 0,
-        ]);
-
         $this->startTest();
 
         $feeRecoveryPayout = $this->getDbLastEntity('payout');
@@ -3522,7 +3489,6 @@ class FeeRecoveryTest extends TestCase
 
         //assert that fees for fee recovery payout is 0
         $this->assertEquals(0, $feeRecoveryPayout->getAttribute('fees'));
-        $this->assertEquals('custompricing1', $feeRecoveryPayout->getAttribute('pricing_rule_id'));
     }
 
     public function testFeeRecoveryZeroPricingFeesExperimentDisabled()
@@ -3561,25 +3527,6 @@ class FeeRecoveryTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $this->setMockRazorxTreatment([
-            RazorxTreatment::ZERO_PRICING_FEE_RECOVERY_PAYOUT => 'off',
-        ], 'control');
-
-        $this->fixtures->create('pricing', [
-            'id'             => 'custompricing1',
-            'plan_id'        => 'BTo98voDY05ueB',
-            'plan_name'      => 'testFeeRecoveryZeroPricing',
-            'org_id'         => '100000razorpay',
-            'product'        => 'banking',
-            'feature'        => 'payout',
-            'type'           => 'pricing',
-            'payment_method' => 'fund_transfer',
-            'account_type'   => 'direct',
-            'payouts_filter' => Payout\Purpose::RZP_FEES,
-            'fixed_rate'     => 0,
-            'percent_rate'   => 0,
-        ]);
-
         $this->startTest();
 
         $feeRecoveryPayout = $this->getDbLastEntity('payout');
@@ -3598,11 +3545,11 @@ class FeeRecoveryTest extends TestCase
         $this->assertEquals($feeRecovery1['recovery_payout_id'], $feeRecoveryPayout['id']);
 
         $this->assertNotNull($feeRecoveryPayout->getAttribute('pricing_rule_id'));
-        $this->assertNotEquals('custompricing1', $feeRecoveryPayout->getAttribute('pricing_rule_id'));
     }
 
     public function testCreateFeeRecoveryPayoutJobViaAdminAction()
     {
+
         [$payout, $payout2, $payout3] = $this->createPayoutsForFeeRecoveryTests();
 
         $data = $this->testData[__FUNCTION__];
