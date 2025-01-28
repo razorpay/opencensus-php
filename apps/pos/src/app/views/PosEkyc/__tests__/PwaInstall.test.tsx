@@ -7,10 +7,10 @@ describe('POS eKYC <PwaInstall />', () => {
   test('should render instructions', () => {
     render(<PwaInstall />);
     expect(screen.getByText(/Install App on your device/i)).toBeInTheDocument();
-    expect(screen.getByText(/Get started seamlessly/i)).toBeInTheDocument();
+    expect(screen.getByText(/Get started to Onboard Merchants/i)).toBeInTheDocument();
 
     const dashboardLink = screen.getByRole('link', {
-      name: /Accessing Dashboard/i,
+      name: /here/i,
     });
 
     expect(dashboardLink).toHaveAttribute('href', `/app/pos-sales`);

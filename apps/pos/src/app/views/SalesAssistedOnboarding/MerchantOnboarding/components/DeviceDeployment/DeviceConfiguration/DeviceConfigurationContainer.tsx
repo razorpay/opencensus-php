@@ -26,6 +26,7 @@ const DeviceConfigurationContainer = (): JSX.Element | null => {
     language,
     hideLanguageSettings,
     hideWifiConfiguration,
+    hideDeviceTesting,
     deviceId,
   } = deviceConfigInfo;
 
@@ -53,6 +54,7 @@ const DeviceConfigurationContainer = (): JSX.Element | null => {
         language={language}
         hideLanguageSettings={hideLanguageSettings}
         hideWifiConfiguration={hideWifiConfiguration}
+        hideDeviceTesting={hideDeviceTesting}
       />
     </ErrorBoundary>
   );

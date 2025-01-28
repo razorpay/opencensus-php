@@ -52,6 +52,7 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
         color: 'positive',
         content: 'Successfully updated additional details',
         leading: CheckCircleIcon,
+        autoDismiss: true,
       });
       navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${values.merchantId}`, { replace: true });
     },

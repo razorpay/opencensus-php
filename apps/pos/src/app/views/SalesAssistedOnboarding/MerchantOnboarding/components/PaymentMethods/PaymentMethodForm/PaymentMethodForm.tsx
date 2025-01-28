@@ -194,6 +194,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
               toast.show({
                 content: `Some Error Occured while upload file. Please try again later`,
                 color: 'negative',
+                autoDismiss: true,
               })
             }
             isDisabled={isFormDisabled || isMDREditEnabled || isVASEditEnabled}

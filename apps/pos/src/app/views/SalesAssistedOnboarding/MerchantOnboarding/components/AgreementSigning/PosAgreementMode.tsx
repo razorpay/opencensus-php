@@ -138,6 +138,7 @@ export const PosAgreementMode = ({
         color: 'negative',
         content: 'Unable to generate link. Please try again',
         leading: InfoIcon,
+        autoDismiss: true,
       });
     }
   };
@@ -147,6 +148,7 @@ export const PosAgreementMode = ({
       color: 'positive',
       content: 'Agreement re-sent successfully',
       leading: CheckCircleIcon,
+      autoDismiss: true,
     });
   };
 
@@ -202,6 +204,7 @@ export const PosAgreementMode = ({
       toast.show({
         color: 'notice',
         content: 'Please upload a file',
+        autoDismiss: true,
       });
       return;
     }
@@ -256,6 +259,7 @@ export const PosAgreementMode = ({
       color: 'positive',
       content: 'Link copied successfully',
       leading: CheckCircleIcon,
+      autoDismiss: true,
     });
   };
 
@@ -282,6 +286,7 @@ export const PosAgreementMode = ({
               toast.show({
                 content: 'Failed to upload agreement proof',
                 color: 'negative',
+                autoDismiss: true,
               });
             }}
           />

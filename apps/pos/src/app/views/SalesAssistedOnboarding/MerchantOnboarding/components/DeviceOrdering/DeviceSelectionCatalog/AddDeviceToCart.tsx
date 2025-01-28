@@ -74,6 +74,7 @@ const AddDeviceToCart = ({
       color: 'positive',
       content: `Successfully ${isEditFlow ? 'edited' : 'added'} ${deviceConfig.title} to cart`,
       leading: CheckCircleIcon,
+      autoDismiss: true,
     });
   };
 

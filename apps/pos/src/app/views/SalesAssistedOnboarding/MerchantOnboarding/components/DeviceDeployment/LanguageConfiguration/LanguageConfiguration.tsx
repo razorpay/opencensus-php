@@ -46,6 +46,7 @@ const LanguageConfiguration = ({
       toast.show({
         content: `Please select a language`,
         color: 'negative',
+        autoDismiss: true,
       });
       return;
     }

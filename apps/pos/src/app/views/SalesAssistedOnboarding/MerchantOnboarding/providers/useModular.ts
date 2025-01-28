@@ -36,6 +36,7 @@ const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseM
     toast.show({
       content: 'Something went wrong. Please try again.',
       color: 'negative',
+      autoDismiss: true,
     });
   };
 
@@ -43,6 +44,7 @@ const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseM
     toast.show({
       content: 'Something went wrong. Please try again.',
       color: 'negative',
+      autoDismiss: true,
     });
   };
 

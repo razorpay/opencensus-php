@@ -436,6 +436,7 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
       toast.show({
         color: 'negative',
         content: `Please enter valid ${form[errFieldName]?.title} value`,
+        autoDismiss: true,
       });
       return;
     }
@@ -453,6 +454,7 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
       toast.show({
         color: 'negative',
         content: 'Please upload custom pricing proof',
+        autoDismiss: true,
       });
       return;
     }

@@ -34,6 +34,7 @@ interface DeviceConfigurationProps {
   mappingStatus: MappingStatusType;
   hideLanguageSettings: boolean;
   hideWifiConfiguration: boolean;
+  hideDeviceTesting: boolean;
   deviceId: string;
   handleUpdateModularConfig: (payload: ModularPayload) => void;
   handleProceed: () => void;
@@ -45,6 +46,7 @@ const DeviceConfiguration = ({
   language,
   hideLanguageSettings,
   hideWifiConfiguration,
+  hideDeviceTesting,
   deviceId,
 }: DeviceConfigurationProps): JSX.Element => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false);
@@ -170,12 +172,14 @@ const DeviceConfiguration = ({
         />
       ) : null}
 
-      <DeviceConfigCard
-        onClick={() => handleConfigCard(AvailableComponents.DEVICE_TESTING)}
-        title="Device Testing"
-        isDone={isDeviceTested}
-        Icon={SpeakerIcon}
-      />
+      {!hideDeviceTesting && (
+        <DeviceConfigCard
+          onClick={() => handleConfigCard(AvailableComponents.DEVICE_TESTING)}
+          title="Device Testing"
+          isDone={isDeviceTested}
+          Icon={SpeakerIcon}
+        />
+      )}
 
       {!hideWifiConfiguration ? (
         <DeviceConfigCard

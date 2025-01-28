@@ -23,6 +23,7 @@ const MerchantKYC = (): JSX.Element => {
       toast.show({
         color: 'negative',
         content: 'Failed to switch merchant',
+        autoDismiss: true,
       });
     },
   });

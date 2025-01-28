@@ -52,6 +52,7 @@ interface DeviceConfigType {
   deviceName: string;
   hideLanguageSettings: boolean;
   hideWifiConfiguration: boolean;
+  hideDeviceTesting: boolean;
   currentDeviceDetails: CurrentDeviceDetails;
 }
 
@@ -211,6 +212,9 @@ export const getDeviceConfigurationDetailsFromModularConfig = ({
       currentDeviceDetails.display_name === DeviceModel.STICKER_AND_STANDEE, //TODO: revert this change once BE SDK for isHidden is fixed
     hideWifiConfiguration:
       wifiConfigField?.isHidden ||
+      currentDeviceDetails.display_name === DeviceModel.STICKER_AND_STANDEE,
+    hideDeviceTesting:
+      deviceTestingField?.isHidden ||
       currentDeviceDetails.display_name === DeviceModel.STICKER_AND_STANDEE,
     currentDeviceDetails,
   };

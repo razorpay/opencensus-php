@@ -114,24 +114,34 @@ const PwaInstall = () => {
         <Box display="flex" flexDirection="column" gap="16px">
           <Instruction
             title="Install App on your device"
-            content="'Install Now' to get started right away"
+            content="Click on 'Install Now' to start the installation"
             icon={<PayrollAddonsIcon size="xlarge" color="surface.icon.gray.muted" />}
           />
           <Instruction
-            title="Get started seamlessly"
+            title="Get started to Onboard Merchants"
             content={
               <>
-                Once installed, launch it by{' '}
+                Once installed, click{' '}
                 <Link size="small" href={DASHBOARD_LINK}>
-                  Accessing Dashboard
-                </Link>
+                  here
+                </Link>{' '}
+                to Launch the App
               </>
             }
             icon={<UserPlusIcon size="xlarge" color="surface.icon.gray.muted" />}
           />
         </Box>
 
-        <Box borderTopColor="surface.border.gray.muted" borderTopWidth="thin" padding="spacing.3">
+        <Box
+          display="flex"
+          justifyContent="center"
+          position={{ base: 'fixed', l: 'relative' }}
+          bottom="0px"
+          padding="spacing.4"
+          left="0px"
+          right="0px"
+          zIndex="1"
+        >
           <Button isFullWidth icon={DownloadIcon} iconPosition="right" onClick={onInstallClick}>
             Install Now
           </Button>

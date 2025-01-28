@@ -70,6 +70,7 @@ const NACHFormEkyc: React.FC<NachFormProps> = ({
           toast.show({
             content: `Unable to upload file. Please try again`,
             color: 'negative',
+            autoDismiss: true,
           })
         }
         isDisabled={isFormDisabled}

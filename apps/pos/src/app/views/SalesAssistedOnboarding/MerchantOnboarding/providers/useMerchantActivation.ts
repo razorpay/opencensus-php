@@ -23,6 +23,7 @@ const useMerchantActivation = ({
     toast.show({
       content: 'Failed to fetch merchant details',
       color: 'negative',
+      autoDismiss: true,
     });
   };
 

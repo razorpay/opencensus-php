@@ -13,6 +13,7 @@ const AssistedOnboarding: React.FC<{}> = () => {
     toast.show({
       content: 'Loading...',
       color: 'information',
+      autoDismiss: true,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

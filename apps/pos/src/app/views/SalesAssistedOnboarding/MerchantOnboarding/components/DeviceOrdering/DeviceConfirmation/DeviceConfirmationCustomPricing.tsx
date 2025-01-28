@@ -76,6 +76,7 @@ const DeviceConfirmationCustomPricing = ({
           toast.show({
             content: 'Failed to upload pricing proof',
             color: 'negative',
+            autoDismiss: true,
           });
         }}
       />

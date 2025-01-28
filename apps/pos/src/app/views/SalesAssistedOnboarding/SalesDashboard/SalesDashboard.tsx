@@ -88,7 +88,7 @@ const SalesDashboard = (): JSX.Element => {
           </Text>
         </Box>
       ),
-      autoDismiss: false,
+      autoDismiss: true,
     });
   };
 

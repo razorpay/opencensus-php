@@ -53,6 +53,7 @@ const DeviceDeliveryAddress = ({
       content: 'Delivery Address updated successfully',
       color: 'positive',
       leading: CheckCircleIcon,
+      autoDismiss: true,
     });
     handleGoToNextStep();
   };
