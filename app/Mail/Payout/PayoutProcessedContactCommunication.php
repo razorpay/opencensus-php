@@ -4,6 +4,7 @@ namespace RZP\Mail\Payout;
 
 use App;
 use Carbon\Carbon;
+use RZP\Trace\TraceCode;
 use Symfony\Component\Mime\Email;
 
 
@@ -41,6 +42,8 @@ class PayoutProcessedContactCommunication extends Mailable
 
     protected $supportDetails = null;
 
+    protected $data ;
+
     public function __construct(string $payoutId, string $recipientEmail, array $supportDetails)
     {
         parent::__construct();
@@ -54,6 +57,38 @@ class PayoutProcessedContactCommunication extends Mailable
         $this->supportDetails = $supportDetails;
 
         $this->recipientEmail = $recipientEmail;
+
+        [$amountSymbol, $rupeesAmount, $paiseAmount] = $this->payout->getAmountComponents();
+
+        $this->data = [
+            'payout_amount'                  => [
+                $amountSymbol,
+                $rupeesAmount,
+                $paiseAmount
+            ],
+            'merchant_name'           => $this->merchant->getName(),
+            'merchant_billing_label'  => $this->merchant->getBillingLabel(),
+            'merchant_brand_logo'     => $this->merchant->getFullLogoUrlWithSize()?? "https://saransh.dev/myAvatar.png",
+            'merchant_brand_color'    => $this->merchant->getBrandColorElseDefault(),
+            'merchant_contrast_color' => $this->merchant->getContrastOfBrandColor(),
+            'payout_status'           => $this->payout->getStatus(),
+            'payout_utr'              => $this->payout->getUtr() ?? '',
+            'payout_reference_id'     => $this->payout->getReferenceId(),
+            'payout_mode'             => $this->payout->getMode(),
+            'payout_id'               => $this->payout->getPublicId(),
+            'payout_processed_at'     => Carbon::createFromTimeStamp($this->payout->getProcessedAt(), Timezone::IST)
+                ->format(self::DATE_FORMAT),
+            'payout_notes'            => $this->payout->getNotes()->toArray(),
+            'payout_narration'        => $this->payout->getNarration(),
+            'merchant_website'        => $this->supportDetails[self::SUPPORT_URL] ?? '',
+            'merchant_email'          => $this->supportDetails[self::SUPPORT_EMAIL] ?? '',
+            'merchant_phone'          => $this->supportDetails[self::SUPPORT_CONTACT] ?? '',
+            'customer_email'          => $this->recipientEmail,
+            //'sent'                    => [
+            //    'url' => sprintf('https://x.razorpay.com/payouts?id=%s', $this->payout->getPublicId()),
+            //],
+            'learn_more_url'             => 'https://razorpay.com/x'
+        ];
     }
 
     protected function setPayout()
@@ -132,39 +167,7 @@ class PayoutProcessedContactCommunication extends Mailable
 
     protected function addMailData()
     {
-        [$amountSymbol, $rupeesAmount, $paiseAmount] = $this->payout->getAmountComponents();
-
-        $data = [
-            'payout_amount'                  => [
-                $amountSymbol,
-                $rupeesAmount,
-                $paiseAmount
-            ],
-            'merchant_name'           => $this->merchant->getName(),
-            'merchant_billing_label'  => $this->merchant->getBillingLabel(),
-            'merchant_brand_logo'     => $this->merchant->getFullLogoUrlWithSize()?? "https://saransh.dev/myAvatar.png",
-            'merchant_brand_color'    => $this->merchant->getBrandColorElseDefault(),
-            'merchant_contrast_color' => $this->merchant->getContrastOfBrandColor(),
-            'payout_status'           => $this->payout->getStatus(),
-            'payout_utr'              => $this->payout->getUtr() ?? '',
-            'payout_reference_id'     => $this->payout->getReferenceId(),
-            'payout_mode'             => $this->payout->getMode(),
-            'payout_id'               => $this->payout->getPublicId(),
-            'payout_processed_at'     => Carbon::createFromTimeStamp($this->payout->getProcessedAt(), Timezone::IST)
-                                               ->format(self::DATE_FORMAT),
-            'payout_notes'            => $this->payout->getNotes()->toArray(),
-            'payout_narration'        => $this->payout->getNarration(),
-            'merchant_website'        => $this->supportDetails[self::SUPPORT_URL] ?? '',
-            'merchant_email'          => $this->supportDetails[self::SUPPORT_EMAIL] ?? '',
-            'merchant_phone'          => $this->supportDetails[self::SUPPORT_CONTACT] ?? '',
-            'customer_email'          => $this->recipientEmail,
-            //'sent'                    => [
-            //    'url' => sprintf('https://x.razorpay.com/payouts?id=%s', $this->payout->getPublicId()),
-            //],
-            'learn_more_url'             => 'https://razorpay.com/x'
-        ];
-
-        $this->with($data);
+        $this->with($this->data);
 
         return $this;
     }
@@ -179,5 +182,45 @@ class PayoutProcessedContactCommunication extends Mailable
         });
 
         return $this;
+    }
+
+    public function shouldSendEmailViaStork():bool
+    {
+        return ($this->isSendingPayoutServiceMailsSupported($this->merchant->getId()) ?? false);
+    }
+
+    protected function getParamsForStork(): array
+    {
+        return [
+            'template_name' => $this->view,
+            'template_namespace' => 'razorpayx_payouts_core',
+            'org_id' => $this->merchant->getOrgId(),
+            'params' => $this->data
+        ];
+    }
+
+    public function isSendingPayoutServiceMailsSupported($merchantId) : bool {
+        $traceCode = TraceCode::PAYOUT_SERVICE_EMAIL_ATTEMPT_STORK;
+        $experimentId = 'app.send_payout_service_emails_via_stork';
+        try {
+            $app = \App::getFacadeRoot();
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $app['config']->get($experimentId),
+                'request_data'  => json_encode(['merchant_id' => $merchantId])
+            ];
+            $response = $app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $app['trace']->info($traceCode, [
+                'splitzUserResult' => $response,
+            ]);
+
+            return  $variant == "enable";
+
+        } catch (\Exception $e) {
+            $app['trace']->traceException($e, null, $traceCode);
+        }
+        return false;
     }
 }

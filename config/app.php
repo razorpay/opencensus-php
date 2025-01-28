@@ -1251,6 +1251,8 @@ return array(
 
     'cross_border_import_rearch_shadow_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_SHADOW_EXPERIMENT_ID'),
 
+    'send_payout_service_emails_via_stork' => env('SEND_PAYOUT_SERVICE_EMAILS_VIA_STORK'),
+
     'cross_border_pacb_tagging_experiment_id'   => env('CROSS_BORDER_PACB_TAGGING_EXPERIMENT_ID'),
 
     'update_upi_late_auth_status'   => env('UPDATE_UPI_LATE_AUTH_STATUS')
