@@ -227,16 +227,23 @@ class Repository extends Transaction\Repository
      * @param $toDate
      * @return mixed
      */
-    public function getStatementsInRange($merchantId, $balanceId, $fromDate, $toDate)
+    public function getStatementsInRange($merchantId, $balanceId, $fromDate, $toDate, $useTiDB=false)
     {
-        return $this->newQuery()
-                    ->merchantId($merchantId)
-                    ->where(Entity::BALANCE_ID, $balanceId)
-                    ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->orderBy(Entity::ID, 'desc')
-                    ->with('bankingAccountStatement')
-                    ->get();
+        if($useTiDB === true)
+        {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+        return $query->merchantId($merchantId)
+                     ->where(Entity::BALANCE_ID, $balanceId)
+                     ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
+                     ->orderBy(Entity::CREATED_AT, 'desc')
+                     ->orderBy(Entity::ID, 'desc')
+                     ->with('bankingAccountStatement')
+                     ->get();
     }
 
     protected function addQueryParamId($query, $params)

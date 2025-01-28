@@ -78,12 +78,16 @@ abstract class Generator extends Base
                 ->balance
                 ->getBalanceIdByAccountNumberOrFail($bankingAccount->getAccountNumber());
 
+        $properties = ['experiment_id' => 'x_statement_report_via_tidb', 'id'=>$bankingAccount->getMerchantId()];
+        $expResult = $this->isSplitzExperimentEnable($properties, "enabled");
+
         $bankAccountStatements = $this->repo
                                       ->statement
                                       ->getStatementsInRange($bankingAccount->getMerchantId(),
                                                              $balanceId,
                                                              $this->fromDate,
-                                                             $this->toDate);
+                                                             $this->toDate,
+                                                             $expResult);
 
         $transactions = [];
 
@@ -339,5 +343,25 @@ abstract class Generator extends Base
         }
 
         return $lastUpdatedAt;
+    }
+
+    private function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode=null)
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            return false;
+        }
+        return false;
     }
 }
