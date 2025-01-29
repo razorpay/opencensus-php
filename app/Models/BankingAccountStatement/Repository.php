@@ -31,21 +31,35 @@ class Repository extends Base\Repository
                     ->exists();
     }
 
-    public function findLatestByAccountNumber($accountNumber)
+    public function findLatestByAccountNumber($accountNumber, $useSlave=false)
     {
-        return $this->newQuery()
-                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                    ->latest(Entity::ID)
-                    ->first();
+        if($useSlave === true)
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+        return $query->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                     ->latest(Entity::ID)
+                     ->first();
     }
 
-    public function findLatestByAccountNumberAndChannel($accountNumber, $channel)
+    public function findLatestByAccountNumberAndChannel($accountNumber, $channel, $useSlave=false)
     {
-        return $this->newQuery()
-                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                    ->where(Entity::CHANNEL, '=', $channel)
-                    ->latest(Entity::ID)
-                    ->first();
+        if($useSlave === true)
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+        return $query->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                      ->where(Entity::CHANNEL, '=', $channel)
+                      ->latest(Entity::ID)
+                      ->first();
      }
 
     public function findExistingStatementRecordsForBankWithDate(array $bankTransactionIds, $accountNumber, $queryDate)

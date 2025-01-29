@@ -873,13 +873,13 @@ class Repository extends Base\Repository
 
         if($newAsvFlow === true)
         {
-            $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                 ->with(['balance'])
                 ->where($statusColumn, '=', Status::QUEUED)
                 ->where($balanceIdColumn, '=', $balanceId);
         } else
         {
-            $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                 ->with(['balance', 'merchant', 'merchant.org'])
                 ->where($statusColumn, '=', Status::QUEUED)
                 ->where($balanceIdColumn, '=', $balanceId);
@@ -917,7 +917,7 @@ class Repository extends Base\Repository
         $statusColumn = $this->dbColumn(Entity::STATUS);
         $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->where($statusColumn, '=', Status::QUEUED)
                     ->where($balanceIdColumn, '=', $balanceId)
                     ->count();

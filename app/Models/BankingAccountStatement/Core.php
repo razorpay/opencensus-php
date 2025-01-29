@@ -505,8 +505,12 @@ class Core extends Base\Core
                             $merchant);
                     }
 
+                    $properties = ['experiment_id' => 'x_bas_reads_from_slave', 'id'=>$accountNumber];
+
+                    $experimentResult = $this->isSplitzExperimentEnable($properties, 'enabled');
+
                     //get last statement in our db
-                    $lastBankTxn = $this->repo->banking_account_statement->findLatestByAccountNumber($accountNumber);
+                    $lastBankTxn = $this->repo->banking_account_statement->findLatestByAccountNumber($accountNumber, $experimentResult);
 
                     $postedDateOfLastTransaction = isset($lastBankTxn) === true ? $lastBankTxn[Entity::POSTED_DATE] : null;
 
@@ -1120,8 +1124,12 @@ class Core extends Base\Core
             $insertedBasIds         = [];
             $insertedTransactionIds = [];
 
+            $properties = ['experiment_id' => 'x_bas_reads_from_slave', 'id'=>$accountNumber];
+
+            $experimentResult = $this->isSplitzExperimentEnable($properties, 'enabled');
+
             $lastTransaction = $this->repo->banking_account_statement
-                                               ->findLatestByAccountNumberAndChannel($accountNumber, $channel);
+                                               ->findLatestByAccountNumberAndChannel($accountNumber, $channel, $experimentResult);
 
             $postedDateOfLastTransaction = isset($lastTransaction) === true ? $lastTransaction[Entity::POSTED_DATE] : null;
 
@@ -1282,8 +1290,12 @@ class Core extends Base\Core
 
             $groupedStatementsBasedOnInsertion = [];
 
+            $properties = ['experiment_id' => 'x_bas_reads_from_slave', 'id'=>$accountNumber];
+
+            $experimentResult = $this->isSplitzExperimentEnable($properties, 'enabled');
+
             $lastTransaction = $this->repo->banking_account_statement
-                ->findLatestByAccountNumberAndChannel($accountNumber, $channel);
+                ->findLatestByAccountNumberAndChannel($accountNumber, $channel, $experimentResult);
 
             $postedDateOfLastTransaction = isset($lastTransaction) === true ? $lastTransaction[Entity::POSTED_DATE] : null;
 
@@ -1729,8 +1741,12 @@ class Core extends Base\Core
                     {
                         if ($channel === Channel::RBL)
                         {
+                            $properties = ['experiment_id' => 'x_bas_reads_from_slave', 'id'=>$accountNumber];
+
+                            $experimentResult = $this->isSplitzExperimentEnable($properties, 'enabled');
+
                             $lastBankTransaction = $this->repo->banking_account_statement
-                                ->findLatestByAccountNumberAndChannel($accountNumber, $channel);
+                                ->findLatestByAccountNumberAndChannel($accountNumber, $channel, $experimentResult);
 
                             $transactionCount = $this->repo->banking_account_statement->fetchCountOfRecordsForAGivenDayWithPostedDateRange(
                                 $accountNumber, $channel, $lastBankTransaction[Entity::TRANSACTION_DATE]);
@@ -2409,7 +2425,11 @@ class Core extends Base\Core
             $accountNumber,
             $merchant);
 
-        $lastBankTxn = $this->repo->banking_account_statement->findLatestByAccountNumber($accountNumber);
+        $properties = ['experiment_id' => 'x_bas_reads_from_slave', 'id'=>$accountNumber];
+
+        $experimentResult = $this->isSplitzExperimentEnable($properties, 'enabled');
+
+        $lastBankTxn = $this->repo->banking_account_statement->findLatestByAccountNumber($accountNumber, $experimentResult);
 
         $previousClosingBalance = $lastBankTxn == null ? 0 : $lastBankTxn->getBalance();
 
@@ -5960,5 +5980,24 @@ class Core extends Base\Core
 
             $this->repo->payout->updateInPayoutServiceDB($tableName, $id, $data);
         }
+    }
+    private function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode=null)
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            return false;
+        }
+        return false;
     }
 }
