@@ -2498,13 +2498,13 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
         else
         {
-            if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true and $this->payment->getCpsRoute() != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
             {
 
                 (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($this->payment);
 
             }
-            else
+            else if ($this->payment->getCpsRoute() != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
                 {
 
                 list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
@@ -2513,6 +2513,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             };
         }
+
+
+        if ($this->payment->getCpsRoute() == Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+        {
+            //
+            // If the row reaches this part of the code, that means that it is captured on the gateway's end.
+            //
+            $this->payment->setGatewayCaptured(true);
+        }
+
 
         // This is required to save the association of the transaction with the payment.
         $this->repo->saveOrFail($this->payment);
