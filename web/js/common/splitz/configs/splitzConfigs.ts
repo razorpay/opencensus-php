@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { SplitzInitConfig } from 'common/splitz/types';
 import { TransactionsEntityRoute } from 'merchant/views/Transactions/v2/common/constants';
 
@@ -170,6 +171,22 @@ export const splitzConfig: SplitzInitConfig = {
         experimentId: {
           beta: 'PbAS6OJf62NkqW',
           production: 'PcF5ZZMY4akO8j',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
+        uniqueHashKey: 'pos_payment_link_qr_comp',
+        experimentId: {
+          beta: 'PoobhkRSe1t1pE',
+          production: 'PooPBjLCcziyvU',
         },
         defaultVariant: {
           name: 'variables',
