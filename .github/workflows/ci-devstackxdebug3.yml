@@ -29,7 +29,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          add-hosts: github.com:172.20.36.152
           tags: c.rzp.io/razorpay/api:devstackxdebug3
           push: true
           file: ./Dockerfile.devstackxdebug3
