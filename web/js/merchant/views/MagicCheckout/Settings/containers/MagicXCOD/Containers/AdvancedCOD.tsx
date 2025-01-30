@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Box, Spinner } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 
 import {
   fetchACODRules,
@@ -9,111 +8,19 @@ import {
   updateACODRule,
   removeACODRule,
 } from 'merchant/reducers/magicCheckout/magicxACODRules/actions';
-import { api } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/api';
-import { GetStarted } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/GetStarted';
-import AdvancedCODTable from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/Table';
-import { Facts } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/constants';
-import {
-  createNewRuleState,
-  ruleValidator,
-} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/util';
-import RuleCreator from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/Containers/RuleCreatorContainer';
-import { RuleCreatorEngine } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator';
-import { toJSON } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/util/json';
-import { parseShopifyRule } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/RuleCreator/util/parse';
-import { DisplayNotificationTxt } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { AdvancedCOD } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/AdvancedCOD';
+import { ACODProvider } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/context';
 
-import type { Rule, RuleType } from 'merchant/reducers/magicCheckout/magicxACODRules/types';
+import type { Rule as ACODRule } from 'merchant/reducers/magicCheckout/magicxACODRules/types';
 
-const AdvancedCOD = ({
-  magicxACODRules,
-  fetchACODRules,
-  removeACODRule,
-  addACODRule,
-  updateACODRule,
-  showNotification,
-  merchantId,
-}) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [ruleToEdit, setRuleToEdit] = useState<Partial<Rule> | undefined>();
-  const [isProcessingReq, setIsProcessingReq] = useState(false);
-
+const ACODContainer = ({ magicxACODRules, fetchACODRules, storeActions, notify, merchantId }) => {
   const { isLoading, rules, ruleLimits } = magicxACODRules;
-  const paymentRules = useMemo(() => {
-    return rules.filter((rule) => rule.type === 'payment');
-  }, [rules]);
-  const shippingRules = useMemo(() => {
-    return rules.filter((rule) => rule.type === 'shipping');
-  }, [rules]);
-  const hasRules = rules.length > 0;
-  const isAppUpdateRequired = ruleLimits.shipping === 0 && ruleLimits.payment === 0;
-  const defaultRule = useMemo(() => parseShopifyRule(toJSON(ruleToEdit?.rule || '')), [ruleToEdit]);
-
-  // helper functions
-  const notify = (type, message) =>
-    showNotification({ type, message: <DisplayNotificationTxt notificationTxt={message} /> });
-
-  function handleOpenRuleCreator(type: RuleType, rule?: Rule) {
-    if (rule) {
-      setRuleToEdit(rule);
-    } else {
-      const isShippingType = type === 'shipping';
-      const rulesCount = isShippingType ? shippingRules.length : paymentRules.length;
-      setRuleToEdit(createNewRuleState({ rulesCount, type, merchant_id: merchantId }));
-    }
-
-    setIsModalOpen(true);
-  }
-
-  const formActions = {
-    createRule: async (rule: Rule) => {
-      setIsProcessingReq(true);
-
-      await api
-        .createRule(rule, merchantId)
-        .then((res) => {
-          if (res.success && res.data?.id) {
-            addACODRule(res.data);
-            setIsModalOpen(false);
-            notify('success', `Successfully created new ${rule.type} rule`);
-          }
-        })
-        .finally(() => {
-          setIsProcessingReq(false);
-        });
-    },
-    updateRule: async (rule: Rule) => {
-      setIsProcessingReq(true);
-
-      await api
-        .updateRule(rule, merchantId)
-        .then((res) => {
-          if (res.success && res.data?.id) {
-            updateACODRule(res.data);
-            setIsModalOpen(false);
-            notify('success', `Successfully updated ${rule.type} rule ${rule.name}`);
-          }
-        })
-        .finally(() => {
-          setIsProcessingReq(false);
-        });
-    },
-  };
-  const tableActions = {
-    deleteRule: (rule: Rule) => {
-      removeACODRule(rule);
-      notify('success', `Successfully removed ${rule.type} rule ${rule.name}`);
-    },
-    makeCreateRule: (type: RuleType) => () => {
-      handleOpenRuleCreator(type);
-    },
-    makeEditRule: (type: RuleType) => (rule?: Rule) => {
-      handleOpenRuleCreator(type, rule);
-    },
+  const acodProviderProps = {
+    merchantId,
+    notify,
+    storeActions,
   };
 
-  // effects
   useEffect(() => {
     fetchACODRules();
   }, [fetchACODRules]);
@@ -130,54 +37,9 @@ const AdvancedCOD = ({
   }
 
   return (
-    <>
-      <Box paddingY="spacing.8">
-        <Box display="flex" gap="spacing.8" flexDirection="column">
-          {!hasRules ? (
-            <GetStarted
-              onCreateRule={handleOpenRuleCreator}
-              isAppUpdateRequired={isAppUpdateRequired}
-            />
-          ) : (
-            <>
-              <AdvancedCODTable
-                type="shipping"
-                rules={shippingRules}
-                createRule={tableActions.makeCreateRule('shipping')}
-                editRule={tableActions.makeEditRule('shipping')}
-                deleteRule={tableActions.deleteRule}
-                ruleLimit={ruleLimits.shipping}
-              />
-              <AdvancedCODTable
-                type="payment"
-                rules={paymentRules}
-                createRule={tableActions.makeCreateRule('payment')}
-                editRule={tableActions.makeEditRule('payment')}
-                deleteRule={tableActions.deleteRule}
-                ruleLimit={ruleLimits.payment}
-              />
-            </>
-          )}
-        </Box>
-      </Box>
-      {isModalOpen && (
-        <RuleCreatorEngine
-          defaultRule={defaultRule}
-          facts={Facts}
-          sizeLimit="40kb"
-          validator={ruleValidator}
-        >
-          <RuleCreator
-            isOpen={isModalOpen}
-            setIsOpen={setIsModalOpen}
-            isProcessingReq={isProcessingReq}
-            apiRule={ruleToEdit}
-            createRule={formActions.createRule}
-            updateRule={formActions.updateRule}
-          />
-        </RuleCreatorEngine>
-      )}
-    </>
+    <ACODProvider {...acodProviderProps}>
+      <AdvancedCOD rules={rules} ruleLimits={ruleLimits} />
+    </ACODProvider>
   );
 };
 
@@ -187,16 +49,13 @@ const mapStateToProps = (state) => ({
   magicxACODRules: state.magicxACODRules,
 });
 
-const mapDispatchToProps = (dispatch) =>
-  bindActionCreators(
-    {
-      fetchACODRules,
-      removeACODRule,
-      addACODRule,
-      updateACODRule,
-      showNotification,
-    },
-    dispatch,
-  );
+const mapDispatchToProps = (dispatch) => ({
+  storeActions: {
+    addRule: (rule: ACODRule) => dispatch(addACODRule(rule)),
+    updateRule: (rule: ACODRule) => dispatch(updateACODRule(rule)),
+    removeRule: (rule: ACODRule) => dispatch(removeACODRule(rule)),
+  },
+  fetchACODRules: () => dispatch(fetchACODRules()),
+});
 
-export default connect(mapStateToProps, mapDispatchToProps)(AdvancedCOD);
+export default connect(mapStateToProps, mapDispatchToProps)(ACODContainer);

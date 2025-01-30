@@ -1,65 +1,70 @@
-import * as React from 'react';
 import { act } from 'react-dom/test-utils';
-import { fireEvent, render as renderMain, screen, server, waitFor, within } from 'test-utils';
-import { rest } from 'msw';
-
-import { storeWithInitialState } from 'merchant/store';
+import { fireEvent, screen, waitFor, within } from 'test-utils';
 
 import AdvancedCODTable from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/Table';
+import { useACODTable } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/Table/hooks';
+import { ACOD_TABLE } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/constants';
+import { lazyRenderACODComponent } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/test-helpers/acod';
+import { rulesToTableNodes } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/test-helpers/util';
+
 import {
   shippingRules,
   paymentRules,
 } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/__tests__/mocks/table';
-import { ACOD_TABLE } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/constants';
-import { ConfirmationModalProvider } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/common/components/ConfirmationModal';
+
+jest.mock(
+  'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/Table/hooks',
+  () => ({
+    useACODTable: jest.fn(),
+  }),
+);
+
+const createRule = jest.fn();
+const editRule = jest.fn();
+const deleteRule = jest.fn();
+
+const mockTableHookForProps = (props: any) => {
+  (useACODTable as jest.Mock).mockReturnValueOnce({
+    createRule,
+    editRule,
+    deleteRule,
+    nodes: rulesToTableNodes(props.rules),
+  });
+};
 
 const getTablePropsFor = (type: keyof typeof ACOD_TABLE) => {
   return {
     type,
     rules: type === 'shipping' ? shippingRules : paymentRules,
-    createRule: jest.fn(),
-    editRule: jest.fn(),
-    deleteRule: jest.fn(),
+    ruleLimits: {
+      shipping: 3,
+      payment: 3,
+    },
   };
 };
 
-const initState = {
-  config: {
-    config: {
-      id: 'mid',
-    },
-  },
-};
-
-const render = (ui, config = {}) => {
-  return renderMain(<ConfirmationModalProvider>{ui}</ConfirmationModalProvider>, {
-    reduxStore: storeWithInitialState({ ...initState, ...config }),
-  });
-};
-
-const mockRuleDeleteCall = () => {
-  server.use(
-    rest.delete('*/magic/sopc/customisations/rules/*', (_, res, ctx) => {
-      return res(
-        ctx.json({
-          status_code: 204,
-          success: true,
-        }),
-      );
-    }),
-  );
-};
+const renderWithProps = lazyRenderACODComponent(AdvancedCODTable);
 
 describe('AdvancedCODTable', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should render', () => {
-    render(<AdvancedCODTable {...getTablePropsFor('shipping')} />);
+    const tableProps = getTablePropsFor('shipping');
+    mockTableHookForProps(tableProps);
+
+    renderWithProps(tableProps);
     expect(screen.getByText(ACOD_TABLE.shipping.title)).toBeInTheDocument();
   });
 
   it('should render table with correct column headers and rows', () => {
-    const props = getTablePropsFor('shipping');
+    const tableProps = getTablePropsFor('shipping');
+    mockTableHookForProps(tableProps);
+
+    const props = tableProps;
     const [firstRule] = props.rules;
-    render(<AdvancedCODTable {...props} />);
+    renderWithProps(props);
 
     const rows = screen.getAllByRole('row');
     const rowHeader = screen.getByRole('rowheader');
@@ -73,40 +78,37 @@ describe('AdvancedCODTable', () => {
     // First Row
     expect(within(rows[0]).getByText(firstRule.name)).toBeInTheDocument();
     expect(within(rows[0]).getByText(firstRule.description)).toBeInTheDocument();
-    expect(within(rows[0]).getByText('-')).toBeInTheDocument();
   });
 
   it('should call edit and delete callbacks with proper rule arguments', async () => {
-    mockRuleDeleteCall();
     const props = getTablePropsFor('payment');
+    mockTableHookForProps(props);
     const [firstRule] = props.rules;
-    render(<AdvancedCODTable {...props} />);
+    renderWithProps(props);
 
     const rows = screen.getAllByRole('row');
     act(() => {
       fireEvent.click(within(rows[0]).getByRole('button', { name: /edit rule/i }));
     });
     await waitFor(() => {
-      expect(props.editRule).toHaveBeenCalledWith(firstRule);
+      expect(editRule).toHaveBeenCalledWith(firstRule);
     });
     act(() => {
       fireEvent.click(within(rows[0]).getByRole('button', { name: /delete rule/i }));
     });
-    act(() => {
-      fireEvent.click(screen.getByText('Delete'));
-    });
     await waitFor(() => {
-      expect(props.deleteRule).toHaveBeenCalledWith(firstRule);
+      expect(deleteRule).toHaveBeenCalledWith(firstRule);
     });
   });
 
   it('should call create rule callback', () => {
     const props = getTablePropsFor('payment');
-    render(<AdvancedCODTable {...props} />);
+    mockTableHookForProps(props);
+    renderWithProps(props);
 
     fireEvent.click(
       screen.getByRole('button', { name: ACOD_TABLE.payment.newRuleCTAAccessibilityLabel }),
     );
-    expect(props.createRule).toHaveBeenCalled();
+    expect(createRule).toHaveBeenCalled();
   });
 });

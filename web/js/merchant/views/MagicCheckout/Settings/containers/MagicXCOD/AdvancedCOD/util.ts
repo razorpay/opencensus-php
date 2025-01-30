@@ -3,7 +3,7 @@ import { isValidPhoneNumber } from '@razorpay/i18nify-js/phoneNumber';
 import { capitalize } from 'common/utils/rzp-utils';
 import { isEmail } from 'common/utils/validators';
 
-import type { Rule as APIRule } from 'merchant/reducers/magicCheckout/magicxACODRules/types';
+import type { Rule as ACODRule } from 'merchant/reducers/magicCheckout/magicxACODRules/types';
 import type {
   Condition,
   ConditionGroup,
@@ -18,11 +18,12 @@ export const createNewRuleState = ({
   rulesCount: number;
   merchant_id: string;
   type: 'shipping' | 'payment';
-}): Partial<APIRule> => ({
+}): Omit<ACODRule, 'id'> => ({
   merchant_id,
   type,
   name: `${capitalize(type)}Rule0${rulesCount + 1}`,
   description: '',
+  rule: '',
 });
 
 export const ruleValidator = (rule: Rule) => {

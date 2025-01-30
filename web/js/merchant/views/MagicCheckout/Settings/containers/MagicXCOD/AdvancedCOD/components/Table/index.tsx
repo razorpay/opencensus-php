@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import {
   Alert,
   Heading,
@@ -14,53 +14,27 @@ import {
   Button,
   PlusIcon,
   InfoIcon,
-  type TableData,
 } from '@razorpay/blade/components';
-import { connect } from 'react-redux';
 
-import { api } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/api';
+import { useACODTable } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/Table/hooks';
 import { ACOD_TABLE } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/constants';
-import { useConfirm } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/common/components/ConfirmationModal';
 
-import type { Rule, RuleType } from 'merchant/reducers/magicCheckout/magicxACODRules/types';
+import type {
+  Rule as ACODRule,
+  RuleType as ACODRuleType,
+} from 'merchant/reducers/magicCheckout/magicxACODRules/types';
+import type { ACODTableData } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/Table/types';
 
 type ACODTableProps = {
-  type: RuleType;
-  rules: Rule[];
-  createRule: () => void;
-  deleteRule: (rule: Rule) => void;
-  editRule: (rule: Rule) => void;
+  type: ACODRuleType;
+  rules: ACODRule[];
   ruleLimit: number;
-  merchantId: string;
 };
-const AdvancedCODTable: React.FC<ACODTableProps> = ({
-  type,
-  rules,
-  ruleLimit,
-  createRule,
-  deleteRule,
-  editRule,
-  merchantId,
-}) => {
-  const confirm = useConfirm();
-  const data: TableData<Rule<typeof type>> = { nodes: rules };
+const AdvancedCODTable: React.FC<ACODTableProps> = ({ type, rules, ruleLimit }) => {
+  const { nodes, createRule, editRule, deleteRule } = useACODTable(type, rules);
+  const data: ACODTableData<typeof type> = { nodes };
   const hasRows = data.nodes.length > 0;
   const isRuleLimitMaxedOut = rules.length >= ruleLimit;
-
-  const handleDelete = async (rule: Rule) => {
-    await confirm.promise(() => api.deleteRule(rule, merchantId), {
-      title: `Delete ${rule.name}`,
-      description: `Are you sure you want to delete this ${rule.type} rule?`,
-      confirmText: 'Delete',
-      confirmColor: 'negative',
-      dismissText: 'Cancel',
-      onSuccess: (res: any) => {
-        if (res?.success === true) {
-          deleteRule(rule);
-        }
-      },
-    });
-  };
 
   return (
     <Box display="flex" flexDirection="column" gap="spacing.5" width="100%">
@@ -105,7 +79,7 @@ const AdvancedCODTable: React.FC<ACODTableProps> = ({
                     {ACOD_TABLE[type].tableRowCells.map((cell, cellIndex) => {
                       return (
                         <TableCell key={`${rowIndex}${cellIndex}`}>
-                          {cell.value(tableItem, { deleteRule: handleDelete, editRule })}
+                          {cell.value(tableItem, { deleteRule, editRule })}
                         </TableCell>
                       );
                     })}
@@ -142,8 +116,4 @@ const AdvancedCODTable: React.FC<ACODTableProps> = ({
   );
 };
 
-const mapStateToProps = (state) => ({
-  merchantId: state.config?.config?.id || '',
-});
-
-export default connect(mapStateToProps)(AdvancedCODTable);
+export default AdvancedCODTable;

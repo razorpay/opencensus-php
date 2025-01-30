@@ -27,6 +27,8 @@ const render = (ui, config = {}) => {
   });
 };
 
+const mockedNotify = jest.fn();
+
 const mockRulesFetchCall = () => {
   server.use(
     rest.get('*/magic/sopc/customisations/rules', (_, res, ctx) => {
@@ -75,7 +77,7 @@ describe('AdvancedCOD', () => {
   it('should remove a rule from store on delete action', async () => {
     mockRulesFetchCall();
     mockRuleDeleteCall();
-    render(<AdvancedCOD />);
+    render(<AdvancedCOD notify={mockedNotify} />);
 
     await waitFor(() => {
       const rows = screen.getAllByRole('row');
@@ -92,8 +94,7 @@ describe('AdvancedCOD', () => {
       fireEvent.click(screen.getByText('Delete'));
     });
     await waitFor(() => {
-      const successNotification = screen.queryByTestId(/notification--success/i);
-      expect(successNotification).toBeInTheDocument();
+      expect(mockedNotify).toBeCalled();
     });
   });
 });

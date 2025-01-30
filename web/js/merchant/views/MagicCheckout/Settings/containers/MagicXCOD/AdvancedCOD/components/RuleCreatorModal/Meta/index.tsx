@@ -4,11 +4,11 @@ import { Box } from '@razorpay/blade/components';
 import { Description } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/RuleCreatorModal/Meta/Description';
 import { Name } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/AdvancedCOD/components/RuleCreatorModal/Meta/Name';
 
-import type { Rule } from 'merchant/reducers/magicCheckout/magicxACODRules/types';
+import type { Rule as ACODRule } from 'merchant/reducers/magicCheckout/magicxACODRules/types';
 
 type RuleMetaProps = {
-  rule: Rule;
-  handleChange: (prop: string, value: string) => void;
+  rule: Omit<ACODRule, 'id'> & { id?: string };
+  handleChange: (prop: 'name' | 'description', value: string) => void;
 };
 export const RuleMeta: React.FC<RuleMetaProps> = ({ rule, handleChange }) => {
   return (

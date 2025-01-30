@@ -105,6 +105,7 @@ export const ConfirmationModalProvider: React.FC = ({ children }) => {
     setIsOpen(true);
 
     return new Promise<boolean>((resolve) => {
+      setPromiseOrFunction(undefined);
       setResolve(() => resolve);
     });
   };

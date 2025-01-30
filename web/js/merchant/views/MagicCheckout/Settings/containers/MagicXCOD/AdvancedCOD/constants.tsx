@@ -58,7 +58,7 @@ export const GetStartedCards = {
 const tableHeaderCells = ['Name', 'Description', 'Rule', 'Action'];
 const tableRowCells: Array<{
   value: (
-    rule: Rule,
+    rule: Rule & { about: string },
     actions: {
       deleteRule: (rule: Rule) => void;
       editRule: (rule: Rule) => void;
@@ -72,7 +72,7 @@ const tableRowCells: Array<{
     value: (rule) => rule.description,
   },
   {
-    value: () => '-', // TODO: must be calculated using rule actions
+    value: (rule) => rule.about,
   },
   {
     value: (rule, actions) => (

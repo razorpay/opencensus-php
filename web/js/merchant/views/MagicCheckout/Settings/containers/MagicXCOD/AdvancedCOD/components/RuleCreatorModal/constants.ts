@@ -28,3 +28,11 @@ export const LIMITS = {
   MIN_GROUPS_IN_BLOCK: 1,
   MIN_CONDITIONS_IN_GROUP: 1,
 };
+
+export const MODAL_DISMISS_CONFIRM_OPTIONS = {
+  title: 'Are you sure you want to exit?',
+  description: 'Conditions configured for the rule may be lost',
+  confirmText: 'Exit',
+  dismissText: 'Continue configuration',
+  confirmColor: 'negative',
+} as const;

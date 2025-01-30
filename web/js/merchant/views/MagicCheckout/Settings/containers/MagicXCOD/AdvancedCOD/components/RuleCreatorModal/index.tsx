@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   Modal,
   ModalHeader,
@@ -17,32 +17,21 @@ import { useRule } from 'merchant/views/MagicCheckout/Settings/containers/MagicX
 import { ActionBlock } from './ActionBlock';
 import { ConditionBlock } from './ConditionBlock';
 import { RuleMeta } from './Meta';
+import { useRCMHandlers, useRCMState } from './hooks';
 
-import type { Rule as APIRule } from 'merchant/reducers/magicCheckout/magicxACODRules/types';
 import type { ShippingProfile } from 'merchant/reducers/magicCheckout/shippingEngine/types';
 
 type RuleCreatorModalProps = {
-  title: string;
-  apiRule: APIRule;
-  isOpen: boolean;
-  isProcessingReq: boolean;
-  onDismiss: () => void;
-  onSubmit: (rule: APIRule) => void;
   magicShippingEngine: {
     shipping_profiles: Record<string, ShippingProfile>;
     isLoading: { summary: boolean };
   };
 };
 const RuleCreatorModal: React.FC<RuleCreatorModalProps> = ({
-  title,
-  isOpen,
-  isProcessingReq,
-  onDismiss,
-  onSubmit,
-  apiRule: _apiRule,
   magicShippingEngine: { shipping_profiles },
 }) => {
-  const [apiRule, setAPIRule] = useState(_apiRule);
+  const rcmState = useRCMState();
+  const rcmHandlers = useRCMHandlers();
   const { ruleSize } = useRule();
 
   const shippingProfiles = useMemo(() => {
@@ -52,26 +41,14 @@ const RuleCreatorModal: React.FC<RuleCreatorModalProps> = ({
     return [];
   }, [shipping_profiles]);
 
-  const ruleSizeIndicatorColor =
-    ruleSize.usage < 70 ? 'information' : ruleSize.usage < 90 ? 'notice' : 'negative';
-
-  // helper methods
-  const handleSubmit = () => {
-    onSubmit(apiRule);
-  };
-
-  const handleAPIRuleChange = (prop: string, value: any) => {
-    setAPIRule({ ...apiRule, [prop]: value });
-  };
-
   return (
-    <Modal isOpen={isOpen} size="medium" onDismiss={onDismiss}>
-      <ModalHeader title={title} />
+    <Modal isOpen={rcmState.isModalOpen} size="medium" onDismiss={rcmHandlers.handleDismiss}>
+      <ModalHeader title={rcmState.title} />
       <ModalBody>
         <Box display="flex" flexDirection="column" gap="spacing.8">
-          <RuleMeta rule={apiRule} handleChange={handleAPIRuleChange} />
+          <RuleMeta rule={rcmState.acodRule} handleChange={rcmHandlers.handleMetaPropChange} />
           <ConditionBlock />
-          <ActionBlock type={apiRule.type} shippingProfiles={shippingProfiles} />
+          <ActionBlock type={rcmState.acodRule?.type} shippingProfiles={shippingProfiles} />
         </Box>
       </ModalBody>
       <ModalFooter>
@@ -81,19 +58,19 @@ const RuleCreatorModal: React.FC<RuleCreatorModalProps> = ({
               value={ruleSize.usage}
               size="medium"
               variant="circular"
-              color={ruleSizeIndicatorColor}
+              color={rcmState.ruleSizeIndicatorColor}
             />
             <Text weight="medium">Allowed Rule Size</Text>
           </Box>
           <Box display="flex" gap="spacing.3" alignItems="center">
-            <Button variant="secondary" size="medium" onClick={onDismiss}>
+            <Button variant="secondary" size="medium" onClick={rcmHandlers.handleDismiss}>
               Cancel
             </Button>
             <Button
               size="medium"
-              onClick={handleSubmit}
-              isLoading={isProcessingReq}
-              isDisabled={ruleSize.usage >= 100 || isProcessingReq}
+              onClick={rcmHandlers.handleSubmit}
+              isLoading={rcmState.isProcessingRequest}
+              isDisabled={ruleSize.usage >= 100 || rcmState.isProcessingRequest}
             >
               Submit
             </Button>

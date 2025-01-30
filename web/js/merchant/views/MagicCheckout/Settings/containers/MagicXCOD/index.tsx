@@ -284,7 +284,7 @@ const MagicXCOD = ({ settings, updateMagicSettings, showNotification, fetchShipp
                   </TabPanel>
                   {isACODExperimentEnabled && (
                     <TabPanel value="advanced">
-                      <AdvancedCOD />
+                      <AdvancedCOD notify={notify} />
                     </TabPanel>
                   )}
                 </Tabs>
