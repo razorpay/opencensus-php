@@ -51,19 +51,22 @@ const DesktopFiltering = ({
         accessibilityLabel="Filter by category"
         selectionType="multiple"
         size="medium"
+        display="grid"
         value={categories}
         marginTop="spacing.4"
         onChange={({ values }) => {
           setCategories(values);
         }}
       >
-        {MARKETPLACE_CATEGORIES.map(
-          (category): JSX.Element => (
-            <Chip key={category} value={category}>
-              {category}
-            </Chip>
-          ),
-        )}
+        <Box display="grid" gap="spacing.4">
+          {MARKETPLACE_CATEGORIES.map(
+            (category): JSX.Element => (
+              <Chip key={category} value={category}>
+                {category}
+              </Chip>
+            ),
+          )}
+        </Box>
       </ChipGroup>
     </Box>
   );

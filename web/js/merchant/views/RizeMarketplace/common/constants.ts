@@ -5,6 +5,7 @@ export const MARKETPLACE_CATEGORIES = [
   'Communication & Collaboration',
   'Engineering & Development',
   'Finance & Legal',
+  'Gifting',
   'Hiring & Recruitment',
   'Organisation & People',
   'Sales & Marketing',
