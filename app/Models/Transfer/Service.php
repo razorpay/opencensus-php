@@ -481,15 +481,7 @@ class Service extends Base\Service
 
             $input['expand'] = ['transfer', 'transfer.recipient_settlement'];
 
-            // fetching by payments fetch to handle notes search.
-            if ($this->repo->payment->isExperimentEnabledForId(\RZP\Base\Repository::PAYMENT_QUERIES_TIDB_MIGRATION, 'fetchLinkedAccountTransfers') === true)
-            {
-                $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
-            }
-            else
-            {
-                $payments = $this->repo->payment->fetch($input, $merchantId);
-            }
+            $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
             $transfers = $this->createResponse($payments);
 

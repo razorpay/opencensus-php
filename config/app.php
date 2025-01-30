@@ -1191,6 +1191,8 @@ return array(
 
     'my_save_card_splitz_experiment_id' => env('MY_SAVE_CARD_SPLITZ_EXPERIMENT_ID'),
 
+    'line_item_min_amount_validator_splitz_exp_id' => env('LINE_ITEM_MIN_AMOUNT_VALIDATOR_SPLITZ_EXP_ID'),
+
     'p2p' => [
         'encryption_key' => env('P2P_NACL_SESSION_TOKEN_ENCRYPTION_KEY')
     ],

@@ -11590,14 +11590,8 @@ class Core extends Base\Core
             "skip"  => 0
         ];
 
-        if ($this->repo->payment->isExperimentEnabledForId(\RZP\Base\Repository::PAYMENT_QUERIES_TIDB_MIGRATION, 'getMerchantInfo') === true)
-        {
-            $response['transactions'] = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT)->toArrayPublic()['items'];
-        }
-        else
-        {
-            $response['transactions'] = $this->repo->payment->fetch($input, $merchantId)->toArrayPublic()['items'];
-        }
+        $response['transactions'] = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT)->toArrayPublic()['items'];
+
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'Core/getMerchantInfo',
         ]);

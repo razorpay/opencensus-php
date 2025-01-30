@@ -6882,23 +6882,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             ($this->getRecurringType() === RecurringType::CARD_CHANGE) and
             ($card->iinRelation !== null))
         {
-            $app = \App::getFacadeRoot();
-
-            $variant = $app['razorx']->getTreatment($this->getMerchantId(),
-                RazorxTreatment::RECURRING_NEW_CARD_CHANGE_TOKEN,
-                $app['rzp.mode']);
-
-            $app['trace']->info(TraceCode::RECURRING_NEW_CARD_CHANGE_TOKEN_RESULT, [
-                'merchant_id'     => $this->merchant->getId(),
-                'payment_id'      => $this->getId(),
-                'subscription_id' => $this->getSubscriptionId(),
-                'variant'         => $variant,
-            ]);
-
-            if ($variant === 'on')
-            {
-                return true;
-            }
+            return true;
         }
 
         return false;

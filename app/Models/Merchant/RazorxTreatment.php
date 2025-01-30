@@ -43,7 +43,6 @@ final class RazorxTreatment
     const VOTERS_ID_SYNC            = 'voters_id_sync';
     const PASSPORT_SYNC             = 'passport_sync';
     const BVS_IN_SYNC               = "bvs_in_sync";
-    const TNG_RECURRING             = 'tng_recurring';
 
     // the ON variant
     const RAZORX_VARIANT_ON     = 'on';
@@ -616,9 +615,6 @@ final class RazorxTreatment
     // Experiment to toggle unhappy flow handling for tokenisation failure in recurring
     const RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING = 'recurring_tokenisation_unhappy_flow_handling';
 
-    // Experiment to enable new token creation for all card changes
-    const RECURRING_NEW_CARD_CHANGE_TOKEN = 'recurring_new_card_change_token';
-
     // Experiment to toggle tokenisation for recurring tokens
     const RECURRING_TOKENISATION = 'recurring_tokenisation';
 
@@ -653,9 +649,6 @@ final class RazorxTreatment
      * oauth verification which is redundant)
      */
     const USE_EDGE_PASSPORT_FOR_AUTH = 'use_edge_passport_for_auth';
-
-    // Experiment to control sync/async call on scrooge
-    public const SCROOGE_SYNC_CALL = 'scrooge_sync_call';
 
     const PAYMENT_METHOD_CONFIG_UPDATE = 'payment_method_config_update';
 
@@ -740,9 +733,6 @@ final class RazorxTreatment
 
     // Experiment to migrate merchant_risk_fact to datalake
     public const MERCHANT_RISK_FACT_MIGRATION = "merchant_risk_fact_migration";
-
-    // Token fetch list
-    public const CAW_TOKEN_FETCH = 'caw_token_fetch';
 
     // Experiment to enable Whatsapp Notification for Risk chargeback intimation
     const RISK_WHATSAPP_NOTIFICATION = 'risk_whatsapp_notification';

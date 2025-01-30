@@ -9,9 +9,6 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    // Razorx feature : Invoice line item currency validation
-    const LINE_ITEM_CURRENCY_VALIDATOR = 'line_item_currency_validator';
-
     public function create(
         array $input,
         Merchant\Entity $merchant,
@@ -54,11 +51,25 @@ class Core extends Base\Core
         {
             $mode = $this->app['rzp.mode'] ?? 'live';
 
-            $variantFlag = $this->app['razorx']->getTreatment($merchant->getId(), self::LINE_ITEM_CURRENCY_VALIDATOR, $mode);
+            $experimentId = $this->app['config']->get('app.line_item_min_amount_validator_splitz_exp_id');
 
-            $this->trace->info(TraceCode::LINE_ITEM_VALIDATOR_VARIANT, ['variant' => $variantFlag]);
+            $properties = [
+                'experiment_id' => $experimentId,
+                'id'            => $this->app['request']->getTaskId(),
+                'request_data'  => json_encode(['merchant_id' => $merchant->getId(), 'mode' => $mode]),
+            ];
 
-            if ($variantFlag === 'on')
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::LINE_ITEM_VALIDATOR_VARIANT, [
+                'variant'       => $variant,
+                'experiment_id' => $experimentId,
+                'merchant_id'   => $merchant->getId(),
+            ]);
+
+            if ($variant === 'variant_on')
             {
                 (new Validator)->validateInput('min_amount_check', [
                     Entity::AMOUNT => $input[Entity::AMOUNT],

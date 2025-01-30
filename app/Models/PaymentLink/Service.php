@@ -923,27 +923,6 @@ class Service extends Base\Service
 
         $payments = Tracer::inSpan(['name' => 'payment_page.payments.get.fetch_payments'], function() use($input, $merchant)
         {
-            $variant = $this->app['razorx']->getTreatment(
-                'paymentPageGetPayments',
-                'pp_payment_fetch_query_migration',
-                $this->mode ?? Mode::LIVE);
-
-            $this->trace->info(TraceCode::ARCHIVAL_EXPERIMENTS_REPOSITORY_VARIANT, [
-                'variant'    => $variant,
-                'feature'    => 'pp_payment_fetch_query_migration',
-                'context_id' => 'paymentPageGetPayments',
-            ]);
-
-            if ($variant === "tidb")
-            {
-                return $this->repo->payment->fetch($input, $merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
-            }
-
-            if ($variant === "replica")
-            {
-                return $this->repo->payment->fetch($input, $merchant->getId(), ConnectionType::PAYMENT_FETCH_REPLICA);
-            }
-
             return $this->repo->payment->fetch($input, $merchant->getId());
         });
 
