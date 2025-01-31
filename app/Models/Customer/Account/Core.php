@@ -2049,6 +2049,19 @@ class Core extends Base\Core
         return $contacts;
     }
 
+    function isClubPayment(Payment\Entity $payment=null): bool
+    {
+        if (isset($payment) && isset($payment['notes'])) {
+            $notes = $payment['notes'];
+            foreach ($notes as $key => $value) {
+                if (is_string($key) && str_ends_with($key, '_is_club') && $value === "true") {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     protected function formatPaymentDetailsForSupportPage(array $paymentDetails, Payment\Entity $payment) : array
     {
         if (empty($paymentDetails))
@@ -2098,7 +2111,13 @@ class Core extends Base\Core
         {
             $formattedPaymentDetails['payment']['is_lrs_transaction'] = true;
         }
+        try{
+            if ($this->isClubPayment($payment)===true){
+                $formattedPaymentDetails['is_club'] = true;
+            }
+        } catch(\Exception $e){
 
+        }
         return $formattedPaymentDetails;
     }
 
