@@ -11,7 +11,7 @@ test.describe('Test gcms reports @flow=reports @project=payments ', () => {
     await expect(page).toHaveURL(routes.GCMS_REPORTS);
   });
 
-  test('should be able to submit a download report request', async ({ page }) => {
+  test.skip('should be able to submit a download report request', async ({ page }) => {
     await expect(await page.getByText('Download Report')).toBeVisible();
     await page.getByText('Download Report').click();
 

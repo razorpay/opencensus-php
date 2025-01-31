@@ -92,7 +92,9 @@ web/e2e/suites/transactions/refunds.spec.js                              @razorp
 web/e2e/suites/paymentButtons/paymentButtons.spec.js                     @razorpay/deploy-leads-dashboard
 web/e2e/suites/CAW/registration_link.spec.js                             @razorpay/deploy-leads-dashboard
 web/e2e/suites/GCMS/resellers.spec.js                                    @razorpay/deploy-leads-dashboard
-
+web/e2e/suites/GCMS/reports.spec.js                                      @razorpay/deploy-leads-dashboard
+web/e2e/suites/RTUX/homepage-rtux.spec.js                                @razorpay/deploy-leads-dashboard
+web/e2e/suites/Wallet/reports.spec.js                                    @razorpay/deploy-leads-dashboard
 # [IMP] DO NOT REMOVE (KEEP AT THE END!) DO NOT OVERRIDE ANYTHING THAT FALLS UNDER THIS SCOPE! ----------
 scripts/*                                                                @joel-jaimon @dhruvdutt
 .github/*                                                                @joel-jaimon @dhruvdutt
