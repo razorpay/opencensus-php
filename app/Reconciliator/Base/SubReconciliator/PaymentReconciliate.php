@@ -1089,6 +1089,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             $this->sendPaymentReconNFCDataToCLS($this->payment, $data);
 
+            $this->setReconStatusAndSummary($this->payment);
+
             return $recordSuccess;
         }
 

@@ -458,6 +458,23 @@ class SubReconciliate extends Base\Core
         $this->setRowReconStatusAndError(InfoCode::RECONCILED);
     }
 
+    protected function setReconStatusAndSummary($entity)
+    {
+        if (($entity->getEntityName() !== Entity::REFUND) or
+            ($entity->isScrooge() === false))
+        {
+
+            $this->deleteCardMetaDataIfApplicable($entity);
+
+            $this->pushSuccessReconMetrics($entity);
+
+            // Increment the success count for the summary.
+            $this->setSummaryCount(self::SUCCESSES_SUMMARY, $entity->getKey());
+        }
+
+        $this->setRowReconStatusAndError(InfoCode::RECONCILED);
+    }
+
     public function sendPaymentReconNFCDataToCLS($payment, $data = [])
     {
         $payload = [
