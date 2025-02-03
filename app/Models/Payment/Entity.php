@@ -8252,4 +8252,29 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
     }
+
+    public function getTransferAttribute()
+    {
+        $transfer = null;
+
+        if ($this->relationLoaded('transfer') === true)
+        {
+            $transfer = $this->getRelation('transfer');
+        }
+
+        if ($transfer !== null)
+        {
+            return $transfer;
+        }
+
+        try {
+
+            $transfer = (new Transfer\Repository)->findOrFail($this->getTransferId());
+
+            $this->transfer()->associate($transfer);
+        }
+        catch ( \Throwable $e){}
+
+        return $transfer;
+    }
 }
