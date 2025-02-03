@@ -1159,6 +1159,8 @@ return array(
 
     'splitz_entity_origin_fallback_experiment_id'       => env('SPLITZ_ENTITY_ORIGIN_FALLBACK_EXPERIMENT_ID'),
 
+    'splitz_role_query_slave_experiment_id'       => env('SPLITZ_ROLE_QUERY_SLAVE_EXPERIMENT_ID'),
+
     'qr_code_v1_failed_payment_experiment' => env('QRCODEV1_FAILED_PAYMENT_EXPERIMENT'),
 
     'qr_gateway_unrecognised_payment_process'  =>   env('QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS'),

@@ -35,7 +35,8 @@ class Repository extends Base\Repository
     {
         if($useSlave === true)
         {
-            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+            $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                          ->from(\DB::raw('`banking_account_statement` FORCE INDEX (idx_account_number_channel_desc)'));
         }
         else
         {
@@ -50,7 +51,8 @@ class Repository extends Base\Repository
     {
         if($useSlave === true)
         {
-            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+            $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                          ->from(\DB::raw('`banking_account_statement` FORCE INDEX (idx_account_number_channel_desc)'));
         }
         else
         {

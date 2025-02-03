@@ -61,6 +61,16 @@ class Repository extends BaseRepository
                     ->get();
     }
 
+    public function fetchByOrgIdFromSlave(string & $orgId, $relations = [])
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->orgId($orgId)
+            ->with($relations)
+            ->get();
+    }
+
     public function findByPublicIdWithRelations(
         string $id,
         array $relations = [])
