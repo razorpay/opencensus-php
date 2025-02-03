@@ -8,6 +8,8 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Reconciliator\Base\Foundation\SubReconciliate;
+use RZP\Models\Transaction;
 use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\FundTransfer;
@@ -637,10 +639,17 @@ class Core extends Base\Core
 
         $irctcPayoutReverseShadowCore = new IRCTCPayoutReverseShadowCore();
 
-        if(!$irctcPayoutReverseShadowCore->isIrctcPGLedgerReverseShadowEnabled($fta->merchant)) {
+        if($irctcPayoutReverseShadowCore->isIrctcPGLedgerReverseShadowEnabled($fta->merchant)) {
+            $time = time();
+            $reconData = [
+                Transaction\Entity::RECONCILED_AT   => $time,
+                Transaction\Entity::RECONCILED_TYPE => ReconciledType::MIS
+            ];
+            (new SubReconciliate())->sendPayoutReconNFCDataToCLS($fta->getSourceId(), $reconData);
+        }
+        else {
             $this->updateTransactionEntity($fta->source);
         }
-
     }
 
     /**
