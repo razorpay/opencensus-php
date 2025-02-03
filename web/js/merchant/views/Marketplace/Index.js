@@ -21,6 +21,7 @@ import DocsLink from 'merchant/components/DocsLink';
 import PaymentsList from 'merchant/views/Marketplace/Payments/List';
 import ReversalsList from 'merchant/views/Marketplace/Reversals/List';
 import TransfersList from 'merchant/views/Marketplace/Transfers/List';
+import OptimizerAccountsList from 'merchant/views/Marketplace/OptimizerAccounts/List';
 
 import OnBoarding, { getIsAllowedResetRouteBoarding } from './OnBoarding';
 import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
@@ -237,6 +238,16 @@ class MarketplaceContainer extends React.Component {
                 </Wrapper>
               }
             />
+            {user.isOptimizerEnabled && user.isOptimizerRouteEnabled && (
+              <Route
+                path="optimizer/accounts/*"
+                element={
+                  <Wrapper>
+                    <OptimizerAccountsList />
+                  </Wrapper>
+                }
+              />
+            )}
             {!user.isOrgCurlec && (
               <Route
                 path="batchuploads/*"

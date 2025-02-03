@@ -389,6 +389,12 @@ const ConfigurationHeader = lazy(() =>
   ),
 );
 
+const OptimizerAccountDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "OptimizerAccountDetails" */ 'merchant/views/Marketplace/OptimizerAccounts/Details'
+  ),
+);
+
 /**
  * FPV(Full Page View) of component doesnt have header included. But we are extending FPV with Header for
  * Magic Checkout
@@ -472,6 +478,10 @@ const entityDetailsMap = {
         '/route/payments/:id': { component: PaymentsDetails },
       }),
   '/route/accounts/:id': { component: AccountDetailsNew },
+  '/route/optimizer/accounts/:id': {
+    component: OptimizerAccountDetails,
+    additionalCondition: (user) => user?.isOptimizerRouteEnabled,
+  },
   '/smartcollect/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/smartcollect/batchuploads/:id': { component: VirtualAccountBatchDetails },
