@@ -362,7 +362,7 @@ trait ExternalOffersRepo
         return null;
     }
 
-    private function fetchAllDefaultOffersForMerchantFromOE($merchantId)
+    private function fetchAllDefaultOffersForMerchantFromOE($merchantId, $enableCache = false)
     {
         if ($this->fetchFromOE($merchantId) === true)
         {
@@ -372,7 +372,7 @@ trait ExternalOffersRepo
                     [
                         Constants::OFFER_TYPE => Constants::OFFER_TYPE_STAGE_REGULAR,
                         Constants::STATUS => Constants::STATUS_ACTIVE,
-                    ]
+                    ], $enableCache
                 );
 
                 if (empty($responseOffers) === true)
@@ -413,13 +413,13 @@ trait ExternalOffersRepo
         return $this->fetchOffersWithLimitsFromAPI($responseOffers);
     }
 
-    private function fetchExternalEntitiesBulk($merchantId, array $ids = [], $input = [])
+    private function fetchExternalEntitiesBulk($merchantId, array $ids = [], $input = [], $enableCache = false)
     {
         $class = Entity::getExternalRepoSingleton($this->entity);
 
         try
         {
-            return $class->fetchBulk($merchantId, $ids, $input);
+            return $class->fetchBulk($merchantId, $ids, $input, $enableCache);
 
         } catch (\Throwable $e) {
             $this->trace->traceException(

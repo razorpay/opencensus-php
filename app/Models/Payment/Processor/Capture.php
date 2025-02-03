@@ -619,10 +619,17 @@ trait Capture
             return;
         }
 
-        $offer = $this->repo->offer->findByIdAndMerchant($discount->getAttribute(Entity::OFFER_ID), $payment->merchant);
+        if (($payment->getOffer() !== null) and
+            ($discount->getAttribute(Entity::OFFER_ID) === $payment->getOffer()->getId()))
+        {
+            $offer = $payment->getOffer();
+        }
+        else
+        {
+            $offer = $this->repo->offer->findByIdAndMerchant($discount->getAttribute(Entity::OFFER_ID), $payment->merchant);
+        }
 
         $captureAmount = $offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
-
     }
 
     /**

@@ -228,9 +228,9 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchAllDefaultOffersForMerchant(string $merchantId)
+    public function fetchAllDefaultOffersForMerchant(string $merchantId, $enableCache = false)
     {
-        $oeResponse = $this->fetchAllDefaultOffersForMerchantFromOE($merchantId);
+        $oeResponse = $this->fetchAllDefaultOffersForMerchantFromOE($merchantId, $enableCache);
 
         if (empty($oeResponse) === false)
         {

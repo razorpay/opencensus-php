@@ -949,6 +949,8 @@ return array(
 
     'offers_engine_reverse_shadow_exp_id' => env('OFFERS_ENGINE_REVERSE_SHADOW_EXP'),
 
+    'oe_enable_cache_internal_merchant_get_exp' => env('OE_ENABLE_CACHE_INTERNAL_MERCHANT_GET_EXP'),
+
     'offers_engine_create_read_migration_exp_id' => env('OFFERS_ENGINE_CREATE_READ_MIGRATION_EXP'),
 
     'offers_engine_merchant_dashboard_read_migration_exp_id' => env('OFFERS_ENGINE_MERCHANT_DASHBOARD_READ_MIGRATION_EXP'),

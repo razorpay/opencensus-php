@@ -227,7 +227,10 @@ class Core extends Base\Core
 
     public function defaultOffersForMerchant(string $merchantId)
     {
-        $defaultOffers = $this->fetchDefaultOffersForMerchant($merchantId);
+        $enableCache = $this->shouldRouteToOffersEngineForCreation($merchantId,
+            Constants::OE_ENABLE_CACHE_INTERNAL_MERCHANT_GET_EXP);
+
+        $defaultOffers = $this->fetchDefaultOffersForMerchant($merchantId, $enableCache);
 
         $defaultOffersBool = false;
 
@@ -468,9 +471,9 @@ class Core extends Base\Core
         return true;
     }
 
-    public function fetchDefaultOffersForMerchant(string $merchantId)
+    public function fetchDefaultOffersForMerchant(string $merchantId, $enableCache = false)
     {
-        $defaultOffers = $this->repo->offer->fetchAllDefaultOffersForMerchant($merchantId);
+        $defaultOffers = $this->repo->offer->fetchAllDefaultOffersForMerchant($merchantId, $enableCache);
 
         return $defaultOffers;
     }
