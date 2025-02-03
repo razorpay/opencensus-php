@@ -425,6 +425,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const GatewayMerchantId = 'gateway_merchant_id';
     const GatewayTerminalId = 'gateway_terminal_id';
     const DeviceId          = 'device_id';
+    const InternalStatus     = 'internal_status';
 
     const REFUND_UNEXPECTED_PAYMENT = 'refund_unexpected_payment';
 
@@ -2406,6 +2407,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getGatewayTerminalId()
     {
         return $this->getAttribute(self::GatewayTerminalId);
+    }
+
+    public function getInternalStatus()
+    {
+        return $this->getAttribute(self::InternalStatus);
     }
 
     public function getDeviceId()
@@ -7183,6 +7189,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::GatewayTerminalId] = $this->getGatewayTerminalId();
             $data[self::GatewayMerchantId] = $this->getGatewayMerchantId();
             $data[self::DeviceId] = $this->getDeviceId();
+            $data[self::InternalStatus] = $this->getInternalStatus();
         }
     }
 
