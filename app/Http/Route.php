@@ -21424,7 +21424,8 @@ class Route
         'payment_create_private_old',
         'payment_create_checkout',
         'order_fetch_by_id',
-        'order_payments'
+        'order_payments',
+        'internal_order_payments'
     ];
 
 
