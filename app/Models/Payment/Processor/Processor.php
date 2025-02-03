@@ -11186,6 +11186,18 @@ class Processor
         }
 
         $this->upiMandate = $upiMandate;
+
+        if(($upiMandate['frequency'] === 'one_time') and
+            (($upiMandate['status'] === 'confirmed') or ($upiMandate['status'] === 'revoked') or
+            ($upiMandate['status'] === 'expired')))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_OTM_MANDATE_ALREADY_CONFIRMED,
+                null,
+                [
+                    'order_id' => $orderId,
+                ]);
+        }
     }
 
     protected function validateAndSetReceiverIfApplicable(Payment\Entity $payment, array $input)

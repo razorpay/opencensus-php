@@ -10,6 +10,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\UpiMandate\Entity;
 use RZP\Models\UpiMandate\Status;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -1473,6 +1474,66 @@ class UpiAxisInitialRecurringTest extends TestCase
         $this->assertUpiDbLastEntity('upi_mandate', [
             'status' => 'expired'
         ]);
+    }
+
+    public function testRecurringOneTimeMultipleMandateCreateFailedOnSameOrder()
+    {
+        $this->testRecurringOneTimeMandateCreate();
+
+        $order = $this->getDbLastOrder();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => $order->getId(),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'one_time',
+            Entity::STATUS          => Status::CONFIRMED,
+            Entity::USED_COUNT      => 1,
+        ], $upiMandate->toArray(), true);
+
+        $this->payment['order_id'] = $order->getPublicId();
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        try {
+            $this->doAuthPaymentViaAjaxRoute($this->payment);
+            $this->fail('Expected exception ' . BadRequestException::class . ' was not thrown');
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestException::class);
+            $this->assertEquals("Your payment has been declined as the One-time mandate is already created with the order. Please initiate the payment with a new order for new mandate creation.", $e->getMessage());
+        }
+    }
+
+    public function testRecurringOneTimeMultipleMandateCreateFailedOnSameOrderAfterExpired()
+    {
+        $this->testRecurringOneTimeMandateExecute();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $this->assertArraySubset([
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'one_time',
+            Entity::STATUS          => Status::EXPIRED,
+            Entity::USED_COUNT      => 2,
+        ], $upiMandate->toArray(), true);
+
+        $this->payment['order_id'] = 'order_'.$upiMandate['order_id'];
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        try
+        {
+            $this->doAuthPaymentViaAjaxRoute($this->payment);
+            $this->fail('Expected exception ' . BadRequestException::class . ' was not thrown');
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestException::class);
+            $this->assertEquals("Your payment has been declined as the One-time mandate is already created with the order. Please initiate the payment with a new order for new mandate creation.", $e->getMessage());
+        }
     }
 
     /** all mock callbacks */
