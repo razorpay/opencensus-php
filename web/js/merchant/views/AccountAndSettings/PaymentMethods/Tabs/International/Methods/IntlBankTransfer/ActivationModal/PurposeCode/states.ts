@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import debounce from 'lodash/debounce';
 
 import { useActivationState } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/Methods/IntlBankTransfer/ActivationModal/activationStates';
+import { track } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/Methods/IntlBankTransfer/ActivationModal/analytics';
 
 import { DEFAULT_VALIDATION, STEPS } from './constants';
 import { getPurposeCode } from './helpers';
@@ -60,6 +61,7 @@ export const usePurposeCode = () => {
 
   const handleSelectedGroupChange = ({ values }: { values: string[] }): void => {
     setSelectedGroup(values[0]);
+    track('clicked', { objectName: 'purpose code group selected', value: values[0] });
   };
 
   const handleValueChange = ({ value }: { value: string }): void => {
@@ -69,9 +71,15 @@ export const usePurposeCode = () => {
     });
 
     setStepValidationState(STEPS.PURPOSE_CODE, 'purposeCode', DEFAULT_VALIDATION);
+
+    track('clicked', { objectName: 'purpose code selected', value });
   };
 
   const handleClearSearch = () => handleSearch({ value: '' });
+
+  useEffect(() => {
+    track('render', { objectName: 'purpose code step' });
+  }, []);
 
   return {
     groups,

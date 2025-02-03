@@ -1,9 +1,10 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { Alert, Box, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { User, InstrumentListItem } from 'common/typings';
+import { trackPageView } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/analytics/track';
 import Firc from 'merchant/views/Settings/Configuration/components/FircAnnouncements/Firc';
 import { trackLinkClick } from 'merchantLA/containers/TestModeBanner/ga';
 
@@ -50,6 +51,15 @@ const International = ({ user, instrument, isOrgCurlec }: Props): JSX.Element =>
   const isIntlMethodsHidden = user.isInternationalMethodsHidden;
   const isIntlMerchant = user.international;
   const isLiveMerchant = user.live;
+
+  useEffect(() => {
+    trackPageView({
+      isActivatedUser,
+      isIntlMethodsHidden,
+      isIntlMerchant: !!isIntlMerchant,
+      isLiveMerchant,
+    });
+  }, [isActivatedUser, isIntlMerchant, isIntlMethodsHidden, isLiveMerchant]);
 
   return (
     <>

@@ -10,6 +10,8 @@ import {
   Checkbox,
 } from '@razorpay/blade/components';
 
+import { track } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/Methods/IntlBankTransfer/ActivationModal/analytics';
+
 import { B2B_EXPORTS_TNC_LINK, NOT_APPLICABLE, VERIFIED } from './constants';
 import { useIecCode } from './states';
 
@@ -26,6 +28,12 @@ const IecCode = () => {
     handleValueChange,
     handleAcceptNotApplicableTnc,
   } = useIecCode();
+
+  const trackIecCodeFieldClicked = () => {
+    track('clicked', {
+      objectName: 'iec code entered',
+    });
+  };
 
   return (
     <Box>
@@ -78,6 +86,7 @@ const IecCode = () => {
               helpText="Available on the DGFT portal under IEC details in the Services tab"
               autoCapitalize="characters"
               onChange={handleValueChange}
+              onFocus={trackIecCodeFieldClicked}
               isDisabled={isReadOnly}
               validationState={validationState.iecCode.state}
               errorText={validationState.iecCode.errorText}

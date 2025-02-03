@@ -1,5 +1,8 @@
+import { useEffect } from 'react';
+
 import { useVerificationStatus } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/Methods/IntlBankTransfer/verificationStates';
 import { VerificationStatus } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/Methods/IntlBankTransfer/verificationStates/types';
+import { track } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/analytics/track';
 
 import { getBannerActions, getBannerDetails } from './helpers';
 
@@ -29,6 +32,10 @@ export const useFailureBanner = ({ user, onRetry }: FailureBannerProps) => {
     status: banner?.status,
     onRetry,
   });
+
+  useEffect(() => {
+    track('render', { objectName: 'failure banner', status: status ?? '' });
+  }, [status]);
 
   return {
     banner,

@@ -1,4 +1,7 @@
+import { useEffect } from 'react';
+
 import { useActivationState } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/Methods/IntlBankTransfer/ActivationModal/activationStates';
+import { track } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/Methods/IntlBankTransfer/ActivationModal/analytics';
 
 import { STEPS } from './constants';
 
@@ -30,7 +33,13 @@ export const useInternationalDetails = () => {
       state: 'none',
       errorText: '',
     });
+
+    track('clicked', { objectName: 'international details accept tnc', isChecked });
   };
+
+  useEffect(() => {
+    track('render', { objectName: 'international details step' });
+  }, []);
 
   return {
     iecCode,

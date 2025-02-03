@@ -1,7 +1,10 @@
+import { useEffect } from 'react';
+
 import {
   useActivationState,
   validateIecCode,
 } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/Methods/IntlBankTransfer/ActivationModal/activationStates';
+import { track } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/Methods/IntlBankTransfer/ActivationModal/analytics';
 
 import { NOT_APPLICABLE, STEPS } from './constants';
 
@@ -36,6 +39,12 @@ export const useIecCode = () => {
       state: 'none',
       errorText: '',
     });
+
+    track('clicked', {
+      objectName: 'iec code option selected',
+      value,
+      iecCode: value === NOT_APPLICABLE ? NOT_APPLICABLE : '',
+    });
   };
 
   const handleValueChange = ({ value }: { value?: string }) => {
@@ -65,6 +74,11 @@ export const useIecCode = () => {
       state: 'none',
       errorText: '',
     });
+
+    track('clicked', {
+      objectName: 'iec code accept tnc',
+      isChecked,
+    });
   };
 
   const handleAcceptNotApplicableTnc = ({ isChecked }: { isChecked: boolean }): void => {
@@ -76,7 +90,16 @@ export const useIecCode = () => {
       state: 'none',
       errorText: '',
     });
+
+    track('clicked', {
+      objectName: 'iec code accept not applicable tnc',
+      isChecked,
+    });
   };
+
+  useEffect(() => {
+    track('render', { objectName: 'IEC code step' });
+  }, []);
 
   return {
     iecCode,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Alert,
   Accordion,
@@ -17,6 +17,7 @@ import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import { CommonInstrumentRequestInfo, LeafListItem } from 'common/typings';
 import copyToClipboard from 'common/utils/copyToClipboard';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { track } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/analytics/track';
 
 import AccountRow from './AccountItemRow';
 import { ACCOUNT_DETAIL_FIELD_MAPPING, RAZORPAY_SUPPORT_LINK, ACCOUNTS_STATUS } from './constants';
@@ -66,7 +67,13 @@ const Details = ({ item, isLoading, onAccountActivate }: DetailsProps) => {
         }).join('\n'),
       );
     }
+
+    track('clicked', { objectName: 'details copy all' });
   };
+
+  useEffect(() => {
+    track('render', { objectName: 'details' });
+  }, []);
 
   if (!item) {
     return null;

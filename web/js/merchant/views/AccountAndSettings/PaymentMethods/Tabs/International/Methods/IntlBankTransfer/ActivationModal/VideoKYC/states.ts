@@ -1,5 +1,8 @@
+import { useEffect } from 'react';
+
 import copyToClipboard from 'common/utils/copyToClipboard';
 import { useActivationState } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/Methods/IntlBankTransfer/ActivationModal/activationStates';
+import { track } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/Methods/IntlBankTransfer/ActivationModal/analytics';
 
 import { STEPS } from './constants';
 
@@ -35,11 +38,19 @@ export const useVideoKyc = () => {
       state: 'none',
       errorText: '',
     });
+
+    track('clicked', { objectName: 'video kyc owner selected', value });
   };
 
   const handleCopyLink = () => {
     copyToClipboard(webLink);
+
+    track('clicked', { objectName: 'video kyc copy link' });
   };
+
+  useEffect(() => {
+    track('render', { objectName: 'video kyc step' });
+  }, []);
 
   return {
     owner,

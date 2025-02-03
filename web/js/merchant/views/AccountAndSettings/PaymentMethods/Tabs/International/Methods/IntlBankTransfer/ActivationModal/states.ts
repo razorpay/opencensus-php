@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 
 import { useActivationState } from './activationStates';
+import { track } from './analytics';
 import { NOT_APPLICABLE, STEPS, VERIFIED } from './constants';
 import { patchMerchantPurposeCode, postVKycLink } from './helpers';
 import { ActivationModalProps } from './types';
@@ -36,6 +37,20 @@ export const useModal = ({
     onError: () => {
       setIsSavingForm(false);
     },
+    onSettled: (_data, error) => {
+      const message = error
+        ? error instanceof Error
+          ? error.message
+          : 'Failed to save purpose code'
+        : 'Purpose code saved successfully';
+
+      track('response', {
+        objectName: 'patchMerchantPurposeCode',
+        step: current,
+        error: !!error,
+        message,
+      });
+    },
   });
 
   const { mutateAsync: generateLink } = useMutation({
@@ -43,10 +58,33 @@ export const useModal = ({
     onError: () => {
       setIsSavingForm(false);
     },
+    onSettled: (_data, error) => {
+      const message = error
+        ? error instanceof Error
+          ? error.message
+          : 'Failed to create video kyc link'
+        : 'Video kyc link created successfully';
+
+      track('response', {
+        objectName: 'postVKycLink',
+        step: current,
+        error: !!error,
+        message,
+      });
+    },
   });
 
   const handleContinueClick = async () => {
-    if (steps[current].submitBtnText === 'Close') {
+    const isLastStep = steps[current].submitBtnText === 'Close';
+
+    track('clicked', {
+      objectName: 'continue',
+      step: current,
+      hasEddVerified: !!isEddVerified,
+      isLastStep,
+    });
+
+    if (isLastStep) {
       onDismiss();
       return;
     }

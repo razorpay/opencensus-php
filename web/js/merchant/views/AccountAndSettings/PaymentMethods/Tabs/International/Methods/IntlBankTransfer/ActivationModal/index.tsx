@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useMemo } from 'react';
+import React, { lazy, Suspense, useEffect, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -14,6 +14,7 @@ import {
   Skeleton,
 } from '@razorpay/blade/components';
 
+import { track } from './analytics';
 import { ACTION_LIST, STEPS } from './constants';
 import { useModal } from './states';
 import { ActivationModalProps } from './types';
@@ -49,6 +50,9 @@ const ActivationModal = ({ isOpen, onDismiss, ...props }: ActivationModalProps) 
     onDismiss,
   });
 
+  const { purposeCode, promoterPanName, purposeCodeDesc, hideSteps, iecCode, isEddVerified, step } =
+    props;
+
   const actionList = useMemo(() => {
     return ACTION_LIST.map(({ value, label }) => {
       if (hiddenSteps.has(value)) {
@@ -72,6 +76,30 @@ const ActivationModal = ({ isOpen, onDismiss, ...props }: ActivationModalProps) 
       );
     }).filter(Boolean);
   }, [current, hiddenSteps, steps]);
+
+  useEffect(() => {
+    if (isOpen) {
+      track('render', {
+        objectName: 'opened',
+        hasPurposeCode: !!purposeCode,
+        hasPromoterPanName: !!promoterPanName,
+        hasPurposeCodeDesc: !!purposeCodeDesc,
+        hasIecCode: !!iecCode,
+        hasEddVerified: !!isEddVerified,
+        step: step as number,
+        isHideStepSet: hideSteps ? hideSteps.length > 0 : false,
+      });
+    }
+  }, [
+    hideSteps,
+    iecCode,
+    isEddVerified,
+    isOpen,
+    promoterPanName,
+    purposeCode,
+    purposeCodeDesc,
+    step,
+  ]);
 
   return (
     <Modal isOpen={isOpen} onDismiss={onDismiss} size="large">

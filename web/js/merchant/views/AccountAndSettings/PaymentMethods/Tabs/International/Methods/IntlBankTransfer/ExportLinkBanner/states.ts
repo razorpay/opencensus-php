@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import copyToClipboard from 'common/utils/copyToClipboard';
+import { track } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/analytics/track';
 
 import { BASE_EXPORT_LINK_URL } from './constants';
 import { getExportLink, postExportLink } from './helpers';
@@ -18,6 +19,8 @@ export const useExportLinkBanner = () => {
     mutationFn: () => postExportLink(),
     onSuccess: () => {
       refetchExportLink();
+
+      track('success', { objectName: 'export link banner create link' });
     },
   });
 
@@ -26,8 +29,17 @@ export const useExportLinkBanner = () => {
     if (!accountsExportLink && retryToCreateExportLink.current < 3) {
       createExportLink();
       retryToCreateExportLink.current += 1;
+
+      track('request', {
+        objectName: 'export link banner create link',
+        retryCount: retryToCreateExportLink.current,
+      });
     }
   }, [accountsExportLink, createExportLink]);
+
+  useEffect(() => {
+    track('render', { objectName: 'export link banner' });
+  }, []);
 
   const text = `${BASE_EXPORT_LINK_URL}${accountsExportLink}`;
   const url = `https://${text}`;
