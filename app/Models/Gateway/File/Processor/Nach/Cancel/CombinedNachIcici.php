@@ -32,7 +32,7 @@ class CombinedNachIcici extends Base
     const FILE_TYPE = FileStore\Type::ICICI_NACH_COMBINED_CANCEL;
     const GATEWAY   = Payment\Gateway::NACH_ICICI;
     const S3_PATH   = 'icicibank/nach/input_file/';
-    const FILE_NAME = 'MMS-CANCEL-ICIC-ICIC865719-{$date}-API0{$count}-INP';
+    const FILE_NAME = 'MMS-CANCEL-ICIC-ICICRZ-{$date}-API0{$count}-INP';
     const ZIP_FILE  = 'MMS-CANCEL-ICIC-ICICRZ-{$date}-API000001-INP';
     const STEP      = 'cancel';
 
@@ -75,7 +75,7 @@ class CombinedNachIcici extends Base
                 $this->mailData[$fileNameForMail]['count'] = $recordCount;
 
             }
-    
+
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
 
             $this->trace->info(
