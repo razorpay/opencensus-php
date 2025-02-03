@@ -985,7 +985,9 @@ class Core extends Base\Core
                     return $item['id'] === $creditJournalId;
                 });
 
-                $txn = $this->transformJournalResponseToTransactionEntityBase($filteredCreditJournal);
+                $creditJournal = reset($filteredCreditJournal);
+
+                $txn = $this->transformJournalResponseToTransactionEntityBase($creditJournal);
                 $txn->accountBalance()->associate($balance);
 
                 $adjustment->setStatus(Status::PROCESSED);
