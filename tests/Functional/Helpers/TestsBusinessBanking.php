@@ -60,7 +60,8 @@ trait TestsBusinessBanking
         bool $skipFeatureAddition = false,
         int $balance = 0,
         string $balanceType = AccountType::SHARED,
-        $channel = null)
+        $channel = null,
+        $ifscCode = 'RAZRB000000',)
     {
         // Activate merchant with business_banking flag set to true.
         $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
@@ -90,7 +91,7 @@ trait TestsBusinessBanking
                 'type'           => 'virtual_account',
                 'entity_id'      => $virtualAccount->getId(),
                 'account_number' => '2224440041626905',
-                'ifsc_code'      => 'RAZRB000000',
+                'ifsc_code'      => $ifscCode,
             ]);
         $virtualAccount->bankAccount()->associate($bankAccount);
         $virtualAccount->balance()->associate($bankingBalance);

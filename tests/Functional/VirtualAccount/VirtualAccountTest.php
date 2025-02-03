@@ -5674,4 +5674,79 @@ class VirtualAccountTest extends TestCase
             ->shouldReceive('bulkCallsToSplitz')
             ->andReturn($output);
     }
+
+    public function testVirtualAccountClose_CollectxVA()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts/'.$this->virtualAccount->getPublicId().'/close'
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        self::assertEquals('closed', $response['status']);
+    }
+
+    public function testVirtualAccountClose_PrimaryBalanceTypeVA()
+    {
+        $virtualAccount = $this->createVirtualAccount();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts/'.$virtualAccount['id'].'/close'
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        self::assertEquals('closed', $response['status']);
+    }
+
+    public function testVirtualAccountClose_RBL_CollectxVA()
+    {
+        try
+        {
+            $input = [
+                "id" => '10000000000000',
+                'experiment_name' => RazorxTreatment::COLLECTX_RBL_MERCHANTS_VA_CLOSE_BLOCK,
+                'request_data' => json_encode(['id'=>'10000000000000'])
+            ];
+
+            $output = [
+                "response" => [
+                    "variant" => [
+                        "name" => 'enable',
+                    ]
+                ]
+            ];
+
+            $this->mockSplitzTreatment($input, $output);
+
+            $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+            $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true, ifscCode: 'RATN0VAAPIS');
+
+            $request = [
+                'method'  => 'POST',
+                'url'     => '/virtual_accounts/'.$this->virtualAccount->getPublicId().'/close'
+            ];
+
+            $this->ba->privateAuth();
+
+            $response = $this->makeRequestAndGetContent($request);
+
+        }
+        catch (BadRequestException $exp)
+        {
+            $this->assertEquals("BAD_REQUEST_VA_CLOSE_BLOCKED_FOR_RBL_MERCHANTS", $exp->getMessage());
+            return;
+        }
+    }
 }

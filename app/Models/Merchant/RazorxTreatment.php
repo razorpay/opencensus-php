@@ -1087,4 +1087,6 @@ final class RazorxTreatment
 
     const BANK_DATA_VIA_NPCI_API = 'bank_data_via_npci_api';
     const Axis_VA_MIGRATION = 'axis_va_migration';
+
+    const COLLECTX_RBL_MERCHANTS_VA_CLOSE_BLOCK = "collectx_rbl_merchants_va_close_block";
 }

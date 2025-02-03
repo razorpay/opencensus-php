@@ -692,7 +692,17 @@ class Core extends Base\Core
 
     public function close(Entity $virtualAccount)
     {
-        $virtualAccount->getValidator()->validateOfPrimaryBalance();
+        if( ($virtualAccount->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true))
+        {
+            $virtualAccount->getValidator()->validateOfBankingBalance();
+
+            // TODO: Remove this check when RBL VA close API is live from bank end
+            $this->verifyMerchantDoesNotBelongToRblCollectx();
+        }
+        else
+        {
+            $virtualAccount->getValidator()->validateOfPrimaryBalance();
+        }
 
         return $this->closeVA($virtualAccount);
     }
@@ -1571,5 +1581,25 @@ class Core extends Base\Core
             'Success' => true,
             'Count'   => $deletedCount
         ];
+    }
+
+    protected function verifyMerchantDoesNotBelongToRblCollectx(): void
+    {
+        $properties = [
+            "id" => $this->merchant->getId(),
+            "experiment_name" => RazorxTreatment::COLLECTX_RBL_MERCHANTS_VA_CLOSE_BLOCK,
+            'request_data'  => json_encode(['id' => $this->merchant->getId()])
+        ];
+
+        $isCollectxRblMerchant = (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($properties,'enable');
+
+        if ($isCollectxRblMerchant === true &&
+            $this->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true){
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VA_CLOSE_BLOCKED_FOR_RBL_MERCHANTS,
+                null,
+                null,
+                ErrorCode::BAD_REQUEST_VA_CLOSE_BLOCKED_FOR_RBL_MERCHANTS);
+        }
     }
 }
