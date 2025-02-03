@@ -14,6 +14,7 @@ final class Constants
     const PAYMENT_ID = 'payment_id';
     const GATEWAY = 'gateway';
     const BATCH_ID = 'batch_id';
+    const MERCHANT_REFERENCE = 'merchant_reference';
 
     // UPS authorize entity columns
     const NPCI_TXN_ID = 'npci_txn_id';
@@ -23,6 +24,9 @@ final class Constants
 
     // Models in UPS
     const AUTHORIZE = 'authorize';
+
+    // Models in UPS
+    const DEBIT = 'debit';
 
     // Entity fetch request paramenters
     const MODEL = 'model';

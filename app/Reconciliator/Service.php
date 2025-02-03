@@ -1352,6 +1352,12 @@ class Service extends Base\Service
         if (($payment->isRoutedThroughUpiPaymentService() === true) ||
             ($payment->isRoutedThroughPaymentsUpiPaymentService() === true))
         {
+            // check if payment is recurring then update operation entity
+            if ($payment->isUpiRecurring() === true)
+            {
+                $this->updateUpsRecurringGatewayData($input, $payment);
+                return;
+            }
             $this->updateUpsGatewayData($input, $payment);
             return;
         }
@@ -1385,6 +1391,121 @@ class Service extends Base\Service
         $this->updateAccountDetails($input['upi'], $gatewayPayment);
 
         $this->repo->saveOrFail($gatewayPayment);
+    }
+
+    /** Persist/update gateway data post recon and pushes to metro
+     * @param array $input
+     * @param Payment\Entity $payment
+     * @throws Exception\BadRequestException
+     */
+    protected function updateUpsRecurringGatewayData(array $input, Payment\Entity $payment)
+    {
+        $gatewayEntity = $this->getUpsRecurringGatewayEntity($input, $payment);
+
+        $dataToUpdate = [];
+
+        if ((empty($input['upi']['gateway_payment_id']) === false) and
+            ($input['upi']['gateway_payment_id'] !== $gatewayEntity[UpsConstants::GATEWAY_REFERENCE]))
+        {
+            $dataToUpdate[UpsConstants::GATEWAY_REFERENCE] = $input['upi']['gateway_payment_id'];
+        }
+
+        if ((empty($input['upi']['npci_txn_id']) === false) and
+            ($input['upi']['npci_txn_id'] !== $gatewayEntity[UpsConstants::NPCI_TXN_ID]))
+        {
+            $dataToUpdate[UpsConstants::NPCI_TXN_ID] = $input['upi']['npci_txn_id'];
+        }
+
+        if ((empty($input['upi']['npci_reference_id']) === false) and
+            ($input['upi']['npci_reference_id'] !== $gatewayEntity[UpsConstants::CUSTOMER_REFERENCE]))
+        {
+            $dataToUpdate[UpsConstants::CUSTOMER_REFERENCE] = $input['upi']['npci_reference_id'];
+        }
+
+        if (empty($dataToUpdate) === true)
+        {
+            // do not push to sqs if there is no data to update
+            return;
+        }
+
+        // in case of upi recurring we need to update operation table with the help of merchant_reference
+        $this->dispatchRecurringDataToUpsReconQueue($dataToUpdate, $payment,  $input['upi']['merchant_reference']);
+    }
+
+    /**
+     * Retrive required field of UPS operation entity
+     * @param Payment\Entity $payment
+     * @return array
+     */
+    protected function getUpsRecurringGatewayEntity($input, Payment\Entity $payment): array
+    {
+        $action = UpsConstants::ENTITY_FETCH;
+
+        $gateway = $payment->getGateway();
+
+        $input = [
+            UpsConstants::MODEL            => UpsConstants::DEBIT,
+            UpsConstants::REQUIRED_FIELDS  => [
+                UpsConstants::CUSTOMER_REFERENCE,
+                UpsConstants::GATEWAY_REFERENCE,
+                UpsConstants::NPCI_TXN_ID,
+                UpsConstants::RECONCILED_AT,
+            ],
+            UpsConstants::COLUMN_NAME           => UpsConstants::MERCHANT_REFERENCE,
+            UpsConstants::VALUE                 => $input['upi']['merchant_reference'],
+            UpsConstants::GATEWAY               => $gateway,
+        ];
+
+        $gatewayEntity = $this->app['upi.payments']->action($action, $input, $gateway);
+
+        if ((isset($gatewayEntity[UpsConstants::CUSTOMER_REFERENCE]) === false) or
+            (isset($gatewayEntity[UpsConstants::GATEWAY_REFERENCE]) === false) or
+            (isset($gatewayEntity[UpsConstants::NPCI_TXN_ID]) === false) or
+            (isset($gatewayEntity[UpsConstants::RECONCILED_AT]) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_UPI_PAYMENT_SERVICE_ENTITY_FETCH_ERROR,
+                [
+                    'input'     => $input,
+                    'entity'    => $gatewayEntity
+                ],
+                null,
+                'received wrong entity from Upi Payment Service');
+        }
+
+        return $gatewayEntity;
+    }
+
+    /** Dispatch the entity update message to sqs queue
+     * @param array $data
+     * @param Payment\Entity $payment
+     * @throws \Exception
+     */
+    protected function dispatchRecurringDataToUpsReconQueue(array $data, Payment\Entity $payment, $merchant_reference)
+    {
+        $pushData = [
+            UpsConstants::PAYMENT_ID            => $payment->getId(),
+            UpsConstants::MERCHANT_REFERENCE    => $merchant_reference,
+            UpsConstants::GATEWAY_DATA          => $data,
+            UpsConstants::GATEWAY               => $payment->getGateway(),
+            UpsConstants::BATCH_ID              => null,
+            UpsConstants::MODEL                 => UpsConstants::DEBIT
+        ];
+
+        try
+        {
+            UpsGatewayEntityUpdate::dispatch($this->mode, $pushData);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(TraceCode::UPI_PAYMENT_JOB_DISPATCH_ERROR,
+                [
+                    UpsConstants::PAYMENT_ID   => $payment->getId(),
+                    "error_message"            => $ex->getMessage()
+                ]);
+
+            throw $ex;
+        }
     }
 
     protected function updateCpsData (array $input, Payment\Entity $payment)
