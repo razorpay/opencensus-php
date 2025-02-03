@@ -95,6 +95,10 @@ return [
         'test'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_LIVE_QUEUE'),
         'live'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_LIVE_QUEUE'),
     ],
+    'payout_service_dual_write_direct_push' => [
+        'test'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH_LIVE_QUEUE'),
+        'live'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH_LIVE_QUEUE'),
+    ],
     'account_statement_dual_write' => [
         'test'       => env('AWS_ACCOUNT_STATEMENT_DUAL_WRITE_LIVE_QUEUE'),
         'live'       => env('AWS_ACCOUNT_STATEMENT_DUAL_WRITE_LIVE_QUEUE'),
@@ -876,6 +880,8 @@ return [
 
         env('AWS_APPROVED_PAYOUT_DISTRIBUTION_TEST_QUEUE') => 'RZP\\Jobs\\ApprovedPayoutDistribution',
         env('AWS_APPROVED_PAYOUT_DISTRIBUTION_LIVE_QUEUE') => 'RZP\\Jobs\\ApprovedPayoutDistribution',
+
+        env('AWS_PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH_LIVE_QUEUE') => 'RZP\\Jobs\\PayoutServiceDualWriteDirectPush',
     ],
 
     'fifo_sqs_mappings'=>[
