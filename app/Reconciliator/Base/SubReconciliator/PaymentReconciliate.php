@@ -2449,10 +2449,21 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'batch_id'      => $this->batchId,
             ]);
 
-        if (isset($this->merchant) === false )
+        if (isset($this->merchant) === false || $this->payment->isCard())
         {
             $this->merchant = $this->repo->merchant->fetchMerchantFromEntity($this->payment); ;
         }
+
+        $this->trace->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'info_code'     => 'PAYMENT_TRANSACTION_CREATE',
+                'message'       => 'Attempting to create payment transaction in recon with merchant',
+                'payment_id'    => $this->payment->getId(),
+                'gateway'       => $this->gateway,
+                'batch_id'      => $this->batchId,
+                'merchant'      => $this->merchant->getId(),
+            ]);
 
         $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
