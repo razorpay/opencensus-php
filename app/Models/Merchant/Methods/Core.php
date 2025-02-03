@@ -896,6 +896,12 @@ class Core extends Base\Core
         }
         $experimentName = $this->app['config']->get('app.bank_data_via_npci_api_experiment');
         if ($this->getSplitzResponse($merchant->getMerchantId(), $experimentName) === 'enable') {
+
+            $this->trace->info(TraceCode::BANK_DATA_VIA_NPCI_API,[
+                'merchant_id' => $merchant->getMerchantId(),
+                'experiment_name' => $experimentName,
+            ]);
+
             if ($this->isTestMode() === true) {
                 $recurringData[self::EMANDATE] = Payment\Gateway::getFilteredEmandateBanks($authTypes);
             } else {
@@ -1659,13 +1665,11 @@ class Core extends Base\Core
         // Loop through each available gateway for the merchant
         foreach ($availableGatewaysForMerchant as $gateway) {
             // Check if the gateway has the specified auth type and retrieve the bank IFSCs for that auth type
-            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$gateway][$authType])) {
-                $allowedBanksForAuthType = Payment\Gateway::$gatewaysEmandateBanksMap[$gateway][$authType];
-
+            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$gateway])) {
                 // Loop through each bank from the API response
                 foreach ($data as $ifsc => $bank) {
                     // Check if the bank's IFSC is allowed for the given auth type in the gateway
-                    if (in_array($ifsc, $allowedBanksForAuthType, true) && in_array($authType, $bank[self::AUTH_TYPES], true)) {
+                    if (in_array($authType, $bank[self::AUTH_TYPES], true)) {
                         // Add the bank to the recurring data array for this auth type
                         $recurringData[self::EMANDATE][$ifsc] = $bank;
                     }
