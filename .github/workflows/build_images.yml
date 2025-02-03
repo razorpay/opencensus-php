@@ -476,7 +476,7 @@ jobs:
   #             "status": "Pending",
   #             "config_overrides": "{}"
   #           }
-            
+
   # trigger-e2e-execution-sc:
   #   name: Trigger E2E Execution for smart collect
   #   runs-on:
