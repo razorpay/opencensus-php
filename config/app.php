@@ -1223,6 +1223,10 @@ return array(
 
     'cms_create_override_live_experiment_id' => env('CMS_CREATE_OVERRIDE_LIVE_EXPERIMENT_ID'),
 
+    'cms_read_override_test_experiment_id' => env('CMS_READ_OVERRIDE_TEST_EXPERIMENT_ID'),
+
+    'cms_read_override_live_experiment_id' => env('CMS_READ_OVERRIDE_LIVE_EXPERIMENT_ID'),
+
     'stop_async_capture_card_gateways' => env('STOP_ASYNC_CAPTURE_CARD_GATEWAYS'),
 
     'read_token_iin_bin_service_primary' => env('READ_TOKEN_IIN_BIN_SERVICE_PRIMARY'),

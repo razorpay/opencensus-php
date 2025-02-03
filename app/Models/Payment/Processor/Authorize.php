@@ -7561,12 +7561,7 @@ trait Authorize
 
         // Based on experiment, evaluate if update call should go to CMS or not
         // Note that, we are reusing the same experiment that we are using for create override
-        $shouldCreateViaCMS = (new Customer\Core)->isCreateOverrideToCmsEnabled($this->subscription->merchant,
-            $this->mode,
-            app('request.ctx')->getInternalAppName(),
-            $this->app['api.route']->getCurrentRouteName(),
-        );
-
+        $shouldCreateViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isCreateOverrideToCmsEnabled($this->subscription->merchant);
         if ($shouldCreateViaCMS)
         {
             (new Customer\Core)->addGlobalCustomerIdViaCMS($this->subscription->merchant->getId(), $localCustomer, $customer->getId());

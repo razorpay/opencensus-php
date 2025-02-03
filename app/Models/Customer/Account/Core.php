@@ -175,9 +175,7 @@ class Core extends Base\Core
             }
         }
 
-        $shouldCreateViaCMS = $this->isCreateOverrideToCmsEnabled($merchant, $this->mode,
-            app('request.ctx')->getInternalAppName(),
-            $this->app['api.route']->getCurrentRouteName());
+        $shouldCreateViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isCreateOverrideToCmsEnabled($merchant);
 
         // Check if address is part of the input
         $hasAddress = $this->isAddressPresentInRequest($input);
@@ -231,66 +229,20 @@ class Core extends Base\Core
         return false;
     }
 
-    public function isCreateOverrideToCmsEnabled($merchant, $mode, $internal_app_name, $route_name): bool
-    {
-        $experimentId = $this->mode == "test" ? "app.cms_create_override_test_experiment_id" : "app.cms_create_override_live_experiment_id";
-        $properties = [
-                'id'            => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get($experimentId),
-                'request_data'  => json_encode([
-                    'merchantId' => $merchant->getId(),
-                    'internal_app_name' => $internal_app_name, 'mode' => $mode,
-                    'route_name'  => $route_name, 'country' => $merchant->getCountry()])
-            ];
-        try
-        {
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-        }
-        catch(\Exception $e)
-        {
-            $this->trace->traceException($e, null, TraceCode::CMS_REQUEST_SPLITZ_ERROR);
-        }
-
-        $variant = $response['response']['variant']['name'] ?? '';
-
-        return  $variant == "enabled";
-    }
-
     protected function createCustomerViaCMS($customer, $input, $merchantId)
     {
         $cmsService = new CMSService\Service($this->app);
         $cmsInput = $input;
         $data = $cmsService->createCustomerV2($cmsInput, $merchantId);
 
-        $this->fillV2CustomerInfoInCustomerEntity($customer, $data);
+        (new Customer\Account\Transformations())->fillV2CustomerInfoInCustomerEntity($customer, $data);
     }
-
-    protected function fillV2CustomerInfoInCustomerEntity($customer, $v2Data)
-    {
-        $entityData = [
-            Entity::ID             => $v2Data[Entity::ID] ?? null,
-            Entity::ENTITY         => $v2Data[Entity::ENTITY] ?? null,
-            Entity::NAME           => $v2Data['first_name'] ?? null,
-            Entity::EMAIL          => $v2Data[Entity::EMAIL] ?? null,
-            Entity::CONTACT        => $v2Data[Entity::CONTACT] ?? null,
-            Entity::GSTIN          => $v2Data['tax_details'][0]['value'] ?? null,
-            Entity::NOTES          => $v2Data[Entity::NOTES] ?? [],
-        ];
-        $customer->fill($entityData);
-        $customer->setAttribute(Entity::CREATED_AT, $v2Data[Entity::CREATED_AT]);
-
-        if (array_key_exists('global_customer_id', $v2Data['custom_data']))
-        {
-            $customer->setAttribute(Entity::GLOBAL_CUSTOMER_ID, $v2Data['custom_data']['global_customer_id']);
-        }
-    }
-
 
     /**
      * Uses v2 update API to add global customer ID to the given customer ID
      * Makes a read call to first fetch the existing customer and then adds global customer ID to the custom_data field
      * @param $merchantId
-     * @param $customerId
+     * @param $localCustomer
      * @param $globalCustomerId
      * @return void
      */
@@ -301,7 +253,7 @@ class Core extends Base\Core
 
         $newCustomData = array_merge($data['custom_data'], ['global_customer_id' => $globalCustomerId]);
         $updatedCustomerV2 = $cmsService->updateCustomerByReferenceId($localCustomer->getId(), ['custom_data' => $newCustomData, 'merchant_id' => $merchantId]);
-        $this->fillV2CustomerInfoInCustomerEntity($localCustomer, $updatedCustomerV2);
+        (new Customer\Account\Transformations())->fillV2CustomerInfoInCustomerEntity($localCustomer, $updatedCustomerV2);
     }
 
     /**

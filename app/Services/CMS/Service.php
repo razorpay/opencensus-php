@@ -12,6 +12,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 use RZP\Http\Request\Requests;
 use RZP\Http\RequestHeader;
+use RZP\Models\Customer\Account\Transformations;
 use RZP\Trace\TraceCode;
 
 class Service {
@@ -19,7 +20,8 @@ class Service {
     const CMS_ROUTES = [
         'create_customer' => 'v2/internal/customers',
         'get_customer_by_reference_id' => 'v2/internal/customers/by/reference/%s',
-        'update_customer_by_reference_id' => 'v2/internal/customers/by/reference/%s'
+        'update_customer_by_reference_id' => 'v2/internal/customers/by/reference/%s',
+        'list_customers' => 'v2/internal/customers'
     ];
 
     protected $app;
@@ -61,8 +63,7 @@ class Service {
      */
     public function createCustomerV2($input,$merchantId)
     {
-        $input = $this->transformV1CreateOptionsToV2CreateOptions($input,$merchantId);
-
+        $input = (new Transformations())->transformV1CreateOptionsToV2CreateOptions($input, $merchantId);
         return $this->sendRequest(self::CMS_ROUTES['create_customer'], 'post', $input);
     }
 
@@ -74,6 +75,26 @@ class Service {
     public function updateCustomerByReferenceId($customerId, $payload)
     {
         return $this->sendRequest(sprintf(self::CMS_ROUTES['update_customer_by_reference_id'], $customerId), 'patch', $payload);
+    }
+
+    public function listCustomers($params = [])
+    {
+        // Remove keys if their values are null
+        $filteredParams = array_filter($params, function ($value) {
+            return $value !== null;
+        });
+
+        $url = self::CMS_ROUTES['list_customers'];
+        if (count($filteredParams) > 0)
+        {
+            // Add query string params
+            $url = $url . '?';
+            foreach ($filteredParams as $key => $value)
+                $url = $url . $key . '=' . $value . '&';
+
+            $url = rtrim($url, '&');
+        }
+        return $this->sendRequest($url, 'get');
     }
 
     /**
@@ -206,47 +227,12 @@ class Service {
 
         $this->trace->histogram(Metric::CMS_REQUEST_DURATION_MS, microtime(true) - $requestStartAt,
             [
-                Metric::LABEL_ROUTE => $request['url'],
+                Metric::LABEL_ACTION => $method,
                 Metric::LABEL_IS_SUCCESS => $success,
                 Metric::LABEL_STATUS_CODE => $success ? $response->status_code: "",
             ]
         );
 
         return $response;
-    }
-
-    public function transformV1CreateOptionsToV2CreateOptions($opt, $merchantId)
-    {
-        $v2CreateOptions = [
-            'salutation'          =>        null,
-            'first_name'          =>        $opt['name'] ?? null,
-            'middle_name'         =>        null,
-            'last_name'           =>        null,
-            'email'               =>        $opt['email'] ?? null,
-            'contact'             =>        $opt['contact'] ? (string)$opt['contact'] : null,
-            'notes'               =>        (object)$opt["notes"] ?? [],
-            'gender'              =>        null,
-            'dob'                 =>        null,
-            'custom_data'         =>        (object)([]),
-            'tax_details'         =>        $this->convertGstinToTaxDetails($opt['gstin'] ?? null),
-            'merchant_id'         =>        $merchantId,
-        ];
-
-        return $v2CreateOptions;
-    }
-
-    // Helper function to convert Gstin to TaxDetails
-    public function convertGstinToTaxDetails($gstin)
-    {
-        if (empty($gstin)) {
-            return null;
-        }
-
-        return [
-            [
-            'type' => 'IN_GST',
-            'value' => $gstin
-            ]
-        ];
     }
 }

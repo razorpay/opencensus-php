@@ -1288,7 +1288,7 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,null,null,PublicErrorDescription::BAD_REQUEST_CUSTOMER_ADDRESS_NOT_FOUND);
         }
-                                    
+
         $address = (new Address\Core)->edit($address, $input);
 
         return $address->toArrayPublic();
