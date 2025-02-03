@@ -439,6 +439,12 @@ class Entity extends Base\PublicEntity
                 ($now <= $this->getEndsAt()));
     }
 
+    public function isExternalOfferWithGlobalLimits(): bool
+    {
+        return (($this->getMaxOfferUsage() !== null) and
+                ($this->isExternal()));
+    }
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);

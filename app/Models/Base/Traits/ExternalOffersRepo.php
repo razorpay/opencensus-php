@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant;
+use RZP\Models\Offer\Core as OfferCore;
 use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
@@ -148,6 +149,12 @@ trait ExternalOffersRepo
 
                 if (sizeof($offerIds) !== sizeof($updatedOffers))
                 {
+                    app('trace')->info(TraceCode::OFFERS_NOT_FOUND_IN_OFFERS_ENGINE, [
+                        "req_offer_ids_count"    => sizeof($offerIds),
+                        "offer_engine_ids_count" => $updatedOffers,
+                        "route"                  => $this->app['api.route']->getCurrentRouteName(),
+                    ]);
+
                     $fallbackOffers = $this->fetchRemainingFromAPI($offerIds, $updatedOffers);
                     $updatedOffers = array_merge($updatedOffers, $fallbackOffers);
                 }
@@ -482,8 +489,7 @@ trait ExternalOffersRepo
     private function fetchFromOE(string $merchantId): bool
     {
         return ($this->validateExternalFetchEnabled() === true)
-        && ($this->core->shouldRouteToOffersEngine(
-            $merchantId, Constants::OFFERS_ENGINE_FETCH_EXP) === true);
+        && ($this->core->shouldRouteToOffersEngine() === true);
     }
 
     private function fetchRemainingFromAPI(array $offerIds, $offerEngineOffers)
@@ -514,6 +520,8 @@ trait ExternalOffersRepo
     {
         $offersWithLimits = [];
         $updatedOffers = [];
+        $offerWithLimitsMerchantIds = [];
+        $offerIdsWithLimits = [];
 
         // get offers with limits if any
         foreach ($offers as $offer)
@@ -525,21 +533,35 @@ trait ExternalOffersRepo
 
             if (isset($offer[OfferEntity::MAX_OFFER_USAGE]) === true)
             {
-                $offersWithLimits[] = $offer->getId();
+                $offersWithLimits[]           = $offer;
+                $offerWithLimitsMerchantIds[] = $offer->getMerchantId();
+                $offerIdsWithLimits[]         = $offer->getId();
             }
         }
 
+        $merchantIdResultMap = count($offersWithLimits) > 0 ? (new OfferCore())->shouldMigrateOffersWithLimitsToOE(
+            array_unique($offerWithLimitsMerchantIds), Constants::OFFERS_ENGINE_FETCH_EXP) : [];
+
         // fetch offers with usage limits from API db
-        foreach ($offersWithLimits as $offerId)
+        foreach ($offersWithLimits as $offersWithLimit)
         {
-            $updatedOffers[] = parent::findOrFail($offerId);
+            $merchantId = $offersWithLimit->getMerchantId();
+
+            if ((isset($merchantIdResultMap[$merchantId]) === true) and
+                ($merchantIdResultMap[$merchantId] === true))
+            {
+                $updatedOffers[] = $offersWithLimit;
+                continue;
+            }
+
+            $updatedOffers[] = parent::findOrFail($offersWithLimit->getId());
         }
 
         // append remaining offers normally
         foreach ($offers as $offer)
         {
             // if offer_id is not present in array it returns false
-            if (array_search($offer->getId(), $offersWithLimits) === false)
+            if (array_search($offer->getId(), $offerIdsWithLimits) === false)
             {
                 $updatedOffers[] = $offer;
             }

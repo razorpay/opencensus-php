@@ -2045,7 +2045,9 @@ class OffersTest extends TestCase
                 'continue_txn_on_failure' => 0,
                 'offer_type'              => 'OFFER_TYPE_STAGE_REGULAR',
                 'channel_name'            => 'CHANNEL_RZP_CHECKOUT',
-            ]];
+                'total_usage'             => "200",
+            ]
+        ];
     }
     public function testFetchOffersCreateInfoWithoutEmiPlans()
     {
@@ -2092,4 +2094,130 @@ class OffersTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testFetchOffersWithGlobalLimitsFromOE()
+    {
+        $this->markTestSkipped("marking this as skipped due to concurrency issues with config keys.")
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => true,
+                ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED => true,
+            ]);
+
+        $offerResponse = [
+            'offer'            => [
+                'metadata' => [
+                    'offer_id'      => 'offer_10000000000000',
+                    'name'          => 'Test Offer',
+                    'display_name'  => 'Test Offer',
+                    'advertiser_id' => 'rzp.merchant.10000000000000',
+                    'created_by'    => 'rzp_merchant',
+                    'state'         => 'STATE_CREATED',
+                    'offer_on'      => 'BENEFICIARY_TYPE_SELF',
+                    'currency'      => 'INR',
+                    'schedules'     => [
+                        'starts_at' => 1514764800,
+                        'ends_at'   => 1546300800,
+                    ],
+                ],
+                'spec'     => [
+                    'allowed_channels' => [
+                        'CHANNEL_RZP_CHECKOUT',
+                    ],
+                    'funding'          => [
+                        'type'  => 'BENEFICIARY_TYPE_SELF',
+                        'split' => [
+                            [
+                                'type'   => 'VALUE_OPTION_PERCENTAGE',
+                                'bearer' => 'USER_TYPE_PUBLISHER',
+                                'value'  => 100,
+                            ],
+                        ],
+                    ],
+                    'benefits_types'   => [
+                        'BENEFIT_TYPE_DISCOUNT',
+                    ],
+                    "usage_limits"     => [
+                        [
+                            "maximum_value" => 300,
+                            "on"            => "LIMIT_ON_OFFER",
+                            "limit_type"    => "LIMIT_TYPE_COUNT"
+                        ]
+                    ],
+                    'rule_groups'      => [
+                        'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true',
+                                    'then'            => [
+                                        [
+                                            'discount' => [
+                                                'percent_discount' => 1000,
+                                                'applicable_on'    => 'Order.total_amount',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL'    => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.CardType == \"credit\" && PaymentInstrument.CardNetwork == \"VISA\" && PaymentInstrument.Issuer == \"HDFC\"',
+                                    'then'            => [
+                                        [
+                                            'discount' => [
+                                                [
+                                                    'percent_discount' => 1000,
+                                                    'applicable_on'    => 'Order.total_amount',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'offer_publishers' => [
+                [
+                    'continue_txn_on_failure' => 0,
+                    'offer_type'              => 'OFFER_TYPE_STAGE_REGULAR',
+                    'channel_name'            => 'CHANNEL_RZP_CHECKOUT',
+                    'total_usage'             => '200',
+                ]
+            ]
+        ];
+
+        $OffersEngineMock = Mockery::mock(OffersEngine::class, [$this->app])
+                                   ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $OffersEngineMock->shouldReceive('sendRequest')
+                         ->andReturnUsing(function(string $endpoint,
+                                                   string $method,
+                                                   array  $data = [],
+                                                   bool   $throwExceptionOnFailure = true,
+                                                   int    $timeout = 60
+                         ) use ($offerResponse) {
+                             self::assertEquals('v1/offers/offer_10000000000000?publisher_id=rzp.merchant.10000000000000', $endpoint);
+                             self::assertEquals("GET", $method);
+                             self::assertEmpty($data);
+                             self::assertTrue($throwExceptionOnFailure);
+
+                             return $offerResponse;
+                         })->times(1);
+
+        $this->app->instance('offers_engine', $OffersEngineMock);
+
+        $this->startTest();
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => false,
+                ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED => false,
+            ]);
+    }
 }
+

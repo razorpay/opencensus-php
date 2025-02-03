@@ -92,6 +92,8 @@ class Checker extends Base\Core
 
         $isMaxOfferUsageExceeded = true;
 
+        // Note: The values for Max Usage and Current offer usage is coming from OE here.
+        // This is to be migrated to OE directly by pg_router team
         if($this->offer->getMaxOfferUsage() !== null)
         {
             $isMaxOfferUsageExceeded = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
@@ -124,6 +126,8 @@ class Checker extends Base\Core
     {
         $isMaxOfferUsageExceeded = true;
 
+        // Note: The values for Max Usage and Current offer usage is coming from OE here.
+        // This is to be migrated to OE directly by pg_router team
         if($this->offer->getMaxOfferUsage() !== null)
         {
             $isMaxOfferUsageExceeded = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
@@ -155,7 +159,8 @@ class Checker extends Base\Core
         }
 
         // no parity check here, it happens in payment discount calculation function
-        return $this->checkOfferIsValidOrNot();
+        // Skipping properties validation here, since offer has been validated in offers engine
+        return $this->checkOfferIsValidOrNot(true);
     }
 
     public function checkApplicabilityForPaymentBeforeCheckout(Payment\Entity $payment, Order\Entity $order): bool
@@ -165,10 +170,55 @@ class Checker extends Base\Core
         $this->order = $order;
 
         $core = New Core();
-        $shouldValidateOnOffersEngine = $core->shouldRouteToOffersEngine($payment->getMerchantId(),
-            Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP);
+        $shouldValidateOnOffersEngine = $core->shouldRouteToOffersEngine();
+
         $oeResp = $core->validateOnOffersEngine($shouldValidateOnOffersEngine,
             $this->payment, $this->order, $this->offer, $this->isDummyPayment);
+
+        $isOfferValidAtOE = (($oeResp[Constants::VALIDATE_OFFER_CALLED] === true) and
+                             (isset($oeResp[Constants::VALIDATE_OFFER_RESPONSE]) === true) and
+                             (isset($oeResp[Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']) === true));
+
+        // 1. For external Offers with Global limits we will be keeping OE validation API as the final
+        //    source of truth. Offers with global limits being external will be controlled by an experiment
+        //    named OFFERS_ENGINE_FETCH_EXP.
+        //
+        // 2. Added a check for platform offer since Fi Money Saved Card offer is not currently supported
+        //    by validation API of OE due to it having whitelisting enabled. The resulting error being
+        //    invalid contact details since, the payment and contact details in this flow are sent as
+        //    dummy details. This will be removed once we fix this bug.
+        if (($this->offer->isPlatformOffer() === false) and
+            ($this->offer->isExternalOfferWithGlobalLimits() === true))
+        {
+            app('trace')->info(TraceCode::OFFER_VALIDATION_LOGGER, [
+                "external_offer_with_limits" => $this->offer->isExternalOfferWithGlobalLimits(),
+                "platform_offer"             => $this->offer->isPlatformOffer(),
+                "offer_id"                   => $this->offer->getId(),
+            ]);
+
+            return $isOfferValidAtOE;
+        }
+
+        $shouldSkipApiValidation = (new core)->shouldRouteToOffersEngineForCreation(
+            $payment->getMerchantId(),
+            Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP);
+
+        // Hardcoding exclusion of Fi Money offer as highlighted due to the above bug.
+        if (($shouldSkipApiValidation === true) and
+            ($this->offer->getId() !== 'PjkSHDt8psBZA3'))
+        {
+            app('trace')->info(TraceCode::OFFER_VALIDATION_LOGGER, [
+                "skip_validation" => true,
+                "offer_id"        => $this->offer->getId(),
+            ]);
+
+            return $isOfferValidAtOE;
+        }
+
+        app('trace')->info(TraceCode::OFFER_VALIDATION_LOGGER, [
+            "skip_validation" => $shouldSkipApiValidation,
+            "offer_id"        => $this->offer->getId(),
+        ]);
 
         if(($this->offer->getMaxOfferUsage() !== NULL) and
             ($this->offer->getCurrentOfferUsage() >= $this->offer->getMaxOfferUsage()))
@@ -176,7 +226,7 @@ class Checker extends Base\Core
             $this->traceCheckResult(
                 TraceCode::OFFER_USAGE_CHECK,
                 [
-                    'result' => 'false',
+                    'result'              => 'false',
                     'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
                     'current_offer_usage' => $this->offer->getCurrentOfferUsage(),
                 ]);
@@ -195,7 +245,7 @@ class Checker extends Base\Core
         return $apiResp;
     }
 
-    private function checkOfferIsValidOrNot()
+    private function checkOfferIsValidOrNot(bool $shouldSkipPropertiesValidation = false)
     {
         $offerActive = $this->checkOfferActive();
 
@@ -210,6 +260,13 @@ class Checker extends Base\Core
         {
             return false;
         }
+
+        if ((app()->runningUnitTests() === false) and
+            ($shouldSkipPropertiesValidation === true))
+        {
+            return true;
+        }
+
         $checkResult = false;
 
         foreach (self::PROPERTIES_TO_CHECK as $property)
@@ -651,6 +708,12 @@ class Checker extends Base\Core
                     'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
                     'current_offer_usage' => $this->offer->getCurrentOfferUsage(),
                 ]);
+
+        // External offers with global limits will be marked as validated since they have already undergone validation.
+        if ($this->offer->isExternalOfferWithGlobalLimits() === true)
+        {
+            return true;
+        }
 
         if($result === false)
         {

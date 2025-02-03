@@ -7605,7 +7605,7 @@ class Processor
 
         $core = New Offer\Core();
 
-        $experiments = $core->bulkCalltoSplitz($payment->getMerchantId());
+        $experiments = $core->bulkCalltoSplitz();
 
         $valid = $this->setOfferForPaymentFromOrderOrInput($payment, $input, $experiments);
 

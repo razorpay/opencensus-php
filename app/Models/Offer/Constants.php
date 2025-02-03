@@ -76,6 +76,8 @@ final class Constants
     const ENDS_AT = 'ends_at';
     const SPEC = 'spec';
 
+    const TOTAL_USAGE = 'total_usage';
+
     const OFFER = 'offer';
 
     const OFFERS = 'offers';

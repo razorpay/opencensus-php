@@ -3123,6 +3123,23 @@ return [
             "merchant_methods" => null,
         ]
     ]
-]
+],
+
+    'testFetchOffersWithGlobalLimitsFromOE' => [
+        'request'  => [
+            'url'    => '/offers/offer_10000000000000',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'id'                  => 'offer_10000000000000',
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
+                'current_offer_usage' => 200
+            ]
+        ]
+    ],
 ];
 

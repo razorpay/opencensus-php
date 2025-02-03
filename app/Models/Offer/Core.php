@@ -113,7 +113,7 @@ class Core extends Base\Core
 
                 $this->traceNonExistingIins($offer, $merchant);
 
-                if ($this->shouldRouteToOffersEngine($merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true) {
+                if ($this->shouldRouteToOffersEngine() === true) {
 
                     $this->offersEngine->update($offer, $input);
 
@@ -159,7 +159,7 @@ class Core extends Base\Core
 
                         $this->repo->saveOrFail($offer);
 
-                        if ($this->shouldRouteToOffersEngine($offer->getMerchantId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true) {
+                        if ($this->shouldRouteToOffersEngine() === true) {
 
                             $this->offersEngine->update($offer, [Entity::ACTIVE => false]);
 
@@ -807,25 +807,50 @@ class Core extends Base\Core
     {
         if ($offer !== null)
         {
-            $offer = $this->repo->transaction(function () use ($offer, $payment)
+            // Keeping duplication in code for readability, will remove this once fully ramped up.
+            if ($offer->isExternalOfferWithGlobalLimits() === true)
             {
-                $offer = $this->repo->offer->lockForUpdate($offer->getId());
+                // Even though we are making offers with limits source of truth as offers engine,
+                // incrementing the API offer to maintain consistency if need of rollback arises.
+                $this->repo->transaction(function() use ($offer, $payment) {
+                    $apiOffer = $this->repo->offer->lockForUpdate($offer->getId());
 
-                app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_INCREMENT, [
-                    "offer_id"      => $offer->getId(),
-                    "current_usage" => $offer->getCurrentOfferUsage(),
-                    "new_usage"     => $offer->getCurrentOfferUsage() + 1,
-                    "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null,
-                    "payment_id"    => optional($payment)->getId(),
-                ]);
+                    app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_INCREMENT, [
+                        "offer_id"             => $offer->getId(),
+                        "external_offer"       => true,
+                        "oe_incremented_usage" => $offer->getCurrentOfferUsage(),
+                        "api_current_usage"    => $apiOffer->getCurrentOfferUsage(),
+                        "api_new_usage"        => $apiOffer->getCurrentOfferUsage() + 1,
+                        "route_name"           => $this->app['api.route']->getCurrentRouteName() ?? null,
+                        "payment_id"           => optional($payment)->getId(),
+                    ]);
 
-                $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
+                    $apiOffer->setCurrentUsageCount($apiOffer->getCurrentOfferUsage() + 1);
 
-                $this->repo->saveOrFail($offer);
+                    $this->repo->saveOrFail($apiOffer);
+                });
+            }
+            else
+            {
+                $offer = $this->repo->transaction(function() use ($offer, $payment) {
+                    $offer = $this->repo->offer->lockForUpdate($offer->getId());
 
-                // not handling this as part of decomp reads as it is part of payment flow and involves usage updates
-                return $this->repo->offer->findByPublicIdAndMerchant($offer->getPublicId(), $this->merchant);
-            });
+                    app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_INCREMENT, [
+                        "offer_id"      => $offer->getId(),
+                        "current_usage" => $offer->getCurrentOfferUsage(),
+                        "new_usage"     => $offer->getCurrentOfferUsage() + 1,
+                        "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null,
+                        "payment_id"    => optional($payment)->getId(),
+                    ]);
+
+                    $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
+
+                    $this->repo->saveOrFail($offer);
+
+                    // not handling this as part of decomp reads as it is part of payment flow and involves usage updates
+                    return $this->repo->offer->findByPublicIdAndMerchant($offer->getPublicId(), $this->merchant);
+                });
+            }
 
             return $offer;
         }
@@ -838,24 +863,49 @@ class Core extends Base\Core
 
         if ($offer !== null && $offer->getMaxOfferUsage() !== null)
         {
-            $offer = $this->repo->transaction(function () use ($offer, $payment)
+            // Keeping duplication in code for readability, will remove this once fully ramped up.
+            if ($offer->isExternalOfferWithGlobalLimits() === true)
             {
-                $offer = $this->repo->offer->lockForUpdate($offer->getId());
+                // Even though we are making offers with limits source of truth as offers engine,
+                // decrementing the API offer to maintain consistency if need of rollback arises.
+                $this->repo->transaction(function() use ($offer, $payment) {
+                    $apiOffer = $this->repo->offer->lockForUpdate($offer->getId());
 
-                app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_DECREMENT, [
-                    "offer_id"      => $offer->getId(),
-                    "current_usage" => $offer->getCurrentOfferUsage(),
-                    "new_usage"     => $offer->getCurrentOfferUsage() - 1,
-                    "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null,
-                    "payment"       => optional($payment)->getId(),
-                ]);
+                    app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_DECREMENT, [
+                        "offer_id"          => $offer->getId(),
+                        "external_offer"    => true,
+                        "oe_usage"          => $offer->getCurrentOfferUsage(),
+                        "api_current_usage" => $apiOffer->getCurrentOfferUsage(),
+                        "api_new_usage"     => $apiOffer->getCurrentOfferUsage() - 1,
+                        "route_name"        => $this->app['api.route']->getCurrentRouteName() ?? null,
+                        "payment_id"        => optional($payment)->getId(),
+                    ]);
 
-                $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() - 1);
+                    $apiOffer->setCurrentUsageCount($apiOffer->getCurrentOfferUsage() - 1);
 
-                $this->repo->saveOrFail($offer);
+                    $this->repo->saveOrFail($apiOffer);
+                });
+            }
+            else
+            {
+                $offer = $this->repo->transaction(function() use ($offer, $payment) {
+                    $offer = $this->repo->offer->lockForUpdate($offer->getId());
 
-                return $offer;
-            });
+                    app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_DECREMENT, [
+                        "offer_id"      => $offer->getId(),
+                        "current_usage" => $offer->getCurrentOfferUsage(),
+                        "new_usage"     => $offer->getCurrentOfferUsage() - 1,
+                        "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null,
+                        "payment"       => optional($payment)->getId(),
+                    ]);
+
+                    $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() - 1);
+
+                    $this->repo->saveOrFail($offer);
+
+                    return $offer;
+                });
+            }
 
             return $offer;
         }
@@ -1139,8 +1189,7 @@ class Core extends Base\Core
 
                 $this->traceNonExistingIins($offer, $merchant);
 
-                if ($this->shouldRouteToOffersEngine(
-                    $merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP, true) === true)
+                if ($this->shouldRouteToOffersEngine() === true)
                 {
                     $this->offersEngine->createOffer($offer, $subscriptionInput ?? [], $input);
                 }
@@ -1149,12 +1198,10 @@ class Core extends Base\Core
         return $offer;
     }
 
-    public function bulkCalltoSplitz(string $merchantId): array
+    public function bulkCalltoSplitz(): array
     {
         if ((app()->runningUnitTests() === true) or
-            ($this->env === 'bvt' or $this->env === 'automation' or
-             $this->env === 'func' or $this->env === 'availability' or
-             $this->env === 'perf' or $this->env === 'perf2'))
+            (app()->isEnvironmentQA() === true))
         {
             return [
                 Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP => false,
@@ -1168,12 +1215,10 @@ class Core extends Base\Core
         ];
     }
 
-    public function shouldRouteToOffersEngine(string $merchantId, $experiment, $throwError = false): bool
+    public function shouldRouteToOffersEngine(): bool
     {
         if ((app()->runningUnitTests() === true) or
-        ($this->env === 'bvt' or $this->env === 'automation' or
-         $this->env === 'func' or $this->env === 'availability' or
-         $this->env === 'perf' or $this->env === 'perf2'))
+        (app()->isEnvironmentQA() === true))
         {
             return (bool) ConfigKey::get(ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED, false);
         }
@@ -1187,10 +1232,7 @@ class Core extends Base\Core
         {
             return (bool) ConfigKey::get(ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED, false);
         }
-        if (
-            ($this->env === 'bvt' or $this->env === 'automation' or
-             $this->env === 'func' or $this->env === 'availability' or
-             $this->env === 'perf' or $this->env === 'perf2'))
+        if (app()->isEnvironmentQA() === true)
         {
             return false;
         }
@@ -1224,6 +1266,93 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    /*
+     * This function checks if offers with limits should be fetched from Offers Engine or not.
+     * Adding 2 retries to splitz to avoid discrepancy while evaluating offer with limits
+     */
+    public function shouldMigrateOffersWithLimitsToOE($merchantIds, $experiment)
+    {
+        if ((app()->runningUnitTests() === true) or
+            (app()->isEnvironmentQA() === true))
+        {
+            $result = [];
+            foreach ($merchantIds as $merchantId)
+            {
+                $result[$merchantId] = (bool) ConfigKey::get(ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED, false);
+            }
+
+            return $result;
+        }
+
+        $attempt    = 0;
+        $maxRetries = 2; // Maximum number of retries
+
+        do
+        {
+            $merchantIdResultMap = [];
+            $experimentsData     = [];
+            foreach ($merchantIds as $merchantId)
+            {
+                $merchantIdResultMap[$merchantId] = false; // Default value
+
+                $experimentsData[] = [
+                    "id"            => $merchantId,
+                    "experiment_id" => $this->app['config']->get($experiment),
+                    'request_data'  => json_encode(
+                        [
+                            'merchant_id' => $merchantId,
+                        ]),
+                ];
+            }
+
+            try
+            {
+                $experimentResponses = $this->app['splitzService']->bulkCallsToSplitz($experimentsData);
+
+                foreach ($experimentResponses as $response)
+                {
+                    $merchantId = $response['id'];
+
+                    $variables = $response['variant']['variables'];
+
+                    foreach ($variables as $variable)
+                    {
+                        if ($variable['key'] == "enabled" && $variable['value'] == "true")
+                        {
+                            $merchantIdResultMap[$merchantId] = true;
+                        }
+                    }
+                }
+
+                app('trace')->info(TraceCode::OFFER_WITH_GLOBAL_LIMITS_SPLITZ_RESULT, [
+                    "experiment_response" => $experimentResponses,
+                    "attempt"             => $attempt,
+                    'max_retries'         => $maxRetries,
+                    'route'               => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+
+                return $merchantIdResultMap;
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
+                    [
+                        'attempt'     => $attempt,
+                        'max_retries' => $maxRetries,
+                        'route'       => $this->app['api.route']->getCurrentRouteName(),
+                    ]
+                );
+            }
+
+            $attempt++;
+        } while ($attempt < $maxRetries);
+
+        return $merchantIdResultMap;
     }
 
     /**
