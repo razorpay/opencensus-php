@@ -403,6 +403,8 @@ return array(
 
     'redirect_malaysia_card_payments_via_api' => env('REDIRECT_MALAYSIA_CARD_PAYMENTS_VIA_API'),
 
+    'fetch_balance_from_slave_exp_id'        => env('FETCH_BALANCE_FROM_SLAVE_EXP_ID'),
+
     'enabled_recurring_card_types_malaysia' => env('ENABLED_RECURRING_CARD_TYPES_MALAYSIA'),
 
     'send_sms_whatsapp_partner_submerchant_onboarding_events' => env('SEND_SMS_WHATSAPP_PARTNER_SUBMERCHANT_ONBOARDING_EVENTS'),

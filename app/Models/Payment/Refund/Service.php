@@ -1024,7 +1024,14 @@ class Service extends Base\Service
                                 $txnType = Transaction\Type::REFUND;
                                 $merchant = $payment->merchant;
 
-                                $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromTiDBForMerchantWithFail($merchant, Balance\Type::PRIMARY);
+                                if ($this->shouldFetchBalanceFromSlave($merchant->getId()))
+                                {
+                                    $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromSlaveForMerchantWithFail($merchant, Balance\Type::PRIMARY);
+                                }
+                                else
+                                {
+                                    $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromTiDBForMerchantWithFail($merchant, Balance\Type::PRIMARY);
+                                }
 
                                 $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
 
@@ -4344,5 +4351,48 @@ class Service extends Base\Service
                 'event'  => $event
             ]);
         }
+    }
+
+    private function shouldFetchBalanceFromSlave(string $merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.fetch_balance_from_slave_exp_id')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::FETCH_BALANCE_FROM_SLAVE_SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
+            ]);
+
+            if ($response['response']['variant'] !== null)
+            {
+                $variables = $response['response']['variant']['variables'] ?? [];
+
+                foreach ($variables as $variable)
+                {
+                    $key   = $variable['key'] ?? '';
+                    $value = $variable['value'] ?? '';
+                    if ($key === 'result' && $value === 'on')
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::FETCH_BALANCE_FROM_SLAVE_SPLITZ_UNRECOGNIZED_ERROR
+            );
+        }
+        return false;
     }
 }
