@@ -10950,12 +10950,39 @@ class Core extends Base\Core
 
     public function blockLinkedAccountCreationIfApplicable(Entity $merchant)
     {
-        if (in_array($merchant->getId(), Preferences::BLOCK_LINKED_ACCOUNT_CREATION_MIDS) === true) {
+        $routeName = $this->app['request.ctx']->getRoute() ?? '';
+
+        // - unblocking individual la creation from dashboard.
+        // - unblocking batch la creation from dashboard
+        // Ref: https://razorpay.slack.com/archives/C01QG1N4A82/p1672037321513599
+        if (in_array($merchant->getId(), Preferences::BLOCK_LINKED_ACCOUNT_CREATION_MIDS) === true &&
+            in_array($routeName, ['merchant_sub_create', 'linked_account_create_batch']) === false)
+        {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_BLOCKED,
                 null,
                 [
                     'parent_merchant_id' => $merchant->getId(),
+                ]
+            );
+        }
+
+        if ($merchant->org->isFeatureEnabled(FeatureConstants::ORG_BLOCK_ACCOUNT_UPDATE) === true)
+        {
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNT_CREATION_BLOCKED_FOR_VAS_MERCHANT,
+                [
+                    'parent_merchant_id' => $merchant->getId(),
+                    'org_id'             => $merchant->org->getId(),
+                ]
+            );
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_BLOCKED_FOR_VAS_MERCHANT,
+                null,
+                [
+                    'parent_merchant_id' => $merchant->getId(),
+                    'org_id'             => $merchant->org->getId(),
                 ]
             );
         }

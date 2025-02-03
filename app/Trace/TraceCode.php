@@ -5121,6 +5121,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Account codes
     const ACCOUNT_CREATED                                       = 'ACCOUNT_CREATED';
     const LINKED_ACCOUNT_CREATION_FAILED                        = 'LINKED_ACCOUNT_CREATION_FAILED';
+    const LINKED_ACCOUNT_CREATION_BLOCKED_FOR_VAS_MERCHANT      = 'LINKED_ACCOUNT_CREATION_BLOCKED_FOR_VAS_MERCHANT';
 
     const ACCOUNT_CREATION_REQUEST                              = 'ACCOUNT_CREATION_REQUEST';
     const ACCOUNT_CREATION_RESPONSE                             = 'ACCOUNT_CREATION_RESPONSE';

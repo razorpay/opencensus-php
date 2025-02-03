@@ -6,6 +6,7 @@ use Mail;
 
 use RZP\Constants\Mode;
 use Illuminate\Support\Facades\Http;
+use RZP\Exception\BadRequestException;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Feature\Constants as FName;
@@ -13,6 +14,7 @@ use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateFo
 use RZP\Services\KafkaProducerClient;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Core;
+use RZP\Models\Admin\Org as OrgModel;
 use RZP\Models\Feature\Entity;
 use RZP\Models\Merchant\Detail;
 use RZP\Services\SplitzService;
@@ -1601,6 +1603,30 @@ class AccountV2Test extends TestCase
         $this->assertEquals(self::DEFAULT_MERCHANT_ID, $linkedAccount->getParentId());
 
         return $linkedAccount;
+    }
+
+    public function testCreateLinkedAccountBlockedForVasMerchant()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => OrgModel\Entity::HDFC_ORG_ID]);
+
+        $this->fixtures->org->addFeatures('block_account_update', OrgModel\Entity::HDFC_ORG_ID);
+
+        $testData = $this->testData['testCreateLinkedAccountWithMarketplaceFeature'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            BadRequestException::class,
+            'Linked account creation is blocked for this merchant.'
+        );
     }
 
     public function testCreateLinkedAccountWithOutMarketplaceFeature()

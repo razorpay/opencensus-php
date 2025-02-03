@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Merchant\Account;
 use Mail;
 
 use RZP\Constants\Mode;
+use RZP\Models\Admin\Org;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
 use RZP\Models\Merchant\Account\Repository as AccountRepo;
@@ -271,6 +273,26 @@ class AccountTest extends TestCase
             },
             BadRequestException::class,
             'This code is already in use, please try another.'
+        );
+    }
+
+    public function testCreateLinkedAccountForVasMerchant()
+    {
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org\Entity::HDFC_ORG_ID]);
+
+        $this->fixtures->org->addFeatures('block_account_update', Org\Entity::HDFC_ORG_ID);
+
+        $testData = $this->testData['testCreateLinkedAccountWithCode'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            BadRequestException::class,
+            'Linked account creation is blocked for this merchant.'
         );
     }
 

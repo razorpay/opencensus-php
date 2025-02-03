@@ -20,6 +20,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use WpOrg\Requests\Response;
 use RZP\Models\Card\Network;
 use RZP\Models\Batch\Header;
+use RZP\Models\Admin\Org as OrgModel;
 use RZP\Models\Merchant\Core;
 use RZP\Services\RazorXClient;
 use Razorpay\OAuth\Application;
@@ -2609,6 +2610,29 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals('la.1@rzp.com', $linkedAccount['email']);
         $this->assertNotNull($linkedAccount['activated_at']);
     }
+
+    public function testCreateLinkedAccountFromBatchBlockedForVas()
+    {
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => OrgModel\Entity::HDFC_ORG_ID]);
+
+        $this->fixtures->org->addFeatures('block_account_update', OrgModel\Entity::HDFC_ORG_ID);
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testCreateLinkedAccountFromBatch'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            BadRequestException::class,
+            'Linked account creation is blocked for this merchant.'
+        );
+    }
+
 
     public function testCreateLinkedAccountDashboardAccess()
     {

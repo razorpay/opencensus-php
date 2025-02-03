@@ -60,6 +60,8 @@ class Core extends Merchant\Core
 
         $accountCoreV1->validatePartnerAccess($partner, null, $accountType);
 
+        $accountCoreV1->blockLinkedAccountCreationIfApplicable($partner);
+
         $this->checkAndSetPhantomPrefillEnabledContextForPartner($partner, null, $accountType);
 
         $requestedProduct = ProductConstants::PRIMARY;
