@@ -11378,6 +11378,176 @@ You can now start accepting payments from https://www.example.com.
         $this->assertWorkflowNeedsClarificationMailQueued($data['expected_deep_link']);
     }
 
+    public function testHandleSubmitMerchantInternalForMkycActivation()
+    {
+        $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 1]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+            "submitted" => true,
+            'promoter_pan_name' => 'Test123',
+            'business_website'  => 'https://dummyurl.com',
+            'promoter_pan' => 'AAAPA1234J']);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH8gGHX1Vf0bK2",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "website_policy",
+            "artefact_identifier" => "number",
+            "status" => "verified",
+            "audit_id" => "MH98mqZfN59Wx8",
+            "metadata" => [
+                "terms" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesarees.myshopify.com/pages/terms-conditions"
+                        ],
+                        "confidence_score" => 0.9651,
+                        "relevant_details" => [
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "refund" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesarees.com/pages/returns"
+                        ],
+                        "confidence_score" => 0.9465,
+                        "relevant_details" => [
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "privacy" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesarees.myshopify.com/pages/privacy-policy"
+                        ],
+                        "confidence_score" => 0.9853,
+                        "relevant_details" => [
+                            "note" => "Privacy Policy is majorly about First Party Collection/Use, Third Party Sharing/Collection, Data Security, Introductory/Generic, Practice not covered. Privacy Policy includes the following attributes Does, Explicit, Implicit, Collect on website, Unspecified, Identifiable, Aggregated or anonymized, Contact, Cookies and tracking elements, Basic service/feature, Additional service/feature, Marketing, Analytics/Research, Personalization/Customization, Service operation and security, Unspecified, User with account, Opt-in, Dont use service/feature, Opt-out via contacting company, Browser/device privacy controls, Collection, First party use, Unnamed third party, Named third party, Receive/Shared with, Track on first party website/app, Secure data transfer"
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "shipping" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesarees.com/policies/shipping-policy"
+                        ],
+                        "confidence_score" => 0.9079,
+                        "relevant_details" => [
+                            "5 ",
+                            "7 ",
+                            "10 "
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "contact_us" => [
+                    "analysis_result" => [
+                        "links_found" => [
+                            "https://ilovesarees.com/pages/contact-us"
+                        ],
+                        "confidence_score" => 0.9079,
+                        "relevant_details" => [
+                            "9043222190"
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "policy_details_file" => "file_MH8jjmKC3s9G3a"
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchant->getId(),
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "contact_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => env(\RZP\Models\Merchant\Website\Constants::MERCHANT_POLICIES_SUBDOMAIN) . '/compliance/' . $merchant->getId() . '/contact_us'
+                ]
+            ]
+        ]);
+
+        $expectedUrls = [
+            'https://dummyurl.com' => [
+                'terms' => [
+                    'url' => 'https://ilovesarees.myshopify.com/pages/terms-conditions'
+                ],
+                'refund' => [
+                    'url' => 'https://ilovesarees.com/pages/returns'
+                ],
+                'privacy' => [
+                    'url' => 'https://ilovesarees.myshopify.com/pages/privacy-policy'
+                ],
+                'shipping' => [
+                    'url' => 'https://ilovesarees.com/policies/shipping-policy'
+                ],
+                'contact_us' => [
+                    'url' => 'https://ilovesarees.com/pages/contact-us'
+                ],
+                'cancellation' => [
+                    'url' => 'https://ilovesarees.com/pages/returns'
+                ]
+            ]
+        ];
+
+        $input['action'] = 'UPDATE_ACTIVATION_STATUS';
+
+        $input[Entity::ACTIVATION_STATUS] = 'activated';
+
+        $input[DetailConstants::MODULAR_MERCHANT_ACTIVATION] = true;
+
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $app = App::getFacadeRoot();
+
+        $reflection = new \ReflectionClass($mockedCore);
+
+        $repoProperty = $reflection->getProperty('repo');
+
+        $repoProperty->setAccessible(true);
+
+        $repoProperty->setValue($mockedCore, $app['repo']);
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', $merchant->getId(), [
+            'activation_status' => 'activated',
+        ]);
+
+        $mockedCore->shouldReceive("updateActivationStatus")->andReturn($merchantDetail);
+
+        $merchantDetailService = new Detail\Service($mockedCore);
+
+        $reflection = new \ReflectionClass(Detail\Service::class);
+
+        $method = $reflection->getMethod('handleSubmitMerchantInternal');
+        $method->setAccessible(true); // Allow access to private method
+
+        $result = $method->invoke($merchantDetailService, $merchant->getId(), $input);
+
+        $websiteDetail = $app['repo']->merchant_website->getWebsiteDetailsForMerchantId($merchantDetail->getMerchantId());
+
+        $websiteDetailAdminView = $websiteDetail->toArrayAdmin();
+
+        $adminWebsiteDetails = $websiteDetailAdminView[WebsiteEntity::ADMIN_WEBSITE_DETAILS];
+
+        $this->assertEquals($expectedUrls, $adminWebsiteDetails['website']);
+
+        $this->assertEquals('activated', $result[Detail\Entity::ACTIVATION_STATUS]);
+    }
+
     public function testUpdateBusinessWebsiteWorkflowReject()
     {
         Mail::fake();

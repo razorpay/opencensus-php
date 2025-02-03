@@ -1781,7 +1781,7 @@ class Core extends Base\Core
             // prefill policy links in admin section at time activation by submitting l2 activation form.
             if (in_array($statusToBeUpdated, [Status::ACTIVATED, Status::ACTIVATED_MCC_PENDING, Status::KYC_QUALIFIED_UNACTIVATED]) === true)
             {
-                $this->prefillSystemUrlsInAdminWebisteDetails($merchantDetails);
+                $this->prefillSystemUrlsInAdminWebsiteDetails($merchantDetails);
             }
 
             $this->updateActivationStatus($merchant, $activationStatusData, $merchant);
@@ -12689,7 +12689,7 @@ class Core extends Base\Core
         }
     }
 
-    public function prefillSystemUrlsInAdminWebisteDetails(MerchantDetail $merchantDetail)
+    public function prefillSystemUrlsInAdminWebsiteDetails(MerchantDetail $merchantDetail)
     {
         // save website policy links
         $websitePolicy = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(

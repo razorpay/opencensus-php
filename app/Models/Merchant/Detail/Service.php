@@ -5388,7 +5388,7 @@ class Service extends Base\Service
                                     'new_activation_status' => $newActivationStatus,
                                 ]);
 
-                                $this->core->prefillSystemUrlsInAdminWebisteDetails($merchant->merchantDetail);
+                                $this->core->prefillSystemUrlsInAdminWebsiteDetails($merchant->merchantDetail);
                             }
 
                         }
@@ -5414,6 +5414,24 @@ class Service extends Base\Service
                     if (empty($this->app['basicauth']->getMerchant()) === true)
                     {
                         $this->app['basicauth']->setMerchant($merchant);
+                    }
+
+                    $activationStatus = $input[Entity::ACTIVATION_STATUS];
+
+                    if ($activationStatus === Status::ACTIVATED)
+                    {
+                        $this->trace->info(TraceCode::PREFILLING_ADMIN_WEBSITE_DETAILS, [
+                            'merchant_id' => $merchantId,
+                            'new_activation_status' => $activationStatus,
+                        ]);
+
+                        /*
+                         *  Prefilling system urls for India PG modular merchants in admin website details as this is a
+                         *  necessary check during merchant activation in validateMerchantActivation
+                         *  https://razorpay.slack.com/archives/C043K5N223F/p1737367042676009?thread_ts=1736917359.986569&cid=C043K5N223F
+                        */
+
+                        $this->core->prefillSystemUrlsInAdminWebsiteDetails($merchant->merchantDetail);
                     }
                 }
 
