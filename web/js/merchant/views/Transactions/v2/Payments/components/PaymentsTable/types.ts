@@ -4,6 +4,7 @@ import { ListContainerProps } from 'merchant/views/Transactions/v2/common/types'
 
 export type PaymentsTableProps = ListContainerProps<Payments['items']> & {
   shouldDisplayOptimizerColumn: boolean;
+  isMarketplacePayments?: boolean;
 };
 
 export type StatusProps = {

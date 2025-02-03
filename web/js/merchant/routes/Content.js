@@ -52,6 +52,7 @@ import SelfServeStateWrapper from 'merchant/views/Transactions/SelfServeStateWra
 
 import {
   isMicrofrontendSelfserveEnabled,
+  isTransactionCleanupEnabled,
   isTransactionsV2Enabled,
 } from 'merchant/views/Transactions/v2/common/utils';
 import { withI18Service } from 'common/i18';
@@ -1110,7 +1111,7 @@ class Content extends Component {
               />
             </Route>
             <Route
-              path=":id"
+              path={isTransactionCleanupEnabled() ? ':id/*' : ':id'}
               element={
                 <RouteGuard
                   additionalCondition={(user) =>

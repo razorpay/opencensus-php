@@ -6,7 +6,7 @@ import { bindActionCreators } from 'redux';
 import { withRouter } from 'common/deprecated/withRouter';
 import { withSplitzService } from 'common/splitz';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
+import { fetchPayments, fetchMarketplacePayments } from 'merchant/reducers/collection';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import {
   FIXED_COLUMNS_TRANSACTIONS_V2,
@@ -115,6 +115,7 @@ class PaymentsList extends ListContainer {
       },
       orgName,
       terminalProviders,
+      isMarketplacePayments,
     } = this.props;
 
     const shouldDisplayOptimizerColumn =
@@ -162,6 +163,7 @@ class PaymentsList extends ListContainer {
           shouldDisplayOptimizerColumn={shouldDisplayOptimizerColumn}
           isOmniView={isOmniView}
           isJnKOmniEnabled={isJnKOmniEnabled}
+          isMarketplacePayments={isMarketplacePayments}
           onRowClick={({ id, rowData }) =>
             handleDetailsClick({
               navigate,
@@ -178,10 +180,10 @@ class PaymentsList extends ListContainer {
   }
 }
 
-function mapDispatchToProps(dispatch) {
+function mapDispatchToProps(dispatch, props) {
   return bindActionCreators(
     {
-      fetchAll,
+      fetchAll: props?.isMarketplacePayments ? fetchMarketplacePayments : fetchPayments,
       showNotification,
       fetchProviders: fetchTerminalProviders,
     },
@@ -191,14 +193,13 @@ function mapDispatchToProps(dispatch) {
 
 export default withSplitzService(
   withRouter(
-    connect(
-      (state) => ({
-        ...state.payments,
+    connect((state, props) => {
+      return {
+        ...(props?.isMarketplacePayments ? state.mpPayments : state.payments),
         user: state.session.user,
         orgName: state.session.org?.business_name,
         terminalProviders: state.navigator.terminalProviders,
-      }),
-      mapDispatchToProps,
-    )(PaymentsList),
+      };
+    }, mapDispatchToProps)(PaymentsList),
   ),
 );

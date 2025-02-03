@@ -34,7 +34,7 @@ import {
   TODAY,
 } from './constants';
 import { Duration, DurationOption, DurationOptionsMap, Paginate } from './types';
-import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import { getSplitzExperimentVariant, ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 export const generateOptions = (optionsMap: {
   [key: string]: string;
@@ -352,3 +352,10 @@ export const shouldHideAnalytics = (user: User, mode: Environments): boolean => 
   const isCurlecVASTestMode = mode === 'test' && !user.isOrgRZP;
   return isCurlecVASTestMode;
 };
+
+export const isTransactionCleanupEnabled = () =>
+  (
+    getSplitzExperimentVariant('enable_transactions_cleanup') as {
+      variables?: { result: string };
+    }
+  )?.variables?.result === 'on';

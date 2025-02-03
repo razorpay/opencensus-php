@@ -359,7 +359,7 @@ export const splitzConfig: SplitzInitConfig = {
       {
         uniqueHashKey: 'settlementsV3_details_revamp',
         experimentId: {
-          beta: 'MPFDhXp1ooZQom',
+          beta: 'PpkEmnPqDmD1bF',
           production: 'N02pvjbyZUaw4f',
         },
         defaultVariant: {
@@ -409,6 +409,22 @@ export const splitzConfig: SplitzInitConfig = {
         experimentId: {
           beta: 'PK7igAoTxqLVkl',
           production: 'PK7cRCY8lsu5ER',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
+        uniqueHashKey: 'Transactions_Revamp',
+        experimentId: {
+          beta: 'MPFDhXp1ooZQom',
+          production: 'MPFKF4K2JVFXa2',
         },
         defaultVariant: {
           name: 'variables',
@@ -1163,22 +1179,6 @@ export const splitzConfig: SplitzInitConfig = {
         `${DISPUTES}/:id`,
       ],
       abExperiments: [
-        {
-          uniqueHashKey: 'Transactions_Revamp',
-          experimentId: {
-            beta: 'MPFDhXp1ooZQom',
-            production: 'MPFKF4K2JVFXa2',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-            ],
-          },
-        },
         {
           uniqueHashKey: 'export_payments_v2',
           experimentId: {

@@ -85,6 +85,7 @@ const PaymentsListFilter = ({
   location: { pathname },
   openModal,
   terminalProviders,
+  showBatchIdFilter = false,
 }: PaymentsListFilterProps): JSX.Element => {
   const splitz = useSplitzService();
   const isProviderSelectorForV2 = isPaymentV2ParityFeatureEnabled(splitz, user);
@@ -124,6 +125,7 @@ const PaymentsListFilter = ({
       isMobile,
       isOrgCurlec: isCurlecMerchant,
       isJnKOmniEnabled: isJnKOmniEnabled || false,
+      showBatchIdFilter,
     });
   const numberOfMonths = isMediumDesktopAndMobile
     ? MOBILE_CALENDAR_NUMBER_OF_MONTHS

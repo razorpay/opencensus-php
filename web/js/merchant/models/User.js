@@ -2114,7 +2114,7 @@ function _isAllowed(userRole, moduleName, permissionsMap, shouldSkipRoleCheck = 
   return isAllowed;
 }
 
-function getSplitzExperimentVariant(experimentName) {
+export function getSplitzExperimentVariant(experimentName) {
   const splitzExperiments = window.rzp_user?.splitz_experiments;
   let splitzExperimentVariant = null;
 

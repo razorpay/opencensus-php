@@ -48,6 +48,7 @@ export interface PaymentsListFilterProps extends RouteComponentProps {
   openModal: (args: { size: string; component: JSX.Element; isNew?: boolean }) => void;
   user: User;
   terminalProviders?: { [key: string]: any }[];
+  showBatchIdFilter?: boolean;
 }
 
 export interface ExtraFiltersModalProps {
@@ -97,6 +98,7 @@ export interface OptionsType {
   isMobile: boolean;
   isOrgCurlec: boolean;
   isJnKOmniEnabled: boolean;
+  showBatchIdFilter?: boolean;
 }
 
 export interface MobileColumns {

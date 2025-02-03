@@ -11,6 +11,9 @@ import { fetchMarketplacePayments as fetchAll } from 'merchant/reducers/collecti
 import { platformFeeTabDisplayedAnalytics } from 'merchant/views/Marketplace/MarketplaceAnalytics';
 import { navItems } from 'merchant/views/Marketplace/NavItems';
 import PaymentsList from 'merchant/views/Transactions/v1/Payments/components/PaymentsList';
+import PaymentsListV2 from 'merchant/views/Transactions/v2/Payments/components/PaymentsList';
+import { Box } from '@razorpay/blade/components';
+import { isTransactionCleanupEnabled } from 'merchant/views/Transactions/v2/common/utils';
 
 export default connect((state) => ({ ...state.mpPayments, user: state.session.user }), {
   fetchAll,
@@ -34,12 +37,18 @@ export default connect((state) => ({ ...state.mpPayments, user: state.session.us
     >
       <content>
         <TestModeBanner />
-        <PaymentsList
-          {...props}
-          quickTourFeature={RZPFeatures.ROUTE}
-          isRoute
-          selfServeActionsPage={SelfServeActionPages.RoutePayments}
-        />
+        {isTransactionCleanupEnabled() ? (
+          <Box padding="spacing.7">
+            <PaymentsListV2 {...props} isMarketplacePayments />
+          </Box>
+        ) : (
+          <PaymentsList
+            {...props}
+            quickTourFeature={RZPFeatures.ROUTE}
+            isRoute
+            selfServeActionsPage={SelfServeActionPages.RoutePayments}
+          />
+        )}
       </content>
     </ProductWrapper>
   );

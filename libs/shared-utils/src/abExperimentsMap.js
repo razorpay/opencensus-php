@@ -682,7 +682,7 @@ export default {
     //prod experiment ids,
     'PQMwxDcW8bE6Ma',
   ],
-  ramp_account_settings_for_jnk_omni: [
+  enable_transactions_cleanup: [
     //beta experiment ids
     'PesKDFb25KJNeW',
 

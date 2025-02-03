@@ -5,7 +5,7 @@ import EntityTable from 'merchant/components/EntityTable';
 import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
 import { StyledTable } from 'merchant/views/Transactions/v2/common/styled';
 
-import EmptyComponent from './EmptyComponent';
+import EmptyComponent, { EmptyRoutesComponent } from './EmptyComponent';
 import { getMobileColumns, getDesktopColumns } from './columns';
 import { PaymentsTableProps } from './types';
 
@@ -17,6 +17,7 @@ const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
     selectedColumnsList,
     shouldDisplayOptimizerColumn,
     isJnKOmniEnabled,
+    isMarketplacePayments = false,
   } = props;
   const isMobile = useMobile(mobileBreakoints);
 
@@ -39,7 +40,7 @@ const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
         progressLoader={true}
         noStripe={true}
         columns={columns}
-        EmptyComponent={EmptyComponent}
+        EmptyComponent={isMarketplacePayments ? EmptyRoutesComponent : EmptyComponent}
         customClass="transactions-table-v2"
         limit={25}
         {...props}

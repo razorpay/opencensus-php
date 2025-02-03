@@ -15,6 +15,7 @@ import {
 
 import lazy from './LazyLoader';
 import { isExperimentEnabled } from 'common/splitz/utils';
+import { isTransactionCleanupEnabled } from 'merchant/views/Transactions/v2/common/utils';
 
 const InstantSettlementDetails = lazy(() =>
   import(
@@ -404,10 +405,14 @@ const entityDetailsMap = {
     component: PaymentTransferNew,
     additionalCondition: (user) => user.isAllowedEdit('payments'),
   },
-  '/payments/:id(pay_.+)/:entity_name(transfers|disputes)/:entity_id': {
-    component: PaymentsDetails,
-    additionalCondition: (user) => user.isAllowedEdit('payments'),
-  },
+  ...(isTransactionCleanupEnabled()
+    ? {}
+    : {
+        '/payments/:id(pay_.+)/:entity_name(transfers|disputes)/:entity_id': {
+          component: PaymentsDetails,
+          additionalCondition: (user) => user.isAllowedEdit('payments'),
+        },
+      }),
   '/payments/:id(pay_.+)': {
     component: PaymentsDetails,
     additionalCondition: (user) => user.isAllowedView('payments'),
@@ -461,8 +466,11 @@ const entityDetailsMap = {
     additionalCondition: (user, extraConfig) =>
       user.isAllowedView('invoices') && !extraConfig?.i18?.isConfigTagEnabled('invoices.invoice'),
   },
-
-  '/route/payments/:id': { component: PaymentsDetails },
+  ...(isTransactionCleanupEnabled()
+    ? {}
+    : {
+        '/route/payments/:id': { component: PaymentsDetails },
+      }),
   '/route/accounts/:id': { component: AccountDetailsNew },
   '/smartcollect/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/virtualaccounts/:id': { component: VirtualAccountDetails },

@@ -17,6 +17,7 @@ import {
 } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
+import { isTransactionCleanupEnabled } from 'merchant/views/Transactions/v2/common/utils';
 
 const findDispute = (disputes = [], disputeId) =>
   disputes.find(({ id }) => id === disputeId) || disputeId;
@@ -78,7 +79,17 @@ class DisputeDetailsContainer extends Component {
       closeModal,
       onCloseSecView,
     } = this.props;
-    return (
+    return isTransactionCleanupEnabled() ? (
+      <DisputeDetails
+        openModal={openModal}
+        closeModal={closeModal}
+        isLoading={loading}
+        dispute={dispute}
+        error={error}
+        onCloseSecView={onCloseSecView}
+        showNotification={this.props.showNotification}
+      />
+    ) : (
       <DualDetailView secondaryView={entity_name}>
         <PrimaryView>
           <DisputeDetails

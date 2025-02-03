@@ -8,7 +8,7 @@ import {
   paymentDurationOptions,
   countryCodeSectionOptions,
   countryCodeOptions,
-  searchBySectionOptions,
+  searchBySectionOptions as _searchBySectionOptions,
   searchByOptionsMap,
   paymentChannelOptions,
 } from './constants';
@@ -95,15 +95,24 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
 
 const curlecPaymentMethods = ['all', 'card', 'wallet', 'fpx', 'paylater'];
 const jnkPaymentMethods = ['upi'];
+const batchIdOption = { title: 'Batch ID', value: 'batch_id' };
 
 export const getOptions = (
-  { isMobile, isOrgCurlec, isJnKOmniEnabled }: OptionsType = {
+  { isMobile, isOrgCurlec, isJnKOmniEnabled, showBatchIdFilter }: OptionsType = {
     isMobile: false,
     isOrgCurlec: false,
     isJnKOmniEnabled: false,
+    showBatchIdFilter: false,
   },
 ): AllOptions => {
   let paymentMethodOptions = paymentMethodSectionOptions;
+  const searchBySectionOptions = [
+    ..._searchBySectionOptions,
+    ...(showBatchIdFilter ? [batchIdOption] : []),
+  ];
+  const searchBySectionOption = searchByOptions;
+  searchBySectionOption[0].section.options = searchBySectionOptions;
+
   if (isOrgCurlec) {
     paymentMethodOptions = paymentMethodSectionOptions.filter(({ value }) =>
       curlecPaymentMethods.includes(value),
@@ -130,7 +139,7 @@ export const getOptions = (
     paymentDurationOptions,
     paymentMethodOptions,
     statusOptions,
-    searchByOptions,
+    searchByOptions: searchBySectionOption,
     countryCodeOptions,
     paymentChannelOptions,
   };

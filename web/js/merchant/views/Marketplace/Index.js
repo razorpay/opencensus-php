@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { RZPFeatures } from 'merchant/helpers/data';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { matchPath, Navigate, Route, Routes } from 'react-router-dom';
 
 import {
   handleProductQuickGuide,
@@ -30,6 +30,9 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import lazy from 'merchant/routes/LazyLoader';
 import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
 import { Alert, Box } from '@razorpay/blade/components';
+import PaymentsDetails from '../Transactions/v2/Payments/components/PaymentsDetails';
+import { withRouter } from 'common/deprecated/withRouter';
+import { isTransactionCleanupEnabled } from '../Transactions/v2/common/utils';
 
 //lazy loads
 const PlatformFeeList = lazy(() => import('merchant/views/Marketplace/PlatformFee/List'));
@@ -122,13 +125,17 @@ class MarketplaceContainer extends React.Component {
   };
 
   render() {
-    const { user, routeProductOnBoarding } = this.props;
+    const { user, routeProductOnBoarding, location } = this.props;
     const { isQuickGuideOpen, showOnboarding } = routeProductOnBoarding;
     const { isOrgAxis, isMarketplaceEnabled } = user;
 
     const feeBearer = user.merchant.fee_bearer;
     const isCustomerFeeBearer = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
     const isRoutesDisabled = !isMarketplaceEnabled;
+    const isDetailsView = matchPath('/route/payments/:id', location.pathname);
+    const isTransactionCleanup = isTransactionCleanupEnabled();
+    const shouldShowBanners = isTransactionCleanup ? !isDetailsView : true;
+
     // in case of customer fee bearer if route is disabled for the user, he should not be able to access onboarding to turn on the ROUTE
     if (isCustomerFeeBearer && isRoutesDisabled) {
       return (
@@ -144,7 +151,7 @@ class MarketplaceContainer extends React.Component {
 
     return (
       <div className="Marketplace-Container">
-        {user.isDirectTransferEnabled && (
+        {shouldShowBanners && user.isDirectTransferEnabled && (
           <AnnouncementBanner
             title="Introducing Direct Transfers"
             theme="primary"
@@ -160,8 +167,8 @@ class MarketplaceContainer extends React.Component {
             />
           </AnnouncementBanner>
         )}
-        {isQuickGuideOpen ? <QuickGuide className="QuickGuide-v2" /> : null}
-        {isCustomerFeeBearer && (
+        {shouldShowBanners && isQuickGuideOpen ? <QuickGuide className="QuickGuide-v2" /> : null}
+        {shouldShowBanners && isCustomerFeeBearer && (
           <Box padding="spacing.6" paddingBottom="spacing.0">
             <Alert
               emphasis="subtle"
@@ -176,14 +183,28 @@ class MarketplaceContainer extends React.Component {
         <ErrorBoundary resetOnProps>
           <Routes>
             <Route path="*" element={<Navigate to="payments" replace />} />
-            <Route
-              path="payments/*"
-              element={
-                <Wrapper>
-                  <ClonedPaymentsList />
-                </Wrapper>
-              }
-            />
+            {isTransactionCleanup ? (
+              <Route path="payments/*">
+                <Route path=":id" element={<PaymentsDetails />} />
+                <Route
+                  path="*"
+                  element={
+                    <Wrapper>
+                      <ClonedPaymentsList />
+                    </Wrapper>
+                  }
+                />
+              </Route>
+            ) : (
+              <Route
+                path="payments/*"
+                element={
+                  <Wrapper>
+                    <ClonedPaymentsList />
+                  </Wrapper>
+                }
+              />
+            )}
             <Route
               path="transfers/*"
               element={
@@ -233,4 +254,4 @@ class MarketplaceContainer extends React.Component {
   }
 }
 
-export default MarketplaceContainer;
+export default withRouter(MarketplaceContainer);

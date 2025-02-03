@@ -17,7 +17,11 @@ import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
 import roleList from 'merchant/helpers/permissions/roles-list';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import { CANNOT_ACCEPT_DISPUTE_TOOLTIP_TEXT } from 'merchant/views/Transactions/v1/Disputes/components/constants';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
+import {
+  isTransactionCleanupEnabled,
+  isTransactionsV2Enabled,
+} from 'merchant/views/Transactions/v2/common/utils';
+import { useNavigate } from 'react-router-dom';
 
 import ConfirmModal from './ConfirmModal';
 import ContestDispute from './ContestDispute';
@@ -51,6 +55,7 @@ const DisputeDetails = (props) => {
     isAdminAsMerchant,
     fetchIsAdminAsMerchant,
   } = props;
+  const navigate = useNavigate();
   const [showContest, setShowContest] = useState(!!dispute?.evidence);
   const contestRef = React.createRef();
   const splitz = useSplitzService();
@@ -112,9 +117,15 @@ const DisputeDetails = (props) => {
   };
 
   const redirectAndTrackSelfServe = () => {
-    goToLink(
-      `payments/${dispute.payment_id}?init_point=${initiatePoint}&init_page=${initiatePage}`,
-    );
+    if (isTransactionCleanupEnabled()) {
+      navigate(
+        `payments/${dispute.payment_id}?init_point=${initiatePoint}&init_page=${initiatePage}`,
+      );
+    } else {
+      goToLink(
+        `payments/${dispute.payment_id}?init_point=${initiatePoint}&init_page=${initiatePage}`,
+      );
+    }
     const selfServeInitiateData = {
       selfServeAction: 'Payment Details Fetched',
       page,

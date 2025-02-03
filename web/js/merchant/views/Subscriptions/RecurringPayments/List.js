@@ -5,12 +5,15 @@ import ListContainer from 'merchant/containers/ListContainer';
 import { withRouter } from 'common/deprecated/withRouter';
 import PaymentsTable from 'merchant/views/Transactions/v1/Payments/components/PaymentsTable';
 import PaymentListFilter from 'merchant/views/Transactions/v1/Payments/components/PaymentsListFilter';
+import PaymentListFilterV2 from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter';
 // eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction'; // TODO: Remove this import , and use ProductWrapper instead of HeaderAction
 import DocsLink from 'merchant/components/DocsLink';
 import analytics from 'merchant/views/Subscriptions/analytics';
 import { trackSearchEvent } from 'merchant/views/Subscriptions/utils';
 import { SelfServeActionPages } from 'common/constant/enums';
+import { isTransactionCleanupEnabled } from 'merchant/views/Transactions/v2/common/utils';
+import { onSearch } from 'merchant/views/Transactions/v2/common/utils';
 
 @connect((state) => ({ ...state.payments, user: state.session.user }), { fetchAll })
 @RTracking(() => window.rzpQ.component('EmandatePayments'))
@@ -34,7 +37,7 @@ class RecurringPaymentsListContainer extends ListContainer {
   };
 
   render() {
-    const { user } = this.props;
+    const { history, loading, user } = this.props;
     return (
       <div class="content-wrapper">
         <HeaderAction responsive>
@@ -42,14 +45,18 @@ class RecurringPaymentsListContainer extends ListContainer {
             <DocsLink url="https://razorpay.com/docs/recurring-payments/" />
           </div>
         </HeaderAction>
-        <PaymentListFilter
-          form="emandatePaymentListFilter"
-          count={this.state.count}
-          showBatchIdFilter
-          onSubmit={this.onSubmit}
-          onClearAnalytics={this.onClearAnalytics}
-          user={user}
-        />
+        {isTransactionCleanupEnabled() ? (
+          <PaymentListFilterV2 onSubmit={onSearch(history)} showBatchIdFilter loading={loading} />
+        ) : (
+          <PaymentListFilter
+            form="emandatePaymentListFilter"
+            count={this.state.count}
+            showBatchIdFilter
+            onSubmit={this.onSubmit}
+            onClearAnalytics={this.onClearAnalytics}
+            user={user}
+          />
+        )}
 
         <PaymentsTable
           count={this.state.count}
