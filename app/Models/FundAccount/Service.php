@@ -515,7 +515,7 @@ class Service extends Base\Service
 
     public function fetchBySourceTypeAndId(string $sourceType, string $sourceId): array
     {
-        $fundAccounts = $this->core->fetchBySourceTypeAndId($sourceType, $sourceId);
+        $fundAccounts = $this->core->fetchBySourceTypeAndId($sourceType, $sourceId, $this->merchant);
 
         return $fundAccounts->toArrayPublic();
     }
