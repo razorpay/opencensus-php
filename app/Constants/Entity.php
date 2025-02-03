@@ -313,6 +313,7 @@ class Entity
     const PAYU                   = 'payu';
     const OPTIMIZER_RAZORPAY     = 'optimizer_razorpay';
     const BT_RBL                 = 'bt_rbl';
+    const BT_IBL                 = 'bt_ibl';
     const CASHFREE               = 'cashfree';
     const PHONEPE                = 'phonepe';
     const ZAAKPAY                = 'zaakpay';
@@ -1392,6 +1393,7 @@ class Entity
         self::CURRENCY_CLOUD         => \RZP\Gateway\Mozart::class,
         self::UPI_RZPAPB             => \RZP\Gateway\Mozart::class,
         self::UPI_RZPAXIS            => \RZP\Gateway\Mozart::class,
+        self::BT_IBL                 => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,

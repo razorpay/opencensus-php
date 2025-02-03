@@ -1985,6 +1985,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_RESPONSE_STATUS_FAILURE                       = 'GATEWAY_RESPONSE_STATUS_FAILURE';
     const GATEWAY_PAYMENT_CALLBACK                              = 'GATEWAY_PAYMENT_CALLBACK';
     const GATEWAY_PAYMENT_S2S_CALLBACK                          = 'GATEWAY_PAYMENT_S2S_CALLBACK';
+    const MOZART_SERVICE_REQUEST_BT_IBL                         = 'MOZART_SERVICE_REQUEST_BT_IBL';
     const GATEWAY_PAYMENT_TOPUP_REQUEST                         = 'GATEWAY_PAYMENT_TOPUP_REQUEST';
     const GATEWAY_PAYMENT_TOPUP_RESPONSE                        = 'GATEWAY_PAYMENT_TOPUP_RESPONSE';
     const GATEWAY_PAYMENT_TOPUP_CALLBACK                        = 'GATEWAY_PAYMENT_TOPUP_CALLBACK';
@@ -7331,6 +7332,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MOZART_SERVICE_UNEXPECTED_RESPONSE                    = 'MOZART_SERVICE_UNEXPECTED_RESPONSE';
     const MOZART_SERVICE_REQUEST_FAILED                         = 'MOZART_SERVICE_REQUEST_FAILED';
     const MOZART_SERVICE_RESPONSE                               = 'MOZART_SERVICE_RESPONSE';
+    const MOZART_SERVICE_RESPONSE_BT_IBL                        = 'MOZART_SERVICE_RESPONSE_BT_IBL';
     const MOZART_SERVICE_REQUEST                                = 'MOZART_SERVICE_REQUEST';
     const MOZART_SERVICE_RETRY                                  = 'MOZART_SERVICE_RETRY';
     const MOZART_SERVICE_REQUEST_TIMEOUT                        = 'MOZART_SERVICE_REQUEST_TIMEOUT';
@@ -8216,6 +8218,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const IDFC_VA_VALIDATION_CALLBACK_SUCCESSFUL                 = 'IDFC_VA_VALIDATION_CALLBACK_SUCCESSFUL';
     const IDFC_VA_NOTIFICATION_CALLBACK_SUCCESSFUL               = 'IDFC_VA_NOTIFICATION_CALLBACK_SUCCESSFUL';
     const IDFC_METRIC_LOGGING_ERROR                             = 'IDFC_METRIC_LOGGING_ERROR';
+
+    // RBL VA integration
+    const IBL_VA_CALLBACK                                       = 'IBL_VA_CALLBACK';
+    const IBL_VA_EMPTY_TOKEN                                    = 'IBL_VA_EMPTY_TOKEN';
+    const IBL_VA_INVALID_CALLBACK_DATA                          = 'IBL_VA_INVALID_CALLBACK_DATA';
 
     const TYPEFORM_PARSED_DATA                                  = 'TYPEFORM_PARSED_DATA';
     const TYPEFORM_WORKFLOW_TRIGGERED                           = 'TYPEFORM_WORKFLOW_TRIGGERED';

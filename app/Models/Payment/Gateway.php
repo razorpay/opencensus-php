@@ -218,6 +218,7 @@ class Gateway
     const BT_HDFC_ECMS       = 'bt_hdfc_ecms';
     const BT_AXIS            = 'bt_axis';
     const BT_IDFC            = 'bt_idfc';
+    const BT_IBL             = 'bt_ibl';
 
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
@@ -491,6 +492,7 @@ class Gateway
         self::BT_YESBANK            => self::YESB,
         self::UPI_YESBANK           => self::YESB,
         self::BT_RBL                => self::RBL,
+        self::BT_IBL                => self::INDUSIND,
     ];
 
     // Map of DS settlement entity with DS Bank/org name
@@ -3391,6 +3393,7 @@ class Gateway
         Provider::AXIS      => self::BT_AXIS,
         Provider::AXIS_RTPL => self::BT_AXIS,
         Provider::IDFC       => self::BT_IDFC,
+        Provider::INDUSIND  => self::BT_IBL,
     ];
 
     //

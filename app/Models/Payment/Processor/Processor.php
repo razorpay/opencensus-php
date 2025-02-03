@@ -11401,11 +11401,13 @@ class Processor
         }
 
         $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test', 'bank_transfer_process_rbl_internal'];
+        $iblVaRoutes = ['bank_transfer_process_ibl', 'bank_transfer_process_ibl_test', 'bank_transfer_process_ibl_internal'];
         $axisVaRoutes = ['bank_transfer_process_axis', 'bank_transfer_process_axis_test', 'bank_transfer_process_axis_internal'];
         $idfcVaRoutes = [ 'bank_transfer_validate_idfc',   'bank_transfer_process_idfc', 'bank_transfer_validate_idfc_test',  'bank_transfer_process_idfc_test'];
         $yesbVaRoutes = ['bank_transfer_process'];
 
         if ((in_array(Route::currentRouteName(), $rblVaRoutes, true) === true) ||
+            (in_array(Route::currentRouteName(), $iblVaRoutes, true) === true) ||
             (in_array(Route::currentRouteName(), $axisVaRoutes, true) === true) ||
             (in_array(Route::currentRouteName(), $idfcVaRoutes, true) === true) ||
             (in_array(Route::currentRouteName(), $yesbVaRoutes, true) === true) )

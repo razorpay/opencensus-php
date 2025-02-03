@@ -305,6 +305,11 @@ return [
         'org_token' => env('RBL_VA_SECRET'),
     ],
 
+    'ibl_va'    => [
+        'org_token' => env('IBL_VA_SECRET'),
+        'secret'    => env('IBL_VA_SYMM_KEY'),
+    ],
+
     'axis_va' => [
         'org_token'   => env('AXIS_VA_SECRET'),
         'x_corp_code' => env('AXIS_X_CORP_CODE', "9845"),

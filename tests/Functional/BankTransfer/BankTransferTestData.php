@@ -3257,6 +3257,29 @@ return [
         ]
     ],
 
+    'testBankTransferIbl' => [
+        'request' => [
+            'url'     => '/ecollect/validate/ibl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_IBL_SECRET',
+            ],
+            'content' => [
+                "data"=> "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2R0NNIn0.1KfDDKp3WaKcYYxMrBLIjX_QFOA-LUYWpAGdvKW56EDHsNT8gMPo5A.k5mZj_Z2uNJPaoOY.ycm5V5vLXTwflv9CR9IZOKohsEkfcUbi0Ig80t2gm-4FKJqBPWpqfw_Ym3qyulb3_93id77cylGhO6iPpLSpPpzUJzsskvCTxnKRrTXlFWw9XgXwA2mH1hYs1XrBSYfLQxqE8PIMWWV8dJoOslwEqLU2RVGB6MvyEpFZzDPK8ebAuTddXb3gr9mViJ6XMsSX10nt9GIQbEoP6hHnDnlbXf4j4utSQWOh54chxoJ6-z0SE1JnZ8lOx1A0KtXXqLyY4BOUlUZ9_qwaUta8rgmf27p2Ga9NMgeP23RDR__FOpyySB6bOCAlgFqDoD7yUEEqpx79pa1r7p5f7EXAfhr36z_MBEkb901GEta-typCFkbO4FP1VXPUa1_ptdaez_FVhOrnT8e3ZIwDlQE.-WKIEreA9U4eCX7HTjFZQQ"
+            ],
+        ],
+
+        'response' => [
+            'content' => [
+                'Stts_flg'   => 'S',
+                'Err_cd'     => '000',
+                'message'    => 'Success',
+                'Identifier' => 'XYZ',
+            ],
+            'status_code'  =>  200,
+        ]
+    ],
+
     'testEcollectAxisBatchCreate' => [
         'request' => [
             'url' => '/ecollect/validate/file/axis',

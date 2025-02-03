@@ -89,6 +89,21 @@ class Validator extends Base\Validator
         'remitterName'                      => 'nullable|string',
     ];
 
+    public static $iblRules = [
+        'UTR'                               => 'required|string',
+        'Bene_acc_no'                       => 'required|string',
+        'Req_type'                          => 'required|in:notification',
+        'Req_dt_time'                       => 'required|string',
+        'Txn_amnt'                          => 'required|string',
+        'Pmode'                             => 'required|string',
+        'Sndr_acnt'                         => 'required|string',
+        'Sndr_nm'                           => 'required|string',
+        'Sndr_ifsc'                         => 'required|string',
+        'Corp_code'                         => 'required|string',
+        'Narration'                         => 'required|string',
+        'Identifier'                        => 'required|string',
+    ];
+
     public static $iciciRules = [
         'Virtual_Account_Number_Verification_IN'                    => 'required|array',
         'Virtual_Account_Number_Verification_IN.0.client_code'      => 'required|string',

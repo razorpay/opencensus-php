@@ -6,6 +6,7 @@ use Request;
 use ApiResponse;
 use Carbon\Carbon;
 
+use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
 use RZP\Constants\HyperTrace;
 use RZP\Models\BankTransfer\Constants;
@@ -16,6 +17,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\BankTransfer\Entity;
 use RZP\Models\BankTransfer\HdfcEcms;
 use RZP\Models\BankTransfer\Validator;
@@ -195,6 +197,27 @@ class BankTransferController extends Controller
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
 
         return $this->processAxisBankTransfer(false);
+    }
+
+    public function processIblBankTransferTest()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);
+
+        return $this->processIblBankTransfer();
+    }
+
+    public function processIblBankTransferLive()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        return $this->processIblBankTransfer();
+    }
+
+    public function processIblBankTransferInternal()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        return $this->processIblBankTransfer(false);
     }
 
     public function validateIdfcBankTransferLive()
@@ -409,6 +432,72 @@ class BankTransferController extends Controller
         ]);
     }
 
+    public function processIblBankTransfer($validateReqToken = true)
+    {
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
+
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::IBL_VA_CALLBACK, $this->service()->removeSenderSensitiveInfoFromLogging($input, Provider::INDUSIND));
+
+        $errorResp = $this->validateIblRequestToken($validateReqToken);
+
+        if ($errorResp !== null)
+        {
+            return $errorResp;
+        }
+
+        try
+        {
+            $inputList = $this->modifyIblDataToEntity($input);
+
+            $provider = $inputList['gateway_provider']['provider'];
+
+            $this->service()->saveRequestAndProcess($inputList['input'], $provider, false, $inputList['input']);
+
+        }
+        catch (BadRequestValidationFailureException $e)
+        {
+            $this->trace->traceException($e);
+
+            if($e->getMessage() === ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE) {
+
+                return ApiResponse::json([
+                    'Stts_flg'   => 'F',
+                    'Err_cd'     => '007',
+                    'message'    => $e->getMessage(),
+                    'Identifier' => $inputList['input']['description'],
+                ], 400);
+
+            }
+
+            return ApiResponse::json([
+                'Stts_flg'   => 'F',
+                'Err_cd'     => '002',
+                'message'    =>  $e->getMessage(),
+                'Identifier' => $inputList['input']['description'],
+            ], 400);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            return ApiResponse::json([
+                'Stts_flg'   => 'F',
+                'Err_cd'     => '001',
+                'message'    => 'Authentication failed',
+                'Identifier' =>  $inputList['input']['description'],
+            ], 400);
+        }
+
+        return ApiResponse::json([
+            'Stts_flg'   => 'S',
+            'Err_cd'     => '000',
+            'message'    => 'Success',
+            'Identifier' =>  $inputList['input']['description'],
+        ]);
+    }
+
     protected function traceXFundLoadingMetrics($input = [], $errorCode = '')
     {
         if ($this->doesRequestBelongToX($input))
@@ -500,6 +589,47 @@ class BankTransferController extends Controller
             ]);
 
             return ApiResponse::json(['Status' => 'Failure Invalid token.'], 400);
+        }
+
+        return null;
+    }
+
+    protected function validateIblRequestToken($validateReqToken)
+    {
+        if ($validateReqToken === false)
+        {
+            return null;
+        }
+
+        $headers = Request::header();
+
+        if (empty($headers['xorgtoken']) === true)
+        {
+            $this->trace->error(TraceCode::IBL_VA_EMPTY_TOKEN, [
+                'message'   => 'empty token',
+            ]);
+
+            return ApiResponse::json([
+                'Stts_flg'=>'F',
+                'Err_cd'=>'003',
+                'message'=>'Authentication failed',
+            ], 400);
+        }
+
+        $actualToken = $headers['xorgtoken'][0];
+        $expectedToken = $this->config['applications.ibl_va.org_token'];
+
+        if (hash_equals($expectedToken, $actualToken) === false)
+        {
+            $this->trace->error(TraceCode::IBL_VA_INVALID_CALLBACK_DATA, [
+                'message'   => 'invalid token',
+            ]);
+
+            return ApiResponse::json([
+                'Stts_flg'=>'F',
+                'Err_cd'=>'003',
+                'message'=>'Authentication failed',
+            ], 400);
         }
 
         return null;
@@ -830,6 +960,49 @@ class BankTransferController extends Controller
             'gateway_provider' => [
                 'provider'       => $provider,
             ]);
+    }
+
+    protected function modifyIblDataToEntity($input)
+    {
+        $provider = Provider::INDUSIND;
+
+        $input['key'] = $this->config['applications.ibl_va.secret'];
+        $input['gateway'] = Gateway::BT_IBL;
+
+        $gateway = $this->app['gateway']->gateway(Gateway::BT_IBL);
+        $resp = $gateway->preProcessServerCallback($input, Gateway::BT_IBL);
+
+        $payeeIfsc = Provider::getIFSC()[$provider];
+
+        // Fetching the Payee IFSC code from the bank account, as it is dynamic in the bt_ibl case.
+        if (isset($resp['payee_account']) === true)
+        {
+            $bankAccount = $this->repo->bank_account->findVirtualBankAccountByAccountNumberAndBankCode($resp['payee_account'], null, true);
+            if ($bankAccount !== null)
+            {
+                $payeeIfsc = $bankAccount->getIfscCode();
+            }
+        }
+
+        return array(
+            'input' => [
+                'request_type'   => $resp['request_type'],
+                'payee_account'  => $resp['payee_account'],
+                'payee_ifsc'     => $payeeIfsc,
+                'payer_name'     => $resp['payer_name'],
+                'payer_account'  => $resp['payer_account'],
+                'payer_ifsc'     => $resp['payer_ifsc'],
+                'mode'           => $resp['mode'],
+                'transaction_id' => $resp['transaction_id'],
+                'time'           => $resp['time'],
+                'amount'         => $resp['amount'],
+                'description'    => $resp['description'],
+                'narration'      => $resp['narration'],
+            ],
+            'gateway_provider' => [
+                'provider' => $provider,
+            ]);
+
     }
 
     protected function doesRequestBelongToX($input = []): bool

@@ -246,6 +246,26 @@ class Service extends Base\Service
             throw new Exception\BadRequestValidationFailureException(TraceCode::YESBANK_GATEWAY_UNEXPECTED_PAYMENT_ERROR);
         }
 
+        // Do Early Return if Virtual Account is not present
+        // Indusind Will handle Refund themselves
+        if ($provider === Provider::INDUSIND)
+        {
+            $valid  = $this->checkIfVirtualAccountIsPresent($input);
+
+            $this->trace->error(TraceCode::VIRTUAL_ACCOUNT_UNAVAILABLE, [
+                'input' => $input
+            ]);
+
+            if ($valid === false) {
+                throw new Exception\BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE,
+                    $input
+                );
+            }
+
+        }
+
+
         $response = $this->processValidationRequest($input, $provider);
 
         if (empty($response) === false) {
@@ -324,6 +344,21 @@ class Service extends Base\Service
         }
 
         return $this->validateAndProcessRequest($input, $bankTransferRequest, $provider, $checkForIfsc);
+    }
+
+    protected function checkIfVirtualAccountIsPresent(array $input): bool
+    {
+        $accountNumber = $input["payee_account"];
+        $ifsc = $input["payee_ifsc"];
+
+        $virtualAccount = $this->getVirtualAccountUsingAccountNumberAndIfsc($accountNumber, $ifsc);
+
+        if ($virtualAccount === null)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function checkForCollectXValidateRequestForUPI(array $input): bool
@@ -2036,6 +2071,9 @@ class Service extends Base\Service
             ($routeName === 'bank_transfer_process_axis') or
             ($routeName === 'bank_transfer_process_axis_test') or
             ($routeName === 'bank_transfer_process_axis_internal') or
+            ($routeName === 'bank_transfer_process_ibl') or
+            ($routeName === 'bank_transfer_process_ibl_test') or
+            ($routeName === 'bank_transfer_process_ibl_internal') or
             ($routeName === 'bank_transfer_validate_idfc') or
             ($routeName === 'bank_transfer_process_idfc') or
             ($routeName === 'bank_transfer_validate_idfc_test') or
@@ -2067,6 +2105,9 @@ class Service extends Base\Service
                 if (($routeName === 'bank_transfer_process_axis') or
                     ($routeName === 'bank_transfer_process_axis_test') or
                     ($routeName === 'bank_transfer_process_axis_internal') or
+                    ($routeName === 'bank_transfer_process_ibl') or
+                    ($routeName === 'bank_transfer_process_ibl_test') or
+                    ($routeName === 'bank_transfer_process_ibl_internal') or
                     ($routeName === 'bank_transfer_validate_idfc') or
                     ($routeName === 'bank_transfer_process_idfc') or
                     ($routeName === 'bank_transfer_validate_idfc_test') or

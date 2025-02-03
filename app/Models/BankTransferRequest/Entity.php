@@ -292,6 +292,7 @@ class Entity extends Base\PublicEntity
         {
             case 'bank_transfer_process':
             case 'bank_transfer_process_rbl':
+            case 'bank_transfer_process_ibl':
             case 'bank_transfer_process_axis':
             case 'bank_transfer_validate_idfc':
             case 'bank_transfer_process_idfc':
@@ -305,6 +306,7 @@ class Entity extends Base\PublicEntity
                 break;
 
             case 'bank_transfer_process_rbl_internal':
+            case 'bank_transfer_process_ibl_internal':
             case 'bank_transfer_process_axis_internal':
             case 'bank_transfer_process_icici_internal':
             case 'bank_transfer_process_yesbank_internal':
@@ -334,6 +336,7 @@ class Entity extends Base\PublicEntity
             case 'bank_transfer_process_test_x_demo_cron':
             case 'bank_transfer_process_test':
             case 'bank_transfer_process_rbl_test':
+            case 'bank_transfer_process_ibl_test':
             case 'bank_transfer_process_axis_test':
             case 'bank_transfer_process_idfc_test':
             case 'bank_transfer_validate_idfc_test':
