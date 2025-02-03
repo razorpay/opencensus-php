@@ -35,6 +35,7 @@ class Core extends Base\Core
     const TEMPORARY_VAULT_TOKEN_REGEX = '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-'.
                                         '[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{12}4[0-9a-f]{19}$/';
 
+    const BIN_SERVICE_PRIMARY_READ_MODE = 'primary';
     protected $card = null;
 
     public function create($input, $merchant, $recurring = false, $dummyProcessing = false, $isRzpX = false)
@@ -157,11 +158,29 @@ class Core extends Base\Core
         }
     }
 
-    public function migrateToTokenizedCard($card, $merchant, $input, $payment = null, $asyncTokenisationJobId)
+    public function migrateToTokenizedCard($card, $merchant, $input, $payment = null, $asyncTokenisationJobId,$callback=null)
     {
+        if ($asyncTokenisationJobId === "hdfcPushProvNetworkTokenMigrate"
+            || $asyncTokenisationJobId === "hdfcPushProvIssuerTokenMigrate") {
+            $input = [
+                'asyncTokenisationJobId'           => $asyncTokenisationJobId,
+                'hdfc_push_prov'                   => true,
+                'pushProvisioningReceipt'          => $input['pushProvisioningReceipt'],
+                'merchantId'                       => $input['merchantId'],
+                'cardType'                         => $input['cardType'],
+                'clientReferenceId'                => $input['clientReferenceId'],
+                'userConsent'                      => 'Y',
+                'provider'                         => $input['provider'],
+                'vault_token'                      => $input['vault_token'],
+                'iv'                               => $input['iv'],
+                'dualTokenMapperId'                =>$input['dualTokenMapperId'],
+                'merchantKey'                      => $input['merchantKey'],
+                'rzpMerchantId'                    => $callback['rzpMerchantId'],
+            ];
+        }
         $response = $this->getTokenizedCardResponseFromAnExistingVault($card, $merchant, $input);
 
-        return $this->migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment, $asyncTokenisationJobId);
+        return $this->migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment, $asyncTokenisationJobId,$callback);
     }
 
     public function fetchParValue($input)
@@ -177,9 +196,42 @@ class Core extends Base\Core
     }
 
 
-    protected function migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment = null, $asyncTokenisationJobId)
+    protected function migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment = null, $asyncTokenisationJobId,$callback = null)
     {
-        if($asyncTokenisationJobId === "pushtokenmigrate" ) {
+        if ($asyncTokenisationJobId === "hdfcPushProvNetworkTokenMigrate" || $asyncTokenisationJobId==="hdfcPushProvIssuerTokenMigrate") {
+            // Create a dummy Card here for hdfc push prov
+
+            $merchant=[
+                'merchant_id'                  => $callback['rzpMerchantId']
+            ];
+
+            $tokenNumber = substr($response['service_provider_tokens'][0]['provider_data']['token_number'],0,6);
+
+            $iinData = (new BinService())->fetchEntityByIINFromBinService($tokenNumber, self::BIN_SERVICE_PRIMARY_READ_MODE);
+
+            $this->trace->info(TraceCode::MISC_TRACE_CODE,[
+                'message'    =>'after bin service',
+                '$iinData'      =>$iinData,
+            ]);
+            if($iinData==null){
+                throw new Exception\RuntimeException('Bin Mapping for the given token not present', $tokenNumber, $response);
+            }
+
+            // Bin Service Data
+            $cardInput = [
+                Card\Entity::CVV          => '123',
+                Card\Entity::VAULT        => Card\Vault::RZP_VAULT,
+                Card\Entity::EXPIRY_MONTH => $response['service_provider_tokens'][0]['provider_data']['token_expiry_month'],
+                Card\Entity::EXPIRY_YEAR  => $response['service_provider_tokens'][0]['provider_data']['token_expiry_year'],
+                Card\Entity::NUMBER       => $iinData['mappedIin'].'000000'.$response['service_provider_tokens'][0]['provider_data']['last4'],
+                Card\Entity::DUMMY_CARD   => true,
+            ];
+
+            $tokenisedCard = $this->create($cardInput, $merchant,false,false);
+
+
+        }
+        else if($asyncTokenisationJobId === "pushtokenmigrate" ) {
 
             $tokenisedCard = $card;
 
@@ -191,7 +243,16 @@ class Core extends Base\Core
         }
 
 
-        $tokenisedCard->setVaultToken($response['token']);
+        if ($asyncTokenisationJobId === "hdfcPushProvNetworkTokenMigrate"
+            || $asyncTokenisationJobId==="hdfcPushProvIssuerTokenMigrate")
+        {
+            $tokenisedCard->setVaultToken($input['dualTokenMapperId']);
+            $tokenisedCard->setNetwork($iinData['network']);
+            $tokenisedCard->setIssuer($iinData['issuer']);
+            $tokenisedCard->setTokenLast4($response['service_provider_tokens'][0]['provider_data']['last4']);
+        }else{
+            $tokenisedCard->setVaultToken($response['token']);
+        }
 
         $tokenisedCard->setGlobalFingerprint($response['fingerprint']);
 
@@ -1148,6 +1209,74 @@ class Core extends Base\Core
         }
     }
 
+    public function GetRzpMerchantIdAndAsyncTokenisationJobId($input)
+    {
+
+            $gateway = "tokenization_";
+
+            $NetworkCheck = "onboard_tokenization_";
+
+            if ($input['provider'] == 'ONUS') {
+
+                $gateway .= 'hdfc';
+
+                $rzpMerchantId = $this->repo->terminal->findByGatewayMerchantId($input['merchant_id'], $gateway);
+
+                $asyncTokenisationJobId = "hdfcPushProvIssuerTokenMigrate";
+
+            } else {
+
+                $network = $input['cardType'];
+
+                switch ($network) {
+                    case 'V':
+                        $gateway .= "visa";
+                        $NetworkCheck .= "visa";
+                        break;
+                    case 'M':
+                        $gateway .= "mastercard";
+                        $NetworkCheck .= "mastercard";
+                        break;
+                    case 'D':
+                        $gateway .= "diners";
+                        $NetworkCheck .= "diners";
+                        break;
+                    case 'R':
+                        $gateway .= "rupay";
+                        $NetworkCheck .= "rupay";
+                        break;
+                    case 'A':
+                        $gateway .= "amex";
+                        $NetworkCheck .= "amex";
+                        break;
+                    default:
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "Invalid card type: ");
+                }
+
+                $rzpMerchantId = $this->repo->terminal->findByGatewayMerchantId($input['merchant_id'], $gateway);
+
+                $asyncTokenisationJobId = "hdfcPushProvNetworkTokenMigrate";
+            }
+            if (
+                $this->merchant->isFeatureEnabled(Feature\Constants::PUSH_PROVISIONING_LIVE) === false
+                && $this->merchant->isFeatureEnabled($NetworkCheck) === false
+                && $this->merchant->isFeatureEnabled(Feature\Constants::ONBOARD_TOKENIZATION_VISA) === false
+                && $this->merchant->isFeatureEnabled(Feature\Constants::ISSUER_TOKENIZATION_LIVE) === false
+            ) {
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    null,
+                    "Push provisioning is not enabled for merchant"
+                );
+            }
+
+        return [$rzpMerchantId, $asyncTokenisationJobId];
+    }
+
+
+
     public function findAllExistingCards(Card\Entity $newCard, Merchant\Entity $merchant, $limit = 10)
     {
         $params = array(
@@ -1580,18 +1709,22 @@ class Core extends Base\Core
 
     protected function getTokenizedCardResponseFromAnExistingVault($card, $merchant, $input)
     {
-        $iin = $this->repo->card->retrieveIinDetails($card->getIin());
+        $iin = null;
 
-        $iinInfo = [
-            'issuer'       => $iin->getIssuer(),
-            'network'      => $iin->getNetwork(),
-            'network_code' => $iin->getNetworkCode(),
-            'iin'          => $iin->getIin(),
-            'category'     => $iin->getCategory(),
-            'type'         => $iin->getType(),
-            'country'      => $iin->getCountry(),
-            'issuer_name'  => $iin->getIssuerName(),
-        ];
+        if ($card !==null){
+            $iin = $this->repo->card->retrieveIinDetails($card->getIin());
+
+            $iinInfo = [
+                'issuer'       => $iin->getIssuer(),
+                'network'      => $iin->getNetwork(),
+                'network_code' => $iin->getNetworkCode(),
+                'iin'          => $iin->getIin(),
+                'category'     => $iin->getCategory(),
+                'type'         => $iin->getType(),
+                'country'      => $iin->getCountry(),
+                'issuer_name'  => $iin->getIssuerName(),
+            ];
+        }
 
         $cardVault = (new Card\CardVault);
 

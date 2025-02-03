@@ -77,6 +77,10 @@ class TokenController extends Controller
     {
         $input = Request::all();
 
+        if( $input['requester']=='wibmo'){
+            $data = $this->service()->hdfcPushProvTokens($input);
+            return ApiResponse::json($data);
+        }
         $data = $this->service()->tokensPush($input);
 
         return ApiResponse::json($data);

@@ -624,6 +624,122 @@ class Service extends Base\Service
         return $response;
     }
 
+
+    public function hdfcPushProvTokens(&$input, $internalServiceRequest = false)
+    {
+
+        $startTime = microtime(true);
+
+        try {
+
+            $response = [];
+
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+            //Step 1-: Validate the request
+
+            (new Validator)->validateInput(Validator::HDFC_PUSH_PROV, $input);
+
+               $this->trace->info(TraceCode::HDFC_TOKEN_PUSH_INFO,
+                [
+                'message' => "hdfcPushProvTokens",
+                'input' => $input
+                ]);
+
+            //Step 2-: Fetch the merchant details from
+            list($rzpMerchantId, $asyncTokenizationJobId) =(new Card\Core)->GetRzpMerchantIdAndAsyncTokenisationJobId($input);
+
+            $callbackData = [
+                'pushProvisioningReceipt'      => $input['pushProvisioningReceipt'],
+                'merchantId'                   => $input['merchantId'],
+                'cardType'                     => $input['cardType'],
+                'clientReferenceId'            => $input['clientReferenceId'],
+                'userConsent'                  => 'Y',
+                'provider'                     => $input['provider'],
+                'iv'                           => $input['iv'],
+                'dualTokenMapperId'            => $input['dualTokenMapperId'],
+                'merchantKey'                  => $input['merchantKey'],
+                'rzpMerchantId'                => $rzpMerchantId,
+                'dualToken'                    =>  $input['dualToken'],
+            ];
+
+            $ExistingTokensId="";
+            if ($input['dualToken']) {
+                $ExistingTokensId= (new Token\Core)-> getTokenId($input['dualTokenMapperId']);
+                $this->trace->info(TraceCode::HDFC_TOKEN_PUSH_INFO, [
+                    "message"=>$ExistingTokensId[0]['id']]);
+            }
+            if (!$input['dualToken'])
+            {
+
+                if (($mode === Mode::LIVE) || app()->isEnvironmentQA() === true)
+                {
+                    $customerIssuer = $this->repo->customer->findByPublicIdAndMerchant($input['customer_id'], $this->merchant);
+
+                    $merchantPushProvisioning = $this->repo->merchant->fetchMerchantFromId($rzpMerchantId);
+
+                    $customer =  $this->getCustomerByMerchantType($customerIssuer);
+
+                    $this->merchant = $merchantPushProvisioning;
+
+                    $tokenCreateInput = [Token\Entity::METHOD => Payment\Method::CARD,];
+
+                    $token = (new Token\Core)->create($customer, $tokenCreateInput);
+
+                    $token->merchant()->associate($this->merchant);
+
+                    $token->setAcknowledgedAt(Carbon::now(Timezone::IST)->getTimestamp());
+
+                    $token->setSource(TokenConstants::ISSUER);
+
+                    $token->setEntityId($input['dualTokenMapperId']);
+
+                    $token->setEntityType('HDFC_PUSH_PROV');
+
+                    $token->setUsedCount(1);
+
+                    $token->setUsedAt(Carbon::now()->getTimestamp());
+
+                    $this->repo->saveOrFail($token);
+
+                    (new Token\Core())->updateTokenStatus($token['id'], Token\Constants::INITIATED);
+
+                    SavedCardTokenisationJob::dispatch($this->mode, $token['id'], $asyncTokenizationJobId, null, $callbackData);
+
+                    $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_SUCCESS, [
+                        'message' => "after saved job",
+                    ]);
+
+                    (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::HDFC_PUSH_PROV_TOKEN);
+                    (new Metric())->pushTokenProvisioningSRMetrics(BaseMetric::SUCCESS, Token\Action::HDFC_PUSH_PROV_SR);
+                }
+                $response['tokens'] = $token;
+
+            }else
+            {
+                SavedCardTokenisationJob::dispatch($this->mode, $ExistingTokensId[0]['id'], $asyncTokenizationJobId, null, $callbackData);
+
+                (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::HDFC_PUSH_PROV_TOKEN);
+                (new Metric())->pushTokenProvisioningSRMetrics(BaseMetric::SUCCESS, Token\Action::HDFC_PUSH_PROV_SR);
+            }
+
+
+        } catch (\Throwable $e) {
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::HDFC_TOKEN_PUSH_EXCEPTION
+            );
+            (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::HDFC_PUSH_PROV_TOKEN);
+            (new Metric())->pushTokenProvisioningSRMetrics(BaseMetric::FAILED, Token\Action::HDFC_PUSH_PROV_SR);
+
+
+            throw $e;
+        }
+        return $response;
+    }
+
+
     public function checkIsCustomCheckoutEnabledForMerchant($merchantId, $mode): bool
     {
 
@@ -640,7 +756,7 @@ class Service extends Base\Service
 
     public function isStandardCheckoutEnabledForPPMerchant($merchantId): bool
     {
-        
+
         $properties = [
             'id'            => $merchantId,
             'experiment_id' => 'PhebFAHyYd05lT'

@@ -116,7 +116,17 @@ class SavedCardTokenisationJob extends Job
 
             $card = $token->card;
 
-           $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_INITIATED, $card);
+
+            if($card!==null && !$this->callbackData['dualToken']){
+                $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_INITIATED, $card);
+
+                if($this->tokenCore->checkIfTokenisationApplicable($token) === false)
+                {
+                    $this->traceTokenisationNotApplicable($card);
+                    $this->delete();
+                    return;
+                }
+            }
 
             $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_REQUEST, [
                 'tokenId'                   => $this->tokenId,
@@ -126,15 +136,11 @@ class SavedCardTokenisationJob extends Job
                 'tokenpan' => $this->callbackData,
             ]);
 
+            $cardInput = [];
 
-            if($this->tokenCore->checkIfTokenisationApplicable($token) === false)
-            {
-                $this->traceTokenisationNotApplicable($card);
-                $this->delete();
-                return;
+            if($card!==null || $this->callbackData['dualToken']){
+                $cardInput = $this->tokenCore->buildCardInputForTokenisation($card);
             }
-
-            $cardInput = $this->tokenCore->buildCardInputForTokenisation($card);
 
             $startTime = millitime();
 
@@ -152,11 +158,13 @@ class SavedCardTokenisationJob extends Job
                 $payment = $this->repoManager->payment->findOrFail($this->paymentId);
             }
 
-            if($this->asyncTokenisationJobId === 'pushtokenmigrate'){
+            if($this->asyncTokenisationJobId === 'pushtokenmigrate' ||
+                        $this->asyncTokenisationJobId ==='hdfcPushProvIssuerTokenMigrate'
+                             || $this->asyncTokenisationJobId ==='hdfcPushProvNetworkTokenMigrate'){
                 $cardInput['via_push_provisioning'] = true;
             }
 
-            [$tokenPanVaultToken, $tokenNumber , $cryptogramValue, $serviceProviderTokens] = $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true, $this->asyncTokenisationJobId,$this->callbackData);
+            [$tokenPanVaultToken, $tokenNumber , $cryptogramValue, $serviceProviderTokens,$card] = $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true, $this->asyncTokenisationJobId,$this->callbackData);
 
             $tokenIIN = null;
             if(isset($tokenNumber)) {

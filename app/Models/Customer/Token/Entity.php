@@ -370,7 +370,8 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::NOTES,
         self::ERROR_DESCRIPTION,
-        self::SOURCE
+        self::SOURCE,
+        self::ENTITY_ID,
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
@@ -568,6 +569,15 @@ class Entity extends Base\PublicEntity
     public function hasCard()
     {
         return $this->isAttributeNotNull(self::CARD_ID);
+    }
+
+    public  function  setEntityId($clientReferenceId)
+    {
+        $this->attributes[self::ENTITY_ID] = $clientReferenceId;
+    }
+    public  function  setEntityType($entityType)
+    {
+        $this->attributes[self::ENTITY_TYPE] = $entityType;
     }
 
     public function hasVpa()

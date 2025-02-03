@@ -1225,4 +1225,11 @@ EOT;
         return $this->app['datalake.presto']->getDataFromDataLake($rawQuery);
     }
 
+    public function fetchByEntityId($entityId)
+    {
+
+        $tokenEntityId = $this->repo->token->dbColumn(Token\Entity::ENTITY_ID);
+
+        return $this->newQuery()->where($tokenEntityId, '=', $entityId)->get();
+    }
 }

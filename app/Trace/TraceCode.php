@@ -10555,6 +10555,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NIUM_GIFU_FILE_MII_NOT_FOUND                        = 'NIUM_GIFU_FILE_MII_NOT_FOUND';
     const TOKEN_PUSH_FETCH_INFO                               = 'TOKEN_PUSH_FETCH_INFO';
     const PUSH_TOKEN_FETCH_EXCEPTION                          = 'PUSH_TOKEN_FETCH_EXCEPTION';
+    const HDFC_TOKEN_PUSH_INFO                                = 'HDFC_TOKEN_PUSH_INFO';
+    const HDFC_TOKEN_PUSH_EXCEPTION                           = 'HDFC_TOKEN_PUSH_EXCEPTION';
+    const HDFC_PUSH_PROV_TOKEN_STATUS                         = 'HDFC_PUSH_PROV_TOKEN_STATUS';
     const PUSH_TOKEN_CONSENT_PERSIST_EVENT                    = 'PUSH_TOKEN_CONSENT_PERSIST_EVENT';
     const PUSH_TOKEN_CONSENT_PERSIST_FAILURE                  = 'PUSH_TOKEN_CONSENT_PERSIST_FAILURE';
 

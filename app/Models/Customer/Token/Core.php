@@ -1210,6 +1210,11 @@ class Core extends Base\Core
         return $existingToken;
     }
 
+    public function getTokenId($dualTokenMapperId)
+    {
+        return (new Token\Repository())->fetchByEntityId($dualTokenMapperId);
+    }
+
     /**
      * Fetches global tokens associated with a global customer.
      *
@@ -2223,8 +2228,35 @@ class Core extends Base\Core
                 ];
             }
         }
+        if ($asyncTokenisationJobId==='hdfcPushProvIssuerTokenMigrate'
+            || $asyncTokenisationJobId==='hdfcPushProvNetworkTokenMigrate')
+        {
+            if ($callbackdata['vault_token']!==null){
+                $cardInput+=[
+                    'vault_token'                    => $callbackdata['vault_token'],
+                ];
+            }
+            $cardInput +=
+                [
+                'asyncTokenisationJobId'         => $asyncTokenisationJobId,
+                'pushProvisioningReceipt'        => $callbackdata['pushProvisioningReceipt'],
+                'merchantId'                     => $callbackdata['merchantId'],
+                'cardType'                       => $callbackdata['cardType'],
+                'clientReferenceId'              => $callbackdata['clientReferenceId'],
+                'userConsent'                    => 'Y',
+                'provider'                       => $callbackdata['provider'],
+                'iv'                             => $callbackdata['iv'],
+                'dualTokenMapperId'              =>$callbackdata['dualTokenMapperId'],
+                'merchantKey'                    => $callbackdata['merchantKey'],
+                'rzpMerchantId'                  => $callbackdata['rzpMerchantId'],
+            ];
+        }
+        $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_REQUEST, [
+            'messages'                   => $cardInput,
+        ]);
 
-        list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput, $payment, $asyncTokenisationJobId);
+
+        list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput, $payment, $asyncTokenisationJobId,$callbackdata);
 
         $this->trace->info(
             TraceCode::TOKEN_MIGREATE_FOR_TOKENIZED_CARD);
@@ -2266,7 +2298,7 @@ class Core extends Base\Core
         $tokenPan           = $serviceProviderTokens[0]['provider_data']['token_number'] ?? "";
         $cryptogramValue    = $serviceProviderTokens[0]['provider_data']['cryptogram_value'] ?? "";
 
-        return [$tokenPanVaultToken, $tokenPan, $cryptogramValue, $serviceProviderTokens];
+        return [$tokenPanVaultToken, $tokenPan, $cryptogramValue, $serviceProviderTokens,$card];
     }
 
     public function getIIN($input)

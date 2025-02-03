@@ -36,6 +36,7 @@ class Validator extends Base\Validator
     const FETCH_PAR_VALUE                               = 'fetch_par_value';
     const FETCH_MERCHANTS_WITH_TOKEN_PRESENT            = 'fetch_merchants_with_token_present';
     const TOKEN_PUSH                                    = 'token_push';
+    const  HDFC_PUSH_PROV                               = 'hdfc_Push_Prov';
     const RUPAY_PUSH_PROV                               = 'rupay_push_prov';
 
     /**
@@ -229,6 +230,18 @@ class Validator extends Base\Validator
         Card\Constants::TOKENS . '.*' => 'required_with:' . Card\Constants::TOKENS . '|string|size:14',
     ];
 
+    protected static $hdfcPushProvRules= [
+        'merchantId'                    => 'required|string',
+        'pushProvisioningReceipt'       => 'required|string',
+        'referenceId'                   => 'required|string',
+        'provider'                      => 'required|string',
+        'cardType'                      => 'required|string',
+        'clientReferenceId'             => 'required|string',
+        'mobile'                        => 'required|string',
+        'email'                         => 'sometimes|string',
+        'country'                       => 'sometimes|string',
+        'requester'                     => 'required|string',
+    ];
     protected static $validateGlobalCustomerLocalSavedCardAsyncTokenisationRules = [
         'batch_size' => 'sometimes|integer|max:100000'
     ];
@@ -321,7 +334,6 @@ class Validator extends Base\Validator
                 'Invalid bank name in input: '. $value);
         }
     }
-
     protected function validateWallet($attribute, $value)
     {
         if ((Wallet::exists($value) === false) and (PayLater::exists($value) === false))

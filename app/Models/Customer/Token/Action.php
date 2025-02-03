@@ -20,4 +20,6 @@ class Action
     const TOKEN_PUSH_FETCH  = 'token_push_fetch';
     const TOKEN_PUSH_SR     = 'token_push_sr';
     const TOKEN_MIGRATE     = 'token_migrate';
+    const HDFC_PUSH_PROV_TOKEN        = 'hdfc_push_prov_token';
+    const  HDFC_PUSH_PROV_SR ='hdfc_push_prov_sr';
 }
