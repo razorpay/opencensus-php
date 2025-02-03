@@ -883,11 +883,6 @@ final class RazorxTreatment
     const ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API = 'enable_transfer_sync_processing_via_api';
 
     /**
-     * Razorx flag to enable sync processing for Route transfers via cron
-     */
-    const ENABLE_TRANSFER_SYNC_PROCESSING_VIA_CRON = 'enable_transfer_sync_processing_via_cron';
-
-    /**
      * Razorx flag to enable sync ledger outbox push for Route transfers in reverse shadow
      */
     const ENABLE_TRANSFER_SYNC_LEDGER_OUTBOX_PUSH = 'enable_transfer_sync_ledger_outbox_push';

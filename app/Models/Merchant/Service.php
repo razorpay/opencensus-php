@@ -14094,21 +14094,7 @@ class Service extends Base\Service
 
     protected function checkIfLinkedAccountBatchUploadNewFlowExpIsEnabled($merchant): bool
     {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::USE_NEW_FLOW_FOR_LA_BATCH_UPLOAD,
-            $this->mode
-        );
-
-        $isExperimentEnabled = ($variant === 'on');
-
-        $this->trace->info(TraceCode::LINKED_ACCOUNT_BATCH_UPLOAD_NEW_FLOW_EXP_CHECK,
-            [
-                'merchant'               => $merchant->getId(),
-                'isExperimentEnabled'    => $isExperimentEnabled,
-            ]);
-
-        return $isExperimentEnabled;
+        return true;
     }
 
     public function createMerchantMethods($merchantId)

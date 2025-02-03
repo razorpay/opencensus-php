@@ -2436,13 +2436,34 @@ class Core extends Base\Core
 
     private function isSyncProcessingEnabled($merchant)
     {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API,
-            $this->mode
-        );
+        $merchantId = $merchant->getId();
+        try
+        {
+            $properties = [
+                'id' => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.enable_transfer_sync_processing_via_api_exp_id'),
+            ];
 
-        return ($variant === 'on');
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API_EXP_RESULT, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.enable_transfer_sync_processing_via_api_exp_id') ?? null
+            ]);
+
+            return false;
+        }
     }
 
     public function createInternalTransactionForTransfer(array $input)
@@ -3070,22 +3091,35 @@ class Core extends Base\Core
 
     protected function checkIfPaymentIdMutexExperimentIsEnabled($merchant): bool
     {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            self::PAYMENT_ID_MUTEX_FOR_TRF_PROCESSING_EXPERIMENT,
-            $this->mode
-        );
+        $merchantId = $merchant->getId();
+        try
+        {
+            $properties = [
+                'id' => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.payment_id_mutex_for_transfer_processing_exp_id'),
+            ];
 
-        $isExperimentEnabled = ($variant === 'on');
+            $response = $this->app['splitzService']->evaluateRequest($properties);
 
-        $this->trace->info(
-            TraceCode::PAYMENT_ID_MUTEX_TRANSFER_PROCESSING_EXP_CHECK,
-            [
-                'merchant_id'    => $merchant->getId(),
-                'is_exp_enabled' => $isExperimentEnabled,
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::PAYMENT_ID_MUTEX_TRANSFER_PROCESSING_EXP_CHECK, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
             ]);
 
-        return $isExperimentEnabled;
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.payment_id_mutex_for_transfer_processing_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+
     }
 
     public function pushTransferForAsyncBalanceUpdateIfApplicable($transfer): void
@@ -3101,24 +3135,36 @@ class Core extends Base\Core
         }
     }
 
-    public function checkIfFailCreatedAndPendingTransfersExperimentIsEnabled($merchant)
+    public function checkIfFailCreatedAndPendingTransfersExperimentIsEnabled($merchant): bool
     {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED,
-            $this->mode
-        );
+        $merchantId = $merchant->getId();
+        try
+        {
+            $properties = [
+                'id' => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.fail_created_and_pending_transfers_if_payment_refunded_exp_id'),
+            ];
 
-        $isExperimentEnabled = ($variant === 'on');
+            $response = $this->app['splitzService']->evaluateRequest($properties);
 
-        $this->trace->info(
-            TraceCode::FAIL_CREATED_AND_PENDING_TRANSFERS_EXPERIMENT_CHECK,
-            [
-                'merchant_id'    => $merchant->getId(),
-                'is_exp_enabled' => $isExperimentEnabled,
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::FAIL_CREATED_AND_PENDING_TRANSFERS_EXPERIMENT_CHECK, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
             ]);
 
-        return $isExperimentEnabled;
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.fail_created_and_pending_transfers_if_payment_refunded_exp_id') ?? null
+            ]);
+
+            return false;
+        }
     }
 
     public function failTransferIfSourcePaymentIsRefunded($transfer, $payment)

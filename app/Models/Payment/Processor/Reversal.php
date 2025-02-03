@@ -584,42 +584,66 @@ trait Reversal
 
     protected function checkIfRefundAfterReversalExperimentIsEnabled()
     {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::REFUND_AFTER_TRANSFER_REVERSAL,
-            $this->mode
-        );
+        $merchantId = $this->merchant->getId();
+        try
+        {
+            $properties = [
+                'id' => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.refund_after_transfer_reversal_exp_id'),
+            ];
 
-        $isExperimentEnabled = ($variant === 'on');
+            $response = $this->app['splitzService']->evaluateRequest($properties);
 
-        $this->trace->info(
-            TraceCode::REFUND_AFTER_REVERSAL_EXPERIMENT_CHECK,
-            [
-                'merchant_id'    => $this->merchant->getId(),
-                'is_exp_enabled' => $isExperimentEnabled,
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::REFUND_AFTER_REVERSAL_EXPERIMENT_CHECK, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
             ]);
 
-        return $isExperimentEnabled;
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.refund_after_transfer_reversal_exp_id') ?? null
+            ]);
+
+            return false;
+        }
     }
 
-    protected function checkIfFailCreatedAndPendingTransfersExperimentIsEnabled($merchant)
+    protected function checkIfFailCreatedAndPendingTransfersExperimentIsEnabled($merchant): bool
     {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED,
-            $this->mode
-        );
+        $merchantId = $merchant->getId();
+        try
+        {
+            $properties = [
+                'id' => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.fail_created_and_pending_transfers_if_payment_refunded_exp_id'),
+            ];
 
-        $isExperimentEnabled = ($variant === 'on');
+            $response = $this->app['splitzService']->evaluateRequest($properties);
 
-        $this->trace->info(
-            TraceCode::FAIL_CREATED_AND_PENDING_TRANSFERS_EXPERIMENT_CHECK,
-            [
-                'merchant_id'    => $merchant->getId(),
-                'is_exp_enabled' => $isExperimentEnabled,
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::FAIL_CREATED_AND_PENDING_TRANSFERS_EXPERIMENT_CHECK, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
             ]);
 
-        return $isExperimentEnabled;
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.fail_created_and_pending_transfers_if_payment_refunded_exp_id') ?? null
+            ]);
+
+            return false;
+        }
     }
 
     protected function validateTransferReversalAllowedIfLedgerReverseShadowEnabled($transfer)

@@ -1135,6 +1135,14 @@ return array(
 
     'order_transfer_idempotency_exp_id' => env('ORDER_TRANSFER_IDEMPOTENCY_EXP_ID'),
 
+    'enable_transfer_sync_processing_via_api_exp_id' => env('ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API_EXP_ID'),
+
+    'fail_created_and_pending_transfers_if_payment_refunded_exp_id' => env('FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED_EXP_ID'),
+
+    'payment_id_mutex_for_transfer_processing_exp_id' => env('PAYMENT_ID_MUTEX_FOR_TRANSFER_PROCESSING_EXP_ID'),
+
+    'refund_after_transfer_reversal_exp_id' => env('REFUND_AFTER_TRANSFER_REVERSAL_EXP_ID'),
+
     'recurring_populate_error_metadata' => env('RECURRING_POPULATE_ERROR_METADATA'),
 
     'visa_cvv_less_experiment' => env('VISA_CVV_LESS_EXPERIMENT'),

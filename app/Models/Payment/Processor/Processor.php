@@ -8335,13 +8335,6 @@ class Processor
                                 'payment_id' => $this->payment->getId()
                             ]
                         );
-
-                        // If sync processing has failed, set asyncTransfer flag based on the transfer_sync_via_cron
-                        // experiment to decide whether the transfer should be dispatched to queue
-                        if ($this->checkIfTransferSyncProcessingViaCronIsEnabled() === false)
-                        {
-                            $processTransferInSync = false;
-                        }
                     }
                 }
 
@@ -8367,6 +8360,37 @@ class Processor
         return $transfers;
     }
 
+    private function isTransferSyncProcessingViaApiEnabled(string $merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id' => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.enable_transfer_sync_processing_via_api_exp_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API_EXP_RESULT, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.enable_transfer_sync_processing_via_api_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
+
     protected function checkIfPaymentTransferSyncProcessingAllowed(array $input, Payment\Entity $payment): array
     {
         $isCustomerWalletTransfer = array_key_exists(TransferToType::CUSTOMER, $input);
@@ -8375,13 +8399,7 @@ class Processor
 
         if ($this->merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === true)
         {
-            $variant = App::getFacadeRoot()->razorx->getTreatment(
-                $this->merchant->getId(),
-                Merchant\RazorxTreatment::ENABLE_TRANSFER_SYNC_LEDGER_OUTBOX_PUSH,
-                $this->mode
-            );
-
-            $isExperimentEnabled = ($variant === 'on');
+            $isExperimentEnabled = true;
 
             $journal = (new ReverseShadowPaymentsCore())->fetchLedgerJournalForPaymentMerchantCapture($payment);
 
@@ -8418,13 +8436,7 @@ class Processor
 
         $transfersCount = count($input);
 
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API,
-            $this->mode
-        );
-
-        $isExperimentEnabled = ($variant === 'on');
+        $isExperimentEnabled = $this->isTransferSyncProcessingViaApiEnabled($this->merchant->getId());
 
         $this->trace->info(TraceCode::PAYMENT_TRANSFER_SYNC_PROCESSING_CHECK,
             [
@@ -13936,17 +13948,6 @@ class Processor
         ]);
 
         return $isWithinLimit;
-    }
-
-    private function checkIfTransferSyncProcessingViaCronIsEnabled()
-    {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_CRON,
-            $this->mode
-        );
-
-        return $variant === 'on';
     }
 
     protected function associateMerchantToOptimizerLinkAndPayWalletTokens(Customer\Token\Entity &$token,Payment\Entity $payment){
