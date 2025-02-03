@@ -7052,6 +7052,18 @@ return [
         ],
     ],
 
+    'testPayoutsDualWriteFailureProcessingCron' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payouts_dual_write_failure_processing',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testPayoutsServiceCreateFailureProcessingCron' => [
         'request'  => [
             'method' => 'POST',

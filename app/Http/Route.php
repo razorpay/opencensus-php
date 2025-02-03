@@ -2266,6 +2266,8 @@ class Route
         'payouts_auto_cancel_on_expiry'            => ['post',     'payouts/auto_expire',                            'PayoutController@processDispatchForPayoutsAutoRejectionOnExpiry'   ],
         'payouts_dispatch_stuck'                   => ['post',     'payouts/dispatch_stuck',                         'PayoutController@dispatchStuckPayouts'   ],
 
+        'payouts_dual_write_failure_processing_cron' => ['post',   'payouts_dual_write_failure_processing',          'PayoutController@payoutsDualWriteFailureProcessingCron'               ],
+
         'payout_service_data_migration'            => ['post',     'payout_service_data_migration',                  'PayoutController@initiateDataMigration'                            ],
         'ps_data_migration_redis_clean_up'         => ['post',     'ps_data_migration_redis_clean_up',                'PayoutController@psDataMigrationRedisCleanUp'                     ],
 
@@ -6253,6 +6255,7 @@ class Route
         'payouts_dispatch_stuck',
         'payouts_create_failure_processing_cron',
         'payouts_update_failure_processing_cron',
+        'payouts_dual_write_failure_processing_cron',
         'card_settlement_generate_file',
         'payouts_process_batch',
         'payouts_process_scheduled',
@@ -17286,6 +17289,7 @@ class Route
             'payouts_dispatch_stuck',
             'payouts_create_failure_processing_cron',
             'payouts_update_failure_processing_cron',
+            'payouts_dual_write_failure_processing_cron',
             'card_settlement_generate_file',
             'payouts_process_batch',
             'payouts_process_scheduled',

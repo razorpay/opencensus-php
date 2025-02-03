@@ -806,6 +806,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutsUpdateFailureProcessingCron();
 
+        $this->registerPayoutsDualWriteFailureProcessingCron();
+
         $this->registerUpdateFreePayout();
 
         $this->registerUpdateMerchantFeatureInPayoutService();
@@ -933,7 +935,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerOptimizerCoreService();
 
         $this->registerOptimizerCoreServiceClient();
-        
+
         $this->registerCredcase();
 
         $this->registerCredcaseService();
@@ -2124,6 +2126,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\PayoutsUpdateFailureProcessingCron::PAYOUTS_UPDATE_FAILURE_PROCESSING_CRON, function($app)
         {
             return new PayoutService\PayoutsUpdateFailureProcessingCron($app);
+        });
+    }
+
+    protected function registerPayoutsDualWriteFailureProcessingCron()
+    {
+        $this->app->singleton(PayoutService\PayoutsDualWriteFailureProcessingCron::PAYOUTS_DUAL_WRITE_FAILURE_PROCESSING_CRON, function($app)
+        {
+            return new PayoutService\PayoutsDualWriteFailureProcessingCron($app);
         });
     }
 

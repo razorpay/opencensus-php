@@ -172,6 +172,11 @@ class Service extends Base\Service
     protected $payoutServiceUpdateFailureProcessingCronClient;
 
     /**
+     * @var PayoutService\PayoutsDualWriteFailureProcessingCron
+     */
+    protected $payoutsDualWriteFailureProcessingCronClient;
+
+    /**
      * @var PayoutService\OnHoldSLAUpdate
      */
     protected $payoutServiceOnHoldSLAUpdateClient;
@@ -204,6 +209,8 @@ class Service extends Base\Service
         $this->payoutServiceCreateFailureProcessingCronClient = $this->app[PayoutService\PayoutsCreateFailureProcessingCron::PAYOUTS_CREATE_FAILURE_PROCESSING_CRON];
 
         $this->payoutServiceUpdateFailureProcessingCronClient = $this->app[PayoutService\PayoutsUpdateFailureProcessingCron::PAYOUTS_UPDATE_FAILURE_PROCESSING_CRON];
+
+        $this->payoutsDualWriteFailureProcessingCronClient = $this->app[PayoutService\PayoutsDualWriteFailureProcessingCron::PAYOUTS_DUAL_WRITE_FAILURE_PROCESSING_CRON];
 
         $this->payoutServiceOnHoldSLAUpdateClient = $this->app[PayoutService\OnHoldSLAUpdate::PAYOUT_SERVICE_ON_HOLD_SLA_UPDATE];
 
@@ -944,7 +951,7 @@ class Service extends Base\Service
             ($this->auth->isChargeCollectionsApp() === false) and
             ($this->auth->isCapitalCollectionsApp() === false) and
             ($this->auth->isFTSApp() === false) and
-            ($this->auth->isXperienceApp() === false) and 
+            ($this->auth->isXperienceApp() === false) and
             ($this->auth->isCrossBorderImportApp() === false)
         );
     }
@@ -7001,5 +7008,36 @@ class Service extends Base\Service
             );
 
         }
+    }
+
+    public function payoutsDualWriteFailureProcessingCron($input)
+    {
+        $this->trace->info
+        (
+            TraceCode::PAYOUTS_DUAL_WRITE_FAILURE_PROCESSING_CRON_REQUEST,
+            [
+                'input' => $input,
+            ]
+        );
+
+        try
+        {
+            $this->payoutsDualWriteFailureProcessingCronClient->triggerDualWriteFailureProcessingViaMicroservice($input);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->info(
+                TraceCode::PAYOUTS_DUAL_WRITE_FAILURE_PROCESSING_CRON_FAILED,
+                [
+                    'exception' => $exception->getMessage(),
+                ]
+            );
+
+            throw $exception;
+        }
+
+        return [
+            'success' => true,
+        ];
     }
 }

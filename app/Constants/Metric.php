@@ -195,6 +195,8 @@ class Metric
 
     const DUPLICATE_PAYOUT_EVAlUATE_TIME_TAKEN = 'duplicate_payout_evaluate_time_taken';
 
+    const PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH_LAG = 'payout_service_dual_write_direct_push_lag';
+
     // Order Outbox
     const ORDER_OUTBOX_SOFT_DELETE_FAILURE                  = 'order_outbox_soft_delete_failure';
     const ORDER_OUTBOX_CRON_RETRY_FAILURE                   = 'order_outbox_cron_retry_failure';

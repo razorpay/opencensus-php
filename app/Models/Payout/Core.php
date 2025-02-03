@@ -245,6 +245,8 @@ class Core extends Base\Core
 
     const DUAL_WRITE_META_NAME = 'dual_write';
 
+    const DUAL_WRITE_RETRY_EXHAUST = 'dual_write_retry_exhaust';
+
     /**
      * @var Mutex
      */
@@ -9466,9 +9468,9 @@ class Core extends Base\Core
         $this->upsertMetaDataInPayoutServiceForDualWrite($payoutId, $currentTime, $metadata);
     }
 
-    public function getMetaDataFromPayoutServiceForDualWrite($payoutId)
+    public function getMetaDataFromPayoutServiceForDualWrite($payoutId, string $metaName = 'dual_write')
     {
-        $metadata = $this->repo->payout->getPayoutServicePayoutMetaDataForDualWrite($payoutId);
+        $metadata = $this->repo->payout->getPayoutServicePayoutMetaDataForDualWrite($payoutId, $metaName);
 
         if (count($metadata) === 0)
         {
@@ -9522,6 +9524,52 @@ class Core extends Base\Core
             );
 
             $this->repo->payout->updateInPayoutServiceDB($tableName, $id, $data);
+        }
+    }
+
+    /*
+     * This updates meta data in payouts service which will be used by
+     * cron to retry dual write for payouts which failed due to some reason.
+     * This will be called for only payouts dual write failure and not for bas/fav.
+     */
+    public function upsertMetaDataInPayoutServiceForDualWriteRetryExhaust(array $input)
+    {
+        $payoutId = $input[PayoutConstants::ENTITY_ID];
+
+        $metadata = $this->getMetaDataFromPayoutServiceForDualWrite($payoutId, self::DUAL_WRITE_RETRY_EXHAUST);
+
+        $tableName = self::PAYOUT_SERVICE_TEMPORARY_METADATA_TABLE;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        if (empty($metadata) === true)
+        {
+            $data = [
+                Entity::ID         => Entity::generateUniqueId(),
+                Entity::PAYOUT_ID  => $payoutId,
+                'meta_name'        => self::DUAL_WRITE_RETRY_EXHAUST,
+                'meta_value'       => json_encode([
+                    'retry_count' => 0,
+                ]),
+                Entity::CREATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),
+                Entity::UPDATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),
+            ];
+
+            $this->trace->info(
+                TraceCode::PAYOUT_SERVICE_DUAL_WRITE_RETRY_EXHAUST_INSERT_METADATA,
+                $data
+            );
+
+            $this->repo->payout->insertIntoPayoutServiceDB($tableName, $data);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::PAYOUT_SERVICE_DUAL_WRITE_RETRY_EXHAUST_INSERT_METADATA_SKIPPED
+            );
         }
     }
 

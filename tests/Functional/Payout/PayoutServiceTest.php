@@ -79,6 +79,7 @@ use RZP\Services\PayoutService\Details as PayoutServiceDetails;
 use RZP\Services\PayoutService\PayoutsCreateFailureProcessingCron;
 use RZP\Services\PayoutService\PayoutsUpdateFailureProcessingCron;
 use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
+use RZP\Services\PayoutService\PayoutsDualWriteFailureProcessingCron;
 use RZP\Services\PayoutService\FreePayout as PayoutServiceFreePayout;
 use RZP\Services\PayoutService\QueuedInitiate as PayoutServiceQueuedInitiate;
 use RZP\Services\PayoutService\MerchantConfig as PayoutServiceMerchantConfig;
@@ -9657,6 +9658,26 @@ class PayoutServiceTest extends TestCase
         return $response;
     }
 
+    public function payoutsDualWriteFailureProcessingCronResponseMock($fail)
+    {
+        $response = new \WpOrg\Requests\Response();
+
+        if ($fail === true)
+        {
+            $response->body        = json_encode([]);
+            $response->status_code = 500;
+            $response->success     = true;
+        }
+        else
+        {
+            $response->body        = json_encode([]);
+            $response->status_code = 200;
+            $response->success     = true;
+        }
+
+        return $response;
+    }
+
     public function payoutsServiceBankingAccountStatementResponseMock(int $statusCode)
     {
         $response = new Response();
@@ -9819,6 +9840,24 @@ class PayoutServiceTest extends TestCase
 
         $this->app->instance(PayoutsCreateFailureProcessingCron::PAYOUTS_CREATE_FAILURE_PROCESSING_CRON,
             $payoutServiceCreateFailureProcessingCronClient);
+
+        $this->startTest();
+    }
+
+    public function testPayoutsDualWriteFailureProcessingCron()
+    {
+        $this->ba->cronAuth();
+
+        $payoutDualWriteFailureProcessingCronClient = Mockery::mock(
+            'RZP\Services\PayoutService\PayoutsDualWriteFailureProcessingCron', [$this->app])->makePartial();
+
+        $payoutDualWriteFailureProcessingCronClient->shouldReceive('sendRequest')
+            ->andReturn(
+                $this->payoutsDualWriteFailureProcessingCronResponseMock(false)
+            );
+
+        $this->app->instance(PayoutsDualWriteFailureProcessingCron::PAYOUTS_DUAL_WRITE_FAILURE_PROCESSING_CRON,
+            $payoutDualWriteFailureProcessingCronClient);
 
         $this->startTest();
     }

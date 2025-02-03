@@ -3,6 +3,10 @@
 namespace RZP\Jobs;
 
 use App;
+use Carbon\Carbon;
+
+use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
@@ -42,11 +46,11 @@ class PayoutServiceDualWriteDirectPush extends Job
      */
     protected $params;
 
-    public function __construct(string $mode, array $params)
+    public function __construct(array $params)
     {
         $this->params = $params;
 
-        parent::__construct($mode);
+        parent::__construct(Mode::LIVE);
     }
 
     public function handle()
@@ -62,6 +66,16 @@ class PayoutServiceDualWriteDirectPush extends Job
 
             if (array_key_exists("direct_push_from_ps_to_api", $this->params))
             {
+                $app = App::getFacadeRoot();
+
+                $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+                $psDispatchedTime = $this->params["timestamp"];
+
+                $timeDiff = $currentTime - $psDispatchedTime;
+
+                $app['trace']->histogram(Metric::PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH_LAG, $timeDiff);
+
                 unset($this->params["direct_push_from_ps_to_api"]);
             }
 
@@ -107,6 +121,13 @@ class PayoutServiceDualWriteDirectPush extends Job
         }
         else
         {
+            // Update payout service meta table for dual write failure
+            // which will be used by the cron to retry the dual write
+            if ($this->params[self::ENTITY_TYPE] === 'payout')
+            {
+                (new Core)->upsertMetaDataInPayoutServiceForDualWriteRetryExhaust($this->params);
+            }
+
             $this->trace->info(
                 TraceCode::PAYOUTS_DUAL_WRITE_DIRECT_PUSH_JOB_DELETE,
                 $this->params);

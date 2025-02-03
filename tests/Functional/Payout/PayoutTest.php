@@ -46223,7 +46223,7 @@ class PayoutTest extends OAuthTestCase
 
         $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
-        (new PayoutServiceDualWriteDirectPush('live', [
+        (new PayoutServiceDualWriteDirectPush( [
             'entity_id'                  => 'randomid111111',
             'entity_type'                => 'payout',
             'timestamp'                  => $timestamp,

@@ -1297,4 +1297,13 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function payoutsDualWriteFailureProcessingCron()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->payoutsDualWriteFailureProcessingCron($input);
+
+        return ApiResponse::json($data);
+    }
 }
