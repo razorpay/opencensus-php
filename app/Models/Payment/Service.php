@@ -2250,6 +2250,37 @@ class Service extends Base\Service
         return $response['response']['variant']['name'] ?? '';
     }
 
+    public function getSplitzExpResponse(string $merchantId, string $experimentName)
+    {
+        try
+        {
+
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get($experimentName),
+                'request_data'  => json_encode(['mids' => $merchantId]),
+            ];
+            $experimentId = $this->app['config']->get($experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $experimentId,
+                'result'        => $response
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get($experimentName) ?? null
+            ]);
+        }
+
+        return $response['response']['variant']['name'] ?? '';
+    }
+
     public function isSplitzExperimentEnable(string $merchantId, string $experimentName, string $checkVariant): bool
     {
         $variant = $this->getSplitzResponse($merchantId, $experimentName);

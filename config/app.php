@@ -1255,6 +1255,14 @@ return array(
 
     'cross_border_import_rearch_shadow_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_SHADOW_EXPERIMENT_ID'),
 
+    'saved_card_token_payments_via_pg_router' => env('SAVED_CARD_TOKEN_PAYMENTS_VIA_PG_ROUTER'),
+
+    'fetch_cryptogram_via_cps' => env('FETCH_CRYPTOGRAM_VIA_CPS'),
+
+    'mc_scof_payments_via_cps'=> env('MC_SCOF_PAYMENTS_VIA_CPS'),
+
+    'block_merchant_on_rearch_cps' => env('BLOCK_MERCHANT_ON_REARCH_CPS'),
+    
     'send_payout_service_emails_via_stork' => env('SEND_PAYOUT_SERVICE_EMAILS_VIA_STORK'),
 
     'cross_border_pacb_tagging_experiment_id'   => env('CROSS_BORDER_PACB_TAGGING_EXPERIMENT_ID'),

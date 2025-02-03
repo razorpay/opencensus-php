@@ -384,11 +384,15 @@ class Processor
      */
     const SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER = 'saved_card_token_payments_via_pg_router';
 
-    const SAVED_CARD_ISSUER_AND_DUAL_TOKEN_PAYMENTS_VIA_PGROUTER = 'saved_card_issuer_and_dual_token_payments_via_pg_router';
-
     const FETCH_CRYPTOGRAM_VIA_CPS = 'fetch_cryptogram_via_cps';
 
     const MC_SCOF_PAYMENTS_VIA_CPS = 'mc_scof_payments_via_cps';
+
+    const BLOCK_MERCHANT_ON_REARCH_CPS = 'block_merchant_on_rearch_cps';
+
+
+    const SAVED_CARD_ISSUER_AND_DUAL_TOKEN_PAYMENTS_VIA_PGROUTER = 'saved_card_issuer_and_dual_token_payments_via_pg_router';
+
 
     /**
      * Razorx flag to indicate if a payment with save option should go via PG Router and CPS or just via API service
@@ -2087,9 +2091,10 @@ class Processor
                 }
             }
 
+            $blockMerchantsOnRearchexperiment = 'app.block_merchant_on_rearch_cps';
             //Ultimate flag to stop re-arch traffic, merchants added in this flag will be blocked from CPS re-arch traffic
-            $result = $this->app->razorx->getTreatment($merchant->getId(), self::BLOCK_MERCHANTS_ON_REARCH_CPS, $this->mode);
-            if ($result === 'on') {
+            $result = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$blockMerchantsOnRearchexperiment);
+            if ($result === 'enable' && app()->isEnvironmentProduction()) {
                 $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                     'reason' => "blocked_merchant",
                     'merchant_id' => $merchant->getId(),
@@ -2132,9 +2137,10 @@ class Processor
                 ]);
 
                 $tokenId = $input[Payment\Entity::TOKEN];
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER, $this->mode);
+                $experimentName = 'app.saved_card_token_payments_via_pg_router';
+                $result = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$experimentName);
 
-                if ($result === 'on')
+                if ($result === 'enable' && app()->isEnvironmentProduction())
                 {
                     try {
                         // First fetch the relevant customer (global or local)
@@ -2260,9 +2266,20 @@ class Processor
                                     ],
                                 ] );
 
-                                $cpsCryptogramFetchResult = $this->app->razorx->getTreatment($merchant->getId(), self::FETCH_CRYPTOGRAM_VIA_CPS, $this->mode);
+                                $cpsCryptogramFetchExperiment = 'app.fetch_cryptogram_via_cps';
+                                $mcScofTokenExperiment = 'app.mc_scof_payments_via_cps';
 
-                                $mcScofTokenResult = $this->app->razorx->getTreatment($token->getId(), self::MC_SCOF_PAYMENTS_VIA_CPS, $this->mode);
+                                $cpsCryptogramFetchResult = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$cpsCryptogramFetchExperiment);
+
+                                if ($cpsCryptogramFetchResult == 'enable' && app()->isEnvironmentProduction()) {
+                                    $cpsCryptogramFetchResult = 'on';
+                                }
+                                $mcScofTokenResult = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$mcScofTokenExperiment);
+
+                                if ($mcScofTokenResult == 'enable' && app()->isEnvironmentProduction()) {
+                                    $mcScofTokenResult = 'on';
+                                }
+
                                 if ($mcScofTokenResult === 'on')
                                 {
                                     // $token->card->trivia = '3' for mastercard scof payments
