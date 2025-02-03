@@ -1265,7 +1265,7 @@ class Service extends Base\Service
             [
                 Payment\Entity::PROVIDER => $provider,
                 'method'                 => $method,
-                'error_code'             => $ex->getCode()
+                'error_code'             => $ex->getMessage()
             ]);
     }
 
@@ -4236,7 +4236,7 @@ class Service extends Base\Service
 
         $payeeAccount = $input['VANum'];
 
-        if(substr($payeeAccount, 0, 4) != Provider::IDFC_VA_PREFIX)
+        if(in_array(substr($payeeAccount, 0, 4), Provider::IDFC_VA_PREFIX) === false)
         {
             $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
                 'message'   => 'invalid Va idfc account prefix',
@@ -4331,7 +4331,7 @@ class Service extends Base\Service
 
         $payerName = $input['remitterName']??"";
 
-        if(substr($payeeAccount, 0, 4) != Provider::IDFC_VA_PREFIX)
+        if(in_array(substr($payeeAccount, 0, 4), Provider::IDFC_VA_PREFIX)  === false)
         {
             $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
                 'message'   => 'invalid Va idfc account prefix',

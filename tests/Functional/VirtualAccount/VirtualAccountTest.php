@@ -2736,6 +2736,45 @@ class VirtualAccountTest extends TestCase
         // This method calls the update route.
         $this->closeVirtualAccountViaEdit($this->virtualAccount->getPublicId());
     }
+    public function testVirtualAccountUpdate_CollectxVA()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+
+        $request = [
+            'method'  => 'PATCH',
+            'url'     => '/virtual_accounts/'.$this->virtualAccount->getPublicId(),
+            'content' => [
+                'name' => 'Test new Name',
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        self::assertEquals('Test new Name', $response['name']);
+    }
+
+    public function testUpdateVirtualAccount_PrimaryBalanceTypeVA()
+    {
+        $virtualAccount = $this->createVirtualAccount();
+
+        $request = [
+            'method'  => 'PATCH',
+            'url'     => '/virtual_accounts/'.$virtualAccount['id'],
+            'content' => [
+                'name' => 'Test new Name',
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        self::assertEquals('Test new Name', $response['name']);
+    }
 
     public function testClosingOfVirtualAccountOfBankingBalanceFails()
     {

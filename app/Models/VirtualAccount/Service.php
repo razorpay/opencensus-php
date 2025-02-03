@@ -14,6 +14,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Jobs\VirtualAccountsAutoCloseInactive;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
+use RZP\Models\Feature;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Order;
@@ -419,7 +420,14 @@ class Service extends Base\Service
                                ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $virtualAccount->getValidator()->validateOfPrimaryBalance();
+        if( ($virtualAccount->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true))
+        {
+            $virtualAccount->getValidator()->validateOfBankingBalance();
+        }
+        else
+        {
+            $virtualAccount->getValidator()->validateOfPrimaryBalance();
+        }
 
         $virtualAccount = $this->core->edit($virtualAccount, $input);
 

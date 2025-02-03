@@ -600,7 +600,7 @@ class Processor extends VirtualAccount\Processor
             if ($bankTransfer->virtualAccount->getId() === VirtualAccount\Entity::SHARED_ID_BANKING) {
                 // If the payee account is of IDFC bank VA then we need to raise the slack alert
                 if($bankTransfer[Entity::PAYEE_IFSC] == VirtualAccount\Provider::IDFC_COMMON_IFSC &&
-                    substr($bankTransfer[Entity::PAYEE_ACCOUNT], 0, 4) == VirtualAccount\Provider::IDFC_VA_PREFIX &&
+                    ( in_array(substr($bankTransfer[Entity::PAYEE_ACCOUNT], 0, 4) , VirtualAccount\Provider::IDFC_VA_PREFIX) === true) &&
                     empty($bankTransfer[Entity::PAYER_IFSC]))
                 {
                     // For such cases we need to raise a slack alert for manual refund creation.

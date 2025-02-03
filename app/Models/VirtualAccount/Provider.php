@@ -71,7 +71,9 @@ class Provider
     const AXIS_COMMON_IFSC = 'UTIB0CCH274'; // THIS IS PAYROLL VA ifsc
 
     const IDFC_COMMON_IFSC ='IDFB0020101'; // THIS IS PAYROLL VA ifsc
-    const IDFC_VA_PREFIX = '3141';
+    const IDFC_VA_PREFIX = ['3141','5678'];
+
+    const PAYROLL_VA_PREFIX = '3141';
 
     // The default details are fixed by each provider, most specifically
     // the IFSC code where the virtual accounts are said to be located.

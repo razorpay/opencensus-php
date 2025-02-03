@@ -1144,7 +1144,7 @@ class Core extends Base\Core
         $isMerchantEnabledForIDFCVA = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,'enable');
 
         if($isMerchantEnabledForIDFCVA === true){
-            return Provider::IDFC_VA_PREFIX;
+            return Provider::PAYROLL_VA_PREFIX;
         }
 
         $config = (new Admin\Service)->getConfigKey(
