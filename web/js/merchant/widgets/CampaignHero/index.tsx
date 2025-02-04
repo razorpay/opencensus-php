@@ -62,7 +62,10 @@ export const CampaignHero = ({
     if (!container) return;
 
     const resizeObserver = new ResizeObserver((elements) => {
-      setWidth(elements[0].contentRect.width);
+      // modify the width based on refresh rate of the browser, to optimise DOM modifications
+      requestAnimationFrame(() => {
+        setWidth(elements[0].contentRect.width);
+      });
     });
     const screenObserver = new IntersectionObserver((elements) => {
       setIsOnScreen(elements[0].isIntersecting);
