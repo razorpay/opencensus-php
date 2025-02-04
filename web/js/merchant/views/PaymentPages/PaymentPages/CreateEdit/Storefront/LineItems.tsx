@@ -9,6 +9,7 @@ type LineItemsProps = {
   extraItems?: React.ReactNode;
   isMobile?: boolean;
   isDetailsFilled?: boolean;
+  isMandatoryInfo?: boolean;
 };
 
 const LineItems: React.FC<LineItemsProps> = ({
@@ -18,6 +19,7 @@ const LineItems: React.FC<LineItemsProps> = ({
   extraItems,
   isMobile,
   isDetailsFilled,
+  isMandatoryInfo = false,
 }) => {
   return (
     <Box
@@ -43,11 +45,23 @@ const LineItems: React.FC<LineItemsProps> = ({
             {isDetailsFilled ? (
               <CheckCircleIcon color="feedback.icon.positive.intense" size="medium" />
             ) : null}
-            <Text weight="semibold" color="surface.text.gray.normal" variant="body" size="large">
-              {title}
-            </Text>
+            <Box display="flex" alignItems="center" gap="spacing.0">
+              <Text weight="semibold" color="surface.text.gray.normal" variant="body" size="large">
+                {title}
+              </Text>
+              {isMandatoryInfo ? (
+                <Text
+                  weight="semibold"
+                  color="interactive.text.notice.normal"
+                  variant="body"
+                  size="large"
+                >
+                  *
+                </Text>
+              ) : null}
+            </Box>
           </Box>
-          {subTitle}
+          {!isDetailsFilled ? subTitle : null}
         </Box>
         {rightChildren}
       </Box>

@@ -92,6 +92,7 @@ export const Footer = styled.footer`
     bottom: 0;
     width: 100%;
     text-align: center;
+    padding: ${({ theme }) => `${theme.spacing[8]}px ${theme.spacing[7]}px`};
   }
 
   .Button--transparent {

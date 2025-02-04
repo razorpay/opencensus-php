@@ -1,4 +1,4 @@
-import { utmParam } from "common/utils/constants";
+import { utmParam } from 'common/utils/constants';
 export const SHIPROCKET_DASHBOARD_LINK =
   'https://app.shiprocket.in/register?utm_source=Razorpay&utm_medium=In-Product&utm_campaign=PaymentPages&utm_content=Razorpay-In-product';
 export const MAX_ROWS = 50000;
@@ -26,3 +26,5 @@ export const NOTIFY_MESSAGE = {
   BATCH_PAYMENT_PAGE: `If Notify ' via SMS' and ' via Email' is selected, Batch Page Link will be sent as soon as the batch is Processed. Incase you wish to send the link later, don't select the Notify 'via SMS' or 'via Email'. The option to send it later will be available under 'Actions' on 'Batch Details'.`,
   PAYMENT_LINK: `Payment Links with SMS and Email will be sent once the batch is created.`,
 };
+export const MAX_BANNERS_ALLOWED = 5;
+export const MAX_ENABLED_BANNERS = 3;

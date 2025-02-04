@@ -30,8 +30,9 @@ import {
   PaymentPagesStorefrontType,
 } from 'merchant/reducers/paymentPages/storefront';
 import lazy from 'merchant/routes/LazyLoader';
-import { IBannerImage,CropDimensions } from 'merchant/reducers/paymentPages/types';
+import { IBannerImage, CropDimensions } from 'merchant/reducers/paymentPages/types';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { MAX_BANNERS_ALLOWED } from '../../constants';
 
 const BannerList = lazy(
   () => import(/* webpackChunkName: 'StorefrontV1BannerList' */ './BannerList'),
@@ -135,7 +136,7 @@ const RenderBannerSection = ({
   handleEditImage,
 }) => {
   return (
-    <Box height="500px">
+    <Box height="500px" paddingBottom={isMobile ? 'spacing.11' : 'spacing.4'}>
       <LineItems
         title="Upload banner images"
         subTitle={
@@ -149,7 +150,7 @@ const RenderBannerSection = ({
             color="primary"
             size="xsmall"
             icon={ArrowRightIcon}
-            onClick={onImageUpload}
+            onClick={() => onImageUpload({ isReplacing: false })}
           />
         }
       />
@@ -184,13 +185,23 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
   const [selectedBanner, setSelectedBanner] = useState<IBannerImage | null>(null);
   const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
 
-  const onImageUpload = () => {
-    if (bannerData?.length >= 5) {
+  const onImageUpload = ({ isReplacing }: { isReplacing: boolean }) => {
+    if (!isReplacing && bannerData?.length >= MAX_BANNERS_ALLOWED) {
       showNotification({
         type: 'neutral',
         message: 'You cannot upload more than 5 banners,delete to add new banner',
       });
       return;
+    }
+
+    if (!storefront?.entity?.settings?.base_config?.banner_feature_enabled) {
+      editStorefront('settings', {
+        ...storefront.entity.settings,
+        base_config: {
+          ...(storefront.entity.settings.base_config || {}),
+          banner_feature_enabled: true,
+        },
+      });
     }
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
@@ -344,7 +355,7 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
       isNewStoreFront: Boolean(!storefront?.id),
     });
     setSelectedBanner(banner);
-    onImageUpload();
+    onImageUpload({ isReplacing: true });
   };
 
   const handleDeleteImage = (banner: IBannerImage) => {

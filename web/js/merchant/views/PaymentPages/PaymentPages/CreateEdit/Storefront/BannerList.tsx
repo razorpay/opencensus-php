@@ -40,7 +40,7 @@ const SortableList = SortableContainer<{
           id={banner?.position?.toString()}
           src={banner?.cropped}
           enabled={banner?.enabled}
-          isSwitchEnabled={banner?.isSwitchEnabled ?? banner?.enabled}
+          isSwitchEnabled={banner?.isSwitchEnabled ?? true}
           isMobile={isMobile}
           onToggleEnabled={(val) => onToggleEnabled(val, banner)}
           handleReplaceImage={() => handleReplaceImage(banner)}

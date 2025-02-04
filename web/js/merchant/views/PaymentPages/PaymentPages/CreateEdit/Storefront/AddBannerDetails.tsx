@@ -123,13 +123,7 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
         <LineItems
           title="Add store banner"
           subTitle={
-            <Text
-              color="surface.text.gray.muted"
-              variant="body"
-              size="small"
-              weight="regular"
-              marginLeft={isDetailsFilled ? 'spacing.7' : 'spacing.0'}
-            >
+            <Text color="surface.text.gray.muted" variant="body" size="small" weight="regular">
               This is an optional field
             </Text>
           }

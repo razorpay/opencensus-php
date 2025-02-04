@@ -3,8 +3,9 @@ import {
   PRODUCT_STATUS,
 } from 'merchant/views/PaymentPages/common/Products/utils';
 import { IPaymentPagesProduct, PaymentPagesStorefrontType } from './storefront';
-import { ICatalog, ILineItem, IStorefrontResponse } from './types';
+import { IBannerImage, ICatalog, ILineItem, IStorefrontResponse } from './types';
 import { decodeHTMLEntities } from 'common/utils/rzp-utils';
+import { MAX_ENABLED_BANNERS } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 export const transformCatalog = (catalog: ICatalog): IPaymentPagesProduct => {
   return {
@@ -31,12 +32,22 @@ export const transformLineItem = (lineItem: ILineItem): IPaymentPagesProduct => 
   return transformCatalog(catalog);
 };
 
+export const transformBannerImage = (banner_images: IBannerImage[] = []) => {
+  const enabledCount = banner_images.filter((item) => item.enabled).length;
+  return banner_images.map((item) => {
+    return {
+      ...item,
+      isSwitchEnabled: item.enabled ? true : enabledCount === MAX_ENABLED_BANNERS ? false : true,
+    };
+  });
+};
+
 export const transformStorefront = (
   response: IStorefrontResponse,
 ): PaymentPagesStorefrontType['entity'] => {
   return {
     title: response.title,
-    banner_images: response.banner_images || [],
+    banner_images: transformBannerImage(response.banner_images),
     slug: response.slug || '',
     contactPhone: response.support_contact,
     contactEmail: response.support_email,

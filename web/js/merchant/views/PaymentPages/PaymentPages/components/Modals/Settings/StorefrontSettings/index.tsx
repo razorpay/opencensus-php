@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import moment from 'moment';
 
+import { Box } from '@razorpay/blade/components';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
@@ -28,6 +29,7 @@ interface IStorefrontSettingsProps {
   openModal: (data) => void;
   closeModal: () => void;
   isTestMode: boolean;
+  isMobile?: boolean;
 }
 
 const CUSTOM_URL_INPUT_NAME = 'slug';
@@ -49,6 +51,7 @@ const StorefrontSettings = ({
   openModal,
   closeModal,
   isTestMode,
+  isMobile,
 }: IStorefrontSettingsProps): React.ReactElement => {
   const settings = storefrontEntity.settings || {};
   const isPluginConfigured = settings.pp_ga_pixel_tracking_id || settings.pp_fb_pixel_tracking_id;
@@ -158,7 +161,7 @@ const StorefrontSettings = ({
               />
               {isTestMode && CUSTOM_URL_DISABLED_INFO}
             </CustomSlugSection>
-            <div>
+            <Box marginBottom={isMobile ? 'spacing.11' : 'spacing.0'}>
               <SettingsSection>
                 <input
                   name="expire_by"
@@ -240,7 +243,7 @@ const StorefrontSettings = ({
                   <span className="action">{PluginsBtn}</span>
                 </CtaSection>
               </SettingsSection>
-            </div>
+            </Box>
             <Footer>
               <Button.Transparent type="button" onClick={onClose}>
                 Cancel
@@ -256,7 +259,9 @@ const StorefrontSettings = ({
   );
 };
 
-const mapStateToProps = (state) => ({ isTestMode: state.session.mode === 'test' });
+const mapStateToProps = (state) => ({
+  isTestMode: state.session.mode === 'test',
+});
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({ closeModal, openModal }, dispatch);
 

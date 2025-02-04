@@ -51,7 +51,6 @@ const AddBuisnessDetails: React.FC<IAddBusinessDetailsProps> = ({
               variant="body"
               size="small"
               weight="regular"
-              marginLeft={isDetailsFilled ? 'spacing.7' : 'spacing.0'}
             >
               Mandatory information
             </Text>
@@ -59,6 +58,7 @@ const AddBuisnessDetails: React.FC<IAddBusinessDetailsProps> = ({
           rightChildren={<RightChildren handleClick={handleClick} />}
           isMobile={isMobile}
           isDetailsFilled={Boolean(isDetailsFilled)}
+          isMandatoryInfo={true}
         />
       )}
     </>

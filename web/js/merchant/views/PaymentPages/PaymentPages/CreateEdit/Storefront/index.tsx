@@ -747,6 +747,7 @@ const StoreFront = ({
           onSave={handlePageSettingsSave}
           onPluginsAndAddOnsSave={handlePluginsAndAddOnsSave}
           onClose={() => setIsPageSettingsOpen(false)}
+          isMobile={isMobile}
         />
       )}
       {isReceiptSettingsOpen && (

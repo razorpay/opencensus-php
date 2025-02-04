@@ -429,6 +429,7 @@ class Details extends React.Component {
                     // eslint-disable-next-line react/no-access-state-in-setstate
                     ...this.state.paymentPageEntity,
                     ...resp.data,
+                    status_reason: null,
                   };
                   this.props.updatePPInReduxList(newPaymentPageEntity, false);
 
