@@ -273,6 +273,7 @@ export const UPI_APP_PROVIDERS = {
   PAYTM: 'paytm',
   AMAZONPAY: 'amazon_pay',
   CRED: 'cred',
+  BHIM: 'bhim',
 };
 
 export const PAYER_ACCOUNT_TYPES_OPTIONS = {

@@ -24,6 +24,7 @@ export const UPI_APPS_SELECT_OPTIONS = [
   { label: 'Paytm', name: UPI_APP_PROVIDERS.PAYTM },
   { label: 'Amazon Pay', name: UPI_APP_PROVIDERS.AMAZONPAY },
   { label: 'Cred', name: UPI_APP_PROVIDERS.CRED },
+  { label: 'Bhim', name: UPI_APP_PROVIDERS.BHIM },
 ];
 
 const UPISelector: React.FC<Props> = React.memo(
