@@ -17,6 +17,7 @@ export const BANK_GATEWAYS = [
   'axis_migs',
   'netbanking_icici',
   'netbanking_hdfc',
+  'netbanking_sbi',
 ];
 
 export const GATEWAY_CATEGORIES = {
@@ -153,6 +154,7 @@ export const HAS_NETBANKING_FEATURES = [
   'ingenico',
   'atom',
   'phonepe',
+  'netbanking_sbi',
 ];
 
 export const ACCOUNT_TYPE_OPTIONS = [

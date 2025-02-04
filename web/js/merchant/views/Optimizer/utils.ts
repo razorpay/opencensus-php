@@ -1421,6 +1421,8 @@ export const gatewayLogos = {
   zaakpay: getLogoPath('zaakpay', 'svg'),
   airwallex_optimizer: getLogoPath('airwallex_optimizer'),
   nimbbl: getLogoPath('nimbbl'),
+  sbiepay: getLogoPath('sbi'),
+  netbanking_sbi: getLogoPath('sbi'),
 };
 
 export const getValue = (type, value) => {
