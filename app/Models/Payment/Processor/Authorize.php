@@ -4589,8 +4589,9 @@ trait Authorize
         // validate if jpmc supported payment libraries
         // currently s2s
         $library = (new Payment\Service)->getLibraryFromPayment($payment);
-
-        if(in_array($library, Analytics\Metadata::JPMC_IMPORT_FLOW_SUPPORTED_LIBRARIES) === false)
+        // handling for qr payments, as it is possible that no library is propagated for qr payments.
+        // QR payments recon and internal appAuth based QR payments use the library 'push'
+        if((in_array($library, Analytics\Metadata::JPMC_IMPORT_FLOW_SUPPORTED_LIBRARIES) === false) && !($payment->receiver instanceof \RZP\Models\QrCode\NonVirtualAccountQrCode\Entity))
         {
             $this->pushMetricForImportFlowPaymentValidation(
                 'jpmc',
