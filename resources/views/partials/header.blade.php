@@ -7,6 +7,7 @@
   <meta name="author" content="Razorpay">
   <link rel="icon" type="image/png"  href="https://razorpay.com/favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+  <meta name="clarity-site-verification" content="cc0522fd-b574-460c-8446-17f0fb19e52e" />
   @if(env('APP_ENV') !== 'production')
     <meta name="robots" content="noindex">
   @endif
