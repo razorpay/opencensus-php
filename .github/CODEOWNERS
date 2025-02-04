@@ -98,12 +98,13 @@ web/e2e/suites/Wallet/reports.spec.js                                    @razorp
 # [IMP] DO NOT REMOVE (KEEP AT THE END!) DO NOT OVERRIDE ANYTHING THAT FALLS UNDER THIS SCOPE! ----------
 scripts/*                                                                @joel-jaimon @dhruvdutt
 .github/*                                                                @joel-jaimon @dhruvdutt
+.github/CODEOWNERS                                                       @razorpay/deploy-leads-dashboard
 libs/*                                                                   @joel-jaimon @dhruvdutt
 apps/*                                                                   @joel-jaimon @dhruvdutt
 apps/digital-bills                                                       @joel-jaimon @dhruvdutt
 apps/self-serve                                                          @joel-jaimon @dhruvdutt
 apps/pos/webpack.config.js                                               @joel-jaimon @dhruvdutt
-apps/pos/package.json                                                   @joel-jaimon @dhruvdutt
+apps/pos/package.json                                                    @joel-jaimon @dhruvdutt
 web/entry/*                                                              @joel-jaimon @dhruvdutt
 web/js/merchant/containers/App.js                                        @joel-jaimon @dhruvdutt
 web/js/merchant/commonStore/*                                            @joel-jaimon @dhruvdutt
