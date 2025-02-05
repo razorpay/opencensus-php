@@ -724,6 +724,8 @@ return array(
 
     'commission_reversal_for_refund_exp_id' => env('COMMISSION_REVERSAL_FOR_REFUNDS_EXP_ID'),
 
+    'payment_update_for_refunds_exp_id'             => env('PAYMENT_UPDATE_FOR_REFUNDS_EXP_ID'),
+
     'magic_checkout_woocommerce_giftcard_url'       => env('MAGIC_CHECKOUT_WOOCOMMERCE_GIFTCARD_URL'),
 
     '1cc_multiple_shipping_splitz_experiment_id' => env('MAGIC_CHECKOUT_MULTIPLE_SHIPPING_EXP_ID'),

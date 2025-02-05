@@ -5171,40 +5171,55 @@ GROUP BY
     {
        if ($payment->isExternal() === false)
        {
-           if ($payment->isUpi() === true
-               and $payment->localToken !== null
-               and $payment->localToken->isExternal() === true)
-           {
-               $payment->setTokenRelations();
-           }
+           return $this->saveInternalEntity($payment, $options);
+       }
 
-           if ($payment->isUpi() === true
-               and $payment->globalToken !== null
-               and $payment->globalToken->isExternal() === true)
-           {
-               $payment->removeGlobalTokenRelations();
-           }
+        $this->saveExternalEntity($payment);
+    }
+
+    public function saveInternalEntity($payment, array $options = array())
+    {
+        if ($payment->isUpi() === true
+            and $payment->localToken !== null
+            and $payment->localToken->isExternal() === true)
+        {
+            $payment->setTokenRelations();
+        }
+
+        if ($payment->isUpi() === true
+            and $payment->globalToken !== null
+            and $payment->globalToken->isExternal() === true)
+        {
+            $payment->removeGlobalTokenRelations();
+        }
 
 
-          $emiPlan = $this->stripEmiRelation($payment);
+        $emiPlan = $this->stripEmiRelation($payment);
 
-           // Source Channel column is introduced by omni channel team in harvester replica,
-           // which is noty present in master, unsetting so that it doesn't break insert on archived
-           // payments
-          unset($payment['source_channel']);
+        // Source Channel column is introduced by omni channel team in harvester replica,
+        // which is noty present in master, unsetting so that it doesn't break insert on archived
+        // payments
+        unset($payment['source_channel']);
 
-          unset($payment['_transaction_updated_at']);
+        unset($payment['_transaction_updated_at']);
 
 //          unset($payment['device_id']);
 
-          parent::saveOrFail($payment, $options);
+        parent::saveOrFail($payment, $options);
 
-          $this->addEmiRelationIfApplicable($payment, $emiPlan);
+        $this->addEmiRelationIfApplicable($payment, $emiPlan);
 
-          return $payment;
+        return $payment;
+    }
+
+    public function saveOrFailWithoutFetch($payment, array $options = array())
+    {
+        if ($payment->isExternal() === false)
+        {
+            return $this->saveInternalEntity($payment, $options);
         }
 
-        $this->saveExternalEntity($payment);
+        $this->saveExternalEntityWithoutFetch($payment);
     }
 
     public function save($payment, array $options = array())
