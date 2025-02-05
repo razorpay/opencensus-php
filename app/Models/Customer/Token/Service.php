@@ -2688,6 +2688,52 @@ class Service extends Base\Service
 
         }
 
+        /*
+        * This code is for creating recurring token for card method in optimizer
+        * this is done is sync because token id is saved in payment which is used for subsequent payment
+        */
+        if(!empty($input['additional_data']) && !empty($input['additional_data']['optimizer_mandate_id']))
+        {
+            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                'optimizer_recurring_token_create'     =>  $token->getId(),
+                'optimizer_recurring_token_input' => $input,
+                'paymentId'   => $payment->getId(),
+                'newCard'     => $tokenCard,
+                'card'        => $card,
+                'token'       => $token
+            ]);
+
+            $payment->localToken()->associate($token);
+
+            (new Payment\Processor\Processor($token->merchant))->migrateTokenIfApplicable($payment, $callbackData);
+
+            $token->setOptimizerMandateDetails($input['additional_data']);
+
+            if ($input['additional_data']['expire_at'] < $token->getExpiredAt()) {
+                $token->setExpiredAt($input['additional_data']['expire_at']);
+            }
+
+            $this->repo->saveOrFail($token);
+
+            $createTokenResponse = $token->toArrayPublic();
+
+            $this->repo->saveOrFail($token);
+
+            $createTokenResponse['vault_token']           = $token->card->getVaultToken();
+
+            $createTokenResponse['token_pan_vault_token'] = $callbackData['token_pan_vault_token'];
+
+            $createTokenResponse['token_number']          = $callbackData['token_number'];
+
+            $createTokenResponse['cryptogram_value']      = $callbackData['cryptogram_value'];
+
+            $createTokenResponse['token_expiry_month']    = $token->card->getTokenExpiryMonth();
+
+            $createTokenResponse['token_expiry_year']     = $token->card->getTokenExpiryYear();
+
+            return $createTokenResponse;
+        }
+
         $asyncTokenisationJobId = "paymentmigrate";
 
         $this->trace->info(TraceCode::TRACE_TOKEN_DISPATCH_LOG, [

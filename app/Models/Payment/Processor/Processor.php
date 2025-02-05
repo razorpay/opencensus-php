@@ -1483,6 +1483,11 @@ class Processor
 
                 $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
 
+                // not required in case of billdesk, add vpa if required for any other provider
+                $input[Payment\Entity::CARD] = null;
+                $input[Payment\Entity::UPI] = null;
+                $input[Payment\Entity::BANK_ACCOUNT] = null;
+
                 if ($input[Payment\Entity::METHOD] == Payment\METHOD::CARD)
                 {
                     $card = $this->repo->card->fetchForToken($token);
@@ -1508,6 +1513,28 @@ class Processor
                         ]);
                         return false;
                     }
+
+                    $cardInput = [
+                        Card\Entity::NAME                   => Card\Entity::DUMMY_NAME,
+                        Card\Entity::NUMBER                 => Card\Entity::DUMMY_CARD_NUMBER,
+                        Card\Entity::COUNTRY                => $card->getCountry(),
+                        Card\Entity::ISSUER                 => $card->getIssuer(),
+                        Card\Entity::TYPE                   => $card->getType(),
+                        Card\Entity::NETWORK                => $card->getNetwork(),
+                        Card\Entity::SUBTYPE                => $card->getSubType(),
+                        Card\Entity::CATEGORY               => $card->getCategory(),
+                        Card\Entity::INTERNATIONAL          => $card->isInternational(),
+                        Card\Entity::EXPIRY_MONTH           => $card->getTokenExpiryMonth(),
+                        Card\Entity::EXPIRY_YEAR            => $card->getTokenExpiryYear(),
+                        Card\Entity::CVV                    => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
+                        Card\Entity::VAULT_TOKEN            => $card->getVaultToken(),
+                        Card\Entity::TOKEN_IIN              => $card->getTokenIin(),
+                        Card\Entity::LAST4                  => $card->getLast4(),
+                        Card\Entity::TOKENISED              => true,
+                        Card\Entity::REWARD                 => $input['card']['reward']
+                    ];
+
+                    $input[Payment\Entity::CARD] = $cardInput;
                 }
 
                 // Optimizer mandate details
@@ -1531,12 +1558,6 @@ class Processor
 
                     return false;
                 }
-
-                // not required in case of billdesk, add vpa if required for any other provider
-                $input[Payment\Entity::UPI] = null;
-                $input[Payment\Entity::CARD] = null;
-                $input[Payment\Entity::BANK_ACCOUNT] = null;
-
 
                 $input[Payment\Entity::API_VAULT] = "";
 

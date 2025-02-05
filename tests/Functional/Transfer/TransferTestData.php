@@ -81,6 +81,17 @@ return [
         ],
     ],
 
+    'testFetchOptimizerTransfers' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'created',
+            ]
+        ],
+    ],
+
     'testFetchSingleReversal' => [
         'request' => [
             'method' => 'GET'

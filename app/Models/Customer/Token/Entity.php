@@ -1843,7 +1843,9 @@ class Entity extends Base\PublicEntity
             $this->setRecurring($input["recurring"]);
         }
 
-        $this->setRecurringStatus(RecurringStatus::CONFIRMED);
+        $this->setStatus($input["status"]);
+
+        $this->setRecurringStatus($input["recurring_status"]);
 
         $this->setAttribute(self::TERMINAL_ID, $input["terminal_id"]);
 
