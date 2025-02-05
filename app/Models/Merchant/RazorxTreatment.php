@@ -1100,4 +1100,6 @@ final class RazorxTreatment
     const Axis_VA_MIGRATION = 'axis_va_migration';
 
     const COLLECTX_RBL_MERCHANTS_VA_CLOSE_BLOCK = "collectx_rbl_merchants_va_close_block";
+
+    const COLLECTIONS_RBL_MERCHANTS_VA_ADD_TPV_BLOCK = "collections_rbl_merchants_va_add_tpv_block";
 }
