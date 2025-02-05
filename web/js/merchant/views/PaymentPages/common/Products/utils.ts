@@ -286,3 +286,10 @@ export const validateContactDetails = ({
 
   return { errors, isValid };
 };
+
+export const shouldShowStrikethrough = (discountedAmount: string, amount: string): boolean => {
+  const discountedValue = Number(discountedAmount);
+  const amountValue = Number(amount);
+
+  return !!discountedAmount && discountedValue < amountValue;
+};

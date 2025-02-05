@@ -6,6 +6,7 @@ import TableBody from 'common/ui/TableBody';
 import CatalogStatusLabel from 'merchant/views/PaymentPages/common/Products/CatalogStatusLabel';
 import { analyticsTrack } from 'common/utils/analytics';
 import { decodeHTMLEntities, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { shouldShowStrikethrough } from '../common/Products/utils';
 
 const getQuantityInStock = ({ units, status }) => {
   if (status === 'unlimited') {
@@ -63,6 +64,7 @@ export default ({ products, loading, handleEditProduct }) => {
         <TableBody isLoading={loading} colSpan={8} rows={products} emptyTableMsg="No data found!">
           {products.map((item) => {
             const productName = decodeHTMLEntities(item.product_name);
+            const showStrikethrough = shouldShowStrikethrough(item.discounted_amount, item.amount);
             return (
               <EntityItemRow id={item.id} key={item.id}>
                 <td class="text-right">
@@ -84,7 +86,7 @@ export default ({ products, loading, handleEditProduct }) => {
                   })}
                 </td>
                 <td>
-                  {item.discounted_amount ? (
+                  {showStrikethrough ? (
                     <>
                       <strike>
                         <Amount value={item.amount} currency={item.currency} />

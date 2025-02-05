@@ -1,4 +1,7 @@
-import { generateProductRequest } from 'merchant/views/PaymentPages/common/Products/utils';
+import {
+  generateProductRequest,
+  shouldShowStrikethrough,
+} from 'merchant/views/PaymentPages/common/Products/utils';
 
 const product = {
   id: 'my-id',
@@ -79,6 +82,29 @@ describe('generateProductRequest', () => {
     test('should send selected category', () => {
       const request = generateProductRequest(product2);
       expect(request.categories && request.categories[0].id).toEqual(product2.category);
+    });
+  });
+
+  describe('shouldShowStrikethrough', () => {
+    test('should return false if discountedAmount is empty', () => {
+      expect(shouldShowStrikethrough('', '1000')).toBe(false);
+    });
+
+    test('should return false if discountedAmount is greater than or equal to amount', () => {
+      expect(shouldShowStrikethrough('1000', '1000')).toBe(false);
+      expect(shouldShowStrikethrough('1200', '1000')).toBe(false);
+    });
+
+    test('should return true if discountedAmount is less than amount', () => {
+      expect(shouldShowStrikethrough('500', '1000')).toBe(true);
+    });
+
+    test('should handle discountedAmount as a string of numeric value', () => {
+      expect(shouldShowStrikethrough('500.5', '1000')).toBe(true);
+    });
+
+    test('should return false if both discountedAmount and amount are zero', () => {
+      expect(shouldShowStrikethrough('0', '0')).toBe(false);
     });
   });
 });

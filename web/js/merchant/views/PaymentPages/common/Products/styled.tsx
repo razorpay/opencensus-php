@@ -2,7 +2,7 @@ import React from 'react';
 import { Theme, Link, IconButton, PlusIcon, Text } from '@razorpay/blade/components';
 import styled from 'styled-components';
 import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
-import { formatTextAmountField } from './utils';
+import { formatTextAmountField, shouldShowStrikethrough } from './utils';
 import PictureImage from 'assets/payment_pages/picture-icon.svg';
 
 export const HeadingContainer = styled.div`
@@ -109,9 +109,10 @@ export const PricePreview = ({
   amount: string;
   discounted_amount: string;
 }): React.ReactElement | null => {
+  const showStrikethrough = shouldShowStrikethrough(discounted_amount, amount);
   const price = (
     <PriceField>
-      {discounted_amount ? (
+      {showStrikethrough ? (
         <>
           <PriceField strikethrough>{formatTextAmountField(amount)}</PriceField>
           <Text size="small" display="inline" color="surface.text.gray.subtle">

@@ -4,6 +4,7 @@ import { CheckboxContent, CheckboxLeftContent, CheckboxRightContent } from './st
 import { ProductImage } from 'merchant/reducers/paymentPages/storefront';
 import { getPrimaryImage } from './utils';
 import Input from 'common/new-ui/Input';
+import { shouldShowStrikethrough } from 'merchant/views/PaymentPages/common/Products/utils';
 
 interface ICheckboxItem {
   checked: boolean;
@@ -27,6 +28,7 @@ const CheckboxItem = ({
   discounted_amount,
   onChange,
 }: ICheckboxItem): React.ReactElement => {
+  const showStrikethrough = shouldShowStrikethrough(discounted_amount, amount);
   const image = getPrimaryImage(images);
   return (
     <Input.Check
@@ -39,16 +41,16 @@ const CheckboxItem = ({
             <img src={image} alt={`${product_name} image`} width={28} height={28} />
             {product_name}
           </CheckboxLeftContent>
-          <CheckboxRightContent isDiscounted={!!discounted_amount}>
+          <CheckboxRightContent isDiscounted={showStrikethrough}>
             <Text
               variant="body"
               size="medium"
               weight="regular"
-              color={discounted_amount ? 'surface.text.gray.muted' : 'surface.text.gray.normal'}
+              color={showStrikethrough ? 'surface.text.gray.muted' : 'surface.text.gray.normal'}
             >
               {amount}
             </Text>
-            {discounted_amount && (
+            {showStrikethrough && (
               <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
                 {discounted_amount}
               </Text>

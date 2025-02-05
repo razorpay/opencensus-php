@@ -15,7 +15,10 @@ import {
 } from './styled';
 import { IconWrapper } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/styled';
 import { IProductItem, IProductItems, IProductSection, TDropdown } from './types';
-import { formatTextAmountField } from 'merchant/views/PaymentPages/common/Products/utils';
+import {
+  formatTextAmountField,
+  shouldShowStrikethrough,
+} from 'merchant/views/PaymentPages/common/Products/utils';
 import { getPrimaryImage } from './utils';
 import BottomSheet from 'common/components/BottomSheet';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -94,6 +97,7 @@ export const ProductItem = ({
   function closeDropdown() {
     setCurrentDropdown(null);
   }
+  const showStrikethrough = shouldShowStrikethrough(discounted_amount, amount);
   const image = getPrimaryImage(images);
   return (
     <li>
@@ -103,16 +107,16 @@ export const ProductItem = ({
           {product_name}
         </Text>
       </div>
-      <div className={`product-item-right ${discounted_amount ? 'discount-applicable' : ''}`}>
+      <div className={`product-item-right ${showStrikethrough ? 'discount-applicable' : ''}`}>
         <Text
-          color={discounted_amount ? 'surface.text.gray.muted' : 'surface.text.gray.normal'}
+          color={showStrikethrough ? 'surface.text.gray.muted' : 'surface.text.gray.normal'}
           variant="body"
           size="medium"
           weight="regular"
         >
           {formatTextAmountField(amount)}
         </Text>
-        {discounted_amount && (
+        {showStrikethrough && (
           <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
             {formatTextAmountField(discounted_amount)}
           </Text>
