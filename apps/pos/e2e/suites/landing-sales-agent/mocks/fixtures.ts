@@ -1,7 +1,21 @@
-import { additionalDetailsMock } from 'apps/pos/e2e/suites/landing-sales-agent/mocks//additionalDetailsMock';
-import { agreementSigningMock } from 'apps/pos/e2e/suites/landing-sales-agent/mocks/agreementSigningMock';
-import { deviceSelectionStepMock } from 'apps/pos/e2e/suites/landing-sales-agent/mocks/deviceSelectionMock';
-import { paymentMethodsAndServiceSelectionMock } from 'apps/pos/e2e/suites/landing-sales-agent/mocks//paymentMethodAndServiceMock';
+import {
+  additionalDetailsMock,
+  incompleteAdditionalDetailsAggregatorModelMock,
+  incompleteAdditionalDetailsDirectModelMock,
+} from 'apps/pos/e2e/suites/landing-sales-agent/mocks/additionalDetails';
+import {
+  agreementSigningMock,
+  incompleteAgreementSigningMock,
+} from 'apps/pos/e2e/suites/landing-sales-agent/mocks/agreementSigningMock';
+import {
+  deviceSelectionStepMock,
+  incompleteDeviceSelectionStepMock,
+} from 'apps/pos/e2e/suites/landing-sales-agent/mocks/deviceSelectionMock';
+import {
+  paymentMethodsAndServiceSelectionMock,
+  incompletePricingStepAggregatorModelMock,
+  incompletePricingStepDirectModelMock,
+} from 'apps/pos/e2e/suites/landing-sales-agent/mocks/paymentMethodAndServiceMock';
 
 export const salesOnboardedMerchantsMock = {
   __typename: 'SalesOnboardedMerchants',
@@ -100,6 +114,24 @@ export const salesOnboardedMerchantsMock = {
       status: 'PENDING',
     },
   ],
+};
+
+export const emptySalesOnboardedMerchantsMock = {
+  __typename: 'SalesOnboardedMerchants',
+  limit: 10,
+  offset: 0,
+  total: 0,
+  hasMore: true,
+  totalMerchantsOnboarded: 0,
+  statusCounts: {
+    activated: 0,
+    rejected: 0,
+    needsClarification: 0,
+    kycQualifiedStb: 0,
+    pending: 0,
+    underReview: 0,
+  },
+  merchants: [],
 };
 
 export const merchantModularOnboardingDetailsAsSalesMock = {
@@ -275,6 +307,211 @@ export const MerchantByIdMock = {
         },
         {
           id: 'Ov5OBxXaXPBoF4',
+          fileName: null,
+        },
+      ],
+    },
+  },
+};
+
+export const incompleteSalesOnboardingDetailsMock = {
+  __typename: 'merchantModularOnboardingDetailsSuccessResponse',
+  success: true,
+  workflowData: {
+    id: 'PgAehad9Ffx4uj',
+    progress: 38.541664,
+    status: 'processing',
+    milestones: [
+      {
+        canSubmit: false,
+        name: 'sales_milestone',
+        status: 'processing',
+        steps: [
+          incompleteDeviceSelectionStepMock,
+          incompletePricingStepAggregatorModelMock,
+          incompleteAdditionalDetailsAggregatorModelMock,
+          incompleteAgreementSigningMock,
+        ],
+      },
+    ],
+  },
+  onboardingState: {
+    milestones: ['sales_milestone'],
+    modularComponents: [],
+    steps: [],
+  },
+  countryCode: 'IN',
+  onboardingType: 'DEFAULT_ONBOARDING',
+  merchantType: 'Pos Payments',
+};
+
+export const incompleteSalesOnboardingDetailsDirectModelMock = {
+  __typename: 'merchantModularOnboardingDetailsSuccessResponse',
+  success: true,
+  workflowData: {
+    id: 'PgAehad9Ffx4uj',
+    progress: 38.541664,
+    status: 'processing',
+    milestones: [
+      {
+        canSubmit: false,
+        name: 'sales_milestone',
+        status: 'processing',
+        steps: [
+          incompleteDeviceSelectionStepMock,
+          incompletePricingStepDirectModelMock,
+          incompleteAdditionalDetailsDirectModelMock,
+          incompleteAgreementSigningMock,
+        ],
+      },
+    ],
+  },
+  onboardingState: {
+    milestones: ['sales_milestone'],
+    modularComponents: [],
+    steps: [],
+  },
+  countryCode: 'IN',
+  onboardingType: 'DEFAULT_ONBOARDING',
+  merchantType: 'Pos Payments',
+};
+
+export const MerchantByIdStatusMock = {
+  createdAt: '2025-01-15T06:03:49.000Z',
+  id: 'Pjc5vONrnPt8WH',
+  activation: {
+    posActivationStatus: null,
+    posActivationFlow: 'WHITELIST',
+    status: null,
+    isFormSubmitted: true,
+    milestone: 'L1_COMPLETED',
+    isPgosMerchant: true,
+  },
+  name: {
+    display: null,
+  },
+  contactPerson: {
+    name: {
+      value: 'Test Pos',
+    },
+    email: {
+      value: null,
+    },
+    phone: {
+      value: {
+        number: '+914325435323',
+      },
+    },
+  },
+  business: {
+    type: {
+      value: 'PROPRIETORSHIP',
+    },
+    address: {
+      registered: {
+        city: {
+          value: 'Bengaluru',
+        },
+        country: {
+          value: null,
+        },
+        district: {
+          value: null,
+        },
+        line1: {
+          value:
+            '3rd, 4th and 5th Floor, Kothari Arena, 24, Hosur Rd, Chikku Lakshmaiah Layout, Koramangala',
+        },
+        line2: {
+          value: null,
+        },
+        state: {
+          value: 'KA',
+        },
+        zipCode: {
+          value: '560029',
+        },
+      },
+      operation: {
+        city: {
+          value: 'Bengaluru',
+        },
+        country: {
+          value: null,
+        },
+        district: {
+          value: null,
+        },
+        line1: {
+          value:
+            '3rd, 4th and 5th Floor, Kothari Arena, 24, Hosur Rd, Chikku Lakshmaiah Layout, Koramangala',
+        },
+        line2: {
+          value: null,
+        },
+        state: {
+          value: 'KA',
+        },
+        zipCode: {
+          value: '560029',
+        },
+      },
+    },
+    paymentAcceptanceChannels: {
+      websites: {
+        urls: [
+          {
+            value: '',
+          },
+        ],
+        accept: false,
+        complianceConsent: null,
+      },
+      ios: {
+        urls: [
+          {
+            value: '',
+          },
+        ],
+        accept: false,
+      },
+      android: {
+        urls: [
+          {
+            value: '',
+          },
+        ],
+        accept: false,
+      },
+      offlineStore: {
+        accept: true,
+      },
+      socialMedia: {
+        accept: false,
+        socialMediaUrls: [],
+      },
+      whatsappSmsEmail: {
+        accept: false,
+      },
+      others: {
+        accept: false,
+        value: '',
+      },
+    },
+  },
+  document: {
+    shopFront: {
+      values: [
+        {
+          id: 'PjcdaPxucdbVDa',
+          fileName: null,
+        },
+      ],
+    },
+    shopInterior: {
+      values: [
+        {
+          id: 'PjcisRdWyuGe3L',
           fileName: null,
         },
       ],
