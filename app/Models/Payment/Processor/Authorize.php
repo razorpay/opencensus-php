@@ -4760,7 +4760,7 @@ trait Authorize
 
         // validate merchant purpose code
         if ((empty($payment->merchant->getPurposeCode()) === true) or
-            (in_array($payment->merchant->getPurposeCode(), PurposeCodeList::JPMC_IMPORT_FLOW_PURPOSE_CODES) === false))
+            (in_array($payment->merchant->getPurposeCode(), PurposeCodeList::JPMC_IMPORT_FLOW_NEGETIVE_PURPOSE_CODES) === true))
         {
             $this->pushMetricForImportFlowPaymentValidation(
                 'jpmc',

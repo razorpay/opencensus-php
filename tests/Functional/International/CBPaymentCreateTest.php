@@ -2096,7 +2096,7 @@ class CBPaymentCreateTest extends TestCase
 
         $merchantAttribute = [
             MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
-            'purpose_code' => 'P0802',
+            'purpose_code' => 'S0006',
             'convert_currency' => true,
             'international' => false,
         ];
