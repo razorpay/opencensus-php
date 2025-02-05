@@ -31,19 +31,27 @@ final class Constants
     ];
 
     const BENEFIT_API_OFFER_MAP = [
-        self::BENEFIT_TYPE_DISCOUNT           => Constants::INSTANT_OFFER,
-        self::BENEFIT_TYPE_CASHBACK           => Constants::CASHBACK_OFFER,
-        self::BENEFIT_TYPE_VOUCHER            => Constants::CASHBACK_OFFER,
-        self::BENEFIT_TYPE_ALREADY_DISCOUNTED => Constants::ALREADY_DISCOUNTED,
+        self::BENEFIT_TYPE_DISCOUNT                     => Constants::INSTANT_OFFER,
+        self::BENEFIT_TYPE_CASHBACK                     => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_VOUCHER                      => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_MERCHANT_COUPON              => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_GIFTCARD                     => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_CASHBACK_MERCHANT_WALLET     => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_CASHBACK_CUSTOMER_ACCOUNT    => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_ALREADY_DISCOUNTED           => Constants::ALREADY_DISCOUNTED,
     ];
 
     const BENEFIT_DISCOUNT_MAP = [
-        self::BENEFIT_TYPE_DISCOUNT           => 'discount',
-        self::BENEFIT_TYPE_CASHBACK           => 'cashback',
-        self::BENEFIT_TYPE_ALREADY_DISCOUNTED => 'already_discounted',
-        self::BENEFIT_TYPE_NO_COST_EMI        => 'no_cost_emi',
-        self::BENEFIT_TYPE_LOW_COST_EMI       => 'low_cost_emi',
-        self::BENEFIT_TYPE_VOUCHER            => 'vouchers',
+        self::BENEFIT_TYPE_DISCOUNT                     => 'discount',
+        self::BENEFIT_TYPE_CASHBACK                     => 'cashback',
+        self::BENEFIT_TYPE_MERCHANT_COUPON              => 'cashback',
+        self::BENEFIT_TYPE_CASHBACK_CUSTOMER_ACCOUNT    => 'cashback',
+        self::BENEFIT_TYPE_CASHBACK_MERCHANT_WALLET     => 'cashback',
+        self::BENEFIT_TYPE_GIFTCARD                     => 'cashback',
+        self::BENEFIT_TYPE_ALREADY_DISCOUNTED           => 'already_discounted',
+        self::BENEFIT_TYPE_NO_COST_EMI                  => 'no_cost_emi',
+        self::BENEFIT_TYPE_LOW_COST_EMI                 => 'low_cost_emi',
+        self::BENEFIT_TYPE_VOUCHER                      => 'vouchers',
     ];
 
     const METADATA = 'metadata';
@@ -102,6 +110,10 @@ final class Constants
     const BENEFIT_TYPE_LOW_COST_EMI = 'BENEFIT_TYPE_LOW_COST_EMI';
     const BENEFIT_TYPE_DISCOUNT = 'BENEFIT_TYPE_DISCOUNT';
     const BENEFIT_TYPE_CASHBACK = 'BENEFIT_TYPE_CASHBACK';
+    const BENEFIT_TYPE_GIFTCARD = 'BENEFIT_TYPE_GIFTCARD';
+    const BENEFIT_TYPE_MERCHANT_COUPON = 'BENEFIT_TYPE_MERCHANT_COUPON';
+    const BENEFIT_TYPE_CASHBACK_CUSTOMER_ACCOUNT = 'BENEFIT_TYPE_CASHBACK_CUSTOMER_ACCOUNT';
+    const BENEFIT_TYPE_CASHBACK_MERCHANT_WALLET = 'BENEFIT_TYPE_CASHBACK_MERCHANT_WALLET';
     const BENEFIT_TYPE_ALREADY_DISCOUNTED = 'BENEFIT_TYPE_ALREADY_DISCOUNTED';
     const BENEFIT_TYPE_VOUCHER = 'BENEFIT_TYPE_VOUCHER';
 
