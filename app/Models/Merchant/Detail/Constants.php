@@ -260,6 +260,10 @@ class Constants
     const ONBOARDED_TO_COMPETITORS_PREVIOUSLY = 'onboarded_to_competitors_previously';
     const PAYMENT_GATEWAY_COMPETITORS = 'payment_gateway_competitors';
 
+    //PG Onboarding For X Interests Constants
+    const PG_ONBOARDING_CA = 'pg_onboarding_ca';
+    const OFFER_PRICE_FOR_CA ='offer_price_for_ca';
+
     // Default payment constants
     const DEFAULT_ELIGIBILITY_CRITERIA   = true;
     const DEFAULT_ORDER_ID               = "order_MblejZXmYhvaqK" ;

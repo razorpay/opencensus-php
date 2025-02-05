@@ -391,6 +391,16 @@ class Service extends Base\Service
         {
             $response[DetailConstants::CATEGORY_MODULE_PLACEMENT] = $pgosFetchInternalResponse[DetailConstants::CATEGORY_MODULE_PLACEMENT];
         }
+        //adding pg_conboarding_for_ca keys from pgos
+        if (isset($pgosFetchInternalResponse[DetailConstants::PG_ONBOARDING_CA]) === true)
+        {
+            $response[DetailConstants::PG_ONBOARDING_CA] = $pgosFetchInternalResponse[DetailConstants::PG_ONBOARDING_CA];
+        }
+
+        if (isset($pgosFetchInternalResponse[DetailConstants::OFFER_PRICE_FOR_CA]) === true)
+        {
+            $response[DetailConstants::OFFER_PRICE_FOR_CA] = $pgosFetchInternalResponse[DetailConstants::OFFER_PRICE_FOR_CA];
+        }
 
         // adding pg competitors keys coming from pgos
         if (isset($pgosFetchInternalResponse[DetailConstants::ONBOARDED_TO_COMPETITORS_PREVIOUSLY]) === true)
