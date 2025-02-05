@@ -73,6 +73,8 @@ class Constants
     const DISABLE_AUTO_MERCHANT_LOGIN = 'DISABLE_AUTO_MERCHANT_LOGIN';
     const DEFAULT_MERCHANT_ID = 'default_merchant_id';
 
+    const DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED = 'DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED';
+
     /**
      * determines the 2fa verification state of user in session
      * If true, means routes requiring 2fa in API will pass

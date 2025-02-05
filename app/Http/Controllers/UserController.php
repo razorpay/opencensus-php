@@ -337,6 +337,24 @@ class UserController extends Controller
 
         $queryParams = Request::all();
 
+        if ($this->userService->isDashboardHomepageRedirectionEnabledtoUSL($currentRouteName, $data, $org) === true) {
+
+            $redirectPath = \Config::get('app.unified_signup_redirect_path');
+
+            $redirectPath = $this->appendAllQueryParams($queryParams, $redirectPath);
+
+            $this->trace->info(TraceCode::USL_REDIRECTION, [
+                'redirection_url' => $redirectPath,
+                'cookie_set'      => false,
+                'condition'       => 'GUEST_LOGIN',
+                'user'            => $data['user'] ?? null,
+                'api_host'        => $data['api_host'] ?? null,
+                'session_id'      => $data['session_id'] ?? null,
+            ]);
+
+            return redirect($redirectPath);
+        }
+
         if (empty($currentRouteName) === false and ($currentRouteName === "signup" || $currentRouteName === "signin" || $currentRouteName === "resetpassword" || $currentRouteName === "emailupdate"))
         {
             $data['isAuthPath'] = true;
@@ -838,7 +856,6 @@ class UserController extends Controller
 
     private function isRedirectionApplicableToUnifiedLogin(array $org, array $queryParams): bool
     {
-
         $existingRedirectionConditions = $this->redirectionApplicableForGuest($org);
 
         if (empty($queryParams['referral_code']) === false)
@@ -873,21 +890,7 @@ class UserController extends Controller
             return false;
         }
 
-        $uuid = UniqueIdEntity::generateUniqueId();
-
-        if (empty($_COOKIE['ab_user_id']) === false) {
-            $cookie = $_COOKIE['ab_user_id'];
-
-            $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
-                'cookieSetFromFE' => $_COOKIE['ab_user_id'],
-            ]);
-
-            $uuid = $cookie;
-        } else {
-            if (isset($this->options['cookies']['ab_user_id']) === false) {
-                $this->options['cookies']['ab_user_id'] = $uuid;
-            }
-        }
+        $uuid = $this->userService->getUUID();
 
         // UNIFIED LOGIN SIGN UP EASY_ONBOARDING_REDIRECT as true.
         $unifiedExperimentID = \Config::get('splitz.experiments')['UNIFIED_PG_REDIRECTION_ENABLED'];

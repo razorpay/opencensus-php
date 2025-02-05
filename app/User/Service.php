@@ -54,6 +54,7 @@ use hisorange\BrowserDetect\Parser as BrowserDetect;
 use App\Constants\Constants as AppConstants;
 use App\Admin\ApiPromiseAny as ApiPromiseAny;
 use function PHPUnit\Framework\at;
+use App\Base\UniqueIdEntity;
 
 const EVENT_TRIGGER_COUNT = 1;
 class Service extends Base\Service
@@ -4074,6 +4075,27 @@ class Service extends Base\Service
 
     public function getRedirectionUrl($details, $org, $data)
     {
+        $queryParams = Request::query();
+        $currentRouteName = \Route::currentRouteName();
+
+        if ($this->isDashboardHomepageRedirectionEnabledtoUSL($currentRouteName, $data, $org) === true) {
+
+            $redirectPath = \Config::get('app.unified_signup_redirect_path');
+
+            $redirectPath = $this->appendAllQueryParams($queryParams, $redirectPath);
+
+            $this->trace->info(TraceCode::USL_REDIRECTION, [
+                'redirection_url' => $redirectPath,
+                'cookie_set'      => false,
+                'condition'       => 'GUEST_LOGIN',
+                'user'            => $data['user'] ?? null,
+                'api_host'        => $data['api_host'] ?? null,
+                'session_id'      => $data['session_id'] ?? null,
+            ]);
+
+            return redirect($redirectPath);
+        }
+
         if ($this->isRedirectionApplicable($details) === true)
         {
             $ttl = 12 * 60;
@@ -4590,6 +4612,91 @@ class Service extends Base\Service
         return AppResponse::jsonResponse($error);
     }
 
+    public function isDashboardHomepageRedirectionEnabledtoUSL($currentRouteName, $data, $org): bool {
+
+        $uuid = $this->getUUID();
+
+        //This experiment is for redirection of dashbaord homepage to USL
+        $dashboardRedirectionExpId = \Config::get('splitz.experiments')[Constants::DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED];
+
+        $experimentData = (new SplitzService())->getVariantBulk($uuid, [$dashboardRedirectionExpId], [], "splitz/bulkEvaluate");
+
+        $this->trace->info(TraceCode::USL_REDIRECTION, [
+            'experimentId'              => $dashboardRedirectionExpId,
+            'experimentData'            => $experimentData[$dashboardRedirectionExpId]['variables']['result'],
+            'currentRouteName'          => $currentRouteName,
+            'isMerchantAuthenticated'   => $data['isAuthenticated'],
+        ]);
+
+        if ($experimentData[$dashboardRedirectionExpId]['variables']['result'] != 'on'
+            or $data['isAuthenticated'] === true ) {
+            return false;
+        }
+
+        if ( empty($currentRouteName) ||
+            !(
+                $currentRouteName === "dashboard" ||
+                $currentRouteName === "dashboard_app" ||
+                $currentRouteName === "shell_redirect"
+            )
+        ) {
+            return false;
+        }
+
+        $queryParams = Request::query();
+        $requestPath = \Request::path();
+
+        //Redirection for billme and payroll is excluded
+        if ($this->hasBillmeOrPayroll($queryParams, $requestPath) === true or $this->isRedirectionApplicableToUnifiedLogin($org, $queryParams) === false) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @return mixed|string
+     */
+    public function getUUID()
+    {
+        $uuid = UniqueIdEntity::generateUniqueId();
+
+        if (empty($_COOKIE['ab_user_id']) === false) {
+            $cookie = $_COOKIE['ab_user_id'];
+
+            $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
+                'cookieSetFromFE' => $_COOKIE['ab_user_id'],
+            ]);
+
+            return $cookie;
+        }
+
+        if (isset($this->options['cookies']['ab_user_id']) === false) {
+            $this->options['cookies']['ab_user_id'] = $uuid;
+        }
+
+        return $uuid;
+    }
+
+    private function hasBillmeOrPayroll($queryParam, $path): bool {
+
+        foreach ($queryParam as $queryParamKey => $queryParamValue) {
+            if (preg_match('/\b(billme|payroll)\b/', $queryParamValue) === 1) {
+                return true;
+            }
+        }
+
+        if (preg_match('/\b(billme|payroll)\b/', $path) === 1) {
+            return true;
+        }
+
+        $this->trace->info(TraceCode::USL_REDIRECTION, [
+            'isBillmeOrPayrollURL'  => false,
+        ]);
+
+        return false;
+    }
+
     private function canCookieSetForEasyOnboardingPostL1Submit($details): bool
     {
         if ($this->isAuthSourceHasWebsite() === true)
@@ -4624,5 +4731,145 @@ class Service extends Base\Service
         $domain = \Request::server('SERVER_NAME');
 
         return (new AdminService())->getOrg($domain);
+    }
+
+    private function isRedirectionApplicableToUnifiedLogin(array $org, array $queryParams): bool
+    {
+        $existingRedirectionConditions = $this->redirectionApplicableForGuest($org);
+
+        if (empty($queryParams['referral_code']) === false)
+        {
+            $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
+                'skip_for_partner_flow' => 'true',
+            ]);
+            return false;
+        }
+
+        // in case server and host is not there fallback to default domain as we can't make a decision without its presence
+        $domain = \Request::server('SERVER_NAME') ?? $queryParams['host']  ?? UserConstants::DASHBOARD_PROD;
+
+        $devServe = \Request::header(Headers::DEV_SERVE_USER) ?? '';
+
+        // USL is only applicable for dashboard domain, do an exact match, in case of empty move forward
+        $isDashboardDomain = in_array($domain, self::getDashboardDomains($devServe));
+
+        $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
+            'isDashboardDomain' => $isDashboardDomain,
+        ]);
+
+        if (!$isDashboardDomain) {
+            return false;
+        }
+
+        $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
+            'existingRedirectionConditions' => $existingRedirectionConditions,
+        ]);
+
+        if ($existingRedirectionConditions === false) {
+            return false;
+        }
+
+        $uuid = $this->getUUID();
+
+        // UNIFIED LOGIN SIGN UP EASY_ONBOARDING_REDIRECT as true.
+        $unifiedExperimentID = \Config::get('splitz.experiments')['UNIFIED_PG_REDIRECTION_ENABLED'];
+
+        $data = (new SplitzService())->getVariantBulk($uuid, [$unifiedExperimentID], [], "splitz/bulkEvaluate");
+
+        $this->trace->info(TraceCode::UNIFIED_SIGNUP_REDIRECTION, [
+            '$data' => $data,
+        ]);
+
+        return ($data[$unifiedExperimentID]['variables']['result'] ?? null) === 'on';
+    }
+
+    private function redirectionApplicableForGuest(array $org): bool
+    {
+        if (ApiUrl::isBankingOriginRequest() === true)
+        {
+            return false;
+        }
+
+        $uuid = Cookie::get('rzp_ab_uuid') ?? UniqueIdEntity::generateUniqueId();
+
+        Cookie::queue('rzp_ab_uuid', $uuid);
+
+        // EASY_ONBOARDING_REDIRECT as true.
+        $referralExpId = config('splitz.experiments')['PARTNERSHIPS_SUBMERCHANT_ONBOARDING_VIA_EASY'];
+
+        $queryParams = Request::all();
+
+        $requestData = [
+            'referral_code' => $queryParams['referral_code'] ?? '',
+            'easy' => $queryParams['eo'] ?? '',
+            'org'  => $org['custom_code'] ?? ''
+        ];
+
+        $data = (new SplitzService())->getVariantBulk($uuid, [$referralExpId], [], "splitz/bulkEvaluate", $requestData);
+
+        $isReferralExpEnabled = ($data[$referralExpId]['variables']['result'] ?? null) === 'on';
+        if ($isReferralExpEnabled ===false) {
+            $this->trace->info(TraceCode::OLD_DASHBOARD_REDIRECT, [
+                'referral_code' => $requestData['referral_code'],
+                'org' => $requestData['org'],
+            ]);
+
+            $this->metrics->count(MetricConstants::OLD_DASHBOARD_REDIRECT_COUNT, \App\Http\Controllers\EVENT_TRIGGER_COUNT);
+        }
+
+        if ($this->matchExclusionsToRedirect($isReferralExpEnabled))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function matchExclusionsToRedirect(bool $isExpEnabled = false): bool
+    {
+        $uri = trim(\Request::getRequestUri(), '/');
+
+        $pattern = '/(\br=partner\b)|(\bauth_source\b)|(\breferral_code\b)|(\bcoupon_code\b)|(\bmerchant_invitation\b)|(\binvitation\b)/';
+
+        if($isExpEnabled)
+        {
+            $pattern = '/(\br=partner\b)|(\bauth_source\b)|(\bcoupon_code\b)|(\bmerchant_invitation\b)|(\binvitation\b)/';
+        }
+
+        if (preg_match($pattern, $uri))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function appendAllQueryParams($queryParams, $redirectURL): string
+    {
+        try {
+            foreach ($queryParams as $queryParamKey => $queryParamValue) {
+                $redirectURL = $redirectURL . '&' . $queryParamKey . '=' . $queryParamValue;
+            }
+            return $redirectURL;
+        } catch (Exception $e) {
+            throw new BadRequestError(
+                'Invalid query params',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400);
+        }
+
+    }
+
+    public function getDashboardDomains($devServe): array
+    {
+        return [
+            UserConstants::DASHBOARD_PREFIX . $devServe . UserConstants::DASHBOARD_SUFFIX_DEV,
+            UserConstants::DASHBOARD_PREFIX . $devServe . UserConstants::DASHBOARD_SUFFIX_INT_DEV,
+            UserConstants::DASHBOARD_DEV,
+            UserConstants::DASHBOARD_INT_DEV,
+            UserConstants::DASHBOARD_PROD,
+            UserConstants::CURLEC_PROD,
+            UserConstants::CURLEC_COM
+        ];
     }
 }
