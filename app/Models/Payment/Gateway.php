@@ -2128,6 +2128,7 @@ class Gateway
         IFSC::UTKS,
         IFSC::YESB,
         IFSC::ZCBL,
+        IFSC::CIUB
     ];
 
     // disabled for all auth types
