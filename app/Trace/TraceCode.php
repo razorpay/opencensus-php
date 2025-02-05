@@ -10238,6 +10238,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const XPAYROLL_TPV_REQUEST_RESPONSE                       = 'XPAYROLL_TPV_REQUEST_RESPONSE';
     const XPAYROLL_TPV_INVALID_RESPONSE                       = 'XPAYROLL_TPV_INVALID_RESPONSE';
     const XPAYROLL_TPV_TEST_MODE_UNSUPPORTED                  = 'XPAYROLL_TPV_TEST_MODE_UNSUPPORTED';
+    const HIDE_RX_PAYROLL_PAYOUTS_FEATURE_FLAG_RESPONSE       = 'HIDE_RX_PAYROLL_PAYOUTS_FEATURE_FLAG_RESPONSE';
 
     # Ledger
     const LEDGER_RESPONSE                                       = 'LEDGER_RESPONSE';

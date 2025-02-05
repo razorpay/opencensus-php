@@ -14195,7 +14195,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testSearchPayrollPayoutByContactEmailWithExperimentOn()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(
@@ -14221,7 +14223,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testSearchPayoutWithMultipleSourceByContactEmailWithExperimentOn()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(
@@ -14247,7 +14251,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testSearchPayoutByContactEmailWithExperimentOn()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+        
+        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(
@@ -26605,7 +26611,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnProxyAuth()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
 
         // create 5 payouts [2 xpayroll + 3 payout_link]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26631,7 +26639,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOnAndSomePayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
 
         // create 5 payouts [2 xpayroll + 3 payout_link]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26657,7 +26667,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOffAndSomePayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'off', 'imps_mode_payout_filter' => 'control']);
+        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
 
         // create 5 payouts [2 xpayroll + 3 payout_link]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26683,7 +26693,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOnAndNoPayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
 
         // create 3 payouts [3 payout_link]
         $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
@@ -26707,7 +26719,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOffAndNoPayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'off', 'imps_mode_payout_filter' => 'control']);
+        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
 
         // create 3 payouts [3 payout_link]
         $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
@@ -26731,7 +26743,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOnAndAllPayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
 
         // create 3 payouts [3 xpayroll]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26755,7 +26769,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOffAndAllPayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'off', 'imps_mode_payout_filter' => 'control']);
+        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
 
         // create 3 payouts [3 xpayroll]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26803,7 +26817,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testGetXpayrollPayoutWithExperimentOn()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
 
         $this->testCreateXpayrollPayoutWithSourceDetails();
 
@@ -26823,7 +26839,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testGetXpayrollPayoutWithExperimentOff()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'off', 'imps_mode_payout_filter' => 'control']);
+        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
 
         $this->testCreateXpayrollPayoutWithSourceDetails();
 

@@ -2051,13 +2051,15 @@ class Service extends Base\Service
     }
 
     public function shouldSkipPayrollEntries()
-    {
-        $skipPayrollPayoutsExperimentVariant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::RX_SKIP_PAYROLL_PAYOUTS,
-            $this->mode);
-
-        return strtolower($skipPayrollPayoutsExperimentVariant) === 'on';
+    {  
+        $hideRxPayrollPayouts = $this->merchant->isFeatureEnabled(Features::HIDE_RX_PAYROLL_PAYOUTS);
+        $this->trace->info(
+            TraceCode::HIDE_RX_PAYROLL_PAYOUTS_FEATURE_FLAG_RESPONSE,
+            [
+                Entity::MERCHANT_ID       => $this->merchant->getId(),
+                'hideRxPayrollPayouts'    => $hideRxPayrollPayouts
+            ]);
+        return $hideRxPayrollPayouts === true;
     }
 
     public function shouldUnsetAccountNUmber()
