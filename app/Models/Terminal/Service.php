@@ -633,6 +633,10 @@ class Service extends Base\Service
 
     public function setBanks(string $id, array $input): array
     {
+        if($this->isSplitzEnabled('set_banks') === true){
+            return $this->app['terminals_service']->setBanksForTerminalV3($id, $input);
+        }
+
         Entity::verifyIdAndSilentlyStripSign($id);
 
         $terminal = $this->repo->terminal->getById($id);
@@ -640,6 +644,7 @@ class Service extends Base\Service
         $banksToEnable = $input[Entity::ENABLED_BANKS] ?? [];
 
         $syncInstruments = false;
+
         if( isset($input[Constants::SYNC_INSTRUMENTS]) )
         {
             $syncInstruments = $input[Constants::SYNC_INSTRUMENTS];
@@ -652,9 +657,11 @@ class Service extends Base\Service
             Constants::SYNC_INSTRUMENTS => $syncInstruments
         ];
 
-        $banks = $this->core()->setBanksForTerminal($terminal, $banksToEnable, $option);
+        return $this->core()->setBanksForTerminal($terminal, $banksToEnable, $option);
+    }
 
-        return $banks;
+    public function setBanksV3(string $id, array $input): array {
+        return $this->app['terminals_service']->setBanksForTerminalV3($id, $input);
     }
 
     public function setWallets(string $id, array $input): array
@@ -2264,4 +2271,41 @@ class Service extends Base\Service
 
         $this->trace->error(TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
     }
+
+    public function isSplitzEnabled(string $action): bool {
+        $properties = [
+            'action'   => $action,
+            'experiment_id' => $this->app['config']->get('app.api_migration_v3'),
+        ];
+
+        return $this->isSplitzExperimentEnabled($properties, 'enable');
+    }
+
+    public function isSplitzExperimentEnabled(array $properties, string $checkVariant, string $traceCode = null): bool
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $id = $properties['id'] ?? null;
+
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+
+            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
+        }
+
+        return false;
+    }
+
 }

@@ -114,6 +114,7 @@ class TerminalsService
     const CREATE_TERMINAL_V3          = 'create_terminal_v3';
     const VALIDATE_CREATE_TERMINAL_V3 = 'validate_create_terminal_v3';
 
+    const SET_BANKS_TERMINAL_V3       = 'set_banks_terminal_v3';
 
     // terminals service error descriptions
     const MERCHANT_HAS_ALREADY_COMPLETED_PAYPAL_ONBOARDING         = 'Merchant has already completed PayPal onboarding';
@@ -234,6 +235,10 @@ class TerminalsService
         ],
         self::REASSIGN_MERCHANT_V3 => [
             self::PATH   => 'v3/terminals/reassign_merchant/%s',
+            self::METHOD => Requests::PATCH
+        ],
+        self::SET_BANKS_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s/banks',
             self::METHOD => Requests::PATCH
         ],
     ];
@@ -1477,6 +1482,7 @@ class TerminalsService
 
         return $parsedResponse;
     }
+
     public function reassignMerchantV3($terminalId, $input): array
     {
         Entity::verifyIdAndSilentlyStripSign($terminalId);
@@ -1493,5 +1499,29 @@ class TerminalsService
         $path = sprintf($params[self::PATH],$terminalId);
 
         return $this->proxyTerminalService($input, $params[self::METHOD], $path);
+    }
+
+    /**
+     * @throws MethodInstrumentsTerminalsSyncException
+     */
+    public function setBanksForTerminalV3($terminalId, $input): array
+    {
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+        $banksToEnable = $input[Entity::ENABLED_BANKS] ?? [];
+
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle([Entity::ENABLED_BANKS => $terminal->getEnabledBanks()], [Entity::ENABLED_BANKS => $banksToEnable]);
+
+        $params = self::PARAMS[self::SET_BANKS_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH], $terminalId);
+
+        $parsedResponse = $this->proxyTerminalService($input, $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
     }
 }
