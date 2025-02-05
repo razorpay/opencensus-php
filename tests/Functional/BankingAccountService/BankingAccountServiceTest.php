@@ -22,6 +22,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Schedule;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\BankingAccount\XProActivation;
@@ -38,10 +39,10 @@ use RZP\Mail\BankingAccount\Activation\AccountOpeningWebhookDataAmbiguity;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\DocketMail\DocketMail;
 use RZP\Services\BankingAccountService as BasService;
-use RZP\Tests\Traits\MocksSplitz;
 
 class BankingAccountServiceTest extends TestCase
 {
+    use MocksSplitz;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use MocksDiagTrait;

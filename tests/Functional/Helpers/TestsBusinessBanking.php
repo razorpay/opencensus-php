@@ -335,7 +335,7 @@ trait TestsBusinessBanking
                                            string $useWorkflowMicroService = 'off',
                                            string $bulkPayoutsImprovementsRollout = 'on',
                                            string $oldToNewIfscForMergedBank = 'on',
-                                           string $rejectCommentInWebhook = 'off',
+                                           string $rejectCommentInWebhook = 'disable',
                                            string $allowVAToVAPayouts = 'control',
                                            string $allowWalletAccountAmazonPay = 'on',
                                            string $rblBASFetchV2 = 'off',
@@ -636,4 +636,39 @@ trait TestsBusinessBanking
             ]
         );
     }
+    protected function setMockSplitzTreatment($id,$experimentName,$variantName,$requestData): void
+    {
+        $input = [
+            "id" => $id,
+            'experiment_name' => $experimentName
+
+        ];
+
+        if ($requestData != null)
+            $input['request_data'] =  json_encode($requestData);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $variantName,
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($input, $output);
+    }
+    protected function setMockSplitzTreatmnt($SplitzTreatment,string $defaultBehaviour = 'disable'): void
+    {
+        $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($array) use ($defaultBehaviour, $SplitzTreatment)
+            {
+                if (array_key_exists($array['experiment_name'], $SplitzTreatment) === true)
+                {
+                    return ["response"=>["variant" => ["name" => $SplitzTreatment[$array['experiment_name']]]]];
+                }
+
+                return ["response"=>["variant" => ["name" => $defaultBehaviour]]];
+            });
+    }
+
 }

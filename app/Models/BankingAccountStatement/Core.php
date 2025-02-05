@@ -3037,9 +3037,13 @@ class Core extends Base\Core
 
     protected function saveAccountStatementV2(Base\PublicCollection $basEntities, Merchant\Entity $merchant)
     {
-        $payoutServiceTxnVariant = $this->app->razorx->getTreatment($merchant->getId(),
-                                                    Merchant\RazorxTreatment::PAYOUT_SERVICE_TXN_RECON,
-                                                    $this->mode);
+        $requestPayload = [
+            "id" =>  $merchant->getId(),
+            "experiment_name" => Merchant\RazorxTreatment::PAYOUT_SERVICE_TXN_RECON,
+            'request_data'  => json_encode(['id' =>  $merchant->getId()])
+        ];
+
+        $isPSTxnReconExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         /** @var Entity $basEntity */
         foreach ($basEntities as $basEntity)
@@ -3060,7 +3064,7 @@ class Core extends Base\Core
                     ($sourceEntity->isBalanceAccountTypeDirect() === true) and
                     ($sourceEntity->isOfMerchantTransaction() === true) and
                     ($sourceEntity->getStatus() === Status::PROCESSED) and
-                    !($payoutServiceTxnVariant == 'on' and
+                    !($isPSTxnReconExperimentEnabled === true and
                       $sourceEntity->getIsPayoutService() == true and
                       $basEntity->getType() == Type::DEBIT))
                 {
@@ -3071,7 +3075,7 @@ class Core extends Base\Core
                 // for statement under fix we send event to ledger after inserting all the missing statements outside the transaction
                 // For payout service payout linked with debit, we dont send event to ledger since we make a call to ps which already does this
                 if ($this->isStatementUnderFix === false and
-                    !($payoutServiceTxnVariant == 'on' and
+                    !($isPSTxnReconExperimentEnabled === true and
                       $sourceEntity->getEntityName() === Constants\Entity::PAYOUT and
                       $sourceEntity->getIsPayoutService() == true and
                       $basEntity->getType() == Type::DEBIT)
@@ -3120,7 +3124,7 @@ class Core extends Base\Core
             }
             else
             {
-                if (!($payoutServiceTxnVariant == 'on' and
+                if (!($isPSTxnReconExperimentEnabled === true and
                       $sourceEntity->getEntityName() === Constants\Entity::PAYOUT and
                       $sourceEntity->getIsPayoutService() == true and
                       $basEntity->getType() == Type::DEBIT)
@@ -3529,11 +3533,13 @@ class Core extends Base\Core
         (new DownstreamProcessor('fund_account_payout', $payout, $this->mode))->processTransaction();
         $transactionId = $payout->transaction ? $payout->transaction->getID() : null;
 
-        $payoutServiceTxnVariant = $this->app->razorx->getTreatment($payout->getMerchantId(),
-                                                    Merchant\RazorxTreatment::PAYOUT_SERVICE_TXN_RECON,
-                                                    $this->mode);
+        $requestPayload = [
+            "id" =>  $payout->getMerchantId(),
+            "experiment_name" => Merchant\RazorxTreatment::PAYOUT_SERVICE_TXN_RECON,
+            'request_data'  => json_encode(['id' =>  $payout->getMerchantId()])
+        ];
 
-        if ($payoutServiceTxnVariant == 'on' and $payout->getIsPayoutService() == true)
+        if (((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,Merchant\RazorxTreatment::VARIANT_ENABLE) === true) and $payout->getIsPayoutService() == true)
         {
             $input = [
                 Entity::BAS_ID                  => $transactionId,
@@ -5170,17 +5176,7 @@ class Core extends Base\Core
             return true;
         }
 
-        /** @var BASDetails\Entity $basDetailEntity */
-        $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
-
-        // roll out via razorx.
-        $variant = $this->app->razorx->getTreatment(
-            $basDetailEntity->getMerchantId(),
-            Merchant\RazorxTreatment::BAS_FETCH_RE_ARCH,
-            $this->mode
-        );
-
-        return (strtolower($variant) == 'on');
+        return true;
     }
 
     /**
@@ -5830,18 +5826,12 @@ class Core extends Base\Core
      */
     private function fetchUnlinkedRecordsUsingOptimizedQueryIfApplicable($accountNumber, Details\Entity $basDetails, $channel, int $limit): array
     {
-        $variant = $this->app->razorx->getTreatment($accountNumber,
-                                                    Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_UNLINKED_QUERY_OPTIMIZE,
-                                                    $this->mode);
-
         $fetchUsingDefaultQuery = true;
 
         $basEntities = null;
 
         try
         {
-            if ($variant == 'on')
-            {
                 $txns = $this->repo->transaction->fetchLatestTxnForBalanceId($basDetails->getBalanceId());
 
                 if (count($txns) > 0)
@@ -5854,7 +5844,6 @@ class Core extends Base\Core
                         $fetchUsingDefaultQuery = false;
                     }
                 }
-            }
         }
         catch (\Throwable $e)
         {

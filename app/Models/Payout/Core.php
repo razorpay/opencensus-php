@@ -5392,10 +5392,13 @@ class Core extends Base\Core
         if (($payout->getIsPayoutService() === true) and
             ($payout->balance->isAccountTypeDirect() === true))
         {
-            $variant = $this->app['razorx']->getTreatment($payout->getMerchantId(),
-                RazorxTreatment::ENABLE_BAS_CHECK_FOR_PAYOUTS_SERVICE, Constants\Mode::LIVE);
+            $requestPayload = [
+                "id" => $payout->getMerchantId(),
+                "experiment_name" => RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
+                'request_data'  => json_encode(['id' =>  $payout->getMerchantId()])
+            ];
 
-            if ($variant != 'on') {
+            if ((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE) !== true) {
                 return;
             }
         }
@@ -9177,10 +9180,13 @@ class Core extends Base\Core
         if (($payout->getIsPayoutService() === true) and
             ($payout->balance->isAccountTypeDirect() === true))
         {
-            $variant = $this->app['razorx']->getTreatment($payout->getMerchantId(),
-                RazorxTreatment::ENABLE_BAS_CHECK_FOR_PAYOUTS_SERVICE, Constants\Mode::LIVE);
+            $requestPayload = [
+                "id" => $payout->getMerchantId(),
+                "experiment_name" => RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
+                'request_data'  => json_encode(['id' =>  $payout->getMerchantId()])
+            ];
 
-            if ($variant != 'on') {
+            if ((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE) !== true) {
                 return;
             }
         }

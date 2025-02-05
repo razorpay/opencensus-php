@@ -187,11 +187,6 @@ trait PayoutTrait
                         return 'on';
                     }
 
-                    if ($feature === Merchant\RazorxTreatment::PAYOUT_BULK_APPROVE_ASYNC && $isBulkApproveAsyncEnabled === true)
-                    {
-                        return 'on';
-                    }
-
                     return 'control';
                 }));
 

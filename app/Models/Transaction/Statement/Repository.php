@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction\Statement;
 use Db;
 use Illuminate\Database\Query\JoinClause;
 
+use RZP\Constants\Mode;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
@@ -171,11 +172,20 @@ class Repository extends Transaction\Repository
 
     protected function setBaseQueryIfApplicable(string $merchantId)
     {
-        $variant = $this->app->razorx->getTreatment($merchantId,
-                                                    Merchant\RazorxTreatment::IGNORE_INDEX_IN_TRANSACTIONS_FETCH,
-                                                    $this->app['rzp.mode']);
+        $experimentName = Merchant\RazorxTreatment::IGNORE_INDEX_IN_TRANSACTIONS_FETCH;
 
-        if ($variant === 'on')
+        if($this->app['rzp.mode'] === MODE::TEST)
+        {
+            $experimentName = Merchant\RazorxTreatment::IGNORE_INDEX_IN_TRANSACTIONS_FETCH_TEST;
+        }
+
+        $requestPayload = [
+            "id" => $merchantId,
+            "experiment_name" => $experimentName,
+            'request_data'  => json_encode(['id' =>  $merchantId])
+        ];
+
+        if ((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,Merchant\RazorxTreatment::VARIANT_ENABLE ) === true)
         {
             $this->baseQuery = $this->setQueryToIgnoreTransactionsCreatedAtIndex();
         }

@@ -272,7 +272,7 @@ return [
         'exception' => [
             'class'               => RZP\Exception\LogicException::class,
             'internal_error_code' => ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_STATEMENT_BALANCES_DO_NOT_MATCH,
-            'message'             => 'Balance at channel does not match with our balance',
+            'message'             => 'Statement record balance is not in correct order',
         ],
     ],
 

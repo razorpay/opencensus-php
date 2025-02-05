@@ -89,13 +89,15 @@ class Core extends Base\Core
 
     public function isFavServiceForwardingApplicable(Merchant\Entity $merchant){
 
-        $newCompositeApplicable = $this->app->razorx->getTreatment($merchant->getId(),
-            RazorxTreatment::FAV_COMPOSITE_SERVICE_FORWARDING,
-            $this->mode);
+        $requestPayload = [
+            "id" =>  $merchant->getId(),
+            "experiment_name" => RazorxTreatment::FAV_COMPOSITE_SERVICE_FORWARDING,
+            'request_data'  => json_encode(['id' =>  $merchant->getId()])
+        ];
 
         $isFavServiceEnabled = $merchant->isFeatureEnabled(Feature\Constants::FAV_SERVICE_ENABLED);
 
-        if(($newCompositeApplicable === RazorxTreatment::RAZORX_VARIANT_ON) or ($isFavServiceEnabled === true))
+        if(((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE)) or ($isFavServiceEnabled === true))
         {
             return true;
         }
@@ -1184,11 +1186,17 @@ class Core extends Base\Core
 
     protected function handleExceptionalPGBalanceFAV(Entity $fundAccValidation)
     {
-        $shouldAllowPGBalance = $this->app->razorx->getTreatment($fundAccValidation->merchant->getId(),
-            RazorxTreatment::FAV_PG_LEDGER_CUTOFF,
-            $this->mode);
+        $requestPayload = [
+            "id" =>  $fundAccValidation->merchant->getId(),
+            "experiment_name" => RazorxTreatment::FAV_PG_LEDGER_CUTOFF,
+            'request_data'  => json_encode(['id' =>  $fundAccValidation->merchant->getId()])
+        ];
 
-        if ($shouldAllowPGBalance === RazorxTreatment::RAZORX_VARIANT_ON)
+        $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
+
+        $shouldAllowPGBalance = ($isExperimentEnabled === true) ? 'enable' : 'disable';
+
+        if ($shouldAllowPGBalance === RazorxTreatment::VARIANT_ENABLE)
         {
             $balance = $fundAccValidation->merchant->primaryBalance;
 

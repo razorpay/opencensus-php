@@ -7,6 +7,7 @@ use RZP\Models\Feature;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
@@ -151,15 +152,17 @@ class Base extends FundAccountPayout\Base
 
     protected function getMerchantBalanceToCheckForQueued(Entity $payout)
     {
-        $variant = $this->app->razorx->getTreatment(
-            $payout->getMerchantId(),
-            RazorxTreatment::CA_PAYOUT_SKIP_BALANCE_FETCH,
-            $this->mode ?? ConstantMode::LIVE
-        );
+        $requestPayload = [
+            "id" =>  $payout->getMerchantId(),
+            "experiment_name" => RazorxTreatment::CA_PAYOUT_SKIP_BALANCE_FETCH,
+            'request_data'  => json_encode(['id' =>  $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
 
         $isPayoutCreateFlow = false;
 
-        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+        if ($isExperimentEnabled === true)
         {
             $isPayoutCreateFlow = true;
         }

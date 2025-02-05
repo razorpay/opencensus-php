@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Counter;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
@@ -52,10 +53,14 @@ class CounterHelper extends Base\Core
             ($balance->getAccountType() === AccountType::DIRECT))
         {
 
-            $variant = $this->app['razorx']->getTreatment($balance->getMerchantId(),
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
+            $requestPayload = [
+                "id" => $balance->getMerchantId(),
+                "experiment_name" => RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
+                'request_data'  => json_encode(['id' =>  $balance->getMerchantId()])
+            ];
 
-            if ($variant === 'on') {
+
+            if ((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE) === true) {
                 return null;
             }
         }

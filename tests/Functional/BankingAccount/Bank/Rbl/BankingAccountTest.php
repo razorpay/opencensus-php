@@ -44,6 +44,7 @@ use RZP\Tests\Functional\Helpers\MocksDiagTrait;
 use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Mail\BankingAccount\StatusNotifications\Created;
@@ -78,6 +79,7 @@ use RZP\Tests\Traits\MocksSplitz;
 
 class BankingAccountTest extends TestCase
 {
+    use TestsBusinessBanking;
     use OAuthTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
@@ -2346,25 +2348,6 @@ class BankingAccountTest extends TestCase
 
         $this->setupBankPartnerMerchant();
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        // ledger shadow experiment is NOT enabled
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === Merchant\RazorxTreatment::MANDATE_IDEMPOTENCY_KEY_EXPERIMENT_NEW)
-                    {
-                        return 'on';
-                    }else{
-                        return 'control';
-                    }
-                }));
 
         $this->mockLedgerSns(0);
 

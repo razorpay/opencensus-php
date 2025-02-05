@@ -47,6 +47,11 @@ final class RazorxTreatment
     // the ON variant
     const RAZORX_VARIANT_ON     = 'on';
 
+    //the enable variant
+    const VARIANT_ENABLE = 'enable';
+
+    //the enable variant
+    const VARIANT_DISABLE = 'disable';
 
     //Razorx treatment constant, allows system to send new bu namespace to vault service
     const VAULT_BU_NAMESPACE_MIGRATION  = 'vault_bu_namespace_migration';
@@ -468,6 +473,8 @@ final class RazorxTreatment
 
     const IGNORE_INDEX_IN_TRANSACTIONS_FETCH = 'ignore_index_in_transactions_fetch_2';
 
+    const IGNORE_INDEX_IN_TRANSACTIONS_FETCH_TEST = 'ignore_index_in_transactions_fetch_test';
+
     const GATEWAY_BALANCE_FETCH_V2 = 'gateway_balance_fetch_v2';
 
     const BAS_FETCH_RE_ARCH = 'bas_fetch_re_arch';
@@ -590,8 +597,12 @@ final class RazorxTreatment
     // experiment to fetch transaction from central ledger service
     const RX_TRANSACTION_LOAD_FROM_LEDGER = 'rx_transaction_load_from_ledger';
 
+    const RX_TRANSACTION_LOAD_FROM_LEDGER_TEST = 'rx_transaction_load_from_ledger_test';
+
     // experiment to fetch and return the transaction fetched from central ledger service
     const RX_TRANSACTION_LOAD_AND_RETURN_FROM_LEDGER = 'rx_transaction_load_and_return_from_ledger';
+
+    const RX_TRANSACTION_LOAD_AND_RETURN_FROM_LEDGER_TEST = 'rx_transaction_load_and_return_from_ledger_test';
 
     // Razorx treatment constant to send a single request to bvs for validating aadhaar
     // document, rather than sending a single one.

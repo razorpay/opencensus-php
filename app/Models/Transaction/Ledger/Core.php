@@ -6,6 +6,7 @@ use App;
 
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -85,11 +86,20 @@ class Core extends Base\Core
         $mode = $this->app['rzp.mode'] ?? 'live';
 
         // ramp up will be based on percentage so it will not be having any merchant_id
-        $result = $this->app['razorx']->getTreatment(
-            $merchantID,
-            RazorxTreatment::RX_TRANSACTION_LOAD_FROM_LEDGER,
-            $mode);
+        $experimentName = RazorxTreatment::RX_TRANSACTION_LOAD_FROM_LEDGER;
+        if($mode === Mode::TEST)
+        {
+            $experimentName = RazorxTreatment::RX_TRANSACTION_LOAD_FROM_LEDGER_TEST;
+        }
+        $requestPayload = [
+            "id" =>  $merchantID,
+            "experiment_name" => $experimentName,
+            'request_data'  => json_encode(['id' =>  $merchantID])
+        ];
 
+        $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
+
+        $result = ($isExperimentEnabled === true) ? RazorxTreatment::VARIANT_ENABLE : RazorxTreatment::VARIANT_DISABLE;
 
         $this->trace->info(
             TraceCode::RX_TRANSACTION_LOAD_FROM_LEDGER_EXPERIMENT,
@@ -98,7 +108,7 @@ class Core extends Base\Core
                 'mode'      => $mode,
             ]);
 
-        return (strtolower($result) === 'on');
+        return  (strtolower($result) === RazorxTreatment::VARIANT_ENABLE);
     }
 
     /**
@@ -111,10 +121,21 @@ class Core extends Base\Core
     {
         $mode = $this->app['rzp.mode'] ?? 'live';
 
-        $result = $this->app['razorx']->getTreatment(
-            $merchantID,
-            RazorxTreatment::RX_TRANSACTION_LOAD_AND_RETURN_FROM_LEDGER,
-            $mode);
+        $experimentName = RazorxTreatment::RX_TRANSACTION_LOAD_AND_RETURN_FROM_LEDGER;
+        if($mode === Mode::TEST)
+        {
+            $experimentName = RazorxTreatment::RX_TRANSACTION_LOAD_AND_RETURN_FROM_LEDGER_TEST;
+        }
+
+        $requestPayload = [
+            "id" =>  $merchantID,
+            "experiment_name" =>$experimentName,
+            'request_data'  => json_encode(['id' =>  $merchantID])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
+
+        $result = ($isExperimentEnabled === true) ? RazorxTreatment::VARIANT_ENABLE : RazorxTreatment::VARIANT_DISABLE;
 
         $this->trace->info(
             TraceCode::RX_TRANSACTION_LOAD_AND_RETURN_FROM_LEDGER_EXPERIMENT,
@@ -123,7 +144,7 @@ class Core extends Base\Core
                 'mode'      => $mode,
             ]);
 
-        return (strtolower($result) === 'on');
+        return (strtolower($result) === RazorxTreatment::VARIANT_ENABLE);
     }
     public function fetchLedgerEntryById($id){
         return $this->fetchExternalEntity($id);

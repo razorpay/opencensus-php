@@ -1563,14 +1563,13 @@ class ApiEventSubscriber extends Base\Core
     {
         $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
 
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::PAYOUTS_REJECT_COMMENT_IN_WEBHOOK_FILTER,
-            $this->mode,
-            Payout\Entity::RAZORX_RETRY_COUNT
-        );
+        $requestPayload = [
+            "id" => $merchantId,
+            "experiment_name" => RazorxTreatment::PAYOUTS_REJECT_COMMENT_IN_WEBHOOK_FILTER,
+            'request_data'  => json_encode(['id' => $merchantId])
+        ];
 
-        if (strtolower($variant) === 'on')
+        if ((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE))
         {
             // For merchants who are onboarded to WFS, reject comment can be found by doing ->toArrayPublic on payout entity.
             $payoutArrayPublic = $payout->toArrayPublic();

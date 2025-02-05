@@ -16,6 +16,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
@@ -50,6 +51,7 @@ use function Termwind\renderUsing;
 
 class IciciBankingAccountStatementTest extends TestCase
 {
+    use MocksSplitz;
     use PayoutTrait;
     use PaymentTrait;
     use TestsMetrics;
@@ -4106,8 +4108,6 @@ class IciciBankingAccountStatementTest extends TestCase
         $setDate = Carbon::now(Timezone::IST)->firstOfMonth()->addDays(15)->addHours(10);
 
         Carbon::setTestNow($setDate);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'on']);
 
         $basDetails = $this->getDbEntity('banking_account_statement_details', ['account_number' => 2224440041626905]);
 

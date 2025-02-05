@@ -31,6 +31,7 @@ use RZP\Models\PayoutsDetails;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payout\Validator;
 use RZP\Models\Feature\Constants;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Services\FTS\FundTransfer;
 use RZP\Tests\Functional\TestCase;
@@ -47,7 +48,6 @@ use RZP\Services\PayoutService\BulkPayout;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Constants\Entity as EntityConstants;
-use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\Payout\PayoutTest;
 use RZP\Models\Merchant\Balance\Type as Type;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -2421,7 +2421,7 @@ class PayoutServiceTest extends TestCase
 
 
         $payout = $this->testCreatePayoutEntry($mode, false);
-        $this->setMockRazorxTreatment([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
         $this->fixtures->edit('payout', $payout['id'], [
             'transaction_id' => 'randomtxnnnnnn',
@@ -3783,11 +3783,12 @@ class PayoutServiceTest extends TestCase
         $this->setMockRazorxTreatment(
             [
                 RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD  => 'on',
-                RazorxTreatment::PAYOUT_SERVICE_VA_TO_VA_CONSUME_FROM_PAYLOAD => 'on',
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
+                RazorxTreatment::PAYOUT_SERVICE_VA_TO_VA_CONSUME_FROM_PAYLOAD => 'on'
             ]
+
         );
 
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
         $fundAccountObject = $this->getDbEntities('fund_account',
             [
@@ -3948,10 +3949,10 @@ class PayoutServiceTest extends TestCase
             [
                 RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD  => 'on',
                 RazorxTreatment::PAYOUT_SERVICE_VA_TO_VA_CONSUME_FROM_PAYLOAD => 'on',
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
             ]
         );
 
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
         $fundAccountObject = $this->getDbEntities('fund_account',
             [
@@ -6335,7 +6336,7 @@ class PayoutServiceTest extends TestCase
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'enable']);
 
         $mock = $this->createMetricsMock();
 
@@ -6444,7 +6445,7 @@ class PayoutServiceTest extends TestCase
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'enable']);
 
         $metricsMock = $this->createMetricsMock();
 
@@ -6488,7 +6489,7 @@ class PayoutServiceTest extends TestCase
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'enable']);
 
         $balance = $this->getDbEntities('balance',
             [
@@ -8091,11 +8092,7 @@ class PayoutServiceTest extends TestCase
     {
         $this->mockPayoutServiceCreateBulkPayout(2, false, false, [], true);
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -8144,11 +8141,7 @@ class PayoutServiceTest extends TestCase
     {
         $this->mockPayoutServiceCreateBulkPayout(1);
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -8199,11 +8192,7 @@ class PayoutServiceTest extends TestCase
     {
         $this->mockPayoutServiceCreateBulkPayout(2);
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -8233,7 +8222,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_DirectAccount_SinglePayout_SpacesInAccountNumber()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8283,10 +8272,11 @@ class PayoutServiceTest extends TestCase
 
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-                'imps_mode_payout_filter' => 'control',
+                'imps_mode_payout_filter' => 'control'
             ]
         );
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
         $this->setFreePayoutsCountInAdminKey(AccountType::SHARED, Channel::YESBANK);
 
@@ -8321,7 +8311,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_DirectAccount_MultiplePayout_SkipWorkflowTrue_FeatureEnabled()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8375,10 +8365,11 @@ class PayoutServiceTest extends TestCase
 
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
                 'imps_mode_payout_filter' => 'control',
             ]
         );
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
         $this->setFreePayoutsCountInAdminKey(AccountType::SHARED, Channel::YESBANK);
 
@@ -8412,7 +8403,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_DirectAccount_MultiplePayout_SkipWorkflowFalse_FeatureEnabled()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $this->fixtures->merchant->addFeatures(['bulk_payout_workflow']);
 
@@ -8465,7 +8456,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_DirectAccount_MultiplePayout_SkipWorkflowTrue_FeatureDisabled()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8516,7 +8507,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_SharedAccount_SinglePayout_SkipWorkflowTrue_FeatureEnabled_UseMicroservice()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -8548,7 +8539,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_DirectAccount_MultiplePayout_SpacesInAccountNumber()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8593,7 +8584,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_SharedAndDirectAccounts_SpacesInAccountNumber()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
@@ -8639,10 +8630,11 @@ class PayoutServiceTest extends TestCase
 
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
                 'imps_mode_payout_filter' => 'control',
             ]
         );
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
         $this->setFreePayoutsCountInAdminKey(AccountType::SHARED, Channel::YESBANK);
 
@@ -8714,7 +8706,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_InvalidAccountNumber()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8739,10 +8731,11 @@ class PayoutServiceTest extends TestCase
     {
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
                 'imps_mode_payout_filter' => 'control',
             ]
         );
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8766,7 +8759,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_ValidSharedAccount_And_InvalidAccountNumber()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $this->mockPayoutServiceCreateBulkPayout(2);
 
@@ -8803,7 +8796,7 @@ class PayoutServiceTest extends TestCase
             ]
         );
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
         $this->mockPayoutServiceCreateBulkPayout(1);
 
@@ -8887,7 +8880,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_DirectAccount()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8942,7 +8935,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_MultiplePayouts_SameDirectAccount()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -9009,7 +9002,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_SharedAndDirectAccounts()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
@@ -9052,7 +9045,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_SharedAndDirectAccount_ExceptionFromSharedAccount()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -9097,10 +9090,11 @@ class PayoutServiceTest extends TestCase
 
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
                 'imps_mode_payout_filter' => 'control',
             ]
         );
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -9152,7 +9146,7 @@ class PayoutServiceTest extends TestCase
     }
     public function testBulkPayout_SharedAndDirectAccount_TimeoutFromPayoutsService()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -9194,7 +9188,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_ExceptionFromDirectAccount()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -9222,7 +9216,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_SharedAndDirectAccount_ExceptionFromDirectAccount()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -9255,10 +9249,11 @@ class PayoutServiceTest extends TestCase
     {
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
                 'imps_mode_payout_filter' => 'control',
             ]
         );
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',

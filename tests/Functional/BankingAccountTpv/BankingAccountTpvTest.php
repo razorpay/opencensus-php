@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\User\Role;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\BankingAccountTpv\Type;
@@ -23,10 +24,11 @@ use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
-use RZP\Tests\Traits\MocksSplitz;
+
 
 class BankingAccountTpvTest extends TestCase
 {
+    use MocksSplitz;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
     use MocksSplitz;
@@ -618,20 +620,18 @@ class BankingAccountTpvTest extends TestCase
         $this->assertNotNull($tpv);
     }
 
-    public function enableRazorXTreatmentForPGLedgerCutoff()
+    public function enableSplitzTreatmentForPGLedgerCutoff()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
 
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+        return $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($array)
             {
-                if ($featureFlag === (RazorxTreatment::FAV_PG_LEDGER_CUTOFF))
+                if ($array['experiment_name'] === (RazorxTreatment::FAV_PG_LEDGER_CUTOFF))
                 {
-                    return 'on';
+                    return  ["response"=>["variant" => ["name" => 'enable', ]]];
                 }
-                return 'control';
+                return  ["response"=>["variant" => ["name" => 'disable', ]]];
             });
     }
 
@@ -654,7 +654,7 @@ class BankingAccountTpvTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
-        $this->enableRazorXTreatmentForPGLedgerCutoff();
+        $this->enableSplitzTreatmentForPGLedgerCutoff();
 
         $response = $this->startTest();
 
@@ -727,7 +727,7 @@ class BankingAccountTpvTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
-        $this->enableRazorXTreatmentForPGLedgerCutoff();
+        $this->enableSplitzTreatmentForPGLedgerCutoff();
 
         $this->startTest();
 
@@ -837,7 +837,7 @@ class BankingAccountTpvTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $this->enableRazorXTreatmentForPGLedgerCutoff();
+        $this->enableSplitzTreatmentForPGLedgerCutoff();
 
         $response = $this->startTest();
 
@@ -1064,7 +1064,7 @@ class BankingAccountTpvTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
-        $this->enableRazorXTreatmentForPGLedgerCutoff();
+        $this->enableSplitzTreatmentForPGLedgerCutoff();
 
         $response = $this->startTest();
 
@@ -1114,7 +1114,7 @@ class BankingAccountTpvTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
-        $this->enableRazorXTreatmentForPGLedgerCutoff();
+        $this->enableSplitzTreatmentForPGLedgerCutoff();
 
         $response = $this->startTest();
 
@@ -1164,7 +1164,7 @@ class BankingAccountTpvTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
-        $this->enableRazorXTreatmentForPGLedgerCutoff();
+        $this->enableSplitzTreatmentForPGLedgerCutoff();
 
         $response = $this->startTest();
 

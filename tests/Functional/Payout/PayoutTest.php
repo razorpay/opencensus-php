@@ -10729,6 +10729,8 @@ class PayoutTest extends OAuthTestCase
             'on'
         );
 
+        $this->setMockSplitzTreatmnt([RazorxTreatment::PAYOUTS_REJECT_COMMENT_IN_WEBHOOK_FILTER=> 'enable']);
+
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
         $this->fixtures->on('live')->create(
@@ -17127,24 +17129,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::ENABLE_SMART_ROUTING]);
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function ($mid, $feature, $mode)
-                              {
-                                  if ($feature === Merchant\RazorxTreatment::RX_UNSET_ACCOUNT_NUMBER)
-                                  {
-                                      return 'on';
-                                  }
-
-                                  return 'off';
-                              }));
+        $this->setMockSplitzTreatmnt([Merchant\RazorxTreatment::RX_UNSET_ACCOUNT_NUMBER => 'enable']);
 
         $request = &$this->testData[__FUNCTION__]['request'];
 
@@ -18752,7 +18737,8 @@ class PayoutTest extends OAuthTestCase
         $testData['request']['url']              = '/payouts';
 
         $this->setupDirectAccount();
-        $this->setMockRazorxTreatment(['enable_ca_flow_via_payouts_service' => 'on']);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE=> 'enable']);
 
         $balance = $this->getDbEntities('balance',
             [
@@ -41786,6 +41772,8 @@ class PayoutTest extends OAuthTestCase
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode(true);
 
+        $this->setMockSplitzTreatmnt([RazorxTreatment::PAYOUT_BULK_APPROVE_ASYNC=> 'enable']);
+
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
@@ -44594,9 +44582,6 @@ class PayoutTest extends OAuthTestCase
             'idempotency_key' => 'batch_111',
             'created_at'      => $createdAt,
         ]);
-
-
-        $this->setMockRazorxTreatment([RazorxTreatment::BATCH_PAYOUTS_IKEY_ROLLOUT_V2  => 'on'], 'control');
 
         $this->startTest();
 

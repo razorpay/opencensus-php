@@ -20,6 +20,7 @@ use RZP\Models\Contact\Type;
 use RZP\Services\RazorXClient;
 use RZP\Jobs\FTS\CreateAccount;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -35,6 +36,7 @@ use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 class FundAccountsTest extends TestCase
 {
+    use MocksSplitz;
     use PaymentTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
@@ -2870,7 +2872,7 @@ class FundAccountsTest extends TestCase
 
     public function testNullSourceFundAccountCreationAndVerifyHash()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'enable']);
 
         $response = $this->createValidationWithFundAccountEntity();
 

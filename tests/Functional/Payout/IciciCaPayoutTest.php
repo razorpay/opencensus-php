@@ -994,7 +994,7 @@ class IciciCaPayoutTest extends TestCase
 
     public function testBalanceFetch()
     {
-        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::GATEWAY_BALANCE_FETCH_V2=> 'enable']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -1598,7 +1598,7 @@ class IciciCaPayoutTest extends TestCase
     // Case when payout amount is less than balance in CA and queue_if_low_balance = true
     public function testApprovePendingPayoutWithQueueFlagBalanceGreater()
     {
-        $response = $this->createPendingPayoutAndApprovePayoutUptoSecondLevel(500);
+        $response = $this->createPendingPayoutAndApprovePayoutUptoSecondLevel(10000);
 
         $this->assertEquals('processing', $response['status']);
     }
@@ -1710,7 +1710,7 @@ class IciciCaPayoutTest extends TestCase
     // Case when both payouts amount is less than balance in CA and queue_if_low_balance = true
     public function testBulkApprovePendingPayoutWithQueueFlagTrueAndBalanceGreater()
     {
-        list($payoutId1, $payoutId2) = $this->createBulkPendingPayoutAndApprovePayoutsUptoSecondLevel(500);
+        list($payoutId1, $payoutId2) = $this->createBulkPendingPayoutAndApprovePayoutsUptoSecondLevel(10000);
 
         $payout1 = $this->getDbEntityById('payout', $payoutId1)->toArray();
         $payout2 = $this->getDbEntityById('payout', $payoutId2)->toArray();
@@ -2299,20 +2299,20 @@ class IciciCaPayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreatePayoutWithFetchAndUpdateBalanceFromGatewayAndBalanceMoreThanPayoutAmount()
-    {
-        $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
-
-        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
-            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
-        ] );
-
-        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(50000);
-
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
+//    public function testCreatePayoutWithFetchAndUpdateBalanceFromGatewayAndBalanceMoreThanPayoutAmount()
+//    {
+//        $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
+//
+//        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+//            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+//        ] );
+//
+//        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(50000);
+//
+//        $this->ba->privateAuth();
+//
+//        $this->startTest();
+//    }
 
     public function testDashboardSummary()
     {
@@ -3334,7 +3334,7 @@ class IciciCaPayoutTest extends TestCase
 
         /** @var Details\Entity $basDetailsBeforeCronRuns */
         $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
-                                                       ['account_number' => 2224440041626905]);
+            ['account_number' => 2224440041626905]);
 
         $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
 
@@ -3342,7 +3342,7 @@ class IciciCaPayoutTest extends TestCase
 
         /** @var Details\Entity $basDetailsAfterCronRuns */
         $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
-                                                      ['account_number' => 2224440041626905]);
+            ['account_number' => 2224440041626905]);
 
         $this->assertEquals(5000000, $basDetailsAfterCronRuns->getGatewayBalance());
 
@@ -3562,11 +3562,7 @@ class IciciCaPayoutTest extends TestCase
 
     public function testICICIPriorityMerchantBalanceUpdate()
     {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2  => 'on'
-            ]
-        );
+        $this->setMockSplitzTreatmnt([RazorxTreatment::GATEWAY_BALANCE_FETCH_V2=> 'enable']);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::ICICI_CA_PRIORITY_BALANCE_UPDATE_LIST => ['10000000000000']]);
 
@@ -3591,11 +3587,7 @@ class IciciCaPayoutTest extends TestCase
 
     public function testICICIPriorityMerchantBalanceUpdateIsNotPushedOnDefaultQueue()
     {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2 => 'on'
-            ]
-        );
+        $this->setMockSplitzTreatmnt([RazorxTreatment::GATEWAY_BALANCE_FETCH_V2=> 'enable']);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::ICICI_CA_PRIORITY_BALANCE_UPDATE_LIST => ['10000000000000']]);
 

@@ -1059,12 +1059,15 @@ class Service extends Base\Service
         {
             $merchantId = $this->merchant->getId();
 
-            $variant = $this->app->razorx->getTreatment(
-                $merchantId,
-                RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE,
-                $this->mode,
-                Payout\Entity::RAZORX_RETRY_COUNT
-            );
+            $requestPayload = [
+                "id" =>  $merchantId,
+                "experiment_name" => RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE,
+                'request_data'  => json_encode(['id' =>  $merchantId])
+            ];
+
+            $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
+
+            $variant = ($isExperimentEnabled === true) ? RazorxTreatment::VARIANT_ENABLE : RazorxTreatment::VARIANT_DISABLE;
 
             $this->trace->info(
                 TraceCode::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE,
@@ -1074,7 +1077,7 @@ class Service extends Base\Service
                     'merchant_id'   => $merchantId,
                 ]);
 
-            if (strtolower($variant) === 'on')
+            if($variant === 'enable')
             {
                 $this->dualWritePayout($payoutId);
 
@@ -1149,8 +1152,7 @@ class Service extends Base\Service
 
         if ($this->schedulePayoutProcessingForP2PIfApplicable($payout) === false)
         {
-            if ($this->shouldProcessBulkApproveAsync($payout->getMerchantId()))
-            {
+            if ($this->shouldProcessBulkApproveAsync($payout->getMerchantId())) {
                 $payload = [
                     'input' => $input,
                     'payout_id' => $id,
@@ -1167,6 +1169,7 @@ class Service extends Base\Service
             {
                 $payout = (new Core)->processActionOnPayout($approved, $payout, $input);
             }
+
         }
 
         return $payout->toArrayPublic();
@@ -2059,12 +2062,13 @@ class Service extends Base\Service
 
     public function shouldUnsetAccountNUmber()
     {
-        $unsetAccountNumberExperimentVariant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::RX_UNSET_ACCOUNT_NUMBER,
-            $this->mode);
+        $requestPayload = [
+            "id" =>  $this->merchant->getId(),
+            "experiment_name" => RazorxTreatment::RX_UNSET_ACCOUNT_NUMBER,
+            'request_data'  => json_encode(['id' =>  $this->merchant->getId()])
+        ];
 
-        return strtolower($unsetAccountNumberExperimentVariant) === 'on';
+        return (new Merchant\Core)->isSplitzExperimentEnable($requestPayload, RazorxTreatment::VARIANT_ENABLE);
     }
 
     public function processReversedPayout(string $id)
@@ -2531,22 +2535,28 @@ class Service extends Base\Service
             $merchantID = $this->merchant->getId();
 
             // Bulk Payout Creation for Current Account Merchant onboarded on Payout Service
-            $variant = $this->app->razorx->getTreatment(
-                $merchantID,
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
-                $this->mode);
+            $requestPayload = [
+                "id" =>   $merchantID,
+                "experiment_name" => RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
+                'request_data'  => json_encode(['id' =>  $merchantID])
+            ];
 
-            if (strtolower($variant) === 'on')
+            $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
+
+            if ($isExperimentEnabled === true)
             {
                 return $this->handleBulkCreationForPayoutServiceEnabledCurrentAccountMerchant($input, $merchantID);
             }
 
-            $variant = $this->app->razorx->getTreatment(
-                $merchantID,
-                RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE,
-                $this->mode,
-                Payout\Entity::RAZORX_RETRY_COUNT
-            );
+            $requestPayload = [
+                "id" =>  $merchantID,
+                "experiment_name" => RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE,
+                'request_data'  => json_encode(['id' =>  $merchantID])
+            ];
+
+            $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
+
+            $variant = $isExperimentEnabled === true ? RazorxTreatment::VARIANT_ENABLE : RazorxTreatment::VARIANT_DISABLE;
 
             $this->trace->info(
                 TraceCode::BULK_PAYOUT_CA_EXPERIMENT_VALUE,
@@ -2556,7 +2566,7 @@ class Service extends Base\Service
                     'merchant_id' => $merchantID,
                 ]);
 
-            if (strtolower($variant) === 'on')
+            if (strtolower($variant) === 'enable')
             {
                 // Merchant onboarded on both CA and VA
                 return $this->handleBulkCreationForPSEnabledMerchant($input, $merchantID);
@@ -6227,12 +6237,13 @@ class Service extends Base\Service
 
     private function shouldProcessBulkApproveAsync(string $merchantId)
     {
-        $bulkApprovalAsyncExperimentVariant = $this->app->razorx->getTreatment(
-            $merchantId,
-            RazorxTreatment::PAYOUT_BULK_APPROVE_ASYNC,
-            Constants\Mode::LIVE);
+        $requestPayload = [
+            "id" =>  $merchantId,
+            "experiment_name" => RazorxTreatment::PAYOUT_BULK_APPROVE_ASYNC,
+            'request_data'  => json_encode(['id' =>  $merchantId])
+        ];
 
-        return (strtolower($bulkApprovalAsyncExperimentVariant) === 'on');
+        return (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
     }
 
     private function generateRawQuery(string $rawQuery, $key): string

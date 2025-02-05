@@ -53,12 +53,9 @@ class Service extends Transaction\Service
         {
             // This is to ensure addQueryParamBalanceId is not used thus skipping balance join
             // The above method is dynamically called if input has the param balance id
-            if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_TIDB_MERCHANT_ACCOUNT_ID_CACHE) === true)
+            if (isset($input['balance_id']) === true)
             {
-                if (isset($input['balance_id']) === true)
-                {
-                    unset($input['balance_id']);
-                }
+                unset($input['balance_id']);
             }
 
             $startTime = millitime();
@@ -187,12 +184,9 @@ class Service extends Transaction\Service
 
             // This is to ensure addQueryParamBalanceId is not used thus skipping balance join
             // The above method is dynamically called if input has the param balance id
-            if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_TIDB_MERCHANT_ACCOUNT_ID_CACHE) === true)
+            if (isset($input['balance_id']) === true)
             {
-                if (isset($input['balance_id']) === true)
-                {
-                    unset($input['balance_id']);
-                }
+                unset($input['balance_id']);
             }
 
             $ledger = $this->repo->ledger_statement->fetch($input,

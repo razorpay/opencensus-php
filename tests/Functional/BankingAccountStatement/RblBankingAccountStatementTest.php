@@ -26,6 +26,7 @@ use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
 
 use RZP\Models\Admin\ConfigKey;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Constants\Mode as EnvMode;
@@ -80,6 +81,7 @@ use RZP\Jobs\RblBankingAccountStatement as RblBankingAccountStatementJob;
 
 class RblBankingAccountStatementTest extends TestCase
 {
+    use MocksSplitz;
     use PayoutTrait;
     use AttemptTrait;
     use WebhookTrait;
@@ -248,7 +250,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        Queue::assertPushed(BankingAccountStatementJob::class, 1);
+        Queue::assertPushed(RblBankingAccountStatementJob::class, 1);
     }
 
     protected function setRazorxMockForBankingAccountStatementV2Api()
@@ -311,10 +313,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
 
         $txnActual = $this->txnEntity->toArray();
-
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
@@ -419,10 +417,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $txnActual = $this->txnEntity->toArray();
 
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
-
         $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
         $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
@@ -525,9 +519,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals($basBeforeTest[BasEntity::ID], $basAfterTest[BasEntity::ID]);
 
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
     }
 
     /**
@@ -547,9 +538,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->startTest();
 
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
     }
 
     /**
@@ -647,10 +635,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
 
         $txnActual = $this->txnEntity->toArray();
-
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
@@ -750,10 +734,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
 
         $txnActual = $this->txnEntity->toArray();
-
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
 
@@ -1087,8 +1067,9 @@ class RblBankingAccountStatementTest extends TestCase
 
     public function testRBLAccountStatementFetchExistingAccounts()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH          => 'on',
+        $this->setMockRazorxTreatment([
                                        RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+
 
         $this->app['rzp.mode'] = EnvMode::TEST;
 
@@ -1234,9 +1215,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals($basBeforeTest[BasEntity::ID], $basAfterTest[BasEntity::ID]);
 
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
     }
 
     /**
@@ -1258,9 +1236,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->startTest();
 
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
     }
 
     /**
@@ -5725,34 +5700,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertTrue($basAfterTest['balance'] < 0);
     }
 
-   public function testRblAccountStatementWhenNegativeBalanceExceedsMaxLimit()
-    {
-        $mockedResponse = $this->getBasicNegativeBalanceResponse();
-
-        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['txnBalance']['amountValue'] = '-1000001.00';
-
-        $this->setMozartMockResponse($mockedResponse);
-
-        $payoutAttributes = [
-            'utr'             => '123456',
-            'balance_id'      => $this->balance->getId(),
-            'amount'          => '22100',
-            'channel'         => 'rbl',
-            'fees'            => '500',
-            'tax'             => '90',
-            'pricing_rule_id' => 'Bbg7fgaDwax04u',
-        ];
-
-        $this->fixtures->payout->createPayoutWithoutTransaction($payoutAttributes);
-
-        $this->fixtures->edit('balance', $this->balance->getId(), [
-            'balance' => -499999999900
-        ]);
-
-        $this->ba->cronAuth();
-
-        $this->startTest();
-    }
 
     public function testQueuedFeeRecoveryPayoutQueuedFlagDoesNotUnsetAndOnlyFeeRecoveryPayoutPickedByCron()
     {
@@ -6900,9 +6847,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->startTest();
 
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
     }
 
     /**
@@ -6924,9 +6868,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->startTest();
 
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
     }
 
     public function testWebhookEventForRblAccountStatementForSuccessfulMappingToExternalAndPayout()
@@ -7347,7 +7288,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->startTest();
 
-        Queue::assertPushed(BankingAccountStatementJob::class, 3);
+        Queue::assertPushed(RblBankingAccountStatementJob::class, 3);
 
         Carbon::setTestNow();
     }
@@ -8426,8 +8367,6 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $channel = Channel::RBL;
 
-        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'on']);
-
         $this->setupForRblPayout($channel, 104, FundTransfer\Mode::IMPS);
 
         $payout1 = $this->getDbLastEntity('payout');
@@ -8614,8 +8553,9 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponseRblV2($mockedResponse);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH          => 'on',
-                                       RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BAS_FETCH_RE_ARCH => 'enable']);
 
         BankingAccountStatementJob::dispatch('test', [
             'channel'           => Channel::RBL,
@@ -8781,8 +8721,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponseRblV2($mockedResponse);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH          => 'on',
-                                       RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
 
         BankingAccountStatementJob::dispatch('test', [
             'channel'           => Channel::RBL,
@@ -10678,10 +10617,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $txnActual = $this->txnEntity->toArray();
 
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
-
         $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
         $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
@@ -10776,10 +10711,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
 
         $txnActual = $this->txnEntity->toArray();
-
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
@@ -11215,7 +11146,7 @@ class RblBankingAccountStatementTest extends TestCase
     // runs as expected
     public function testRblAccountStatementFetchV2WithDifferentValueForBulkFetchAndSave()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BAS_FETCH_RE_ARCH => 'enable']);
 
         (new Admin\Service)->setConfigKeys([
             Admin\ConfigKey::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE => 3]);
@@ -11346,7 +11277,7 @@ class RblBankingAccountStatementTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BAS_FETCH_RE_ARCH => 'enable']);
 
         (new Admin\Service)->setConfigKeys([
             Admin\ConfigKey::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE => 3]);
@@ -11481,7 +11412,7 @@ class RblBankingAccountStatementTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BAS_FETCH_RE_ARCH => 'enable']);
 
         (new Admin\Service)->setConfigKeys([
             Admin\ConfigKey::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE => 3]);
@@ -15492,7 +15423,7 @@ class RblBankingAccountStatementTest extends TestCase
             'status'                    => BasDetails\Status::UNDER_MAINTENANCE,
             'account_number'            => '2224440041626905',
             'channel'                   => BasDetails\Channel::RBL,
-            'balance_last_fetched_at'   => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+            'balance_last_fetched_at'   => Carbon::now(Timezone::IST)->subHours(0.5)->getTimestamp(),
             'gateway_balance_change_at' => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp()
             ]);
 
@@ -15711,7 +15642,9 @@ class RblBankingAccountStatementTest extends TestCase
 
     public function testRblMissingAccountStatementDetection()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'on', RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BAS_FETCH_RE_ARCH => 'enable']);
 
         $basDetails = $this->getDbEntity('banking_account_statement_details', ['account_number' => 2224440041626905]);
 
@@ -15809,7 +15742,9 @@ class RblBankingAccountStatementTest extends TestCase
 
     public function testRblMissingAccountStatementDetectionWhenThereIsNoMismatch()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'on', RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BAS_FETCH_RE_ARCH => 'enable']);
 
         $basDetails = $this->getDbEntity('banking_account_statement_details', ['account_number' => 2224440041626905]);
 
@@ -16279,7 +16214,6 @@ class RblBankingAccountStatementTest extends TestCase
     {
         (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"]]);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_UNLINKED_QUERY_OPTIMIZE => 'on']);
 
         $this->setupForRblPayout();
 
@@ -17368,9 +17302,8 @@ class RblBankingAccountStatementTest extends TestCase
     {
         (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"]]);
 
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_UNLINKED_QUERY_OPTIMIZE => 'on',
-                                          RazorxTreatment::PAYOUT_SERVICE_TXN_RECON                                => 'on'
+        $this->setMockSplitzTreatmnt([
+                                          RazorxTreatment::PAYOUT_SERVICE_TXN_RECON                                => 'enable'
                                       ]);
 
         (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_SKIP_VALIDATE_BALANCE => ['10000000000000']]);

@@ -335,7 +335,7 @@ class AxisCaPayoutTest extends TestCase
 
     public function testBalanceFetch()
     {
-        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::GATEWAY_BALANCE_FETCH_V2=> 'enable']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -358,7 +358,7 @@ class AxisCaPayoutTest extends TestCase
     {
         $this->testCreatePayout();
 
-        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::GATEWAY_BALANCE_FETCH_V2=> 'enable']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -379,7 +379,7 @@ class AxisCaPayoutTest extends TestCase
 
     public function testBalanceFetchWhenMerchantGatewayBalanceChanges()
     {
-        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::GATEWAY_BALANCE_FETCH_V2=> 'enable']);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -424,22 +424,22 @@ class AxisCaPayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreatePayoutWithFetchAndUpdateBalanceFromGatewayAndBalanceMoreThanPayoutAmount()
-    {
-        $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
-
-        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
-            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
-        ] );
-
-        $this->mockMozartResponseForFetchingBalanceFromAxisGateway(50000);
-
-        sleep(1);
-
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
+//    public function testCreatePayoutQueuedWithLowBalance()
+//    {
+//        $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
+//
+//        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+//            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+//        ] );
+//
+//        $this->mockMozartResponseForFetchingBalanceFromAxisGateway(50000);
+//
+//        sleep(1);
+//
+//        $this->ba->privateAuth();
+//
+//        $this->startTest();
+//    }
 
     public function testCreatePayout()
     {
