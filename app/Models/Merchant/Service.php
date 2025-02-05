@@ -159,6 +159,8 @@ use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\PayoutLink\Service as PayoutLinkService;
@@ -2926,6 +2928,8 @@ class Service extends Base\Service
         }
 
         $balance = $this->repo->balance->fetch($input, $merchantId)->toArrayPublic();
+
+        $this->updateResponseForCLSAccountBalance($balance,$merchantId);
 
         $this->updateResponseForSharedBankingBalance($balance);
 
@@ -14219,6 +14223,52 @@ class Service extends Base\Service
                     break;
                 }
             }
+        }
+    }
+
+    private function updateResponseForCLSAccountBalance(&$balances,$merchantId)
+    {
+        try
+        {
+            $properties = [
+                "id" => UniqueIdEntity::generateUniqueId(),
+                "experiment_id" => $this->app['config']->get('app.reserve_balance_read_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $variant = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+
+            if (($variant === true)
+                and ($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)) {
+
+                if (!isset($balances['items']) || !is_array($balances['items'])) {
+                    return;
+                }
+
+                $ledgerService = $this->app['ledger'];
+                $ledgerOutboxCore = new LedgerOutboxCore();
+                $accountBalanceMap = $ledgerOutboxCore->getMerchantAccountBalances($ledgerService, $merchantId);
+
+                foreach ($balances['items'] as &$b) {
+                    if (isset($b[Balance\Entity::TYPE]) && $b[Balance\Entity::TYPE] === Balance\Type::RESERVE_PRIMARY) {
+                        $b[Balance\Entity::BALANCE] = $accountBalanceMap[LedgerConstants::MERCHANT_RESERVE_BALANCE] ?? 0;
+                    }
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::RESERVE_PRIMARY_BALANCE_FETCH_FAIL,
+                [
+                    'merchant_id'     => $merchantId,
+                    'error'           => $e
+                ]
+            );
+
         }
     }
 

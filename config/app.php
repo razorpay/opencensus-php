@@ -1261,6 +1261,8 @@ return array(
 
     'internal_order_payments_experiment_id' => env('INTERNAL_ORDER_PAYMENTS_EXPERIMENT_ID'),
 
+    'reserve_balance_read_experiment_id'    => env('RESERVE_BALANCE_READ_EXPERIMENT_ID'),
+
     'mandate_payouts_ikey_internal_experiment_id' => env('MANDATE_PAYOUTS_IKEY_INTERNAL_EXPERIMENT_ID'),
 
     'enable_payout_ikey_required_feature_flag_experiment_id' => env('ENABLE_PAYOUT_IKEY_REQUIRED_FEATURE_FLAG_EXPERIMENT_ID'),
@@ -1280,7 +1282,7 @@ return array(
     'mc_scof_payments_via_cps'=> env('MC_SCOF_PAYMENTS_VIA_CPS'),
 
     'block_merchant_on_rearch_cps' => env('BLOCK_MERCHANT_ON_REARCH_CPS'),
-    
+
     'send_payout_service_emails_via_stork' => env('SEND_PAYOUT_SERVICE_EMAILS_VIA_STORK'),
 
     'cross_border_pacb_tagging_experiment_id'   => env('CROSS_BORDER_PACB_TAGGING_EXPERIMENT_ID'),

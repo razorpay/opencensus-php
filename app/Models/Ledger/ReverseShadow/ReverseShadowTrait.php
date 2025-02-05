@@ -326,6 +326,10 @@ trait ReverseShadowTrait
                 case Constants::MERCHANT_REFUND_CREDITS:
                     $accountBalances[Constants::MERCHANT_REFUND_CREDITS] = $account[Constants::BALANCE];
                     break;
+
+                case Constants::MERCHANT_RESERVE_BALANCE:
+                    $accountBalances[Constants::MERCHANT_RESERVE_BALANCE] = $account[Constants::BALANCE];
+                    break;
             }
         }
         return $accountBalances;
@@ -504,6 +508,11 @@ trait ReverseShadowTrait
                 [
                     Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
                     Constants::FUND_ACCOUNT_TYPE => [Constants::MERCHANT_REFUND_CREDITS]
+                ],
+                // PG Merchant Reserve Balance Account
+                [
+                    Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
+                    Constants::FUND_ACCOUNT_TYPE => [Constants::MERCHANT_RESERVE_BALANCE]
                 ],
             ],
         ];
