@@ -368,6 +368,7 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
   const [nachForm, setNachForm] = useState<NachFormObject>(createDefaultNACHForm());
   const [brandEmiForm, setBrandEmiForm] = useState<BrandEmiFormData>(createDefaultBrandEmiForm());
   const [modelIsOpen, setModelIsOpen] = useState<boolean>(!nach && !isFormDisabled);
+  const [isLoading, setIsLoading] = useState(false);
   const standardRates = useMemo(() => {
     if (modularConfig) {
       const componentName =
@@ -506,6 +507,13 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
   };
 
   const onFileUploadChange = (files: FileItem[]) => {
+    const { updateModularConfig } = handlers;
+    setIsLoading(true);
+    const filePayload = {
+      [PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD]: processFilesForModularSave(files),
+      [PaymentMethodsFieldKeyNames.MODULAR_CALLBACK]: () => setIsLoading(false),
+    };
+    updateModularConfig(filePayload);
     handleFileUploadAnalytics(paymentMethodType);
     const newForm = JSON.parse(JSON.stringify(methodForm.form));
     newForm[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value = files;
@@ -616,6 +624,16 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
   };
 
   const onNachFileUploadChange = (files: FileItem[]) => {
+    const { updateModularConfig } = handlers;
+    setIsLoading(true);
+    const fileField = files.length
+      ? processFilesForModularSave(files)[0]
+      : { fileStoreId: '', name: '', size: 0 };
+    const filePayload = {
+      [NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD]: fileField,
+      [NachFormKeyNames.MODULAR_CALLBACK]: () => setIsLoading(false),
+    };
+    updateModularConfig(filePayload);
     handleNachFileUploadAnalytics();
     setNachForm((prev) => {
       const newNACHForm: NachFormObject = JSON.parse(JSON.stringify(prev));
@@ -647,6 +665,8 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
   };
 
   const shouldRenderComponent = () => {
+    if ((states.isModularLoading || states.isUpdateModularLoading || modelIsOpen) && !isLoading)
+      return false;
     if (states.isModularLoading || states.isUpdateModularLoading || modelIsOpen) return false;
     return true;
   };
@@ -694,6 +714,7 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
     onFormSubmitClick,
     isFormDisabled,
     handleViewBrandEMIForm,
+    isLoading,
     hasAddedBrandEMIData: !!brandEmiForm.brand_details_field.length,
 
     // props for NACH
@@ -772,7 +793,7 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
   return (
     <>
       <KYCRedirectionLoader
-        isOpen={states.isModularLoading || states.isUpdateModularLoading}
+        isOpen={(states.isModularLoading || states.isUpdateModularLoading) && !isLoading}
         message="Loading..."
       />
       <OnboardingModel

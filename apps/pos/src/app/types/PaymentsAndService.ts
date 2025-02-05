@@ -52,6 +52,7 @@ export const enum PaymentMethodsFieldKeyNames {
   EMI_PLUS_DC_RATE_FIELD = 'emi_plus_dc_rate_field',
   BRAND_EMI_RATE_ENABLED_FIELD = 'brand_emi_rate_enabled_field',
   EMI_PLUS_RATE_ENABLED_FIELD = 'emi_plus_rate_enabled_field',
+  MODULAR_CALLBACK = 'modular_callback',
 }
 
 export enum PricingStepComponents {

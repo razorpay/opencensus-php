@@ -58,6 +58,17 @@ export const isValidFee = (value: number | null | undefined): boolean => {
   return value === 0 || (value !== undefined && value !== null);
 };
 
+export const isPosTabVisible = (user: User, abExperiments: ExperimentInfoType) => {
+  if (isExperimentEnabled(abExperiments?.pos_api_merchant_enablement)) {
+    return (
+      user?.activation_status === 'activated' ||
+      user?.activation_status === 'activated_mcc_pending' ||
+      user?.activation_status === 'activated_kyc_pending'
+    );
+  }
+  return false;
+};
+
 export const isPosExperimentEnabled = ({
   user,
   abExperiments,
@@ -87,8 +98,8 @@ export const isPosExperimentEnabled = ({
   if (user.is_pgos_merchant) {
     return checks;
   } else {
-    // For non-pgos(API) merchants, we need to check the experiment & the checks
-    return isExperimentEnabled(abExperiments?.pos_api_merchant_enablement) && checks;
+    // For non-pgos(API) merchants, we need to check the experiment, activation_status & the checks
+    return isPosTabVisible(user, abExperiments) && checks;
   }
 };
 

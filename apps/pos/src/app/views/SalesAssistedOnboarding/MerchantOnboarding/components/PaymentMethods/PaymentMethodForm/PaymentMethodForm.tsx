@@ -53,7 +53,59 @@ export interface PaymentMethodFormProps {
   handleViewBrandEMIForm: () => void;
   hasAddedBrandEMIData: boolean;
   isBrandEmiEnabled?: boolean;
+  isLoading?: boolean;
 }
+
+const getKeyName = (key: string) => {
+  if (key === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD)
+    return PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD;
+  if (key === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD)
+    return PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD;
+  if (key === PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD)
+    return PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD;
+  if (key === PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD)
+    return PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD;
+  return key;
+};
+
+const getCheckedStatus = (key: string, form) => {
+  if (key === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD) {
+    return form[PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD]?.checked ?? false;
+  }
+  if (key === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD) {
+    return form[PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD]?.checked ?? false;
+  }
+  if (key === PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD) {
+    return form[PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD]?.checked ?? false;
+  }
+  if (key === PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD) {
+    return form[PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD]?.checked ?? false;
+  }
+  return false;
+};
+
+const getHeading = (isAggregatorFieldsPresent) => {
+  if (isAggregatorFieldsPresent) return 'Choose MDR Rates & Value Added Services';
+  return 'Choose Value Added Services';
+};
+
+const filteredDirectModelKeys = (
+  directModelKeys: (keyof DirectModelForm)[],
+  isBrandEmiEnabled?: boolean,
+) => {
+  if (isBrandEmiEnabled) return directModelKeys;
+  return directModelKeys.filter(
+    (key) =>
+      ![
+        PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD,
+        PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD,
+        PaymentMethodsFieldKeyNames.BRAND_EMI_CC_RATE_FIELD,
+        PaymentMethodsFieldKeyNames.BRAND_EMI_DC_RATE_FIELD,
+        PaymentMethodsFieldKeyNames.EMI_PLUS_CC_RATE_FIELD,
+        PaymentMethodsFieldKeyNames.EMI_PLUS_DC_RATE_FIELD,
+      ].includes(key),
+  );
+};
 
 const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
   methodForm,
@@ -65,6 +117,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
   handleViewBrandEMIForm,
   hasAddedBrandEMIData,
   isBrandEmiEnabled,
+  isLoading,
 }) => {
   const { form } = methodForm;
   const toast = useToast();
@@ -86,52 +139,6 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
     Object.keys(form).filter((key) =>
       AggregatorModelFormKeys.includes(key as keyof AggregatorModelForm),
     ).length > 0;
-
-  const getKeyName = (key: string) => {
-    if (key === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD)
-      return PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD;
-    if (key === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD)
-      return PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD;
-    if (key === PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD)
-      return PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD;
-    if (key === PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD)
-      return PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD;
-    return key;
-  };
-
-  const getCheckedStatus = (key: string, form) => {
-    if (key === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD) {
-      return form[PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD]?.checked ?? false;
-    }
-    if (key === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD) {
-      return form[PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD]?.checked ?? false;
-    }
-    if (key === PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD) {
-      return form[PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD]?.checked ?? false;
-    }
-    if (key === PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD) {
-      return form[PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD]?.checked ?? false;
-    }
-    return false;
-  };
-
-  const getHeading = (isAggregatorFieldsPresent) => {
-    if (isAggregatorFieldsPresent) return 'Choose MDR Rates & Value Added Services';
-    return 'Choose Value Added Services';
-  };
-
-  const filteredDirectModelKeys = (directModelKeys: (keyof DirectModelForm)[]) => {
-    if (isBrandEmiEnabled) return directModelKeys;
-    return directModelKeys.filter(
-      (key) =>
-        key !== PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD &&
-        key !== PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD &&
-        key !== PaymentMethodsFieldKeyNames.BRAND_EMI_CC_RATE_FIELD &&
-        key !== PaymentMethodsFieldKeyNames.BRAND_EMI_DC_RATE_FIELD &&
-        key !== PaymentMethodsFieldKeyNames.EMI_PLUS_CC_RATE_FIELD &&
-        key !== PaymentMethodsFieldKeyNames.EMI_PLUS_DC_RATE_FIELD,
-    );
-  };
 
   useEffect(() => {
     if (form) {
@@ -188,16 +195,15 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
             onChange={onFileUploadChange}
             maxSize={5 * 1024 * 1023}
             maxLimit={5}
-            isLoading={false}
+            isLoading={isLoading}
             defaultValue={form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value}
             onError={() =>
               toast.show({
                 content: `Some Error Occured while upload file. Please try again later`,
                 color: 'negative',
-                autoDismiss: true,
               })
             }
-            isDisabled={isFormDisabled || isMDREditEnabled || isVASEditEnabled}
+            isDisabled={isFormDisabled || isMDREditEnabled || isVASEditEnabled || isLoading}
             value={form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value}
           />
         </Box>
@@ -293,7 +299,9 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
       ) : null}
       {Object.keys(form)
         .filter((key) =>
-          filteredDirectModelKeys(DirectModelFormKeys).includes(key as keyof DirectModelForm),
+          filteredDirectModelKeys(DirectModelFormKeys, isBrandEmiEnabled).includes(
+            key as keyof DirectModelForm,
+          ),
         )
         .map((key, i) => {
           const field: PaymentMethodFormStringValue = form[key];
@@ -363,6 +371,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
         flexWrap={'wrap'}
       >
         <Button
+          isLoading={isLoading}
           onClick={onFormSubmitClick}
           icon={ArrowRightIcon}
           iconPosition="right"
@@ -384,4 +393,4 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
   );
 };
 
-export default PaymentMethodFormComponent;
+export default React.memo(PaymentMethodFormComponent);
