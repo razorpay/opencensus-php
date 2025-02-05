@@ -55,7 +55,7 @@ class Core extends Base\Core
     const BANK_TRANSFER_ID ='bank_transfer_id';
 
     const MAX_INTL_BANK_TRANSFER_AMOUNT_BY_CURRENCIES = [
-        Currency\Currency::USD => 29000,
+        Currency\Currency::USD => 25000,
         Currency\Currency::AUD => 43000,
         Currency\Currency::CAD => 40000,
         Currency\Currency::HRK => 200000,
