@@ -46,9 +46,9 @@ class PayoutServiceDualWriteDirectPush extends Job
      */
     protected $params;
 
-    public function __construct(array $params)
+    public function __construct(array $payload)
     {
-        $this->params = $params;
+        $this->params = $payload;
 
         parent::__construct(Mode::LIVE);
     }
