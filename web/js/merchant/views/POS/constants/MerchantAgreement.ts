@@ -233,14 +233,22 @@ th {
                 <td>{{feeNbfc}}</td>
             </tr>
             <tr>
-                <td>Brand EMI/IBD/Additional Cashback 
-(does not include IBD financing cost)
+                <td>Brand EMI Credit Card
 </td>
-                <td>{{brand_emi_rate_field}}</td>
+                <td>{{brand_emi_cc_rate_field}}</td>
             </tr>
             <tr>
-            <td>EMI Plus</td>
-            <td>{{emi_plus_rate_field}}</td>
+                <td>Brand EMI Debit Card
+</td>
+                <td>{{brand_emi_dc_rate_field}}</td>
+            </tr>
+            <tr>
+            <td>EMI Plus Credit Card</td>
+            <td>{{emi_plus_cc_rate_field}}</td>
+        </tr>
+            <tr>
+            <td>EMI Plus Debit Card</td>
+            <td>{{emi_plus_dc_rate_field}}</td>
         </tr>
         </tbody>
     </table>
