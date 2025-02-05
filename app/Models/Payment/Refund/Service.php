@@ -38,6 +38,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
+use RZP\Models\BankAccount;
 use RZP\Models\BankTransfer;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Card\IIN\IIN;
@@ -996,6 +997,39 @@ class Service extends Base\Service
                                 {
                                     $entity = $entity->makeVisible([TerminalEntity::GATEWAY_SECURE_SECRET, TerminalEntity::GATEWAY_SECURE_SECRET2, TerminalEntity::GATEWAY_TERMINAL_PASSWORD]);
                                     $data = $entity->toArray();
+                                }
+                            }
+                            else if ($key === Constants\Entity::BANK_TRANSFER){
+                                try{
+
+                                    $bankTransfer = $payment->bankTransfer;
+                                    if (empty($bankTransfer) === false)
+                                    {
+                                        $data[BankTransfer\Entity::MODE] = $bankTransfer->getMode();
+                                        $data[BankTransfer\Entity::PAYER_ACCOUNT] = $bankTransfer->getPayerAccount();
+                                        $data[BankTransfer\Entity::PAYER_IFSC] = $bankTransfer->getPayerIfsc();
+                                        $data[BankTransfer\Entity::PAYER_NAME] = $bankTransfer->getPayerName();
+                                        $data[BankTransfer\Entity::PAYEE_IFSC] = $bankTransfer->getPayeeIfsc();
+                                        $data[BankTransfer\Entity::PAYEE_ACCOUNT] = $bankTransfer->getPayeeAccount();
+                                    }
+                                }
+                                catch (\Throwable $ex)
+                                {
+                                    $error = RefundConstants::FETCH_ENTITIES_ERROR;
+                                }
+                            }else if ($key === Constants\Entity::BANK_ACCOUNT) {
+                                try{
+
+                                    $merchantBankAccount = $payment->merchant->bankAccount;
+
+                                    if (empty($merchantBankAccount) === false) {
+                                        $data[BankAccount\Entity::ACCOUNT_NUMBER] = $merchantBankAccount->getAccountNumber();
+                                        $data[BankAccount\Entity::IFSC] = $merchantBankAccount->getIfscCode();
+                                    }
+                                }
+                                catch (\Throwable $ex)
+                                {
+                                    $error = RefundConstants::FETCH_ENTITIES_ERROR;
                                 }
                             }
                             else if ($key === Constants\Entity::TOKEN)

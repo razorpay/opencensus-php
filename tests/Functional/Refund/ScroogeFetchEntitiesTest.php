@@ -11,6 +11,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\BankTransfer\Entity as BankTransferEntity;
 use RZP\Models\Payment\UpiMetadata\Entity as UpiMetadataEntity;
 use RZP\Models\Payment\PaymentMeta\Entity as PaymentMetaEntity;
@@ -836,6 +837,119 @@ class ScroogeFetchEntitiesTest extends TestCase
             ],
         ];
 
+        return [$input, $expectedOutput];
+    }
+
+    public function scroogeFetchEntitiesV2SubTest16($subTestArgs): array
+    {
+        $merchantEntity = $this->fixtures->create('merchant', [
+            'id' => '10000000000001',
+            'name' => 'Test Merchant',
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      => '10000000000001',
+            'business_name'    => 'Test Merchant',
+            'contact_name'     => 'Test Merchant',
+            'contact_email'    => 'testmerchant@gmail.com',
+            'contact_mobile'   => '8114455061',
+            'business_website' => 'testmerchant.com'
+        ]);
+
+        $bankAccount = new BankAccountEntity();
+
+        $bankAccount->build([
+            BankAccountEntity::ACCOUNT_NUMBER => '12345678990',
+            BankAccountEntity::IFSC_CODE => 'SBIN0000001',
+            BankAccountEntity::TYPE => 'merchant',
+            BankAccountEntity::BENEFICIARY_NAME => 'Test Merchant',
+            'entity_id' => '10000000000001',
+        ]);
+
+        $bankAccount->merchant()->associate($merchantEntity);
+
+        $bankAccount->save();
+
+        $payment1 = $this->fixtures->create('payment', [
+            'id' => 'JCTRhsU4aiY0t1',
+            'currency' => 'INR',
+            'method'      => 'bank_transfer',
+            'base_amount' => 100000,
+            'amount' => 1000,
+            'email'       => 'customer1@gmail.com',
+            'contact'     => '8114455012',
+            'created_at'  => 1618191015,
+            'merchant_id' => '10000000000001',
+            'status' => 'captured',
+        ]);
+
+        $this->fixtures->create('transaction', [
+            'id' => 'TCTRhsU4aiY0t1',
+            'entity_id' => $payment1->getId(),
+            'merchant_id' => '10000000000001',
+            'type' => 'payment',
+            'settled' => 1,
+        ]);
+
+        $bankTransfer = new BankTransferEntity();
+
+        $bankTransfer->payment()->associate($payment1);
+
+        $bankTransfer->merchant()->associate($merchantEntity);
+
+        $time=Carbon::now()->getTimestamp();
+
+
+        $bankTransfer->build([
+            BankTransferEntity::PAYEE_ACCOUNT => '2224440041626905',
+            BankTransferEntity::PAYEE_IFSC => 'HDFC0000001',
+            'transaction_id' => 'TCTRhsU4aiY0t1',
+            BankTransferEntity::AMOUNT => '100',
+            BankTransferEntity::MODE => 'IMPS',
+            BankTransferEntity::TIME => $time,
+            BankTransferEntity::PAYER_IFSC => 'HDFC0000001',
+            BankTransferEntity::PAYER_ACCOUNT => '2224440041626906'
+        ]);
+
+        $bankTransfer->forceFill([
+            BankTransferEntity::GATEWAY => 'hdfc',
+            BankTransferEntity::UTR => '124802075266',
+        ]);
+
+        $bankTransfer->save();
+
+        $input = [
+            'payment_ids' => [
+                'JCTRhsU4aiY0t1'
+            ],
+            'entities' => [
+                'bank_transfer',
+                'bank_account'
+            ],
+        ];
+
+        $expectedOutput = [
+            'JCTRhsU4aiY0t1' => [
+                'entities' => [
+                    'bank_transfer' => [
+                        'data' => [
+                            'mode' => 'IMPS',
+                            'payer_account' => '2224440041626906',
+                            'payer_ifsc' => 'HDFC0000001',
+                            'payee_ifsc' => 'HDFC0000001',
+                            'payee_account' => '2224440041626905',
+                        ],
+                    'bank_account' => [
+                        'data' => [
+                            'account_number' => '12345678990',
+                            'ifsc' => 'SBIN0000001',
+                        ],
+                    ],
+                        'error' => NULL,
+                    ],
+                ],
+            ],
+        ];
         return [$input, $expectedOutput];
     }
 
