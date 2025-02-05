@@ -4,6 +4,8 @@ export const ROUTES = {
   POS_SALES: '/app/pos-sales',
 };
 
+export const MERCHANT_API_LIVE_ENDPOINT = '/merchant/api/live';
+
 export const ERROR_MESSAGES = {
   INVALID_NAME: 'Please enter a valid name',
   INVALID_NUMBER: 'Please enter a valid number',
