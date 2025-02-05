@@ -46,6 +46,8 @@ class TerminalsService
 
     protected $request;
 
+    protected $repo;
+
     const X_RAZORPAY_TASKID         = 'X-Razorpay-TaskId';
     const X_RZP_TESTCASE_ID         = 'X-RZP-TESTCASE-ID';
     const X_DASHBOARD_MERCHANT_ID   = 'X-Dashboard-Merchant-Id';
@@ -107,6 +109,8 @@ class TerminalsService
     const DELETE_TERMINAL_V3            = 'delete_terminal_v3';
 
     const VALIDATE_DELETE_TERMINAL_V3   = 'validate_delete_terminal_v3';
+
+    const REASSIGN_MERCHANT_V3          = 'reassign_merchant_v3';
     const CREATE_TERMINAL_V3          = 'create_terminal_v3';
     const VALIDATE_CREATE_TERMINAL_V3 = 'validate_create_terminal_v3';
 
@@ -228,6 +232,10 @@ class TerminalsService
             self::PATH   => 'v3/terminals/%s',
             self::METHOD => Requests::DELETE
         ],
+        self::REASSIGN_MERCHANT_V3 => [
+            self::PATH   => 'v3/terminals/reassign_merchant/%s',
+            self::METHOD => Requests::PATCH
+        ],
     ];
 
     protected array $terminal_admin_dashboard_routes = [
@@ -270,6 +278,8 @@ class TerminalsService
         $this->auth = $this->app['basicauth'];
 
         $this->adminOrgId = $this->app['basicauth']->getAdminOrgId();
+
+        $this->repo = $this->app['repo'];
     }
 
     public function migrateTerminal(Terminal\Entity $terminal, array $additionalOptions = array()): array
@@ -1466,5 +1476,22 @@ class TerminalsService
         $this->throwSyncMethodInstrumentsWarning($parsedResponse);
 
         return $parsedResponse;
+    }
+    public function reassignMerchantV3($terminalId, $input): array
+    {
+        Entity::verifyIdAndSilentlyStripSign($terminalId);
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+        $mid = $input[Entity::MERCHANT_ID];
+
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle([Entity::MERCHANT_ID => $terminal->getMerchantId()],[Entity::MERCHANT_ID => $mid]);
+
+        $params = self::PARAMS[self::REASSIGN_MERCHANT_V3];
+
+        $path = sprintf($params[self::PATH],$terminalId);
+
+        return $this->proxyTerminalService($input, $params[self::METHOD], $path);
     }
 }

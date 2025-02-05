@@ -363,6 +363,11 @@ class Service extends Base\Service
         return $this->app['terminals_service']->godModeEditTerminalV3($terminalId, $input);
     }
 
+    public function reassignMerchantV3($terminalId, $input)
+    {
+        return $this->app['terminals_service']->reassignMerchantV3($terminalId, $input);
+    }
+
     public function getEditableFields()
     {
         $response = [];

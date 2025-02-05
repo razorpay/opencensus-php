@@ -163,7 +163,7 @@ class TerminalController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->reassignMerchantForTerminal($id, $input);
+        $data = $this->service()->reassignMerchantV3($id, $input);
 
         return ApiResponse::json($data);
     }
