@@ -10,6 +10,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Token;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Card\TokenisedIIN;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {

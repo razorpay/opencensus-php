@@ -58,7 +58,7 @@ class Service extends Base\Service
             $this->updateBinServiceData($iin, $input);
         }
 
-        if ($bulkUpdateFeatures && $this->shouldAllowBulkFeatureUpdateAtBinService($iin)) {
+        if ($bulkUpdateFeatures && $this->shouldAllowBulkFeatureUpdateAtBinService($id)) {
             $this->bulkUpdateFeaturesForBin($iin, $input);
         }
 
