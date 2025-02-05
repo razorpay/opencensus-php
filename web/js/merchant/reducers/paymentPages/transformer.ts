@@ -47,7 +47,7 @@ export const transformStorefront = (
 ): PaymentPagesStorefrontType['entity'] => {
   return {
     title: response.title,
-    banner_images: transformBannerImage(response.banner_images),
+    banner_images: transformBannerImage(response.banner_images ?? []),
     slug: response.slug || '',
     contactPhone: response.support_contact,
     contactEmail: response.support_email,
