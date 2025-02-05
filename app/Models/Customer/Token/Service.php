@@ -8,9 +8,7 @@ use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
 use RZP\Constants\Timezone;
 use RZP\Diag\EventCode;
-use Aws\Ec2\Exception\Ec2Exception;
-use phpseclib\Crypt\AES;
-use RZP\Encryption\AESEncryption;
+use RZP\Gateway\Visa\Crypto;
 use RZP\Http\RequestHeader;
 use RZP\Jobs\MerchantAsyncTokenisationJob;
 use RZP\Jobs\PushTokenConsentDataPersist;
@@ -27,9 +25,7 @@ use RZP\Models\Customer\Token\Constants as TokenConstants;
 use RZP\Models\Customer\Token\Core as TokenCore;
 use RZP\Models\Merchant;
 use RZP\Models\Feature;
-use RZP\Encryption;
 use RZP\Models\Base\UniqueIdEntity;
-use RZP\Jobs\PushProvisioningTokenCreateJob;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Models\Customer\GatewayToken;
@@ -637,7 +633,7 @@ class Service extends Base\Service
             $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
             //Step 1-: Validate the request
 
-            (new Validator)->validateInput(Validator::HDFC_PUSH_PROV, $input);
+            //(new Validator)->validateInput(Validator::HDFC_PUSH_PROV, $input);
 
                $this->trace->info(TraceCode::HDFC_TOKEN_PUSH_INFO,
                 [
@@ -646,7 +642,7 @@ class Service extends Base\Service
                 ]);
 
             //Step 2-: Fetch the merchant details from
-            list($rzpMerchantId, $asyncTokenizationJobId) =(new Card\Core)->GetRzpMerchantIdAndAsyncTokenisationJobId($input);
+            list($merchantPushProvisioning, $asyncTokenizationJobId) =(new Card\Core)->GetRzpMerchantIdAndAsyncTokenisationJobId($input);
 
             $callbackData = [
                 'pushProvisioningReceipt'      => $input['pushProvisioningReceipt'],
@@ -658,7 +654,7 @@ class Service extends Base\Service
                 'iv'                           => $input['iv'],
                 'dualTokenMapperId'            => $input['dualTokenMapperId'],
                 'merchantKey'                  => $input['merchantKey'],
-                'rzpMerchantId'                => $rzpMerchantId,
+                'rzpMerchantId'                => $merchantPushProvisioning,
                 'dualToken'                    =>  $input['dualToken'],
             ];
 
@@ -673,13 +669,10 @@ class Service extends Base\Service
 
                 if (($mode === Mode::LIVE) || app()->isEnvironmentQA() === true)
                 {
-                    $customerIssuer = $this->repo->customer->findByPublicIdAndMerchant($input['customer_id'], $this->merchant);
-
-                    $merchantPushProvisioning = $this->repo->merchant->fetchMerchantFromId($rzpMerchantId);
-
-                    $customer =  $this->getCustomerByMerchantType($customerIssuer);
 
                     $this->merchant = $merchantPushProvisioning;
+
+                    $customer =  $this->getCustomerByMerchantPP($input);
 
                     $tokenCreateInput = [Token\Entity::METHOD => Payment\Method::CARD,];
 
@@ -738,7 +731,6 @@ class Service extends Base\Service
         }
         return $response;
     }
-
 
     public function checkIsCustomCheckoutEnabledForMerchant($merchantId, $mode): bool
     {
@@ -800,6 +792,51 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::TOKEN_PUSH_CUSTOMER_INFO, [
             'variant' => $standardCheckoutEnabledPP,
+            'merchantForCustomerCreation' => $merchantForCustomerCreation['id'],
+            'customer' => $customer['id']]);
+        return $customer;
+    }
+
+    public function getCustomerByMerchantPP($input) {
+
+        if(isset($input['requester']) && $input['requester'] === 'wibmo') {
+            $customerContact = $input['mobile'];
+        } else {
+            $customerContact = $input['clientInformation']['phoneNumber'];
+        }
+
+        $merchantForCustomerCreation = $this->merchant;
+
+        $standardCheckoutEnabledPP = $this->isStandardCheckoutEnabledForPPMerchant($merchantForCustomerCreation->getId());
+
+        if($standardCheckoutEnabledPP)
+            $merchantForCustomerCreation = $this->repo->merchant->fetchMerchantFromId(Merchant\Account::SHARED_ACCOUNT);
+
+        if(strlen($customerContact) > 10 && $this->checkIsCustomCheckoutEnabledForMerchant(
+                $merchantForCustomerCreation->getId(),
+                'enable'
+            )){
+            $customerContact = substr($customerContact, -10);
+
+            $existingCustomer =  $this->repo->customer->findByContactAndMerchant($customerContact, $merchantForCustomerCreation);
+            if($existingCustomer !== null) {
+                return $existingCustomer;
+            }
+        }
+
+        if(isset($input['requester']) && $input['requester'] === 'wibmo') {
+            $customer = (new Customer\Core)->createLocalCustomer([
+                Customer\Entity::CONTACT => $customerContact,
+            ], $merchantForCustomerCreation, false);
+        } else {
+            $customer = (new Customer\Core)->createLocalCustomer([
+                Customer\Entity::CONTACT => $customerContact,
+                Customer\Entity::EMAIL => $input['clientInformation']['contactEmail'],
+            ], $merchantForCustomerCreation, false);
+        }
+
+        $this->trace->info(
+            TraceCode::TOKEN_PUSH_CUSTOMER_INFO, [
             'merchantForCustomerCreation' => $merchantForCustomerCreation['id'],
             'customer' => $customer['id']]);
         return $customer;
@@ -2680,6 +2717,142 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function vcppTokensPush(& $input, $internalServiceRequest = false)
+    {
+        $startTime = microtime(true);
+
+        try
+        {
+            if (isset($this->app['rzp.mode']))
+            {
+                $this->mode = $this->app['rzp.mode'];
+            }
+
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+            $this->trace->info(TraceCode::MISC_TRACE_CODE,[
+                'message'=>'Decrypted Input Recieved from Vault Service',
+                'input'=>$input
+            ]);
+
+            (new Validator)->validateInput(Validator::VCPP_TOKEN_PUSH, $input);
+
+            $this->trace->info(
+                TraceCode::TOKEN_PUSH_INFO, [
+                    'merchantCount' => count($input['merchants']),
+                    'account_ids' => $input[Token\Entity::ACCOUNT_IDS]]);
+
+            if (($mode === Mode::LIVE) || app()->isEnvironmentQA() === true)
+            {
+                foreach ($input['merchants'] as $merchant)
+                {
+                    $gateway_terminal_id =  $merchant['merchantId'];
+                    $terminal_response = $this->app['terminals_service']->fetchMerchantByGatewayTerminalId(
+                        $gateway_terminal_id,
+                        [
+                            Terminal\Entity::GATEWAY=>"tokenisation_visa",
+                            Terminal\Entity::TYPE=>"tokenisation",
+                            Terminal\Entity::STATUS=>"activated",
+                            Terminal\Entity::ENABLED=>true
+                        ]
+                    );
+
+                    $this->trace->info(TraceCode::TOKEN_PUSH_INFO,[
+                        'message'=>'Response recieved from Terminal Service',
+                        'response'=>$terminal_response
+                    ]);
+
+                    $currentMerchantID = $terminal_response[0]['merchant_id'];
+                    $merchantPushProvisioning = $this->repo->merchant->fetchMerchantFromId($currentMerchantID);
+
+                    $this->trace->info(TraceCode::MISC_TRACE_CODE,[
+                        'message'=>'Merchant Info',
+                        'merchant'=>$merchantPushProvisioning,
+                    ]);
+
+                    $this->merchant = $merchantPushProvisioning;
+
+                    // find existing customer or create a new one if not available
+                    $customer =  $this->getCustomerByMerchantPP($input);
+
+                    // setting entity type and entity id for vcpp type push tokens
+                    $tokenCreateInput = [
+                        Token\Entity::METHOD            => Payment\Method::CARD
+                    ];
+
+                    $token = (new Token\Core)->createTokenForVCPP(
+                        $tokenCreateInput,
+                        $customer
+                    );
+
+                    $this->trace->info(TraceCode::MISC_TRACE_CODE,[
+                        'message'=>'Token ID Created',
+                        'token'=>$token['id']
+                    ]);
+
+                    $callbackData = [
+                        'vPanEnrollmentID' => $merchant['vPanEnrollmentId'],
+                        'referenceID'=> $merchant['referenceId'],
+                        'merchantID'=> $merchant['merchantId'],
+                        'merchant_gateway_id'=>$gateway_terminal_id,
+                        'merchantPushProvisioning'=>$merchantPushProvisioning
+                    ];
+
+                    //Required to override incase of global/standard checkout cases merchant needs to be explicitly set to local merchant.
+                    $token->merchant()->associate($this->merchant);
+
+                    $token->setAcknowledgedAt(Carbon::now(Timezone::IST)->getTimestamp());
+
+                    $token->setSource(TokenConstants::ISSUER);
+
+                    //UsedCount and UsedAt set for token fetch in checkout.
+                    $token->setUsedCount(1);
+                    $token->setUsedAt(Carbon::now()->getTimestamp());
+
+                    $this->repo->saveOrFail($token);
+
+                    $asyncTokenisationJobId = "visa_vcpp_token_provision";
+
+                    (new Token\Core())->updateTokenStatus($token['id'], Token\Constants::INITIATED);
+
+                    SavedCardTokenisationJob::dispatch($this->mode, $token['id'], $asyncTokenisationJobId, null, $callbackData);
+
+                }
+
+
+                (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::TOKEN_PUSH);
+                (new Metric())->pushTokenProvisioningSRMetrics(BaseMetric::SUCCESS, Token\Action::TOKEN_PUSH_SR);
+
+            }
+
+            $response = [
+                "code"=>200,
+                "reason_code"=>"accepted",
+                "description"=>"Request is received and request data structure is validated, a requestId is provided for status inquiry asynchronously."
+            ];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::TOKEN_PUSH_EXCEPTION);
+
+            (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::TOKEN_PUSH);
+            (new Metric())->pushTokenProvisioningSRMetrics(BaseMetric::FAILED, Token\Action::TOKEN_PUSH_SR);
+
+            $response = [
+                "code"=>400,
+                "reason_code"=>"invalidData",
+                "description"=>"The data structure is not valid, the request is rejected and has not been processed"
+            ];
+        }
+        finally {
+            return $response;
+        }
+    }
+
     public function rupaytokensPush(& $input, $internalServiceRequest = false)
     {
         $startTime = microtime(true);

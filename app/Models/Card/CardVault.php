@@ -576,12 +576,16 @@ class CardVault extends Base\Core
 
     public function migrateToTokenizedCard($card, $merchant, $iinInfo, $cardInput)
     {
-        if ($card!==null) {
+        if(empty($cardInput['vcpp'])===false){
+            $input['vcpp'] = $cardInput['vcpp'];
+        }
+
+        if($card!==null){
             $input['card'] = [
-                'vault_token' => $card->getVaultToken(),
-                'expiry_month' => strval($card->getExpiryMonth()),
-                'expiry_year' => strval($card->getExpiryYear()),
-                'cvv' => strval($cardInput['cvv']),
+                'vault_token'                     => $card->getVaultToken(),
+                'expiry_month'                    => strval($card->getExpiryMonth()),
+                'expiry_year'                     => strval($card->getExpiryYear()),
+                'cvv'                             => strval($cardInput['cvv']),
             ];
         }
 
@@ -764,6 +768,12 @@ class CardVault extends Base\Core
             'features'      => $merchant->getEnabledFeatures(),
             'business_name' => empty($merchant->merchantDetail) === false ? $merchant->merchantDetail->getBusinessName() : "Razorpay"
         ];
+
+        if($merchant->getVPanEnrollmentID()!==null){
+            $input['merchant']+= [
+                'vPanEnrollmentID' => $merchant->getVPanEnrollmentID(),
+            ];
+        }
 
         return $input;
     }

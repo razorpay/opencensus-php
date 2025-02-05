@@ -13,6 +13,8 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Modules\Base;
+use RZP\Services\Mozart;
+use RZP\Services\Mozart as MozartBase;
 use RZP\Models\Event;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -116,8 +118,7 @@ class SavedCardTokenisationJob extends Job
 
             $card = $token->card;
 
-
-            if($card!==null && !$this->callbackData['dualToken']){
+            if($card!==null) {
                 $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_INITIATED, $card);
 
                 if($this->tokenCore->checkIfTokenisationApplicable($token) === false)
@@ -138,7 +139,7 @@ class SavedCardTokenisationJob extends Job
 
             $cardInput = [];
 
-            if($card!==null || $this->callbackData['dualToken']){
+            if($card!==null){
                 $cardInput = $this->tokenCore->buildCardInputForTokenisation($card);
             }
 
@@ -158,21 +159,23 @@ class SavedCardTokenisationJob extends Job
                 $payment = $this->repoManager->payment->findOrFail($this->paymentId);
             }
 
-            if($this->asyncTokenisationJobId === 'pushtokenmigrate' ||
-                        $this->asyncTokenisationJobId ==='hdfcPushProvIssuerTokenMigrate'
-                             || $this->asyncTokenisationJobId ==='hdfcPushProvNetworkTokenMigrate'){
+            if(
+                $this->asyncTokenisationJobId === 'pushtokenmigrate' ||
+                $this->asyncTokenisationJobId ==='hdfcPushProvIssuerTokenMigrate' ||
+                $this->asyncTokenisationJobId ==='hdfcPushProvNetworkTokenMigrate' ||
+                $this->asyncTokenisationJobId === "visa_vcpp_token_provision"
+            ) {
                 $cardInput['via_push_provisioning'] = true;
             }
 
-            [$tokenPanVaultToken, $tokenNumber , $cryptogramValue, $serviceProviderTokens,$card] = $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true, $this->asyncTokenisationJobId,$this->callbackData);
+            [$tokenPanVaultToken, $tokenNumber , $cryptogramValue, $serviceProviderTokens, $card] = $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true, $this->asyncTokenisationJobId, $this->callbackData);
 
             $tokenIIN = null;
             if(isset($tokenNumber)) {
                 $tokenIIN = substr($tokenNumber,0,9);
             }
 
-
-//            // Notify to mandateHQ for successful tokenisation
+            // Notify to mandateHQ for successful tokenisation
             if($token->isRecurring() === true and $token->getCardMandateId() !== null)
             {
                 try

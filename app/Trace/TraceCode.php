@@ -1201,6 +1201,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CUSTOMER_TOKEN_CREATE                                 = 'CUSTOMER_TOKEN_CREATE';
     const DEFAULTING_TOKEN_EXPIRY_IF_NULL                       = 'DEFAULTING_TOKEN_EXPIRY_IF_NULL';
     const SUBSCRIPTION_TOKEN_CREATE                             = 'SUBSCRIPTION_TOKEN_CREATE';
+
+    const VCPP_TOKEN_CREATE                             = 'VCPP_TOKEN_CREATE';
     const CUSTOMER_TOKEN_PAUSE                                  = 'CUSTOMER_TOKEN_PAUSE';
     const CUSTOMER_TOKEN_RESUME                                 = 'CUSTOMER_TOKEN_RESUME';
     const CUSTOMER_TOKEN_CANCEL                                 = 'CUSTOMER_TOKEN_CANCEL';
@@ -10588,6 +10590,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_PUSH_CUSTOMER_INFO                            = 'TOKEN_PUSH_CUSTOMER_INFO';
     const TOKEN_PUSH_EXCEPTION                                = 'TOKEN_PUSH_EXCEPTION';
     const MANUAL_MERCHANT_WEBHOOK_TRIGGER                     = 'MANUAL_MERCHANT_WEBHOOK_TRIGGER';
+
+    const VCPP_TOKEN_PUSH_CUSTOMER_INFO                       = 'VCPP_TOKEN_PUSH_CUSTOMER_INFO';
     const NIUM_GIFU_FILE_MII_NOT_FOUND                        = 'NIUM_GIFU_FILE_MII_NOT_FOUND';
     const TOKEN_PUSH_FETCH_INFO                               = 'TOKEN_PUSH_FETCH_INFO';
     const PUSH_TOKEN_FETCH_EXCEPTION                          = 'PUSH_TOKEN_FETCH_EXCEPTION';

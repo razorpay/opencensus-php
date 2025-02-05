@@ -362,6 +362,8 @@ class Entity extends Base\PublicEntity
     protected $entity = 'merchant';
     const COUNTRY_CODE = 'country_code';
 
+    const VPAN_ENROLLMENTID = 'vpanEnrollmentID';
+
     /**
      * Merchant features, saved to this variable once fetched to avoid
      * repeated DB calls.
@@ -2325,6 +2327,11 @@ class Entity extends Base\PublicEntity
     public function getCategory()
     {
         return $this->getAttribute(self::CATEGORY);
+    }
+
+    public function getVPanEnrollmentID()
+    {
+        return $this->getAttribute(self::VPAN_ENROLLMENTID);
     }
 
     public function setCategory($category)

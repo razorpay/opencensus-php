@@ -1061,6 +1061,13 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENTITY_TYPE] = E::SUBSCRIPTION;
     }
 
+    // Removing the entity_id since the current limit is of 14 characters long and vPan can be 36 char long.
+    // This is will break the DB save flow.
+    public function setVCPPType()
+    {
+        $this->attributes[self::ENTITY_TYPE] = E::VCPP;
+    }
+
     public function setGatewayToken2(string $gatewayToken2)
     {
         $this->attributes[self::GATEWAY_TOKEN2] = $gatewayToken2;

@@ -605,6 +605,26 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA][0] ?? [];
     }
 
+    public function fetchMerchantByGatewayTerminalId(string $gateway_terminal_id, $additionalParams=null){
+        $params = self::PARAMS[self::FETCH_TOKENISATION_TERMINALS];
+
+        $content = [
+            Terminal\Entity::IDENTIFIERS => [
+                Terminal\Entity::GATEWAY_TERMINAL_ID => $gateway_terminal_id,
+            ]
+        ];
+
+        if($additionalParams!==null){
+            $content = array_merge($content,$additionalParams);
+        }
+
+        $data = json_encode($content,JSON_PRETTY_PRINT);
+
+        $response = $this->sendRequest($params[self::PATH], $data, $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
     public function initiateOnboarding(string $merchantId, string $gateway, $identifiers = null, $features = null, array $currency = [], array $otherInputs = []): array
     {
         $params = self::PARAMS[self::INITIATE_ONBOARDING];

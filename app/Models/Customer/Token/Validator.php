@@ -39,6 +39,8 @@ class Validator extends Base\Validator
     const  HDFC_PUSH_PROV                               = 'hdfc_Push_Prov';
     const RUPAY_PUSH_PROV                               = 'rupay_push_prov';
 
+    const VCPP_TOKEN_PUSH                                    = 'vcpp_token_push';
+
     /**
      * token epoch constrains :
      * min : Sat Jan  1 05:30:00 IST 2000
@@ -63,6 +65,16 @@ class Validator extends Base\Validator
         Entity::TOKEN_REFERENCE_ID      => 'required|string',
         Entity::CONVERSATION_ID         => 'required|string',
         Entity::TOKEN_EXPIRY            => 'required|string'
+    ];
+
+    protected static $vcppTokenPushRules = [
+        'clientInformation'             => 'required',
+        'clientInformation.phoneNumber' => 'required|numeric|digits:10',
+        'merchants'                     => 'required|array',
+        'merchants.*.vPanEnrollmentId'  => 'required|string',
+        'merchants.*.merchantId'        => 'required|string',
+        'merchants.*.isAfaPerformed'    => 'sometimes|boolean',
+        'merchants.*.referenceId'       => 'required|string',
     ];
 
     protected static $fetchParValueRules = [

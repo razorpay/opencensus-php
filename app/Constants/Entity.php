@@ -113,6 +113,8 @@ class Entity
     const ENTITY_OFFER               = 'entity_offer';
     const FUND_ACCOUNT               = 'fund_account';
     const SUBSCRIPTION               = 'subscription';
+
+    const VCPP                       = 'vcpp';
     const UPI_TRANSFER               = 'upi_transfer';
     const UPI_METADATA               = 'upi_metadata';
     const PAPER_MANDATE              = 'paper_mandate';

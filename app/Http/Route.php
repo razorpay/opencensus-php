@@ -4804,6 +4804,9 @@ class Route
         'tokens_list'                             => ['post',          'tokens/list',                                          'TokenController@tokensList'                                  ],
         'tokens_push_fetch'                       => ['get',           'tokens/push/{id}',                                     'TokenController@tokensPushFetch'                             ],
 
+        //VCPP Token Push Provisioning
+        'vcpp_tokens_push'                        => ['post',          'notifysp/enroll',                                       'TokenController@vcppTokensPush'                            ],
+
         // Async tokenisation
         'tokenisation_local_cards'                => ['post',        'tokenisation/local_cards',                                 'TokenController@localSavedCardAsyncTokenisation'          ],
         'tokenisation_local_cards_recurring'      => ['post',        'tokenisation/local_cards/recurring',                       'TokenController@localSavedCardAsyncTokenisationRecurring' ],
@@ -12268,6 +12271,7 @@ class Route
         'payment_button_create_order',
         'payment_links_demo',
         'payment_links_demo_cors',
+        'vcpp_tokens_push',
 
         //virtual cards - capital
         'capital_virtual_cards_validate_token',
