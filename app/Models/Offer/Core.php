@@ -819,13 +819,13 @@ class Core extends Base\Core
                     $apiOffer = $this->repo->offer->lockForUpdate($offer->getId());
 
                     app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_INCREMENT, [
-                        "offer_id"             => $offer->getId(),
-                        "external_offer"       => true,
-                        "oe_incremented_usage" => $offer->getCurrentOfferUsage(),
-                        "api_current_usage"    => $apiOffer->getCurrentOfferUsage(),
-                        "api_new_usage"        => $apiOffer->getCurrentOfferUsage() + 1,
-                        "route_name"           => $this->app['api.route']->getCurrentRouteName() ?? null,
-                        "payment_id"           => optional($payment)->getId(),
+                        "offer_id"          => $offer->getId(),
+                        "external_offer"    => true,
+                        "oe_current_usage"  => $offer->getCurrentOfferUsage(),
+                        "api_current_usage" => $apiOffer->getCurrentOfferUsage(),
+                        "api_new_usage"     => $apiOffer->getCurrentOfferUsage() + 1,
+                        "route_name"        => $this->app['api.route']->getCurrentRouteName() ?? null,
+                        "payment_id"        => optional($payment)->getId(),
                     ]);
 
                     $apiOffer->setCurrentUsageCount($apiOffer->getCurrentOfferUsage() + 1);
@@ -1330,10 +1330,11 @@ class Core extends Base\Core
                 }
 
                 app('trace')->info(TraceCode::OFFER_WITH_GLOBAL_LIMITS_SPLITZ_RESULT, [
-                    "experiment_response" => $experimentResponses,
-                    "attempt"             => $attempt,
-                    'max_retries'         => $maxRetries,
-                    'route'               => $this->app['api.route']->getCurrentRouteName(),
+                    "experiment_response"    => $experimentResponses,
+                    "attempt"                => $attempt,
+                    'max_retries'            => $maxRetries,
+                    'route'                  => $this->app['api.route']->getCurrentRouteName(),
+                    'merchant_id_result_map' => $merchantIdResultMap,
                 ]);
 
                 return $merchantIdResultMap;

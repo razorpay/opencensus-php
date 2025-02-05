@@ -172,9 +172,9 @@ class Validator extends Base\Validator
     protected static $fetchOfferCreateInfoRules = [
         'merchant_id'               => 'required|unsigned_id',
         'offer'                     => 'required|array',
-        'offer.emi_durations'       => 'array',
-        'offer.emi_durations.*'     => 'integer',
         'offer.is_no_cost_emi'      => 'required|boolean',
+        'offer.emi_durations'       => 'required_if:offer.is_no_cost_emi,true|array',
+        'offer.emi_durations.*'     => 'sometimes|integer',
         'offer.issuer'              => 'sometimes|string',
         'offer.payment_network'     => 'sometimes|string',
         'offer.payment_method'      => 'sometimes|string',

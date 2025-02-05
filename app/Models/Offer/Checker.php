@@ -261,7 +261,10 @@ class Checker extends Base\Core
             return false;
         }
 
-        if ((app()->runningUnitTests() === false) and
+        $isLowerEnvironment = ((app()->runningUnitTests() === true) or
+                              (app()->isEnvironmentQA() === true));
+
+        if (($isLowerEnvironment === false) and
             ($shouldSkipPropertiesValidation === true))
         {
             return true;
