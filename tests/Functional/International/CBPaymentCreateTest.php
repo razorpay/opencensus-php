@@ -15,6 +15,7 @@ use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Payment\Constant;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
+use RZP\Services\PGRouter;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -1233,7 +1234,7 @@ class CBPaymentCreateTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
         $payment = $this->getDefaultUpiPaymentArray();
-        
+
         $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
 
         $payment['_']['library'] = 'checkoutjs';
@@ -1257,7 +1258,7 @@ class CBPaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultUpiPaymentArray();
         $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
-       
+
         $value = self::getOrderMetaValueForLrsTravelCitiFlow();
 
         unset($value['customer_details']['identity']);
@@ -1268,7 +1269,7 @@ class CBPaymentCreateTest extends TestCase
             'value'    => $value,
             'type'     => 'cart_info',
         ]);
-        
+
         $payment['_']['library'] = 'checkoutjs';
         $payment['order_id'] = $order->getPublicId();
          $this->makeRequestAndCatchException(function () use ($payment) {
@@ -1290,7 +1291,7 @@ class CBPaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultUpiPaymentArray();
         $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
-       
+
         $value = self::getOrderMetaValueForLrsTravelCitiFlow();
 
         $value['customer_details']['billing_address']['line1'] = null;
@@ -1332,7 +1333,7 @@ class CBPaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultUpiPaymentArray();
         $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
-       
+
         $value = self::getOrderMetaValueForLrsTravelCitiFlow();
 
         $value['customer_details']['billing_address']['line1'] = null;
@@ -1398,6 +1399,225 @@ class CBPaymentCreateTest extends TestCase
         $this->assertEquals($lastPayment['notes']['invoice_number'], $paymentInvoice['receipt']);
         $this->assertNull($paymentInvoice['ref_num']);
     }
+
+    public function testCitiTravelLrsPaymentRearchForCardPositive()
+    {
+        $this->mockSplitzEvaluationCrossBorderImportPaymentRearch('LRS_CARD');
+        $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'card');
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'card_payments_via_pg_router_v2')
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+
+        $order = $this->fixtures->create('order',
+            [
+                'amount' => 1000,
+                'currency' => 'INR',
+                'customer_id' => '100000customer',
+            ]);
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => self::getOrderMetaValueForLrsTravelCitiFlow(),
+                'type'     => 'cart_info',
+            ]);
+
+        $this->enablePgRouterConfig();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'card';
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout)
+            {
+                return [
+                    'body' => [
+                        'data' => [
+                            'pg_router' => 'true'
+                        ]
+                    ]
+
+                ];
+            });
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/ajax',
+            'method'  => 'post'
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($content['data']['pg_router'], 'true');
+
+
+    }
+
+    public function testCrossBorderImportPaymentRearchForCardPositive()
+    {
+        $this->mockSplitzEvaluationCrossBorderImportPaymentRearch("IMPORT_CARD");
+        $this->fixtures->merchant->addFeatures(['enable_import_flow']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'card');
+
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'card_payments_via_pg_router_v2')
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+
+        $order = $this->fixtures->create('order',
+            [
+                'amount' => 1000,
+                'currency' => 'INR',
+                'customer_id' => '100000customer',
+            ]);
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => self::getOrderMetaValue(),
+                'type'     => 'cart_info',
+            ]);
+
+        $this->enablePgRouterConfig();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'card';
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout)
+            {
+                return [
+                    'body' => [
+                        'data' => [
+                            'pg_router' => 'true'
+                        ]
+                    ]
+
+                ];
+            });
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/ajax',
+            'method'  => 'post'
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($content['data']['pg_router'], 'true');
+
+    }
+
+    private function mockSplitzEvaluationCrossBorderImportPaymentRearch($case)
+    {
+        $input = [];
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+        switch ($case) {
+            case 'LRS_CARD':
+                $input = [
+                    "experiment_id" => "PrAXWY4uKztftu",
+                    "id"            => "10000000000000",
+                    'request_data'  => json_encode(
+                        [
+                            'merchant_id' => "10000000000000",
+                        ]),
+                ];
+                break;
+            case 'LRS_UPI':
+                $input = [
+                    "experiment_id" => "Prfal07CfuAG8u",
+                    "id"            => "10000000000000",
+                    'request_data'  => json_encode(
+                        [
+                            'merchant_id' => "10000000000000",
+                        ]),
+                ];
+                break;
+            case 'IMPORT_CARD':
+                $input = [
+                    "experiment_id" => "PjfLeevhXS72mQ",
+                    "id"            => "10000000000000",
+                    'request_data'  => json_encode(
+                        [
+                            'merchant_id' => "10000000000000",
+                        ]),
+                ];
+                break;
+            case 'IMPORT_UPI':
+                $input = [
+                    "experiment_id" => "PrffEGhTlosPNP",
+                    "id"            => "10000000000000",
+                    'request_data'  => json_encode(
+                        [
+                            'merchant_id' => "10000000000000",
+                        ]),
+                ];
+                break;
+        }
+
+        $this->mockSplitzTreatment($input, $output);
+    }
+
     public function setMockForPCBClient()
     {
         $mockResponseGetLRSQuote =[

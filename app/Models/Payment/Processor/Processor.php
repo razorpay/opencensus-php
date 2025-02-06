@@ -1344,6 +1344,131 @@ class Processor
         return false;
     }
 
+    private function evaluateSplitzExperimentforLRSTravelCitiCardPaymentRearch($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.lrs_travel_citi_card_payment_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::LRS_TRAVEL_CITI_CARD_PAYMENT_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforLRSTravelCitiUPIPaymentRearch($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.lrs_travel_citi_upi_payment_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::LRS_TRAVEL_CITI_UPI_PAYMENT_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderImportCardPaymentRearch($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.cross_border_import_card_payment_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_IMPORT_CARD_PAYMENT_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderImportUPIPaymentRearch($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.cross_border_import_upi_payment_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_IMPORT_UPI_PAYMENT_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+        return false;
+    }
+
+
     private function evaluateSplitzExperimentForCardRecurringRearchMerchant($merchant)
     {
         try
@@ -2677,6 +2802,63 @@ class Processor
         }
 
         return false;
+    }
+
+    private function canRouteCrossBorderImportPaymentThroughRearchFlow($input)
+    {
+        try {
+            if (($this->isLRSTravelCitiMerchant()) === true){
+
+                // Supports Card and UPI method only for rearch payments
+                if ($input[Payment\Entity::METHOD] !== Payment\Method::CARD && $input[Payment\Entity::METHOD] !== Payment\Method::UPI) {
+                    return false;
+                }
+                if ($input[Payment\Entity::METHOD] === Payment\Method::CARD) {
+                    return $this->evaluateSplitzExperimentforLRSTravelCitiCardPaymentRearch($this->merchant->getId());
+                }
+                if ($input[Payment\Entity::METHOD] === Payment\Method::UPI) {
+                    return $this->evaluateSplitzExperimentforLRSTravelCitiUPIPaymentRearch($this->merchant->getId());
+                }
+            }
+
+            if(($this->isImportFlowMerchant()) === true){
+
+                // Supports Card and UPI method only for rearch payments
+                if ($input[Payment\Entity::METHOD] !== Payment\Method::CARD && $input[Payment\Entity::METHOD] !== Payment\Method::UPI) {
+                    return false;
+                }
+                if ($input[Payment\Entity::METHOD] === Payment\Method::CARD) {
+                    return $this->evaluateSplitzExperimentforCrossBorderImportCardPaymentRearch($this->merchant->getId());
+                }
+                if ($input[Payment\Entity::METHOD] === Payment\Method::UPI) {
+                    return $this->evaluateSplitzExperimentforCrossBorderImportUPIPaymentRearch($this->merchant->getId());
+                }
+            }
+
+        } catch (\Throwable $e){
+            $this->trace->traceException($e, null, TraceCode::IMPORT_PAYMENT_REARCH_ERROR, [
+                "merchant_id" => $this->merchant->getId(),
+                "input"       => $input
+            ]);
+        }
+        return false;
+    }
+
+    //Checks if the merchant belongs to cross border import flow and payment can be routed through rearch if merchant is not of cross border import then it gives true
+    private function processPaymentRoutingForCrossBorderImport($input){
+        try {
+            if ($this->isImportFlowMerchant() || $this->isLRSTravelCitiMerchant()) {
+                return $this->canRouteCrossBorderImportPaymentThroughRearchFlow($input);
+            } else {
+                return true;
+            }
+        } catch (\Throwable $e){
+            $this->trace->traceException($e, null, TraceCode::IMPORT_PAYMENT_REARCH_ERROR, [
+                "merchant_id" => $this->merchant->getId(),
+                "input"       => $input
+            ]);
+        }
+        return true;
     }
 
     protected function isOptimizerRecurringRearchPayment($merchant): bool
@@ -4596,10 +4778,9 @@ class Processor
             if (($isSplitPaymentRequest === false) and
                 ($this->isLRSEducationMerchant() === false) and
                 ($this->isOpgspImportMerchant() === false) and
-                ($this->isImportFlowMerchant() === false) and
                 ($isPaCbPartnerPayment === false) and
-                ($this->isLRSTravelCitiMerchant() === false) and
                 ($this->isJPMCImportFlowMerchant() === false) and
+                ($this->processPaymentRoutingForCrossBorderImport($input) === true) and
                 ($this->isOptimizerCFBInternalFlow() === false ) and
                 (($this->canRouteWalletThroughRearchFlow($input) === true) or
                 ($this->canRouteRazorpayAccountThroughRearchFlow($input) === true) or

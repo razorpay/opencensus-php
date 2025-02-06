@@ -1275,6 +1275,14 @@ return array(
 
     'cross_border_import_rearch_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_EXPERIMENT_ID'),
 
+    'lrs_travel_citi_card_payment_rearch_experiment_id' => env('LRS_TRAVEL_CITI_CARD_PAYMENT_REARCH_EXPERIMENT_ID'),
+
+    'lrs_travel_citi_upi_payment_rearch_experiment_id' => env('LRS_TRAVEL_CITI_UPI_PAYMENT_REARCH_EXPERIMENT_ID'),
+
+    'cross_border_import_card_payment_rearch_experiment_id' => env('CROSS_BORDER_IMPORT_CARD_PAYMENT_REARCH_EXPERIMENT_ID'),
+
+    'cross_border_import_upi_payment_rearch_experiment_id' => env('CROSS_BORDER_IMPORT_UPI_PAYMENT_REARCH_EXPERIMENT_ID'),
+
     'cross_border_import_rearch_shadow_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_SHADOW_EXPERIMENT_ID'),
 
     'subscriptions_intl_auto_payments_handler_exp'  => env('SUBSCRIPTIONS_INTL_AUTO_PAYMENTS_HANDLER_EXP'),

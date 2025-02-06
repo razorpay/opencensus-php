@@ -12478,7 +12478,8 @@ class Route
 
         'cross_border_import_service' => [
             'payout_create_internal',
-            'payment_fetch_by_id'
+            'payment_fetch_by_id',
+            'api_entity_fetch'
         ],
 
         'xperience' => [
