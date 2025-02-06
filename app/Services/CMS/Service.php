@@ -88,11 +88,7 @@ class Service {
         if (count($filteredParams) > 0)
         {
             // Add query string params
-            $url = $url . '?';
-            foreach ($filteredParams as $key => $value)
-                $url = $url . $key . '=' . $value . '&';
-
-            $url = rtrim($url, '&');
+            $url .= '?' . http_build_query($filteredParams);
         }
         return $this->sendRequest($url, 'get');
     }

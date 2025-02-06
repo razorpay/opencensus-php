@@ -135,8 +135,12 @@ class Repository extends Base\Repository
 
     public function findOrFailByPublicIdWithParams(string $id, array $params, string $connectionType = null): PublicEntity
     {
-        $this->logMethodCall(__FUNCTION__);
-        return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+        $this->logMethodCall(__FUNCTION__, ['params' => $params, 'id' => $id]);
+        // From the usage logs of findOrFailByPublicIdWithParams method, params is always empty
+        // Therefore we will be ignoring the value in params and only consider $id
+        // Note that, $id can be both signed and unsigned
+        Customer\Entity::silentlyStripSign($id);
+        return $this->findOrFail($id);
     }
 
     public function findOrFailArchivedByPublicIdWithParams(string $id, array $params, string $connectionType = null): PublicEntity
@@ -292,7 +296,7 @@ class Repository extends Base\Repository
         return parent::newQueryOnPaymentFetchReplica($lagThreshold, $endTime);
     }
 
-    public function find($id, $columns = array('*'), string $connectionType = null): Entity
+    public function find($id, $columns = array('*'), string $connectionType = null)
     {
         $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled(null);
         $this->logMethodCall(__FUNCTION__, [ 'id' => $id, 'connection_type' => $connectionType, 'should_create_via_cms' => $shouldReadViaCMS]);
@@ -390,7 +394,33 @@ class Repository extends Base\Repository
 
     public function findManyForIndexingByIds(array $ids): array
     {
-        $this->logMethodCall(__FUNCTION__, [ 'ids' => $ids ]);
+        $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled(null);
+        $this->logMethodCall(__FUNCTION__, [ 'ids' => $ids, 'should_read_via_cms' => $shouldReadViaCMS]);
+        if ($shouldReadViaCMS)
+        {
+            try
+            {
+                $collection = new Collection();
+                foreach ($ids as $id) {
+                    $cust = $this->findOrFail($id);
+                    $collection->push($cust);
+                }
+
+                return array_map(
+                    function($v)
+                    {
+                        return $this->serializeForIndexing($v);
+                    },
+                    $collection->all());
+            }
+            catch (\Exception) {
+                /* This exception can occur when
+                    1. CMS responds with "ID does not exist"
+                    2. Request to CMS fails [Expected in geos where CMS is not yet deployed]
+                */
+            }
+        }
+
         return parent::findManyForIndexingByIds($ids);
     }
 
