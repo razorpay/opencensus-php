@@ -18747,6 +18747,7 @@ class Route
             'bank_account_fetch',
             'setl_fetch_multiple_proxy',
             'merchant_analytics',
+            'feature_add',
         ],
 
         'route' => [
