@@ -524,13 +524,52 @@ class Reporting implements ExternalService
         return $this->createAndSendRequest(Requests::GET, $path, $input, $headers);
     }
 
+    public function isEligibleForSchedulerV2(): bool
+    {
+        $isNonAdminRequest = empty($this->ba->getAdminToken()) === true;
+
+        $isEligibleForAdminDashboard = $this->isSchedulerExperimentEnabledForAdminDashboard();
+
+        return $isNonAdminRequest or $isEligibleForAdminDashboard;
+    }
+
+    public function isSchedulerExperimentEnabledForAdminDashboard(): bool
+    {
+        $merchantId = $this->ba->getMerchantId();
+
+        if(empty($merchantId) === true)
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get(Constants::REP_SCHEDULER_FOR_ADMIN_DASHBOARD_EXP),
+        ];
+
+        $variables = $this->app['splitzService']->evaluateRequest($properties);
+
+        if (is_array($variables)) {
+            foreach ($variables as $variable)
+            {
+                if (is_array($variable) && $variable['key'] === "result" && $variable['value'] === "on")
+                {
+                    return true;
+                }
+            }
+        }
+
+        $variantValue = $variables['response']['variant']['variables'][0]['value'] ?? '';
+
+        return $variantValue == "on";
+    }
+
     public function createSchedule(array $input): array
     {
         $reportingServiceRequest = $input['payload'];
 
         $scheduleRequest = $input['schedule'];
-        $adminToken = $this->ba->getAdminToken();
-        if (empty($adminToken) === false)
+        if ($this->isEligibleForSchedulerV2() === false)
         {
             $path = self::SCHEDULE_PATH;
             $this->trace->info(TraceCode::REPORTING_SERVICE_CREATE_SCHEDULE, $reportingServiceRequest);
@@ -569,8 +608,7 @@ class Reporting implements ExternalService
     public function fetchScheduleMultiple(array $input): array
     {
 
-        $adminToken = $this->ba->getAdminToken();
-        if (empty($adminToken) === false)
+        if ($this->isEligibleForSchedulerV2() === false)
         {
             $path = self::SCHEDULE_PATH;
             $scheduleDataList = $this->createAndSendRequest(Requests::GET, $path, $input);
@@ -590,8 +628,7 @@ class Reporting implements ExternalService
 
     public function fetchScheduleById(string $id): array
     {
-        $adminToken = $this->ba->getAdminToken();
-        if (empty($adminToken) === false)
+        if ($this->isEligibleForSchedulerV2() === false)
         {
             $path = self::SCHEDULE_PATH . '/' . $id;
         }
@@ -604,8 +641,7 @@ class Reporting implements ExternalService
 
     public function deleteSchedule(string $id): array
     {
-        $adminToken = $this->ba->getAdminToken();
-        if (empty($adminToken) === false)
+        if ($this->isEligibleForSchedulerV2() === false)
         {
             $path = self::SCHEDULE_PATH . '/' . $id;
             $response = $this->createAndSendRequest(Requests::DELETE, $path);
@@ -706,7 +742,11 @@ class Reporting implements ExternalService
 
     public function fetchScheduleByIdAdmin(string $id): array
     {
-        $path = self::SCHEDULE_PATH . '/' . $id;
+        if ($this->isEligibleForSchedulerV2() === false){
+            $path = self::SCHEDULE_PATH . '/' . $id;
+        } else {
+            $path = self::SCHEDULE_PATH_V2 . '/' . $id;
+        }
 
         return $this->createAndSendRequest(Requests::GET, $path);
     }
@@ -767,9 +807,15 @@ class Reporting implements ExternalService
 
     public function fetchScheduleMultipleAdmin(array $input): array
     {
+        if ($this->isEligibleForSchedulerV2() === false){
+            $path = self::SCHEDULE_PATH;
+        } else {
+            $path = self::SCHEDULE_PATH_V2;
+        }
+
         $headers = $this->fetchHeadersFromInput($input);
 
-        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input, $headers);
+        return $this->createAndSendRequest(Requests::GET, $path, $input, $headers);
     }
 
     public function fetchFileLogsMultipleAdmin(array $input): array

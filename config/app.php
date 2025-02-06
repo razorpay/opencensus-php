@@ -364,6 +364,8 @@ return array(
 
     'customer_flagging_report_url' => env('CUSTOMER_FLAGGING_REPORT_URL'),
 
+    'rep_scheduler_experiment_for_admin_dashboard_exp' => env('REP_SCHEDULER_FOR_ADMIN_DASHBOARD_EXP'),
+
     'keyless_header' =>  [
         'identifier'    => env('KEYLESS_HEADER_IDENTIFIER'),
         'sender'    =>  [
