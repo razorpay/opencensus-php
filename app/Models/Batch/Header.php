@@ -986,7 +986,7 @@ class Header
     const TERMINAL_CREATION_GATEWAY_MERCHANT_ID2        = 'Gateway Merchant ID2';
     const TERMINAL_CREATION_GATEWAY_TERMINAL_ID         = 'Gateway Terminal ID';
     const TERMINAL_CREATION_GATEWAY_ACCESS_CODE         = 'Gateway Access Code';
-    const TERMINAL_CREATION_PLAN_NAME                   = 'Buy Pricing Plan Name';
+    const TERMINAL_CREATION_PLAN_ID                     = 'Buy Pricing Plan ID';
     const TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD   = 'Gateway Terminal Password';
     const TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD2  = 'Gateway Terminal Password2';
     const TERMINAL_CREATION_GATEWAY_SECURE_SECRET       = 'Gateway Secure Secret';
@@ -2257,7 +2257,7 @@ class Header
                 self::TERMINAL_CREATION_ENABLED,
                 self::TERMINAL_CREATION_STATUS,
                 self::TERMINAL_CREATION_CAPABILITY,
-                self::TERMINAL_CREATION_PLAN_NAME,
+                self::TERMINAL_CREATION_PLAN_ID,
             ],
             self::OUTPUT => [
                 self::TERMINAL_ID,
@@ -2297,7 +2297,7 @@ class Header
                 self::TERMINAL_CREATION_ENABLED,
                 self::TERMINAL_CREATION_STATUS,
                 self::TERMINAL_CREATION_CAPABILITY,
-                self::TERMINAL_CREATION_PLAN_NAME,
+                self::TERMINAL_CREATION_PLAN_ID,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
@@ -2363,7 +2363,7 @@ class Header
                 self::TERMINAL_CREATION_ENABLED,
                 self::TERMINAL_CREATION_STATUS,
                 self::TERMINAL_CREATION_CAPABILITY,
-                self::TERMINAL_CREATION_PLAN_NAME,
+                self::TERMINAL_CREATION_PLAN_ID,
             ],
             self::OUTPUT => [
                 self::TERMINAL_ID,
@@ -2405,7 +2405,7 @@ class Header
                 self::TERMINAL_CREATION_ENABLED,
                 self::TERMINAL_CREATION_STATUS,
                 self::TERMINAL_CREATION_CAPABILITY,
-                self::TERMINAL_CREATION_PLAN_NAME,
+                self::TERMINAL_CREATION_PLAN_ID,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

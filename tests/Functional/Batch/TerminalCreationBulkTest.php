@@ -39,8 +39,8 @@ class TerminalCreationBulkTest extends TestCase
 
         $entries[1] = $entries[0];
 
-        $entries[0][Batch\Header::TERMINAL_CREATION_PLAN_NAME] = 'plan1';
-        $entries[1][Batch\Header::TERMINAL_CREATION_PLAN_NAME] = 'plan2';
+        $entries[0][Batch\Header::TERMINAL_CREATION_PLAN_ID] = 'Prbje6edMegWMi';
+        $entries[1][Batch\Header::TERMINAL_CREATION_PLAN_ID] = 'PrbjmAIvtI6gYz';
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
@@ -139,7 +139,7 @@ class TerminalCreationBulkTest extends TestCase
                 Batch\Header::TERMINAL_CREATION_ENABLED              => null,
                 Batch\Header::TERMINAL_CREATION_STATUS               => null,
                 Batch\Header::TERMINAL_CREATION_CAPABILITY           => null,
-                Batch\Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                Batch\Header::TERMINAL_CREATION_PLAN_ID              => null,
             ],
         ];
     }

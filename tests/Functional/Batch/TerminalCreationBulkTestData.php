@@ -71,7 +71,7 @@ return [
                         Header::TERMINAL_CREATION_PAYLATER             => null,
                         Header::TERMINAL_CREATION_ENABLED              => null,
                         Header::TERMINAL_CREATION_CAPABILITY           => null,
-                        Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                        Header::TERMINAL_CREATION_PLAN_ID              => null,
                     ],
                 ],
             ],
@@ -170,7 +170,7 @@ return [
                 "Enabled",
                 "Status",
                 "Capability",
-                "Buy Pricing Plan Name",
+                "Buy Pricing Plan ID",
             ],
             [
                 "10NodalAccount",
@@ -271,7 +271,7 @@ return [
                     Header::TERMINAL_CREATION_ENABLED              => null,
                     Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
-                    Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                    Header::TERMINAL_CREATION_PLAN_ID              => null,
                 ],
             ]
         ],
@@ -347,7 +347,7 @@ return [
                     Header::TERMINAL_CREATION_ENABLED              => null,
                     Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
-                    Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                    Header::TERMINAL_CREATION_PLAN_ID              => null,
                 ],
             ]
         ],
@@ -494,7 +494,7 @@ return [
                     Header::TERMINAL_CREATION_ENABLED              => null,
                     Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
-                    Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                    Header::TERMINAL_CREATION_PLAN_ID              => null,
                 ],
             ]
         ],
@@ -553,7 +553,7 @@ return [
                         Header::TERMINAL_CREATION_ENABLED              => null,
                         Header::TERMINAL_CREATION_STATUS               => null,
                         Header::TERMINAL_CREATION_CAPABILITY           => null,
-                        Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                        Header::TERMINAL_CREATION_PLAN_ID              => null,
                     ]
                 ]
             ]
@@ -610,7 +610,7 @@ return [
                     Header::TERMINAL_CREATION_ENABLED              => null,
                     Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
-                    Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                    Header::TERMINAL_CREATION_PLAN_ID              => null,
                 ],
             ]
         ],
@@ -669,7 +669,7 @@ return [
                             Header::TERMINAL_CREATION_ENABLED              => null,
                             Header::TERMINAL_CREATION_STATUS               => null,
                             Header::TERMINAL_CREATION_CAPABILITY           => null,
-                            Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                            Header::TERMINAL_CREATION_PLAN_ID              => null,
                         ]
                     ]
             ]
@@ -727,7 +727,7 @@ return [
                     Header::TERMINAL_CREATION_ENABLED              => null,
                     Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
-                    Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                    Header::TERMINAL_CREATION_PLAN_ID              => null,
                 ],
             ]
         ],
@@ -786,7 +786,7 @@ return [
                         Header::TERMINAL_CREATION_ENABLED              => null,
                         Header::TERMINAL_CREATION_STATUS               => null,
                         Header::TERMINAL_CREATION_CAPABILITY           => null,
-                        Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                        Header::TERMINAL_CREATION_PLAN_ID              => null,
                     ]
                 ]
             ]
@@ -843,7 +843,7 @@ return [
                     Header::TERMINAL_CREATION_ENABLED              => null,
                     Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
-                    Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                    Header::TERMINAL_CREATION_PLAN_ID              => null,
                 ],
             ]
         ],
@@ -902,7 +902,7 @@ return [
                         Header::TERMINAL_CREATION_ENABLED              => null,
                         Header::TERMINAL_CREATION_STATUS               => null,
                         Header::TERMINAL_CREATION_CAPABILITY           => null,
-                        Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                        Header::TERMINAL_CREATION_PLAN_ID              => null,
                     ]
                 ]
             ]
@@ -959,7 +959,7 @@ return [
                     Header::TERMINAL_CREATION_ENABLED              => null,
                     Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
-                    Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                    Header::TERMINAL_CREATION_PLAN_ID              => null,
                 ],
                 [
                     'idempotency_key'                              => 'randomIdempotencyKey3',
@@ -1006,7 +1006,7 @@ return [
                     Header::TERMINAL_CREATION_ENABLED              => null,
                     Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
-                    Header::TERMINAL_CREATION_PLAN_NAME            => null,
+                    Header::TERMINAL_CREATION_PLAN_ID              => null,
                 ],
 
             ]

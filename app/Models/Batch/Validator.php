@@ -1526,7 +1526,7 @@ class Validator extends Base\Validator
          collect($input)->groupBy(Batch\Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID)
             ->map(function ($rows) use (& $failedRecords)
             {
-                if (count($rows->pluck(Batch\Header::TERMINAL_CREATION_PLAN_NAME)->unique()) > 1)
+                if (count($rows->pluck(Batch\Header::TERMINAL_CREATION_PLAN_ID)->unique()) > 1)
                 {
                     $failedRecords[] = $rows->pluck('Gateway Merchant ID')->toArray()[0];
                 }
