@@ -12,6 +12,8 @@ const base_dependencies = [
   // { namespace: 'splitz', service_name: 'splitz-base' },
   { namespace: 'gcoms', service_name: 'gcoms-base' },
   { namespace: 'asv', service_name: 'asv-web-base' },
+  { namespace: 'rize-service', service_name: 'rize-service-web-base' },
+  { namespace: 'pgos', service_name: 'pgos-base' },
   // can add multiple pod name dependencies in a namespace
   // { namespace: 'partnerships', service_name: 'partnerships-test-base' },
   // { namespace: 'partnerships', service_name: 'partnerships-live-base' },
@@ -234,8 +236,6 @@ async function devstackDeploy() {
     pull_request_number: pullNumber,
     self,
     dependencies,
-    skip_check_base_deployment_status: 'false', // set to "true" in case base pod check to be skipped
-    base_dependencies,
   };
 
   await triggerJob(payload);
@@ -264,6 +264,8 @@ async function runE2ETests() {
     author,
     self,
     dependencies,
+    skip_check_base_deployment_status: 'false', // set to "true" in case base pod check to be skipped
+    base_dependencies,
   };
   await triggerJob(payload);
 }
