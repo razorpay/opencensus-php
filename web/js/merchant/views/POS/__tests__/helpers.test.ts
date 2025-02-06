@@ -28,7 +28,6 @@ import {
   isItemPresentInCart,
   getAvailablePricingPlans,
   getInitialPlan,
-  isPosTabVisible,
 } from 'merchant/views/POS/helpers';
 import { CartItem, PricingTypes, ProductDescription, ProductPlans } from 'merchant/views/POS/types';
 
@@ -713,7 +712,7 @@ describe('processPrecheckoutPricing', () => {
       expect(isExperimentEnabled).toBe(false);
     });
 
-    test('isPosExperimentEnabled should return true when experiment is enabled for non-pgos merchant and KYC activation status is activated', () => {
+    test('isPosExperimentEnabled should return true when experiment is enabled for non-pgos merchant', () => {
       const newAbExperiments = {
         pos_api_merchant_enablement: {
           experimentId: 'mock-exp-id',
@@ -723,32 +722,13 @@ describe('processPrecheckoutPricing', () => {
         },
       };
 
-      const user = { ...MOCK_USER, is_pgos_merchant: false, activation_status: 'activated' };
+      const user = { ...MOCK_USER, is_pgos_merchant: false };
 
       const isExperimentEnabled = isPosExperimentEnabled({
         user,
         abExperiments: newAbExperiments,
       });
       expect(isExperimentEnabled).toBe(true);
-    });
-
-    test('isPosExperimentEnabled should return false when experiment is enabled for non-pgos merchant and KYC activation status is other than activated', () => {
-      const newAbExperiments = {
-        pos_api_merchant_enablement: {
-          experimentId: 'mock-exp-id',
-          variables: {
-            result: 'on',
-          },
-        },
-      };
-
-      const user = { ...MOCK_USER, is_pgos_merchant: false, activation_status: 'under_review' };
-
-      const isExperimentEnabled = isPosExperimentEnabled({
-        user,
-        abExperiments: newAbExperiments,
-      });
-      expect(isExperimentEnabled).toBe(false);
     });
 
     test('isPosExperimentEnabled should return false for unregistered merchants', () => {
@@ -766,36 +746,6 @@ describe('processPrecheckoutPricing', () => {
         abExperiments: newAbExperiments,
       });
       expect(isExperimentEnabled).toBe(false);
-    });
-
-    test('isPosExperimentEnabled should return true when experiment is enabled and kyc status is activated', () => {
-      const newAbExperiments = {
-        pos_api_merchant_enablement: {
-          experimentId: 'mock-exp-id',
-          variables: {
-            result: 'off',
-          },
-        },
-      };
-      const user = { ...MOCK_USER, activation_status: 'activated' };
-      const isVisible = isPosTabVisible(user, newAbExperiments);
-
-      expect(isVisible).toBe(false);
-    });
-
-    test('isPosExperimentEnabled should return false when experiment is enabled and kyc status is other than activated', () => {
-      const newAbExperiments = {
-        pos_api_merchant_enablement: {
-          experimentId: 'mock-exp-id',
-          variables: {
-            result: 'off',
-          },
-        },
-      };
-      const user = { ...MOCK_USER, activation_status: 'pending' };
-      const isVisible = isPosTabVisible(user, newAbExperiments);
-
-      expect(isVisible).toBe(false);
     });
   });
 });

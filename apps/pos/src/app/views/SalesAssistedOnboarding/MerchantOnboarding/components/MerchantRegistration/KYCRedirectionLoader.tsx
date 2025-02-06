@@ -3,14 +3,14 @@ import { Box, Spinner, Text } from '@razorpay/blade/components';
 import ModalWithBottomSheet from 'apps/pos/src/app/components/ModalWithBottomSheet';
 
 interface KYCRedirectionLoaderProps {
-  isOpen: boolean | null;
+  isOpen: boolean;
   message?: string;
 }
 
-const KYCRedirectionLoader = ({ isOpen, message = '' }: KYCRedirectionLoaderProps): JSX.Element => {
+const KYCRedirectionLoader = ({ isOpen, message = ''  }: KYCRedirectionLoaderProps): JSX.Element => {
   return (
     <ModalWithBottomSheet
-      isOpen={!!isOpen}
+      isOpen={isOpen}
       onDismiss={() => null}
       snapPoints={[0.5, 0.5, 0.5]}
       content={

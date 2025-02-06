@@ -178,7 +178,6 @@ const SalesFileUpload = ({
           key={fileStoreId}
           name={name}
           size={size}
-          isLoading={isLoading}
           fileStoreId={fileStoreId}
           onDownloadClick={handleFileDownloadClick}
           onRemoveClick={handleOnRemove}

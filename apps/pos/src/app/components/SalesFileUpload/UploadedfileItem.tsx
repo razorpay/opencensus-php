@@ -18,7 +18,6 @@ interface UploadedfileItemProps extends FileItem {
   isDisabled?: boolean;
   onDownloadClick: (fileStoreId: string) => void;
   onRemoveClick: (fileStoreId: string) => void;
-  isLoading?: boolean;
 }
 
 const getFileUploadIcon = (name: string): string => {
@@ -37,7 +36,6 @@ const UploadedfileItem = ({
   isDisabled,
   onDownloadClick,
   onRemoveClick,
-  isLoading,
 }: UploadedfileItemProps): JSX.Element => {
   const fileIcon = getFileUploadIcon(name as string);
 
@@ -74,7 +72,6 @@ const UploadedfileItem = ({
           icon={DownloadIcon}
           onClick={() => onDownloadClick(fileStoreId as string)}
           accessibilityLabel="download-file"
-          isDisabled={isLoading}
         />
         <Divider orientation="vertical" marginX="spacing.4" variant="normal" />
         <IconButton

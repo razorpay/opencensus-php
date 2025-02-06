@@ -15,7 +15,6 @@ export enum NachFormKeyNames {
   NACH_FORM_DOCUMENT_FIELD = 'nach_form_document_field',
   NACH_FORM_COMMENTS_FIELD = 'nach_form_comments_field',
   NACH_DOCUMENT_NAME = 'nach',
-  MODULAR_CALLBACK = 'modular_callback',
 }
 
 export type NachFormObject = {
@@ -31,7 +30,6 @@ export interface NachFormProps {
   onNachSkipClick: () => void;
   isFormDisabled: boolean;
   isModularLoading?: boolean;
-  isLoading?: boolean;
 }
 
 const NACHForm: React.FC<NachFormProps> = ({
@@ -42,7 +40,6 @@ const NACHForm: React.FC<NachFormProps> = ({
   onNachSkipClick,
   isFormDisabled,
   isModularLoading,
-  isLoading,
 }) => {
   const { id } = useParams();
   const toast = useToast();
@@ -69,7 +66,7 @@ const NACHForm: React.FC<NachFormProps> = ({
         onChange={onNachFileUploadChange}
         maxSize={5 * 1024 * 1023}
         maxLimit={1}
-        isLoading={isLoading}
+        isLoading={false}
         defaultValue={nachForm[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD]}
         onError={() =>
           toast.show({
@@ -78,7 +75,7 @@ const NACHForm: React.FC<NachFormProps> = ({
             autoDismiss: true,
           })
         }
-        isDisabled={isFormDisabled || isLoading}
+        isDisabled={isFormDisabled}
         value={nachForm[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD]}
       />
       <Box>
@@ -120,7 +117,6 @@ const NACHForm: React.FC<NachFormProps> = ({
           iconPosition="right"
           variant="primary"
           isFullWidth
-          isLoading={isLoading}
           isDisabled={
             isFormDisabled ||
             !(
