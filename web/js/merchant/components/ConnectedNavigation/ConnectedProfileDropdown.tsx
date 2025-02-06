@@ -170,7 +170,7 @@ function ConnectedProfileDropdown({
               <Box display="flex" gap="spacing.4" alignItems="center">
                 <Avatar
                   size="large"
-                  name={loggedInUserName}
+                  name={loggedInUserName || name}
                   {...(isRTBEnabled ? { bottomAddon: TrustedBadgeIcon } : {})}
                 />
                 <Box display="flex" gap="spacing.2" flexDirection="column">
@@ -307,7 +307,7 @@ function ConnectedProfileDropdown({
       <>
         <Avatar
           size="medium"
-          name={loggedInUserName}
+          name={loggedInUserName || name}
           variant="square"
           {...(isRTBEnabled ? { bottomAddon: TrustedBadgeIcon } : {})}
           onClick={() => {
@@ -357,7 +357,7 @@ function ConnectedProfileDropdown({
       >
         <Avatar
           size="medium"
-          name={loggedInUserName}
+          name={loggedInUserName || name}
           variant="square"
           {...(isRTBEnabled ? { bottomAddon: TrustedBadgeIcon } : {})}
         />
