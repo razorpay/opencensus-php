@@ -505,13 +505,20 @@ class ApiEventSubscriber extends Base\Core
 
         try
         {
-            $variant = $this->app->razorx->getTreatment(
-                $payment->getMerchantId(),
-                RazorxTreatment::CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER,
-                $this->getMode()
-            );
+            $properties = [
+                'id'            => $this->merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.subscriptions_intl_auto_payments_handler_exp'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                    ]),
+            ];
 
-            if(strtolower($variant) === 'on')
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $varName = $response['response']['variant']['name'] ?? '';
+
+            if ($varName === 'variant_on')
             {
                 $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
                 $country = $merchant->getCountry();

@@ -862,9 +862,7 @@ final class RazorxTreatment
 
     // Partner bank hold payouts experiment
     const PARTNER_BANK_ON_HOLD_PAYOUT_ICICI = 'partner_bank_on_hold_payout_icici';
-
-    const CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER  = "card_subscriptions_international_handler";
-
+    
 
     // If true, it will select Optimizer mandate hub for card recurring payments.
     const ALLOW_OPTIMIZER_CARD_MANDATE_HUB = 'allow_optimizer_card_mandate_hub';

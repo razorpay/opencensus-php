@@ -1275,6 +1275,8 @@ return array(
 
     'cross_border_import_rearch_shadow_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_SHADOW_EXPERIMENT_ID'),
 
+    'subscriptions_intl_auto_payments_handler_exp'  => env('SUBSCRIPTIONS_INTL_AUTO_PAYMENTS_HANDLER_EXP'),
+  
     'saved_card_token_payments_via_pg_router' => env('SAVED_CARD_TOKEN_PAYMENTS_VIA_PG_ROUTER'),
 
     'fetch_cryptogram_via_cps' => env('FETCH_CRYPTOGRAM_VIA_CPS'),
