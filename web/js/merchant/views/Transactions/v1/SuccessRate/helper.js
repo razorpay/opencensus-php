@@ -155,7 +155,7 @@ export const queryFilters = (updateDropdownOptions = false, refreshMetricTabs = 
     ...(isSrAdminEnabled && searchedMerchantId ? { merchant_id: searchedMerchantId } : {}),
     group_by: {
       keys: _group_by,
-      limit: isOptimizerEnabled ? 3 : GROUP_BY_KEY_VS_LIMIT[_group_by] || DEFAULT_GROUP_BY_LIMIT, // 3 for dropdown filters in case of optimizer merchant and other limits as per groupBy for graph pills in case of rzp merchant.
+      limit: isOptimizerEnabled ? 5 : GROUP_BY_KEY_VS_LIMIT[_group_by] || DEFAULT_GROUP_BY_LIMIT, // 5 for dropdown filters in case of optimizer merchant and other limits as per groupBy for graph pills in case of rzp merchant.
     },
     features: {
       use_alias: true,
