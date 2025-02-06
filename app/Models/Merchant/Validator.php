@@ -118,7 +118,7 @@ class Validator extends Base\Validator
 
     const SEARCH_MERCHANT_USERS_INTERNAL = 'search_merchant_users_internal';
 
-    const FETCH_ACCOUNT_BALANCES_V2 = 'fetch_account_balances_v2';
+    const FETCH_BANKING_ACCOUNT_BALANCES = 'fetch_banking_account_balances';
 
     const EXTENSIONMIMEMAP = [
         'jpeg'  => 'image/jpeg',
@@ -779,9 +779,9 @@ class Validator extends Base\Validator
         'batch_size'       => 'required|int|min:1',
     ];
 
-    protected static $fetchAccountBalancesV2Rules = [
-        'account_type' => 'sometimes|string|in:direct,shared',
-        'bank'         => 'sometimes|string|max:32|custom',
+    protected static $fetchBankingAccountBalancesRules = [
+        'account_type' => 'sometimes|string|in:razorpayx_lite,current_account',
+        'bank_code'    => 'sometimes|string|size:4|in:UTIB,ICIC,IDFB,RATN,YESB',
         'count'        => 'sometimes|int',
         'skip'         => 'sometimes|int'
     ];

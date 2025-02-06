@@ -8820,8 +8820,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     //sync api for balance fetch trace codes
     const BALANCE_FETCH_REQUEST                                    = 'BALANCE_FETCH_REQUEST';
-    const BALANCE_FETCH_REQUEST_V2                                 = 'BALANCE_FETCH_REQUEST_V2';
-    const BALANCE_FETCH_RESPONSE_V2                                = 'BALANCE_FETCH_RESPONSE_V2';
+    const BANKING_BALANCE_FETCH_REQUEST                            = 'BANKING_BALANCE_FETCH_REQUEST';
+    const BANKING_BALANCE_FETCH_RESPONSE                           = 'BANKING_BALANCE_FETCH_RESPONSE';
     const BALANCE_FETCH_REQUEST_SYNC_CALL_STARTED                  = 'BALANCE_FETCH_REQUEST_SYNC_CALL_STARTED';
     const BALANCE_FETCH_REQUEST_SYNC_CALL_SUCCESSFUL               = 'BALANCE_FETCH_REQUEST_SYNC_CALL_SUCCESSFUL';
     const BALANCE_FETCH_REQUEST_SYNC_CALL_UNSUCCESSFUL             = 'BALANCE_FETCH_REQUEST_SYNC_CALL_UNSUCCESSFUL';

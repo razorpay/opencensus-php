@@ -854,6 +854,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getBankingAccountBalances()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchBankingAccountBalances($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPrimaryBalance()
     {
         $data = $this->service()->getPrimaryBalance();

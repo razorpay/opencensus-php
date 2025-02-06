@@ -2956,13 +2956,13 @@ class Service extends Base\Service
         return $balance;
     }
 
-    public function fetchAccountBalancesV2(array $input)
+    public function fetchBankingAccountBalances(array $input)
     {
-        $this->merchant->getValidator()->validateInput(Validator::FETCH_ACCOUNT_BALANCES_V2, $input);
+        $this->merchant->getValidator()->validateInput(Validator::FETCH_BANKING_ACCOUNT_BALANCES, $input);
 
         $merchantId = $this->merchant->getId();
 
-        $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_V2,
+        $this->trace->info(TraceCode::BANKING_BALANCE_FETCH_REQUEST,
                            [
                                'input'       => $input,
                                'merchant_id' => $merchantId,
@@ -2973,12 +2973,12 @@ class Service extends Base\Service
 
         if (isset($input['account_type']) == true)
         {
-            $input['account_type'] = array(array_pull($input, 'account_type'));
+            $input['account_type'] = array(array_flip(Constants::BALANCE_TYPE_ACCOUNT_TYPE_MAPPING)[array_pull($input, 'account_type')]);
         }
 
-        if (isset($input['bank']) == true)
+        if (isset($input['bank_code']) == true)
         {
-            $input['channel'] = array_pull($input, 'bank');
+            $input['channel'] = array_flip(Constants::BANK_CHANNEL_BANK_CODE_MAPPING)[array_pull($input, 'bank_code')];
         }
 
         $balances = $this->repo->balance->fetch($input, $merchantId)->toArrayPublic();
@@ -2989,27 +2989,11 @@ class Service extends Base\Service
 
         $balances[Base\PublicCollection::ITEMS] = array_values($balances[Base\PublicCollection::ITEMS]);
 
-        foreach ($balances[Base\PublicCollection::ITEMS] as $index => &$balance)
-        {
-            foreach ($balance as $key => $value)
-            {
-                if (in_array($key, Constants::BALANCE_FETCH_V2_RESPONSE_FIELDS) == false)
-                {
-                    unset($balance[$key]);
-                }
-                if (array_key_exists($key, Constants::BALANCE_FETCH_V2_RESPONSE_KEY_MAPPING))
-                {
-                    $balance[Constants::BALANCE_FETCH_V2_RESPONSE_KEY_MAPPING[$key]] = $value;
-                    unset($balance[$key]);
-                }
-            }
+        $this->mapBalanceResponseData($balances);
 
-            $balance[Balance\Entity::ENTITY]            = 'balance';
-            $balance[Balance\Entity::ACCOUNT_NUMBER]    = mask_except_last4($balance[Balance\Entity::ACCOUNT_NUMBER]);
-            $balance[Balance\Entity::AVAILABLE_BALANCE] = $balance[Balance\Entity::BALANCE];
-        }
+        $this->removeAdditionalInfoFromBankingBalanceResponse($balances);
 
-        $this->trace->info(TraceCode::BALANCE_FETCH_RESPONSE_V2,
+        $this->trace->info(TraceCode::BANKING_BALANCE_FETCH_RESPONSE,
                            [
                                'count'       => sizeof($balances[Base\PublicCollection::ITEMS]),
                                'merchant_id' => $merchantId
@@ -14425,4 +14409,43 @@ class Service extends Base\Service
         return $response;
     }
 
+    private function mapBalanceResponseData(&$balances)
+    {
+        foreach($balances[Base\PublicCollection::ITEMS] as $index => &$balance)
+        {
+            if(array_key_exists(Balance\Entity::CHANNEL, $balance))
+            {
+                $balance['bank_code'] = Constants::BANK_CHANNEL_BANK_CODE_MAPPING[$balance[Balance\Entity::CHANNEL]];
+                $balance['bank_name'] = Constants::BANK_CHANNEL_BANK_NAME_MAPPING[$balance[Balance\Entity::CHANNEL]];
+            }
+            if(array_key_exists(Balance\Entity::BALANCE, $balance))
+            {
+                $balance['available_amount'] = $balance[Balance\Entity::BALANCE];
+                $balance['amount'] = $balance[Balance\Entity::BALANCE];
+            }
+            if(array_key_exists(Balance\Entity::LAST_FETCHED_AT, $balance))
+            {
+                $balance['refreshed_at'] = $balance[Balance\Entity::LAST_FETCHED_AT];
+            }
+            if(array_key_exists(Balance\Entity::ACCOUNT_TYPE, $balance))
+            {
+                $balance[Balance\Entity::ACCOUNT_TYPE] = Constants::BALANCE_TYPE_ACCOUNT_TYPE_MAPPING[$balance[Balance\Entity::ACCOUNT_TYPE]];
+            }
+            $balance[Balance\Entity::ENTITY] = 'banking_balance';
+        }
+    }
+
+    private function removeAdditionalInfoFromBankingBalanceResponse(&$balances)
+    {
+        foreach($balances[Base\PublicCollection::ITEMS] as $index => &$balance)
+        {
+            foreach($balance as $key => $value)
+            {
+                if(!in_array($key, Constants::BANKING_BALANCE_RESPONSE_KEYS))
+                {
+                    unset($balance[$key]);
+                }
+            }
+        }
+    }
 }

@@ -2053,20 +2053,39 @@ Razorpay';
 
     const SET_METHOD_MUTEX_SUFFIX="SET_METHODS";
 
-    const BALANCE_FETCH_V2_RESPONSE_FIELDS = [
-        Balance\Entity::ID,
-        Balance\Entity::ENTITY,
-        Balance\Entity::BALANCE,
-        Balance\Entity::AVAILABLE_BALANCE,
+    const BANK_CHANNEL_BANK_NAME_MAPPING = [
+        'rbl' => 'RBL Bank',
+        'icici' => 'ICICI Bank',
+        'yesbank' => 'Yes Bank',
+        'axis' => 'Axis Bank',
+        'idfc' => 'IDFC First Bank',
+    ];
+
+    // If any change is made in array BANK_CHANNEL_BANK_CODE_MAPPING,
+    // also include the change in FETCH_BANKING_ACCOUNT_BALANCES validator
+
+    const BANK_CHANNEL_BANK_CODE_MAPPING =[
+        'rbl' => 'RATN',
+        'icici' => 'ICIC',
+        'yesbank' => 'YESB',
+        'axis' => 'UTIB',
+        'idfc' => 'IDFB'
+    ];
+
+    const BALANCE_TYPE_ACCOUNT_TYPE_MAPPING = [
+        'direct' => 'current_account',
+        'shared' => 'razorpayx_lite'
+    ];
+
+    const BANKING_BALANCE_RESPONSE_KEYS = [
         Balance\Entity::CURRENCY,
         Balance\Entity::ACCOUNT_NUMBER,
         Balance\Entity::ACCOUNT_TYPE,
-        Balance\Entity::CHANNEL,
-        Balance\Entity::LAST_FETCHED_AT,
-    ];
-
-    const BALANCE_FETCH_V2_RESPONSE_KEY_MAPPING = [
-        Balance\Entity::LAST_FETCHED_AT => 'last_refreshed',
-        Balance\Entity::CHANNEL         => 'bank'
+        Balance\Entity::ENTITY,
+        'bank_code',
+        'refreshed_at',
+        'bank_name',
+        'available_amount',
+        'amount'
     ];
 }
