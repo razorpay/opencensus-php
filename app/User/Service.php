@@ -4623,12 +4623,11 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::USL_REDIRECTION, [
             'experimentId'              => $dashboardRedirectionExpId,
-            'experimentData'            => $experimentData[$dashboardRedirectionExpId]['variables']['result'],
             'currentRouteName'          => $currentRouteName,
             'isMerchantAuthenticated'   => $data['isAuthenticated'],
         ]);
 
-        if ($experimentData[$dashboardRedirectionExpId]['variables']['result'] != 'on'
+        if (($experimentData[$dashboardRedirectionExpId]['variables']['result'] ?? null) != 'on'
             or $data['isAuthenticated'] === true ) {
             return false;
         }
