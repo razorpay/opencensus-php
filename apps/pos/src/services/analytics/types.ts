@@ -46,6 +46,8 @@ export enum L1_FUNNEL_STAGE {
   AGREEMENT_SIGNING = 'Agreement Signing',
   DEVICE_DEPLOYMENT = 'Device Deployment',
   VALUE_ADDED_SERVICES = 'Value Added Services',
+  ORDER_PAYMENT_SCREEN = 'Order Payment Screen',
+  PAYMENT_LINK_PAYMENT_SCREEN = 'Payment Link Payment Screen',
 }
 
 export enum L2_FUNNEL_STAGE {
@@ -111,6 +113,7 @@ export enum L2_FUNNEL_STAGE {
   DISTRIBUTOR_CODE = 'Distributor Code',
   GSTIN = 'GSTIN',
   CUSTOM_RATES = 'Custom Rates',
+  PAYMENT_FAILED = 'Payment Failed',
 }
 
 export enum FIELD_TYPES {
@@ -135,6 +138,7 @@ export enum PAGE_TYPES {
   POST_CHECKOUT = 'Post Checkout',
   MERCHANT_SIGNING_ONLINE = 'Merchant Signing-online',
   AGREEMENT_DETAILS_SUCCESS = 'Agreement Details Success',
+  PAYMENT_LINK_CHECKOUT_PAGE = 'Payment Link Checkout Page',
 }
 
 export enum STATUS {

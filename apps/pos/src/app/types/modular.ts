@@ -298,6 +298,7 @@ export interface ModularComponentMetaUiFieldMetaRedirectUrl {
 export interface ModularOnboardingOption {
   label: string;
   value: string;
+  helpText?: string;
 }
 
 // Step Meta

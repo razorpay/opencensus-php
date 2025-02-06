@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useContext } from 'react';
 import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import errorService from '@razorpay/universe-cli/errorService';
 import { Box } from '@razorpay/blade/components';
@@ -9,11 +9,13 @@ import { getOrderSummaryFieldsFromModularConfig } from 'apps/pos/src/app/utils/d
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 import PageError from 'apps/pos/src/app/components/PageError';
-import { MODULES } from 'apps/pos/src/app/types/common';
+import { AvailableComponents, MODULES } from 'apps/pos/src/app/types/common';
+import { SpiltzContext } from 'shell/SpiltzServiceContext';
 
 const DeviceDeliveryAddressForSaleSalesAgent = (): JSX.Element | null => {
   const { states, handlers } = useOnboardingContext();
-  const { isUpdateModularLoading, merchantDetails, modularConfig } = states;
+  const splitz = useContext(SpiltzContext);
+  const { isUpdateModularLoading, merchantDetails, modularConfig, isPosEkycAgent } = states;
   const {
     getComponentConfigFromStep,
     updateModularConfig,
@@ -27,6 +29,37 @@ const DeviceDeliveryAddressForSaleSalesAgent = (): JSX.Element | null => {
   }, [modularConfig]);
 
   const { addedDevices = [], orderSummary } = deviceSummary ?? {};
+  // if expt below is ON, then BE will send payment_options_component on address confirmation. Else, BE will continue sending qr_code_component
+  const isBackendPLExptOn =
+    splitz.abExperiments?.pos_payment_link_qr_comp?.variables?.result === 'on';
+
+  const handleGoToNextStep = () => {
+    if (orderSummary?.totalOrderCharge === 0) {
+      //redirecting to order success page becoz order amount is 0
+      handleProceedToNextComponent({
+        __typeName: 'custom_routing',
+        routerConditions: {
+          [AvailableComponents.DEVICE_PAYMENT]: true,
+        },
+      });
+    } else {
+      if (isBackendPLExptOn) {
+        handleProceedToNextComponent({
+          __typeName: 'custom_routing',
+          routerConditions: {
+            [AvailableComponents.DEVICE_PAYMENT_METHODS]: true,
+          },
+        });
+      } else {
+        handleProceedToNextComponent({
+          __typeName: 'custom_routing',
+          routerConditions: {
+            [AvailableComponents.DEVICE_PAYMENT]: true,
+          },
+        });
+      }
+    }
+  };
 
   useEffect(() => {
     if (componentConfig && stepConfig?.modularKey && merchantDetails && orderSummary) {
@@ -72,7 +105,7 @@ const DeviceDeliveryAddressForSaleSalesAgent = (): JSX.Element | null => {
         isUpdateModularLoading={isUpdateModularLoading}
         merchantDetails={merchantDetails}
         handleModularUpdate={updateModularConfig}
-        handleGoToNextStep={handleProceedToNextComponent}
+        handleGoToNextStep={isPosEkycAgent ? handleProceedToNextComponent : handleGoToNextStep}
         isStepCompleted={isDeviceSelectionCompleted}
       />
     </ErrorBoundary>

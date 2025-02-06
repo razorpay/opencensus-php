@@ -272,6 +272,7 @@ export const MODULAR_CONFIG = gql`
       options {
         label
         value
+        helpText
       }
       validations
       jsonValue
@@ -506,6 +507,7 @@ export const UPDATE_MODULAR_CONFIG = gql`
       options {
         label
         value
+        helpText
       }
       validations
       jsonValue

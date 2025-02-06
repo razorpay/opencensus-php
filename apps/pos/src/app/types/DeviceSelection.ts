@@ -21,6 +21,7 @@ export enum MODULAR_DEVICE_FIELDS {
   DEVICE_DELIVERY_ADDRESS_FIELD = 'device_delivery_address_field',
   DEVICE_ORDER_CONFIRMATION_FIELD = 'device_order_confirmation_field',
   DEVICE_ORDER_QR_AMOUNT = 'qr_payment_amount_field',
+  DEVICE_ORDER_PAYMENT_LINK_AMOUNT_FIELD = 'payment_link_payment_amount_field',
   DEVICE_QR_PAYMENT_STATUS_CHECK = 'check_qr_status_field',
   DEVICE_SELECTION_STEP = 'device_selection_step',
   DEVICE_CART_COMPONENT = 'device_cart_component',
@@ -29,9 +30,11 @@ export enum MODULAR_DEVICE_FIELDS {
   DEVICE_ORDER_SUMMARY_FIELD = 'device_order_summary_field',
   DEVICE_CUSTOM_PRICING_DOCS = 'device_custom_pricing_documents_field',
   DEVICE_QR_CODE_COMPONENT = 'qr_code_component',
+  DEVICE_QR_CODE_COMPONENT_V2 = 'qr_code_component_v2',
   DEVICE_QR_IMAGE_CONTENT_FIELD = 'qr_image_content_field',
   DEVICE_PAYMENT_AMOUNT_FIELD = 'qr_payment_amount_field',
   DEVICE_DELIVERY_ADDRESS_COMPONENT = 'device_delivery_address_component',
+  DEVICE_PAYMENT_METHOD_COMPONENT = 'device_payment_method_component',
   DEVICE_PAYMENT_COMPONENT = 'device_payment',
   DEVICE_CHECK_FOR_ORDER_COMPLETION = 'check_for_order_completion',
   PARTNER_DEVICE_CATALOG_COMPONENT = 'partner_device_catalogue_component',
@@ -39,6 +42,31 @@ export enum MODULAR_DEVICE_FIELDS {
   NACH_FORM_COMPONENT = 'nach_form_component',
   DEVICE_CUSTOM_RATES_APPLICABLE = 'device_custom_rates_applicable_field',
   DEVICE_CUSTOM_RATES_DOCUMENTS = 'custom_device_charges_proof',
+  DEVICE_SALES_ASSISTED_PAYMENT_LINK_COMPONENT = 'sales_assisted_payment_link_component',
+  DEVICE_PAYMENT_OPTIONS_COMPONENT = 'payment_options_component',
+  DEVICE_PAYMENT_OPTIONS_FIELD = 'payment_options_field',
+  DEVICE_CANCEL_PAYMENT_LINK_FIELD = 'cancel_payment_link_field',
+  DEVICE_QR_CODE = 'qr_code',
+  DEVICE_PAYMENT_LINK = 'payment_link',
+  DEVICE_PAYMENT_LINK_CONFIRMATION_COMPONENT = 'payment_link_confirmation_component',
+  DEVICE_PAYMENT_LINK_REFERENCE_ID = 'payment_link_reference_id',
+  DEVICE_PAYMENT_LINK_NOTIFY_EMAIL = 'payment_link_notify_via_email_field',
+  DEVICE_PAYMENT_LINK_NOTIFY_MOBILE = 'payment_link_notify_via_mobile_field',
+  DEVICE_PAYMENT_LINK_CONTACT_MOBILE = 'payment_link_contact_mobile_field',
+  DEVICE_PAYMENT_LINK_CONTACT_EMAIL = 'payment_link_contact_email_field',
+  DEVICE_PAYMENT_LINK_CONFIRMATION_FIELD = 'payment_link_confirmation_field',
+  DEVICE_PAYMENT_LINK_STATUS_FIELD = 'payment_link_status_field',
+  DEVICE_CHECK_PAYMENT_LINK_STATUS_FIELD = 'check_payment_link_status_field',
+  DEVICE_PAYMENT_LINK_ID_FIELD = 'payment_link_id_field',
+  DEVICE_PAYMENT_LINK_URL_FIELD = 'payment_link_url_field',
+  DEVICE_GENERATE_PAYMENT_LINK_FIELD = 'generate_payment_link_field',
+  DEVICE_RESEND_PAYMENT_LINK_FIELD = 'resend_payment_link_field',
+  DEVICE_PAYMENT_LINK_CREATED_AT_FIELD = 'payment_link_created_at_field',
+  DEVICE_PAYMENT_LINK_COMPLETED_AT_FIELD = 'payment_completed_at_field',
+  DEVICE_CREATE_QR_CODE_FIELD = 'create_qr_code_field',
+  DEVICE_QR_PAYMENT_STATUS_FIELD = 'qr_payment_status_field',
+  DEVICE_QR_CODE_STATUS_FIELD = 'qr_code_status_field',
+  DEVICE_CLOSE_QR_FIELD = 'close_qr_field',
 }
 
 export enum QuantityActions {
@@ -120,10 +148,24 @@ export interface DeviceDeliveryAddress {
 
 export type DeviceDeliveryAddressTypes = 'registered' | 'operation';
 export type DeliveryAddresses = Record<DeviceDeliveryAddressTypes, DeviceDeliveryAddress>;
-export type DevicePaymentStatus = 'pending' | 'success' | 'payment_completed' | 'payment_pending';
+export type DevicePaymentStatus =
+  | 'pending'
+  | 'success'
+  | 'payment_completed'
+  | 'payment_pending'
+  | 'expired';
 
 export enum MILESTONE_NAME_FIELDS {
   SALES_MILESTONE = 'sales_milestone',
   PARTNER_MILESTONE = 'partner_milestone',
   PARTNER_DEVICE_DEPLOYMENT_MILESTONE = 'partner_device_deployment_milestone',
 }
+
+export enum PaymentStatusEnum {
+  pending = 'pending',
+  expired = 'expired',
+  paid = 'paid',
+}
+
+export type PaymentLinkStatusType = 'created' | 'expired' | 'paid' | 'cancelled' | '';
+export type QrPaymentStatusType = 'success' | 'pending' | 'expired' | '';

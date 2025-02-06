@@ -173,6 +173,8 @@ describe('deviceSelection utils', () => {
     test('should return correct device payment fields', () => {
       const { qrImageContent, qrPaymentStatus, qrTotalAmount } = getDevicePaymentFields({
         modularConfig,
+        isPosEkycAgent: true,
+        isBackendPLExptOn: false,
       });
 
       expect(qrImageContent).toBe(

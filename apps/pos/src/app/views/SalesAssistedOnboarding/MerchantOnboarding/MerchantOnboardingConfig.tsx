@@ -13,6 +13,8 @@ import DeviceSelectionCatalogForPosSalesAgent from './components/DeviceOrdering/
 import DeviceConfirmationForSalesAgent from './components/DeviceOrdering/DeviceConfirmation/DeviceConfirmationForSalesAgent';
 import MerchantNumberVerifySalesAssisted from './components/MerchantRegistration/MerchantNumberVerifySalesAssisted';
 import DevicePaymentForPosSalesAgent from './components/DeviceOrdering/DevicePayment/DevicePaymentForPosSalesAgent';
+import DevicePaymentMethodContainer from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/DeviceOrdering/DevicePaymentMethods';
+import PaymentLinkMethodContainer from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/DeviceOrdering/DevicePaymentMethods/PaymentLinkMethod';
 
 import MerchantKYC from './components/MerchantKYC';
 import AgreementSigning from './components/AgreementSigning';
@@ -153,7 +155,7 @@ const DEVICE_SELECTION_STEP = {
     {
       slug: AvailableComponents.DEVICE_SELECTION_CATALOG,
       modularKey: MODULAR_DEVICE_FIELDS.DEVICE_CATALOG_COMPONENT,
-      checkIfLandingPossible: () => true,
+      checkIfLandingPossible: (flag?: boolean) => !!flag,
       view: <DeviceSelectionCatalogForPosSalesAgent />,
       title: 'Choose Suitable Devices for your merchant',
       getNextComponent: () => AvailableComponents.DEVICE_CART,
@@ -161,7 +163,7 @@ const DEVICE_SELECTION_STEP = {
     {
       slug: AvailableComponents.DEVICE_CART,
       modularKey: MODULAR_DEVICE_FIELDS.DEVICE_CART_COMPONENT,
-      checkIfLandingPossible: () => true,
+      checkIfLandingPossible: (flag?: boolean) => !!flag,
       view: <DeviceConfirmationForSalesAgent />,
       title: 'Order Confirmation',
       getNextComponent: () => AvailableComponents.DEVICE_DELIVERY_ADDRESS,
@@ -169,10 +171,31 @@ const DEVICE_SELECTION_STEP = {
     {
       slug: AvailableComponents.DEVICE_DELIVERY_ADDRESS,
       modularKey: MODULAR_DEVICE_FIELDS.DEVICE_DELIVERY_ADDRESS_COMPONENT,
-      checkIfLandingPossible: () => true,
+      checkIfLandingPossible: (flag?: boolean) => !!flag,
       view: <DeviceDeliveryAddressForSaleSalesAgent />,
       title: 'Delivery Address',
-      getNextComponent: () => AvailableComponents.DEVICE_PAYMENT,
+      getNextComponent: () => AvailableComponents.DEVICE_PAYMENT_METHODS,
+    },
+    {
+      slug: AvailableComponents.DEVICE_PAYMENT_METHODS,
+      modularKey: MODULAR_DEVICE_FIELDS.DEVICE_PAYMENT_METHOD_COMPONENT,
+      checkIfLandingPossible: (flag?: boolean) => !!flag,
+      view: <DevicePaymentMethodContainer />,
+      title: 'Payment Options',
+    },
+    {
+      slug: AvailableComponents.PAYMENT_LINK_METHOD,
+      modularKey: MODULAR_DEVICE_FIELDS.DEVICE_PAYMENT_METHOD_COMPONENT,
+      checkIfLandingPossible: (flag?: boolean) => !!flag,
+      view: <PaymentLinkMethodContainer />,
+      title: 'Payment Link',
+    },
+    {
+      slug: AvailableComponents.SCAN_AND_PAY_METHOD,
+      modularKey: MODULAR_DEVICE_FIELDS.DEVICE_PAYMENT_METHOD_COMPONENT,
+      checkIfLandingPossible: (flag?: boolean) => !!flag,
+      view: <DevicePaymentForPosSalesAgent />,
+      title: 'Scan and Pay',
     },
     {
       slug: AvailableComponents.DEVICE_PAYMENT,

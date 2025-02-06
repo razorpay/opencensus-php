@@ -35,6 +35,7 @@ const DevicePaymentStatusCheck = ({
   const handlePaymentStatusCheck = () => {
     const payload: ModularPayload = {
       [MODULAR_DEVICE_FIELDS.DEVICE_QR_PAYMENT_STATUS_CHECK]: moment().unix(),
+      [MODULAR_DEVICE_FIELDS.DEVICE_CHECK_FOR_ORDER_COMPLETION]: moment().unix(),
       [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: onStatusCheckAttempt,
     };
     trackEvent({

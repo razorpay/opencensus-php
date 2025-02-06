@@ -59,6 +59,7 @@ describe('DeviceQR', () => {
     renderApp();
     await userEvent.click(screen.getByText('Check Payment Status'));
     expect(defaultProps.handleModularUpdate).toHaveBeenCalledWith({
+      check_for_order_completion: expect.any(Number),
       check_qr_status_field: expect.any(Number),
       modular_callback: expect.any(Function),
     });

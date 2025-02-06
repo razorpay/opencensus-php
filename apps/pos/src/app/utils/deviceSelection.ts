@@ -13,6 +13,7 @@ import {
   DeviceOrderSummaryItem,
   DeviceCharges,
   ArrayOfDocumentFieldsUpload,
+  ModularOnboardingOption,
 } from 'apps/pos/src/app/types/modular';
 import {
   AvailableDevicePlans,
@@ -23,6 +24,8 @@ import {
   EditDeviceInCartForm,
   MODULAR_DEVICE_FIELDS,
   OrderSummaryItemWithDeviceConfig,
+  PaymentLinkStatusType,
+  QrPaymentStatusType,
   QuantityActions,
 } from 'apps/pos/src/app/types/DeviceSelection';
 import {
@@ -211,6 +214,8 @@ export const getFieldsForDeliveryAddressFromMerchantDetails = ({
 
 interface GetDevicePaymentFieldsProps {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse;
+  isPosEkycAgent?: boolean;
+  isBackendPLExptOn?: boolean;
 }
 
 interface GetDevicePaymentFields {
@@ -221,18 +226,27 @@ interface GetDevicePaymentFields {
 
 export const getDevicePaymentFields = ({
   modularConfig,
+  isPosEkycAgent,
+  isBackendPLExptOn,
 }: GetDevicePaymentFieldsProps): GetDevicePaymentFields => {
+  const getQrComponentName = () => {
+    if (isPosEkycAgent || !isBackendPLExptOn) {
+      return MODULAR_DEVICE_FIELDS.DEVICE_QR_CODE_COMPONENT;
+    }
+    return MODULAR_DEVICE_FIELDS.DEVICE_QR_CODE_COMPONENT_V2;
+  };
+
   const qrImageContentField = getFieldFromComponent({
     modularConfig,
     step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
-    component: MODULAR_DEVICE_FIELDS.DEVICE_QR_CODE_COMPONENT,
+    component: getQrComponentName(),
     fieldName: MODULAR_DEVICE_FIELDS.DEVICE_QR_IMAGE_CONTENT_FIELD,
   });
 
   const qrTotalAmountField = getFieldFromComponent({
     modularConfig,
     step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
-    component: MODULAR_DEVICE_FIELDS.DEVICE_QR_CODE_COMPONENT,
+    component: getQrComponentName(),
     fieldName: MODULAR_DEVICE_FIELDS.DEVICE_PAYMENT_AMOUNT_FIELD,
   });
 
@@ -268,4 +282,97 @@ export const getDeviceStepStatus = ({
   if (addedDevices?.length > 0 && !isDeviceStepCompleted) return 'payment_pending';
   else if (addedDevices?.length > 0 && isDeviceStepCompleted) return 'payment_completed';
   else return 'pending';
+};
+
+interface GetDevicePaymentMethodsProps {
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse;
+}
+export const getDevicePaymentMethods = ({
+  modularConfig,
+}: GetDevicePaymentMethodsProps): ModularOnboardingOption[] | undefined => {
+  const paymentOptionsField = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_PAYMENT_OPTIONS_COMPONENT,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_PAYMENT_OPTIONS_FIELD,
+  });
+  return paymentOptionsField?.meta?.options;
+};
+interface GetDevicePaymentDetailsProps {
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
+}
+
+interface GetPaymentLinkDetailsReturnType {
+  paymentLinkStatus: PaymentLinkStatusType;
+  qrCodePaymentStatus: QrPaymentStatusType;
+  paymentLinkUrl: string;
+  paymentLinkCreatedAt: string;
+  paymentLinkCompletedAt: string;
+}
+export const getDevicePaymentDetails = ({
+  modularConfig,
+}: GetDevicePaymentDetailsProps): GetPaymentLinkDetailsReturnType | null => {
+  if (!modularConfig) return null;
+  const paymentLinkStatusField = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_SALES_ASSISTED_PAYMENT_LINK_COMPONENT,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_PAYMENT_LINK_STATUS_FIELD,
+  });
+  const paymentLinkUrlField = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_SALES_ASSISTED_PAYMENT_LINK_COMPONENT,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_PAYMENT_LINK_URL_FIELD,
+  });
+  const paymentLinkCreatedAt = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_SALES_ASSISTED_PAYMENT_LINK_COMPONENT,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_PAYMENT_LINK_CREATED_AT_FIELD,
+  });
+  const paymentLinkCompletedAt = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_SALES_ASSISTED_PAYMENT_LINK_COMPONENT,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_PAYMENT_LINK_COMPLETED_AT_FIELD,
+  });
+  const qrCodeStatusField = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_QR_CODE_COMPONENT_V2,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_QR_CODE_STATUS_FIELD,
+  });
+  const qrPaymentStatusField = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_QR_CODE_COMPONENT_V2,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_QR_PAYMENT_STATUS_FIELD,
+  });
+  let qrPaymentStatus: QrPaymentStatusType = '';
+  // qrCodeStatusField can be '', 'active', 'closed'
+  if (isStringValue(qrCodeStatusField) && qrCodeStatusField.stringValue === 'active') {
+    qrPaymentStatus = 'pending';
+  }
+  if (isStringValue(qrCodeStatusField) && qrCodeStatusField.stringValue === 'closed') {
+    if (isStringValue(qrPaymentStatusField) && qrPaymentStatusField.stringValue === 'success') {
+      qrPaymentStatus = 'success';
+    }
+    if (isStringValue(qrPaymentStatusField) && qrPaymentStatusField.stringValue === 'pending') {
+      qrPaymentStatus = 'expired';
+    }
+  }
+  return {
+    paymentLinkStatus: isStringValue(paymentLinkStatusField)
+      ? (paymentLinkStatusField.stringValue as PaymentLinkStatusType)
+      : '',
+    paymentLinkUrl: isStringValue(paymentLinkUrlField) ? paymentLinkUrlField.stringValue : '',
+    paymentLinkCreatedAt: isStringValue(paymentLinkCreatedAt)
+      ? paymentLinkCreatedAt.stringValue
+      : '',
+    paymentLinkCompletedAt: isStringValue(paymentLinkCompletedAt)
+      ? paymentLinkCompletedAt.stringValue
+      : '',
+    qrCodePaymentStatus: qrPaymentStatus || '',
+  };
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import errorService from '@razorpay/universe-cli/errorService';
 import { Box } from '@razorpay/blade/components';
@@ -8,16 +8,22 @@ import { getDevicePaymentFields } from 'apps/pos/src/app/utils/deviceSelection';
 import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { MODULES } from 'apps/pos/src/app/types/common';
+import { SpiltzContext } from 'shell/SpiltzServiceContext';
 
 const DevicePaymentForPosSalesAgent = (): JSX.Element | null => {
   const { states, handlers } = useOnboardingContext();
-  const { modularConfig, isUpdateModularLoading, merchantDetails } = states;
+  const splitz = useContext(SpiltzContext);
+  const { modularConfig, isUpdateModularLoading, merchantDetails, isPosEkycAgent } = states;
   const { updateModularConfig, handleProceedToNextComponent } = handlers;
-
+  // if expt below is ON, then BE will send payment_options_component on address confirmation. Else, BE will continue sending qr_code_component
+  const isBackendPLExptOn =
+    splitz.abExperiments?.pos_payment_link_qr_comp?.variables?.result === 'on';
   if (!modularConfig || !merchantDetails) return null;
 
   const { qrImageContent, qrTotalAmount, qrPaymentStatus } = getDevicePaymentFields({
     modularConfig,
+    isPosEkycAgent,
+    isBackendPLExptOn,
   });
 
   return (

@@ -53,6 +53,9 @@ export enum AvailableComponents {
   BRAND_EMI_FORM = 'brandEmiForm',
   ADDED_BRAND_INFO = 'addedBrandInfo',
   DEVICE_MAPPING_SUCCESS = 'deviceMappingSuccess',
+  DEVICE_PAYMENT_METHODS = 'devicePaymentMethods',
+  PAYMENT_LINK_METHOD = 'paymentLink',
+  SCAN_AND_PAY_METHOD = 'scanAndPay',
 }
 
 export type OnboardingStepType =
@@ -72,6 +75,9 @@ export type OnboardingComponentType =
   | AvailableComponents.AGREEMENT_SIGNING
   | AvailableComponents.ADDITIONAL_DETAILS
   | AvailableComponents.DEVICE_DELIVERY_ADDRESS
+  | AvailableComponents.DEVICE_PAYMENT_METHODS
+  | AvailableComponents.PAYMENT_LINK_METHOD
+  | AvailableComponents.SCAN_AND_PAY_METHOD
   | AvailableComponents.DEVICE_PAYMENT
   | AvailableComponents.DEVICE_DEPLOYMENT_LIST
   | AvailableComponents.DEVICE_TESTING
