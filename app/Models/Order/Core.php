@@ -68,7 +68,7 @@ class Core extends Base\Core
 
             $input['public_key'] = $publicKey;
 
-            $orderService->checkForDefaultOffers($input);
+            $orderService->checkForDefaultOffers($input, $merchant);
 
             $input['merchant_id'] = $merchant->getId();
 

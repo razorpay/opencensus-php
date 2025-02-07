@@ -190,8 +190,13 @@ class Service extends Base\Service
         return $order;
     }
 
-    public function checkForDefaultOffers(array & $input)
+    public function checkForDefaultOffers(array & $input, $merchant = null)
     {
+        if ($this->merchant === null)
+        {
+            $this->merchant = $merchant;
+        }
+
         $defaultOffers = (new Offer\Core())->fetchDefaultOffersForMerchant($this->merchant->getId());
 
         $offerCore = (new Offer\Core);
