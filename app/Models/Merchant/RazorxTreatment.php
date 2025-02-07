@@ -53,8 +53,6 @@ final class RazorxTreatment
     //the enable variant
     const VARIANT_DISABLE = 'disable';
 
-    //Razorx treatment constant, allows system to send new bu namespace to vault service
-    const VAULT_BU_NAMESPACE_MIGRATION  = 'vault_bu_namespace_migration';
 
     // razorx treatment constant, allows saving and fetching card meta data in vault service temporarily
     const VAULT_BU_NAMESPACE_CARD_METADATA_VARIANT = 'vault_bu_namespace_card_metadata_variant';
@@ -666,7 +664,6 @@ final class RazorxTreatment
     // Razorx treatment constant  for which validating multiple sheets for recurring charge axis;
     const DUPLICATE_SHEET_VALIDATION_BATCH = 'duplicate_sheet_validation_batch';
 
-    const ASYNC_TOKEN_MIGRATION = 'async_token_migration';
 
     const NON_RZP_TOKENISED_IR = "non_rzp_tokenised_ir";
 
@@ -676,8 +673,6 @@ final class RazorxTreatment
     public const RX_CUSTOM_ACCESS_CONTROL_DISABLED = "rx_custom_access_control_disabled";
 
     public const RX_PAYOUT_RECEIPT_BENE_NOTIFICATION = "rx_payout_receipt_bene_notification";
-
-    public const PANSOURCE_CHANGE_RUPAY = 'pansource_change_rupay';
 
     public const FETCH_TOKEN_STATUS_FROM_NETWORK = 'fetch_token_status_from_network';
 
@@ -1022,7 +1017,6 @@ final class RazorxTreatment
     const ALLOW_EMAIL_OPTIONAL_FOR_PARTNER = 'allow_email_optional_for_partner';
 
     public const ALLOW_BIN_SERVICE_DUAL_WRITE = 'allow_bin_service_dual_write';
-    public const ALLOW_BIN_SERVICE_TOKEN_DUAL_WRITE = 'allow_bin_service_token_dual_write';
 
     public const ALLOW_BIN_SERVICE_SHADOW_READS = 'allow_bin_service_shadow_reads';
 

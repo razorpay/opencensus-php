@@ -920,7 +920,6 @@ class CBPaymentCreateTest extends TestCase
                 {
                     if ($feature === 's2s_card_payments_via_pg_router_v2' or
                         $feature === 'netbanking_payments_via_pg_router_disable_mid' or
-                        $feature === 'netbanking_payments_via_pg_router_create_json' or
                         $feature === 'netbanking_payments_via_pg_router')
                     {
                         return 'on';

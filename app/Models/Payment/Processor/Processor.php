@@ -334,30 +334,16 @@ class Processor
      */
     const RAAS_CARD_PAYMENTS_VIA_PGROUTER = 'raas_card_payments_via_pg_router';
 
-    /**
-     * Razorx flag to indicate if a oAuth payment should go via PG Router and CPS or just via API service
-     */
-    const OAUTH_CARD_PAYMENTS_VIA_PGROUTER = 'oauth_card_payments_via_pg_router';
-
-    /**
-     * Razorx flag to indicate if a partner auth payment should go via PG Router and CPS or just via API service
-     */
-    const PARTNER_AUTH_CARD_PAYMENTS_VIA_PGROUTER = 'partner_auth_card_payments_via_pg_router';
 
     /**
      * Razorx flag to indicate if a Diners and AMex payment should go via PG Router and CPS or just via API service
      */
-    const DINERS_OR_AMEX_CARD_PAYMENTS_VIA_PGROUTER = 'diners_or_amex_card_payments_via_pg_router';
 
     /**
      * Razorx flag to indicate if a JSON V2 should go via PG Router and CPS or just via API service
      */
     const JSON_V2_CARD_PAYMENTS_VIA_PGROUTER = 'json_v2_card_payments_via_pg_router';
 
-     /**
-     * Razorx flag to indicate if a marketplace should go via PG Router and CPS or just via API service
-     */
-    const MARKETPLACE_CARD_PAYMENTS_VIA_PGROUTER = 'marketplace_v2_card_payments_via_pg_router';
 
     /**
      * Razorx flag to indicate if a non saved card tokenised Payment should go via PG Router and CPS or just via API service
@@ -373,11 +359,6 @@ class Processor
     * Razorx flag to indicate if a Dynamic Convenience Fee Payment should go via PG Router and CPS or just via API service
     */
     const DYNAMIC_CONVENIENCE_PAYMENTS_VIA_PGROUTER = 'dynamic_convenience_payments_via_pg_router';
-
-    /**
-     * Razorx flag to indicate if open wallet Payment should go via PG Router and CPS or just via API service
-     */
-    const OPEN_WALLET_CARD_PAYMENTS_VIA_PGROUTER = 'open_wallet_card_payments_via_pg_router';
 
     /**
      * Razorx flag to indicate if a saved card token payment should go via PG Router and CPS or just via API service
@@ -410,10 +391,7 @@ class Processor
      * Razorx flag to indicate if a payment with save option on s2s should go via PG Router and CPS or just via API service
      */
     const SAVED_CARD_PAYMENTS_VIA_PGROUTER_V4 = 'saved_card_payments_via_pg_router_v4';
-    /**
-     * Razorx flag to indicate if a payment with charge account should go via PG Router and CPS or just via API service
-     */
-    const CHARGE_ACCOUNT_CARD_PAYMENTS_VIA_PGROUTER = 'charge_account_card_payments_via_pg_router';
+
     /**
      * Razorx flag to indicate if a banking Org ID card payment should go via PG Router and CPS or just via API service
      */
@@ -1907,15 +1885,7 @@ class Processor
 
             if (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false)
             {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::CHARGE_ACCOUNT_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-                if ($result !== 'on')
-                {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_INPUT_REASON, [
-                        'inputField' => 'charge_account',
-                        'merchant_id' => $merchant->getId(),
-                    ]);
-                    return false;
-                }
+
                 $this->setChargeAccountMerchantFeatures($input);
             }
 

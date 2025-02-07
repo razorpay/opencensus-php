@@ -537,20 +537,14 @@ class CardVault extends Base\Core
     {
         if((new TokenCore)->isNetworkRuPay($input[Entity::CARD]))
         {
-            $variant = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::PANSOURCE_CHANGE_RUPAY, $this->mode);
-
             $this->trace->info(TraceCode::PANSOURCE_CHANGE_RAZORX_VARIANT, [
                 'authentication_data'     => $input['authentication'],
-                'razorx_variant' => $variant,
                 'mode' => $this->mode,
                 'merchant_id' => $merchant->getId(),
             ]);
-
-            if (strtolower($variant) === 'on')
-            {
+            if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
                 return true;
             }
-
             return false;
         }
     }
