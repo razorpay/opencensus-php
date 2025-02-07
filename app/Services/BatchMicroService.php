@@ -31,6 +31,8 @@ class BatchMicroService
 
     const JK_ORG = 'CuggZoEvla3kgc';
 
+    const HDFC_ORG = 'ISCBolfdHQnhj4';
+
     protected $trace;
 
     protected $mode;
@@ -305,10 +307,12 @@ class BatchMicroService
                 'X-Creator-Type' => $creatorType,
             ];
 
-            if ($input['type'] !=='jammu_and_kashmir_onboarding') {
-                $headers['X-Entity-Id'] = $merchant->getId();
-            } else {
+            if ($input['type'] == Batch\Type::JAMMU_AND_KASHMIR_ONBOARDING) {
                 $headers['X-Entity-Id'] = self::JK_ORG;
+            } else if ($input['type'] == Batch\Type::HDFC_ONBOARDING) {
+                $headers['X-Entity-Id'] = self::HDFC_ORG;
+            }else {
+                $headers['X-Entity-Id'] = $merchant->getId();
             }
 
             if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
