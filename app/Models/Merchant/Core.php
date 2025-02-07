@@ -3185,20 +3185,6 @@ class Core extends Base\Core
             return $merchant;
         }
 
-        if ($action === Constants::SUSPEND)
-        {
-            try
-            {
-                $this->expireKeysForSuspendedMerchant($merchant);
-            }
-            catch (\Throwable $exception)
-            {
-                $this->trace->error(TraceCode::EXPIRE_KEYS_FOR_SUSPENDED_MERCHANTS, [
-                    'error' => $exception->getMessage(),
-                ]);
-            }
-        }
-
         $internationalProducts = array_key_exists(ProductInternationalMapper::INTERNATIONAL_PRODUCTS, $input) ?
             $input[ProductInternationalMapper::INTERNATIONAL_PRODUCTS] :
             null;
@@ -3218,6 +3204,19 @@ class Core extends Base\Core
             $internationalProducts,
             $riskAttributes
         ) {
+            if ($action === Constants::SUSPEND)
+            {
+                try
+                {
+                    $this->expireKeysForSuspendedMerchant($merchant);
+                }
+                catch (\Throwable $exception)
+                {
+                    $this->trace->error(TraceCode::EXPIRE_KEYS_FOR_SUSPENDED_MERCHANTS, [
+                        'error' => $exception->getMessage(),
+                    ]);
+                }
+            }
             $this->handleInternationalAction($action, $merchant, $internationalProducts);
 
             $merchant->$function();
