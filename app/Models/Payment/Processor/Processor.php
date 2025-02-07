@@ -1960,7 +1960,10 @@ class Processor
                 }
 
                 if (empty($order) === false and $order->hasOffers() === true) {
-                    $offerExpResult = $this->app->razorx->getTreatment($merchant->getId(), self::ROUTE_OFFER_PAYMENTS_TO_REARCH_CPS, $this->mode);
+                    $offerExpResult = 'off';
+                    if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()) {
+                        $offerExpResult = 'on';
+                    }
                     if ($offerExpResult != 'on') {
                         $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                             'reason' => "offers_blocked",
@@ -2019,7 +2022,10 @@ class Processor
                 if ((empty($orderTransfers) === false) and
                     (count($orderTransfers) > 0))
                 {
-                    $orderTransfersExpResult = $this->app->razorx->getTreatment($merchant->getId(), self::ROUTE_ORDER_TRANSFERS_PAYMENTS_TO_REARCH_CPS, $this->mode);
+                    $orderTransfersExpResult = 'off';
+                    if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+                        $orderTransfersExpResult = 'on';
+                    }
                     if ($orderTransfersExpResult != 'on') {
                         $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                             'reason' => "order_transfers",
@@ -2304,8 +2310,10 @@ class Processor
                                 $networkToken = (new TokenCore())->fetchToken($token, false);
                                 // Adding this check to route issuer or dual token payments on rearch.
                                 // In this case we would fetch cryptogram on the CPS service & this is how it should be for all network tokenised payments
-                                $issuer_result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_ISSUER_AND_DUAL_TOKEN_PAYMENTS_VIA_PGROUTER, $this->mode);
-
+                                $issuer_result = 'off';
+                                if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+                                    $issuer_result = 'on';
+                                }
                                 if ($issuer_result === 'on') {
 
                                     $cardInput = [
@@ -2577,8 +2585,10 @@ class Processor
             {
                 if ($iin->getNetworkCode() === Card\Network::DICL)
                 {
-                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_PAYMENTS_VIA_PGROUTER_V3, $this->mode);
-
+                    $result ='off';
+                    if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+                        $result = 'on';
+                    }
                     if ($result !== 'on') {
                         $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                             'reason' => "not_engaged_in_saved_card_payments_via_pg_router_v3",
@@ -2601,8 +2611,10 @@ class Processor
                 {
                     if ($library === Payment\Analytics\Metadata::CUSTOM || $library === Payment\Analytics\Metadata::RAZORPAYJS)
                     {
-                        $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_PAYMENTS_VIA_PGROUTER_V2, $this->mode);
-
+                        $result = 'off';
+                        if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+                            $result = 'on';
+                        }
                         if ($result !== 'on') {
                             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                                 'reason' => "not_engaged_in_saved_card_payments_via_pg_router_v2",
@@ -2615,8 +2627,10 @@ class Processor
                     }
                     if ($library === Payment\Analytics\Metadata::S2S)
                     {
-                        $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_PAYMENTS_VIA_PGROUTER_V4, $this->mode);
-
+                        $result = 'off';
+                        if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+                            $result = 'on';
+                        }
                         if ($result !== 'on') {
                             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                                 'reason' => "not_engaged_in_saved_card_payments_via_pg_router_v4",
@@ -2631,8 +2645,10 @@ class Processor
                     return false;
                 }
 
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
+                $result = 'off';
+                if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+                    $result = 'on';
+                }
                 if ($result !== 'on') {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "not_engaged_in_saved_card_payments_via_pg_router",
@@ -2710,15 +2726,18 @@ class Processor
 
             if ($this->isPaymentViaTokenisedCard($input))
             {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::NON_SAVED_TOKENISED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
+                $result = 'off';
+                if($this->mode == MODE::LIVE && app()->isEnvironmentProduction()){
+                    $result = 'on';
+                }
                 return ($result === 'on');
             }
 
             if (($merchant->isFeatureEnabled(Feature::JSON_V2) === true))
             {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::JSON_V2_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
+                if($this->mode == MODE::LIVE && app()->isEnvironmentProduction()){
+                    $result = 'on';
+                }
                 return ($result === 'on');
             }
 
@@ -2741,8 +2760,10 @@ class Processor
 
             if ($this->app['basicauth']->isPrivateAuth() === false)
             {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-            }
+                $result = 'off';
+                if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+                    $result = 'on';
+                }            }
             else
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::S2S_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
@@ -7184,8 +7205,10 @@ class Processor
 
         $experimentVariable = UniqueIdEntity::generateUniqueId();
 
-        $variant = $this->app->razorx->getTreatment($experimentVariable, Merchant\RazorxTreatment::DISABLE_RZP_TOKENISED_PAYMENT, $this->mode);
-
+        $variant = '';
+        if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+            $variant = 'on';
+        }
         $merchant = $this->merchant;
 
         $isMalaysianMerchant = Country::matches($merchant->getCountry(), Country::MY);

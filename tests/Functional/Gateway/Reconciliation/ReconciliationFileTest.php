@@ -666,7 +666,7 @@ class ReconciliationFileTest extends TestCase
 
         $cardVault->shouldReceive('sendRequest')
             ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-            ->andReturnUsing($callable)->times(7);
+            ->andReturnUsing($callable)->times(6);
 
 
         $this->mockServerContentFunction(function (& $content, $action)

@@ -10,6 +10,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Jobs\Ledger\ReconNFCToCLS;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Models\OfflinePayment\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
@@ -777,7 +778,10 @@ class SubReconciliate extends Base\Core
                 }
                 else
                 {
-                    $variant = $this->app['razorx']->getTreatment($entity->getId(), RazorxTreatment::DELETE_CARD_METADATA_AFTER_RECONCILIATION, $this->app['rzp.mode'] ?? 'live');
+                    $variant = '';
+                    if($this->mode == \RZP\Constants\Mode::LIVE && app()->isEnvironmentProduction()){
+                        $variant = 'on';
+                    }
                 }
 
                 $this->trace->info(

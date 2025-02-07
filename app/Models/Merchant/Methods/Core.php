@@ -2015,7 +2015,10 @@ class Core extends Base\Core
         if ($merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID) {
             return false;
         }
-        $result = $this->app->razorx->getTreatment(DEConstants::CARD, RazorxTreatment::MERCHANT_ALT_ID_ONBOARDING, $this->mode);
+        $result = 'off';
+        if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+            $result = 'on';
+        }
         if ($result === 'on') {
             $this->trace->info(TraceCode::MERCHANT_ALT_ID_ONBOARDING_ENABLED, [
                 'merchant_id' => $merchant->getId(),

@@ -680,8 +680,6 @@ final class RazorxTreatment
 
     public const DELETE_CARD_METADATA_AFTER_RECONCILIATION_FOR_PAYSECURE_AND_FULCRUM = 'delete_card_metadata_after_reconciliation_for_paysecure_and_fulcrum';
 
-    public const PANSOURCE_CHANGE_MIGRATION_RUPAY = 'pansource_change_migration_rupay';
-
     public const  SMARTCOLLECT_SERVICE_BANK_TRANSFER = 'smartcollect_service_bank_transfer';
 
     /* Experiment to enable self serve workflow */

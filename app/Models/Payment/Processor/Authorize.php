@@ -771,15 +771,27 @@ trait Authorize
         $gatewayAndGatewayAcquirer = $gateway . "_" . $gatewayAcquirer;
 
         $vaiant = 'off';
+        $gatewayAndAcqForCvvLess = [
+            'cybersource_axis',
+            'hitachi_ratn',
+            'first_data_icic',
+            'cybersource_hdfc',
+            'hdfc_hdfc',
+            'card_fss_barb',
+            'fulcrum_ratn'
+        ];
 
         if ($payment->card->isMasterCard() === true)
         {
-            $variant = $this->app->razorx->getTreatment($gatewayAndGatewayAcquirer, Merchant\RazorxTreatment::CVV_LESS_NON_REARCH_MC, $this->mode);
+            if (in_array($gatewayAndGatewayAcquirer,$gatewayAndAcqForCvvLess) && $this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+                $variant = 'on';
+            }
         }
         else {
             $networkCode = $payment->card->getNetworkCode();
-            $exp = Merchant\RazorxTreatment::CVV_LESS_NON_REARCH . '_' . $networkCode . '_'. $gatewayAndGatewayAcquirer;
-            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $exp, $this->mode);
+            if($this->mode == Mode::LIVE && app()->isEnvironmentProduction() && $networkCode == 'DICL' && $gatewayAndGatewayAcquirer == 'hdfc_hdfc'){
+                $variant = 'on';
+            }
         }
 
 
@@ -2333,8 +2345,10 @@ trait Authorize
             ($payment->isMethodCardOrEmi() === true and
                 $payment->merchant->isRazorpayOrgId() === true))
         {
-            $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_OTHER_NETWORKS, $this->mode);
-
+            $variant = '';
+            if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+                $variant = 'on';
+            }
             $this->trace->info(TraceCode::GATEWAY_CAPTURE_RAZORX_VARIANT, [
                 'payment_id'     => $payment->getId(),
                 'merchant_id'    => $payment->getMerchantId(),
@@ -2354,8 +2368,10 @@ trait Authorize
         if (($payment->isGatewayCaptured() === false) and
             ($payment->getGateway() === Payment\Gateway::FULCRUM))
         {
-            $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_FULCRUM ,$this->mode);
-
+            $variant = '';
+            if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+                $variant = 'on';
+            }
             $this->trace->info(TraceCode::GATEWAY_CAPTURE_RAZORX_VARIANT, [
                 'payment_id'     => $payment->getId(),
                 'merchant_id'    => $payment->getMerchantId(),
