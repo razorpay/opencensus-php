@@ -558,7 +558,7 @@ class Validator extends Base\Validator
         }
 
         $maxAmount = empty($input[Entity::MAX_AMOUNT]) ?
-            Entity::getDefaultMaxAmountForMethod($method) : $input[Entity::MAX_AMOUNT];
+            Entity::getDefaultMaxAmountForMethod($method, $mcc = null, $merchantID = null) : $input[Entity::MAX_AMOUNT];
 
         $firstPaymentAmount = empty($input[Entity::FIRST_PAYMENT_AMOUNT]) ?
             0 : $input[Entity::FIRST_PAYMENT_AMOUNT];

@@ -8387,14 +8387,24 @@ trait Authorize
 
                     if ($maxAmount === null)
                     {
-                        if (($inn !== null) and
-                            (IIN\IIN::isDomesticBin($inn->getCountry(), $payment->merchant->getCountry())))
-                        {
-                            $maxAmount =  SubscriptionRegistration\Entity::CARD_MANDATE_DEFAULT_MAX_AMOUNT;
-                        }
-                        else
-                        {
-                            $maxAmount =  SubscriptionRegistration\Entity::DEFAULT_MAX_AMOUNT;
+                        $mcc = $payment->merchant->getCategory();
+                        $app = App::getFacadeRoot();
+                        $experimentName = $app['config']->get('app.afa_splitz');
+
+                        $merchantId = $payment->merchant->getMerchantId();
+                        $splitzResponse = $this->getSplitzResponseI($merchantId, $experimentName);
+                        $defaultMaxAmount = SubscriptionRegistration\Entity::CARD_MANDATE_DEFAULT_MAX_AMOUNT;
+
+                        if ($inn !== null && IIN\IIN::isDomesticBin($inn->getCountry(), $payment->merchant->getCountry())) {
+                            if ($splitzResponse === 'enable') {
+                                $maxAmount = in_array($mcc, Token\Entity::EXTENDED_AFA_MERCHANTS)
+                                    ? SubscriptionRegistration\Entity::SPECIAL_MCC_MAX_AMOUNT
+                                    : $defaultMaxAmount;
+                            } else {
+                                $maxAmount = $defaultMaxAmount;
+                            }
+                        } else {
+                            $maxAmount = SubscriptionRegistration\Entity::DEFAULT_MAX_AMOUNT;
                         }
                     }
 
@@ -8593,6 +8603,22 @@ trait Authorize
             ]);
 
         return $token;
+    }
+    protected function getSplitzResponseI(string $id, string $experimentId)
+    {
+        $properties = [
+            'id'            => $id,
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     protected function savePaymentMethodForSubscription(

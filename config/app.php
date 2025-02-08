@@ -1301,5 +1301,7 @@ return array(
 
     'update_upi_late_auth_status'   => env('UPDATE_UPI_LATE_AUTH_STATUS'),
 
+    'afa_splitz' => env('AFA_SPLITZ_EXP_ID'),
+
     'api_migration_v3' => env('API_MIGRATION_V3')
 );

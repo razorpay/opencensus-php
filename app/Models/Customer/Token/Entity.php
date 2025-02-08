@@ -172,6 +172,16 @@ class Entity extends Base\PublicEntity
             Payment\Method::WALLET => 0
         ]
     ];
+
+    // /** The following are Merchant Category Codes (MCC) for Mutual Funds, Insurance, and Credit Card Bills.These codes are applicable to the mentioned categories, where the AFA limit for card recurring payments has been raised to ₹100,000. */
+        const EXTENDED_AFA_MERCHANTS = [
+            6211,
+            6300,
+            6529,
+            5960,
+            6012,
+            5413
+        ];
     /**
      * We use this to set the number of years after which the
      * emandate token will get expired and cannot be used

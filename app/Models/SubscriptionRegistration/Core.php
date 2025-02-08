@@ -66,7 +66,7 @@ class Core extends Base\Core
 
         $validator->validateTokenExpiryDate($input);
 
-        $subscriptionRegistration = (new Entity)->build($input);
+        $subscriptionRegistration = (new Entity)->build($input, $merchant->getCategory(), $merchant->getMerchantId());
 
         if (($subscriptionRegistration->getMethod() === Payment\Method::CARD) or
             ($subscriptionRegistration->getMethod() === null))
