@@ -47,6 +47,8 @@ class ContextMap
 
     const SKIP_HANDLE_VALIDATION_ROUTES = [
         Requests::P2P_CUSTOMER_CREATE_SESSION,
+        Requests::P2P_TURBO_PREFERENCES_V2,
+        Requests::P2P_TURBO_GATEWAY_CONFIG_V2,
     ];
 
     public static function resolveRequestHeaders(Request $request, array $map = self::REQUEST_OPTIONS)

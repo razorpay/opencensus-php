@@ -179,6 +179,7 @@ class Processor extends Base\Processor
                 [
                     Entity::PRIORITY => '0',
                     Entity::GATEWAY  => $this->getGateway(),
+                    Entity::HANDLE => $this->getActiveHandle(),
                 ],
             ],
             Entity::POPULAR_BANKS                  => $this->getPopularBankListForSDK(),
