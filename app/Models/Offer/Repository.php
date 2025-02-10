@@ -237,6 +237,14 @@ class Repository extends Base\Repository
             return $oeResponse;
         }
 
+        $isLowerEnvironment = ((app()->runningUnitTests() === true) or
+                               (app()->isEnvironmentQA() === true));
+
+        if ($isLowerEnvironment === false)
+        {
+            return new PublicCollection();
+        }
+
         return $this->newQuery()
             ->where(Entity::DEFAULT_OFFER, '=', true)
             ->where(Entity::ACTIVE, '=', true)

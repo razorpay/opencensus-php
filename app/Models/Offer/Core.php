@@ -228,10 +228,7 @@ class Core extends Base\Core
 
     public function defaultOffersForMerchant(string $merchantId)
     {
-        $enableCache = $this->shouldRouteToOffersEngineForCreation($merchantId,
-            Constants::OE_ENABLE_CACHE_INTERNAL_MERCHANT_GET_EXP);
-
-        $defaultOffers = $this->fetchDefaultOffersForMerchant($merchantId, $enableCache);
+        $defaultOffers = $this->fetchDefaultOffersForMerchant($merchantId, true);
 
         $defaultOffersBool = false;
 
@@ -1291,94 +1288,6 @@ class Core extends Base\Core
         }
 
         return false;
-    }
-
-    /*
-     * This function checks if offers with limits should be fetched from Offers Engine or not.
-     * Adding 2 retries to splitz to avoid discrepancy while evaluating offer with limits
-     */
-    public function shouldMigrateOffersWithLimitsToOE($merchantIds, $experiment)
-    {
-        if ((app()->runningUnitTests() === true) or
-            (app()->isEnvironmentQA() === true))
-        {
-            $result = [];
-            foreach ($merchantIds as $merchantId)
-            {
-                $result[$merchantId] = (bool) ConfigKey::get(ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED, false);
-            }
-
-            return $result;
-        }
-
-        $attempt    = 0;
-        $maxRetries = 2; // Maximum number of retries
-
-        do
-        {
-            $merchantIdResultMap = [];
-            $experimentsData     = [];
-            foreach ($merchantIds as $merchantId)
-            {
-                $merchantIdResultMap[$merchantId] = false; // Default value
-
-                $experimentsData[] = [
-                    "id"            => $merchantId,
-                    "experiment_id" => $this->app['config']->get($experiment),
-                    'request_data'  => json_encode(
-                        [
-                            'merchant_id' => $merchantId,
-                        ]),
-                ];
-            }
-
-            try
-            {
-                $experimentResponses = $this->app['splitzService']->bulkCallsToSplitz($experimentsData);
-
-                foreach ($experimentResponses as $response)
-                {
-                    $merchantId = $response['id'];
-
-                    $variables = $response['variant']['variables'];
-
-                    foreach ($variables as $variable)
-                    {
-                        if ($variable['key'] == "enabled" && $variable['value'] == "true")
-                        {
-                            $merchantIdResultMap[$merchantId] = true;
-                        }
-                    }
-                }
-
-                app('trace')->info(TraceCode::OFFER_WITH_GLOBAL_LIMITS_SPLITZ_RESULT, [
-                    "experiment_response"    => $experimentResponses,
-                    "attempt"                => $attempt,
-                    'max_retries'            => $maxRetries,
-                    'route'                  => $this->app['api.route']->getCurrentRouteName(),
-                    'merchant_id_result_map' => $merchantIdResultMap,
-                ]);
-
-                return $merchantIdResultMap;
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
-                    [
-                        'attempt'     => $attempt,
-                        'max_retries' => $maxRetries,
-                        'route'       => $this->app['api.route']->getCurrentRouteName(),
-                    ]
-                );
-            }
-
-            $attempt++;
-        } while ($attempt < $maxRetries);
-
-        return $merchantIdResultMap;
     }
 
     /**

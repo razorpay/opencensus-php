@@ -518,10 +518,11 @@ trait ExternalOffersRepo
 
     private function fetchOffersWithLimitsFromAPI($offers)
     {
-        $offersWithLimits = [];
-        $updatedOffers = [];
-        $offerWithLimitsMerchantIds = [];
+        $offersWithLimits   = [];
+        $updatedOffers      = [];
         $offerIdsWithLimits = [];
+
+        $fetchOffersFromApi = false;
 
         // get offers with limits if any
         foreach ($offers as $offer)
@@ -534,21 +535,25 @@ trait ExternalOffersRepo
             if (isset($offer[OfferEntity::MAX_OFFER_USAGE]) === true)
             {
                 $offersWithLimits[]           = $offer;
-                $offerWithLimitsMerchantIds[] = $offer->getMerchantId();
                 $offerIdsWithLimits[]         = $offer->getId();
             }
         }
 
-        $merchantIdResultMap = count($offersWithLimits) > 0 ? (new OfferCore())->shouldMigrateOffersWithLimitsToOE(
-            array_unique($offerWithLimitsMerchantIds), Constants::OFFERS_ENGINE_FETCH_EXP) : [];
+        if (count($offersWithLimits) > 0)
+        {
+            $fetchOffersFromApi = (bool) ConfigKey::get(ConfigKey::FETCH_OFFERS_WITH_LIMITS_FROM_API, false);
+
+            app('trace')->info(TraceCode::OFFER_WITH_GLOBAL_LIMITS_CACHE_RESULT, [
+                'cache_response' => $fetchOffersFromApi,
+                'offer_ids'      => $offerIdsWithLimits,
+                'route'          => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
 
         // fetch offers with usage limits from API db
         foreach ($offersWithLimits as $offersWithLimit)
         {
-            $merchantId = $offersWithLimit->getMerchantId();
-
-            if ((isset($merchantIdResultMap[$merchantId]) === true) and
-                ($merchantIdResultMap[$merchantId] === true))
+            if ($fetchOffersFromApi === false)
             {
                 $updatedOffers[] = $offersWithLimit;
                 continue;

@@ -4054,7 +4054,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_CARD_INTERNATIONAL_CHECK                        = 'OFFER_CARD_INTERNATIONAL_CHECK';
     const OFFER_CARD_USAGE_CHECK                                = 'OFFER_CARD_USAGE_CHECK';
     const OFFER_USAGE_CHECK                                     = 'OFFER_USAGE_CHECK';
-    const OFFER_WITH_GLOBAL_LIMITS_SPLITZ_RESULT                = 'OFFER_WITH_GLOBAL_LIMITS_SPLITZ_RESULT';
+    const OFFER_WITH_GLOBAL_LIMITS_CACHE_RESULT                 = 'OFFER_WITH_GLOBAL_LIMITS_CACHE_RESULT';
     const OFFERS_NOT_FOUND_IN_OFFERS_ENGINE                     = 'OFFERS_NOT_FOUND_IN_OFFERS_ENGINE';
     const OFFER_VALIDATION_LOGGER                               = 'OFFER_VALIDATION_LOGGER';
     const CURRENT_OFFER_USAGE_INCREMENT                         = 'CURRENT_OFFER_USAGE_INCREMENT';
