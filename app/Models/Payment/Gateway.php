@@ -4015,6 +4015,7 @@ class Gateway
         Gateway::UPI_ICICI,
         Gateway::UPI_AXIS,
         Gateway::UPI_RZPAPB,
+        Gateway::BILLDESK_OPTIMIZER,
     ];
 
     public static $recurringCardNetworks = [
