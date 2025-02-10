@@ -1402,37 +1402,25 @@ class CBPaymentCreateTest extends TestCase
     public function testCitiTravelLrsPaymentRearchForCardPositive()
     {
         $this->mockSplitzEvaluationCrossBorderImportPaymentRearch('LRS_CARD');
+
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
         $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
-        $this->fixtures->merchant->enableMethod('10000000000000', 'card');
 
-        $this->fixtures->iin->edit('401200',[
-            'country' => 'IN',
-            'issuer'  => 'SBIN',
-            'network' => 'Visa',
-        ]);
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        // we are ramping up auth terminal selection hence to make sure all test cases passes
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === 'card_payments_via_pg_router_v2')
-                    {
-                        return 'on';
-                    }
-                    return 'off';
-                }));
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
 
         $order = $this->fixtures->create('order',
             [
-                'amount' => 1000,
+                'amount' => 1000000,
                 'currency' => 'INR',
                 'customer_id' => '100000customer',
             ]);
@@ -1443,77 +1431,48 @@ class CBPaymentCreateTest extends TestCase
                 'type'     => 'cart_info',
             ]);
 
-        $this->enablePgRouterConfig();
-
         $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1000000';
+        $payment['currency'] = 'INR';
+        $payment['order_id'] = $order->getPublicId();
+        $payment['notes'] = [
+            'invoice_number' => 'INV123',
+        ];
         $payment['method'] = 'card';
 
-        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
-        $this->app->instance('pg_router', $pgService);
+        // this function makes sure that checks for card rearch pass
+        $this->mockPGRouterForRearch();
 
-        $pgService->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'))
-            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout)
-            {
-                return [
-                    'body' => [
-                        'data' => [
-                            'pg_router' => 'true'
-                        ]
-                    ]
-
-                ];
-            });
-
-        $request = [
-            'content' => $payment,
-            'url'     => '/payments/create/ajax',
-            'method'  => 'post'
-        ];
-
-        $response = $this->makeRequestParent($request);
-
-        $content = $this->getJsonContentFromResponse($response);
-
-        $this->assertEquals($content['data']['pg_router'], 'true');
-
+        $response = $this->doS2SPrivateAuthJsonPayment($payment);
+        $this->assertEquals($response['pg_router'], 'true');
 
     }
 
     public function testCrossBorderImportPaymentRearchForCardPositive()
     {
-        $this->mockSplitzEvaluationCrossBorderImportPaymentRearch("IMPORT_CARD");
+        $this->mockSplitzEvaluationCrossBorderImportPaymentRearch('IMPORT_CARD');
+
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
         $this->fixtures->merchant->addFeatures(['enable_import_flow']);
-        $this->fixtures->merchant->enableMethod('10000000000000', 'card');
 
-        $this->fixtures->iin->edit('401200',[
-            'country' => 'IN',
-            'issuer'  => 'SBIN',
-            'network' => 'Visa',
-        ]);
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === 'card_payments_via_pg_router_v2')
-                    {
-                        return 'on';
-                    }
-                    return 'off';
-                }));
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
 
         $order = $this->fixtures->create('order',
             [
-                'amount' => 1000,
+                'amount' => 1000000,
                 'currency' => 'INR',
                 'customer_id' => '100000customer',
             ]);
@@ -1524,40 +1483,23 @@ class CBPaymentCreateTest extends TestCase
                 'type'     => 'cart_info',
             ]);
 
-        $this->enablePgRouterConfig();
-
         $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1000000';
+        $payment['currency'] = 'INR';
+        $payment['order_id'] = $order->getPublicId();
+        $payment['notes'] = [
+            'invoice_number' => 'INV123',
+        ];
         $payment['method'] = 'card';
 
-        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
-        $this->app->instance('pg_router', $pgService);
+        // this function makes sure that checks for card rearch pass
+        $this->mockPGRouterForRearch();
 
-        $pgService->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'))
-            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout)
-            {
-                return [
-                    'body' => [
-                        'data' => [
-                            'pg_router' => 'true'
-                        ]
-                    ]
-
-                ];
-            });
-
-        $request = [
-            'content' => $payment,
-            'url'     => '/payments/create/ajax',
-            'method'  => 'post'
-        ];
-
-        $response = $this->makeRequestParent($request);
-
-        $content = $this->getJsonContentFromResponse($response);
-
-        $this->assertEquals($content['data']['pg_router'], 'true');
+        $response = $this->doS2SPrivateAuthJsonPayment($payment);
+        $this->assertEquals($response['pg_router'], 'true');
 
     }
 
