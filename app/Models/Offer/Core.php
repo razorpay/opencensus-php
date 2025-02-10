@@ -29,6 +29,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Offer\SubscriptionOffer;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Currency\Core as CurrencyCore;
+use RZP\Models\Offer\Constants as OfferConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use Throwable;
 
@@ -766,14 +767,35 @@ class Core extends Base\Core
             return;
         }
 
+        $methods = [$input[Entity::PAYMENT_METHOD]];
+
+        if (in_array(Entity::MULTIPLE, $methods) === true)
+        {
+            if (empty($input[Entity::INSTRUMENTS]) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Payment Instruments must not be empty");
+            }
+
+            $methods = [];
+            foreach ($input[Entity::INSTRUMENTS] as $instrument)
+            {
+                if (empty($instrument[OfferConstants::METHOD]) === false)
+                {
+                    $methods[] = $instrument[OfferConstants::METHOD];
+                }
+            }
+        }
+
         $merchantPaymentMethods = $merchant->methods;
 
-        $method = $input[Entity::PAYMENT_METHOD];
-
-        if ($merchantPaymentMethods->isMethodEnabled($method) === false)
+        foreach ($methods as $method)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                "Payment method not enabled for the merchant : $method", Entity::PAYMENT_METHOD);
+            if ($merchantPaymentMethods->isMethodEnabled($method) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Payment method not enabled for the merchant : $method", Entity::PAYMENT_METHOD);
+            }
         }
     }
 

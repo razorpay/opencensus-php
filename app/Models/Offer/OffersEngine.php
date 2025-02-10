@@ -473,7 +473,8 @@ class OffersEngine extends Base\Core
         $availRules = $this -> getOfferAvailRules(
             $offer, $tenureDiscountMap,
             $discountType,
-            $discoverConditionString);
+            $discoverConditionString,
+            $input);
 
         $redeemRules = $this->getRedeemRules( $offer,
             $discountType,
@@ -573,7 +574,30 @@ class OffersEngine extends Base\Core
         return $discoverConditions;
     }
 
-    private function getOfferAvailRules(Entity $offer, array $tenureDiscountMap, string $benefitType, string $discoverConditionWhenString)
+    private function getMethodsFromInstruments( array $input): array
+    {
+        if (isset($input[Entity::INSTRUMENTS]) === true)
+        {
+            $methods = [];
+            foreach ($input[Entity::INSTRUMENTS] as $instrument)
+            {
+                if (empty($instrument[Constants::METHOD]) === false)
+                {
+                    $methods[] = $instrument[Constants::METHOD];
+                }
+            }
+
+            return $methods;
+        }
+
+        return [];
+    }
+
+    private function getOfferAvailRules(Entity $offer,
+                                        array $tenureDiscountMap,
+                                        string $benefitType,
+                                        string $discoverConditionWhenString,
+                                        array $input = [])
     {
 
         // avail when condition is same for all tenures in case of no_cost_emi too for rzp_offers
@@ -584,8 +608,22 @@ class OffersEngine extends Base\Core
 
         if ($offer->getPaymentMethod() !== null)
         {
-            // note - if specified, only one payment method allowed per offer in API
-            array_push($availConditionWhenArray, 'PaymentInstrument.Method == "' . $offer->getPaymentMethod() . '"');
+            if ($offer->getPaymentMethod() === Entity::MULTIPLE)
+            {
+                $methods = $this->getMethodsFromInstruments($input);
+
+                if (empty($methods) === false)
+                {
+                    array_push($availConditionWhenArray,
+                               'PaymentInstrument.Method in ["' . implode('", "', $methods) . '"]');
+                }
+            }
+            else
+            {
+                // note - if specified, only one payment method allowed per offer in API
+                array_push($availConditionWhenArray, 'PaymentInstrument.Method == "' . $offer->getPaymentMethod() . '"');
+            }
+
         }
 
         // set payment_method_type if not null (NOTE - if null it means both are allowed in case of cards)
@@ -837,6 +875,11 @@ class OffersEngine extends Base\Core
         $response = $this->mapOfferSpecAndSetAttributes($offersEngineResponse[Constants::OFFER][Constants::SPEC],
                                                         $offer, $offersEngineResponse[Constants::PUBLISH]);
 
+        if (isset($offersEngineResponse[Constants::OFFER][Constants::PUBLIC_OFFER]) === true)
+        {
+            $this->mapPublicOfferAttributes($offersEngineResponse[Constants::OFFER][Constants::PUBLIC_OFFER], $offer);
+        }
+
         // not present in oe
         $offer[Entity::ERROR_MESSAGE] = Entity::DEFAULT_ERROR_MESSAGE;
 
@@ -880,6 +923,29 @@ class OffersEngine extends Base\Core
     {
         $offer->setAttribute(Entity::BLOCK, $channelProperties[Constants::BLOCKING] === true ? 0 : 1);
         $offer->setAttribute(Entity::DEFAULT_OFFER, $channelProperties[Constants::OFFER_TYPE] === Constants::OFFER_TYPE_STAGE_REGULAR ? 1 : 0);
+    }
+
+
+    private function mapPublicOfferAttributes(array $publicOffer, Entity $offer)
+    {
+        if (isset($publicOffer[Constants::RULES]) === true)
+        {
+            foreach ($publicOffer[Constants::RULES] as $rule)
+            {
+                if (isset($rule[Constants::INCLUDES]) === true)
+                {
+                    if (isset($rule[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]) === true)
+                    {
+                        if (count($rule[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]) > 1)
+                        {
+                            $offer->setAttribute(Entity::PAYMENT_METHOD, Entity::MULTIPLE);
+
+                            $offer->setInstruments($rule[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private function mapOfferSpecAndSetAttributes(

@@ -127,6 +127,7 @@ final class Constants
 
     const RULE_GROUPS = 'rule_groups';
     const RULES = 'rules';
+    const INCLUDES = 'includes';
 
     const STAGE_DISCOVER = 'STAGE_DISCOVER';
     const STAGE_AVAIL = 'STAGE_AVAIL';
@@ -142,7 +143,7 @@ final class Constants
     const APPLICABLE_ON = 'applicable_on';
     const WHEN = 'when_expression';
     const THEN = 'then';
-
+    const PUBLIC_OFFER = 'public_offer';
     const TENURE = 'tenure';
     const BLOCKING = 'continue_txn_on_failure';
     const OFFER_TYPE = 'offer_type';
@@ -207,6 +208,7 @@ final class Constants
     const WALLET = 'wallet';
     const PROVIDER = 'provider';
     const CARD = 'card';
+    const PAYMENT_INSTRUMENTS = 'payment_instruments';
 
     const EMI_TENURE = 'emi_tenure';
 

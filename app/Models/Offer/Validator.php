@@ -18,6 +18,7 @@ use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Gateway\Upi\Base as upi;
 use RZP\Models\PaymentsUpi;
+use RZP\Models\Offer\Constants as OfferConstants;
 
 class Validator extends Base\Validator
 {
@@ -64,6 +65,7 @@ class Validator extends Base\Validator
         Entity::PRODUCT_TYPE        => 'sometimes|filled|string|in:subscription',
         Entity::LOW_COST_EMI        => 'sometimes|array',
         Entity::UPI                 => 'sometimes|array',
+        Entity::INSTRUMENTS         => 'sometimes|array',
     ];
 
     protected static $adminFetchMultipleRules = [
@@ -143,6 +145,7 @@ class Validator extends Base\Validator
         Entity::MAX_CASHBACK,
         Entity::ISSUER,
         Entity::UPI,
+        Entity::INSTRUMENTS,
     ];
 
     protected static $emiSubventionValidators = [
@@ -417,15 +420,57 @@ class Validator extends Base\Validator
 
     protected function validatePaymentMethod(string $attribute, string $method)
     {
-        if (empty($method) === true)
+        if (empty($method) === true || $method == Entity::MULTIPLE)
         {
             return;
         }
 
-        if (in_array($method, Payment\Method::getAllPaymentMethods(), true) === false)
+        if ((in_array($method, Payment\Method::getAllPaymentMethods(), true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 "Invalid payment method: $method", $attribute);
+        }
+    }
+
+    protected function validateInstruments(array $input)
+    {
+        $method      = $input[Entity::PAYMENT_METHOD] ?? null;
+        $instruments = $input[Entity::INSTRUMENTS] ?? [];
+
+        if ((empty($method) === true) or
+            ($method !== Entity::MULTIPLE))
+        {
+            return;
+        }
+
+        if (empty($instruments) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "No payment instruments found for payment method multiple");
+        }
+
+        $methods = [];
+        foreach ($input[Entity::INSTRUMENTS] as $instrument)
+        {
+            if (empty($instrument[OfferConstants::METHOD]) === false)
+            {
+                $methods[] = $instrument[OfferConstants::METHOD];
+            }
+        }
+
+        if (empty($methods) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid Payment Instruments passed");
+        }
+
+        foreach ($methods as $method)
+        {
+            if ((in_array($method, Payment\Method::getAllPaymentMethods(), true) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Invalid payment method: $method", $method);
+            }
         }
     }
 

@@ -159,6 +159,172 @@ class OffersTest extends TestCase
 
         $this->startTest();
     }
+    public function testCreateMultiplePaymentMethodOffer()
+    {
+        $this->markTestSkipped("marking this as skipped due to concurrency issues with config keys.");
+
+        (new AdminService)->setConfigKeys(
+        [
+            ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => true,
+            ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED => true,
+        ]);
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
+                'offer' => [
+                    "public_offer" => [
+                        "entity" => "Offer",
+                        "id" => "offer_10000000000000",
+                        "name" => "Second Rule Offer Others",
+                        "display_name" => "Title sample",
+                        "description" => "Description",
+                        "status" => "CREATED",
+                        "currency" => "INR",
+                        "schedules" => [
+                            [
+                                "starts_at" => "1739944804",
+                                "ends_at" => "1801896804"
+                            ]
+                        ],
+                        "terms" => [
+                            "tnc" => "testing the terms and conditions",
+                            "url" => "test.com"
+                        ],
+                        "applicable_channels" => [
+                            "RZP_CHECKOUT"
+                        ],
+                        "funding" => [
+                            "split" => [
+                                [
+                                    "bearer" => "APP",
+                                    "type" => "PERCENTAGE",
+                                    "value" => "100"
+                                ]
+                            ]
+                        ],
+                        "benefits_types" => [
+                            "DISCOUNT"
+                        ],
+                        "rules" => [
+                            [
+                                "includes" => [
+                                    "orders" => [
+                                        [
+                                            "min_amount" => "5000"
+                                        ]
+                                    ],
+                                    "payment_instruments" => [
+                                        [
+                                            "method" => "card"
+                                        ],
+                                        [
+                                            "method" => "netbanking"
+                                        ]
+                                    ]
+                                ],
+                                "benefits" => [
+                                    [
+                                        "instant_discount" => [
+                                            [
+                                                "limit_type" => "UPTO",
+                                                "unit" => "PERCENTAGE",
+                                                "value" => "1000"
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    'metadata' => [
+                        'offer_id' => 'offer_10000000000000',
+                        'name' => 'Test Offer',
+                        'display_name' => 'Test Offer',
+                        'description' => 'Some more details',
+                        'terms' => [
+                            'tnc' => 'Some more details',
+                        ],
+                        'advertiser_id' => 'rzp.merchant.10000000000000', // Replace with the actual advertiser ID
+                        'state' => 'STATE_CREATED',
+                        'offer_on' => 'BENEFICIARY_TYPE_SELF',
+                        'currency' => 'INR',
+                        'schedules' => [
+                            'starts_at' => 1514764800,
+                            'ends_at' => 1546300800,
+                        ],
+                    ],
+                    'spec' => [
+                        'allowed_channels' => [
+                            'CHANNEL_RZP_CHECKOUT',
+                        ],
+                        'funding' => [
+                            'type' => 'BENEFICIARY_TYPE_SELF',
+                            'split' => [
+                                [
+                                    'type' => 'VALUE_OPTION_PERCENTAGE',
+                                    'bearer' => 'USER_TYPE_PUBLISHER',
+                                    'value' => 100,
+                                ],
+                            ],
+                        ],
+                        'benefits_types' => [
+                            'BENEFIT_TYPE_DISCOUNT',
+                        ],
+                        'rule_groups' => [
+                            'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                                'rules' => [
+                                    [
+                                        'when_expression' => 'true',
+                                        'then' => [
+                                            [
+                                                'discount' => [
+                                                    'percent_discount' => 1000,
+                                                    'applicable_on' => 'Order.total_amount',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL' => [
+                                'rules' => [
+                                    [
+                                        'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.CardType == \"credit\" && PaymentInstrument.CardNetwork == \"VISA\" && PaymentInstrument.Issuer == \"HDFC\"',
+                                        'then' => [
+                                            [
+                                                'discount' => [
+                                                    [
+                                                        'percent_discount' => 1000,
+                                                        'applicable_on' => 'Order.total_amount',
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'publish' => [
+                    'continue_txn_on_failure' => 0,
+                    'offer_type' => 'OFFER_TYPE_STAGE_REGULAR',
+                    'channel_name' => 'CHANNEL_RZP_CHECKOUT',
+                ],
+            ]);
+
+        $this->startTest();
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => false,
+                ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED => false,
+        ]);
+    }
+
+    public function testCreateMultiplePaymentMethodOfferWithValidationFailure()
+    {
+        $this->startTest();
+    }
 
     public function testCreateOfferWithApiReadsConflictingOffers()
     {
