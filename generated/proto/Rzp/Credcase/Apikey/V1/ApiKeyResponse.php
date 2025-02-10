@@ -54,6 +54,12 @@ class ApiKeyResponse extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>int32 deleted_at = 11;</code>
      */
     protected $deleted_at = 0;
+    /**
+     * secret attribute exposed for routes using it in API
+     *
+     * Generated from protobuf field <code>string secret = 12;</code>
+     */
+    protected $secret = '';
 
     /**
      * Constructor.
@@ -71,6 +77,8 @@ class ApiKeyResponse extends \Google\Protobuf\Internal\Message
      *     @type int $updated_at
      *     @type int $expired_at
      *     @type int $deleted_at
+     *     @type string $secret
+     *           secret attribute exposed for routes using it in API
      * }
      */
     public function __construct($data = NULL) {
@@ -294,6 +302,32 @@ class ApiKeyResponse extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->deleted_at = $var;
+
+        return $this;
+    }
+
+    /**
+     * secret attribute exposed for routes using it in API
+     *
+     * Generated from protobuf field <code>string secret = 12;</code>
+     * @return string
+     */
+    public function getSecret()
+    {
+        return $this->secret;
+    }
+
+    /**
+     * secret attribute exposed for routes using it in API
+     *
+     * Generated from protobuf field <code>string secret = 12;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setSecret($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->secret = $var;
 
         return $this;
     }

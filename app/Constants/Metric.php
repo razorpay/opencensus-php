@@ -340,6 +340,7 @@ class Metric
     const CREDCASE_READ_RESPONSE_MATCH = 'credcase_read_response_match';
     const KEY_API_DB_RESPONSE_COUNT = 'keys_api_db_response_count';
     const CREDCASE_KEY_READ_ROUTE_COUNT = 'credcase_key_read_count';
+    const CREDCASE_FIND_KEY_READ_ROUTE_COUNT = 'credcase_find_key_read_count';
 
     const CREDCASE_REQUEST_FAILED = 'credcase_request_failed';
     const CREDCASE_REQUEST_LATENCY_MS = 'credcase_request_latency_milliseconds.histogram';

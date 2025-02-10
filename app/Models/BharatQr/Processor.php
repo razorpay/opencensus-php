@@ -323,7 +323,7 @@ class Processor extends VirtualAccount\Processor
             // response signature generation, in case of Offline QR payment
             $this->app['basicauth']->setMerchant($this->merchant);
 
-            $key = $this->repo->key->getFirstActiveKeyForMerchant($this->merchant->getId());
+            $key = $this->repo->key->getFirstActiveKeyForMerchant($this->merchant->getId(), true);
 
             $this->app['basicauth']->authCreds->setKeyEntity($key);
         }

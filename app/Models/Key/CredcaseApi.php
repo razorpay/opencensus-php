@@ -44,6 +44,7 @@ class CredcaseApi
 
     private $readKeySplitzExperiment;
     private $adminReadKeySplitzExperiment;
+    private $findKeySplitzExperiment;
 
     public function __construct($app)
     {
@@ -55,6 +56,7 @@ class CredcaseApi
         $this->consumerClient = new ConsumerApiKeyAPIClient($config['host'], $this->trace, $httpClient);
         $this->readKeySplitzExperiment = $config['read_key_splitz'];
         $this->adminReadKeySplitzExperiment = $config['admin_read_key_splitz'];
+        $this->findKeySplitzExperiment = $config['find_key_splitz'];
         // Set default headers twirp context.
         $auth          = 'Basic ' . base64_encode($config['user'] . ':' . $config['password']);
         $headers       = ['Authorization' => $auth, 'X-Request-ID' => Request::getTaskId()];
@@ -92,10 +94,11 @@ class CredcaseApi
         }
     }
 
-    public function findById($keyId, $expired = false): ?\Rzp\Credcase\Apikey\V1\ApiKeyResponse
+    public function findById($keyId, $expired = false, $includeSecret = false): ?\Rzp\Credcase\Apikey\V1\ApiKeyResponse
     {
         $apiKeyGetRequest = new ApiKeyGetRequest();
         $apiKeyGetRequest->setId($keyId);
+        $apiKeyGetRequest->setIncludeSecret($includeSecret);
         if (!$expired){
             $apiKeyGetRequest->setNotExpired(true);
         }
@@ -143,8 +146,7 @@ class CredcaseApi
         }
     }
 
-
-    public function getKeysForMerchants($ownerIds, $mode, $count, $expired = false): ?\Rzp\Credcase\Apikey\V1\ApiKeyListResponse
+    public function getKeysForMerchants($ownerIds, $mode, $count, $expired = false, $includeSecret = false): ?\Rzp\Credcase\Apikey\V1\ApiKeyListResponse
     {
         $consumerApiKeyListRequest = new ConsumerApiKeyListRequest();
         $consumerApiKeyListRequest->setMode($this->convertModeToEnum($mode));
@@ -154,6 +156,7 @@ class CredcaseApi
         $consumerApiKeyListRequest->setOwnerIds($ownerIds);
         $consumerApiKeyListRequest->setCount($count);
         $consumerApiKeyListRequest->setSkip(0);
+        $consumerApiKeyListRequest->setIncludeSecret($includeSecret);
 
         $debug = ["owner_id" => $ownerIds, "owner_type" => static::OWNER_TYPE, "domain" => static::DOMAIN];
         try {
@@ -232,6 +235,7 @@ class CredcaseApi
         return match ($type) {
             "read" => $this->readKeySplitzExperiment,
             "admin_read" => $this->adminReadKeySplitzExperiment,
+            "find_read" => $this->findKeySplitzExperiment,
             default => "",
         };
     }

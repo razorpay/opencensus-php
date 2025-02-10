@@ -90,7 +90,7 @@ class Processor extends Base\Core
             $this->app['basicauth']->setMerchant($this->merchant);
             // 3.2 Fetch Key for this Merchant. It gets used in forming
             //     signature for payment authorize response
-            $key = $this->repo->key->getLatestActiveKeyForMerchant($this->merchant->getId());
+            $key = $this->repo->key->getLatestActiveKeyForMerchant($this->merchant->getId(), true);
             // 3.3 Set Key Entity in AuthCreds
             $this->app['basicauth']->authCreds->setKeyEntity($key);
         }

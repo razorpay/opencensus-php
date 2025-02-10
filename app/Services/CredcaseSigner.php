@@ -89,16 +89,17 @@ class CredcaseSigner
         // be like this. In current flow, there is more/different logic to
         // find key basis various auth types etc.
         $publicKeyDefaulted = $publicKey ?: $this->ba->getPublicKey();
-
-        if ($this->shouldSignByCredcase($publicKeyDefaulted) === true)
+        $shouldSignByCredcase = $this->shouldSignByCredcase($publicKeyDefaulted) === true;
+        $routeName = app('request.ctx')->getRoute();
+        if ($shouldSignByCredcase)
         {
             try
             {
-                return $this->signByCredcase($payload, $publicKeyDefaulted);
+                return $this->signByCredcase($payload, $publicKeyDefaulted, $routeName);
             }
             catch (Throwable $e)
             {
-                $this->trace->count(self::METRIC_SIGN_FAILURE_TOTAL);
+                $this->trace->count(self::METRIC_SIGN_FAILURE_TOTAL, ['by' => 'credcase', 'route' => $routeName]);
                 $this->trace->traceException(
                     $e,
                     Logger::ERROR,
@@ -107,8 +108,18 @@ class CredcaseSigner
                 );
             }
         }
-
-        return $this->signByApi($payload, $publicKey);
+        try {
+            return $this->signByApi($payload, $publicKey, $routeName);
+        } catch (Throwable $e) {
+            $this->trace->count(self::METRIC_SIGN_FAILURE_TOTAL, ['by' => 'api', 'route' => $routeName]);
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::CREDCASE_SIGNER_ERROR,
+                ['key' => $publicKey]
+            );
+            throw $e;
+        }
     }
 
     /**
@@ -142,7 +153,7 @@ class CredcaseSigner
      * @return string
      * @throws RuntimeException
      */
-    protected function signByCredcase(string $payload, string $publicKey): string
+    protected function signByCredcase(string $payload, string $publicKey, string $routeName): string
     {
         // Mock only applies to non production environment!
         if (($this->config['mock'] === true) and (app()->isEnvironmentProduction() === false))
@@ -152,7 +163,7 @@ class CredcaseSigner
 
 
         $this->trace->debug(TraceCode::CREDCASE_SIGNER_INVOKED, compact('payload', 'publicKey'));
-        $this->trace->count(self::METRIC_SIGN_REQUESTS_TOTAL, ['by' => 'credcase_signer']);
+        $this->trace->count(self::METRIC_SIGN_REQUESTS_TOTAL, ['by' => 'credcase_signer', 'route' => $routeName, 'key_provided' => true]);
 
         $startAt = microtime(true);
         try
@@ -212,9 +223,11 @@ class CredcaseSigner
      * @param  string|null $publicKey
      * @return string
      */
-    protected function signByApi(string $payload, string $publicKey = null): string
+    protected function signByApi(string $payload, string $publicKey = null, string $routeName = null): string
     {
-        $this->trace->count(self::METRIC_SIGN_REQUESTS_TOTAL, ['by' => 'api']);
+
+        $keyProvided = $publicKey !== null;
+        $this->trace->count(self::METRIC_SIGN_REQUESTS_TOTAL, ['by' => 'api', 'route' => $routeName, 'key_provided' => $keyProvided]);
 
         $startAt = microtime(true);
         $signature = $this->ba->sign($payload, $publicKey);

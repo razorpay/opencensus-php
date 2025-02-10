@@ -1071,7 +1071,7 @@ class BasicAuth
         $this->authCreds->setAndCheckMerchantActivatedForLive($merchant);
 
         // Sets the key instance if it exists, gets used in forming signature for payment authorize response
-        $key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
+        $key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId(), true);
         $this->authCreds->setKeyEntity($key);
 
         // Removes key_id from request if it existed with empty values

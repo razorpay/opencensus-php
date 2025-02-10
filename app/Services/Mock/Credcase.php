@@ -26,7 +26,7 @@ class Credcase extends CredcaseApi
         return $expectedCredcaseResponse;
     }
 
-    public function findById($keyId, $expired = false): \Rzp\Credcase\Apikey\V1\ApiKeyResponse {
+    public function findById($keyId, $expired = false, $includeSecret = false): \Rzp\Credcase\Apikey\V1\ApiKeyResponse {
 
         $expectedCredcaseResponse = new ApiKeyResponse();
         $expectedCredcaseResponse->setId($keyId);
@@ -46,7 +46,7 @@ class Credcase extends CredcaseApi
         return $expectedCredcaseResponse;
     }
 
-    public function getKeysForMerchants($ownerIds, $mode, $count, $expired = false): \Rzp\Credcase\Apikey\V1\ApiKeyListResponse {
+    public function getKeysForMerchants($ownerIds, $mode, $count, $expired = false, $includeSecret = false): \Rzp\Credcase\Apikey\V1\ApiKeyListResponse {
 
         $expectedCredcaseResponse = new ApiKeyListResponse();
         $expectedCredcaseResponse->setCount(1);

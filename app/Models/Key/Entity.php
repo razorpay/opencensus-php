@@ -337,4 +337,11 @@ class Entity extends Base\PublicEntity
         }
         return 'rzp_' . $mode . '_' . $this->getKey();
     }
+
+    public function encryptAndSetSecret($secret)
+    {
+        assertTrue(strlen($secret) === self::SECRET_LENGTH);
+        $hash = Crypt::encrypt($secret, true, $this);
+        $this->setAttribute(self::SECRET, $hash);
+    }
 }

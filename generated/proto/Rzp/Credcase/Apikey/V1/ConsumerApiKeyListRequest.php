@@ -42,6 +42,10 @@ class ConsumerApiKeyListRequest extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>bool is_expired = 7;</code>
      */
     protected $is_expired = false;
+    /**
+     * Generated from protobuf field <code>bool include_secret = 8;</code>
+     */
+    protected $include_secret = false;
 
     /**
      * Constructor.
@@ -56,6 +60,7 @@ class ConsumerApiKeyListRequest extends \Google\Protobuf\Internal\Message
      *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $owner_ids
      *     @type string $owner_type
      *     @type bool $is_expired
+     *     @type bool $include_secret
      * }
      */
     public function __construct($data = NULL) {
@@ -213,6 +218,28 @@ class ConsumerApiKeyListRequest extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->is_expired = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool include_secret = 8;</code>
+     * @return bool
+     */
+    public function getIncludeSecret()
+    {
+        return $this->include_secret;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool include_secret = 8;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setIncludeSecret($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->include_secret = $var;
 
         return $this;
     }

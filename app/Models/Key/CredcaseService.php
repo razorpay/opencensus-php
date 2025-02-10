@@ -4,6 +4,7 @@ namespace RZP\Models\Key;
 
 use App;
 use RZP\Constants\Metric;
+use Rzp\Credcase\Apikey\V1\ApiKeyResponse;
 use RZP\Models\Base\PublicCollection;
 use RZP\Trace\TraceCode;
 
@@ -68,7 +69,7 @@ class CredcaseService
     }
 
 
-    public function fetchKey($routeName, $credcaseResponse, $queryResult)
+    public function fetchKey($routeName, ?ApiKeyResponse $credcaseResponse, $queryResult)
     {
         if(!isset($credcaseResponse) && !isset($queryResult)){
             $this->trace->count(Metric::CREDCASE_READ_RESPONSE_MATCH,  [
@@ -148,7 +149,7 @@ class CredcaseService
         );
     }
 
-    private function buildKeyFromCredcaseResponse($credcaseKeyResponse) {
+    private function buildKeyFromCredcaseResponse(ApiKeyResponse $credcaseKeyResponse) {
         $key = new Entity;
         $id = $credcaseKeyResponse->getId();
         Entity::stripSign($id);
@@ -157,6 +158,10 @@ class CredcaseService
         $key->setCreatedAt(empty($credcaseKeyResponse->getCreatedAt()) ? null : $credcaseKeyResponse->getCreatedAt());
         $key->setUpdatedAt(empty($credcaseKeyResponse->getUpdatedAt()) ? null : $credcaseKeyResponse->getUpdatedAt());
         $key->setExpiredAt(empty($credcaseKeyResponse->getExpiredAt()) ? null : $credcaseKeyResponse->getExpiredAt());
+        $secret = $credcaseKeyResponse->getSecret();
+        if(!empty($secret) && strlen($secret) === Entity::SECRET_LENGTH){
+            $key->encryptAndSetSecret($credcaseKeyResponse->getSecret());
+        }
         return $key;
     }
 }
