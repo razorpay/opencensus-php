@@ -203,6 +203,13 @@ const SalesDashboard = (): JSX.Element => {
     });
   });
 
+  useEffect(() => {
+    const user = window.rzp_user?.user;
+    if (isPosEkycAgent && user && !user.name) {
+      navigate('/pos-sales/basic-info');
+    }
+  }, [isPosEkycAgent]);
+
   return (
     <Box display="flex" flexDirection="column" width="100%">
       <Box margin="spacing.5">
