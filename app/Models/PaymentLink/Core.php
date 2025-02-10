@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use phpseclib\Crypt\AES;
 use RZP\Constants\Environment;
 use RZP\Encryption\AESEncryption;
+use RZP\Http\RequestHeader;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Base;
 use RZP\Models\Item;
@@ -92,6 +93,26 @@ class Core extends Base\Core
         $this->merchantRiskService = $this->app['merchantRiskClient'];
     }
 
+    private function getUserFromUserIdInHeaders(): ?User\Entity
+    {
+        $userId = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID);
+
+        if ($userId === null) {
+            return null;
+        }
+
+        try {
+            return $this->repo->user->findOrFailPublic($userId);
+        } catch (\Exception $e) {
+            $this->trace->info(TraceCode::PAYMENT_PAGE_CREATE_ERROR_WHILE_GETTING_USER, [
+                'user_id' => $userId,
+                'message' => 'Could not find user details from user id in headers',
+            ]);
+            return null;
+        }
+    }
+
+
     /**
      * @param  array           $input
      * @param  Merchant\Entity $merchant
@@ -116,6 +137,11 @@ class Core extends Base\Core
         Tracer::inSpan(['name' => 'payment_page.create.associate_merchant'], function() use ($paymentLink, $merchant) {
             $paymentLink->merchant()->associate($merchant);
         });
+
+        if ($user === null)
+        {
+            $user = $this->getUserFromUserIdInHeaders();
+        }
 
         Tracer::inSpan(['name' => 'payment_page.create.associate_user'], function() use ($paymentLink, $user) {
             $paymentLink->user()->associate($user);

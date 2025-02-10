@@ -637,7 +637,14 @@ class Service extends Base\Service
 
         $this->trace->count(Metric::PAYMENT_PAGE_CREATE_ORDER, $paymentLink->getMetricDimensions());
 
-        return $data;
+        return $this->getResponseArrayWithDecompSpecificFields($data, $paymentLink->getViewType());
+    }
+
+    public function getResponseArrayWithDecompSpecificFields(array $response, string $viewType): array
+    {
+        $response[Entity::PAYMENT_PAGE_VIEW_TYPE] = $viewType;
+
+        return $response;
     }
 
     public function updatePaymentPageItem(string $paymentPageItemId, array $input)
@@ -652,7 +659,14 @@ class Service extends Base\Service
             return $this->core->updatePaymentPageItem($paymentPageItem, $input);
         });
 
-        return $paymentPageItem->toArrayPublic();
+        $paymentLinkId = $paymentPageItem->getPaymentLinkId();
+
+        $paymentLink = Tracer::inSpan(['name' => 'payment_page.ppi.update.get_payment_link'], function() use($paymentLinkId)
+        {
+            return $this->repo->payment_link->findByIdAndMerchant($paymentLinkId, $this->merchant);
+        });
+
+        return $this->getResponseArrayWithDecompSpecificFields($paymentPageItem->toArrayPublic(), $paymentLink->getViewType());
     }
 
     public function createPaymentPageFileUploadRecord(string $paymentPageId, string $batchId, array $input)
@@ -886,9 +900,11 @@ class Service extends Base\Service
             return $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
         });
 
-        return Tracer::inSpan(['name' => 'payment_page.receipts.create'], function() use ($paymentLink, $input) {
+        $response = Tracer::inSpan(['name' => 'payment_page.receipts.create'], function() use ($paymentLink, $input) {
             return $this->core->setReceiptDetails($paymentLink, $input);
         });
+
+        return $this->getResponseArrayWithDecompSpecificFields($response, $paymentLink->getViewType());
     }
 
     public function getInvoiceDetails(string $paymentId)
