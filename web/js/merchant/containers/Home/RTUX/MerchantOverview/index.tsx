@@ -44,7 +44,7 @@ const MerchantOverviewComponent: React.FC<IMerchantOverview & CommonWidgetProps>
       testID="merchant-overview"
       borderRadius="medium"
       overflowX="hidden"
-      backgroundImage="url('/img/rtux/hero-card-bg.jpg')"
+      backgroundImage={`url(${window.cdnBaseUrl}/static/assets/rtux/hero-card-bg.jpg)`}
       backgroundSize="cover"
       backgroundPosition="center center"
       marginX={{ base: 'spacing.0', m: 'spacing.6' }}

@@ -13,7 +13,6 @@ import { useMutation } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { queryClient } from 'common/components/Bootstrap/Wrapper';
 import ResellerDetailsHeader from 'merchant/views/GCMS/Resellers/ResellerDetailsHeader';
 import { GCMSSession, SessionContext } from 'merchant/views/GCMS/shared/context';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -30,6 +29,7 @@ import {
   trackOrderCartVerifySuccess,
 } from './events';
 import { orderSubmit, orderUpdate } from './queries';
+import { queryClient } from 'merchant/views/GCMS/shared/Wrapper';
 
 type Props = {
   showNotification: ({ type, message }: { type: string; message: string }) => void;

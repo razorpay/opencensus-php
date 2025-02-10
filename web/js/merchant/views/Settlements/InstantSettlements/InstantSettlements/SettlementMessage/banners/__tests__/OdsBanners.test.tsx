@@ -1,9 +1,7 @@
 import React from 'react';
-
-import { queryClient } from 'common/components/Bootstrap/Wrapper';
 import { OdsBanners } from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage/banners/OdsBanners';
 import { odsConfigGlobalLimitBreachedWithLimitHandler } from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/__test__/mocks/odsApiHandlers';
-import { render, screen, server, waitFor } from 'test-utils';
+import { render, screen, server, waitFor, queryClient } from 'test-utils';
 
 const state = {
   session: {

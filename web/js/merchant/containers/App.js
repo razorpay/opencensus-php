@@ -1,6 +1,6 @@
 import React, { Component, Suspense } from 'react';
 import errorService from '@razorpay/universe-utils/errorService';
-import { createSidetab, createPopup } from '@typeform/embed';
+import { createPopup, createSidetab } from '@typeform/embed';
 import cloneDeep from 'lodash/cloneDeep';
 import moment from 'moment';
 import qs from 'query-string';
@@ -8,12 +8,11 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { bindActionCreators, compose } from 'redux';
-import 'refiner-js';
 
 import Wrapper from 'common/components/Bootstrap/Wrapper';
 import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service, withI18nifyState } from 'common/i18';
-import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import graphqlClient from 'common/services/graphql/graphql-client';
 import { withSplitzService } from 'common/splitz';
@@ -26,17 +25,17 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCookie, setCookie } from 'common/utils/cookies';
 import debounce from 'common/utils/debounce';
 import { fireAnalyticsEvents, setTrackData } from 'common/utils/googleAnalytics';
-import { getItem, setItem, removeItem } from 'common/utils/localStorage';
+import { getItem, removeItem, setItem } from 'common/utils/localStorage';
 import getMobileDetect from 'common/utils/mobileDetect';
 import { initSentry } from 'common/utils/observability';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import {
   classList,
-  isPresent,
-  paiseToRupees,
-  mergeCurrencyFormatting,
   getCommonAnalyticsProperties,
   isConfigTagAPISupported,
+  isPresent,
+  mergeCurrencyFormatting,
+  paiseToRupees,
 } from 'common/utils/rzp-utils';
 import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
 import {
@@ -44,16 +43,13 @@ import {
   setRecommendedProduct,
 } from 'merchant/components/Activation/ActivationUtils';
 import ActivationRequiredModal from 'merchant/components/ActivationRequiredModal';
-import Footer from 'merchant/components/Footer';
-import HeaderNav from 'merchant/components/HeaderNav';
 import HighlightTestMode from 'merchant/components/HighlightTestMode';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import LogoutDialog from 'merchant/components/LogoutDialog';
-import Sidebar from 'merchant/components/Sidebar';
-import SidebarV2 from 'merchant/components/SidebarV2';
-import { FullPageLoader, FullPageLoaderCenterToMainContent } from 'common/components/Loader';
+import NavigationLayout from 'merchant/components/NavigationLayout/NavigationLayout';
+import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
 import currencies from 'merchant/constants/currency';
-import { LOGOUT_ERROR, DEFAULT_TIMEOUT_IN_SECONDS } from 'merchant/constants/dates';
+import { DEFAULT_TIMEOUT_IN_SECONDS, LOGOUT_ERROR } from 'merchant/constants/dates';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import User, { ORG_CUSTOM_CODE_MAP, setFeatures } from 'merchant/models/User';
 import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reducers/app';
@@ -83,11 +79,10 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
-import { isRTUXHomepageEnabled } from './Home/RTUX/utils';
-import NavigationLayout from 'merchant/components/NavigationLayout/NavigationLayout';
-import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { withRtuxLayoutData } from 'merchant/containers/Home/RTUX/hooks/useUCSLayoutQuery';
+import { withRtuxComponentData } from 'merchant/containers/Home/RTUX/hooks/useUCSDataQuery';
 
+import { isRTUXHomepageEnabled } from './Home/RTUX/utils';
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
 // const WebViewHeader = lazy(() =>
@@ -98,8 +93,21 @@ const IdleTimer = lazy(() =>
   import(/* webpackChunkName: "IdleTimer" */ 'merchant/containers/Home/IdleTimer'),
 );
 
-initSentry('Merchant');
+const lazyLoadRefiner = async () => {
+  const refiner = await import('refiner-js');
+  return refiner;
+};
 
+const scheduleIdleTask =
+  window.requestIdleCallback ||
+  function (callback) {
+    // Fallback implementation: execute callback as soon as possible with 0ms delay
+    setTimeout(callback, 0);
+  };
+
+initSentry('Merchant');
+@withRtuxComponentData
+@withRtuxLayoutData
 @RTracking()
 class App extends Component {
   pendingRequests = [];
@@ -142,6 +150,7 @@ class App extends Component {
     };
     this.handleResize = debounce(this.handleResize.bind(this), 200);
     this.handleFestiveAnimeAction = this.handleFestiveAnimeAction.bind(this);
+    this.backgroundAPIsCalled = false;
   }
 
   onIdle = () => {
@@ -260,22 +269,14 @@ class App extends Component {
     }
   };
 
-  // nosemgrep
-  UNSAFE_componentWillMount() {
-    const user = window.rzp_user;
-    const org = window.rzp_org;
-
-    // Init lumberjack
-    initLumberjack();
-
-    const self = this;
+  initializeListeners = (user) => {
     window.addEventListener('NOT_AUTHENTICATED', function notAuthenticatedHandler() {
       // eslint-disable-next-line babel/no-invalid-this
       if (this.logoutPopupShown) {
         return;
       }
-      self.props.closeModal();
-      self.props.openModal({
+      this.props.closeModal();
+      this.props.openModal({
         size: 'large',
         component: <LogoutDialog user={user} />,
       });
@@ -304,25 +305,41 @@ class App extends Component {
           e.detail.response,
         );
     });
+  };
 
-    let currentMode = getItem(this.modeToken);
+  isEligibleForActivation = ({ user, currentMode }) => {
     let isActivated = getItem(`is_activated--${user?.current}`);
-    const isUnregBiz = ['2', '11'].indexOf(user?.business_type) !== -1;
+    const isUnregisteredBusiness = ['2', '11'].indexOf(user?.business_type) !== -1;
 
-    if (
+    const _isEligibleForActivation =
       user &&
       currentMode === 'live' &&
       !isActivated &&
       (user.activation_status === 'activated' ||
         user.activation_status === 'activated_mcc_pending' ||
-        (isUnregBiz &&
+        (isUnregisteredBusiness &&
           user.activation_form_milestone === 'L1' &&
           user.poi_verification_status === 'verified' &&
-          user.activation_status === 'instantly_activated'))
-    ) {
+          user.activation_status === 'instantly_activated'));
+
+    if (_isEligibleForActivation) {
       setItem(`is_activated--${user.current}`, 'true');
       isActivated = 'true';
     }
+
+    return isActivated;
+  };
+  // nosemgrep
+  UNSAFE_componentWillMount() {
+    const user = window.rzp_user;
+    const org = window.rzp_org;
+
+    // Init lumberjack
+    initLumberjack();
+
+    this.initializeListeners(user);
+    let currentMode = getItem(this.modeToken);
+    const isActivated = this.isEligibleForActivation({ user, currentMode });
 
     if (this.props.user?.isProductLedOnboarding) {
       Promise.all([this.props.fetchTransactionAmount(user?.created_at), this.fetchOrg()])
@@ -384,14 +401,6 @@ class App extends Component {
 
         if (user.isProductRecommendationEnabled) {
           setRecommendedProduct();
-        }
-
-        if (user?.user) {
-          // Initialize segment
-          initSegment('Merchant', user, this.props.updateUserSegmentData);
-
-          // Initialize refiner
-          initRefiner(user);
         }
 
         const {
@@ -533,11 +542,6 @@ class App extends Component {
         removeSplashLoader();
         this.setState({ isLoading: false });
       });
-    this.props.fetchConfig();
-    this.props.fetchTrustedBadgeStatus();
-    this.props.fetchMerchantReferralDetail();
-    this.props.fetchGST();
-    this.fetchSupportedCurrencies();
 
     const signUpFormStatus = getItem('sign_up_exp_status');
     if (user?.merchants && Object.keys(user.merchants).length === 1) {
@@ -694,6 +698,8 @@ class App extends Component {
       if (getMobileDetect().isWebView()) {
         this.setState({ isWebView: true });
       }
+      this.fetchSupportedCurrencies();
+      this.loadThirdPartyLibraries(user);
     }
   }
   componentDidUpdate(prevProps) {
@@ -713,6 +719,12 @@ class App extends Component {
       } else if (!isFeedbackFormCreated) {
         this.createFeedbackForms();
       }
+      // Schedule the API fetch to run when the browser is idle (or immediately if using fallback)
+      scheduleIdleTask(() => {
+        if (!this.backgroundAPIsCalled) {
+          this.fetchBackgroundAPIs();
+        }
+      });
     }
   }
   UNSAFE_componentWillReceiveProps({ user, location, baseLocation, org }) {
@@ -771,6 +783,33 @@ class App extends Component {
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
+  }
+
+  async loadThirdPartyLibraries(user) {
+    if (user?.user) {
+      initSegment('Merchant', user, this.props.updateUserSegmentData);
+
+      try {
+        await lazyLoadRefiner();
+        initRefiner(user);
+      } catch (error) {
+        console.error('Failed to load Refiner:', error);
+      }
+    }
+  }
+
+  async fetchBackgroundAPIs() {
+    this.backgroundAPIsCalled = true;
+    try {
+      await Promise.allSettled([
+        this.props.fetchConfig(),
+        this.props.fetchTrustedBadgeStatus(),
+        this.props.fetchMerchantReferralDetail(),
+        this.props.fetchGST(),
+      ]);
+    } catch (error) {
+      console.error('Error fetching APIs:', error);
+    }
   }
 
   getSettlementDetails = (merchantId) => {

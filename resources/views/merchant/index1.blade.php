@@ -9,7 +9,7 @@
   <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
 @endif
 
-<script>
+<script defer>
   var _dcq = _dcq || [];
   var _dcs = _dcs || {};
   _dcs.account = '9421167';
@@ -90,7 +90,8 @@
   <!-- preconnect fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://www.gstatic.com">
-
+  <link rel="preconnect" href="https://apis.google.com">
+  <link rel="preconnect" href="https://www.clarity.ms">
   <!-- Preload FA icons CSS -->
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" as="style">
 

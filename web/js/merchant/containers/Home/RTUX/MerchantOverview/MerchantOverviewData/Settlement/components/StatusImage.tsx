@@ -22,7 +22,7 @@ export const StatusImage = ({ status }: { status: string }) => {
     if (isHovered && !isAnimating) {
       setImageSource('');
       x = setTimeout(() => {
-        setImageSource(`/img/rtux/${image?.name}`);
+        setImageSource(`${window.cdnBaseUrl}/${image?.name}`);
         setIsAnimating(true);
       }, 0);
     }

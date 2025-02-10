@@ -1,4 +1,5 @@
 <script>
+  window.addEventListener('load', function() {
     if (location.hostname === 'dashboard.razorpay.com' && location.pathname !== '/resetpassword') {
       (function(h,o,t,j,a,r){
         h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
@@ -9,4 +10,5 @@
         a.appendChild(r);
       })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
     }
+  });
 </script>

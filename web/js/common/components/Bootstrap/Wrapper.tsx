@@ -2,37 +2,16 @@ import React, { ReactNode } from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
 import { bladeTheme, createTheme } from '@razorpay/blade/tokens';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
-import {
-  QueryClient,
-  QueryClientProvider as ReactQueryClientProvider,
-  MutationFunction,
-} from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Provider } from 'react-redux';
 import { createGlobalStyle, ThemeProvider } from 'styled-components';
 
 import { LayerProvider } from 'common/components/Layer/LayerContext';
 import { SnackbarProvider } from 'common/components/SnackBar/SnackbarContext';
 import { AppProvider, AppContextTypes } from 'common/context/App';
-import {
-  graphqlRequestQuery,
-  graphqlRequestMutation,
-} from 'common/services/graphql/graphql-client';
 import store from 'merchant/store';
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { THEMES } from 'merchant_common/helpers/themes';
-
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      queryFn: graphqlRequestQuery,
-    },
-    mutations: {
-      mutationFn: graphqlRequestMutation as MutationFunction<unknown, unknown>,
-    },
-  },
-});
 
 interface Props {
   context: AppContextTypes;
@@ -73,16 +52,11 @@ const Wrapper: React.FC<Props> = ({ context, children }) => {
       <BladeProvider themeTokens={customTheme}>
         <GlobalStyles />
         <ThemeProvider theme={theme}>
-          <ReactQueryClientProvider client={queryClient}>
-            <AppProvider context={context}>
-              <LayerProvider>
-                <SnackbarProvider>{children}</SnackbarProvider>
-              </LayerProvider>
-              {process.env.PUBLIC_ENV == 'development' ? (
-                <ReactQueryDevtools initialIsOpen={false} />
-              ) : null}
-            </AppProvider>
-          </ReactQueryClientProvider>
+          <AppProvider context={context}>
+            <LayerProvider>
+              <SnackbarProvider>{children}</SnackbarProvider>
+            </LayerProvider>
+          </AppProvider>
         </ThemeProvider>
       </BladeProvider>
     </Provider>

@@ -1,5 +1,5 @@
 <script src='{{$cdnBaseUrl}}/static/analytics/bundle.js'></script>
-  <script src="https://cdn.razorpay.com/static/assets/holidays.js"></script>
+  <script async src="https://cdn.razorpay.com/static/assets/holidays.js"></script>
   <script type="text/javascript">
     //Above code doesn't perform any function, can avoid application breakage if the library is
     //removed, not loaded or library code breaks anytime.

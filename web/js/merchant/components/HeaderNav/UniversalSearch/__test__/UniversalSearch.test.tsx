@@ -19,6 +19,8 @@ const mockAbExperiments = {
   checkout_editor_v2_preview: variantOff,
 };
 
+const SEARCH_INPUT_PLACEHOLDER = 'Search payment products, settings, and more';
+
 jest.mock('common/splitz', () => ({
   useSplitzService: () => ({ abExperiments: mockAbExperiments }),
 }));
@@ -50,17 +52,21 @@ describe('Universal Search', () => {
     fetchConnectedApplicationsSpy.mockClear();
   });
 
-  test('should fetch merchant website details if website compliance flow enabled', () => {
+  test('should fetch merchant website details if website compliance flow enabled', async () => {
     const initialState = getState({
       userData: {
         isWebsiteComplianceFlowEnabled: true,
       },
     });
     renderApp({ initialState });
-    expect(websiteCompSpy).toHaveBeenCalledTimes(1);
+    const searchInput = screen.getByPlaceholderText(SEARCH_INPUT_PLACEHOLDER);
+    await userEvent.click(searchInput);
+    await waitFor(() => {
+      expect(websiteCompSpy).toHaveBeenCalledTimes(1);
+    });
   });
 
-  test('should fetch feature if not exists in feature state', () => {
+  test('should fetch feature if not exists in feature state', async () => {
     const initialState = getState({
       userData: {
         isWebsiteComplianceFlowEnabled: true,
@@ -73,7 +79,11 @@ describe('Universal Search', () => {
       },
     });
     renderApp({ initialState });
-    expect(featureConfigSpy).toHaveBeenCalledTimes(1);
+    const searchInput = screen.getByPlaceholderText(SEARCH_INPUT_PLACEHOLDER);
+    await userEvent.click(searchInput);
+    await waitFor(() => {
+      expect(featureConfigSpy).toHaveBeenCalledTimes(1);
+    });
   });
 
   test('should call fetch merchant and requested instruments on mount', async () => {
@@ -85,12 +95,14 @@ describe('Universal Search', () => {
       return true;
     });
     renderApp({ initialState });
+    const searchInput = screen.getByRole('textbox');
+    userEvent.click(searchInput);
     await waitFor(() => {
       expect(screen.getByRole('textbox')).toBeInTheDocument();
     });
   });
 
-  test('Should fetch the enrollment status if `bundle_pricing` experiment is enabled', () => {
+  test('Should fetch the enrollment status if `bundle_pricing` experiment is enabled', async () => {
     const initialState = getState({
       userData: {
         get isBundlePricingEnabled() {
@@ -100,10 +112,14 @@ describe('Universal Search', () => {
     });
     const fetchEnrollmentStatusSpy = jest.spyOn(fetchEnrollmentStatus, 'fetchEnrollmentStatus');
     renderApp({ initialState });
-    expect(fetchEnrollmentStatusSpy).toHaveBeenCalledTimes(1);
+    const searchInput = screen.getByPlaceholderText(SEARCH_INPUT_PLACEHOLDER);
+    await userEvent.click(searchInput);
+    await waitFor(() => {
+      expect(fetchEnrollmentStatusSpy).toHaveBeenCalledTimes(1);
+    });
   });
 
-  test('Should not fetch the enrollment status if `bundle_pricing` experiment is enabled', () => {
+  test('Should not fetch the enrollment status if `bundle_pricing` experiment is disabled', async () => {
     const initialState = getState({
       userData: {
         get isBundlePricingEnabled() {
@@ -113,26 +129,17 @@ describe('Universal Search', () => {
     });
     const fetchEnrollmentStatusSpy = jest.spyOn(fetchEnrollmentStatus, 'fetchEnrollmentStatus');
     renderApp({ initialState });
-    expect(fetchEnrollmentStatusSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('Should not fetch the enrollment status if `bundle_pricing` experiment is enabled', () => {
-    const initialState = getState({
-      userData: {
-        get isBundlePricingEnabled() {
-          return false;
-        },
-      },
+    const searchInput = screen.getByPlaceholderText(SEARCH_INPUT_PLACEHOLDER);
+    await userEvent.click(searchInput);
+    await waitFor(() => {
+      expect(fetchEnrollmentStatusSpy).toHaveBeenCalledTimes(0);
     });
-    const fetchEnrollmentStatusSpy = jest.spyOn(fetchEnrollmentStatus, 'fetchEnrollmentStatus');
-    renderApp({ initialState });
-    expect(fetchEnrollmentStatusSpy).toHaveBeenCalledTimes(0);
   });
 
   test('should render products on searching query in search bar and hide product on outside click', async () => {
     const initialState = getState();
     renderApp({ initialState });
-    const search = screen.getByRole('textbox');
+    const search = screen.getByPlaceholderText(SEARCH_INPUT_PLACEHOLDER);
     await userEvent.type(search, 'account');
     expect(screen.getByText('Bank account details')).toBeInTheDocument();
     const outsideElement = screen.getByTestId('outside-div');

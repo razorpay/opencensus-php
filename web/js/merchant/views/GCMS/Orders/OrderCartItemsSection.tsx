@@ -3,7 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
-import { queryClient } from 'common/components/Bootstrap/Wrapper';
+import { queryClient } from 'merchant/views/GCMS/shared/Wrapper';
 import { Error } from 'common/new-ui/Input';
 import Spinner from 'common/ui/Spinner';
 import debounce from 'common/utils/debounce';

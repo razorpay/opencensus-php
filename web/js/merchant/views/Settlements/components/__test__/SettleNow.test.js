@@ -3,7 +3,6 @@ import '@testing-library/jest-dom/extend-expect';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 
-import { queryClient } from 'common/components/Bootstrap/Wrapper';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import * as fetchRestriction from 'merchant/reducers/home';
 import { storeWithInitialState } from 'merchant/store';
@@ -12,7 +11,7 @@ import * as apiHandlers from 'merchant/views/Settlements/InstantSettlements/Inst
 import * as gaEvents from 'merchant/views/Settlements/Settlements/ga';
 import SettleNow from 'merchant/views/Settlements/components/SettleNow';
 import * as modals from 'merchant_common/reducers/modals';
-import { render, screen, server, waitFor } from 'test-utils';
+import { render, screen, server, waitFor, queryClient } from 'test-utils';
 
 const waitForODSConfigLoading = async () => {
   await waitFor(() => {

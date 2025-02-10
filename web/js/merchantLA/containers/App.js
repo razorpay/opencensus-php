@@ -1,29 +1,29 @@
+import { withRouter } from 'common/deprecated/withRouter';
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
 
+import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
 import ModalDialog from 'common/ui/ModalDialog';
 import Notifications from 'common/ui/Notifications';
-import LocalStorageService from 'common/utils/localStorage';
 import debounce from 'common/utils/debounce';
-import Sidebar from 'merchantLA/containers/Sidebar';
-import HeaderNav from 'merchantLA/components/HeaderNav';
-import Content from 'merchantLA/components/Content';
-import Footer from 'merchant/components/Footer';
-import MerchantTour from 'merchantLA/containers/MerchantTour';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import * as NotificationActions from 'merchant_common/reducers/notifications';
-import * as SessionActions from 'merchantLA/reducers/session';
-import { applyTheme } from 'merchant_common/helpers/themes';
-import User, { setFeatures } from 'merchantLA/models/User';
-import { resizeWindow } from 'merchantLA/reducers/app';
-import { fetchFeaturesAjax } from 'merchantLA/reducers/session';
-import rolesList from 'merchantLA/helpers/permissions/roles-list';
-import LogoutDialog from '../../merchant/components/LogoutDialog';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import LocalStorageService from 'common/utils/localStorage';
 import { initSentry } from 'common/utils/observability';
 import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
-import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
+import Footer from 'merchant/components/Footer';
+import { applyTheme } from 'merchant_common/helpers/themes';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+import Content from 'merchantLA/components/Content';
+import HeaderNav from 'merchantLA/components/HeaderNav';
+import MerchantTour from 'merchantLA/containers/MerchantTour';
+import Sidebar from 'merchantLA/containers/Sidebar';
+import rolesList from 'merchantLA/helpers/permissions/roles-list';
+import User, { setFeatures } from 'merchantLA/models/User';
+import { resizeWindow } from 'merchantLA/reducers/app';
+import * as SessionActions from 'merchantLA/reducers/session';
+import { fetchFeaturesAjax } from 'merchantLA/reducers/session';
+import LogoutDialog from '../../merchant/components/LogoutDialog';
 
 initSentry('MerchantLA');
 @connect(

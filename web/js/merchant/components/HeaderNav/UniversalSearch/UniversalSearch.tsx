@@ -53,7 +53,6 @@ const UniversalSearch = ({
   fetchMerchantWebsiteDetailsFn: fetchMerchantWebsiteDetails,
   fetchEnrollmentStatus,
   enrollmentStatus,
-  isRTUXHomepage,
   isConnectedNavigation,
 }: UniversalSearchProps): JSX.Element => {
   const haveIndexedApiBasedItems = useRef(false);
@@ -98,7 +97,8 @@ const UniversalSearch = ({
     fuseSearch.current.multiKey = new Fuse(products, multiKeyOptions);
   };
 
-  useEffect((): void => {
+  // Defer API calls until user interaction
+  const initializeSearchData = () => {
     fetchAllInstruments();
     if (user.isBundlePricingEnabled) fetchEnrollmentStatus();
     if (!featureStatusConfig.data?.hasOwnProperty(feature)) {
@@ -112,7 +112,7 @@ const UniversalSearch = ({
     if (!Object.keys(websiteSectionData).length && !error && !isDetailsLoading) {
       if (user.isWebsiteComplianceFlowEnabled) fetchMerchantWebsiteDetails();
     }
-  }, []);
+  };
 
   // We have two types of products one with visibility depends upon api and other without api data.
   // We separated two useEffect 1st one called on mount and based on user object created the product list
@@ -136,6 +136,14 @@ const UniversalSearch = ({
     );
     setUpIndexing({ products });
   }, []);
+
+  const handleSearchFocus = () => {
+    setIsFocussed(true);
+    // Load data only on first focus
+    if (!haveIndexedApiBasedItems.current) {
+      initializeSearchData();
+    }
+  };
 
   useEffect((): void => {
     const { data: featureData, loading: isFeatureLoading } = featureStatusConfig;
@@ -239,8 +247,8 @@ const UniversalSearch = ({
     <div ref={searchContainerRef}>
       <SearchBar
         ref={inputRef}
-        isRTUXHomepage={isRTUXHomepage}
         isConnectedNavigation={isConnectedNavigation}
+        onFocus={handleSearchFocus}
         {...commonProps}
       />
       <ProductListing

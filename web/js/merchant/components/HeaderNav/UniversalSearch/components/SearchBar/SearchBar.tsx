@@ -15,10 +15,12 @@ const SearchBar = forwardRef(
       show,
       isDeviceInBreakpoint,
       isConnectedNavigation = false,
+      onFocus,
     }: CommonStateProps & {
       searchQuery: string;
       isMobile: boolean;
       isConnectedNavigation: boolean;
+      onFocus?: () => void;
     },
     ref,
   ): JSX.Element => {
@@ -43,6 +45,9 @@ const SearchBar = forwardRef(
 
     const handleFocus = (): void => {
       setFocussed(true);
+      if (onFocus) {
+        onFocus();
+      }
     };
 
     if (isConnectedNavigation) {

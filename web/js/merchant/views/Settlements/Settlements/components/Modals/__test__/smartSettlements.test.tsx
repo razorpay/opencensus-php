@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react';
-import { render, screen, server, waitFor, userEvent } from 'test-utils';
+import { render, screen, server, waitFor, userEvent, queryClient } from 'test-utils';
 
 import { SpiltzContextState } from 'common/splitz/types';
 import * as apiHandlers from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/__test__/mocks/odsApiHandlers';
 import { OnDemandModalEntry } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandModalEntry';
 import * as modals from 'merchant_common/reducers/modals';
-import { queryClient } from 'common/components/Bootstrap/Wrapper';
 import { waitForSuccessScreen, waitForOdsModal } from './mocks/fixtures/OnDemandModalV2';
 
 const mockGTMExpActive: any = { value: undefined };

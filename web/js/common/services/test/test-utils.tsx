@@ -28,6 +28,15 @@ import { errorHandlers } from '../../../../mocks/errorHandlers';
 import { server } from '../../../../mocks/node';
 import { BladeProvider } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+export const queryClientMock = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
 
 const createWrapper = ({
   context,
@@ -52,22 +61,26 @@ const createWrapper = ({
     return (
       <Wrapper context={context}>
         <Provider store={reduxStore}>
-          <BladeProvider themeTokens={bladeTheme}>
-            <ConfirmModalProvider>
-              <Router navigator={history} location={history.location}>
-                <>
-                  {showModal && <ModalDialog />}
-                  <Notifications />
-                  <Routes>
-                    <Route
-                      path={`${path as string}/*`}
-                      element={<div data-testid={COMPONENT_WRAPPER_TESTID}>{renderChildren()}</div>}
-                    />
-                  </Routes>
-                </>
-              </Router>
-            </ConfirmModalProvider>
-          </BladeProvider>
+          <QueryClientProvider client={queryClientMock}>
+            <BladeProvider themeTokens={bladeTheme}>
+              <ConfirmModalProvider>
+                <Router navigator={history} location={history.location}>
+                  <>
+                    {showModal && <ModalDialog />}
+                    <Notifications />
+                    <Routes>
+                      <Route
+                        path={`${path as string}/*`}
+                        element={
+                          <div data-testid={COMPONENT_WRAPPER_TESTID}>{renderChildren()}</div>
+                        }
+                      />
+                    </Routes>
+                  </>
+                </Router>
+              </ConfirmModalProvider>
+            </BladeProvider>
+          </QueryClientProvider>
         </Provider>
       </Wrapper>
     );
@@ -176,4 +189,5 @@ export {
   COMPONENT_WRAPPER_TESTID,
   updateUseI18ServiceSpy,
   renderWithSuspense,
+  queryClientMock as queryClient,
 };

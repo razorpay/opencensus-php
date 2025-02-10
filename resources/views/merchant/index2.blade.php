@@ -5,7 +5,7 @@
     window.old_notifications = {!! $old_notifications !!};
     window.new_notifications = {!! $new_notifications !!};
     window.notifications = {!! $notifications !!};
-    window.api_host = "{!! $api_host !!}"
+    window.api_host = "{!! $api_host !!}";
     window.custom_notes = {!! $custom_notes !!};
     window.pl_expiry_in_hrs = {!! $pl_expiry_in_hrs !!};
     window.pl_extra_fields = {!! $pl_extra_fields !!};
@@ -19,8 +19,8 @@
   <!-- head tag ends here -->
   @include('partials/new-auth')
   <script type="text/javascript">
-      window.session_id = "{!! $session_id !!}"
-      window.isAuthPage = true;
+    window.session_id = "{!! $session_id !!}";
+    window.isAuthPage = true;
   </script>
   @if($requestPath !== $rootPath && !$isAuthPath)
     <script>

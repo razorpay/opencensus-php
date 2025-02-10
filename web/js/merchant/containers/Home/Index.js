@@ -46,7 +46,6 @@ import {
   iaActivations,
 } from './ga';
 import RTracking from 'react-tracking';
-import { fetchVirtualAccounts } from 'merchant/reducers/virtualaccounts';
 import CardPaymentsBlockedModal from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Modal';
 import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
 import TnCModal from 'merchant/components/Home/TnCModal';
@@ -56,11 +55,9 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import User from 'merchant/models/User';
 import { analyticsTrack } from 'common/utils/analytics';
 import M2MSuccessModal from 'merchant/components/M2M/M2MSuccessModal';
-import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 import * as EventActions from 'merchant/reducers/trackEvents';
 import LocRepaymentTooltip from 'merchant/views/Capital/CashAdvanceNudges/components/LocRepaymentTooltip';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { fetchAmount } from 'merchant/reducers/fetchTransaction';
 import {
   fetchActivationDetails,
   getBannerAndModalVisibility,
@@ -128,7 +125,6 @@ const recentActivityTitle = 'Recent Activity';
       kycStatusModalType: state.home.kycStatusModalType,
       kycStatusActivationDuration: state.home.kycStatusActivationDuration,
       settlement_amount: state.home.settlement_amount,
-      virtualAccounts: state.virtualaccounts,
       lateAuthConfig: state.config.lateAuthConfig,
       support_detail: state.supportdetails.merchantSupportDetail,
       showTnCModal: state.home.showTnCModal,
@@ -141,13 +137,11 @@ const recentActivityTitle = 'Recent Activity';
     ...ModalActions,
     showNotification,
     fetchPayments,
-    fetchVirtualAccounts,
     fetchLateAuthConfig,
     fetchSupportDetail,
     showOrHideHighlightMode,
     updateSession,
     ...EventActions,
-    fetchAmount,
     fetchMerchantWebsiteDetails,
     getBannerAndModalVisibility,
     fetchActivationDetails,
@@ -554,23 +548,19 @@ class HomeContainer extends Component {
   UNSAFE_componentWillMount() {
     // to style react-power-selct specific to this tab
     document.body.className += bodyClass;
-    const { user } = this.props;
+    const { abExperiments } = this.props.splitz;
 
-    this.fetchOldestTransactionDate();
-    this.fetchTxnsGroupedByPlatform();
-
-    if (user && user.isVirtualAccountsEnabled) {
-      this.props.fetchVirtualAccounts({
-        skip: 0,
-        count: 25,
-      });
+    const isRTUXHomepage = isRTUXHomepageEnabled({ user: this.props.user, abExperiments });
+    if (!isRTUXHomepage) {
+      this.fetchOldestTransactionDate();
+      this.fetchTxnsGroupedByPlatform();
     }
   }
 
   componentWillUnmount() {
     document.body.className = document.body.className.replace(bodyClass, '');
     window.removeEventListener('resize', this.onResize);
-    window.removeEventListener('click', () => {});
+    window.removeEventListener('click', () => { });
   }
 
   setScrollAmountToStickHeader() {
@@ -587,23 +577,32 @@ class HomeContainer extends Component {
     this.setScrollAmountToStickHeader();
   }
 
-  fetchMerchantDetails = async () => {
-    const response = await merchantFetch({
-      url: 'merchant/activation',
-      mode: 'live',
-    });
-    return response;
-  };
-
   componentDidMount() {
-    this.props.fetchCurrentBalance();
-    this.props.fetchSettlementAmount();
-    this.fetchRestrictionsIfAny();
-    this.props.fetchBalanceConfig();
-    this.props.fetchLateAuthConfig();
+    const { abExperiments } = this.props.splitz;
+    const isRTUXHomepage = isRTUXHomepageEnabled({ user: this.props.user, abExperiments });
+
+    if (!isRTUXHomepage) {
+      this.props.fetchCurrentBalance();
+      this.props.fetchSettlementAmount();
+      this.fetchRestrictionsIfAny();
+      this.props.fetchBalanceConfig();
+      this.props.fetchLateAuthConfig();
+
+      const { user, fetchMerchantWebsiteDetails, websiteSectionDetailsData } = this.props;
+      if (user.isWebsiteComplianceFlowEnabled) {
+        const {
+          data: websiteSectionData,
+          error,
+          loading: isDetailsLoading,
+        } = websiteSectionDetailsData;
+        if (!Object.keys(websiteSectionData).length && !error && !isDetailsLoading) {
+          fetchMerchantWebsiteDetails();
+        }
+      }
+    }
+
     this.setScrollAmountToStickHeader();
     this.props.fetchSupportDetail();
-    this.fetchReferredMerchants();
 
     window.addEventListener('resize', this.onResize);
 
@@ -662,36 +661,20 @@ class HomeContainer extends Component {
     }
     setItem('sign_up_exp_status', 'kyc_form_fill_started');
 
-    const {
-      user,
-      fetchAmount,
-      fetchMerchantWebsiteDetails,
-      getBannerAndModalVisibility,
-      fetchActivationDetails,
-      websiteSectionDetailsData,
-    } = this.props;
+    const { getBannerAndModalVisibility, fetchActivationDetails } = this.props;
 
-    const l1Promises = [fetchAmount, fetchActivationDetails(user.id)];
-    if (user.isWebsiteComplianceFlowEnabled) {
-      const {
-        data: websiteSectionData,
-        error,
-        loading: isDetailsLoading,
-      } = websiteSectionDetailsData;
-      if (!Object.keys(websiteSectionData).length && !error && !isDetailsLoading) {
-        l1Promises.push(fetchMerchantWebsiteDetails());
-      }
-      l1Promises.push(getBannerAndModalVisibility());
-    }
-
-    Promise.all(l1Promises).then((responses) => {
-      const activationData = responses?.[1]?.data ?? {};
-      const { business_website, appstore_url, playstore_url } = activationData;
-      if (business_website || appstore_url || playstore_url) {
-        setRecommendedProduct({ overrideProduct: 'payment_gateway' });
-      }
-      this.setState({ canShowL1ActivationModals: true });
-    });
+    Promise.all([fetchActivationDetails(this.props.user.id), getBannerAndModalVisibility()]).then(
+      (responses) => {
+        const activationData = responses?.[0]?.data ?? {};
+        const { business_website, appstore_url, playstore_url } = activationData;
+        if (business_website || appstore_url || playstore_url) {
+          setRecommendedProduct({ overrideProduct: 'payment_gateway' });
+        }
+        this.setState({ canShowL1ActivationModals: true });
+        const referredMerchantData = responses[1];
+        this.setReferredMerchantData(referredMerchantData);
+      },
+    );
   }
 
   closeOnboardingStep() {
@@ -803,8 +786,7 @@ class HomeContainer extends Component {
     else return false;
   };
 
-  fetchReferredMerchants = async () => {
-    const res = await fetchModalConfigDetails('onboarding');
+  setReferredMerchantData = (res) => {
     const referralSuccessCount = parseInt(res?.data?.referral_success_popup_count ?? 0, 10);
     const refereeSuccessCount = parseInt(res?.data?.referee_success_popup_count ?? 0, 10);
     if (referralSuccessCount !== 0 || refereeSuccessCount !== 0) {

@@ -1,14 +1,13 @@
 import React from 'react';
 import moment from 'moment';
 
-import { queryClient } from 'common/components/Bootstrap/Wrapper';
 import { OdsBanners } from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage/banners/OdsBanners';
 import * as apiHandlers from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/__test__/mocks/odsApiHandlers';
 import {
   setEsBannerSeen,
   getEsBannerSeen,
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
-import { render, screen, server, waitFor } from 'test-utils';
+import { render, screen, server, waitFor, queryClient } from 'test-utils';
 
 const waitForLoader = async () => {
   expect(screen.getByTestId('loading')).toBeInTheDocument();

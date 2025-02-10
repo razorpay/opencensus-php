@@ -3,7 +3,7 @@ import { Box, Radio, RadioGroup, Text } from '@razorpay/blade/components';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 
-import { queryClient } from 'common/components/Bootstrap/Wrapper';
+import { queryClient } from 'merchant/views/GCMS/shared/Wrapper';
 import { Error } from 'common/new-ui/Input';
 import Spinner from 'common/ui/Spinner';
 import { GCMSSession, SessionContext } from 'merchant/views/GCMS/shared/context';

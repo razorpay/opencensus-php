@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unsafe */
-import React, { Component, Suspense } from 'react';
 import { Box, Button, MenuIcon, RefreshIcon, Spinner, Text } from '@razorpay/blade/components';
 import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
+import React, { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
 import { compose } from 'redux';
@@ -12,11 +12,9 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { withSplitzService } from 'common/splitz';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import OffersForYou from 'common/ui/OffersForYou';
-import OnboardingCoupons from 'common/ui/OnboardingCoupons';
 import SuccessFullCreditModal from 'common/ui/OnboardingCoupons/SuccessFullCreditModal';
 import ErrorFallbackComponent from 'common/ui/WhatsNew/ErrorFallbackComponent';
 import NotificationIcon from 'common/ui/WhatsNew/Icon';
-import { getItem, setItem } from 'common/utils/localStorage';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { classList } from 'common/utils/rzp-utils';
 import HighlightTestMode from 'merchant/components/HighlightTestMode';
@@ -31,16 +29,15 @@ import {
 import { toggleMobileMenu } from 'merchant/reducers/app';
 import lazyLoader from 'merchant/routes/LazyLoader';
 import EcosystemDowntimes from 'merchant/views/EcosystemDowntimes';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
+import { isEligibleForReKyc } from '../ReKycStatusAlerts/utils';
+import { isJKOfflineMerchant } from '../Sidebar/helpers';
 import AppSwitcher from './AppSwitcher';
 import NavFragment from './NavFragment';
 import ProfileDropdown from './ProfileDropdown';
 import StatusDetails from './StatusDetails';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import UniversalSearch from './UniversalSearch';
-import { isEligibleForReKyc } from '../ReKycStatusAlerts/utils';
-import { isJKOfflineMerchant } from '../Sidebar/helpers';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -125,23 +122,6 @@ class HeaderNav extends Component {
     analyticsAction('Click - Sidebar Toggle');
     this.props.toggleMobileMenu();
   }
-
-  // function to open MTU popup
-  showMTUOffer = (isButtonClicked = false) => {
-    const { closeModals, openModals, user } = this.props;
-
-    openModals({
-      component: (
-        <OnboardingCoupons
-          closeModal={closeModals}
-          mtuCouponCount={this.state.mtuOfferCount}
-          autoOpenOnboardingCoupon={user.autoOpenOnboardingCoupon}
-          isButtonClicked={isButtonClicked}
-        />
-      ),
-      size: 'xlarge',
-    });
-  };
 
   handleOnRefreshClick = () => {
     this.setState({ isRefreshLoading: true });
@@ -440,8 +420,6 @@ const enhancedComponent = compose(
   rTracking(() => window.rzpQ.component('HeaderNav')),
   connect(mapStateToProps, {
     toggleMobileMenu,
-    openModals: openModal,
-    closeModals: closeModal,
   }),
 );
 

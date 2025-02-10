@@ -1,7 +1,5 @@
 import React from 'react';
-import { delay, render, screen, server, waitFor } from 'test-utils';
-
-import { queryClient } from 'common/components/Bootstrap/Wrapper';
+import { delay, render, screen, server, waitFor, queryClient } from 'test-utils';
 import { SpiltzContextState } from 'common/splitz/types';
 import { pricingBreakupHandler } from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/__test__/mocks/odsApiHandlers';
 import Upselling from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/components/Upselling';

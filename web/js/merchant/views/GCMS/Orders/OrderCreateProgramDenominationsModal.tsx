@@ -13,7 +13,7 @@ import {
 } from '@razorpay/blade/components';
 import { useMutation } from '@tanstack/react-query';
 
-import { queryClient } from 'common/components/Bootstrap/Wrapper';
+import { queryClient } from 'merchant/views/GCMS/shared/Wrapper';
 import { Error } from 'common/new-ui/Input';
 import { getFixedINRAmount } from 'common/utils/rzp-utils';
 import { OrderItemDenomination, ModalTypeEnum } from 'merchant/views/GCMS/Orders/types';

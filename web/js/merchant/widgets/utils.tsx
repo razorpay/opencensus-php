@@ -47,7 +47,7 @@ const backgroundImageMap = {
 
 export const getBackgroundImage = (imageIdentifier?: string): BoxProps['backgroundImage'] => {
   if (!imageIdentifier) return undefined;
-
+  const rtuxCdnPath = `${window.cdnBaseUrl}/static/assets/rtux`;
   const isImageUrl = /^http/i.test(imageIdentifier);
   if (isImageUrl) return `url(${imageIdentifier})`;
 
@@ -55,11 +55,11 @@ export const getBackgroundImage = (imageIdentifier?: string): BoxProps['backgrou
     | ValueOf<typeof backgroundImageMap>
     | undefined;
   if (!image) return undefined;
-  if (typeof image === 'string') return `url(/img/rtux/${image})`;
+  if (typeof image === 'string') return `url(${rtuxCdnPath}/${image})`;
 
   const responsiveImage = {};
   Object.entries(image).forEach(([size, image]) => {
-    responsiveImage[size] = /^http/i.test(image) ? `url(${image})` : `url(/img/rtux/${image})`;
+    responsiveImage[size] = /^http/i.test(image) ? `url(${image})` : `url(${rtuxCdnPath}/${image})`;
   });
   return responsiveImage;
 };
