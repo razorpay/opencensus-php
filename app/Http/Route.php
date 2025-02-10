@@ -19487,6 +19487,9 @@ class Route
         'accounting_integration_tally_tax_slab_rates',
         'accounting_integration_tally_banking_accounts',
         'accounting_integration_update_rx_tally_ledger_mapping',
+
+        //Balance Specific Routes
+        'merchant_banking_balance_fetch',
     ];
 
     //
