@@ -506,11 +506,11 @@ class ApiEventSubscriber extends Base\Core
         try
         {
             $properties = [
-                'id'            => $this->merchant->getId(),
+                'id'            => $payment->getMerchantId(),
                 'experiment_id' => $this->app['config']->get('app.subscriptions_intl_auto_payments_handler_exp'),
                 'request_data'  => json_encode(
                     [
-                        'merchant_id' => $this->merchant->getId(),
+                        'merchant_id' => $payment->getMerchantId(),
                     ]),
             ];
 
