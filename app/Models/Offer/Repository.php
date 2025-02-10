@@ -260,32 +260,26 @@ class Repository extends Base\Repository
 
         try
         {
-            if ($this->core->shouldRouteToOffersEngineForCreation(
-                    $this->merchant->getId(),
-                    Constants::OFFER_MERCHANT_DASHBOARD_READS_MIGRATION_EXP) === true)
-            {
-                $this->trace->info(TraceCode::OFFERS_ENGINE_READ_MIGRATION_EXP_ENABLED,
-                                   ["merchant_id" => $this->merchant->getId()]);
 
-                $count = isset($fetchMultipleOEInput['count']) === true ? $fetchMultipleOEInput['count'] : 20;
+            $count = isset($fetchMultipleOEInput['count']) === true ? $fetchMultipleOEInput['count'] : 20;
 
-                $skip = isset($fetchMultipleOEInput['skip']) === true ? $fetchMultipleOEInput['skip'] : 0;
+            $skip = isset($fetchMultipleOEInput['skip']) === true ? $fetchMultipleOEInput['skip'] : 0;
 
-                $fetchMultipleOEInput['page_size'] = $count;
+            $fetchMultipleOEInput['page_size'] = $count;
 
-                unset($fetchMultipleOEInput['count']);
+            unset($fetchMultipleOEInput['count']);
 
-                $fetchMultipleOEInput['page'] = $skip != 0 ? max(1, (floor($skip / $count) + 1)) : 1;
+            $fetchMultipleOEInput['page'] = $skip != 0 ? max(1, (floor($skip / $count) + 1)) : 1;
 
-                unset($fetchMultipleOEInput['skip']);
+            unset($fetchMultipleOEInput['skip']);
 
-                (new Validator())->validateInput('fetch_multiple', $fetchMultipleOEInput);
+            (new Validator())->validateInput('fetch_multiple', $fetchMultipleOEInput);
 
-                $offersResponse = $this->repo->offer->fetchMultipleMerchantDashboardFromOE(
-                    $this->merchant->getId(), $fetchMultipleOEInput);
+            $offersResponse = $this->repo->offer->fetchMultipleMerchantDashboardFromOE(
+                $this->merchant->getId(), $fetchMultipleOEInput);
 
-                return new PublicCollection($offersResponse);
-            }
+            return new PublicCollection($offersResponse);
+
         }
         catch (\Throwable $e)
         {
@@ -327,4 +321,5 @@ class Repository extends Base\Repository
 
         return $query;
     }
+
 }

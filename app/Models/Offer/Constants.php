@@ -181,6 +181,8 @@ final class Constants
 
     const OE_ENABLE_CACHE_INTERNAL_MERCHANT_GET_EXP = 'app.oe_enable_cache_internal_merchant_get_exp';
 
+    const API_OFFERS_REPO_FALLBACK_IGNORE_EXP = 'app.api_offers_repo_fallback_ignore_exp';
+
     const OFFER_CREATE_READS_MIGRATION_EXP = 'app.offers_engine_create_read_migration_exp_id';
 
     const OFFER_MERCHANT_DASHBOARD_READS_MIGRATION_EXP = 'app.offers_engine_merchant_dashboard_read_migration_exp_id';

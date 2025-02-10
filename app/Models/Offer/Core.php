@@ -622,6 +622,9 @@ class Core extends Base\Core
         return ($matchingDirectOfferPresent === false);
     }
 
+    /**
+     * @deprecated this method has been deprecated since we have moved the creation flow to offers engine
+     */
     protected function checkConflictingOffers(Entity $offer)
     {
         /**
@@ -1194,8 +1197,6 @@ class Core extends Base\Core
         if ($offerCreateReadsMigrationExpResult === false)
         {
             $this->validateMerchant($merchant, $input);
-
-            $this->checkConflictingOffers($offer);
         }
 
         $this->repo->transaction(
@@ -1267,6 +1268,44 @@ class Core extends Base\Core
                 "request_data"  => json_encode(
                     [
                         'merchant_id' => $merchantId,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === 'variant_on';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
+                [
+                    'msg' => $e->getMessage()
+                ]);
+
+        }
+
+        return false;
+    }
+
+    public function shouldIgnoreAPIFallback(string $functionName, $experiment): bool
+    {
+        if (app()->runningUnitTests() === true or app()->isEnvironmentQA() === true)
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                "id"            => $functionName,
+                "experiment_id" => $this->app['config']->get($experiment),
+                "request_data"  => json_encode(
+                    [
+                        'function_name' => $functionName,
                     ]),
             ];
             $response = $this->app['splitzService']->evaluateRequest($properties);

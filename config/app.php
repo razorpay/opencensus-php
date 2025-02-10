@@ -955,6 +955,8 @@ return array(
 
     'oe_enable_cache_internal_merchant_get_exp' => env('OE_ENABLE_CACHE_INTERNAL_MERCHANT_GET_EXP'),
 
+    'api_offers_repo_fallback_ignore_exp' => env('API_OFFERS_REPO_FALLBACK_IGNORE_EXP'),
+
     'offers_engine_create_read_migration_exp_id' => env('OFFERS_ENGINE_CREATE_READ_MIGRATION_EXP'),
 
     'offers_engine_merchant_dashboard_read_migration_exp_id' => env('OFFERS_ENGINE_MERCHANT_DASHBOARD_READ_MIGRATION_EXP'),
@@ -1286,7 +1288,7 @@ return array(
     'cross_border_import_rearch_shadow_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_SHADOW_EXPERIMENT_ID'),
 
     'subscriptions_intl_auto_payments_handler_exp'  => env('SUBSCRIPTIONS_INTL_AUTO_PAYMENTS_HANDLER_EXP'),
-  
+
     'saved_card_token_payments_via_pg_router' => env('SAVED_CARD_TOKEN_PAYMENTS_VIA_PG_ROUTER'),
 
     'fetch_cryptogram_via_cps' => env('FETCH_CRYPTOGRAM_VIA_CPS'),
