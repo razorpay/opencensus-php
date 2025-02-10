@@ -62,9 +62,9 @@ class OrderPaymentsParity extends Job
         $message = [
             "data" => [
                 "api"           => "order_payments",
-                "request_input"   => $this->requestInput,
+                "request_input" => $this->requestInput,
                 "response"      => $this->responseBody,
-                "timestamp"     => $this->timestamp
+                "timestamp"     => $this->timestamp,
             ],
         ];
 
