@@ -54,6 +54,8 @@ class Entity extends Base\Entity
     const EXTERNAL_REDIRECT_URL_TEXT      = 'external_redirect_url_text';
     const MERCHANT_SESSION_TIMEOUT_IN_SECONDS = 'merchant_session_timeout_in_seconds';
     const SECURITY_BRANDING_LOGO = 'security_branding_logo';
+    const ADMIN_NAME                      = 'admin.name';
+    const ADMIN_USERNAME                  = 'admin.username';
 
     /**
      * Org level features
