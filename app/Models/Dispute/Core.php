@@ -1216,6 +1216,12 @@ class Core extends Base\Core
             $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::NAME]  = $data[MerchantEntity::NAME];
             $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::EMAIL] = $data[MerchantEntity::EMAIL];
 
+            $this->trace->info(TraceCode::MERCHANT_BULK_NOTIFY_DATA, [
+                'id' => $merchantId,
+                'name'=>$data[MerchantEntity::NAME],
+                'email'=>$data[MerchantEntity::EMAIL],
+            ]);
+
             foreach ($data[Constants::DISPUTES] as $disputePhase => $publicDisputeIds)
             {
                 $bulkMailData[Entity::PHASE] = $disputePhase;
@@ -1264,14 +1270,30 @@ class Core extends Base\Core
                     $bulkMailDataNonFraud['totalPayments'] = count($bulkMailDataNonFraud[Constants::DISPUTES]);
                     if ($bulkMailDataFraud['totalPayments'] > 0)
                     {
+
+                        $this->trace->info(TraceCode:: BULK_MAIL_DATA_FOR_FRAUD_PAYMENTS, [
+                            'phase'=> $disputePhase,
+                            'bulk_mail_fraud_data' => $bulkMailDataFraud,
+                        ]);
+
                         $this->bulkMailQueue($bulkMailDataFraud, $merchantId, $disputeIds, $disputePhase);
                     }
                     if ($bulkMailDataNonFraud['totalPayments'] > 0)
                     {
+
+                        $this->trace->info(TraceCode:: BULK_MAIL_DATA_FOR_FRAUD_PAYMENTS, [
+                            'phase'=> $disputePhase,
+                            'bulk_mail_non_fraud_data' => $bulkMailDataNonFraud,
+                        ]);
+
                         $this->bulkMailQueue($bulkMailDataNonFraud, $merchantId, $disputeIds, $disputePhase);
                     }
                 }
 
+                $this->trace->info(TraceCode::BULK_MAIL_DATA, [
+                    'bulk_mail_data' => $bulkMailData,
+                    'total_payments' => count($publicDisputeIds)
+                ]);
 
                 $bulkMailData['totalPayments'] = count($publicDisputeIds);
 
@@ -1305,6 +1327,11 @@ class Core extends Base\Core
                     if (empty($fdOutboundEmailRequest) === false)
                     {
                         $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
+
+                        $this->trace->info(TraceCode::EMAIL_SENDING_PROCEDURE_START, [
+                            'outmail_bound_data' => $fdOutboundEmailRequest,
+                            'response'=> $response
+                        ]);
 
                         (new FreshDeskService())->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
                     }
@@ -1817,6 +1844,8 @@ class Core extends Base\Core
         $disputes = $this->repo->dispute->getOpenDisputesForNotification();
         $merchantData = $disputeData = [];
 
+        $this->trace->info(TraceCode::DISPUTE_EMAIL_SENDING_START);
+
         foreach ($disputes as $dispute)
         {
             $payment = $dispute->payment;
@@ -1842,6 +1871,11 @@ class Core extends Base\Core
         }
 
         $this->sendAggregatedEmails($merchantData, $disputeData);
+
+        $this->trace->info(TraceCode::DISPUTE_EMAIL_SENDING_COMPLETE,[
+            'total_disputes'=>count($disputes)
+        ]);
+
 
         return ['total_disputes' => count($disputes)];
     }

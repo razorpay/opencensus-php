@@ -879,8 +879,7 @@ Razorpay';
 
     const FOH_DASHBOARD_TEMPLATE_TAG = 'mra_foh';
     const FOH_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.funds_on_hold.confirmation';
-    const FOH_EMAIL_SUBJECT          = 'Razorpay Account Review: {merchant_name} | {merchant_id} | Funds under Review';
-
+    const FOH_EMAIL_SUBJECT          = 'Razorpay Account Funds under Review: {merchant_id}';
     //Suspend Notification templates
     const SUSPEND_ACCOUNT_SMS_TEMPLATE           = 'sms.merchant_risk_actions.suspend';
     const SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_NAME = 'whatsapp.merchant_risk_actions.suspend';
@@ -889,7 +888,11 @@ Razorpay';
     //Disable Live Notification templates
     const DISABLE_LIVE_SMS_TEMPLATE           = 'sms.merchant_risk_actions.disable_live';
     const DISABLE_LIVE_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.disable_live.confirmation';
-    const DISABLE_LIVE_EMAIL_SUBJECT          = 'Razorpay Account disabled: {merchant_name} | {merchant_id}';
+    const DISABLE_LIVE_EMAIL_SUBJECT          = 'Razorpay Account Disabled: {merchant_id}';
+
+    const SUSPEND_LIVE_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.suspend_live.confirmation';
+    const SUSPEND_LIVE_EMAIL_SUBJECT          = 'Razorpay Account Suspended: {merchant_id}';
+
     const DISABLE_LIVE_WHATSAPP_TEMPLATE_NAME = 'whatsapp.merchant_risk_actions.disable_live';
     const DISABLE_LIVE_WHATSAPP_TEMPLATE      = 'We have disabled your account as we observed suspicious account activity on your account - {merchant_id} in the name of M/s. {business_name} held with Razorpay.  Please check your registered email for an email with subject Razorpay Account disabled: {merchant_name} | {merchant_id} for more details';
     const DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG = 'mra_disabled';
@@ -968,8 +971,8 @@ Razorpay';
             self::SMS_TEMPLATE              => self::SUSPEND_ACCOUNT_SMS_TEMPLATE_MOBILE_SIGNUP,
             self::WHATSAPP_TEMPLATE_NAME    => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP,
             self::WHATSAPP_TEMPLATE         => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_MOBILE_SIGNUP,
-            self::EMAIL_TEMPLATE            => self::DISABLE_LIVE_EMAIL_TEMPLATE,
-            self::EMAIL_SUBJECT             => self::DISABLE_LIVE_EMAIL_SUBJECT,
+            self::EMAIL_TEMPLATE            => self::SUSPEND_LIVE_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT             => self::SUSPEND_LIVE_EMAIL_SUBJECT,
         ],
 
         Action::HOLD_FUNDS => [
@@ -1018,8 +1021,8 @@ Razorpay';
     const MERCHANT_RISK_ACTIONS_TEMPLATE_MAP = [
         Action::SUSPEND => [
             self::SMS_TEMPLATE              => self::SUSPEND_ACCOUNT_SMS_TEMPLATE,
-            self::EMAIL_TEMPLATE            => self::DISABLE_LIVE_EMAIL_TEMPLATE,
-            self::EMAIL_SUBJECT             => self::DISABLE_LIVE_EMAIL_SUBJECT,
+            self::EMAIL_TEMPLATE            => self::SUSPEND_LIVE_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT             => self::SUSPEND_LIVE_EMAIL_SUBJECT,
             self::WHATSAPP_TEMPLATE_NAME    => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_NAME,
             self::WHATSAPP_TEMPLATE         => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE,
         ],

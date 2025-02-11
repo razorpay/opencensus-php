@@ -1,5 +1,5 @@
 # Stage - Build & Test
-FROM c.rzp.io/razorpay/onggi-multi-arch:rzp-golden-image-base-golang-1.21
+FROM c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-golden-image-base-golang-1.23
 ARG GIT_USERNAME
 ENV CGO_ENABLED 0
 

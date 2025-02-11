@@ -240,6 +240,8 @@ class MerchantActionNotification
                 TraceCode::MERCHANT_RISK_ACTIONS_NOTIFICATIONS_EMAIL_SENT,
                 [
                     'merchant_id'        => $merchant->getId(),
+                    'merchant_email'     => $merchantEmail,
+                    'cc_emails'          => $ccEmails,
                 ]);
 
             return $fdTicketId;
@@ -251,6 +253,8 @@ class MerchantActionNotification
                                                 TraceCode::MERCHANT_RISK_ACTIONS_NOTIFICATIONS_EMAIL_FAILED,
                                                 [
                                                     'merchant_id'        => $merchant->getId(),
+                                                    'merchant_email'     => $merchantEmail,
+                                                    'cc_emails'          => $ccEmails,
                                                 ]
             );
         }
