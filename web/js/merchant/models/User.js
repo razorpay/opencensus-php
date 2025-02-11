@@ -2089,6 +2089,18 @@ export default class User {
   get isMkycMerchant() {
     return this?.workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING';
   }
+
+  get isUpiRefundsDisabled() {
+    return this.isFeatureEnabled('disable_upi_refunds');
+  }
+
+  get isCardRefundsDisabled() {
+    return this.isFeatureEnabled('disable_card_refunds');
+  }
+
+  get isNetbankingRefundDisabled() {
+    return this.isFeatureEnabled('disable_nb_refunds');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap, shouldSkipRoleCheck = false) {

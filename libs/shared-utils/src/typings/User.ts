@@ -75,6 +75,9 @@ type Getters = {
   isParityFeaturesEnabledForHDCF: boolean;
   isRRNSearchEnabled: boolean;
   isPayerNameEnabled: boolean;
+  isUpiRefundsDisabled: boolean;
+  isCardRefundDisabled: boolean;
+  isNetbankingRefundDisabled: boolean;
 };
 
 type UserProperties = {

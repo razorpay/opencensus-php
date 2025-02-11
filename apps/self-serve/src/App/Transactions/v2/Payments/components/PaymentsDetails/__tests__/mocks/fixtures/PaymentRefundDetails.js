@@ -1,6 +1,8 @@
 export const initialState = {
   session: {
-    user: {},
+    user: {
+      isUpiRefundDisabled: true,
+    },
   },
 };
 

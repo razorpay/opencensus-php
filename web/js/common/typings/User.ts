@@ -94,6 +94,9 @@ type Getters = {
   isCreditSelfServeDisabled: boolean;
   isPayerNameEnabled: boolean;
   isPgLegderReverseShadowEnabled: boolean;
+  isUpiRefundsDisabled: boolean;
+  isCardRefundDisabled: boolean;
+  isNetbankingRefundDisabled: boolean;
 };
 
 type Merchant = {

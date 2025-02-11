@@ -4,6 +4,7 @@ export const initialState = {
   session: {
     user: {
       isOptimizerView: noop,
+      isUpiRefundDisabled: true,
     },
   },
 };

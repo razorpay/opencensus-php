@@ -83,13 +83,31 @@ export const hasPaymentOpenNonFraudDisputes = (payment: IPaymentDetails) => {
   return false;
 };
 
+export const isIssueRefundDisabledForMethod = (
+  payment: IPaymentDetails,
+  user: Record<string, any>,
+) => {
+  const { isUpiRefundDisabled, isNetbankingRefundDisabled, isCardRefundDisabled } = user;
+  switch (payment.method) {
+    case 'upi':
+      return isUpiRefundDisabled;
+    case 'netbanking':
+      return isNetbankingRefundDisabled;
+    case 'card':
+      return isCardRefundDisabled;
+    default:
+      return false;
+  }
+};
+
 export const isIssueRefundDisabled = (payment: IPaymentDetails, user: Record<string, any>) => {
   return (
     !isGatewaySupportingRefund(payment) ||
     !isPaymentEligibleForRefundAsPerStatus(payment) ||
     hasPaymentOpenNonFraudDisputes(payment) ||
     !isPaymentEligibleForRefund(payment, user) ||
-    isPaymentThroughSeamlessProviders(payment)
+    isPaymentThroughSeamlessProviders(payment) ||
+    isIssueRefundDisabledForMethod(payment, user)
   );
 };
 

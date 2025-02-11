@@ -15,6 +15,7 @@ import {
   hasPaymentOpenNonFraudDisputes,
   isGatewaySupportingRefund,
   isPaymentThroughSeamlessProviders,
+  isIssueRefundDisabledForMethod,
 } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/utils';
 
 jest.mock(
@@ -30,6 +31,7 @@ jest.mock(
     hasPaymentOpenNonFraudDisputes: jest.fn(),
     isGatewaySupportingRefund: jest.fn(),
     isPaymentThroughSeamlessProviders: jest.fn(),
+    isIssueRefundDisabledForMethod: jest.fn(),
   }),
 );
 
@@ -53,6 +55,7 @@ describe('Payment Refund Details component', () => {
       hasPaymentOpenNonFraudDisputes.mockReturnValue(false);
       isGatewaySupportingRefund.mockReturnValue(true);
       isPaymentThroughSeamlessProviders.mockReturnValue(false);
+      isIssueRefundDisabledForMethod.mockReturnValue(false);
     });
 
     test('should render refund Ids', () => {
@@ -92,6 +95,7 @@ describe('Payment Refund Details component', () => {
       hasPaymentOpenNonFraudDisputes.mockReturnValue(false);
       isGatewaySupportingRefund.mockReturnValue(true);
       isPaymentThroughSeamlessProviders.mockReturnValue(false);
+      isIssueRefundDisabledForMethod.mockReturnValue(false);
 
       openModalSpy.mockClear();
     });
@@ -117,6 +121,7 @@ describe('Payment Refund Details component', () => {
       hasPaymentOpenNonFraudDisputes.mockReturnValue(false);
       isGatewaySupportingRefund.mockReturnValue(true);
       isPaymentThroughSeamlessProviders.mockReturnValue(false);
+      isIssueRefundDisabledForMethod.mockReturnValue(false);
     });
 
     test('Should render no refunds issued yet', () => {
@@ -136,6 +141,7 @@ describe('Payment Refund Details component', () => {
       hasPaymentOpenNonFraudDisputes.mockReturnValue(false);
       isGatewaySupportingRefund.mockReturnValue(true);
       isPaymentThroughSeamlessProviders.mockReturnValue(false);
+      isIssueRefundDisabledForMethod.mockReturnValue(false);
 
       const updatedAppProps = { ...appProps };
       updatedAppProps.paymentIdRefundDetails = [];
@@ -151,6 +157,7 @@ describe('Payment Refund Details component', () => {
       hasPaymentOpenNonFraudDisputes.mockReturnValue(true);
       isGatewaySupportingRefund.mockReturnValue(true);
       isPaymentThroughSeamlessProviders.mockReturnValue(false);
+      isIssueRefundDisabledForMethod.mockReturnValue(false);
 
       const updatedAppProps = { ...appProps };
       updatedAppProps.paymentIdRefundDetails = [];
@@ -170,6 +177,7 @@ describe('Payment Refund Details component', () => {
       hasPaymentOpenNonFraudDisputes.mockReturnValue(false);
       isGatewaySupportingRefund.mockReturnValue(true);
       isPaymentThroughSeamlessProviders.mockReturnValue(true);
+      isIssueRefundDisabledForMethod.mockReturnValue(false);
 
       const updatedAppProps = { ...appProps };
       updatedAppProps.paymentIdRefundDetails = [];
@@ -185,6 +193,7 @@ describe('Payment Refund Details component', () => {
       hasPaymentOpenNonFraudDisputes.mockReturnValue(false);
       isGatewaySupportingRefund.mockReturnValue(false);
       isPaymentThroughSeamlessProviders.mockReturnValue(false);
+      isIssueRefundDisabledForMethod.mockReturnValue(false);
 
       const updatedAppProps = { ...appProps };
       updatedAppProps.paymentIdRefundDetails = [];
@@ -200,12 +209,31 @@ describe('Payment Refund Details component', () => {
       hasPaymentOpenNonFraudDisputes.mockReturnValue(false);
       isGatewaySupportingRefund.mockReturnValue(true);
       isPaymentThroughSeamlessProviders.mockReturnValue(false);
+      isIssueRefundDisabledForMethod.mockReturnValue(false);
 
       const updatedAppProps = { ...appProps };
       updatedAppProps.paymentIdRefundDetails = [];
       render(<App props={updatedAppProps} />, { initialState });
 
       expect(screen.getByText(`You cannot issue refund for this payment`)).toBeInTheDocument();
+    });
+
+    test('Should disable issue refund button if feature flag for respective payment method is enabled', () => {
+      isIssueRefundDisabled.mockReturnValue(true);
+      isPaymentEligibleForRefundAsPerStatus.mockReturnValue(true);
+      isPaymentEligibleForRefund.mockReturnValue(true);
+      hasPaymentOpenNonFraudDisputes.mockReturnValue(false);
+      isGatewaySupportingRefund.mockReturnValue(true);
+      isPaymentThroughSeamlessProviders.mockReturnValue(false);
+      isIssueRefundDisabledForMethod.mockReturnValue(true);
+
+      const updatedAppProps = { ...appProps };
+      updatedAppProps.paymentIdRefundDetails = [];
+      render(<App props={updatedAppProps} />, { initialState });
+
+      const issueRefundBtn = screen.getByRole('button', { description: 'Issue refund' });
+      expect(issueRefundBtn).toBeInTheDocument();
+      expect(issueRefundBtn).toBeDisabled();
     });
   });
 });
