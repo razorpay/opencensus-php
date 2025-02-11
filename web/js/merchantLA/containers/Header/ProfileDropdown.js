@@ -32,7 +32,7 @@ class ProfileDropdown extends Component {
     return this.props
       .logout()
       .catch((e) => {
-        console.error(e);
+        if (window.APP_ENV !== 'production') console.error(e);
       })
       .then(() => {
         window.location.reload();

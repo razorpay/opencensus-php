@@ -42,7 +42,9 @@ export const shareURL = (url, title) => {
         title,
         url,
       })
-      .catch(console.error);
+      .catch((e) => {
+        if (window.APP_ENV !== 'production') console.error(e);
+      });
   } else {
     // fallback
     copyToClipboard(url);

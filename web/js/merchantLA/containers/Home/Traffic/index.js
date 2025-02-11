@@ -149,8 +149,7 @@ class Traffic extends Component {
           return null;
         }
 
-        console.error(err);
-
+        if (window.APP_ENV !== 'production') console.error(err);
         return API_ERROR;
       })
       .then((data) => {

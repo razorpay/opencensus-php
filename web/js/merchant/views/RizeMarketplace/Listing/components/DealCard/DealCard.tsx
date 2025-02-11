@@ -38,9 +38,10 @@ const useTrackingProductData = (
   );
 
   if (!productData?.data) {
-    console.error(
-      'Product data not found in Query Cache. Render this component in a parent company which calls `useMarketplaceProduct` hook',
-    );
+    if (window.APP_ENV !== 'production')
+      console.error(
+        'Product data not found in Query Cache. Render this component in a parent company which calls `useMarketplaceProduct` hook',
+      );
     return undefined;
   }
 

@@ -28,7 +28,7 @@ export const formatAmountDenom = (amt, showCurrency, currency) => {
     const byParts = formatNumberByParts(amt, options as any);
     return byParts.rawParts.reduce((acc, curr) => `${acc}${curr.value}`, '');
   } catch (e) {
-    console.error(e);
+    if (window.APP_ENV !== 'production') console.error(e);
     return showCurrency ? `${currency} ${amt}` : amt;
   }
 };

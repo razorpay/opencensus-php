@@ -19,7 +19,7 @@ const emailReportErrorMsg = {
 };
 
 const handleError = (e) => {
-  console.error(e);
+  if (window.APP_ENV !== 'production') console.error(e);
   return downloadReportErrorMsg;
 };
 

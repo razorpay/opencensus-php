@@ -152,11 +152,11 @@ class Traffic extends Component {
         return resp;
       })
       .catch((err) => {
+        if (window.APP_ENV !== 'production') console.error(err);
+
         if (requestId !== this.requestId) {
           return null;
         }
-
-        console.error(err);
 
         return API_ERROR;
       })

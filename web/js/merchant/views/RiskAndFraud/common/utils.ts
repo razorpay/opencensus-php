@@ -13,7 +13,8 @@ export const replaceBusinessName = (obj: {
     }
     return str.replace('_businessName_', nameToReplace);
   } catch (error) {
-    console.error('An error occurred while replacing business name:', error);
+    if (window.APP_ENV !== 'production')
+      console.error('An error occurred while replacing business name:', error);
     return str;
   }
 };

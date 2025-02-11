@@ -290,7 +290,7 @@ class FormSectionRenderer extends Component {
         }
       } catch (e) {
         //Suppress the error
-        console.error('No Bureau Report found', e);
+        if (window.APP_ENV !== 'production') console.error('No Bureau Report found', e);
       }
     }
 
@@ -349,7 +349,7 @@ class FormSectionRenderer extends Component {
         });
       } catch (e) {
         //Suppress the error
-        console.error('Contract Not prepared yet.');
+        if (window.APP_ENV !== 'production') console.error('Contract Not prepared yet.');
       }
     }
 

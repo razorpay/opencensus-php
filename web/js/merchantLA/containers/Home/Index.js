@@ -218,7 +218,7 @@ export default class HomeContainer extends Component {
         return data;
       })
       .catch((err) => {
-        console.error(err);
+        if (window.APP_ENV !== 'production') console.error(err);
 
         return API_ERROR;
       }) /* eslint-disable */
@@ -315,7 +315,7 @@ export default class HomeContainer extends Component {
         return { value };
       })
       .catch((err) => {
-        console.error(err);
+        if (window.APP_ENV !== 'production') console.error(err);
 
         return API_ERROR;
       })

@@ -22,7 +22,7 @@ import {
 
 const InitiatedSettlementStatuses = [SETTLEMENT_STATUS.CREATED, SETTLEMENT_STATUS.INITIATED];
 
-const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency }) => {
+const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency = 'INR' }) => {
   const initiatedSettlements = settlementsList?.filter((setl) =>
     InitiatedSettlementStatuses.includes(setl?.status?.toLowerCase()),
   );
@@ -34,7 +34,8 @@ const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency })
     (setl) => moment().diff(moment.unix(setl.created_at), 'hours') > SETTLEMENT_SLA_IN_HOURS,
   );
 
-  const totalTransferAmount = initiatedSettlements?.reduce((total, setl) => total + setl.amount, 0);
+  const totalTransferAmount =
+    initiatedSettlements?.reduce((total, setl) => total + setl.amount, 0) ?? 0;
   const delayedTransferAmount = delayedSettlements?.reduce((total, setl) => total + setl.amount, 0);
   const settlementETA = moment
     .unix(initiatedSettlements?.[0]?.created_at)

@@ -122,7 +122,7 @@ class ProfileDropdown extends Component {
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
-        console.error(e);
+        if (window.APP_ENV !== 'production') console.error(e);
       })
       .then(() => {
         analyticsTrack({

@@ -181,7 +181,7 @@ export default class GrowthService extends GenericEntity {
         exclusive_offers = gsExclusiveOffer[0];
       }
     } catch (e) {
-      console.error(e);
+      if (window.APP_ENV !== 'production') console.error(e);
     }
 
     return exclusive_offers;

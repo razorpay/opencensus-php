@@ -147,7 +147,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
       setCroppedArea(croppedArea);
       setCroppedImageFile(croppedImageFile);
     } catch (e) {
-      console.error(e);
+      if (window.APP_ENV !== 'production') console.error(e);
     }
   };
 

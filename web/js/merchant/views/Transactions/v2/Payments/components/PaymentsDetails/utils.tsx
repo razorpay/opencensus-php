@@ -706,6 +706,7 @@ export const imageDownload = ({
 
     document.body.removeChild(link);
   } catch (error) {
-    console.error('Image download failed:', (error as Error).message);
+    if (window.APP_ENV !== 'production')
+      console.error('Image download failed:', (error as Error).message);
   }
 };

@@ -70,7 +70,7 @@ function RemoteComponent({ project, history, showNotification, user, ...rest }) 
         setComponent(<Output {...rest} history={history} />);
       })
       .catch((e) => {
-        console.error(e);
+        if (window.APP_ENV !== 'production') console.error(e);
         setComponent(<div>Error</div>);
       });
   }, []);

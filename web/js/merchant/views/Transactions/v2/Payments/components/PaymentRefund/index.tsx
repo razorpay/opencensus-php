@@ -113,7 +113,7 @@ const RefundModal = (props) => {
         });
       }
     } catch (error) {
-      console.error('Error fetching refund fee:', error);
+      if (window.APP_ENV !== 'production') console.error('Error fetching refund fee:', error);
     }
   };
 

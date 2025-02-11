@@ -89,7 +89,7 @@ const convertToBase64 = async (url: string): Promise<string> => {
       reader.readAsDataURL(blob);
     });
   } catch (err) {
-    console.error('Error fetching or converting image:', err);
+    if (window.APP_ENV !== 'production') console.error('Error fetching or converting image:', err);
     throw err;
   }
 };
@@ -399,7 +399,7 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
         setImageFile(null);
       })
       .catch((err) => {
-        console.error('Error in converting base 64:', err);
+        if (window.APP_ENV !== 'production') console.error('Error in converting base 64:', err);
       });
   };
 

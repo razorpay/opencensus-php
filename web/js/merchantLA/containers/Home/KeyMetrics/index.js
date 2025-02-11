@@ -487,7 +487,7 @@ class KeyMetricsContainer extends Component {
         return resp;
       })
       .catch(e => {
-        console.error(e);
+        if (window.APP_ENV !== 'production') console.error(e);
 
         if (requestId !== this.otherTabsReqId) {
           return;
@@ -654,7 +654,7 @@ class KeyMetricsContainer extends Component {
         return resp;
       })
       .catch(e => {
-        console.error(e);
+        if (window.APP_ENV !== 'production') console.error(e);
 
         if (requestId !== this.requestId) {
           return null;
@@ -768,7 +768,7 @@ class KeyMetricsContainer extends Component {
         return data.data;
       })
       .catch(err => {
-        console.error(err);
+        if (window.APP_ENV !== 'production') console.error(err);
 
         if (trendRequestID !== this.trendRequestID) {
           return null;

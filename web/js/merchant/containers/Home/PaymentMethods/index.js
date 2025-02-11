@@ -134,7 +134,7 @@ class PaymentMethods extends Component {
         return resp;
       })
       .catch((err) => {
-        console.error(err);
+        if (window.APP_ENV !== 'production') console.error(err);
 
         if (requestId !== this.requestId) {
           return null;

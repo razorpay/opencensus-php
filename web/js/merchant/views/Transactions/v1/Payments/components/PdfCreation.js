@@ -48,7 +48,7 @@ const addLogoAndBackground = (Doc, pageWidth, pageHeight, callback) => {
 
     callback();
   } catch (error) {
-    console.error('Error loading images:', error);
+    if (window.APP_ENV !== 'production') console.error('Error loading images:', error);
   }
 };
 

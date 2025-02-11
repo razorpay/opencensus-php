@@ -58,7 +58,7 @@ export const couponDetailsValidator = async ({ fieldName, value, setErrorStates,
   try {
     errorMessage = await fieldValidator(value, flowName);
   } catch (error) {
-    console.error('Error during async validation:', error);
+    if (window.APP_ENV !== 'production') console.error('Error during async validation:', error);
   }
 
   setErrorStates((prevState) =>

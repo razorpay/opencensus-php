@@ -68,7 +68,7 @@ const PaymentReceipt = ({ closeModal, id, showNotification }: IPaymentReceipt) =
         printWindow.document.write('</body></html>');
         printWindow.document.close();
         printWindow.print();
-      } else {
+      } else if (window.APP_ENV !== 'production') {
         console.error('Failed to open print window. Please check your browser settings.');
       }
     };

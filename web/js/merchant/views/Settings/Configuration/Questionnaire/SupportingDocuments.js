@@ -103,7 +103,7 @@ const SupportingDocuments = ({
         }
       })
       .catch((err) => {
-        console.error(err);
+        if (window.APP_ENV !== 'production') console.error(err);
         showNotification({
           type: 'error',
           message: err.errors,

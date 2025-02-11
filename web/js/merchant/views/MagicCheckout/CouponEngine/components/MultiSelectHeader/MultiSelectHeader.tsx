@@ -48,7 +48,8 @@ const MultiSelectHeader: React.FC<MultiSelectHeaderProps> = ({
       updateCouponsCb(coupon, actionName);
       return true; // API call succeeded
     } catch (error) {
-      console.error(`Error ${actionName}ing coupon ${coupon.id}:`, error);
+      if (window.APP_ENV !== 'production')
+        console.error(`Error ${actionName}ing coupon ${coupon.id}:`, error);
       return false; // API call failed
     }
   };

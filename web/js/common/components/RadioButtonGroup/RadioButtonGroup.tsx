@@ -25,9 +25,11 @@ const RadioButtonGroup: React.FC<RadioButtonGroupProps> = (props) => {
       (option) => option && typeof option === 'object' && 'value' in option && 'label' in option,
     )
   ) {
-    console.error(
-      'Invalid options format. Please provide an array of objects with "value" and "label" keys.',
-    );
+    if (window.APP_ENV !== 'production') {
+      console.error(
+        'Invalid options format. Please provide an array of objects with "value" and "label" keys.',
+      );
+    }
     return null;
   }
 

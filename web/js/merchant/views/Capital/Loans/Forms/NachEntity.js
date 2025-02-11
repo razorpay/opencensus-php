@@ -124,7 +124,7 @@ class NachEntity extends Component {
         window.open(nachForm.token.nach.prefilled_form);
       }
     } catch (e) {
-      console.error(e);
+      if (window.APP_ENV !== 'production') console.error(e);
       this.props.showNotification({
         type: 'error',
         message: 'Unable to download Nach Form',
@@ -262,12 +262,8 @@ class NachEntity extends Component {
   };
 
   render() {
-    const {
-      nach_details,
-      credit_offer_details,
-      accepted_offer_details,
-      meta,
-    } = this.props.loanApplicationDetails;
+    const { nach_details, credit_offer_details, accepted_offer_details, meta } =
+      this.props.loanApplicationDetails;
 
     if (nach_details.loading || credit_offer_details.loading || accepted_offer_details.loading)
       return <FormLoader />;
