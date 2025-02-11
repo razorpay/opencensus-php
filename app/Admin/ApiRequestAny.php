@@ -1202,6 +1202,11 @@ class ApiRequestAny
     public function getApiErrorDescription($exceptionData)
     {
         $errorDescription = 'Something went wrong';
+        
+        if (is_null($exceptionData) === true)
+        {
+            return $errorDescription;
+        }
 
         if (empty($exceptionData['error']['description']) === false)
         {
@@ -1222,6 +1227,11 @@ class ApiRequestAny
 
     public function getSourceOFError($exceptionData, &$errors)
     {
+        if (is_null($exceptionData) === true)
+        {
+            return $errors;
+        }
+        
         // Handle the errors from Admin-experience-service
         if (empty($exceptionData) === false &&
             array_key_exists('meta', $exceptionData) === true &&
