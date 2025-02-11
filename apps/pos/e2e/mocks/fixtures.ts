@@ -2,20 +2,23 @@ import {
   additionalDetailsMock,
   incompleteAdditionalDetailsAggregatorModelMock,
   incompleteAdditionalDetailsDirectModelMock,
-} from 'apps/pos/e2e/suites/landing-sales-agent/mocks/additionalDetails';
+} from 'apps/pos/e2e/mocks/additionalDetails';
+
 import {
   agreementSigningMock,
   incompleteAgreementSigningMock,
-} from 'apps/pos/e2e/suites/landing-sales-agent/mocks/agreementSigningMock';
+} from 'apps/pos/e2e/mocks/agreementSigningMock';
+
 import {
   deviceSelectionStepMock,
   incompleteDeviceSelectionStepMock,
-} from 'apps/pos/e2e/suites/landing-sales-agent/mocks/deviceSelectionMock';
+} from 'apps/pos/e2e/mocks/deviceSelectionMock';
+
 import {
   paymentMethodsAndServiceSelectionMock,
   incompletePricingStepAggregatorModelMock,
   incompletePricingStepDirectModelMock,
-} from 'apps/pos/e2e/suites/landing-sales-agent/mocks/paymentMethodAndServiceMock';
+} from 'apps/pos/e2e/mocks/paymentMethodAndService';
 
 export const salesOnboardedMerchantsMock = {
   __typename: 'SalesOnboardedMerchants',

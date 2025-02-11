@@ -3,7 +3,7 @@ import { navigateTo } from '@dashboard/shared-utils/e2e/utils/common';
 import { test, expect } from 'apps/pos/e2e/utils/test';
 import { waitForSalesAssistedScreenToLoad } from 'apps/pos/e2e/utils';
 import { BASE_PATH, STATUS_TEXT } from 'apps/pos/e2e/constants';
-import { queryMocks } from './mocks/handlers';
+import { queryMocks } from '../mocks/handlers';
 
 test.describe
   .parallel('POS Agreement Signing Step @flow=pos-sales-assisted @project=payments', () => {

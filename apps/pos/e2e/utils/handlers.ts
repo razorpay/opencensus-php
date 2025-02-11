@@ -1,4 +1,4 @@
-import { landingPageMocks } from '../suites/landing-sales-agent/mocks/handlers';
+import { landingPageMocks } from '../mocks/handlers';
 
 /**
  * Global app level handlers needed for config

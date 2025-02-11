@@ -8,7 +8,7 @@ import {
   ERROR_MESSAGES,
   ADDITIONAL_DETAILS_FIELDS,
 } from 'apps/pos/e2e/constants';
-import { queryMocks } from './mocks/handlers';
+import { queryMocks } from '../mocks/handlers';
 
 test.describe
   .parallel('POS Additional Details Step @flow=pos-sales-assisted @project=payments', () => {

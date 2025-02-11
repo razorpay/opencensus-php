@@ -3,8 +3,8 @@ import { navigateTo } from '@dashboard/shared-utils/e2e/utils/common';
 import { test, expect } from 'apps/pos/e2e/utils/test';
 import { waitForSalesAssistedScreenToLoad } from 'apps/pos/e2e/utils';
 import { BASE_PATH } from 'apps/pos/e2e/constants';
-import { queryMocks } from './mocks/handlers';
-import { salesOnboardedMerchantsMock } from './mocks/fixtures';
+import { queryMocks } from '../mocks/handlers';
+import { salesOnboardedMerchantsMock } from '../mocks/fixtures';
 
 test.describe.parallel('POS Sales Dashboard @flow=pos-sales-assisted @project=payments', () => {
   test.use({

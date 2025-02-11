@@ -2,8 +2,8 @@ import { routes, getStorageStatePath } from '@dashboard/shared-utils/e2e/constan
 import { navigateTo } from '@dashboard/shared-utils/e2e/utils/common';
 import { test, expect } from 'apps/pos/e2e/utils/test';
 import { waitForSalesAssistedScreenToLoad } from 'apps/pos/e2e/utils';
-import { BASE_PATH } from 'apps/pos/e2e/constants';
-import { queryMocks } from './mocks/handlers';
+import { BASE_PATH, SME_DASHBOARD_URL } from 'apps/pos/e2e/constants';
+import { queryMocks } from '../mocks/handlers';
 
 test.describe
   .parallel('POS Adding a new Merchant @flow=pos-sales-assisted @project=payments', () => {
@@ -41,7 +41,7 @@ test.describe
     await expect(submitOTPBtn).toBeEnabled();
     await submitOTPBtn.click();
     await expect(page.getByText('Redirecting you to the onboarding journey...')).toBeVisible();
-    await page.waitForTimeout(3000);
-    expect(page.url()).toContain('https://sme-dashboard.dev.razorpay.in/');
+    await page.waitForURL(SME_DASHBOARD_URL);
+    expect(page.url()).toContain(SME_DASHBOARD_URL);
   });
 });

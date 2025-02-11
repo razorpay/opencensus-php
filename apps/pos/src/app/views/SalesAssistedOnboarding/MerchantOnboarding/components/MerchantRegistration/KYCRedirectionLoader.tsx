@@ -7,7 +7,7 @@ interface KYCRedirectionLoaderProps {
   message?: string;
 }
 
-const KYCRedirectionLoader = ({ isOpen, message = ''  }: KYCRedirectionLoaderProps): JSX.Element => {
+const KYCRedirectionLoader = ({ isOpen, message = '' }: KYCRedirectionLoaderProps): JSX.Element => {
   return (
     <ModalWithBottomSheet
       isOpen={isOpen}
