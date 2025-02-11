@@ -20,6 +20,7 @@ use RZP\Models\OfflinePayment;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payout\Metric;
 use RZP\Models\VirtualAccount;
+use RZP\Services\Mozart;
 use RZP\Services\RazorXClient;
 use RZP\Gateway\Mozart\Action;
 use RZP\Models\Admin\ConfigKey;
@@ -28,6 +29,8 @@ use RZP\Models\Payment\Gateway;
 use RZP\Services\SmartRouting;
 use RZP\Services\SplitzService;
 use RZP\Tests\Traits\MocksSplitz;
+use RZP\Models\Settlement\Channel;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Traits\TestsMetrics;
@@ -5679,7 +5682,19 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
 
-        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true,
+            ifscCode: 'YESB0CMSNOC');
+
+        $vpaEntity = $this->fixtures->create('vpa', [
+            'id' => 'J9embXZB7QAute',
+            'username'    => 'amitm',
+            'handle'      => 'upi',
+            'entity_type' => 'virtual_account',
+            'entity_id'   => substr($this->virtualAccount->getPublicId(), 3),
+        ]);
+
+        $this->virtualAccount->vpa()->associate($vpaEntity);
+        $this->virtualAccount->save();
 
         $request = [
             'method'  => 'POST',
@@ -5691,6 +5706,18 @@ class VirtualAccountTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         self::assertEquals('closed', $response['status']);
+
+        $va = $this->getDbLastEntity('virtual_account');
+
+        $ba = $this->getTrashedDbEntityById('bank_account', $va->getBankAccountId());
+
+        $vpa = $this->getTrashedDbEntityById('vpa', $va->getVpaId());
+
+        self::assertEquals('closed', $response['status']);
+
+        $this->assertNotNull($ba['deleted_at']);
+
+        $this->assertNotNull($vpa['deleted_at']);
     }
 
     public function testVirtualAccountClose_PrimaryBalanceTypeVA()
@@ -5706,7 +5733,13 @@ class VirtualAccountTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
+        $va = $this->getDbLastEntity('virtual_account');
+
+        $ba = $this->getTrashedDbEntityById('bank_account', $va->getBankAccountId());
+
         self::assertEquals('closed', $response['status']);
+
+        $this->assertNotNull($ba['deleted_at']);
     }
 
     public function testVirtualAccountClose_RBL_CollectxVA()
@@ -5745,8 +5778,69 @@ class VirtualAccountTest extends TestCase
         }
         catch (BadRequestException $exp)
         {
-            $this->assertEquals("BAD_REQUEST_VA_CLOSE_BLOCKED_FOR_RBL_MERCHANTS", $exp->getMessage());
+            $this->assertEquals(PublicErrorDescription::BAD_REQUEST_VA_CLOSE_BLOCKED_FOR_RBL_MERCHANTS, $exp->getMessage());
             return;
         }
+    }
+
+    public function testVirtuaAccountClose_RBL_Sync_Mozart_CollectxVA()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true, ifscCode: 'RATN0VAAPIS');
+
+        $this->app['config']->set('gateway.mock_bt_rbl', true);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts/'.$this->virtualAccount->getPublicId().'/close'
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $va = $this->getDbLastEntity('virtual_account');
+
+        $ba = $this->getTrashedDbEntityById('bank_account', $va->getBankAccountId());
+
+        self::assertEquals('closed', $response['status']);
+
+        $this->assertNotNull($ba['deleted_at']);
+
+        $this->assertEquals(2, $ba['is_gateway_sync']);
+
+    }
+
+    public function testVirtuaAccountClose_RBL_Sync_Mozart_CollectxVA_Error_From_Bank()
+    {
+        try {
+            $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+            $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true, ifscCode: 'RATN0VAAPIS');
+
+            $this->app['config']->set('gateway.mock_bt_rbl', true);
+
+            $this->app['config']->set('rbl_close_virtual_account.error_code', ErrorCode::ER002);
+
+            $request = [
+                'method'  => 'POST',
+                'url'     => '/virtual_accounts/'.$this->virtualAccount->getPublicId().'/close'
+            ];
+
+            $this->ba->privateAuth();
+
+            $response = $this->makeRequestAndGetContent($request);
+        }
+        catch (BadRequestException $exp)
+        {
+            $va = $this->getDbLastEntity('virtual_account');
+
+            self::assertEquals('active', $va->getStatus());
+
+            $this->assertEquals('Gateway Failure in closing virtual account', $exp->getMessage());
+            return;
+        }
+
     }
 }

@@ -1869,4 +1869,8 @@ class PublicErrorDescription
     const BAD_REQUEST_VA_CREATION_BLOCKED_FOR_RBL_MERCHANTS = "Virtual Account Creation is currently blocked for RBL Merchants.";
 
     const BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_NOT_ALLOWED_RBL = "Adding allowed payer to RBL VA is not allowed";
+
+    const BAD_REQUEST_VA_CLOSE_BLOCKED_FOR_RBL_MERCHANTS = "Virtual Account Close is currently blocked for RBL Merchants";
+
+    const GATEWAY_VA_DEACTIVATION_FAILURE = "Gateway Failure in closing virtual account";
 }

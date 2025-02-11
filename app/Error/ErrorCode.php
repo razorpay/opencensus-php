@@ -3248,6 +3248,8 @@ class ErrorCode
 
     const BAD_REQUEST_MERCHANT_NOT_ALLOWED_FOR_VCIP = 'BAD_REQUEST_MERCHANT_NOT_ALLOWED_FOR_VCIP';
 
+    const GATEWAY_VA_DEACTIVATION_FAILURE = 'GATEWAY_VA_DEACTIVATION_FAILURE';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

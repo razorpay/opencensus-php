@@ -4128,4 +4128,28 @@ class Gateway extends Base\Gateway
 
         return $this->getAuthenticatedMozartRequestArray($url, $input);
     }
+
+    public function deactivateVirtualAccountCollectX($input, $handleException = true)
+    {
+        parent::action($input, Action::DEACTIVATE_VIRTUAL_ACCOUNT_COLLECTX);
+
+        $request = $this->getVirtualAccountMozartRequestArray($input);
+
+        $this->trace->info(
+            TraceCode::DEACTIVATE_VIRTUAL_ACCOUNT_MOZART_REQUEST,
+            [
+                'url'      => $request['url'],
+                'gateway'  => $this->gateway,
+                'content'  => $request['content'],
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        if ($handleException === true)
+        {
+            $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+        }
+
+        return $this->getVirtualAccountResponseArray($response);
+    }
 }

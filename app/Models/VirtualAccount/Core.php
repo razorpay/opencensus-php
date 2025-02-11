@@ -698,13 +698,15 @@ class Core extends Base\Core
 
             // TODO: Remove this check when RBL VA close API is live from bank end
             $this->verifyMerchantDoesNotBelongToRblCollectx();
+
+            return $this->closeVACollectX($virtualAccount);
         }
         else
         {
             $virtualAccount->getValidator()->validateOfPrimaryBalance();
-        }
 
-        return $this->closeVA($virtualAccount);
+            return $this->closeVA($virtualAccount);
+        }
     }
 
     public function closeForBanking(Entity $virtualAccount)
@@ -1597,9 +1599,133 @@ class Core extends Base\Core
             $this->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true){
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_VA_CLOSE_BLOCKED_FOR_RBL_MERCHANTS,
-                null,
-                null,
-                ErrorCode::BAD_REQUEST_VA_CLOSE_BLOCKED_FOR_RBL_MERCHANTS);
+                );
+        }
+    }
+
+    protected function closeVACollectX(Entity $virtualAccount)
+    {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_COLLECTX_CLOSE_REQUEST, [
+            "virtual_account_id" => $virtualAccount->getId(),
+        ]);
+
+        $virtualAccount = $this->repo->transaction(function () use ($virtualAccount)
+        {
+            // For collectX enabled merchant, we are closing VA of RBL in sync
+            $this->callMozartForRBLCollectX($virtualAccount);
+
+            $this->deactivatePayers($virtualAccount);
+
+            $bankAccount = $virtualAccount->bankAccount;
+
+            if ($bankAccount !== null)
+            {
+                $this->repo->deleteOrFail($bankAccount);
+
+                $this->trace->info(TraceCode::BANK_ACCOUNT_DELETED, $bankAccount->toArray());
+            }
+
+            $bankAccount2 = $virtualAccount->bankAccount2;
+
+            if ($bankAccount2 !== null)
+            {
+                $this->repo->deleteOrFail($bankAccount2);
+
+                $this->trace->info(TraceCode::BANK_ACCOUNT_DELETED, $bankAccount2->toArray());
+            }
+
+            // Yesbank has vpa type as well
+            $vpa = $virtualAccount->vpa;
+
+            if ($vpa !== null)
+            {
+                $this->repo->deleteOrFail($vpa);
+
+                $this->trace->info(TraceCode::VPA_DELETED, $vpa->toArray());
+            }
+
+            $virtualAccount->setStatus(Status::CLOSED);
+
+            if ($this->isAutoCloseInactiveVirtualAccountCron() === true)
+            {
+                $virtualAccount->setDescriptor(Constant::DORMANT_VA_CLOSURE);
+            }
+
+            $currentTime = Carbon::now()->getTimestamp();
+
+            $virtualAccount->setClosedAt($currentTime);
+
+            $this->repo->saveOrFail($virtualAccount);
+
+            $this->eventVirtualAccountClosed($virtualAccount);
+
+            return $virtualAccount;
+        });
+
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_COLLECTX_CLOSE_RESPONSE, [
+            "virtualAccount" => $virtualAccount,
+        ]);
+
+        return $virtualAccount;
+    }
+
+    protected function callMozartForRBLCollectX(Entity &$virtualAccount): void
+    {
+        if (($virtualAccount->bankAccount !== null) and
+            $virtualAccount->bankAccount->getIfscCode() === Provider::getGatewaySyncProviderForRBLBanking())
+        {
+            $bankAccount = $virtualAccount->bankAccount;
+
+            $currentAccountNumber = $virtualAccount->balance->getAccountNumber();
+
+            $request = ['bankAccount' => $bankAccount->toArray(),
+                'gateway' => Gateway::BT_RBL,
+                'current_account_number' => $currentAccountNumber
+            ];
+
+            try
+            {
+                $response = $this->app['gateway']->call(
+                    Gateway::BT_RBL,
+                    Action::DEACTIVATE_VIRTUAL_ACCOUNT_COLLECTX,
+                    $request, $this->mode
+                );
+
+                if(isset($response['deactivate_VA']['Header']['Status']) &&
+                    $response['deactivate_VA']['Header']['Status'] !== 'SUCCESS')
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::GATEWAY_VA_DEACTIVATION_FAILURE,
+                        null,
+                        [
+                            "response" => $response
+                        ],
+                    );
+
+                }
+
+                $bankAccount->setConnection($this->mode);
+                $bankAccount->setIsGatewaySync(BankAccountConstants::BANK_ACCOUNT_DEACTIVATE_SYNCED);
+                $this->repo->saveOrFail($bankAccount);
+
+                $this->trace->info(TraceCode::BANK_ACCOUNT_RBL_DEACTIVATE_PROCESS_SUCCESS, [
+                    'mozart_response' => $response,
+                    'bank_account_id' => $bankAccount->getId(),
+                    'merchant_id'     => $bankAccount->getMerchantId(),
+                ]);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e,
+                    code: TraceCode::BANK_ACCOUNT_RBL_DEACTIVATE_PROCESS_FAILED,
+                    extraData: [
+                        'bank_account_id' => $bankAccount->getId(),
+                        'merchant_id'     => $bankAccount->getMerchantId(),
+                        'virtualAccountId' => $virtualAccount->getId(),
+                    ]);
+
+                throw $e;
+            }
         }
     }
 }
