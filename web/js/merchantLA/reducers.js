@@ -5,7 +5,6 @@ import { reducer as formReducer } from 'redux-form';
 // import modalReducer from 'merchant_common/reducers/modals';
 import sliderReducer from 'merchant_common/reducers/slider';
 // import notificationsReducer from 'merchant_common/reducers/notifications';
-
 import teamReducer from 'merchantLA/reducers/team';
 import sessionReducer from 'merchantLA/reducers/session';
 import appReducer from 'merchantLA/reducers/app';
@@ -23,6 +22,7 @@ import {
   settlementsReducer,
   transfersReducer,
 } from 'merchantLA/reducers/collection';
+import twoFactorReducer from 'merchantLA/reducers/TwoFactor';
 
 export default combineReducers({
   // modal: modalReducer,
@@ -37,6 +37,7 @@ export default combineReducers({
   team: teamReducer,
   transfers: transfersReducer,
   transfer: transferReducer,
+  twoFactor: twoFactorReducer,
   reversal: reversalReducer,
   reversals: reversalsReducer,
   credits: creditsReducer,

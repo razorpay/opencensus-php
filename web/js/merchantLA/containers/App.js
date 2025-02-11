@@ -24,6 +24,9 @@ import { resizeWindow } from 'merchantLA/reducers/app';
 import * as SessionActions from 'merchantLA/reducers/session';
 import { fetchFeaturesAjax } from 'merchantLA/reducers/session';
 import LogoutDialog from '../../merchant/components/LogoutDialog';
+import TwoFactorVerificationProvider from 'common/ui/TwoFactorVerification/TwoFactorVerificationProvider';
+import ajax, { merchantFetch } from 'merchantLA/utils/ajax';
+import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
 
 initSentry('MerchantLA');
 @connect(
@@ -35,6 +38,7 @@ initSentry('MerchantLA');
     ...ModalActions,
     ...SessionActions,
     ...NotificationActions,
+    updateTwoFactorVerified,
     resizeWindow,
     openModal,
     closeModal,
@@ -109,8 +113,10 @@ class App extends Component {
         } else if (!user.isActivated) {
           currentMode = 'test';
         }
-
         this.props.updateSession({ mode: currentMode });
+        this.props.updateTwoFactorVerified({
+          twoFactorVerified: user.isTwoFactorVerified,
+        });
         this.redirectToRoute(role);
 
         if (user?.user) {
@@ -302,9 +308,11 @@ class App extends Component {
           showMobileNav={this.props.windowWidth < 950}
         />
         <Sidebar user={user} logoURL={org.main_logo_url} />
-        <SplitzRoutesBasedService>
-          <Content user={user} modeFormatted={modeFormatted} />
-        </SplitzRoutesBasedService>
+        <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
+          <SplitzRoutesBasedService>
+            <Content user={user} modeFormatted={modeFormatted} />
+          </SplitzRoutesBasedService>
+        </TwoFactorVerificationProvider>
         <Footer user={user} />
 
         {/* Creates Portal for the comp */}

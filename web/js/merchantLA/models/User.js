@@ -2,6 +2,7 @@ import { filterBy } from 'common/utils/rzp-utils';
 import { antiOrgsFeatures } from 'merchant/helpers/permissions';
 import { getOrg } from 'merchantLA/store';
 import ajax from 'merchantLA/utils/ajax';
+import { merchantFetch } from 'merchantLA/utils/ajax';
 
 // TODO: Rename fn. name
 export function setFeatures(features) {
@@ -15,6 +16,17 @@ export function setFeatures(features) {
   return enabledFeatures;
 }
 
+export const fetchFeaturesAjax = (currentUserId, mode) => {
+  const params = {
+    url: `merchants/me/features`,
+  };
+
+  if (mode) {
+    params.mode = mode;
+  }
+  return merchantFetch(params);
+};
+
 export default class User {
   merchants = {};
 
@@ -27,10 +39,29 @@ export default class User {
   }
 
   fetch() {
-    return ajax({
-      url: '/user',
-      appendModeInURL: false,
+    const promise = new Promise((resolve, reject) => {
+      ajax({
+        url: '/user',
+        appendModeInURL: false,
+      })
+        //same code from web/js/merchant/models/User.js
+        .then((response) => {
+          fetchFeaturesAjax(response.data.current)
+            .catch((_) => _)
+            .then((data) => {
+              const newUser = new User(response.data);
+              newUser.features = setFeatures(data.success ? data.data.features : []);
+              response.data = newUser;
+              resolve(response);
+            })
+            .catch((err) => {
+              reject(err);
+            });
+        })
+        .catch((err) => reject(err));
     });
+
+    return promise;
   }
 
   get userRole() {
@@ -56,6 +87,14 @@ export default class User {
   // TODO: Remove this code when confirmed no rollbacks
   get isNewAnalyticsEnabled() {
     return true;
+  }
+
+  get isTwoFactorVerified() {
+    return this.user.two_fa_verified;
+  }
+
+  get isTwoFactorSetupDone() {
+    return this.user.contact_mobile && this.user.contact_mobile_verified;
   }
 
   get enabledFeatures() {

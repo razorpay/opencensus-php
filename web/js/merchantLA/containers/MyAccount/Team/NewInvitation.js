@@ -6,6 +6,11 @@ import InputField from 'common/ui/Forms/InputField';
 import { required, email } from 'common/utils/validators';
 import { sendInvitation, fetchTeamDetails } from 'merchantLA/reducers/team';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import { withSplitzService } from 'common/splitz';
+import User from 'merchantLA/models/User';
+import { closeModal as close2faModal } from 'merchant_common/reducers/modals';
+import { updateSession } from 'merchant/reducers/session';
 
 // eslint-disable-next-line no-unused-vars
 const selector = formValueSelector('newInvitation');
@@ -18,9 +23,29 @@ const selector = formValueSelector('newInvitation');
   },
 })
 class NewInvitation extends Component {
+  state = {
+    isProcessing: false,
+  };
+
+  updateUserSession = () => {
+    const updatedUser = new User(this.props.user);
+    if (!updatedUser.isTwoFactorSetupDone) {
+      return updatedUser
+        .fetch()
+        .then((res) => {
+          this.props.updateSession({ user: res.data });
+        })
+        .catch((err) => {
+          this.props.showNotification({
+            type: 'error',
+            message: 'Failed to update user data! Please refresh the page.',
+          });
+        });
+    }
+  };
+
   save = (props) => {
     const user = this.props.user.user;
-
     return this.props
       .sendInvitation({ ...props, sender_name: user.name })
       .then(() => {
@@ -38,8 +63,34 @@ class NewInvitation extends Component {
       });
   };
 
+  handleCriticalFlow = (criticalFlow, handleSubmit) => {
+    this.setState({ isProcessing: true });
+
+    return new Promise((resolve) => {
+      criticalFlow({
+        enforceVerifyOtp: true,
+        modes: ['live', 'test'],
+        onUserTwoFaVerified: () => {
+          this.props.close2faModal();
+          Promise.resolve(handleSubmit(this.save)())
+            .then(() => this.updateUserSession())
+            .then(resolve)
+            .finally(() => this.setState({ isProcessing: false }));
+        },
+        onFlowTermination: () => {
+          this.props.showNotification({
+            type: 'error',
+            message: 'Authentication failed. Please reload the page and try again.',
+          });
+          this.setState({ isProcessing: false });
+        },
+      });
+    });
+  };
+
   render() {
     const { handleSubmit } = this.props;
+    const { isProcessing } = this.state;
 
     return (
       <form onSubmit={handleSubmit(this.save)} style={{ marginBottom: '35px' }}>
@@ -59,7 +110,6 @@ class NewInvitation extends Component {
                     if (value === this.props.user.user.email) {
                       return "You can't invite yourself";
                     }
-
                     return null;
                   },
                 ]}
@@ -69,12 +119,17 @@ class NewInvitation extends Component {
 
           <div class="col-md-3">
             <div class="form-group">
-              <AsyncButton
-                class="btn btn-primary"
-                text="Send Invitation"
-                pendingText="Sending Invitation..."
-                onClick={handleSubmit(this.save)}
-              />
+              <TwoFactorVerificationContext.Consumer>
+                {({ criticalFlow }) => (
+                  <AsyncButton
+                    class="btn btn-primary"
+                    text="Send Invitation"
+                    pendingText="Sending Invitation..."
+                    disabled={isProcessing}
+                    onClick={() => this.handleCriticalFlow(criticalFlow, handleSubmit)}
+                  />
+                )}
+              </TwoFactorVerificationContext.Consumer>
             </div>
           </div>
         </div>
@@ -95,8 +150,12 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, {
-  sendInvitation,
-  fetchTeamDetails,
-  ...NotificationsActions,
-})(NewInvitation);
+export default withSplitzService(
+  connect(mapStateToProps, {
+    sendInvitation,
+    fetchTeamDetails,
+    close2faModal,
+    updateSession,
+    ...NotificationsActions,
+  })(NewInvitation),
+);
