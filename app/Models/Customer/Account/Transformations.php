@@ -36,6 +36,7 @@ class Transformations
             'last_name'           =>        null,
             'email'               =>        $opt['email'] ?? null,
             'contact'             =>        $opt['contact'] ? (string)$opt['contact'] : null,
+            'fail_existing'       =>        false,
             'notes'               =>        (object)$opt["notes"] ?? [],
             'gender'              =>        null,
             'dob'                 =>        null,
