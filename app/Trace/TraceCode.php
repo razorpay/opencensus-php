@@ -1601,6 +1601,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NACH_CANCEL_REQUEST                                   = 'NACH_CANCEL_REQUEST';
     const NACH_DEBIT_REQUEST_ERROR                              = 'NACH_DEBIT_REQUEST_ERROR';
     const NACH_DEBIT_RESPONSE                                   = 'NACH_DEBIT_RESPONSE';
+    const NACH_DEBIT_RECONCILE_AT                               = 'NACH_DEBIT_RECONCILE_AT';
     const NACH_DEBIT_RESPONSE_ERROR                             = 'NACH_DEBIT_RESPONSE_ERROR';
     const NACH_FUNCTION_NOT_IMPLEMENTED                         = 'NACH_FUNCTION_NOT_IMPLEMENTED';
     const NACH_DEBIT_FILE_GENERATED                             = 'NACH_DEBIT_FILE_GENERATED';
