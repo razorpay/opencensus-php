@@ -270,8 +270,7 @@ class App extends Component {
   };
 
   initializeListeners = (user) => {
-    window.addEventListener('NOT_AUTHENTICATED', function notAuthenticatedHandler() {
-      // eslint-disable-next-line babel/no-invalid-this
+    window.addEventListener('NOT_AUTHENTICATED', () => {
       if (this.logoutPopupShown) {
         return;
       }
@@ -280,13 +279,12 @@ class App extends Component {
         size: 'large',
         component: <LogoutDialog user={user} />,
       });
-      // eslint-disable-next-line babel/no-invalid-this
       this.logoutPopupShown = true;
     });
 
-    window.addEventListener('LOGIN_AS_MX', function loginAsMXHandler(e) {
+    window.addEventListener('LOGIN_AS_MX', (e) => {
       if (e.detail?.message) {
-        self.props.showNotification({
+        this.props.showNotification({
           type: 'error',
           message: e.detail.message,
         });
