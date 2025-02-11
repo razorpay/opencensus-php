@@ -91,8 +91,31 @@ jest.mock('common/i18', () => {
   };
 });
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
-afterAll(() => server.close());
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'error' });
+  Object.defineProperty(window.Element.prototype, 'scroll', {
+    writable: true,
+    value: jest.fn(),
+  });
+
+  Object.defineProperty(window.Element.prototype, 'scrollLeft', {
+    writable: true,
+    value: 1,
+  });
+});
+
+afterAll(() => {
+  server.close();
+  Object.defineProperty(window.Element.prototype, 'scroll', {
+    writable: true,
+    value: undefined,
+  });
+
+  Object.defineProperty(window.Element.prototype, 'scrollLeft', {
+    writable: true,
+    value: 0,
+  });
+});
 
 beforeEach(() => {
   const { getComputedStyle } = window;

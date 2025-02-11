@@ -1,15 +1,17 @@
 import React, { useEffect } from 'react';
-import DoughnutChart from './DoughnutChart';
 import { Box, Text } from '@razorpay/blade/components';
-import { durationOptionsSubtextMap } from 'merchant/widgets/InsightsChart/utils';
-import { useRetryWidget } from 'merchant/widgets/hooks';
+
 import { SubwidgetSkeleton } from 'merchant/widgets/InsightsChart/Loader';
+import ChartTable from 'merchant/widgets/InsightsChart/subwidgets/DoughnutWidget/ChartTable';
+import { DoughnutWidgetProps } from 'merchant/widgets/InsightsChart/subwidgets/DoughnutWidget/types';
+import { durationOptionsSubtextMap } from 'merchant/widgets/InsightsChart/utils';
 import { ErrorState } from 'merchant/widgets/common/ErrorState';
 import { TooltipWidget } from 'merchant/widgets/common/Tooltip';
-import { DoughnutWidgetProps } from 'merchant/widgets/InsightsChart/subwidgets/DoughnutWidget/types';
-import ChartTable from 'merchant/widgets/InsightsChart/subwidgets/DoughnutWidget/ChartTable';
-import { EmptyDoughnutChart, emptyChartTableData } from './utils';
+import { useRetryWidget } from 'merchant/widgets/hooks';
 import { getUcsAliasFromQueryKey, track } from 'merchant/widgets/utils';
+
+import DoughnutChart from './DoughnutChart';
+import { EmptyDoughnutChart, emptyChartTableData } from './utils';
 import { InsightItemChartWrapper } from '../../styled';
 
 const DoughnutWidget: React.FC<DoughnutWidgetProps> = ({
@@ -74,7 +76,11 @@ const DoughnutWidget: React.FC<DoughnutWidgetProps> = ({
     );
 
   const { chart_data } = data;
-  const isChartData = chart_data && chart_data.data && chart_data.data.length > 0;
+  const isChartData =
+    chart_data &&
+    chart_data.data &&
+    chart_data.data.length > 0 &&
+    chart_data.data[0].points?.length > 0;
 
   return (
     <Box

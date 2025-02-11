@@ -88,7 +88,7 @@ export const EmptyLineChart = () => {
       {
         label: '',
         data: [0, 0],
-        borderColor: theme.colors.surface.text.gray.subtle,
+        borderColor: theme.colors.surface.border.gray.subtle,
         backgroundColor: theme.colors.surface.background.gray.subtle,
       },
     ],
@@ -111,7 +111,16 @@ export const EmptyLineChart = () => {
       ],
     },
     tooltips: {
-      enabled: false,
+      enabled: true,
+      position: 'nearest',
+      callbacks: {
+        label: () => {
+          return '';
+        },
+        title: () => {
+          return 'No data';
+        },
+      },
     },
   };
 

@@ -2,22 +2,20 @@ import React, { useMemo } from 'react';
 import { Heading, Text, Box } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 
-import { IMerchantOverview } from 'merchant/containers/Home/RTUX/MerchantOverview/types';
-import { CommonWidgetProps } from 'merchant/widgets/types';
-
-import MerchantOverviewData from './MerchantOverviewData';
-import { getGreetingAndDate } from './utils';
-import { useIsSettlementHovered } from './MerchantOverviewData/store';
-import SettlementInfoBar from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/SettlementInfoBar';
-
 import { useSplitzService } from 'common/splitz';
-
-import { isSettlementSOHBlockEnabled } from 'merchant/views/Settlements/components/utils';
+import SettlementInfoBar from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/SettlementInfoBar';
 import {
   isBlocked,
   isRiskDisabled,
   isRiskFoh,
 } from 'merchant/containers/Home/RTUX/MerchantOverview/MerchantOverviewData/Settlement/utils';
+import { IMerchantOverview } from 'merchant/containers/Home/RTUX/MerchantOverview/types';
+import { isSettlementSOHBlockEnabled } from 'merchant/views/Settlements/components/utils';
+import { CommonWidgetProps } from 'merchant/widgets/types';
+
+import MerchantOverviewData from './MerchantOverviewData';
+import { useIsSettlementHovered } from './MerchantOverviewData/store';
+import { getGreetingAndDate } from './utils';
 
 const MerchantOverviewComponent: React.FC<IMerchantOverview & CommonWidgetProps> = (props) => {
   const { user } = props;

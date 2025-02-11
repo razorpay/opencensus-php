@@ -33,7 +33,7 @@ export const EmptyDoughnutChart = () => {
         label: '',
         data: [1],
         fill: false,
-        backgroundColor: ['#D8E4FD'],
+        backgroundColor: ['#cbd5e2'],
         borderWidth: 0,
       },
     ],
@@ -42,8 +42,16 @@ export const EmptyDoughnutChart = () => {
   const options = {
     ...getOptions(),
     tooltips: {
-      enabled: false,
+      enabled: true,
       position: 'nearest',
+      callbacks: {
+        label: () => {
+          return '';
+        },
+        title: () => {
+          return 'No data';
+        },
+      },
     },
   };
 

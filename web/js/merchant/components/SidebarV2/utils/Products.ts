@@ -8,20 +8,19 @@ import {
   CheckCircleIcon,
   CodeSnippetIcon,
   CreditCardIcon,
-  CustomersIcon,
   DashboardIcon,
   FileTextIcon,
   type IconComponent,
   MagicCheckoutIcon,
   MyAccountIcon,
-  OffersIcon,
+  TagIcon,
+  UsersIcon,
   OptimizerIcon,
   PaymentButtonsIcon,
   PaymentLinksIcon,
   PaymentPagesIcon,
   PosIcon,
   QRCodeIcon,
-  RazorpayIcon,
   RazorpayXIcon,
   RefreshIcon,
   ReportsIcon,
@@ -37,7 +36,10 @@ import {
   ZapIcon,
   LayoutIcon,
   SparklesIcon,
+  MagicKonnectIcon,
+  BillMeIcon,
 } from '@razorpay/blade/components';
+import magicKonnectLogo from 'assets/magicKonnectLogo.png';
 
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
@@ -49,15 +51,14 @@ import {
 } from 'merchant/components/SidebarV2/constants/constants';
 import { ConfigTagType } from 'merchant/constants/tags';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 import {
   canViewCashAdvanceProduct,
   canViewLOCEMIProduct,
   canViewLoans,
 } from 'merchant/views/Capital/utils';
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
-import magicKonnectLogo from 'assets/magicKonnectLogo.png';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
-import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 
 export type ExtraConfig = {
   abExperiments: any;
@@ -178,13 +179,13 @@ export const PRODUCTS_DATA = {
       !isConfigTagEnabled('checkout_rewards.checkout_rewards'),
   },
   offers: {
-    bladeIcon: OffersIcon,
+    bladeIcon: TagIcon,
     icon: 'i-offer',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('offers') && !isConfigTagEnabled('offers.offers'),
   },
   customers: {
-    bladeIcon: CustomersIcon,
+    bladeIcon: UsersIcon,
     icon: 'i-people',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('customers') && !isConfigTagEnabled('customers.customers'),
@@ -207,7 +208,7 @@ export const PRODUCTS_DATA = {
     additionalCondition: (user: any): boolean => user.isMagicCheckoutEnabled,
   },
   magic_konnect: {
-    bladeIcon: RazorpayIcon,
+    bladeIcon: MagicKonnectIcon,
     icon: 'i-magic-konnect',
     image: magicKonnectLogo,
     additionalCondition: (user: any, extraConfig: ExtraConfig) =>
@@ -371,6 +372,7 @@ export const PRODUCTS_DATA = {
     },
   },
   bill_me: {
+    bladeIcon: BillMeIcon,
     icon: 'i-bill-me',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) => {
       // TODO: to add 'mode' condition check before Go-Live

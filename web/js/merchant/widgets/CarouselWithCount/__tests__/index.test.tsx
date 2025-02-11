@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { screen, waitFor, renderWithSuspense, userEvent } from 'test-utils';
-import { CarouselWithCountWidget } from 'merchant/widgets/CarouselWithCount';
 import { KEY_UPDATES_MOCK_RESPONSE } from 'merchant/containers/Home/RTUX/__tests__/mocks';
+import { CarouselWithCountWidget } from 'merchant/widgets/CarouselWithCount';
+import { screen, waitFor, renderWithSuspense, userEvent } from 'test-utils';
 
 const mockRetry = jest.fn();
 const error = "Key updates couldn't be loaded";
