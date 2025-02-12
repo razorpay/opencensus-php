@@ -47,97 +47,97 @@ class CitiPayoutTest extends TestCase
         $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
-    public function testCreatePayoutForCitiToCardViaNEFTWithMultipleCredits()
-    {
-        $this->markTestSkipped();
-
-        $this->fixtures->create(
-            'fund_account',
-            [
-                'id'           => '100000000002fa',
-                'account_type' => 'card',
-                'source_id'    => '1000001contact',
-                'source_type'  => 'contact',
-                'account_id'   => '100000000lcard',
-                'active'       => 1,
-            ]);
-
-        $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
-
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
-
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
-
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $balance = $this->getLastEntity('balance', true);
-
-        $balanceBefore = $balance['balance'];
-
-        $this->ba->privateAuth();
-
-        $this->startTest();
-
-        $payout = $this->getLastEntity('payout', true);
-
-        $this->assertEquals($payout['channel'], 'citi');
-        $this->assertNull($payout['user_id']);
-        $this->assertEquals(0, $payout['tax']);
-        $this->assertEquals(500, $payout['fees']);
-        $this->assertEquals('reward_fee', $payout['fee_type']);
-
-        $txn = $this->getLastEntity('transaction', true);
-
-        $txnId = str_after($txn['id'], 'txn_');
-        $this->assertEquals($payout['transaction_id'], $txn['id']);
-        $this->assertNotNull($txn['balance_id']);
-        $this->assertEquals(0, $txn['tax']);
-        $this->assertEquals(500, $txn['fee']);
-        $this->assertEquals('reward_fee', $txn['credit_type']);
-        $this->assertEquals(500, $txn['fee_credits']);
-
-        $balance = $this->getLastEntity('balance', true);
-
-        $this->assertNull($balance['channel']);
-        $this->assertEquals('shared', $balance['account_type']);
-        $this->assertEquals($balanceBefore - 1000, $balance['balance']);
-
-        $creditEntities = $this->getDbEntities('credits');
-        $this->assertEquals(100, $creditEntities[0]['used']);
-        $this->assertEquals(400, $creditEntities[1]['used']);
-
-        $creditTxnEntities = $this->getDbEntities('credit_transaction');
-        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
-        $this->assertEquals($payout['id'], 'pout_' . $creditTxnEntities[0]['entity_id']);
-        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
-
-        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
-        $this->assertEquals($payout['id'], 'pout_' . $creditTxnEntities[1]['entity_id']);
-        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
-
-        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals($payout['id'], $payoutAttempt['source']);
-        $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
-        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals(Channel::CITI, $payoutAttempt['channel']);
-        $this->assertEquals(Status::INITIATED, $payoutAttempt['status']);
-
-        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
-
-        $expectedBreakup = [
-            'name'            => 'payout',
-            'transaction_id'  => $txnId,
-            'pricing_rule_id' => 'Bbg7cl6t6I3XA5',
-            'percentage'      => null,
-            'amount'          => 500,
-        ];
-
-        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][0]);
-
-        $this->flushCache();
-    }
+//    public function testCreatePayoutForCitiToCardViaNEFTWithMultipleCredits()
+//    {
+//        $this->markTestSkipped();
+//
+//        $this->fixtures->create(
+//            'fund_account',
+//            [
+//                'id'           => '100000000002fa',
+//                'account_type' => 'card',
+//                'source_id'    => '1000001contact',
+//                'source_type'  => 'contact',
+//                'account_id'   => '100000000lcard',
+//                'active'       => 1,
+//            ]);
+//
+//        $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
+//
+//        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+//
+//        $creditEntity = $this->getDbLastEntity('credits');
+//
+//        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+//
+//        $creditEntity = $this->getDbLastEntity('credits');
+//
+//        $balance = $this->getLastEntity('balance', true);
+//
+//        $balanceBefore = $balance['balance'];
+//
+//        $this->ba->privateAuth();
+//
+//        $this->startTest();
+//
+//        $payout = $this->getLastEntity('payout', true);
+//
+//        $this->assertEquals($payout['channel'], 'citi');
+//        $this->assertNull($payout['user_id']);
+//        $this->assertEquals(0, $payout['tax']);
+//        $this->assertEquals(500, $payout['fees']);
+//        $this->assertEquals('reward_fee', $payout['fee_type']);
+//
+//        $txn = $this->getLastEntity('transaction', true);
+//
+//        $txnId = str_after($txn['id'], 'txn_');
+//        $this->assertEquals($payout['transaction_id'], $txn['id']);
+//        $this->assertNotNull($txn['balance_id']);
+//        $this->assertEquals(0, $txn['tax']);
+//        $this->assertEquals(500, $txn['fee']);
+//        $this->assertEquals('reward_fee', $txn['credit_type']);
+//        $this->assertEquals(500, $txn['fee_credits']);
+//
+//        $balance = $this->getLastEntity('balance', true);
+//
+//        $this->assertNull($balance['channel']);
+//        $this->assertEquals('shared', $balance['account_type']);
+//        $this->assertEquals($balanceBefore - 1000, $balance['balance']);
+//
+//        $creditEntities = $this->getDbEntities('credits');
+//        $this->assertEquals(100, $creditEntities[0]['used']);
+//        $this->assertEquals(400, $creditEntities[1]['used']);
+//
+//        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+//        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+//        $this->assertEquals($payout['id'], 'pout_' . $creditTxnEntities[0]['entity_id']);
+//        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+//
+//        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+//        $this->assertEquals($payout['id'], 'pout_' . $creditTxnEntities[1]['entity_id']);
+//        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
+//
+//        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+//        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+//        $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
+//        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+//        $this->assertEquals(Channel::CITI, $payoutAttempt['channel']);
+//        $this->assertEquals(Status::INITIATED, $payoutAttempt['status']);
+//
+//        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+//
+//        $expectedBreakup = [
+//            'name'            => 'payout',
+//            'transaction_id'  => $txnId,
+//            'pricing_rule_id' => 'Bbg7cl6t6I3XA5',
+//            'percentage'      => null,
+//            'amount'          => 500,
+//        ];
+//
+//        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][0]);
+//
+//        $this->flushCache();
+//    }
 
     public function testCreatePayoutForCitiToCardViaNEFTWithMultipleCreditsWithNewCreditsFlow()
     {
