@@ -67,6 +67,7 @@ const DeviceDeliveryAddress = ({
     const addressData = addresses?.[addressType];
     const payload = {
       [MODULAR_DEVICE_FIELDS.DEVICE_CHECK_FOR_ORDER_COMPLETION]: moment().unix(),
+      [MODULAR_DEVICE_FIELDS.DEVICE_CHECK_FOR_PAYMENT_EXPT_FIELD]: moment().unix(),
       [MODULAR_DEVICE_FIELDS.DEVICE_DELIVERY_ADDRESS_FIELD]: addressData,
       [MODULAR_DEVICE_FIELDS.DEVICE_ORDER_QR_AMOUNT]: orderSummary?.totalOrderCharge,
       [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: onAddressUpdate,

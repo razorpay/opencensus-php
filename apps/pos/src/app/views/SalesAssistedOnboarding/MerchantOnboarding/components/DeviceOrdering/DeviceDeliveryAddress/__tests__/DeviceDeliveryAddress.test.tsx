@@ -65,6 +65,7 @@ describe('DeviceDeliveryAddress', () => {
       modular_callback: expect.any(Function),
       qr_payment_amount_field: 2478,
       check_for_order_completion: moment().unix(),
+      check_for_payment_exp_field: moment().unix(),
     });
   });
 

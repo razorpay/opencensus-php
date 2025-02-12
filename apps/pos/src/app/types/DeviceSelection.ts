@@ -37,6 +37,7 @@ export enum MODULAR_DEVICE_FIELDS {
   DEVICE_PAYMENT_METHOD_COMPONENT = 'device_payment_method_component',
   DEVICE_PAYMENT_COMPONENT = 'device_payment',
   DEVICE_CHECK_FOR_ORDER_COMPLETION = 'check_for_order_completion',
+  DEVICE_CHECK_FOR_PAYMENT_EXPT_FIELD = 'check_for_payment_exp_field',
   PARTNER_DEVICE_CATALOG_COMPONENT = 'partner_device_catalogue_component',
   PARTNER_DEVICE_CART_COMPONENT = 'partner_device_cart_component',
   NACH_FORM_COMPONENT = 'nach_form_component',
