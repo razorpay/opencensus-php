@@ -47,7 +47,6 @@ import HighlightTestMode from 'merchant/components/HighlightTestMode';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import LogoutDialog from 'merchant/components/LogoutDialog';
 import NavigationLayout from 'merchant/components/NavigationLayout/NavigationLayout';
-import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
 import currencies from 'merchant/constants/currency';
 import { DEFAULT_TIMEOUT_IN_SECONDS, LOGOUT_ERROR } from 'merchant/constants/dates';
 import { withRtuxComponentData } from 'merchant/containers/Home/RTUX/hooks/useUCSDataQuery';
@@ -81,6 +80,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
+import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
 
 import { isRTUXHomepageEnabled } from './Home/RTUX/utils';
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];

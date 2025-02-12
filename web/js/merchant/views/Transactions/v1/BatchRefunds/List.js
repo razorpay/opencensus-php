@@ -17,7 +17,6 @@ import {
   selfServerTrack,
   selfServeTrackResult,
 } from 'merchant/views/Transactions/v1/AnalyticsTrack';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 import BatchList from './components/BatchList';
 
@@ -28,8 +27,8 @@ export const SAMPLE_BATCH_REFUND_FILE_WITH_SPEED = `https://dashboard.razorpay.c
 
 class BatchListContainer extends ListContainer {
   render() {
-    const { user, splitz } = this.props;
-    const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
+    const { splitz } = this.props;
+    const version = 'v2';
     return (
       <BatchList
         form="batchListFilter"

@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom';
 
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { getUser } from 'merchant/store';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 export const getInitiatePointAndPageAndScreenName = () => {
   const params = new Proxy(new URLSearchParams(window.location?.search), {
@@ -17,9 +15,8 @@ export const getInitiatePointAndPageAndScreenName = () => {
   return { initiatePoint, initiatePage, screen, page };
 };
 
-export const getSelfServeSuccessData = (selfServeActionName, screenType, splitz) => {
-  const user = getUser();
-  const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
+export const getSelfServeSuccessData = (selfServeActionName, screenType) => {
+  const version = 'v2';
   const { initiatePoint, initiatePage, screen, page } = getInitiatePointAndPageAndScreenName();
 
   const selfServeSuccessData = {
@@ -45,10 +42,8 @@ export const addIdLinkAndSelfServeInitiate = (
   selfServeActionName,
   url,
   element,
-  splitz,
 ) => {
-  const user = getUser();
-  const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
+  const version = 'v2';
   const { hash } = window.location;
 
   const screen = initiatePage?.split('.')[0] || 'Transactions';

@@ -8,14 +8,10 @@ import BatchRefundsUpload from 'merchant/views/Transactions/v1/BatchRefunds/Batc
 import BatchRefundsList from 'merchant/views/Transactions/v1/BatchRefunds/List';
 import DisputesList from 'merchant/views/Transactions/v1/Disputes/List';
 import OrdersList from 'merchant/views/Transactions/v1/Orders/List';
-import PaymentsList from 'merchant/views/Transactions/v1/Payments/List';
-import RefundsList from 'merchant/views/Transactions/v1/Refunds/List';
 import SuccessRate from 'merchant/views/Transactions/v1/SuccessRate';
 import UploadInvoice from 'merchant/views/Transactions/v1/UploadInvoice';
 import TransactionV2Landing from 'merchant/views/Transactions/v2/Landing';
 import { connect } from 'react-redux';
-
-import Transactions from 'merchant/views/Transactions/v1';
 
 import PaymentsDetailsV2 from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails';
 
@@ -36,8 +32,6 @@ export default connect(
   mapStateToProps,
   null,
 )(() => {
-  const isTransactionV2Enabled = true;
-
   return (
     <div>
       Joel
@@ -60,22 +54,8 @@ export default connect(
           />
         </Route>
         <Route path="payments/*">
-          <Route
-            path="*"
-            element={
-              <RouteGuard>
-                {isTransactionV2Enabled ? <TransactionV2Landing /> : <Transactions />}
-              </RouteGuard>
-            }
-          >
-            <Route
-              index
-              element={
-                <RouteGuard>
-                  {isTransactionV2Enabled ? <PaymentsContainer /> : <PaymentsList />}
-                </RouteGuard>
-              }
-            />
+          <Route path="*" element={<RouteGuard>{<TransactionV2Landing />}</RouteGuard>}>
+            <Route index element={<RouteGuard>{<PaymentsContainer />}</RouteGuard>} />
             <Route path="batchuploads/*">
               <Route
                 index
@@ -122,20 +102,9 @@ export default connect(
         </Route>
         <Route
           path="refunds/*"
-          element={
-            <RouteGuard>
-              {isTransactionV2Enabled ? <TransactionsV2EntitiesOverview /> : <Transactions />}
-            </RouteGuard>
-          }
+          element={<RouteGuard>{<TransactionsV2EntitiesOverview />}</RouteGuard>}
         >
-          <Route
-            path="*"
-            element={
-              <RouteGuard>
-                {isTransactionV2Enabled ? <TransactionV2RefundsContainer /> : <RefundsList />}
-              </RouteGuard>
-            }
-          />
+          <Route path="*" element={<RouteGuard>{<TransactionV2RefundsContainer />}</RouteGuard>} />
           <Route
             path=":id"
             element={
@@ -161,14 +130,7 @@ export default connect(
             }
           />
         </Route>
-        <Route
-          path="orders/*"
-          element={
-            <RouteGuard>
-              {isTransactionV2Enabled ? <TransactionV2Landing /> : <Transactions />}
-            </RouteGuard>
-          }
-        >
+        <Route path="orders/*" element={<RouteGuard>{<TransactionV2Landing />}</RouteGuard>}>
           <Route
             index
             element={
@@ -180,11 +142,7 @@ export default connect(
         </Route>
         <Route
           path="disputes/*"
-          element={
-            <RouteGuard>
-              {isTransactionV2Enabled ? <TransactionsV2EntitiesOverview /> : <Transactions />}
-            </RouteGuard>
-          }
+          element={<RouteGuard>{<TransactionsV2EntitiesOverview />}</RouteGuard>}
         >
           <Route
             index
@@ -197,11 +155,7 @@ export default connect(
         </Route>
         <Route
           path="success-rate/*"
-          element={
-            <RouteGuard>
-              {isTransactionV2Enabled ? <TransactionsV2EntitiesOverview /> : <Transactions />}
-            </RouteGuard>
-          }
+          element={<RouteGuard>{<TransactionsV2EntitiesOverview />}</RouteGuard>}
         >
           <Route
             index

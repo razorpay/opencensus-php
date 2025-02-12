@@ -97,7 +97,6 @@ describe('Failed Payments Analytics', () => {
       session: {
         mode: 'live',
         user: {
-          isTransactionsV2Enabled: true,
           merchant: {
             currency: 'INR',
           },

@@ -32,10 +32,6 @@ import {
   fetchEncodedPaymentReceipt,
   fetchTransfersFn,
 } from 'merchant/views/Transactions/model';
-import {
-  isPaymentV2ParityFeatureEnabled,
-  isTransactionsV2Enabled,
-} from 'merchant/views/Transactions/v2/common/utils';
 import { isOmniChannelMerchant as _isOmniChannelMerchant } from 'merchant/utils/omniUtils';
 import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification as showNotificationAction } from 'merchant_common/reducers/notifications';
@@ -68,7 +64,6 @@ import {
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { PaymentFeeBreakdown } from 'merchant/views/Transactions/v1/Payments/components/PaymentFee';
 import { fetchTransfers, fetchBankTransfer } from 'merchant/reducers/payments/details';
-import { isExperimentEnabled } from 'common/splitz/utils';
 import PaymentOptimizerDetails from './PaymentOptimizerDetails';
 import { getPaymentReferenceNumber } from 'merchant/views/Transactions/v1/utils';
 import { isOrgFeatureExist } from 'merchant/models/User';
@@ -216,18 +211,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
     }
   }, [method, id]);
 
-  const { abExperiments } = splitz || {
-    abExperiments: {
-      enable_trxn_v2_parity_features: undefined,
-      enable_trxn_v2_fee_breakup: undefined,
-    },
-  };
-
   const isChargeSlipExperimentEnabled = isChargeSlipForPosEnabled(splitz);
-  const isTxnV2ParityFeaturesEnabled = isPaymentV2ParityFeatureEnabled(splitz, user);
-  const isTxnFeeBreakupEnabled =
-    isTransactionsV2Enabled(splitz, user) &&
-    isExperimentEnabled(abExperiments?.enable_trxn_v2_fee_breakup);
 
   const isLateAuthAttributeEnabled = orgFeatures?.includes('show_late_auth_attributes');
 
@@ -396,7 +380,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     ) : null}
                   </>
                 ) : null}
-                {isTxnV2ParityFeaturesEnabled ? <PaymentPageDetails id={order_id} /> : null}
+                <PaymentPageDetails id={order_id} />
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow
                   label="Bank RRN"
@@ -458,13 +442,13 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     />
                   }
                 />
-                {isTxnV2ParityFeaturesEnabled && bankReferenceNumber ? (
+                {bankReferenceNumber ? (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                     <DetailRow label="Bank Reference" value={bankReferenceNumber} />
                   </>
                 ) : null}
-                {isPaymentReceiptSectionAllowed() && isTxnV2ParityFeaturesEnabled ? (
+                {isPaymentReceiptSectionAllowed() ? (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                     <DetailRow
@@ -535,7 +519,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     <DetailRow label="Gateway" value={paymentDetails.gateway_provider} />
                   </>
                 )}
-                {isTxnFeeBreakupEnabled && !user.isJnKOmniEnabled ? (
+                {!user.isJnKOmniEnabled ? (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                     <DetailRow
@@ -594,7 +578,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     />
                   </>
                 )}
-                {isTxnV2ParityFeaturesEnabled && isOrgFeatureExist('vas_merchant') ? (
+                {isOrgFeatureExist('vas_merchant') ? (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                     <DetailRow
@@ -694,7 +678,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow label="Notes" value={getNotes({ notes, isStorefront })} />
 
-                {paymentDetails.provider && isTxnV2ParityFeaturesEnabled && (
+                {paymentDetails.provider && (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                     <DetailRow
@@ -729,7 +713,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                 {(user.isOrgCurlec || !isConfigTagEnabled('payment_transfer.transfers')) && (
                   <PaymentTransfers paymentDetails={paymentDetails} />
                 )}
-                {isTxnV2ParityFeaturesEnabled && user.isLRSEducationFlow ? (
+                {user.isLRSEducationFlow ? (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                     <DetailRow

@@ -21,11 +21,6 @@ jest.mock('common/utils/selfServeAnalytics', () => ({
   selfServeTrackSuccess: jest.fn(),
 }));
 
-jest.mock('merchant/views/Transactions/v2/common/utils', () => ({
-  ...jest.requireActual('merchant/views/Transactions/v2/common/utils'),
-  isTransactionsV2Enabled: jest.fn().mockReturnValue(true),
-}));
-
 jest.mock(
   'merchant/views/Transactions/v1/Orders/components/OrderDetails',
   () =>

@@ -25,7 +25,6 @@ import EmptyComponent from 'merchant/views/Transactions/v1/B2bPayments/component
 import ListFilter from 'merchant/views/Transactions/v1/B2bPayments/components/ListFilter';
 import ListTable from 'merchant/views/Transactions/v1/B2bPayments/components/ListTable';
 import HeaderActions from 'merchant/views/Transactions/v1/BatchRefunds/HeaderActions';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -38,11 +37,6 @@ const BuyerAddressModalLazy = lazy(() =>
 ///- Lazy loaded components
 
 class PaymentsListContainer extends ListContainer {
-  getVersion = () => {
-    const { splitz, user } = this.props;
-    return isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
-  };
-
   onFilterSubmit = (params) => {
     this.search(params)
       .then(() => {
@@ -54,7 +48,7 @@ class PaymentsListContainer extends ListContainer {
           count: params.count,
           resultsReturned: true,
           status: 'success',
-          version: this.getVersion(),
+          version: 'v2',
         });
       })
       .catch(() => {
@@ -66,7 +60,7 @@ class PaymentsListContainer extends ListContainer {
           count: params.count,
           resultsReturned: false,
           status: 'failure',
-          version: this.getVersion(),
+          version: 'v2',
         });
       });
   };
@@ -75,13 +69,13 @@ class PaymentsListContainer extends ListContainer {
     trackSearchClicked({
       paymentId: params.id,
       paymentStatus: params.status,
-      version: this.getVersion(),
+      version: 'v2',
     });
   };
 
   onClearAnalytics = () => {
     trackSearchClear({
-      version: this.getVersion(),
+      version: 'v2',
     });
   };
 
@@ -91,7 +85,7 @@ class PaymentsListContainer extends ListContainer {
     uploadInvoicePending({ id });
     trackInvoiceUploadClick({
       paymentId: id,
-      version: this.getVersion(),
+      version: 'v2',
     });
     try {
       await b2bActions.uploadInvoice(id, file);
@@ -104,7 +98,7 @@ class PaymentsListContainer extends ListContainer {
       trackInvoiceUploadStatus({
         paymentId: id,
         status: 'success',
-        version: this.getVersion(),
+        version: 'v2',
       });
     } catch (err) {
       uploadInvoiceError({ id, error: err });
@@ -115,7 +109,7 @@ class PaymentsListContainer extends ListContainer {
       trackInvoiceUploadStatus({
         paymentId: id,
         status: 'failure',
-        version: this.getVersion(),
+        version: 'v2',
       });
     }
   };
@@ -130,7 +124,7 @@ class PaymentsListContainer extends ListContainer {
     getInvoiceDetailsPending({ id });
     trackInvoiceViewClick({
       documentId: id,
-      version: this.getVersion(),
+      version: 'v2',
     });
     try {
       const response = await b2bActions.getInvoiceDetails(id);
@@ -139,7 +133,7 @@ class PaymentsListContainer extends ListContainer {
         trackInvoiceViewStatus({
           documentId: id,
           status: 'success',
-          version: this.getVersion(),
+          version: 'v2',
         });
         getInvoiceDetailsSuccess({ id });
       }
@@ -156,7 +150,7 @@ class PaymentsListContainer extends ListContainer {
       trackInvoiceViewStatus({
         documentId: id,
         status: 'failure',
-        version: this.getVersion(),
+        version: 'v2',
       });
     }
   };
@@ -179,7 +173,7 @@ class PaymentsListContainer extends ListContainer {
 
   componentDidMount() {
     trackShown({
-      version: this.getVersion(),
+      version: 'v2',
     });
   }
 

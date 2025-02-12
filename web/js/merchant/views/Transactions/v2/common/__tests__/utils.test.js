@@ -21,7 +21,6 @@ import {
   getDefaultSearchByValueAndOption,
   onSearch,
   onPaginate,
-  isTransactionsV2Enabled,
   isSettlementRetryTimelineEnabled,
   i18nifyConvertToMajorUnit,
   i18nifyConvertToMinorUnit,
@@ -306,82 +305,6 @@ describe('utils', () => {
         existingKey: 'existingValue',
         newKey: 'newValue',
       });
-    });
-  });
-
-  describe('isTransactionsV2Enabled', () => {
-    test('should return false for TransactionsV2Enabled if user isOrgCurlec', () => {
-      const splitz = {
-        abExperiments: { Transactions_Revamp: { variables: { result: 'on' } } },
-      };
-      const user = { isOrgCurlec: true, isOrgRZP: true, isFeatureEnabled: () => false };
-      const result = isTransactionsV2Enabled(splitz, user);
-      expect(result).toBe(false);
-    });
-
-    test('should return false for TransactionsV2Enabled if experiment is not "on"', () => {
-      const splitz = {
-        abExperiments: { Transactions_Revamp: { variables: { result: 'off' } } },
-      };
-      const user = { isOrgCurlec: false, isOrgRZP: true, isFeatureEnabled: () => false };
-      const result = isTransactionsV2Enabled(splitz, user);
-      expect(result).toBe(false);
-    });
-
-    test('should return false for TransactionsV2Enabled if user is not isOrgRZP', () => {
-      const splitz = {
-        abExperiments: { Transactions_Revamp: { variables: { result: 'on' } } },
-      };
-      const user = {
-        isOrgCurlec: false,
-        isOrgRZP: false,
-        isVasTestingMerchant: false,
-        isFeatureEnabled: () => false,
-      };
-      const result = isTransactionsV2Enabled(splitz, user);
-      expect(result).toBe(false);
-    });
-
-    test('should return true for valid TransactionsV2Enabled case', () => {
-      const splitz = {
-        abExperiments: { Transactions_Revamp: { variables: { result: 'on' } } },
-      };
-      const user = {
-        isOrgCurlec: false,
-        isOrgRZP: true,
-        isCountryIndia: true,
-        isFeatureEnabled: jest.fn(() => false),
-      };
-      const result = isTransactionsV2Enabled(splitz, user);
-      expect(result).toBe(true);
-    });
-
-    test('should return true for SG user', () => {
-      const splitz = {
-        abExperiments: { Transactions_Revamp: { variables: { result: 'on' } } },
-      };
-      const user = {
-        isOrgCurlec: false,
-        isOrgRZP: true,
-        isCountrySingapore: true,
-        isFeatureEnabled: jest.fn(() => false),
-      };
-      const result = isTransactionsV2Enabled(splitz, user);
-      expect(result).toBe(true);
-    });
-
-    test('should return false for Optimizer raas feature check', () => {
-      const splitz = {
-        abExperiments: { Transactions_Revamp: { variables: { result: 'on' } } },
-      };
-      const user = {
-        isOrgCurlec: false,
-        isOrgRZP: true,
-        isCountryIndia: true,
-        isFeatureEnabled: jest.fn(() => true),
-      };
-      const result = isTransactionsV2Enabled(splitz, user);
-      expect(result).toBe(false);
     });
   });
 

@@ -12,14 +12,6 @@ jest.mock('shell/commonStore', () => ({
   useStore: jest.fn(),
 }));
 
-jest.mock('common/splitz', () => ({
-  useSplitzService: () => ({
-    abExperiments: {
-      enable_trxn_v2_parity_features: false,
-    },
-  }),
-}));
-
 describe('PaymentsTable', () => {
   beforeAll(() => {
     useStore.mockReturnValue({ session: { user: {} } });

@@ -15,7 +15,6 @@ import {
 
 import lazy from './LazyLoader';
 import { isExperimentEnabled } from 'common/splitz/utils';
-import { isTransactionCleanupEnabled } from 'merchant/views/Transactions/v2/common/utils';
 
 const InstantSettlementDetails = lazy(() =>
   import(
@@ -75,19 +74,13 @@ const SubscriptionButtonCreate = lazy(() =>
     /* webpackChunkName: "SubscriptionButtonCreate" */ 'merchant/views/PaymentButton/SubscriptionButton/Create'
   ),
 );
-const PaymentsDetails = lazy(() =>
-  import(
-    /* webpackChunkName: "PaymentsDetails" */ 'merchant/views/Transactions/v1/Payments/Details'
-  ),
-);
+
 const PdfDetails = lazy(() =>
   import(
     /* webpackChunkName: "PdfDetails" */ 'merchant/views/Transactions/v1/Payments/BouncememoRoute'
   ),
 );
-const RefundDetails = lazy(() =>
-  import(/* webpackChunkName: "RefundsDetails" */ 'merchant/views/Transactions/v1/Refunds/Details'),
-);
+
 const OrderDetails = lazy(() =>
   import(/* webpackChunkName: "OrdersDetails" */ 'merchant/views/Transactions/v1/Orders/Details'),
 );
@@ -411,23 +404,6 @@ const entityDetailsMap = {
     component: PaymentTransferNew,
     additionalCondition: (user) => user.isAllowedEdit('payments'),
   },
-  ...(isTransactionCleanupEnabled()
-    ? {}
-    : {
-        '/payments/:id(pay_.+)/:entity_name(transfers|disputes)/:entity_id': {
-          component: PaymentsDetails,
-          additionalCondition: (user) => user.isAllowedEdit('payments'),
-        },
-      }),
-  '/payments/:id(pay_.+)': {
-    component: PaymentsDetails,
-    additionalCondition: (user) => user.isAllowedView('payments'),
-  },
-
-  '/refunds/:id(rfnd_.+)': {
-    component: RefundDetails,
-    additionalCondition: (user) => user.isAllowedView('refunds'),
-  },
   '/optimizer/rules/:id': {
     component: RuleDetail,
   },
@@ -472,11 +448,6 @@ const entityDetailsMap = {
     additionalCondition: (user, extraConfig) =>
       user.isAllowedView('invoices') && !extraConfig?.i18?.isConfigTagEnabled('invoices.invoice'),
   },
-  ...(isTransactionCleanupEnabled()
-    ? {}
-    : {
-        '/route/payments/:id': { component: PaymentsDetails },
-      }),
   '/route/accounts/:id': { component: AccountDetailsNew },
   '/route/optimizer/accounts/:id': {
     component: OptimizerAccountDetails,

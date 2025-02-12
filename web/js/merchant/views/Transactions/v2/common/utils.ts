@@ -34,7 +34,6 @@ import {
   TODAY,
 } from './constants';
 import { Duration, DurationOption, DurationOptionsMap, Paginate } from './types';
-import { getSplitzExperimentVariant, ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 export const generateOptions = (optionsMap: {
   [key: string]: string;
@@ -210,44 +209,6 @@ export const getCreatedOnTime = ({ created_at }: { created_at: number }): string
   return createdAt;
 };
 
-export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User): boolean => {
-  // HDFC Bank is excluded from Transactions V2 not for long though :)
-  const excludedOrgs = [
-    ORG_CUSTOM_CODE_MAP.HDFC_SMART_HUB,
-    ORG_CUSTOM_CODE_MAP.HDFC_COLLECT_NOW,
-    ORG_CUSTOM_CODE_MAP.HDFC_GIG,
-  ];
-
-  if (excludedOrgs.some((org) => org.toLowerCase() === user.orgCustomCode?.toLowerCase())) {
-    return user.isParityFeaturesEnabledForHDCF;
-  }
-
-  const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
-
-  if (!abExperiments?.Transactions_Revamp) return false;
-
-  // All optimiser merchants are parity merchants
-  // All merchants whose org is Curlec are parity merchants
-  // All merchants whose org is VAS are parity merchants
-  const isExcludedMerchant = user.isFeatureEnabled('raas') || !user.isOrgRZP;
-  const isTransactionsEnabledForExcludedMerchant = isExperimentEnabled(
-    abExperiments?.enable_trxn_v2_for_excluded_merchants,
-  );
-
-  // for excluded merchants, if experiment is enabled, then show trxn v2
-  if (isExcludedMerchant) {
-    if (isTransactionsEnabledForExcludedMerchant) {
-      return true;
-    }
-    return false;
-  }
-
-  return (
-    Boolean(user.isCountryIndia || user.isCountrySingapore) &&
-    isExperimentEnabled(abExperiments.Transactions_Revamp)
-  );
-};
-
 export const isMicrofrontendSelfserveEnabled = (splitz: SpiltzContextState): boolean => {
   const { abExperiments } = splitz || { abExperiments: { microfrontend_selfserve: undefined } };
 
@@ -325,14 +286,6 @@ export const isBounceMemoEnabled = (splitz: SpiltzContextState): boolean => {
   return isExperimentEnabled(abExperiments.bounce_memo);
 };
 
-// New features introduced within Transactions V2 are behind this experiment
-export function isPaymentV2ParityFeatureEnabled(splitz, user) {
-  return (
-    isTransactionsV2Enabled(splitz, user) &&
-    isExperimentEnabled(splitz?.abExperiments?.enable_trxn_v2_parity_features)
-  );
-}
-
 export const getCountryTaxDefinition = ({ countryCode = '' }: { countryCode: string }) => {
   switch (countryCode) {
     case 'MY':
@@ -345,17 +298,10 @@ export const getCountryTaxDefinition = ({ countryCode = '' }: { countryCode: str
 };
 
 export const shouldHideAnalytics = (user: User, mode: Environments): boolean => {
-  // Hide analytics overview for JnK Omni merchants
+  // Hide analytics overview for JnK Omni merchant
   if (user.isJnKOmniEnabled) {
     return true;
   }
   const isCurlecVASTestMode = mode === 'test' && !user.isOrgRZP;
   return isCurlecVASTestMode;
 };
-
-export const isTransactionCleanupEnabled = () =>
-  (
-    getSplitzExperimentVariant('enable_transactions_cleanup') as {
-      variables?: { result: string };
-    }
-  )?.variables?.result === 'on';

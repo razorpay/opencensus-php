@@ -50,11 +50,7 @@ import lazy from './LazyLoader';
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import SelfServeStateWrapper from 'merchant/views/Transactions/SelfServeStateWrapper';
 
-import {
-  isMicrofrontendSelfserveEnabled,
-  isTransactionCleanupEnabled,
-  isTransactionsV2Enabled,
-} from 'merchant/views/Transactions/v2/common/utils';
+import { isMicrofrontendSelfserveEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import { withI18Service } from 'common/i18';
 import { importRemote } from 'merchant/utils/dynamic-remotes';
 import { isSettlementsV3detailsRevamp } from 'merchant/views/Settlements/v3/utils/common';
@@ -143,14 +139,6 @@ const DisputesListV2 = lazy(() =>
 
 const OrdersList = lazy(() =>
   import(/* webpackChunkName: "OrdersList" */ 'merchant/views/Transactions/v1/Orders/List'),
-);
-
-const PaymentsList = lazy(() =>
-  import(/* webpackChunkName: "PaymentsList" */ 'merchant/views/Transactions/v1/Payments/List'),
-);
-
-const RefundsList = lazy(() =>
-  import(/* webpackChunkName: "RefundsList" */ 'merchant/views/Transactions/v1/Refunds/List'),
 );
 
 const SuccessRate = lazy(() =>
@@ -310,9 +298,7 @@ const AccountAndSettingsHome = lazy(() =>
 const PartnerDashboard = lazy(() =>
   import(/* webpackChunkName: "PartnerDashboard" */ 'merchant/views/PartnerDashboard'),
 );
-const Transactions = lazy(() =>
-  import(/* webpackChunkName: "Transactions" */ 'merchant/views/Transactions/v1'),
-);
+
 const Settlements = lazy(() =>
   import(/* webpackChunkName: "Settlements" */ 'merchant/views/Settlements'),
 );
@@ -666,10 +652,6 @@ const ConnectedNavigationContent = lazy(() =>
 );
 
 class Content extends Component {
-  checkIsTransactionsV2Enabled = () => {
-    const { splitz, user } = this.props;
-    return isTransactionsV2Enabled(splitz, user);
-  };
   checkIsTnCUpdateModalEnabled = () => {
     const {
       splitz: {
@@ -772,7 +754,6 @@ class Content extends Component {
       },
     };
     if (
-      this.checkIsTransactionsV2Enabled() &&
       blacklistedDetailsRoutes.some((route) =>
         matchPath({ path: route, exact: true }, location.pathname),
       )
@@ -893,7 +874,6 @@ class Content extends Component {
     if (fullPageView) return fullPageView;
 
     const PaymentMethods = user.isAccountAndSettingsRevampEnabled ? PaymentMethodsV2 : Settings;
-    const isTransactionV2Enabled = this.checkIsTransactionsV2Enabled();
     const isSettlementV3RevampEnabled = this.checkIsSettlementsV3RevampEnabled();
     const isMicrofrontendSelfserveEnabled = this.checkIsMicrofrontendSelfserveEnabled();
 
@@ -1022,38 +1002,22 @@ class Content extends Component {
               path="*"
               element={
                 <RouteGuard additionalCondition={(user) => user.isAllowedView('payments')}>
-                  {/* put micro app here */}
-                  {isTransactionV2Enabled ? (
-                    isMicrofrontendSelfserveEnabled ? (
-                      <SelfServeStateWrapper>
-                        <SelfServe />
-                      </SelfServeStateWrapper>
-                    ) : (
-                      <TransactionV2Landing />
-                    )
+                  {isMicrofrontendSelfserveEnabled ? (
+                    <SelfServeStateWrapper>
+                      <SelfServe />
+                    </SelfServeStateWrapper>
                   ) : (
-                    <Transactions />
+                    <TransactionV2Landing />
                   )}
                 </RouteGuard>
               }
             >
-              {isTransactionV2Enabled && !isMicrofrontendSelfserveEnabled && (
+              {!isMicrofrontendSelfserveEnabled && (
                 <Route
                   index
                   element={
                     <RouteGuard>
                       <PaymentsContainer />
-                    </RouteGuard>
-                  }
-                />
-              )}
-
-              {!isTransactionV2Enabled && (
-                <Route
-                  index
-                  element={
-                    <RouteGuard>
-                      <PaymentsList />
                     </RouteGuard>
                   }
                 />
@@ -1097,13 +1061,9 @@ class Content extends Component {
               />
             </Route>
             <Route
-              path={isTransactionCleanupEnabled() ? ':id/*' : ':id'}
+              path=":id/*"
               element={
-                <RouteGuard
-                  additionalCondition={(user) =>
-                    isTransactionV2Enabled && user.isAllowedView('payments')
-                  }
-                >
+                <RouteGuard additionalCondition={(user) => user.isAllowedView('payments')}>
                   <PaymentsDetailsV2 />
                 </RouteGuard>
               }
@@ -1119,7 +1079,7 @@ class Content extends Component {
                     user.isAllowedView('refunds') && !isConfigTagEnabled('refunds.refund')
                   }
                 >
-                  {isTransactionV2Enabled ? <TransactionsV2EntitiesOverview /> : <Transactions />}
+                  <TransactionsV2EntitiesOverview />
                 </RouteGuard>
               }
             >
@@ -1127,7 +1087,7 @@ class Content extends Component {
                 index
                 element={
                   <RouteGuard additionalCondition={() => !isConfigTagEnabled('refunds.refund')}>
-                    {isTransactionV2Enabled ? <TransactionV2RefundsContainer /> : <RefundsList />}
+                    <TransactionV2RefundsContainer />
                   </RouteGuard>
                 }
               />
@@ -1152,11 +1112,7 @@ class Content extends Component {
             <Route
               path=":id"
               element={
-                <RouteGuard
-                  additionalCondition={(user) =>
-                    isTransactionV2Enabled && user.isAllowedView('refunds')
-                  }
-                >
+                <RouteGuard additionalCondition={(user) => user.isAllowedView('refunds')}>
                   <PaymentsDetailsV2 />
                 </RouteGuard>
               }
@@ -1167,7 +1123,7 @@ class Content extends Component {
             path="orders/*"
             element={
               <RouteGuard additionalCondition={(user) => user.isAllowedView('orders')}>
-                {isTransactionV2Enabled ? <TransactionV2Landing /> : <Transactions />}
+                <TransactionV2Landing />
               </RouteGuard>
             }
           >
@@ -1185,7 +1141,7 @@ class Content extends Component {
             path="disputes/*"
             element={
               <RouteGuard>
-                {isTransactionV2Enabled ? <TransactionsV2EntitiesOverview /> : <Transactions />}
+                <TransactionsV2EntitiesOverview />
               </RouteGuard>
             }
           >
@@ -1212,7 +1168,7 @@ class Content extends Component {
                   mode === 'live' && currentUser.isAllowedView('success_rate')
                 }
               >
-                {isTransactionV2Enabled ? <TransactionsV2EntitiesOverview /> : <Transactions />}
+                <TransactionsV2EntitiesOverview />
               </RouteGuard>
             }
           >
@@ -2719,8 +2675,7 @@ class Content extends Component {
    */
   checkIfBaseLocationSkipped = () => {
     const paymentDetailsRegex = new RegExp(/\/payments\/pay_.*/i);
-    const result =
-      paymentDetailsRegex.test(this.baseLocation?.pathname) && this.checkIsTransactionsV2Enabled();
+    const result = paymentDetailsRegex.test(this.baseLocation?.pathname);
     return result;
   };
 

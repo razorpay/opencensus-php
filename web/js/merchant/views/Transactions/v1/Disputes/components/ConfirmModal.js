@@ -3,14 +3,12 @@ import PropTypes from 'prop-types';
 import AsyncButton from 'react-async-button';
 import { connect } from 'react-redux';
 
-import { useSplitzService } from 'common/splitz';
 import ModalHeader from 'common/ui/ModalHeader';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { fetchDisputes } from 'merchant/reducers/collection';
 import { accept, fetchOpen } from 'merchant/reducers/disputes/details';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 const ConfirmModal = (props) => {
   const {
@@ -22,11 +20,8 @@ const ConfirmModal = (props) => {
     title,
     description,
     onConfirm,
-    user,
     isAdminAsMerchant,
   } = props;
-  const splitz = useSplitzService();
-  const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
 
   React.useEffect(() => {
     const { loading, error } = isAdminAsMerchant;
@@ -41,7 +36,7 @@ const ConfirmModal = (props) => {
         screen: 'disputes',
         properties: {
           timestamp: Date.now(),
-          version,
+          version: 'v2',
           disputeId: dispute.id,
           isAdminAsMerchant: isAdminAsMerchant?.data,
           ...getCommonAnalyticsProperties(window.rzp_user),

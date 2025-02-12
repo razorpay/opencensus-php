@@ -20,10 +20,7 @@ import RefundModal from 'merchant/views/Transactions/v1/Payments/components/Refu
 import RefundModalRevamp from 'merchant/views/Transactions/v2/Payments/components/PaymentRefund';
 import RefundMiniTimeline from 'merchant/views/Transactions/v2/Refunds/components/RefundMiniTimeline';
 import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
-import {
-  isPaymentV2ParityFeatureEnabled,
-  isRefundRevampEnabled,
-} from 'merchant/views/Transactions/v2/common/utils';
+import { isRefundRevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
 import Tooltip from './Tooltip';
@@ -260,9 +257,6 @@ function PaymentRefundContent({
 }: PaymentRefundContentType): JSX.Element {
   const bankCode = refund.acquirer_data?.rrn || refund.acquirer_data?.arn;
 
-  const splitz = useSplitzService();
-  const isTxnV2ParityFeaturesEnabled = isPaymentV2ParityFeatureEnabled(splitz, user);
-
   const { theme } = useTheme();
   const { matchedBreakpoint } = useBreakpoint({
     breakpoints: theme.breakpoints,
@@ -275,8 +269,7 @@ function PaymentRefundContent({
 
   const isLateAuthAttributeEnabled = orgFeatures?.includes('show_refnd_lateauth_param');
 
-  const shouldShowGatewayResponse =
-    user.isOptimizerView() && isPaymentV2ParityFeatureEnabled(splitz, user);
+  const shouldShowGatewayResponse = user.isOptimizerView();
 
   return (
     <Box testID={`payment-refunded-${refund.id}`}>
@@ -363,29 +356,26 @@ function PaymentRefundContent({
                   <Amount value={refund.amount} currency={currency} />
                 </StyledAmountWrapper>
               </RowWrapper>
-              {isTxnV2ParityFeaturesEnabled ? (
-                <>
-                  <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                  <RowWrapper>
-                    <Text
-                      variant="body"
-                      size="medium"
-                      weight="regular"
-                      color="surface.text.gray.subtle"
-                    >
-                      Currency
-                    </Text>
-                    <Text
-                      variant="body"
-                      size="medium"
-                      weight="regular"
-                      color="surface.text.gray.normal"
-                    >
-                      {refund.currency ?? '--'}
-                    </Text>
-                  </RowWrapper>
-                </>
-              ) : null}
+
+              <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+              <RowWrapper>
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
+                  Currency
+                </Text>
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.normal"
+                >
+                  {refund.currency ?? '--'}
+                </Text>
+              </RowWrapper>
 
               <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
@@ -425,7 +415,7 @@ function PaymentRefundContent({
                   {createdAt}
                 </Text>
               </RowWrapper>
-              {isTxnV2ParityFeaturesEnabled && refund.processed_at ? (
+              {refund.processed_at ? (
                 <>
                   <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                   <RowWrapper>
@@ -551,38 +541,35 @@ function PaymentRefundContent({
                   <RefundMiniTimeline refund={refund} />
                 </StyledRefundTimelineContainer>
               </RowWrapper>
-              {isTxnV2ParityFeaturesEnabled ? (
-                <>
-                  <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                  <RowWrapper>
-                    <Text
-                      variant="body"
-                      size="medium"
-                      weight="regular"
-                      color="surface.text.gray.subtle"
-                    >
-                      Notes
-                    </Text>
-                    {Object.keys(refund.notes || {}).length > 0 ? (
-                      <Box display="flex" flexDirection="column" gap="spacing.1">
-                        {Object.keys(refund.notes).map((key) => (
-                          <Text
-                            variant="body"
-                            size="medium"
-                            weight="regular"
-                            key={`${key}`}
-                            color="surface.text.gray.normal"
-                          >
-                            <NotesKey>{key} :</NotesKey> {String(refund.notes?.[key] || '--')}
-                          </Text>
-                        ))}
-                      </Box>
-                    ) : (
-                      '--'
-                    )}
-                  </RowWrapper>
-                </>
-              ) : null}
+
+              <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+              <RowWrapper>
+                <Text
+                  variant="body"
+                  size="medium"
+                  weight="regular"
+                  color="surface.text.gray.subtle"
+                >
+                  Notes
+                </Text>
+                {Object.keys(refund.notes || {}).length > 0 ? (
+                  <Box display="flex" flexDirection="column" gap="spacing.1">
+                    {Object.keys(refund.notes).map((key) => (
+                      <Text
+                        variant="body"
+                        size="medium"
+                        weight="regular"
+                        key={`${key}`}
+                        color="surface.text.gray.normal"
+                      >
+                        <NotesKey>{key} :</NotesKey> {String(refund.notes?.[key] || '--')}
+                      </Text>
+                    ))}
+                  </Box>
+                ) : (
+                  '--'
+                )}
+              </RowWrapper>
             </RowsWrapper>
           </CardBody>
         </Card>

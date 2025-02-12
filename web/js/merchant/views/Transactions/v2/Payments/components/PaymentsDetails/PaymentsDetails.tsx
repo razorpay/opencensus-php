@@ -41,10 +41,7 @@ import {
   trackDetailsClick,
   trackDetailsPageLoad,
 } from 'merchant/views/Transactions/v2/common/tracking';
-import {
-  isPaymentV2ParityFeatureEnabled,
-  isRefundRevampEnabled,
-} from 'merchant/views/Transactions/v2/common/utils';
+import { isRefundRevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -106,11 +103,9 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
     dashboardFlag.push('upi_payer_name');
   }
   const splitz = useSplitzService();
-  const isDetailHyperlinkVisible = isPaymentV2ParityFeatureEnabled(splitz, user);
   const isPaymentsRoute = location.pathname.includes('/payments');
 
-  const shouldShowOptimizerDetails =
-    isPaymentV2ParityFeatureEnabled(splitz, user) && user.isOptimizerView();
+  const shouldShowOptimizerDetails = user.isOptimizerView();
 
   const fetchDetails = async () => {
     setError(null);
@@ -265,9 +260,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
    * to the <GoBack /> component
    */
   const goBackHandler =
-    location.key === 'default' && isDetailHyperlinkVisible
-      ? () => navigate('/payments')
-      : (undefined as any);
+    location.key === 'default' ? () => navigate('/payments') : (undefined as any);
 
   return (
     <div className="tabbed-container" data-testid="payments-details">

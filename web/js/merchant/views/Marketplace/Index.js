@@ -32,7 +32,6 @@ import OnBoarding, { getIsAllowedResetRouteBoarding } from './OnBoarding';
 import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
 import Wrapper from './RouteWrapper';
 import PaymentsDetails from '../Transactions/v2/Payments/components/PaymentsDetails';
-import { isTransactionCleanupEnabled } from '../Transactions/v2/common/utils';
 
 //lazy loads
 const PlatformFeeList = lazy(() => import('merchant/views/Marketplace/PlatformFee/List'));
@@ -110,12 +109,11 @@ class MarketplaceContainer extends React.Component {
     const { isQuickGuideOpen, showOnboarding } = routeProductOnBoarding;
     const { isOrgAxis, isMarketplaceEnabled } = user;
 
+    const isRouteDetailsView = matchPath('/route/payments/:id', location.pathname);
+
     const feeBearer = user.merchant.fee_bearer;
     const isCustomerFeeBearer = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
     const isRoutesDisabled = !isMarketplaceEnabled;
-    const isDetailsView = matchPath('/route/payments/:id', location.pathname);
-    const isTransactionCleanup = isTransactionCleanupEnabled();
-    const shouldShowBanners = isTransactionCleanup ? !isDetailsView : true;
 
     // in case of customer fee bearer if route is disabled for the user, he should not be able to access onboarding to turn on the ROUTE
     if (isCustomerFeeBearer && isRoutesDisabled) {
@@ -132,7 +130,7 @@ class MarketplaceContainer extends React.Component {
 
     return (
       <div className="Marketplace-Container">
-        {shouldShowBanners && user.isDirectTransferEnabled && (
+        {!isRouteDetailsView && user.isDirectTransferEnabled && (
           <AnnouncementBanner
             title="Introducing Direct Transfers"
             theme="primary"
@@ -148,8 +146,8 @@ class MarketplaceContainer extends React.Component {
             />
           </AnnouncementBanner>
         )}
-        {shouldShowBanners && isQuickGuideOpen ? <QuickGuide className="QuickGuide-v2" /> : null}
-        {shouldShowBanners && isCustomerFeeBearer && (
+        {!isRouteDetailsView && isQuickGuideOpen ? <QuickGuide className="QuickGuide-v2" /> : null}
+        {!isRouteDetailsView && isCustomerFeeBearer && (
           <Box padding="spacing.6" paddingBottom="spacing.0">
             <Alert
               emphasis="subtle"
@@ -164,28 +162,17 @@ class MarketplaceContainer extends React.Component {
         <ErrorBoundary resetOnProps>
           <Routes>
             <Route path="*" element={<Navigate to="payments" replace />} />
-            {isTransactionCleanup ? (
-              <Route path="payments/*">
-                <Route path=":id" element={<PaymentsDetails />} />
-                <Route
-                  path="*"
-                  element={
-                    <Wrapper>
-                      <ClonedPaymentsList />
-                    </Wrapper>
-                  }
-                />
-              </Route>
-            ) : (
+            <Route path="payments/*">
+              <Route path=":id" element={<PaymentsDetails />} />
               <Route
-                path="payments/*"
+                path="*"
                 element={
                   <Wrapper>
                     <ClonedPaymentsList />
                   </Wrapper>
                 }
               />
-            )}
+            </Route>
             <Route
               path="transfers/*"
               element={

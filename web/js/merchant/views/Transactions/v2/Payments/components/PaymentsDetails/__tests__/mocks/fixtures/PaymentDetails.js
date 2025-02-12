@@ -3,6 +3,7 @@ export const initialState = {
     user: {
       isRefundAllowed: true,
       isOrgAllowedFunctionality: (_) => true,
+      isOptimizerView: () => false,
     },
   },
 };

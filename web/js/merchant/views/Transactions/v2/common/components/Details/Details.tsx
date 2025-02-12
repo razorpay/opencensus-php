@@ -4,7 +4,6 @@ import qs from 'query-string';
 import { useNavigate } from 'react-router-dom';
 
 import { useMobile } from 'common/hooks/useMobile';
-import { useSplitzService } from 'common/splitz';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 import PaymentDownloadSwiftCopy from 'merchant/views/Transactions/v1/Payments/components/PaymentDownloadSwiftCopy/DownloadSwiftCopy';
@@ -14,11 +13,9 @@ import {
   TransactionsEntityRoute,
 } from 'merchant/views/Transactions/v2/common/constants';
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
-import { isPaymentV2ParityFeatureEnabled } from 'merchant/views/Transactions/v2/common/utils';
 
 import { RouterLink } from './styled';
 import { DetailsProps, HandleDetailsClickParams, RouterParams } from './types';
-import { useStore } from 'shell/commonStore';
 
 const makeUrl = ({
   baseUrl,
@@ -73,9 +70,7 @@ const Details = ({
   notes,
 }: DetailsProps): JSX.Element => {
   const navigate = useNavigate();
-  const user = useStore((state) => state.session.user);
   const isMobile = useMobile([...mobileBreakoints, 'l']);
-  const splitz = useSplitzService();
   const isStorefront = notes?.product_type === 'payment_store';
 
   const linkText = isMobile ? '' : 'Details';
@@ -108,8 +103,7 @@ const Details = ({
     });
   };
 
-  const shouldShowHyperlink =
-    baseUrl === TransactionsEntityRoute.PAYMENTS && isPaymentV2ParityFeatureEnabled(splitz, user);
+  const shouldShowHyperlink = baseUrl === TransactionsEntityRoute.PAYMENTS;
 
   const url = makeUrl({ baseUrl, itemId, initiatePage, isStorefront });
 

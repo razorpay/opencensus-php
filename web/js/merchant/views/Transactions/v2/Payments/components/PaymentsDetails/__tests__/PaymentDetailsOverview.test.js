@@ -21,18 +21,6 @@ import {
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { render, screen } from 'test-utils';
 
-const mockAbExperiments = {
-  enable_trxn_v2_parity_features: {
-    variables: {
-      result: 'on',
-    },
-  },
-};
-
-jest.mock('common/splitz', () => ({
-  useSplitzService: () => ({ abExperiments: mockAbExperiments }),
-}));
-
 describe('Payment Details Overview component', () => {
   const App = ({ props }) => {
     return <PaymentDetailsOverview {...props} />;

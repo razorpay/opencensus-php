@@ -30,7 +30,6 @@ import {
   fetchTransfers,
 } from 'merchant/reducers/payments/details';
 import { trackRefundError } from 'merchant/views/Transactions/v1/Payments/track';
-import { isPaymentV2ParityFeatureEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import { closeModal } from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
@@ -482,9 +481,8 @@ class RefundModal extends Component {
     const instant_refund_supported =
       payment.instant_refund_support && payment.instant_refund_support === true;
     const refund_check_disabled = isInstantDisabled || !instant_refund_supported;
-    const optimierInstantRefundDisabled = isPaymentV2ParityFeatureEnabled(this.props.splitz, user)
-      ? payment.instant_refund_support === false && user?.isOptimizerEnabled
-      : false;
+    const optimierInstantRefundDisabled =
+      payment.instant_refund_support === false && user?.isOptimizerEnabled;
 
     if (
       !optimierInstantRefundDisabled &&

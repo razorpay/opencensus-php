@@ -1,12 +1,9 @@
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { getUser } from 'merchant/store';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 import { getAction } from './utils';
 
-const trackSelfServe = ({ action, page, splitz }) => {
-  const user = getUser();
-  const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
+const trackSelfServe = ({ action, page }) => {
+  const version = 'v2';
   selfServeTrackInitiate({
     selfServeAction: action,
     page,
@@ -15,9 +12,8 @@ const trackSelfServe = ({ action, page, splitz }) => {
   });
 };
 
-const trackSelfServeSuccess = ({ action, page, splitz }) => {
-  const user = getUser();
-  const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
+const trackSelfServeSuccess = ({ action, page }) => {
+  const version = 'v2';
   selfServeTrackSuccess({
     selfServeAction: action,
     page,

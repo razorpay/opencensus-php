@@ -114,7 +114,6 @@ const renderApp = ({ session, mode = 'live' } = {}) => {
       session: {
         mode,
         user: {
-          isTransactionsV2Enabled: true,
           isOrgAllowedFunctionality,
           merchant: {
             currency: 'INR',

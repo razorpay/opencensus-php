@@ -3,13 +3,11 @@ import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 
-import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDetailView';
 import { withSplitzService } from 'common/splitz';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import * as DisputeActions from 'merchant/reducers/disputes/details';
 import DisputeDetails from 'merchant/views/Transactions/v1/Disputes/components/Details';
 // eslint-disable-next-line import/no-cycle
-import PaymentDetails from 'merchant/views/Transactions/v1/Payments/Details';
 import { getSelfServeSuccessData } from 'merchant/views/Transactions/v1/utils';
 import {
   openModal as fnOpenModal,
@@ -17,7 +15,6 @@ import {
 } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
-import { isTransactionCleanupEnabled } from 'merchant/views/Transactions/v2/common/utils';
 
 const findDispute = (disputes = [], disputeId) =>
   disputes.find(({ id }) => id === disputeId) || disputeId;
@@ -53,33 +50,9 @@ class DisputeDetailsContainer extends Component {
     });
   }
 
-  goToLink = (link) => {
-    if (this.props.isOpenedInDualMode) {
-      this.props.history.push(`/${link}`);
-    }
-    // Don't do anything if dual view already opened
-    else if (!this.props.entity_name) {
-      this.props.history.push(`/disputes/${this.props.id}/${link}`);
-    }
-  };
-
-  secClose = (close) => {
-    const { history, location } = this.props;
-    history.push(location.pathname.replace(!close ? /\/[^/]+\/[^/]+\/?$/ : /\/[^/]+\/?$/, ''));
-  };
-
   render() {
-    const {
-      item: dispute,
-      loading,
-      error,
-      entity_name,
-      entity_id,
-      openModal,
-      closeModal,
-      onCloseSecView,
-    } = this.props;
-    return isTransactionCleanupEnabled() ? (
+    const { item: dispute, loading, error, openModal, closeModal, onCloseSecView } = this.props;
+    return (
       <DisputeDetails
         openModal={openModal}
         closeModal={closeModal}
@@ -89,24 +62,6 @@ class DisputeDetailsContainer extends Component {
         onCloseSecView={onCloseSecView}
         showNotification={this.props.showNotification}
       />
-    ) : (
-      <DualDetailView secondaryView={entity_name}>
-        <PrimaryView>
-          <DisputeDetails
-            openModal={openModal}
-            closeModal={closeModal}
-            isLoading={loading}
-            dispute={dispute}
-            error={error}
-            goToLink={this.goToLink}
-            onCloseSecView={onCloseSecView}
-            showNotification={this.props.showNotification}
-          />
-        </PrimaryView>
-        <SecondaryView entityName="payments">
-          <PaymentDetails id={entity_id} onCloseSecView={() => this.secClose(null)} />
-        </SecondaryView>
-      </DualDetailView>
     );
   }
 }

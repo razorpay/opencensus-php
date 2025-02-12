@@ -5,18 +5,14 @@ import BankTransferDetails from './BankTransferDetails';
 
 import CardIcon from 'assets/transactions/card.svg';
 import TurboUpiIcon from 'assets/transactions/turbo-upi.svg';
-import UpiIcon from 'assets/transactions/upi.svg';
 import EmiIcon from 'assets/transactions/emi.svg';
 import NetbankingIcon from 'assets/transactions/netbanking.svg';
 import WalletIcon from 'assets/transactions/wallet.svg';
 import { getEMI, titleCase } from 'common/utils/rzp-utils';
 
 import { IPaymentDetails } from './types';
-import { useSplitzService } from 'common/splitz';
-import { isPaymentV2ParityFeatureEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import { cardNetworkLogoMap } from './constants';
 import { StyledPaymentMethodLogo } from './styled';
-import { useStore } from 'shell/commonStore';
 import UPITransferDetails from './UPITransferDetails';
 import { CARD_SUB_TYPE_MAP } from 'merchant/views/Transactions/constants';
 
@@ -39,11 +35,7 @@ function PaymentMethod({
   wallet,
   upi,
 }: IPaymentMethod): JSX.Element {
-  const splitz = useSplitzService();
-  const user = useStore((state) => state.session.user);
-
-  const isTxnV2ParityFeaturesEnabled = isPaymentV2ParityFeatureEnabled(splitz, user);
-  const shouldShowBankNameForFpx = method === 'fpx' && isTxnV2ParityFeaturesEnabled;
+  const shouldShowBankNameForFpx = method === 'fpx';
 
   const getPaymentMethod = () => {
     if (method === 'card') {
@@ -83,7 +75,7 @@ function PaymentMethod({
             ({`  `}
             <img src={EmiIcon} alt="emi-icon" /> {` `}xx{card?.last4}, {emiPlan.duration} months |{' '}
             {emiPlan.rate / 100}% interest)
-            {emiAmount && isTxnV2ParityFeaturesEnabled && (
+            {emiAmount && (
               <Amount
                 size="medium"
                 value={emiAmount / 100}
@@ -120,16 +112,7 @@ function PaymentMethod({
           </>
         );
       } else {
-        return isTxnV2ParityFeaturesEnabled ? (
-          <UPITransferDetails paymentID={payment.id} vpa={vpa} upi={upi} />
-        ) : (
-          <>
-            UPI
-            <span style={{ marginLeft: '8px' }}>
-              ( <img src={UpiIcon} alt="upi-icon" /> {vpa && `${vpa}`})
-            </span>
-          </>
-        );
+        return <UPITransferDetails paymentID={payment.id} vpa={vpa} upi={upi} />;
       }
     }
 
@@ -143,7 +126,7 @@ function PaymentMethod({
       );
     }
 
-    if (method === 'bank_transfer' && isTxnV2ParityFeaturesEnabled) {
+    if (method === 'bank_transfer') {
       return (
         <>
           <BankTransferDetails paymentID={payment?.id} />

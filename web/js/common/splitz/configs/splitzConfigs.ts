@@ -452,23 +452,6 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
-      // controls any new feature all for parity across merchant types
-      {
-        uniqueHashKey: 'enable_trxn_v2_parity_features',
-        experimentId: {
-          beta: 'PCABcrELtFteXb',
-          production: 'PBynXkl8hWQ3iW',
-        },
-        defaultVariant: {
-          name: 'variables',
-          variables: [
-            {
-              key: 'result',
-              value: 'off',
-            },
-          ],
-        },
-      },
       // controls ramp for VAS, Curlec, and RAAS merchants
       {
         uniqueHashKey: 'enable_trxn_v2_for_excluded_merchants',
@@ -1248,23 +1231,6 @@ export const splitzConfig: SplitzInitConfig = {
           experimentId: {
             beta: 'NMqWLS3CYxKkBg',
             production: 'NMt4EHe96Igguy',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-            ],
-          },
-        },
-        // controls independent ramp of fee breakup within transactions v2
-        {
-          uniqueHashKey: 'enable_trxn_v2_fee_breakup',
-          experimentId: {
-            beta: 'P1gh8ZzFhi2HaN',
-            production: 'P1k7grrysydwUw',
           },
           defaultVariant: {
             name: 'variables',

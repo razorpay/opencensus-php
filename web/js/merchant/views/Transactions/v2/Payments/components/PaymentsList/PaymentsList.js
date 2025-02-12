@@ -26,11 +26,7 @@ import {
   TransactionsEntityRoute,
   TransactionsPagesMap,
 } from 'merchant/views/Transactions/v2/common/constants';
-import {
-  isPaymentV2ParityFeatureEnabled,
-  onPaginate,
-  onSearch,
-} from 'merchant/views/Transactions/v2/common/utils';
+import { onPaginate, onSearch } from 'merchant/views/Transactions/v2/common/utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 class PaymentsList extends ListContainer {
@@ -105,7 +101,6 @@ class PaymentsList extends ListContainer {
       history,
       location: { pathname },
       navigate,
-      splitz,
       user: {
         isOmniChannelMerchant,
         pos_activation_status,
@@ -118,8 +113,7 @@ class PaymentsList extends ListContainer {
       isMarketplacePayments,
     } = this.props;
 
-    const shouldDisplayOptimizerColumn =
-      this.props.user.isOptimizerView() && isPaymentV2ParityFeatureEnabled(splitz, this.props.user);
+    const shouldDisplayOptimizerColumn = this.props.user.isOptimizerView();
     const isOmniView = isOmniEnabledMerchant || (!!pos_activation_status && isOmniChannelMerchant);
 
     return (

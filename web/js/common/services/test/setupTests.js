@@ -53,11 +53,6 @@ jest.mock('merchant/views/Transactions/v1/AnalyticsTrack', () => ({
   selfServeTrackResult: jest.fn(),
 }));
 
-// jest.mock('merchant/views/Transactions/v2/common/utils', () => ({
-//   ...jest.requireActual('merchant/views/Transactions/v2/common/utils'),
-//   isTransactionsV2Enabled: (_) => true,
-// }));
-
 jest.mock('merchant/views/POS/constants', () => {
   const mockProduct = jest.requireActual(
     'merchant/views/POS/__tests__/mocks/fixtures',

@@ -113,10 +113,10 @@ module.exports = {
     //   lines: 69,
     // },
     './js/merchant/views/Transactions/v1/Payments/': {
-      statements: 81,
-      branches: 74,
-      functions: 81,
-      lines: 81,
+      statements: 73,
+      branches: 63,
+      functions: 68,
+      lines: 68,
     },
   },
 

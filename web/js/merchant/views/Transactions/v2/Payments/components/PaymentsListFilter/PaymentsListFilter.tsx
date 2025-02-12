@@ -19,7 +19,6 @@ import { Option } from 'common/components/Dropdown/types';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useMobile } from 'common/hooks/useMobile';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { useSplitzService } from 'common/splitz';
 import ProviderSelector from 'merchant/components/ProviderSelector';
 import lazy from 'merchant/routes/LazyLoader';
 import { isOmniChannelMerchant as _isOmniChannelMerchant } from 'merchant/utils/omniUtils';
@@ -47,12 +46,7 @@ import {
   trackStatusFilter,
 } from 'merchant/views/Transactions/v2/common/tracking';
 import { Duration, DurationOption } from 'merchant/views/Transactions/v2/common/types';
-import {
-  endOfDay,
-  getFromTime,
-  getValue,
-  isPaymentV2ParityFeatureEnabled,
-} from 'merchant/views/Transactions/v2/common/utils';
+import { endOfDay, getFromTime, getValue } from 'merchant/views/Transactions/v2/common/utils';
 import { openModal } from 'merchant_common/reducers/modals';
 
 import {
@@ -87,8 +81,6 @@ const PaymentsListFilter = ({
   terminalProviders,
   showBatchIdFilter = false,
 }: PaymentsListFilterProps): JSX.Element => {
-  const splitz = useSplitzService();
-  const isProviderSelectorForV2 = isPaymentV2ParityFeatureEnabled(splitz, user);
   const isCurlecMerchant = user.isOrgCurlec;
   const isJnKOmniEnabled = user.isJnKOmniEnabled;
 
@@ -324,8 +316,7 @@ const PaymentsListFilter = ({
             />
           )}
 
-          {isProviderSelectorForV2 &&
-            user.isSingleReconEnabled &&
+          {user.isSingleReconEnabled &&
             user.isOptimizerEnabled &&
             terminalProviders &&
             terminalProviders.length > 0 && (

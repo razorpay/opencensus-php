@@ -338,10 +338,6 @@ export const getPaymentTimelineData = (
   return paymentIdTimelineData;
 };
 
-/**
- *
- * source: web/js/merchant/views/Transactions/v1/Payments/components/PaymentDetails.js
- */
 export const shouldShowCapturePaymentButton = (
   user,
   journeyPoint: TimelineJourneyPoint,

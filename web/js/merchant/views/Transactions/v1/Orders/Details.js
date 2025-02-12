@@ -9,7 +9,6 @@ import * as OrderActions from 'merchant/reducers/orders/details';
 import MagicCheckoutOrderDetails from 'merchant/views/Transactions/v1/Orders/components/MagicCheckoutOrderDetails';
 import OrderDetails from 'merchant/views/Transactions/v1/Orders/components/OrderDetails';
 import { getSelfServeSuccessData } from 'merchant/views/Transactions/v1/utils';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 class OrderDetailsContainer extends Component {
   fetchItem(id) {
@@ -72,10 +71,10 @@ class OrderDetailsContainer extends Component {
   }
 
   render() {
-    const { order: orderInfo, user, splitz } = this.props;
+    const { order: orderInfo } = this.props;
     const { loading, error, order, payments } = orderInfo || {};
     let statusMsg = {};
-    const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
+    const version = 'v2';
 
     if (error) {
       statusMsg = {

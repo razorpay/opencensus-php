@@ -2,12 +2,11 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getUser } from 'merchant/store';
 import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
-export const trackSuccessRateEvents = (payload, splitz) => {
+export const trackSuccessRateEvents = (payload) => {
   const user = getUser();
-  const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
-  if (payload && version) {
+  const version = 'v2';
+  if (payload) {
     payload.properties = {
       ...payload.properties,
       version,

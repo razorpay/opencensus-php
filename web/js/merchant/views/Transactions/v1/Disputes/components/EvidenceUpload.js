@@ -3,23 +3,19 @@ import PropTypes from 'prop-types';
 import { PowerSelect } from 'react-power-select';
 import { connect } from 'react-redux';
 
-import { useSplitzService } from 'common/splitz';
 import { analyticsTrack } from 'common/utils/analytics';
 import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import FileUpload from 'merchant/components/File/Upload';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 import AddOtherDoc from './AddOtherDoc';
 
 const EvidenceUpload = (props) => {
-  const { user, dispute, saveAsDraft, showNotification, fileTypes, canUserTakeAction } = props;
+  const { dispute, saveAsDraft, showNotification, fileTypes, canUserTakeAction } = props;
   const [docTypes, setDocTypes] = useState(fileTypes.filter((item) => item.name !== 'others'));
   const [selectedFixedDocs, setSelectedFixedDocs] = useState([]);
   const [selectedOptionalDocs, setSelectedOptionalDocs] = useState([]);
-  const splitz = useSplitzService();
-  const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
 
   const isOtherFile = (docType) => docType === 'others';
 
@@ -113,7 +109,7 @@ const EvidenceUpload = (props) => {
         screen: 'disputes',
         properties: {
           timestamp: Date.now(),
-          version,
+          version: 'v2',
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });

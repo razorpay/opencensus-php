@@ -11,6 +11,11 @@ jest.mock('shell/commonStore', () => ({
   useStore: jest.fn(),
 }));
 
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useLocation: () => ({ pathname: '/settlements' }),
+}));
+
 describe('ListFilter.js', () => {
   beforeAll(() => {
     useStore.mockReturnValue({ session: { user: {} } });

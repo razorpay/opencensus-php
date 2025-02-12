@@ -7,7 +7,6 @@ import { reduxForm } from 'redux-form';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import { withSplitzService } from 'common/splitz';
-import { isExperimentEnabled, isInternalTestingEnabled } from 'common/splitz/utils';
 import {
   stringifyQueryParams,
   getURLQueryParams,
@@ -15,46 +14,6 @@ import {
   decodeSensitiveFields,
 } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
-
-// Keep this util here, will break web/js/merchant/views/Transactions/v2/common/__tests__/utils.test.js testcases
-export const isTransactionsV2Enabled = (splitz, user) => {
-  // HDFC Bank is excluded from Transactions V2 not for long though :)
-  const excludedOrgs = [
-    ORG_CUSTOM_CODE_MAP.HDFC_SMART_HUB,
-    ORG_CUSTOM_CODE_MAP.HDFC_COLLECT_NOW,
-    ORG_CUSTOM_CODE_MAP.HDFC_GIG,
-  ];
-
-  if (excludedOrgs.some((org) => org.toLowerCase() === user.orgCustomCode?.toLowerCase())) {
-    return false;
-  }
-
-  const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
-
-  if (!abExperiments?.Transactions_Revamp) return false;
-
-  // All optimiser merchants are parity merchants
-  // All merchants whose org is Curlec are parity merchants
-  // All merchants whose org is VAS are parity merchants
-  const isExcludedMerchant = user.isFeatureEnabled('raas') || !user.isOrgRZP;
-  const isTransactionsEnabledForExcludedMerchant = isExperimentEnabled(
-    abExperiments?.enable_trxn_v2_for_excluded_merchants,
-  );
-
-  // for excluded merchants, if experiment is enabled, then show trxn v2
-  if (isExcludedMerchant) {
-    if (isTransactionsEnabledForExcludedMerchant) {
-      return true;
-    }
-    return false;
-  }
-
-  return (
-    Boolean(user.isCountryIndia || user.isCountrySingapore) &&
-    isExperimentEnabled(abExperiments.Transactions_Revamp)
-  );
-};
 
 const DEFAULT_MAX_FILTER_COUNT_DESKTOP = 10;
 const DEFAULT_MAX_FILTER_COUNT_MOBILE = 2;
@@ -167,11 +126,7 @@ class ListFilter extends Component {
       state,
       search: stringifyQueryParams(queryParamsProps),
     };
-    if (isTransactionsV2Enabled(splitz, user)) {
-      history.replace(historyObject);
-    } else {
-      history.push(historyObject);
-    }
+    history.replace(historyObject);
 
     this.props.onSearchAnalytics(props, stringifyQueryParams(queryParamsProps));
 
@@ -196,11 +151,8 @@ class ListFilter extends Component {
       hash,
       state,
     };
-    if (isTransactionsV2Enabled(splitz, user)) {
-      history.replace(historyObject);
-    } else {
-      history.push(historyObject);
-    }
+
+    history.replace(historyObject);
 
     if (resetHandler) {
       resetHandler();

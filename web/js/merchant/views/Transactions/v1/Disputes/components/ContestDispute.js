@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import { useSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
 import { analyticsTrack } from 'common/utils/analytics';
 import { rupeesToPaise, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -12,7 +11,6 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import roleList from 'merchant/helpers/permissions/roles-list';
 import { fetchDisputes } from 'merchant/reducers/collection';
 import { fetchOpen, contest } from 'merchant/reducers/disputes/details';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 import ConfirmModal from './ConfirmModal';
 import CurrencyField from './CurrencyField';
@@ -28,11 +26,9 @@ const ContestDispute = (props) => {
     openModal,
     closeModal,
     user: { role },
-    user,
   } = props;
-  const splitz = useSplitzService();
   const isDipsuteOpen = dispute.status === 'open';
-  const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
+  const version = 'v2';
 
   const canUserTakeAction = [
     roleList.OWNER,

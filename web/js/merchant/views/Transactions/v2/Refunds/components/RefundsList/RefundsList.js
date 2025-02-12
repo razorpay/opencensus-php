@@ -16,11 +16,7 @@ import {
   TransactionsEntityRoute,
   TransactionsPagesMap,
 } from 'merchant/views/Transactions/v2/common/constants';
-import {
-  isPaymentV2ParityFeatureEnabled,
-  onPaginate,
-  onSearch,
-} from 'merchant/views/Transactions/v2/common/utils';
+import { onPaginate, onSearch } from 'merchant/views/Transactions/v2/common/utils';
 
 // TODO: @Shivam KS @Joel refactor it correctly
 const RefundsListWrapper = (props) => {
@@ -30,8 +26,8 @@ const RefundsListWrapper = (props) => {
 
 class RefundsList extends ListContainer {
   componentDidMount() {
-    const { fetchProviders, splitz, user } = this.props;
-    if (user.isOptimizerView() && isPaymentV2ParityFeatureEnabled(splitz, user)) {
+    const { fetchProviders, user } = this.props;
+    if (user.isOptimizerView()) {
       fetchProviders();
     }
   }
@@ -42,13 +38,11 @@ class RefundsList extends ListContainer {
       history,
       navigate,
       location: { pathname },
-      splitz,
       user,
       terminalProviders,
     } = this.props;
     const { count, skip } = this.state;
-    const shouldDisplayOptimizerColumn =
-      this.props.user.isOptimizerView() && isPaymentV2ParityFeatureEnabled(splitz, user);
+    const shouldDisplayOptimizerColumn = this.props.user.isOptimizerView();
     const isOmniView = isOmniChannelMerchant(user);
 
     return (

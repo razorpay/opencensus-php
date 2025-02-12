@@ -9,11 +9,9 @@ import {
 } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 
-import { useSplitzService } from 'common/splitz';
 import { titleCase } from 'common/utils/rzp-utils';
 import { TooltipWrapper } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
 import { PaymentStatus } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/types';
-import { isPaymentV2ParityFeatureEnabled } from 'merchant/views/Transactions/v2/common/utils';
 
 import { StatusProps } from './types';
 import GatewayDataInfo from 'merchant/components/GatewayDataInfo';
@@ -27,12 +25,10 @@ const Status = ({
   isFailedIconEnabled,
   user,
 }: StatusProps): JSX.Element => {
-  const splitz = useSplitzService();
   const { pathname } = useLocation();
   const isRefundsRoute = pathname.includes('/refunds');
 
-  const shouldDisplayGatewayInformation =
-    user.isOptimizerView() && isRefundsRoute && isPaymentV2ParityFeatureEnabled(splitz, user);
+  const shouldDisplayGatewayInformation = user.isOptimizerView() && isRefundsRoute;
 
   const getTooltipContent = () => {
     if (shouldDisplayGatewayInformation) {

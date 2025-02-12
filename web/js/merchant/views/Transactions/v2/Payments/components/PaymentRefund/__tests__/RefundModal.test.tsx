@@ -3,6 +3,7 @@ import {
   defaultProps,
   payment,
   renderRefundModal,
+  session,
   showWhenUtilSpy,
 } from 'merchant/views/Transactions/v2/Payments/components/__tests__/mocks/fixtures/RefundModal';
 
@@ -77,12 +78,23 @@ describe('Refund Modal', () => {
     });
 
     test('should not show Instant Refund Alert if not instant_refund_support is enabled', () => {
-      renderRefundModal({
-        payment: {
-          ...payment,
-          instant_refund_support: false,
+      renderRefundModal(
+        {
+          payment: {
+            ...payment,
+            instant_refund_support: false,
+          },
         },
-      });
+        {
+          session: {
+            ...session,
+            user: {
+              ...session.user,
+              isOptimizerEnabled: false,
+            },
+          },
+        },
+      );
       expect(
         screen.queryByText(
           'Currently, Instant Refunds are available on TPV, netbanking and UPI only.',

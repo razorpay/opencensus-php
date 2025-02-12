@@ -29,6 +29,7 @@ describe('marketplace', () => {
     const reduxStateWithCustomerFeeBearer = getInitialReduxState({
       merchant: { fee_bearer: FEE_BEARER_TYPES.CUSTOMER },
       isMarketplaceEnabled: true,
+      isOptimizerView: () => false,
     });
     render(<Marketplace />, {
       initialState: reduxStateWithCustomerFeeBearer,
@@ -67,6 +68,7 @@ describe('marketplace', () => {
 
   test('should render all product tabs inside Route', () => {
     const reduxState = getInitialReduxState({
+      isOptimizerView: () => false,
       userRole: rolesList.OWNER,
       merchant: {
         dial_code: '+91',

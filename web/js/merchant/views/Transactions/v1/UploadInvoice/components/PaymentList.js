@@ -22,7 +22,6 @@ import {
   trackShown,
 } from 'merchant/views/Transactions/v1/UploadInvoice/analytics';
 import PaymentTable from 'merchant/views/Transactions/v1/UploadInvoice/components/PaymentTable';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 import { UPLOAD_INVOICES_TYPE, JPMC_FEATURE_FLAG } from './constants';
 
 const BulkUploadModal = lazy(() =>
@@ -32,11 +31,6 @@ const BulkUploadModal = lazy(() =>
 );
 
 class PaymentsListContainer extends ListContainer {
-  getVersion = () => {
-    const { splitz, user } = this.props;
-    return isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
-  };
-
   onFilterSubmit = (params) => {
     this.search(params)
       ?.then(() => {
@@ -48,7 +42,7 @@ class PaymentsListContainer extends ListContainer {
           count: params.count,
           resultsReturned: true,
           status: 'success',
-          version: this.getVersion(),
+          version: 'v2',
         });
       })
       .catch(() => {
@@ -60,7 +54,7 @@ class PaymentsListContainer extends ListContainer {
           count: params.count,
           resultsReturned: false,
           status: 'failure',
-          version: this.getVersion(),
+          version: 'v2',
         });
       });
   };
@@ -69,13 +63,13 @@ class PaymentsListContainer extends ListContainer {
     trackSearchClicked({
       paymentId: params.id,
       paymentStatus: params.status,
-      version: this.getVersion(),
+      version: 'v2',
     });
   };
 
   onClearAnalytics = () => {
     trackSearchClear({
-      version: this.getVersion(),
+      version: 'v2',
     });
   };
 
@@ -97,7 +91,7 @@ class PaymentsListContainer extends ListContainer {
     uploadInvoicePending({ id: `${id}-${purpose}` });
     trackInvoiceUploadClick({
       paymentId: id,
-      version: this.getVersion(),
+      version: 'v2',
     });
     try {
       await uploadInvoice(id, file, purpose);
@@ -110,7 +104,7 @@ class PaymentsListContainer extends ListContainer {
       trackInvoiceUploadStatus({
         paymentId: id,
         status: 'success',
-        version: this.getVersion(),
+        version: 'v2',
       });
     } catch (err) {
       uploadInvoiceError({ id: `${id}-${purpose}` });
@@ -121,7 +115,7 @@ class PaymentsListContainer extends ListContainer {
       trackInvoiceUploadStatus({
         paymentId: id,
         status: 'failure',
-        version: this.getVersion(),
+        version: 'v2',
       });
     }
   };
@@ -132,7 +126,7 @@ class PaymentsListContainer extends ListContainer {
     viewInvoicePending({ id });
     trackInvoiceViewClick({
       documentId: id,
-      version: this.getVersion(),
+      version: 'v2',
     });
     try {
       const response = await viewInvoice(id);
@@ -141,7 +135,7 @@ class PaymentsListContainer extends ListContainer {
         trackInvoiceViewStatus({
           documentId: id,
           status: 'success',
-          version: this.getVersion(),
+          version: 'v2',
         });
         viewInvoiceSuccess({ id });
       }
@@ -159,7 +153,7 @@ class PaymentsListContainer extends ListContainer {
       trackInvoiceViewStatus({
         documentId: id,
         status: 'failure',
-        version: this.getVersion(),
+        version: 'v2',
       });
     }
   };
@@ -183,7 +177,7 @@ class PaymentsListContainer extends ListContainer {
       fetchPurposeCode();
     }
     trackShown({
-      version: this.getVersion(),
+      version: 'v2',
     });
   }
 

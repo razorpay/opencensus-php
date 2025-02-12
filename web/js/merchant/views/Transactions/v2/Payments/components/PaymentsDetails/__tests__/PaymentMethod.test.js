@@ -53,7 +53,7 @@ describe('Payment Method component', () => {
       render(<App props={upiAppProps} />);
 
       await waitFor(() => {
-        expect(screen.getByText(`UPI`)).toBeInTheDocument();
+        expect(screen.getByText(`UPI:`)).toBeInTheDocument();
       });
     });
 

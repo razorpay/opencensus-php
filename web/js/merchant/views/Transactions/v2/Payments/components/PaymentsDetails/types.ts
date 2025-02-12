@@ -27,7 +27,6 @@ export enum DisputeStatus {
   UNDER_REVIEW = 'under_review',
 }
 
-// Reference taken from web/js/merchant/views/Transactions/v1/Payments/components/PaymentDisputes.js
 interface IDispute {
   id: string;
   amount: number;

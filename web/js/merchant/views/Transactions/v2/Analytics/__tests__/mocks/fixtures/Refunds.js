@@ -46,7 +46,6 @@ export const renderApp = ({ session } = {}) => {
     initialState: {
       session: {
         user: {
-          isTransactionsV2Enabled: true,
           merchant: {
             currency: 'INR',
           },

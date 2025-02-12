@@ -35,6 +35,7 @@ export const state = {
       merchant: {
         country_code: 'IN',
       },
+      isOptimizerView: () => false,
     },
   },
 };

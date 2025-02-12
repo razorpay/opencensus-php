@@ -20,7 +20,6 @@ import {
 } from 'merchant/views/Transactions/v1/AnalyticsTrack';
 import { makeIdLink } from 'merchant/views/Transactions/v1/Orders/Utils';
 import OrdersListFilter from 'merchant/views/Transactions/v1/Orders/components/OrdersListFilter';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 const _orderId = (initiatePage = SelfServeActionPages.TransactionsOrders, splitz) => {
   return {
@@ -80,8 +79,8 @@ class OrdersListContainer extends ListContainer {
   };
 
   render() {
-    const { user, splitz } = this.props;
-    const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
+    const { splitz } = this.props;
+    const version = 'v2';
     const updatedItems = this.getUpdatedReceipt();
     return (
       <div className="content-wrapper" data-testId="orders-list">

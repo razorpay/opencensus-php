@@ -9,8 +9,6 @@ import { LayerProvider } from 'common/components/Layer/LayerContext';
 import { SnackbarProvider } from 'common/components/SnackBar/SnackbarContext';
 import { AppProvider, AppContextTypes } from 'common/context/App';
 import store from 'merchant/store';
-import { useSplitzService } from 'common/splitz';
-import { isExperimentEnabled } from 'common/splitz/utils';
 import { THEMES } from 'merchant_common/helpers/themes';
 
 interface Props {
@@ -33,18 +31,13 @@ const GlobalStyles = createGlobalStyle`
 `;
 
 const Wrapper: React.FC<Props> = ({ context, children }) => {
-  const splitz = useSplitzService();
-  const isCustomTheme = isExperimentEnabled(splitz?.abExperiments?.enable_trxn_v2_parity_features);
   let customTheme = bladeTheme;
+  const color =
+    window?.rzp_org?.merchant_styles?.primary || THEMES[window?.rzp_org?.custom_code]?.primary;
 
-  if (isCustomTheme) {
-    const color =
-      window?.rzp_org?.merchant_styles?.primary || THEMES[window?.rzp_org?.custom_code]?.primary;
-
-    if (color) {
-      const { theme: customColorTheme } = createTheme({ brandColor: color });
-      customTheme = customColorTheme;
-    }
+  if (color) {
+    const { theme: customColorTheme } = createTheme({ brandColor: color });
+    customTheme = customColorTheme;
   }
 
   return (

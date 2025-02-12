@@ -45,8 +45,6 @@ import { getHumanReadableTimestamp } from './utils';
 
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
-import { useSplitzService } from 'common/splitz';
-import { isPaymentV2ParityFeatureEnabled } from 'merchant/views/Transactions/v2/common/utils';
 
 interface EntityStatusTimelineProps extends RouteComponentProps {
   data: TimelineJourneyPoint[];
@@ -81,8 +79,6 @@ const EntityStatusTimeline = ({
     breakpoints: theme.breakpoints,
   });
   const isMobile = matchedDeviceType === 'mobile';
-  const splitz = useSplitzService();
-  const isTxnV2ParityFeaturesEnabled = isPaymentV2ParityFeatureEnabled(splitz, user);
 
   const openAndShowTimeline = (item): void => {
     if (item.id === 0) {
@@ -344,9 +340,7 @@ const EntityStatusTimeline = ({
             Created on {getHumanReadableTimestamp(journeyPoint.timestamp)}
           </Text>
         )}
-        {isTxnV2ParityFeaturesEnabled &&
-        journeyPoint.metadata?.amount &&
-        journeyPoint.metadata?.currency ? (
+        {journeyPoint.metadata?.amount && journeyPoint.metadata?.currency ? (
           <Text size="small" color="surface.text.gray.subtle" weight="regular">
             Dispute Amount :&nbsp;
             <Amount

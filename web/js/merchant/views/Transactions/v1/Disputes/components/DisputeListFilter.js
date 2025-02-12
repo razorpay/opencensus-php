@@ -13,7 +13,6 @@ import {
   trackDurationFilter,
   trackStatusFilter,
 } from 'merchant/views/Transactions/v2/common/tracking';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 const dateRangePresets = [
   ['Past 7 Days', -7, 'days'],
@@ -29,22 +28,18 @@ const track = handleChangeTrack('dispute');
 const DisputesListFilter = (props) => {
   const {
     location: { pathname },
-    user,
   } = props;
   const splitz = useSplitzService();
   const [date, setDate] = useState({ from: '', to: '' });
   const onDatesChange = (from, to) => {
-    const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
     const dateRange = `${moment(from).format('DD MMM YYYY')} to ${moment(to).format(
       'DD MMM YYYY',
     )}`;
     track({ type: 'filter', args: [], splitz });
-    if (version) {
-      trackDurationFilter({
-        dateRange,
-        pathname,
-      });
-    }
+    trackDurationFilter({
+      dateRange,
+      pathname,
+    });
     setDate({
       from: from.unix(),
       to: to.unix(),

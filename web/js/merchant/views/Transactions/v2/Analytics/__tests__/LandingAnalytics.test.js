@@ -103,7 +103,6 @@ describe('LandingAnalytics', () => {
       session: {
         mode: 'live',
         user: {
-          isTransactionsV2Enabled: true,
           isOrgAllowedFunctionality,
           merchant: {
             currency: 'INR',

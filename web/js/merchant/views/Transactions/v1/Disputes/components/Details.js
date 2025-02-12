@@ -3,7 +3,6 @@ import { Tooltip, TooltipInteractiveWrapper } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { useSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
 import Alert from 'common/ui/Forms/Alert';
 import Spinner from 'common/ui/Spinner';
@@ -17,16 +16,12 @@ import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
 import roleList from 'merchant/helpers/permissions/roles-list';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import { CANNOT_ACCEPT_DISPUTE_TOOLTIP_TEXT } from 'merchant/views/Transactions/v1/Disputes/components/constants';
-import {
-  isTransactionCleanupEnabled,
-  isTransactionsV2Enabled,
-} from 'merchant/views/Transactions/v2/common/utils';
-import { useNavigate } from 'react-router-dom';
 
 import ConfirmModal from './ConfirmModal';
 import ContestDispute from './ContestDispute';
 import StatusBanner from './StatusBanner';
 import UpdatedBy from './UpdatedBy';
+import { useNavigate } from 'react-router-dom';
 
 export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
   const daysLeft = daysFromToday(expiresOn);
@@ -47,21 +42,18 @@ const DisputeDetails = (props) => {
     isLoading,
     error,
     onCloseSecView,
-    goToLink,
     openModal,
     closeModal,
     showNotification,
-    user,
     isAdminAsMerchant,
     fetchIsAdminAsMerchant,
   } = props;
   const navigate = useNavigate();
   const [showContest, setShowContest] = useState(!!dispute?.evidence);
   const contestRef = React.createRef();
-  const splitz = useSplitzService();
   const { isDisputePresentmentEnabled, userRole } = props.user;
   const isDisputeOpen = dispute.status === 'open';
-  const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
+  const version = 'v2';
 
   const params = new Proxy(new URLSearchParams(window.location?.search), {
     get: (searchParams, prop) => searchParams.get(prop),
@@ -117,15 +109,9 @@ const DisputeDetails = (props) => {
   };
 
   const redirectAndTrackSelfServe = () => {
-    if (isTransactionCleanupEnabled()) {
-      navigate(
-        `payments/${dispute.payment_id}?init_point=${initiatePoint}&init_page=${initiatePage}`,
-      );
-    } else {
-      goToLink(
-        `payments/${dispute.payment_id}?init_point=${initiatePoint}&init_page=${initiatePage}`,
-      );
-    }
+    navigate(
+      `payments/${dispute.payment_id}?init_point=${initiatePoint}&init_page=${initiatePage}`,
+    );
     const selfServeInitiateData = {
       selfServeAction: 'Payment Details Fetched',
       page,

@@ -32,7 +32,6 @@ import { makeIdLink as disputeMakeIdLink } from 'merchant/views/Transactions/v1/
 import DisputeListFilter from 'merchant/views/Transactions/v1/Disputes/components/DisputeListFilter';
 import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { DISPUTES_NO_DATA_FOUND_TEXT } from 'merchant/views/Transactions/v2/Disputes/constants';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 const _paymentId = (splitz) => {
   return {
@@ -97,7 +96,6 @@ const createdAt = {
 class Dispute extends ListContainer {
   render() {
     const { user, splitz } = this.props;
-    const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
     return (
       <div className="content-wrapper">
         <Box
@@ -136,7 +134,7 @@ class Dispute extends ListContainer {
               properties: {
                 ...args,
                 location: 'disputes',
-                version,
+                version: 'v2',
                 ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
