@@ -9,10 +9,30 @@ export const Card = styled.div`
   margin-top: 16px;
 `;
 
+export const CreateCouponFormContainer = styled.div`
+  background-color: #f9fbfc;
+  display: flex;
+  @media (max-width: 1120px) {
+    flex-direction: column;
+  }
+`;
+
+export const CouponPreviewWrapper = styled.div`
+  height: max-content;
+  position: sticky;
+  top: 4rem;
+  flex: 3.5;
+  border-radius: 16px;
+  background: linear-gradient(0deg, #ffffff 70%, #edf7f7 100%);
+  margin-top: 3.5rem;
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+  min-width: 350px;
+`;
+
 export const CreateCouponFormWrapper = styled.div`
   padding: 20px;
-  background: #f9fbfc;
-
+  flex: 6.5;
   .Input {
     margin: 0;
   }

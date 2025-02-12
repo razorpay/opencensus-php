@@ -21,7 +21,7 @@ test('should not render coupon code for Prepaid Payment methods option for Magic
 
   await waitFor(() => {
     expect(screen.getByText('Create new coupon')).toBeInTheDocument();
-    expect(screen.getByText('Coupon Code')).toBeInTheDocument();
+    expect(screen.getAllByText('Coupon Code').length).toBeGreaterThan(0);
     expect(screen.getByText('Coupon description')).toBeInTheDocument();
     expect(screen.queryByText('Display this coupon at checkout')).toBeInTheDocument();
 

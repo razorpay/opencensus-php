@@ -11,6 +11,8 @@ import {
   Container,
   BackLink,
   CtaContainer,
+  CouponPreviewWrapper,
+  CreateCouponFormContainer,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CreateCouponFormStyles';
 import { AsyncBtn } from 'common/new-ui/Button';
 
@@ -40,6 +42,7 @@ import {
   HandleCreateUpdateCouponFnProps,
 } from 'merchant/views/MagicCheckout/CouponEngine/types';
 import { getAppType } from 'merchant/views/MagicCheckout/utils/getAppType';
+import { CouponPreview } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CouponPreview';
 
 const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
   showNotification,
@@ -192,7 +195,6 @@ const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
       setIsLoading(false);
     }
   };
-
   return (
     <Container>
       <div className="width-100">
@@ -200,16 +202,21 @@ const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
           <i className="i i-chevron-left" />
           Back to All Coupons
         </BackLink>
-        <CreateCouponFormWrapper>
-          <CouponDetailsWidget couponName={couponName as string} flow={flow} />
-          {widgetMappings[couponName as string].map((Widget, idx) => {
-            return (
-              <div className="widget-wrapper" key={idx}>
-                <Widget couponName={couponName} flow={flow} />
-              </div>
-            );
-          })}
-        </CreateCouponFormWrapper>
+        <CreateCouponFormContainer>
+          <CreateCouponFormWrapper>
+            <CouponDetailsWidget couponName={couponName as string} flow={flow} />
+            {widgetMappings[couponName as string].map((Widget, idx) => {
+              return (
+                <div className="widget-wrapper" key={idx}>
+                  <Widget couponName={couponName} flow={flow} />
+                </div>
+              );
+            })}
+          </CreateCouponFormWrapper>
+          <CouponPreviewWrapper>
+            <CouponPreview />
+          </CouponPreviewWrapper>
+        </CreateCouponFormContainer>
         <CtaContainer>
           <Link to={addFPVSupportToPath('/magic/coupons')}>
             <button className="cancel-cta" onClick={handleReset} disabled={isLoading}>

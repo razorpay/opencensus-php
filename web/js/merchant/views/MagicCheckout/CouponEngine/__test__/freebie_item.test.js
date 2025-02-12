@@ -37,7 +37,7 @@ describe('Freebie Coupon widgets', () => {
     expect(
       screen.queryByText('Enable this coupon code only for Prepaid Payment methods'),
     ).not.toBeInTheDocument();
-    expect(screen.getByText('Coupon Code')).toBeInTheDocument();
+    expect(screen.getAllByText('Coupon Code').length).toBeGreaterThan(1);
     expect(screen.getByText('Coupon description')).toBeInTheDocument();
     const couponWidgets = [
       'Products purchased',

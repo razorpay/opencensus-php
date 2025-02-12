@@ -28,7 +28,6 @@ interface AccordionBodyProps {
 
 const AccordionBody: React.FC<AccordionBodyProps> = ({ couponName }) => {
   const { widgetsData, setWidgetsData, setErrorStates, errorStates } = useContext(ModalContext);
-
   const handleFormValidations = (value: string) => {
     validateDiscountDetails({
       amountType: widgetsData.bulkDiscountDetails.discountSubType,
@@ -81,7 +80,7 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ couponName }) => {
       ...widgetsData,
       bulkDiscountDetails: {
         ...widgetsData.bulkDiscountDetails,
-        discountValue: Number(value),
+        discountValue: value,
       },
     });
     handleFormValidations(value);

@@ -75,7 +75,7 @@ export interface DiscountOffered {
 
 interface BulkDiscountDetails {
   discountSubType: string;
-  discountValue: number;
+  discountValue: string | number;
   discountType: string;
   maxUsagePerOrder: string | number;
   hasLimitedUseagePerOrder: boolean;

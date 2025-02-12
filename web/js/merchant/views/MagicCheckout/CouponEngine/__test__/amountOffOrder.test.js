@@ -20,7 +20,7 @@ test('should render create amount off order coupon correctly', async () => {
 
   expect(screen.getByText('Amount discounted on orders')).toBeInTheDocument();
 
-  expect(screen.getByText('Coupon Code')).toBeInTheDocument();
+  expect(screen.getAllByText('Coupon Code').length).toBeGreaterThan(1);
   expect(
     screen.getByText('Enable this coupon code only for Prepaid Payment methods'),
   ).toBeInTheDocument();
