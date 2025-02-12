@@ -10,6 +10,7 @@ use RZP\Exception\RuntimeException;
 use RZP\Services\Mutex;
 use RZP\Models\Address;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
@@ -1048,8 +1049,16 @@ class FundTransfer extends Base
 
         if ($fta->getStatus() === FundTransferAttempt\Status::INITIATED)
         {
+            $requestPayload = [
+                "id" => $fta->getMerchantId(),
+                "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                'request_data'  => json_encode(['id' => $fta->getMerchantId()])
+            ];
+
+            $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
             if ($fta->getSourceType() === Type::PAYOUT and
-                $this->isExperimentEnabled(RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,$fta) === true)
+                $isExperimentEnabled === true)
             {
                 $this->mutex->acquireAndRelease(
                     PayoutConstants::MIGRATION_REDIS_SUFFIX . $source->getId(),

@@ -19515,30 +19515,6 @@ The same has been enabled for the account.
         $this->assertEquals('shared', $response['items'][0]['account_type']);
         $this->assertGreaterThanOrEqual($startTimeStamp,$response['items'][0]['last_fetched_at']);
     }
-
-    public function testGetBalancesTypeBankingCachedFalseExpOff()
-    {
-        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'off']);
-
-        $this->setUpMerchantForGetBalances();
-
-        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
-
-        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
-
-        $response = $this->startTest();
-
-        $this->assertEquals(2, $response['count']);
-        $this->assertEquals('banking', $response['items'][0]['type']);
-        $this->assertEquals('banking', $response['items'][1]['type']);
-        $this->assertEquals('100abc000abcd0', $response['items'][0]['id']);
-        $this->assertEquals('100abc000abc00', $response['items'][1]['id']);
-        $this->assertEquals('shared', $response['items'][0]['account_type']);
-        $this->assertEquals('direct', $response['items'][1]['account_type']);
-    }
-
     public function testGetBalancesTypeBankingCachedFalseExpOn()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
@@ -19609,29 +19585,6 @@ The same has been enabled for the account.
         $this->assertEquals('direct', $response['items'][0]['account_type']);
         $this->assertEquals(23000, $response['items'][0]['balance']);
         $this->assertGreaterThanOrEqual($startTimeStamp,$response['items'][0]['last_fetched_at']);
-    }
-
-    public function testGetBalancesTypeBankingCachedFalseCABalanceIdExpOff()
-    {
-        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'off']);
-
-        $this->setUpMerchantForGetBalances();
-
-        $balance = $this->getDbEntity('balance', ['type' => 'banking', 'account_type' => 'direct']);
-
-        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
-
-        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
-
-        $response = $this->startTest();
-        $this->assertEquals(100, $balance->getBalance());
-        $this->assertEquals(1, $response['count']);
-        $this->assertEquals('banking', $response['items'][0]['type']);
-        $this->assertEquals('100abc000abc00', $response['items'][0]['id']);
-        $this->assertEquals('direct', $response['items'][0]['account_type']);
-        $this->assertEquals(100, $response['items'][0]['balance']);
     }
 
     // CA balance will be returned . it is applicable when merchant's last

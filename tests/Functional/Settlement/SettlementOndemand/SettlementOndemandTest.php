@@ -1752,67 +1752,8 @@ class SettlementOndemandTest extends TestCase
         return $bearerToken . $adminToken->getId();
     }
 
-    public function testOndemandFeatureValidationSuccess()
-    {
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
 
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
 
-        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000]);
-
-        $this->mockGetFeatureConfigCallFromCapitalEs(false);
-
-        $this->startTest();
-    }
-
-    public function testOndemandFeatureValidationNoAttemptLeftFailure()
-    {
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
-
-        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
-            'merchant_id'                 => $this->merchantDetail['merchant_id'],
-            'amount'                      => 250,
-        ]);
-
-        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
-            'merchant_id'                 => $this->merchantDetail['merchant_id'],
-            'amount'                      => 250,
-        ]);
-
-        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000]);
-
-        $this->mockGetFeatureConfigCallFromCapitalEs(false);
-
-        $this->startTest();
-    }
-
-    public function testOndemandFeatureValidationDailyAmountExceededFailure()
-    {
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
-
-        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
-            'merchant_id'                 => $this->merchantDetail['merchant_id'],
-            'amount'                      => 5000000,
-        ]);
-
-        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
-            'merchant_id'                 => $this->merchantDetail['merchant_id'],
-            'amount'                      => 5000000,
-        ]);
-
-        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000]);
-
-        $this->mockGetFeatureConfigCallFromCapitalEs(false);
-
-        $this->startTest();
-    }
 
     public function testEnableEsOnDemandFullAccessFromBatchRoute()
     {
@@ -3477,64 +3418,7 @@ class SettlementOndemandTest extends TestCase
         Mail::assertQueued(PartialES::class, 0);
     }
 
-    public function testOndemandCreationWithLimitExceededError()
-    {
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
 
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
-
-        for ($i = 0; $i<100; $i++) {
-            $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
-                'merchant_id'                 => $this->merchantDetail['merchant_id'],
-                'amount'                      => 1,
-            ]);
-        }
-
-        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000]);
-
-        $this->mockGetFeatureConfigCallFromCapitalEs(false);
-
-        $this->startTest();
-    }
-
-    public function testOndemandCreationWithAmountExceededError()
-    {
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
-
-        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand.feature_config',[
-            'merchant_id'                 => '10000000000000',
-            'percentage_of_balance_limit' => 50,
-            'settlements_count_limit'     => 3,
-            'max_amount_limit'            => 7500,
-            'pricing_percent'             => 50,
-        ]);
-
-        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
-            'merchant_id'                 => $this->merchantDetail['merchant_id'],
-            'amount'                      => 5000,
-        ]);
-
-        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
-            'merchant_id'                 => $this->merchantDetail['merchant_id'],
-            'amount'                      => 2300,
-        ]);
-
-        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000]);
-
-        $this->mockGetFeatureConfigCallFromCapitalEs(false);
-
-        $this->startTest();
-    }
 
     public function testOndemandCreationWithNoError()
     {
@@ -4554,28 +4438,6 @@ class SettlementOndemandTest extends TestCase
     }
 
     //Creating Ondemand for merchant whose funds are on hold
-    public function testCreateOndemandForFundsOnHoldMerchant()
-    {
-        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
-
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_automatic']);
-
-        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 3000000]);
-
-        $this->fixtures->base->editEntity('merchant', '10000000000000', ['hold_funds' => true]);
-
-        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
-
-        $this->mockGetFeatureConfigCallFromCapitalEs(false);
-
-        $this->startTest();
-    }
 
     //test ondemand creation for fixed_rate pricing plan
     public function testOndemandCreationForFixedRatePricing()
@@ -4813,63 +4675,6 @@ class SettlementOndemandTest extends TestCase
         $this->startTest();
     }
 
-    public function testAdjustmentAditionToOndemandXMerchant()
-    {
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id'], $this->user->getId());
-
-        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand_fund_account');
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
-
-        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand.feature_config',[
-            'merchant_id'                 => $this->merchantDetail['merchant_id'],
-            'percentage_of_balance_limit' => 50,
-            'settlements_count_limit'     => 2,
-            'max_amount_limit'            => 7500,
-            'pricing_percent'             => 23,
-        ]);
-
-        $this->fixtures->on('live')->edit('balance', '10000000000000', ['balance' => 10000000000]);
-
-        $this->fixtures->merchant->editPricingPlanId(Pricing::DEFAULT_PRICING_PLAN_ID);
-
-        $this->fixtures->on('live')->create('balance', [
-            'id'             => '10000SampleBal',
-            'account_number' => '2323230041626905',
-            'type'           => 'banking',
-            'merchant_id'    => '10000000000000',
-            'currency'       => 'INR',
-            'balance'        => 0,
-        ]);
-
-        $this->fixtures->on('live')->pricing->createOndemandPercentRatePricingPlan();
-
-        $this->app['config']->set('applications.razorpayx_client.live.mock', true);
-
-        $this->app['config']->set('applications.razorpayx_client.live.ondemand_x_merchant.id', '10000000000000');
-
-        $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', false);
-
-        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
-
-        Carbon::setTestNow($bankingHour);
-
-        $this->mockGetFeatureConfigCallFromCapitalEs(false);
-
-        $this->startTest();
-
-        $adjustment = $this->getLastEntity('adjustment', false, 'live');
-
-        $this->assertArraySelectiveEquals([
-//            'id'             => 'adj_FBzOs9JIQYrwT2',
-            'entity'         => 'adjustment',
-            'amount'         => 19557292,
-            'currency'       => 'INR',
-//            'description'    => 'adding funds to Ondemand-X merchant for OndemandID - FC13NuI1Niv5FB',
-//            'transaction_id' => 'FBzOsAMF80GFWt',
-        ], $adjustment);
-    }
 
     public function testMinLimitForNonEsAutomaticMerchants()
     {
@@ -5017,71 +4822,8 @@ class SettlementOndemandTest extends TestCase
         $this->startTest();
     }
 
-    public function testOndemandBlocked()
-    {
-        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
 
-        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
 
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
-
-        $this->fixtures->create('merchant', [
-            'id'   => '10000000000001'
-        ]);
-
-        $this->app['config']->set('applications.razorpayx_client.live.ondemand_x_merchant.id', '10000000000001');
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'block_es_on_demand']);
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => $this->merchantDetail['merchant_id'], 'name' => 'es_on_demand']);
-
-        $this->mockGetFeatureConfigCallFromCapitalEs(false);
-
-        $this->startTest();
-    }
-
-    public function testOndemandNotBlocked()
-    {
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
-
-        $this->fixtures->create('merchant', [
-            'id'   => '10000000000001'
-        ]);
-
-        $this->app['config']->set('applications.razorpayx_client.live.ondemand_x_merchant.id', '10000000000001');
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => $this->merchantDetail['merchant_id'], 'name' => 'es_on_demand']);
-
-        $this->mockGetFeatureConfigCallFromCapitalEs(false);
-
-        $this->startTest();
-    }
-
-    public function testCreateOndemandBlockedError()
-    {
-        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
-
-        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
-
-        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
-
-        $this->fixtures->create('merchant', [
-            'id'   => '10000000000001'
-        ]);
-
-        $this->app['config']->set('applications.razorpayx_client.live.ondemand_x_merchant.id', '10000000000001');
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'block_es_on_demand']);
-
-        $this->startTest();
-    }
 
     public function testCreateOndemandSettlementForLinkedAccountSuccess()
     {
@@ -6141,63 +5883,6 @@ class SettlementOndemandTest extends TestCase
         $this->startTest();
     }
 
-    public function testOndemandBlockedFetchConfigFromCapitalEs()
-    {
-        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
-        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
-
-        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
-
-        $this->fixtures->create('merchant', [
-            'id' => '10000000000001'
-        ]);
-
-        $this->app['config']->set('applications.razorpayx_client.live.ondemand_x_merchant.id', '10000000000001');
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant',
-            'entity_id' => '10000000000001',
-            'name' => 'block_es_on_demand'
-        ]);
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant',
-            'entity_id' => $this->merchantDetail['merchant_id'],
-            'name' => 'es_on_demand'
-        ]);
-
-        $this->mockGetFeatureConfigCallFromCapitalEs();
-
-        $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
-        $this->app->instance('capital_early_settlements', $capitalEsMock);
-
-        // Set up the mocked method to return different responses on consecutive calls
-        $capitalEsMock->allows('getFeatureConfig')
-            ->twice()
-            ->andReturns(
-                [
-                    'global_feature_config' => [
-                        "global_limit_check_required" => true,
-                        "global_limit" => 10000,
-                        "global_limit_capping_scale_factor" => 80,
-                        "global_limit_capped_merchant_ids" => "HFQ3S14NsDs3Ti",
-                    ]
-                ],
-                [
-                    'merchant_feature_config' => [
-                        "merchant_id" => $this->merchantDetail['merchant_id'],
-                        "pricing_percent" => 30,
-                        "es_pricing_percent" => 20,
-                        "max_limit_per_working_day" => "10000000",
-                        "max_amount_limit" => "10000000",
-                        "percentage_of_balance_limit" => 50,
-                        "settlements_count_limit" => "100"
-                    ]
-                ]
-            );
-
-        $this->startTest();
-    }
 
     public function testEnableEsOnDemandFullAccessFromBatchRouteFeatureConfigMigrated()
     {

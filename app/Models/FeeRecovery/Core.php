@@ -562,28 +562,9 @@ class Core extends Base\Core
             }
             if ($amount == 0)
             {
-                $variant = $this->app['razorx']->getTreatment(
-                    $balance->getMerchantId(),
-                    Merchant\RazorxTreatment::RX_FEE_RECOVERY_CONTROL_ROLL_OUT,
-                    $this->mode,
-                    3);
-
-                if ($variant === 'on')
-                {
-                    return [
-                        'message'  => "The total amount to be recovered is zero and hence we are not creating a fee recovery payout for the current week"
-                    ];
-                }
-
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_FEE_RECOVERY_AMOUNT_ZERO,
-                    null,
-                    [
-                        'balance_id'            => $balance->getId(),
-                        'start_timestamp'       => $startTimestamp,
-                        'end_timestamp'         => $endTimestamp,
-                        'fee_recovery_amount'   => $amount
-                    ]);
+                return [
+                    'message'  => "The total amount to be recovered is zero and hence we are not creating a fee recovery payout for the current week"
+                ];
             }
 
             $feeRecoveryPayout =  $this->processAndGetFeeRecoveryPayout($payouts,

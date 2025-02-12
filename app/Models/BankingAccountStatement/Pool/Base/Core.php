@@ -130,14 +130,16 @@ class Core extends Base\Core
         {
             if ($this->app['env'] === Environment::TESTING)
             {
-                // razorx experiment to decide the statement fetch flow to be old or new.
-                $accStmtVariant = $this->app->razorx->getTreatment(
-                    $basDetails->merchant->getId(),
-                    Merchant\RazorxTreatment::RBL_V2_BAS_API_INTEGRATION,
-                    $this->mode
-                );
+                // splitz experiment to decide the statement fetch flow to be old or new.
+                $requestPayload = [
+                    "id" =>  $basDetails->merchant->getId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::RBL_V2_BAS_API_INTEGRATION,
+                    'request_data'  => json_encode(['id' =>  $basDetails->merchant->getId()])
+                ];
 
-                if (strtolower($accStmtVariant) === "on")
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if ($isExperimentEnabled === true)
                 {
                     $accountStatementApiVersion = self::ACCOUNT_STATEMENT_FETCH_API_VERSION_2;
                 }

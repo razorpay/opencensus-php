@@ -1165,42 +1165,7 @@ class FeeRecoveryTest extends TestCase
         $this->assertEquals($updatedTask['next_run_at'], $task['next_run_at'] + 86400);
     }
 
-    public function testFeeRecoveryPayoutCronNextAndLastRunUpdateForZeroAmount()
-    {
-        $oldTime = Carbon::create(2020, 1, 4, 8, null, null, Timezone::IST);
 
-        Carbon::setTestNow($oldTime);
-
-        $this->setupScheduleAndScheduleTaskForMerchant();
-
-        $newTime = Carbon::create(2020, 1, 5, 7, 0, null, Timezone::IST);
-
-        $task = $this->getDbLastEntity('schedule_task');
-
-
-        $initialNextRunAt = $task['next_run_at'];
-
-        Carbon::setTestNow($newTime);
-
-        $nextRunAt = $task->getNextRunAt();
-
-        $this->mockRazorxFeeRecoveryRollout();
-
-        $job = new \RZP\Jobs\FeeRecovery('test', null, $this->balance->getId(), 1, $nextRunAt, $task);
-
-        $job->handle();
-
-        $lastRun = Carbon::createFromTimestamp($initialNextRunAt, Timezone::IST);
-
-        $currentTime = Carbon::now(Timezone::IST);
-
-        [$start, $nextRunTime] = (new FeeRecovery\Core)->getNextInterval($currentTime);
-
-        // Assert that last run and next run is updated when job is run
-        $this->assertEquals($nextRunAt, $task['last_run_at']);
-
-        $this->assertEquals($nextRunTime->getTimestamp(), $task['next_run_at']);
-    }
 
     public function testUpdateFeeRecoveryAfterPayoutFTAReconSuccess()
     {

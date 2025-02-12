@@ -503,7 +503,7 @@ class LedgerJournalJobTest extends TestCase
     {
         $testData = &$this->testData['testBankTransferTransactionCreation'];
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
-        $this->enableRazorXTreatment([RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE]);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE =>'enable']);
         $balance = $this->getDbLastEntity('balance');
 
         $this->fixtures->create('bank_transfer', [

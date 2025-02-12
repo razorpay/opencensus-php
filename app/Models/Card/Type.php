@@ -70,9 +70,9 @@ class Type
         ];
     }
 
-    public static function isValidFundAccountCardType(string $type = null, string $variant): bool
+    public static function isValidFundAccountCardType(string $type = null, bool $prepaidCardEnabled): bool
     {
-        if ($variant === 'on')
+        if ($prepaidCardEnabled === true)
         {
             return (in_array($type, self::$fundAccountCardTypesInExperiment, true) === true);
         }

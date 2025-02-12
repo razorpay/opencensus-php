@@ -372,11 +372,15 @@ class Core extends Base\Core
         $mode = $this->mode ?? Mode::LIVE;
 
         // Check if razorx enabled
-        $razorxResponse = $this->app['razorx']->getTreatment($merchant->getId(),
-                                                             Merchant\RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE,
-                                                             $mode);
+        $requestPayload = [
+            "id" => $merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE,
+            'request_data'  => json_encode(['id' => $merchant->getId()])
+        ];
 
-        if ($razorxResponse !== Merchant\RazorxTreatment::RAZORX_VARIANT_ON)
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if ($isExperimentEnabled !== true)
         {
             return;
         }

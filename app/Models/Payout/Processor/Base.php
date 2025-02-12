@@ -3771,14 +3771,6 @@ class Base extends BaseCore
     {
         // todo temp fix https://jira.corp.razorpay.com/browse/RX-3668
         return false;
-
-        $mid = $this->merchant->getId();
-
-        $variant = $this->app['razorx']->getTreatment($mid,
-                                                      Merchant\RazorxTreatment::RX_PAYOUT_LINK_MICROSERVICE,
-                                                      $this->app['rzp.mode'] ?? 'live');
-
-        return !($variant == 'on');
     }
 
     protected function incrementCounterAndSetExpectedFeeTypeForFundAccountPayouts(Payout\Entity $payout)
@@ -4084,18 +4076,27 @@ class Base extends BaseCore
 
     protected function checkIfSourceMerchantEnabledForVaToVaPayouts(Payout\Entity $payout, FundAccount\Entity $fundAccount)
     {
-        $variant = $this->app['razorx']->getTreatment(
-            $payout->getMerchantId(),
-            Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS,
-            $this->mode,
-            3);
+        $experimentName =  Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS;
+
+        if($this->mode === Mode::TEST)
+        {
+            $experimentName = Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST;
+        }
+
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  $experimentName,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         $isVaToVaPayoutsAllowed = $this->merchant->isFeatureEnabled(Features::ALLOW_VA_TO_VA_PAYOUTS);
 
         // variant will be control when:
         // 1. Merchant is not part of the `on` variant, meaning merchant is not allowed VA to VA payouts
         // 2. If RazorX request fails
-        if (($variant === 'on') or
+        if (($isExperimentEnabled === true) or
             ($isVaToVaPayoutsAllowed == true))
         {
             $this->trace->info(TraceCode::PAYOUT_VA_TO_VA_ALLOWED_BASED_ON_SOURCE,
@@ -4197,11 +4198,20 @@ class Base extends BaseCore
         // We shall now check if the merchant has been allowed VA to VA payouts via the experiment
         if ($blockVAToVAPayouts === true)
         {
-            $variant = $this->app['razorx']->getTreatment(
-                $this->merchant->getId(),
-                Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS,
-                $this->mode,
-                3);
+            $experimentName =  Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS;
+
+            if($this->mode === Mode::TEST)
+            {
+                $experimentName = Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST;
+            }
+
+            $requestPayload = [
+                "id" => $payout->getMerchantId(),
+                "experiment_name" =>  $experimentName,
+                'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+            ];
+
+            $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
             $isVaToVaPayoutsAllowed = $this->merchant->isFeatureEnabled(Features::ALLOW_VA_TO_VA_PAYOUTS);
 
@@ -4209,7 +4219,7 @@ class Base extends BaseCore
             // 1. Merchant is not part of the `on` variant, meaning merchant is not allowed VA to VA payouts
             // 2. If RazorX request fails
             // 3. And merchant does not have the feature to allow va to va.
-            if (($variant === 'control') and
+            if (($isExperimentEnabled === false ) and
                 ($isVaToVaPayoutsAllowed == false))
             {
                 throw new Exception\BadRequestException(
@@ -5215,15 +5225,6 @@ class Base extends BaseCore
     {
         try
         {
-            // Check if razorx enabled
-            $razorxResponse = $this->app['razorx']->getTreatment($this->merchant->getId(),
-                                                                 Merchant\RazorxTreatment::PAYOUT_SERVICE_VA_TO_VA_CONSUME_FROM_PAYLOAD,
-                                                                 RZPConstants\Mode::LIVE);
-
-            if ($razorxResponse !== 'on')
-            {
-                return [null, false];
-            }
 
             if (empty($fundAccount) === true)
             {

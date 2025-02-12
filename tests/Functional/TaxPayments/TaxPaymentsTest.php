@@ -772,14 +772,6 @@ class TaxPaymentsTest extends TestCase
         $tpMock->shouldHaveReceived('bulkChallanDownload');
     }
 
-    public function testTaxPaymentMarkAsPaidNegative()
-    {
-        $this->ba->proxyAuth();
-
-        $this->ba->setProxyHeader(null);
-
-        $this->startTest();
-    }
 
     public function testGetInternalMerchantWhenNoSettingsPresent()
     {

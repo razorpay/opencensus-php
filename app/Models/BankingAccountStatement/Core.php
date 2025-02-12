@@ -326,13 +326,15 @@ class Core extends Base\Core
             if ($this->app['env'] === Environment::TESTING)
             {
                 // razorx experiment to decide the statement fetch flow to be old or new.
-                $accStmtVariant = $this->app->razorx->getTreatment(
-                    $basDetails->merchant->getId(),
-                    Merchant\RazorxTreatment::RBL_V2_BAS_API_INTEGRATION,
-                    $this->mode
-                );
+                $requestPayload = [
+                    "id" => $basDetails->merchant->getId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::RBL_V2_BAS_API_INTEGRATION,
+                    'request_data'  => json_encode(['id' =>$basDetails->merchant->getId()])
+                ];
 
-                if (strtolower($accStmtVariant) === "on")
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if ($isExperimentEnabled === true)
                 {
                     $accountStatementApiVersion = Entity::ACCOUNT_STATEMENT_FETCH_API_VERSION_2;
                 }
@@ -628,16 +630,17 @@ class Core extends Base\Core
 
         $merchantId = $basDetails->getMerchantId();
 
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::OPTIMISE_INSERTION_LOGIC,
-            $this->mode ?? Constants\Mode::LIVE,
-            2
-        );
+        $requestPayload = [
+            "id" => $merchantId,
+            "experiment_name" =>  Merchant\RazorxTreatment::OPTIMISE_INSERTION_LOGIC,
+            'request_data'  => json_encode(['id' => $merchantId])
+        ];
+
+        $isOptimisedInsertionEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         [$hasMore, $updateParams] = $this->mutex->acquireAndRelease(
             'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
-            function () use ($channel, $accountNumber, $missingStatements, $updateParams, &$noOfStatementsInserted, $variant)
+            function () use ($channel, $accountNumber, $missingStatements, $updateParams, &$noOfStatementsInserted, $isOptimisedInsertionEnabled)
             {
                 $countOfMissingRecords = count($missingStatements);
 
@@ -699,7 +702,7 @@ class Core extends Base\Core
 
                     $this->setBasDetailsForStatementFix($accountNumber, $channel);
 
-                    if ($variant === 'on')
+                    if ($isOptimisedInsertionEnabled === true)
                     {
                         $insertedBasEntities = $this->optimiseSaveMissingAccountStatements($accountNumber, $channel, $missingStatements);
                     }
@@ -786,7 +789,7 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::BAS_MISSING_STATEMENT_INSERTED_SUCCESSFULLY, [
             'merchant_id'         => $merchantId,
             'response_time'       => $insertEndTime - $insertStartTime,
-            'variant'             => $variant,
+            'isOptimisedInsertionEnabled'             => $isOptimisedInsertionEnabled,
             'statements_inserted' => $noOfStatementsInserted,
         ]);
 
@@ -894,16 +897,17 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
 
-        $variant = $this->app->razorx->getTreatment(
-            $basDetails->getMerchantId(),
-            Merchant\RazorxTreatment::OPTIMISE_INSERTION_LOGIC,
-            $this->mode ?? Constants\Mode::LIVE,
-            2
-        );
+        $requestPayload = [
+            "id" => $merchantId,
+            "experiment_name" =>  Merchant\RazorxTreatment::OPTIMISE_INSERTION_LOGIC,
+            'request_data'  => json_encode(['id' => $merchantId])
+        ];
+
+        $isOptimisedInsertionEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         [$response, $params] = $this->mutex->acquireAndRelease(
             'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
-            function () use ($channel, $accountNumber, $missingStatements, $dryRunMode, &$noOfStatementsInserted, $variant)
+            function () use ($channel, $accountNumber, $missingStatements, $dryRunMode, &$noOfStatementsInserted, $isOptimisedInsertionEnabled)
             {
                 // setting the variable to true to customize the later flow (linking the statement to source entity)
                 $this->isStatementUnderFix = true;
@@ -912,7 +916,7 @@ class Core extends Base\Core
 
                 $this->setBasDetailsForStatementFix($accountNumber, $channel);
 
-                if ($variant === 'on')
+                if ($isOptimisedInsertionEnabled === true)
                 {
                     $insertedBasEntities = $this->optimiseSaveMissingAccountStatements($accountNumber, $channel, $missingStatements);
                 }
@@ -981,7 +985,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::BAS_MISSING_STATEMENT_INSERTED_SUCCESSFULLY, [
             'response_time'       => $insertEndTime - $insertStartTime,
-            'variant'             => $variant,
+            'isOptimisedInsertionEnabled'             => $isOptimisedInsertionEnabled,
             'statements_inserted' => $noOfStatementsInserted,
         ]);
 

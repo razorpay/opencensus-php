@@ -260,11 +260,13 @@ class PayoutLinks
 
         //blacklisted_merchants => off
         //otherwise => on
-        $variant = $this->app['razorx']->getTreatment($merchant->getId(),
-            Merchant\RazorxTreatment::RX_PAYOUT_LINK_WORKFLOW_GA,
-            $this->app['rzp.mode'] ?? 'live', 3);
+        $requestPayload = [
+            "id" => $merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::RX_PAYOUT_LINK_WORKFLOW_GA,
+            'request_data'  => json_encode(['id' => $merchant->getId()])
+        ];
 
-        return ($variant === 'on');
+        return (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
     }
 
     public function create(MerchantEntity $merchant, array $input): array

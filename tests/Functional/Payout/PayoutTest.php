@@ -321,6 +321,8 @@ class PayoutTest extends OAuthTestCase
 
         $queueMock = Mockery::mock(SqsQueue::class);
 
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL,Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL,Feature\Constants::DISABLE_DB_PAYOUT_BENE_SMS]);
+
         // Mock the queue push call made for DLQ and access the queue name that was passed
         $queueObject = new class {
             public $queueName;
@@ -788,6 +790,8 @@ class PayoutTest extends OAuthTestCase
     public function testAccountStatementQueuePushForSplitzDisable() {
         $queueMock = Mockery::mock(SqsQueue::class);
 
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL,Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL,Feature\Constants::DISABLE_DB_PAYOUT_BENE_SMS]);
+
         // Mock the queue push call made for DLQ and access the queue name that was passed
         $queueObject = new class {
             public $queueName = null;
@@ -928,6 +932,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testAccountStatementQueuePushForSharedPayout() {
         $queueMock = Mockery::mock(SqsQueue::class);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL,Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL,Feature\Constants::DISABLE_DB_PAYOUT_BENE_SMS]);
 
         // Mock the queue push call made for DLQ and access the queue name that was passed
         $queueObject = new class {
@@ -6567,10 +6573,10 @@ class PayoutTest extends OAuthTestCase
     {
         $this->app['config']->set('applications.banking_account_service.mock', true);
 
-        $this->setMockRazorxTreatment(
+        $this->setMockSplitzTreatmnt(
             [
-                RazorxTreatment::AXIS_MIGRATION_CUSTOMER_WALLET_PAYOUT => 'on',
-                RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX => 'on',
+                RazorxTreatment::AXIS_MIGRATION_CUSTOMER_WALLET_PAYOUT => 'enable',
+                RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX => 'enable',
 
             ]
         );
@@ -9215,100 +9221,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(true, $firstActionChecker['approved']);
     }
 
-    public function testFetchPendingPayoutsAsOwnerSSWF()
-    {
-        $user = $this->fixtures->create('user');
 
-        $this->liveSetUp();
 
-        $this->fixtures->on('live');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $payoutIds = $this->createMultiplePayoutsWithWorkflow(5);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['content'] = [
-            'account_numbers' => ['2224440041626905'],
-        ];
-
-        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
-
-        $response = $this->startTest();
-
-        $this->assertSameSize($payoutIds, $response);
-
-        $this->assertNotNull($response);
-
-        foreach ($response as $payouts)
-        {
-            $this->assertContains($payouts["id"], $payoutIds);
-
-            $this->assertNotNull($payouts["amount"]);
-        }
-    }
-
-    public function testFetchNoPendingPayoutsAsOwnerSSWF()
-    {
-        $user = $this->fixtures->create('user');
-
-        $this->liveSetUp();
-
-        $this->fixtures->on('live');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $payoutIds = $this->createMultiplePayoutsWithWorkflow(5);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['content'] = [
-            'account_numbers' => ['2224440041626909'],
-        ];
-
-        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
-
-        $response = $this->startTest();
-
-        $this->assertEmpty($response);
-    }
-
-    public function testFetchPendingPayoutsAsOwnerSSWFValidationError()
-    {
-        $user = $this->fixtures->create('user');
-
-        $this->liveSetUp();
-
-        $this->fixtures->on('live');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
-
-        $this->startTest();
-    }
 
     private function createMultiplePayoutsWithWorkflow(int $count): array
     {
@@ -9324,71 +9238,7 @@ class PayoutTest extends OAuthTestCase
         return $payoutIds;
     }
 
-    public function testBulkRejectPayoutsAsOwnerSSWF()
-    {
-        $user = $this->fixtures->create('user');
 
-        $this->liveSetUp();
-
-        $this->fixtures->on('live');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
-
-        $workflowServiceClientMock = Mockery::mock('RZP\Services\WorkflowService');
-
-        $this->app->instance('workflow_service', $workflowServiceClientMock);
-
-        $workflowServiceClientMock->shouldReceive('request')->with("twirp/rzp.workflows.action.v1.ActionAPI/CreateDirectOnWorkflow");
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['content'] += [
-            'payout_ids' => [$payout['id']],
-        ];
-
-        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
-
-        $this->startTest();
-    }
-
-    public function testBulkRejectPayoutsAsOwnerSSWFValidationError()
-    {
-        $user = $this->fixtures->create('user');
-
-        $this->liveSetUp();
-
-        $this->fixtures->on('live');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['content'] += [
-            'payout_ids' => [$payout['id']],
-        ];
-
-        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
-
-        $this->startTest();
-    }
 
     public function testBulkRejectPayouts()
     {
@@ -16116,22 +15966,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('pending', $payout['status']);
     }
 
-    public function testApprovePayoutWithNonBankingRoleInWorkflow()
-    {
-        $this->liveSetUp();
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
-
-        // Approve with Checker role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
-
-        $testData                   = &$this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
-
-        $this->startTest();
-    }
 
     public function testPayoutToAmexCardWithNullIssuerSupportedMode()
     {
@@ -25302,7 +25136,7 @@ class PayoutTest extends OAuthTestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $initialDestinationBalance = $bankingBalance->getBalance();
 
@@ -25636,7 +25470,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('balance',$balanceId,['balance' => 0]);
 
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $this->startTest($testData);
 
@@ -26135,7 +25969,7 @@ class PayoutTest extends OAuthTestCase
         $this->setupDestinationForVaToVaPayoutsWithProvidedFundAccount($fundAccount);
 
         // enabling source merchant to allow va to va payouts
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $testData = & $this->testData['testAllowVAtoVAPayoutsWhenSourceMerchantIsEnabled'];
         $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
@@ -26428,7 +26262,7 @@ class PayoutTest extends OAuthTestCase
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $this->startTest($testData);
     }
@@ -26445,7 +26279,7 @@ class PayoutTest extends OAuthTestCase
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $this->startTest($testData);
     }
@@ -26529,7 +26363,7 @@ class PayoutTest extends OAuthTestCase
     // to make VA to VA payouts, we shall allow this payout to go through
     public function testAllowVAtoVACompositePayoutsWithRazorXExperiment()
     {
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $this->ba->privateAuth();
 
@@ -26554,7 +26388,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testAllowBulkVAToVAPayoutsWithRazorXExperiment()
     {
-        $this->mockRazorxToAllowVAToVAPayouts();
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS =>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable',RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable']);
 
         $this->ba->batchAuth();
 
@@ -38878,7 +38713,7 @@ class PayoutTest extends OAuthTestCase
         $this->setUpMerchantForTestPayouts($merchantId, $accountNumber1, $accountNumber2, $ifsc,
             $channel, $contactId, $fundAccountId, $baId);
 
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $this->ba->cronAuth('live');
         $this->startTest();
@@ -39682,25 +39517,6 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__]['request']['content']['from'] = $start_time;
 
         $this->testData[__FUNCTION__]['request']['content']['to'] = $end_time;
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === Merchant\RazorxTreatment::PAYOUT_ATTACHMENT_EMAIL_VIA_SQS)
-                    {
-                        return 'on';
-                    }
-
-                    return 'off';
-                }));
 
         Queue::fake();
 
@@ -43043,9 +42859,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithNewBankAccountCreationForNonGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+        $this->setMockSplitzTreatmnt([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
                                       ]);
 
         $this->fixtures->edit('bank_account',
@@ -43088,10 +42903,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithExistingBankAccountForNonGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',
@@ -43146,10 +42960,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithNewBankAccountCreationForNonGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43185,10 +42998,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithExistingBankAccountForNonGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',
@@ -43237,10 +43049,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithNoBankCodeWithNewBankAccountCreationForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43278,10 +43089,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithNoBankCodeWithExistingBankAccountForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',
@@ -43334,10 +43144,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithNoBankCodeForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43368,10 +43177,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithBankCodeDifferentForNewIfscWithNewBankAccountCreationForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43412,10 +43220,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithBankCodeCorrectForNewIfscWithNewBankAccountCreationForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43455,10 +43262,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithBankCodeDifferentForNewIfscWithExistingBankAccountForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',
@@ -43510,10 +43316,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithBankCodeCorrectForNewIfscWithExistingBankAccountForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',
@@ -43565,10 +43370,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithBankCodeWithNewBankAccountCreationForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43605,10 +43409,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithBankCodeWithExistingBankAccountForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',
@@ -43658,10 +43461,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithMainBankCodeWithNewBankAccountCreationForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43698,10 +43500,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithMainBankCodeWithExistingBankAccountForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',

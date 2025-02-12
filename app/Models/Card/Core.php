@@ -627,12 +627,13 @@ class Core extends Base\Core
         $cardIin        = $card->getIin();
 
         //experiment for fund account of prepaid card type creation
-        $prepaidCardVariant = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::PAYOUT_TO_PREPAID_CARDS,
-            $this->mode,
-            FundAccount\Entity::FUND_ACCOUNT_RX_RETRY_COUNT
-        );
+        $requestPayload = [
+            "id" =>  $merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::PAYOUT_TO_PREPAID_CARDS,
+            'request_data'  => json_encode(['id' =>  $merchant->getId()])
+        ];
+
+        $prepaidCardEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         if (($cardIssuer === Issuer::SCBL) and
             ($this->checkAllowedNetworksForSCBL($card) === false))
@@ -679,7 +680,7 @@ class Core extends Base\Core
         // If a credit card is not supported for IMPS, NEFT, we check if m2p supports it.
         // If it does, we allow FA creation.
         if (($this->checkIfVaultTokenIsNull($card, $compositePayoutSaveOrFail) === true) or
-            (Type::isValidFundAccountCardType($cardType, $prepaidCardVariant) === false) or
+            (Type::isValidFundAccountCardType($cardType, $prepaidCardEnabled) === false) or
             ((in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === false) and
              (empty($m2pSupportedModeConfigs) === true)))
         {

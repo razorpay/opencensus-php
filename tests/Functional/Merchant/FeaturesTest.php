@@ -47,10 +47,12 @@ use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
+use RZP\Tests\Traits\MocksSplitz;
 use function Clue\StreamFilter\fun;
 
 class FeaturesTest extends OAuthTestCase
 {
+    use MocksSplitz;
     use MocksRazorx;
     use FileUploadTrait;
     use DbEntityFetchTrait;
@@ -3069,15 +3071,7 @@ Regards,
 
         $this->app->instance('razorx', $razorx);
 
-        $razorx->shouldReceive('getTreatment')
-               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-               {
-                   if ($featureFlag === (RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE))
-                   {
-                       return 'on';
-                   }
-                   return 'control';
-               });
+        $this->setMockSplitzTreatmnt([RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE =>'enable']);
 
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
@@ -3094,17 +3088,7 @@ Regards,
     {
         $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
 
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if ($featureFlag === (RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE))
-                {
-                    return 'on';
-                }
-                return 'control';
-            });
+        $this->setMockSplitzTreatmnt([RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE=>'enable']);
 
         $this->startTest();
     }
@@ -3252,6 +3236,7 @@ Regards,
 
         $this->assertContains($featureToBeChecked, $features);
     }
+
 
     /**
      * Get all features, check if disable collect consent feature is present with false

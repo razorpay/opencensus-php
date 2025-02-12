@@ -2051,7 +2051,7 @@ class Service extends Base\Service
     }
 
     public function shouldSkipPayrollEntries()
-    {  
+    {
         $hideRxPayrollPayouts = $this->merchant->isFeatureEnabled(Features::HIDE_RX_PAYROLL_PAYOUTS);
         $this->trace->info(
             TraceCode::HIDE_RX_PAYROLL_PAYOUTS_FEATURE_FLAG_RESPONSE,
@@ -3296,16 +3296,7 @@ class Service extends Base\Service
 
         $response = $this->app->batchService->processBatch($batchId, $input, $this->merchant);
 
-        $batchPayoutSummaryEmailVariant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::BATCH_PAYOUTS_SUMMARY_EMAIL,
-            $this->mode);
-
-        if (strtolower($batchPayoutSummaryEmailVariant) == 'on')
-        {
-            $this->createBatchPayoutEmailSummaryReminder($response);
-        }
-
+        $this->createBatchPayoutEmailSummaryReminder($response);
 
         return $response;
     }
@@ -5263,12 +5254,15 @@ class Service extends Base\Service
 
     public function getPayoutStatusReasonMap(): array
     {
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::STATUS_REASON_MAP_VIA_PS,
-            $this->mode);
+        $requestPayload = [
+            "id" => $this->merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::STATUS_REASON_MAP_VIA_PS,
+            'request_data'  => json_encode(['id' =>  $this->merchant->getId()])
+        ];
 
-        if ($this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED) and strtolower($variant) === 'on')
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if ($this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED) and ($isExperimentEnabled === true))
         {
             return $this->payoutStatusReasonMapApiServiceClient->GetPayoutStatusReasonMapViaMicroService();
         }
@@ -5757,21 +5751,8 @@ class Service extends Base\Service
 
         if ($shouldSendEmail)
         {
-            $variant = $this->app->razorx->getTreatment(
-                $merchantId,
-                Merchant\RazorxTreatment::PAYOUT_ATTACHMENT_EMAIL_VIA_SQS,
-                $this->mode
-            );
 
-            if (strtolower($variant) === 'on')
-            {
-                $this->pushMessageToSQS($receiverEmailIds, $zipFileId, $merchantId);
-            }
-            else
-            {
-                //push to metro
-                $this->pushMessageToMetro($receiverEmailIds, $zipFileId, $merchantId);
-            }
+            $this->pushMessageToSQS($receiverEmailIds, $zipFileId, $merchantId);
 
             return [PayoutConstants::ZIP_FILE_ID => ''];
         }

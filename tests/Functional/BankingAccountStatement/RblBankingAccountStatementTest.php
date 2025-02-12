@@ -707,7 +707,7 @@ class RblBankingAccountStatementTest extends TestCase
      */
     public function testRblAccountStatementV2ApiCase1()
     {
-        $this->setRazorxMockForBankingAccountStatementV2Api();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS =>'enable']);
 
         $mockedResponse = $this->getRblDataResponse();
 
@@ -796,7 +796,7 @@ class RblBankingAccountStatementTest extends TestCase
      */
     public function testRblAccountStatementV2ApiUsingNextKey()
     {
-        $this->setRazorxMockForBankingAccountStatementV2Api();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS =>'enable']);
 
         $mockedResponse = $this->getRblDataResponse();
 
@@ -897,7 +897,7 @@ class RblBankingAccountStatementTest extends TestCase
      */
     public function testRblAccountStatementV2ApiUsingDatesApiAndNextKeySuccessively()
     {
-        $this->setRazorxMockForBankingAccountStatementV2Api();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS =>'enable']);
 
         $postedDateTimestamp = Carbon::now(Timezone::IST)->subDays(2);
 
@@ -1067,9 +1067,8 @@ class RblBankingAccountStatementTest extends TestCase
 
     public function testRBLAccountStatementFetchExistingAccounts()
     {
-        $this->setMockRazorxTreatment([
-                                       RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
-
+        $this->setMockSplitzTreatmnt([
+                                       RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'enable']);
 
         $this->app['rzp.mode'] = EnvMode::TEST;
 
@@ -1191,7 +1190,7 @@ class RblBankingAccountStatementTest extends TestCase
      **/
     public function testRblAccountStatementV2ApiNoRecordsFound()
     {
-        $this->setRazorxMockForBankingAccountStatementV2Api();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS =>'enable']);
 
         $mockedResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
 
@@ -1247,7 +1246,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['pstdDate'] = '';
 
-        $this->setRazorxMockForBankingAccountStatementV2Api();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS =>'enable']);
 
         $this->setMozartMockResponse($this->convertRblV1ResponseToV2Response($mockedResponse));
 
@@ -1261,7 +1260,7 @@ class RblBankingAccountStatementTest extends TestCase
      */
     public function testRblAccountStatementV2ApiMissingFieldInResponse()
     {
-        $this->setRazorxMockForBankingAccountStatementV2Api();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS =>'enable']);
 
         $mockedResponse = $this->getRblMissingFieldMalFormedDataV2ApiResponse();
 
@@ -7126,8 +7125,10 @@ class RblBankingAccountStatementTest extends TestCase
         $this->ba->cronAuth();
 
         $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'off',
-                                       RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'off'],
-                                      'on');
+            RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'off'],
+            'on');
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_SPECIAL_ATTEMPT_LIMIT=>'enable',RazorxTreatment::PAYOUT_SERVICE_TXN_RECON=>'enable']);
 
         $this->dontExpectWebhookEvent('transaction.created');
 
@@ -8553,7 +8554,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponseRblV2($mockedResponse);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'enable']);
 
         $this->setMockSplitzTreatmnt([RazorxTreatment::BAS_FETCH_RE_ARCH => 'enable']);
 
@@ -8721,7 +8722,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponseRblV2($mockedResponse);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'enable']);
 
         BankingAccountStatementJob::dispatch('test', [
             'channel'           => Channel::RBL,
@@ -10690,6 +10691,8 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setRazorxMockForBankingAccountStatementV2Api();
 
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION =>'enable']);
+
         $testData = $this->testData['testRblAccountStatementCase1'];
 
         $this->testData[__FUNCTION__] = $testData;
@@ -11771,6 +11774,8 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setRazorxMockForBankingAccountStatementV2Api();
 
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION =>'enable']);
+
         BankingAccountStatementJob::dispatch('test', [
             'channel'           => Channel::RBL,
             'account_number'    => 2224440041626905
@@ -12551,7 +12556,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         Queue::except(BankingAccountStatementUpdate::class);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::OPTIMISE_INSERTION_LOGIC => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::OPTIMISE_INSERTION_LOGIC => 'enable']);
 
         $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
 
@@ -14309,6 +14314,8 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setRazorxMockForBankingAccountStatementV2Api();
 
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION =>'enable']);
+
         BankingAccountStatementJob::dispatch('test', [
             'channel'           => Channel::RBL,
             'account_number'    => 2224440041626905
@@ -14442,6 +14449,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->app->instance('mozart', $mock);
 
         $this->setRazorxMockForBankingAccountStatementV2Api();
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION =>'enable']);
 
         $testData = $this->testData['testRblAccountStatementCase1'];
 
@@ -15642,7 +15651,7 @@ class RblBankingAccountStatementTest extends TestCase
 
     public function testRblMissingAccountStatementDetection()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'enable']);
 
         $this->setMockSplitzTreatmnt([RazorxTreatment::BAS_FETCH_RE_ARCH => 'enable']);
 
@@ -15742,7 +15751,7 @@ class RblBankingAccountStatementTest extends TestCase
 
     public function testRblMissingAccountStatementDetectionWhenThereIsNoMismatch()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'enable']);
 
         $this->setMockSplitzTreatmnt([RazorxTreatment::BAS_FETCH_RE_ARCH => 'enable']);
 
@@ -16028,6 +16037,8 @@ class RblBankingAccountStatementTest extends TestCase
     public function testStatementFetchWhenBankingAccountCredentialsAreFetchedFromBAS()
     {
         $this->setRazorxMockForBankingAccountStatementV2Api();
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RBL_V2_BAS_API_INTEGRATION =>'enable']);
 
         // mock BAS
         $mock = Mockery::mock(BankingAccountService::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();

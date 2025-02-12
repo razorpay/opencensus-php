@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Trace\Tracer;
 use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\Base\Core;
 use RZP\Models\Transaction;
 use RZP\Constants\HyperTrace;
@@ -153,13 +154,16 @@ abstract class Base extends Core
         $app = App::getFacadeRoot();
 
         try {
-            // razorx call
-            $variant = $app['razorx']->getTreatment(
-                $fav->getMerchantId(),
-                RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX,
-                Constants\Mode::LIVE);
+            // splitz call
+            $requestPayload = [
+                "id" => $fav->getMerchantId(),
+                "experiment_name" =>  Merchant\RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX,
+                'request_data'  => json_encode(['id' => $fav->getMerchantId()])
+            ];
 
-            if ($variant !== RazorxTreatment::RAZORX_VARIANT_ON) {
+            $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+            if ($isExperimentEnabled !== true){
                 return;
             }
 

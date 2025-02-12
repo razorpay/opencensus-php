@@ -39,7 +39,16 @@ class Service extends Transaction\Service
         $dimension = $this->getDimensions();
 
         $isLatestBalanceRequest = false;
-        if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE))
+
+        $requestPayload = [
+            "id" => $this->merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE,
+            'request_data'  => json_encode(['id' => $this->merchant->getId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if ($isExperimentEnabled === true)
         {
             if ((empty($input['count']) === false) and $input['count'] == 1)
             {
@@ -166,7 +175,15 @@ class Service extends Transaction\Service
         $dimension = $this->getDimensions();
 
         $isLatestBalanceRequest = false;
-        if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE))
+        $requestPayload = [
+            "id" => $this->merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE,
+            'request_data'  => json_encode(['id' => $this->merchant->getId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if ($isExperimentEnabled === true)
         {
             if ((empty($input['count']) === false) and $input['count'] == 1)
             {

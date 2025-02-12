@@ -407,9 +407,9 @@ class WorkflowTest extends TestCase
                 'org_id'          => '100000razorpay',
             ]);
 
-        $success = false;
+        $success = true;
 
-        $this->mockNonTerminalExperiment($success);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING =>'enable']);
 
         $this -> mockPayoutServiceWorkflow('created', $success);
 
@@ -477,9 +477,9 @@ class WorkflowTest extends TestCase
                 "type"              => "checker"
             ]);
 
-        $success = false;
+        $success = true;
 
-        $this->mockNonTerminalExperiment($success);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING =>'enable']);
 
         $this -> mockPayoutServiceWorkflow('processed', $success);
 

@@ -3780,13 +3780,6 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceCreate(false, [], [], Status::PROCESSING, false, true, $assertionBody,$actualPayload,false,false,$assertionBodyForPricing);
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD  => 'on',
-                RazorxTreatment::PAYOUT_SERVICE_VA_TO_VA_CONSUME_FROM_PAYLOAD => 'on'
-            ]
-
-        );
 
         $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
@@ -3944,13 +3937,6 @@ class PayoutServiceTest extends TestCase
         $assertionBodyForPricing = [];
 
         $this->mockPayoutServiceCreate(false, [], [], Status::PROCESSING, false, true, $assertionBody,$actualPayload,false,false,$assertionBodyForPricing);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD  => 'on',
-                RazorxTreatment::PAYOUT_SERVICE_VA_TO_VA_CONSUME_FROM_PAYLOAD => 'on',
-            ]
-        );
 
         $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
 
@@ -5223,7 +5209,7 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceStatusWithChecks('processed',$success);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING => 'enable']);
 
         $this->ba->appAuthLive();
 
@@ -10233,6 +10219,8 @@ class PayoutServiceTest extends TestCase
         $this->mockLedgerSns(0);
 
         $this->setUpExperimentForNWFS();
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $this->fixtures->on('live')->merchant->removeFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
 

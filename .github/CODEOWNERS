@@ -144,7 +144,6 @@ devspace.yaml                                          @razorpay/devstack-devs
 # It's moved to PG Router.
 #
 /app/Models/Order                                       @razorpay/techpaymentscore
-app/Models/Transaction                                  @razorpay/techpaymentscore
 
 # Merchant Entities
 #

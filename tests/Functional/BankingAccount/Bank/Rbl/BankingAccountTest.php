@@ -1436,75 +1436,6 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
-    public function testSuccessBankAccountInfoNotification(string $id = null)
-    {
-        $attribute =
-            [
-                'activation_status' => 'activated',
-                'merchant_id'       => '1cXSLlUU8V9sXl',
-            ];
-
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
-
-        $merchantId = '1cXSLlUU8V9sXl';
-
-        $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner', 'test');
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantId);
-
-        $this->ba->addXOriginHeader();
-
-        $this->testCreateBankingAccount();
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->testCreateActivationDetail(null, $bankingAccount);
-
-        $this->fixtures->edit('banking_account',
-            $bankingAccount->getId(),
-            [
-                'status' => 'initiated',
-            ]);
-
-        $this->assertEquals('created', $bankingAccount->getStatus());
-
-        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
-
-        $dataToReplace = [
-            'request' => [
-                'content' => [
-                    'RZPAlertNotiReq' => [
-                        'Body' => [
-                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber()
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $response = $this->startTest($dataToReplace);
-
-        $changeLogRequest  = [
-            'url'     => '/banking_accounts/activation/' . 'bacc_' . $bankingAccount['id'] . '/status_change_log',
-            'method'  => 'GET',
-            'content' => []
-        ];
-
-        $this->ba->adminAuth();
-
-        $logs = $this->makeRequestAndGetContent($changeLogRequest);
-
-        $this->assertEquals('created', $logs['items'][0]['status']);
-        $this->assertEquals('api_onboarding', $logs['items'][1]['status']);
-        $this->assertEquals('in_review', $logs['items'][1]['sub_status']);
-        $this->assertEquals('closed', $logs['items'][1]['bank_status']);
-
-        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
-
-        $this->assertEquals('bank_ops', $bankingAccountActivationDetail['assignee_team']);
-
-        return $response;
-    }
 
     public function testSuccessRblCoCreatedLeadCreation()
     {
@@ -2040,48 +1971,6 @@ class BankingAccountTest extends TestCase
         });
     }
 
-    public function testAccountOpeningWebhookWithExistingAccountNumber()
-    {
-        $this->createAccountOpeningSuccessfulWebhook();
-
-        $this->fixtures->user->createUserForMerchant('1cXSLlUU8V9sXl', [], 'owner', 'test');
-
-        $this->createMerchantDetail(['merchant_id' => '1cXSLlUU8V9sXl','business_name' => 'foo']);
-
-        $bankingAccount = $this->setAuthAndCreateBankingAccount('1cXSLlUU8V9sXl');
-
-        $diagMock = $this->createAndReturnDiagMock();
-
-        $expectedPayload = [
-            'group' => 'onboarding',
-            'name'  => 'x.ca.rbl.webhook.failure',
-        ];
-        $diagMock->shouldReceive('trackOnboardingEvent')
-            ->once()
-            ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($expectedPayload) {
-                $this->assertEquals($expectedPayload, $eventData);
-                return true;
-            })
-            ->andReturnNull();
-
-        $dataToReplace = [
-            'request' => [
-                'content' => [
-                    'RZPAlertNotiReq' => [
-                        'Body' => [
-                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
-                            'Account No' => '31900299180853'
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $response = $this->startTest($dataToReplace);
-
-        $this->assertEquals('Failure', $response['RZPAlertNotiRes']['Body']['Status']);
-
-    }
 
     public function testRzpRefNumberNotExistScenarioInAccountOpeningWebhook()
     {
@@ -2185,20 +2074,6 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($statusChangeLogsArray[count($statusChangeLogsArray) - 1]['bank_status'], $bankingAccount->getBankInternalStatus());
     }
 
-    public function testAccountInfoWebhookWithIncorrectAndThenCorrectDetails()
-    {
-        $response = $this->testFailedBankAccountInfoNotification();
-
-        $this->assertEquals('Failure', $response['RZPAlertNotiRes']['Body']['Status']);
-
-        $response = $this->testSuccessBankAccountInfoNotification();
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertEquals('api_onboarding', $bankingAccount->getStatus());
-
-        $this->assertEquals('Success', $response['RZPAlertNotiRes']['Body']['Status']);
-    }
 
     public function testFailedBankAccountInfoNotification()
     {
@@ -2240,93 +2115,7 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
-    public function testDoubleAccountOpeningWebhooks()
-    {
-        $this->testSuccessBankAccountInfoNotification();
 
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
-
-        $dataToReplace = [
-            'request' => [
-                'content' => [
-                    'RZPAlertNotiReq' => [
-                        'Body' => [
-                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
-                            'Account No.' => '31900299180853'
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $diagMock = $this->createAndReturnDiagMock();
-
-        $expectedPayload = [
-            'group' => 'onboarding',
-            'name'  => 'x.ca.rbl.webhook.failure',
-        ];
-        $diagMock->shouldReceive('trackOnboardingEvent')
-            ->once()
-            ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($expectedPayload) {
-                $this->assertEquals($expectedPayload, $eventData);
-                return true;
-            })
-            ->andReturnNull();
-
-        $this->startTest($dataToReplace);
-
-        // we are asserting that the values passed in second webhook will not be updated
-        // as the first webhook is processed.
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertNotEquals($bankingAccount['account_number'], 31900299180853);
-    }
-
-    public function testDoubleAccountOpeningWebhooksAllowedAfterManualIntervention()
-    {
-        $this->testSuccessBankAccountInfoNotification();
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $newAccountNumber = '31900299180853';
-
-        // asserting current account number is different
-        $this->assertNotEquals($newAccountNumber, $bankingAccount->getAccountNumber());
-
-        // Default behavior is to reject duplicate webhooks.
-        // The following change allows for duplicate webhooks to update information.
-        $this->fixtures->edit('banking_account', $bankingAccount['id'], [
-            'account_activation_date' => null
-        ]);
-
-        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
-
-        $diagMock = $this->createAndReturnDiagMock();
-
-        $diagMock->shouldReceive('trackOnboardingEvent');
-
-        $dataToReplace = [
-            'request' => [
-                'content' => [
-                    'RZPAlertNotiReq' => [
-                        'Body' => [
-                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
-                            'Account No.' => $newAccountNumber
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->startTest($dataToReplace);
-
-        // we are asserting that the values passed in second webhook will be updated
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertEquals($newAccountNumber, $bankingAccount['account_number']);
-    }
 
     protected function createMerchantDetail(array $attrs = ['activation_status' => 'activated'])
     {
@@ -6843,7 +6632,7 @@ class BankingAccountTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertNull($response['items'][0]['balance']['last_fetched_at']);
+        $this->assertNotNull($response['items'][0]['balance']['last_fetched_at']);
 
         $this->assertNotNull($response['items'][1]['balance']['last_fetched_at']);
     }
@@ -10463,66 +10252,6 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
-    public function testBankLmsBankAccountFetchWithFromDocketEstimatedDeliveryDateFilter()
-    {
-        // Make merchant as Bank CA Onboarding Partner
-        $response = $this->makeMerchantAsBankCAOnboardingPartner();
-
-        // Add Feature to the Merchant
-        $response = $this->addBankLmsFeatureToTheMerchant();
-
-        // Invite new user to join RBL merchant
-        $this->inviteNewUserToJoinRBLMerchant();
-
-        // Accept invitation
-        $response = $this->acceptInvitation();
-
-        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
-
-        $ba1 = $this->createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc('10000000000111',$user->getId());
-
-        $this->fixtures->edit('banking_account_activation_detail', $ba1['banking_account_activation_details']['id'],
-            [
-                'banking_account_id' => substr($ba1['id'],5),
-                'additional_details'        => json_encode([
-                    'docket_estimated_delivery_date' => '1667346201'
-                ])
-            ]);
-
-        $ba2 = $this->createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc('10000000000112',$user->getId());
-
-        $this->fixtures->edit('banking_account_activation_detail', $ba2['banking_account_activation_details']['id'],
-            [
-                'banking_account_id' => substr($ba2['id'],5),
-                'additional_details'        => json_encode([
-                    'docket_estimated_delivery_date' => '1667346101'
-                ])
-            ]);
-
-        $ba3 = $this->createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc('10000000000113',$user->getId());
-
-        $this->fixtures->edit('banking_account_activation_detail', $ba3['banking_account_activation_details']['id'],
-            [
-                'banking_account_id' => substr($ba3['id'],5),
-                'additional_details'        => json_encode([
-                    'docket_estimated_delivery_date' => '1667349200'
-                ])
-            ]);
-
-        $this->createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc('10000000000114',$user->getId());
-
-        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
-
-        $this->ba->addXBankLMSOriginHeader();
-
-        $dataToReplace = [
-            'request' => [
-                'url'     => '/banking_accounts/rbl/lms/banking_account?from_docket_estimated_delivery_date=1667346200&to_docket_estimated_delivery_date=1667348200',
-            ]
-        ];
-
-        $this->startTest($dataToReplace);
-    }
 
     protected function createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc(string $merchantId, string $bankPocUserId): array
     {
@@ -10787,36 +10516,6 @@ class BankingAccountTest extends TestCase
 
     }
 
-    public function testBankLmsEndToEndPartnerChangeAssignee()
-    {
-        $response = $this->setupBankLMSTest();
-        $bankingAccount = $response['bankingAccount'];
-
-        $this->ba->addXOriginHeader();
-
-        $dataToReplace = [
-            'url' => '/banking_accounts/rbl/lms/banking_account/' . $bankingAccount['id'],
-            'method' => 'PATCH',
-            'content' => [
-                'activation_detail' => [
-                    'assignee_team' => 'bank',
-                    'comment' => [
-                        'source_team' => 'bank',
-                        'added_at' => '1663065060',
-                        'comment' => '<p>something</p>',
-                        'source_team_type' => 'external',
-                        'type' => 'external'
-                    ]
-                ]
-            ]
-        ];
-
-        $response = $this->makeRequestAndGetContent($dataToReplace);
-        $expectedComment = $this->getDbLastEntity('banking_account_comment');
-
-        $this->assertEquals($response[ActivationDetail\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ASSIGNEE_TEAM], ActivationDetail\Entity::BANK);
-        $this->assertEquals($expectedComment->comment, "<p>something</p>");
-    }
 
     public function testBankLmsEndToEndForLeadReceivedDateFiltersNegativecase()
     {

@@ -3695,13 +3695,16 @@ class Entity extends Base\PublicEntity
         $app = App::getFacadeRoot();
 
         try {
-            // razorx call
-            $variant = $app['razorx']->getTreatment(
-                $payout->getMerchantId(),
-                RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX,
-                Mode::LIVE);
+            // splitz call
+            $requestPayload = [
+                "id" => $payout->getMerchantId(),
+                "experiment_name" =>  Merchant\RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX,
+                'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+            ];
 
-            if ($variant !== RazorxTreatment::RAZORX_VARIANT_ON) {
+            $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+            if ($isExperimentEnabled !== true) {
                 return;
             }
 

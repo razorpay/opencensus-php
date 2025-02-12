@@ -1242,8 +1242,15 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
             ]);
 
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -1875,8 +1882,15 @@ class Core extends Base\Core
                 //
                 // We also have to handle the fund transfer destination while processing the queued payout.
                 //
-                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                              $payout->getMerchantId()) === true)
+                $requestPayload = [
+                    "id" => $payout->getMerchantId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                    'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                ];
+
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if($isExperimentEnabled === true)
                 {
                     return $this->mutex->acquireAndRelease(
                         PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -1976,8 +1990,15 @@ class Core extends Base\Core
                 /** @var Entity $payout */
                 $payout = $this->repo->payout->findOrFail($payoutId);
 
-                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                              $payout->getMerchantId()) === true)
+                $requestPayload = [
+                    "id" => $payout->getMerchantId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                    'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                ];
+
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if($isExperimentEnabled === true)
                 {
                     return $this->mutex->acquireAndRelease(
                         PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -2047,8 +2068,15 @@ class Core extends Base\Core
                 /** @var Entity $payout */
                 $payout = $this->repo->payout->findOrFail($payoutId);
 
-                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                              $payout->getMerchantId()) === true)
+                $requestPayload = [
+                    "id" => $payout->getMerchantId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                    'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                ];
+
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if($isExperimentEnabled === true)
                 {
                     return $this->mutex->acquireAndRelease(
                         PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -2102,8 +2130,15 @@ class Core extends Base\Core
                 /** @var Entity $payout */
                 $payout = $this->repo->payout->findOrFail($payoutId);
 
-                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                              $payout->getMerchantId()) === true)
+                $requestPayload = [
+                    "id" => $payout->getMerchantId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                    'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                ];
+
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if($isExperimentEnabled === true)
                 {
                     return $this->mutex->acquireAndRelease(
                         PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -2360,8 +2395,15 @@ class Core extends Base\Core
                     }
                 }
 
-                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                              $payout->getMerchantId()) === true)
+                $requestPayload = [
+                    "id" => $payout->getMerchantId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                    'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                ];
+
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if($isExperimentEnabled === true)
                 {
                     return $this->mutex->acquireAndRelease(
                         PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -2455,8 +2497,15 @@ class Core extends Base\Core
         //
         // this is the only case where we Migration redis lock before payout lock .
         // its a rare scenario bcz cancel payout is manual
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             return $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -2575,8 +2624,15 @@ class Core extends Base\Core
         // else process via api workflow system
         if ($this->shouldCallWorkflowService($payout) === true)
         {
-            if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                             $payout->getMerchantId()) === true)
+            $requestPayload = [
+                "id" => $payout->getMerchantId(),
+                "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+            ];
+
+            $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+            if($isExperimentEnabled === true)
             {
                 $this->mutex->acquireAndRelease(
                     PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -2648,8 +2704,15 @@ class Core extends Base\Core
             function() use ($payout, $approve, $input)
             {
                 // Reload $payout here if needed.
-                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                              $payout->getMerchantId()) === true)
+                $requestPayload = [
+                    "id" => $payout->getMerchantId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                    'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                ];
+
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if($isExperimentEnabled === true)
                 {
                     return $this->mutex->acquireAndRelease(
                         PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -3013,8 +3076,15 @@ class Core extends Base\Core
     {
         $workflowAction = null;
 
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -3074,8 +3144,15 @@ class Core extends Base\Core
 
         $response = null;
 
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             $response = $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -3137,8 +3214,13 @@ class Core extends Base\Core
         // have enough balance for that payout
         $rzpFeesRecoverySucceeded = true;
 
-        $experimentEnabled = $this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                   $balance->getMerchantId());
+        $requestPayload = [
+            "id" => $balance->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $balance->getMerchantId()])
+        ];
+
+        $experimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         foreach ($payouts as $key => $payout)
         {
@@ -3289,8 +3371,15 @@ class Core extends Base\Core
 
         foreach ($scheduledPayouts as $scheduledPayout)
         {
-            if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                          $scheduledPayout->getMerchantId()) === true)
+            $requestPayload = [
+                "id" => $scheduledPayout->getMerchantId(),
+                "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                'request_data'  => json_encode(['id' => $scheduledPayout->getMerchantId()])
+            ];
+
+            $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+            if($isExperimentEnabled === true)
             {
                 list($count, $amount, $noCount) = $this->mutex->acquireAndRelease(
                     PayoutConstants::MIGRATION_REDIS_SUFFIX . $scheduledPayout->getId(),
@@ -3530,8 +3619,15 @@ class Core extends Base\Core
 
                     if ($isBeneDown === false)
                     {
-                        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                                      $payout->getMerchantId()) === true)
+                        $requestPayload = [
+                            "id" => $payout->getMerchantId(),
+                            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                        ];
+
+                        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                        if($isExperimentEnabled === true)
                         {
                             return $this->mutex->acquireAndRelease(
                                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -3670,8 +3766,15 @@ class Core extends Base\Core
                             return null;
                         }
 
-                        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                                      $payout->getMerchantId()) === true)
+                        $requestPayload = [
+                            "id" => $payout->getMerchantId(),
+                            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                        ];
+
+                        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                        if($isExperimentEnabled === true)
                         {
                             return $this->mutex->acquireAndRelease(
                                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -3980,8 +4083,15 @@ class Core extends Base\Core
                 ]);
         }
 
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -4894,8 +5004,15 @@ class Core extends Base\Core
                                          array $ftsSourceAccountInformation = [],
                                          string $ftaStatus = null)
     {
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -5187,8 +5304,15 @@ class Core extends Base\Core
 
         $currentStatus = $payout->getStatus();
 
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -6305,8 +6429,15 @@ class Core extends Base\Core
                 'input'     => $input,
             ]);
 
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             return $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),

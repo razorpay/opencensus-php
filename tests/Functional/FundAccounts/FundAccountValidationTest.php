@@ -153,10 +153,7 @@ class FundAccountValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([
-            RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX => 'on',
-        ]);
-        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'enable']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'enable',RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX => 'enable']);
 
 
         $fundAccountResponse = $this->createFundAccountBankAccount();

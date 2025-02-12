@@ -14283,13 +14283,6 @@ class Service extends Base\Service
             if (($b[Balance\Entity::TYPE] === Balance\Type::BANKING) &&
                 ($b[Balance\Entity::ACCOUNT_TYPE] === Balance\AccountType::DIRECT))
             {
-                $variant = $this->app['razorx']->getTreatment($merchantId,
-                                                              Experiment::SYNC_CALL_FOR_FRESH_BALANCE, $mode);
-
-                $this->trace->info(TraceCode::SYNC_CALL_FOR_FRESH_BALANCE_VARIANT_STATUS,
-                                   [
-                                       'variant_status' => $variant,
-                                   ]);
 
                 $dimension = [
                     ConstantMetric::LABEL_RZP_INTERNAL_APP_NAME => app('request.ctx')->getInternalAppName() ?? ConstantMetric::LABEL_NONE_VALUE,
@@ -14299,7 +14292,7 @@ class Service extends Base\Service
 
                 // if cached is false and variant is on and balance last fetched is beyond recency threshold (10 sec)
                 // then only , we make sync call for balance fetch
-                if (($cached === 'false') and ($variant === 'on'))
+                if (($cached === 'false'))
                 {
                     $thresholdTimestamp = Carbon::now(Timezone::IST)->subSeconds(10)->getTimestamp();
 

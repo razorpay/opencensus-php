@@ -199,6 +199,8 @@ final class RazorxTreatment
     // Disable ledger transaction dual write
     const LEDGER_DISABLE_TRANSACTION_DUAL_WRITE = 'ledger_disable_transaction_dual_write';
 
+    const LEDGER_DISABLE_TRANSACTION_DUAL_WRITE_TEST = 'ledger_disable_transaction_dual_write_test';
+
     // Fund transfer request from payout to fts in sync mode
     const PAYOUT_TO_FTS_SYNC_MODE = 'payout_to_fts_sync_mode';
 
@@ -355,6 +357,8 @@ final class RazorxTreatment
     const BANK_TRANSFER_DISABLE_GATEWAY = 'bank_transfer_disable_gateway';
     // This is to be used to block VA to VA payouts
     const RX_ALLOW_VA_TO_VA_PAYOUTS = 'rx_allow_va_to_va_payouts';
+
+    const RX_ALLOW_VA_TO_VA_PAYOUTS_TEST = 'rx_allow_va_to_va_payouts_test';
 
     const RX_FEE_RECOVERY_CONTROL_ROLL_OUT = 'rx_fee_recovery_control_roll_out';
 
@@ -855,7 +859,7 @@ final class RazorxTreatment
 
     // Partner bank hold payouts experiment
     const PARTNER_BANK_ON_HOLD_PAYOUT_ICICI = 'partner_bank_on_hold_payout_icici';
-    
+
 
     // If true, it will select Optimizer mandate hub for card recurring payments.
     const ALLOW_OPTIMIZER_CARD_MANDATE_HUB = 'allow_optimizer_card_mandate_hub';
