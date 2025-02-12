@@ -189,12 +189,14 @@ const AddDeviceToCart = ({
   };
 
   const handleDrawerOpen = () => {
-    toggleDetails();
     if (isPosEkycAgent) {
       const payload: ModularPayload = {
         [MODULAR_DEVICE_FIELDS.DEVICE_NAME]: deviceConfig.title,
+        [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: toggleDetails,
       };
       handleModularUpdate(payload);
+    } else {
+      toggleDetails();
     }
   };
 
@@ -202,7 +204,7 @@ const AddDeviceToCart = ({
   const selectionPlanRate = latestRateConfig?.plans?.find((plan) => plan?.planName === devicePlan);
 
   useEffect(() => {
-    // Track whenever the drawer is opened //
+    // Track whenever the drawer is opened
     if (isDetailsOpen) {
       trackEvent({
         eventName: analyticsTypes.ANALYTICS_EVENTS.PAGE,
@@ -241,7 +243,7 @@ const AddDeviceToCart = ({
           {isEditFlow ? 'Edit' : addDeviceText}
         </Link>
       ) : (
-        <Button variant="secondary" onClick={toggleDetails} isDisabled={isDisabled} isFullWidth>
+        <Button variant="secondary" onClick={handleDrawerOpen} isDisabled={isDisabled} isFullWidth>
           {isEditFlow ? 'Edit' : addDeviceText}
         </Button>
       )}

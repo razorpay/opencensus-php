@@ -54,6 +54,7 @@ import {
   L1_FUNNEL_STAGE,
   L2_FUNNEL_STAGE,
 } from 'apps/pos/src/services/analytics/types';
+import { checkIfKycComplete } from 'apps/pos/src/app/utils/merchantActivation';
 
 export interface Component {
   slug: OnboardingComponentType;
@@ -109,7 +110,16 @@ const MERCHANT_KYC = {
   title: 'Merchant KYC',
   description: 'Provide merchant’s business information to start the POS journey .',
   getStatus: ({ states }) => {
-    if (states?.merchantDetails?.activation?.isFormSubmitted) return 'kyc_completed';
+    const { merchantDetails } = states;
+    const posActivationStatus = merchantDetails?.activation?.posActivationStatus;
+    if (
+      !posActivationStatus &&
+      merchantDetails &&
+      checkIfKycComplete({ merchant: merchantDetails })
+    ) {
+      return 'kyc_completed';
+    }
+    if (posActivationStatus) return posActivationStatus.toLowerCase();
     return 'pending';
   },
   checkIfDisabled: ({ values }) => !values.merchantId,
